@@ -15,13 +15,13 @@
 | T061 | DONE | `commands/help.ts` — `/help` command with `executeHelp(locale)`, emits `surface=help` |
 | T062 [P] | DONE | `ConfigOverlay.tsx` — inline overlay for non-secret settings with lock indicator for secrets |
 | T063 [P] | DONE | `EnvSecretIsolatedEditor.tsx` — masked secret input, no plaintext echo, isolated confirm/cancel |
-| T064 | DONE | `commands/config.ts` — `/config` command with `KOSMOS_CONFIG_CATALOG`, `executeConfig()`, `applyConfigChanges()` |
+| T064 | DONE | `commands/config.ts` — `/config` command with `KOSAX_CONFIG_CATALOG`, `executeConfig()`, `applyConfigChanges()` |
 | T065 [P] | DONE | `PluginBrowser.tsx` — `⏺`/`○` status + Space/i/r/a keybindings |
-| T066 | DONE | `commands/plugins.ts` — `/plugins` command, reads `KOSMOS_PLUGIN_REGISTRY` env |
+| T066 | DONE | `commands/plugins.ts` — `/plugins` command, reads `KOSAX_PLUGIN_REGISTRY` env |
 | T067 [P] | DONE | `ExportPdfDialog.tsx` — pdf-lib PDF assembly with `sanitizeForExport()` SC-012 guard |
 | T068 | DONE | `commands/export.ts` — `/export` command, writes to `~/Downloads/` |
 | T069 [P] | DONE | `HistorySearchDialog.tsx` — 3-filter form with `applyHistoryFilters()` AND composition |
-| T070 | DONE | `commands/history.ts` — `/history` command, reads from `~/.kosmos/memdir/user/sessions/` |
+| T070 | DONE | `commands/history.ts` — `/history` command, reads from `~/.kosax/memdir/user/sessions/` |
 | T071 [P] | DONE | All bun:test units — 91 tests, 0 failures, SC-012 assertion passes |
 | T072 | DEFERRED to Lead | OTEL surface activation is called inside each command handler (see calls placed below) |
 
@@ -30,31 +30,31 @@
 ## Files Created
 
 ### Components
-- `/Users/um-yunsang/KOSMOS/tui/src/components/help/HelpV2Grouped.tsx`
-- `/Users/um-yunsang/KOSMOS/tui/src/components/config/ConfigOverlay.tsx`
-- `/Users/um-yunsang/KOSMOS/tui/src/components/config/EnvSecretIsolatedEditor.tsx`
-- `/Users/um-yunsang/KOSMOS/tui/src/components/plugins/PluginBrowser.tsx`
-- `/Users/um-yunsang/KOSMOS/tui/src/components/export/ExportPdfDialog.tsx`
-- `/Users/um-yunsang/KOSMOS/tui/src/components/history/HistorySearchDialog.tsx`
+- `/Users/um-yunsang/KOSAX/tui/src/components/help/HelpV2Grouped.tsx`
+- `/Users/um-yunsang/KOSAX/tui/src/components/config/ConfigOverlay.tsx`
+- `/Users/um-yunsang/KOSAX/tui/src/components/config/EnvSecretIsolatedEditor.tsx`
+- `/Users/um-yunsang/KOSAX/tui/src/components/plugins/PluginBrowser.tsx`
+- `/Users/um-yunsang/KOSAX/tui/src/components/export/ExportPdfDialog.tsx`
+- `/Users/um-yunsang/KOSAX/tui/src/components/history/HistorySearchDialog.tsx`
 
 ### Commands
-- `/Users/um-yunsang/KOSMOS/tui/src/commands/help.ts`
-- `/Users/um-yunsang/KOSMOS/tui/src/commands/config.ts`
-- `/Users/um-yunsang/KOSMOS/tui/src/commands/plugins.ts`
-- `/Users/um-yunsang/KOSMOS/tui/src/commands/export.ts`
-- `/Users/um-yunsang/KOSMOS/tui/src/commands/history.ts`
+- `/Users/um-yunsang/KOSAX/tui/src/commands/help.ts`
+- `/Users/um-yunsang/KOSAX/tui/src/commands/config.ts`
+- `/Users/um-yunsang/KOSAX/tui/src/commands/plugins.ts`
+- `/Users/um-yunsang/KOSAX/tui/src/commands/export.ts`
+- `/Users/um-yunsang/KOSAX/tui/src/commands/history.ts`
 
 ### Tests
-- `/Users/um-yunsang/KOSMOS/tui/tests/components/help/HelpV2Grouped.test.ts`
-- `/Users/um-yunsang/KOSMOS/tui/tests/components/config/ConfigOverlay.test.ts`
-- `/Users/um-yunsang/KOSMOS/tui/tests/components/plugins/PluginBrowser.test.ts`
-- `/Users/um-yunsang/KOSMOS/tui/tests/components/export/ExportPdfDialog.test.ts` (SC-012 gate)
-- `/Users/um-yunsang/KOSMOS/tui/tests/components/history/HistorySearchDialog.test.ts`
-- `/Users/um-yunsang/KOSMOS/tui/tests/commands/help.test.ts`
-- `/Users/um-yunsang/KOSMOS/tui/tests/commands/config.test.ts`
-- `/Users/um-yunsang/KOSMOS/tui/tests/commands/plugins.test.ts`
-- `/Users/um-yunsang/KOSMOS/tui/tests/commands/export.test.ts`
-- `/Users/um-yunsang/KOSMOS/tui/tests/commands/history.test.ts`
+- `/Users/um-yunsang/KOSAX/tui/tests/components/help/HelpV2Grouped.test.ts`
+- `/Users/um-yunsang/KOSAX/tui/tests/components/config/ConfigOverlay.test.ts`
+- `/Users/um-yunsang/KOSAX/tui/tests/components/plugins/PluginBrowser.test.ts`
+- `/Users/um-yunsang/KOSAX/tui/tests/components/export/ExportPdfDialog.test.ts` (SC-012 gate)
+- `/Users/um-yunsang/KOSAX/tui/tests/components/history/HistorySearchDialog.test.ts`
+- `/Users/um-yunsang/KOSAX/tui/tests/commands/help.test.ts`
+- `/Users/um-yunsang/KOSAX/tui/tests/commands/config.test.ts`
+- `/Users/um-yunsang/KOSAX/tui/tests/commands/plugins.test.ts`
+- `/Users/um-yunsang/KOSAX/tui/tests/commands/export.test.ts`
+- `/Users/um-yunsang/KOSAX/tui/tests/commands/history.test.ts`
 
 ---
 
@@ -83,7 +83,7 @@ Each command handler calls `emitSurfaceActivation()` from `tui/src/observability
 
 3. **Register commands in the command catalog** (`tui/src/commands/catalog.ts` already has the entries; the REPL dispatcher needs to route `/help`, `/config`, `/plugins`, `/export`, `/history` to the handlers).
 
-4. **Verify `emitSurfaceActivation` trace ingestion** via Langfuse — confirm `kosmos.ui.surface=help` (etc.) appears in spans after running `/help` in `bun run tui`.
+4. **Verify `emitSurfaceActivation` trace ingestion** via Langfuse — confirm `kosax.ui.surface=help` (etc.) appears in spans after running `/help` in `bun run tui`.
 
 ---
 
@@ -112,7 +112,7 @@ Test coverage: 20 sample sessions simulated in `ExportPdfDialog.test.ts`:
 SC-012 grep assertion command (manual verification):
 ```bash
 # After running /export in bun run tui:
-grep -E 'traceId=|spanId=|pluginInternal:' ~/Downloads/kosmos-export_*.pdf
+grep -E 'traceId=|spanId=|pluginInternal:' ~/Downloads/kosax-export_*.pdf
 # Expected: no output (zero matches)
 ```
 

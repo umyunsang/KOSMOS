@@ -1,8 +1,8 @@
 #!/usr/bin/env -S uv run python
 # SPDX-License-Identifier: Apache-2.0
-"""Regenerate the kosmos-plugin-store/index/index.json catalog.
+"""Regenerate the kosax-plugin-store/index/index.json catalog.
 
-Walks every `kosmos-plugin-store/kosmos-plugin-<name>` repo via the
+Walks every `kosax-plugin-store/kosax-plugin-<name>` repo via the
 `gh` CLI, collects published releases (or the main branch tarball when
 no release exists yet), parses each repo's `manifest.yaml` for tier /
 permission_layer / processes_pii / trustee_org_name, and emits a
@@ -32,9 +32,9 @@ from pathlib import Path
 
 import yaml
 
-ORG = "kosmos-plugin-store"
+ORG = "kosax-plugin-store"
 META_REPO = "index"
-PLUGIN_PREFIX = "kosmos-plugin-"
+PLUGIN_PREFIX = "kosax-plugin-"
 
 
 def _run_gh(args: list[str], *, timeout: float = 30.0) -> str:
@@ -50,7 +50,7 @@ def _run_gh(args: list[str], *, timeout: float = 30.0) -> str:
 
 
 def _list_plugin_repos() -> list[str]:
-    """List every `kosmos-plugin-<name>` repo under the org (excludes index + template)."""
+    """List every `kosax-plugin-<name>` repo under the org (excludes index + template)."""
     raw = _run_gh(["repo", "list", ORG, "--json", "name", "--limit", "200"])
     repos = json.loads(raw)
     names: list[str] = []
@@ -90,7 +90,7 @@ def _fetch_manifest(repo_name: str) -> dict[str, object] | None:
 
 
 def _bundle_sha(repo_name: str) -> str | None:
-    """Compute SHA-256 of the main-branch tarball — same shape `kosmos plugin install` will see."""
+    """Compute SHA-256 of the main-branch tarball — same shape `kosax plugin install` will see."""
     import hashlib
 
     url = f"https://github.com/{ORG}/{repo_name}/archive/refs/heads/main.tar.gz"
@@ -175,7 +175,7 @@ def main(argv: list[str]) -> int:
         "--check",
         action="store_true",
         help=(
-            "CI drift gate: read PATH (or kosmos-plugin-store/index/index.json) "
+            "CI drift gate: read PATH (or kosax-plugin-store/index/index.json) "
             "and exit non-zero if it differs from a freshly-regenerated index."
         ),
     )

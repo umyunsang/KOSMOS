@@ -22,14 +22,14 @@ from uuid import UUID
 
 import pytest
 
-from kosmos.memdir.ministry_scope import (
+from kosax.memdir.ministry_scope import (
     CURRENT_SCOPE_VERSION,
     MINISTRY_CODES,
     MinistryOptIn,
     MinistryScopeAcknowledgment,
     write_scope_atomic,
 )
-from kosmos.tools.main_router import (
+from kosax.tools.main_router import (
     COMPOSITE_TOOL_MINISTRIES,
     MinistryOptOutRefusal,
     check_ministry_scope,
@@ -141,7 +141,7 @@ def test_stale_scope_version_refuses(tmp_path: Path) -> None:
     (research R-6).  Without this check a stale v(N-1) record would carry
     forward opt-in booleans from an obsolete consent version.
     """
-    from kosmos.memdir.ministry_scope import (
+    from kosax.memdir.ministry_scope import (
         MinistryScopeAcknowledgment as Ack,
     )
 

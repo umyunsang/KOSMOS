@@ -113,7 +113,7 @@ export function AssistantToolUseMessage(t0) {
     return (
       <Box flexDirection="column" marginTop={addMargin ? 1 : 0}>
         <Text>
-          <Text color={theme.kosmosCore ?? theme.text}>{shouldShowDot ? '⏺ ' : '  '}</Text>
+          <Text color={theme.kosaxCore ?? theme.text}>{shouldShowDot ? '⏺ ' : '  '}</Text>
           <Text bold={true}>{param.name}</Text>
           <Text dimColor={true}>{`(${inputPreview})`}</Text>
         </Text>

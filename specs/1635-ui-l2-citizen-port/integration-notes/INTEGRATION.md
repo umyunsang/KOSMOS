@@ -13,8 +13,8 @@
 **Status: COMPLETE** — commit `5760885`
 
 - Added `showDialog` to the import from `interactiveHelpers.js`
-- After `showSetupScreens()` completes inside the `if (!isNonInteractiveSession)` block, inserted a KOSMOS-specific onboarding gate
-- `loadOnboardingState()` reads `~/.kosmos/memdir/user/onboarding/state.json`; if `isOnboardingComplete()` returns false, `showDialog()` mounts `OnboardingFlow` and blocks until `onComplete()` fires
+- After `showSetupScreens()` completes inside the `if (!isNonInteractiveSession)` block, inserted a KOSAX-specific onboarding gate
+- `loadOnboardingState()` reads `~/.kosax/memdir/user/onboarding/state.json`; if `isOnboardingComplete()` returns false, `showDialog()` mounts `OnboardingFlow` and blocks until `onComplete()` fires
 - `emitSurfaceActivation('onboarding', { 'onboarding.mode': 'initial' })` fires before mounting (T052)
 - OnboardingFlow is dynamically required via `require()` inside the async block to avoid circular dependency at module load time
 
@@ -24,34 +24,34 @@
 - Imported all 10 new component packages + auxiliary command handlers at line ~291 of REPL.tsx (after the last `createAttachmentMessage` import, before the `EMPTY_MCP_CLIENTS` constant)
 - `emitSurfaceActivation('repl')` fires in a `useEffect([], [])` on REPL mount (T026)
 - 5-second no-chunk timeout: `useEffect([isLoading])` watches the loading state. When `isLoading` becomes true, a `setTimeout(5000)` fires and creates a `network` ErrorEnvelope if no chunk arrived (T023)
-- JSX: `SlashCommandSuggestions`, `ErrorEnvelope` (conditional), and `AgentVisibilityPanel` (when `kosmosSwarmMode`) are rendered above the `SessionBackgroundHint` component (T022)
+- JSX: `SlashCommandSuggestions`, `ErrorEnvelope` (conditional), and `AgentVisibilityPanel` (when `kosaxSwarmMode`) are rendered above the `SessionBackgroundHint` component (T022)
 
 ### Phase C — REPL.tsx permission gauntlet (T036, T039)
 **Status: COMPLETE** — commit `5760885`
 
-- `kosmosPrevModeRef` tracks the previous permission mode
-- `useEffect([toolPermissionContext.mode, setAppState])` intercepts the bypassPermissions transition: when detected, it immediately reverts the mode to the previous value and sets `kosmosShowBypassConfirm=true`
-- `BypassReinforcementModal` renders when `kosmosShowBypassConfirm` is true; `onConfirm` applies `bypassPermissions` and clears the flag; `onCancel` clears only (T036)
-- `kosmosPendingConsent` state holds a pending consent request payload; `PermissionGauntletModal` mounts when non-null. The modal already calls `emitSurfaceActivation('permission_gauntlet')` internally on mount (T039 — no additional wiring needed)
+- `kosaxPrevModeRef` tracks the previous permission mode
+- `useEffect([toolPermissionContext.mode, setAppState])` intercepts the bypassPermissions transition: when detected, it immediately reverts the mode to the previous value and sets `kosaxShowBypassConfirm=true`
+- `BypassReinforcementModal` renders when `kosaxShowBypassConfirm` is true; `onConfirm` applies `bypassPermissions` and clears the flag; `onCancel` clears only (T036)
+- `kosaxPendingConsent` state holds a pending consent request payload; `PermissionGauntletModal` mounts when non-null. The modal already calls `emitSurfaceActivation('permission_gauntlet')` internally on mount (T039 — no additional wiring needed)
 - Note: The full `awaitConsentRequest()` IPC integration (mapping backend `notification_push` frames to the modal state) is deferred to P5. The consent state variable and modal mount surface are present for P5 to populate.
 
 ### Phase D — REPL.tsx ministry agent (T056, T059)
 **Status: COMPLETE** — commit `5760885`
 
-- `kosmosSwarmMode` and `kosmosPrimitiveByWorker` state added
-- `useEffect([kosmosSwarmMode])` emits `emitSurfaceActivation('agents', { 'kosmos.swarm.auto': true })` when swarm activates (T059)
-- `shouldActivateSwarm` is imported and available for call in a plan handler; `setKosmosSwarmMode(true)` is the wiring point
-- Note: The actual plan handler that calls `shouldActivateSwarm()` with `mentioned_ministries` and `complexity_tag` from the LLM response is not yet wired because REPL.tsx does not have a typed plan-response extraction path in P4. `setKosmosSwarmMode` is exposed at REPL scope for P5 to call from the message stream handler.
+- `kosaxSwarmMode` and `kosaxPrimitiveByWorker` state added
+- `useEffect([kosaxSwarmMode])` emits `emitSurfaceActivation('agents', { 'kosax.swarm.auto': true })` when swarm activates (T059)
+- `shouldActivateSwarm` is imported and available for call in a plan handler; `setKosaxSwarmMode(true)` is the wiring point
+- Note: The actual plan handler that calls `shouldActivateSwarm()` with `mentioned_ministries` and `complexity_tag` from the LLM response is not yet wired because REPL.tsx does not have a typed plan-response extraction path in P4. `setKosaxSwarmMode` is exposed at REPL scope for P5 to call from the message stream handler.
 
 ### Phase E — REPL.tsx auxiliary command dispatch (T072)
 **Status: COMPLETE** — commit `5760885`
 
-- KOSMOS command intercept block inserted BEFORE the existing CC `// Handle immediate commands` block in `onSubmit`
+- KOSAX command intercept block inserted BEFORE the existing CC `// Handle immediate commands` block in `onSubmit`
 - Handles: `/help`, `/config`, `/plugins`, `/export`, `/history`, `/consent`, `/agents`, `/onboarding`, `/lang`
 - Each command calls the respective `execute*()` function (which calls `emitSurfaceActivation()` internally — T072 is satisfied at the command-handler level per US5 notes)
 - Mounts the corresponding React component via `setToolJSX({ jsx, isLocalJSXCommand: true })`
 - `/consent list|revoke` uses `addNotification` stub (P5: full PermissionReceiptContext integration)
-- `/onboarding` uses `parseOnboardingCommand` → sets `kosmosOnboardingMode` state → `OnboardingFlow` overlay renders in the REPL JSX
+- `/onboarding` uses `parseOnboardingCommand` → sets `kosaxOnboardingMode` state → `OnboardingFlow` overlay renders in the REPL JSX
 
 ### Phase F — Mark deferred tasks [x] in tasks.md
 **Status: COMPLETE** — commit `e4b866f`
@@ -62,9 +62,9 @@ Tasks marked: T022, T023, T026, T036, T039, T049, T052, T056, T059, T072
 
 ## Files Modified
 
-- `/Users/um-yunsang/KOSMOS/tui/src/screens/REPL.tsx` — 394 lines added (imports + state + effects + command dispatch + JSX)
-- `/Users/um-yunsang/KOSMOS/tui/src/main.tsx` — 30 lines added (showDialog import + onboarding gate)
-- `/Users/um-yunsang/KOSMOS/specs/1635-ui-l2-citizen-port/tasks.md` — 10 task checkboxes updated
+- `/Users/um-yunsang/KOSAX/tui/src/screens/REPL.tsx` — 394 lines added (imports + state + effects + command dispatch + JSX)
+- `/Users/um-yunsang/KOSAX/tui/src/main.tsx` — 30 lines added (showDialog import + onboarding gate)
+- `/Users/um-yunsang/KOSAX/specs/1635-ui-l2-citizen-port/tasks.md` — 10 task checkboxes updated
 
 ---
 
@@ -94,9 +94,9 @@ No new test failures introduced. The 6 pre-existing failures are in `tests/compo
 
 1. **`_showSecretEditor` variable declared but never read**: The `ConfigOverlay` `onOpenSecretEditor` callback sets a local variable that is only used within the closure. TypeScript's `noUnusedLocals` is not enabled in `tsconfig.typecheck.json` so this does not cause a type error. Lead may clean up in P5 polish.
 
-2. **Swarm plan handler not connected**: `setKosmosSwarmMode` is present and `shouldActivateSwarm` is imported. The actual call site (inside the LLM message stream handler where plan responses are parsed) was not wired because REPL.tsx does not have a single typed plan-response extraction point in the current P4 state. Lead should add `shouldActivateSwarm({ mentioned_ministries, complexity_tag })` inside the `handleMessageFromStream` callback and call `setKosmosSwarmMode(true)` on positive result.
+2. **Swarm plan handler not connected**: `setKosaxSwarmMode` is present and `shouldActivateSwarm` is imported. The actual call site (inside the LLM message stream handler where plan responses are parsed) was not wired because REPL.tsx does not have a single typed plan-response extraction point in the current P4 state. Lead should add `shouldActivateSwarm({ mentioned_ministries, complexity_tag })` inside the `handleMessageFromStream` callback and call `setKosaxSwarmMode(true)` on positive result.
 
-3. **`awaitConsentRequest` IPC integration deferred**: The `PermissionGauntletModal` is mounted and functional. The IPC frame routing from `consentBridge.ts` `handleNotificationFrame()` to `setKosmosPendingConsent()` requires the master frame dispatch loop to forward consent frames. This loop lives in the existing REPL bridge hook (`useReplBridge`) — it is a CC artifact with React Compiler artifacts and was not touched. Lead should add a `handleNotificationFrame(frame)` call in `useReplBridge`'s frame handler and call `setKosmosPendingConsent()` when the result is non-null.
+3. **`awaitConsentRequest` IPC integration deferred**: The `PermissionGauntletModal` is mounted and functional. The IPC frame routing from `consentBridge.ts` `handleNotificationFrame()` to `setKosaxPendingConsent()` requires the master frame dispatch loop to forward consent frames. This loop lives in the existing REPL bridge hook (`useReplBridge`) — it is a CC artifact with React Compiler artifacts and was not touched. Lead should add a `handleNotificationFrame(frame)` call in `useReplBridge`'s frame handler and call `setKosaxPendingConsent()` when the result is non-null.
 
 4. **`/consent list|revoke` uses notification stub**: Full `PermissionReceiptContext` integration (reading receipts from the provider) requires `usePermissionReceipts()` which was imported but not yet called with a valid context (the `PermissionReceiptProvider` wraps the root in `main.tsx` per US2 notes, but this was not added to main.tsx to avoid touching `renderAndRun`). Lead should add `<PermissionReceiptProvider>` wrapper in `replLauncher.tsx` or `main.tsx`.
 
@@ -108,9 +108,9 @@ No new test failures introduced. The 6 pre-existing failures are in `tests/compo
 
 ## Remaining Concerns for Lead Before Phase 8 Polish
 
-1. **Connect swarm predicate to LLM plan stream**: Add `shouldActivateSwarm()` call in the message stream handler where `complexity_tag` and `mentioned_ministries` become available. Call `setKosmosSwarmMode(true)` on positive result. Also populate `kosmosPrimitiveByWorker` from `WorkerStatusFrame.current_primitive` as frames arrive.
+1. **Connect swarm predicate to LLM plan stream**: Add `shouldActivateSwarm()` call in the message stream handler where `complexity_tag` and `mentioned_ministries` become available. Call `setKosaxSwarmMode(true)` on positive result. Also populate `kosaxPrimitiveByWorker` from `WorkerStatusFrame.current_primitive` as frames arrive.
 
-2. **Wire `awaitConsentRequest` to `kosmosPendingConsent`**: In `useReplBridge` (or wherever frame dispatch lives), call `handleNotificationFrame(frame)` from `consentBridge.ts`. When a consent request is resolved, call `setKosmosPendingConsent({ layer, toolName, description, onDecide })` where `onDecide` routes through `consentBridge.result.resolve()`. After `onDecide` fires, call `addReceipt()` from `PermissionReceiptContext`.
+2. **Wire `awaitConsentRequest` to `kosaxPendingConsent`**: In `useReplBridge` (or wherever frame dispatch lives), call `handleNotificationFrame(frame)` from `consentBridge.ts`. When a consent request is resolved, call `setKosaxPendingConsent({ layer, toolName, description, onDecide })` where `onDecide` routes through `consentBridge.result.resolve()`. After `onDecide` fires, call `addReceipt()` from `PermissionReceiptContext`.
 
 3. **Wrap app with `<PermissionReceiptProvider>`**: Add the provider in `replLauncher.tsx` or `main.tsx` (above `renderAndRun`) so `usePermissionReceipts()` is available throughout. This unblocks full `/consent list|revoke` rendering.
 

@@ -1,6 +1,6 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 //
-// KOSMOS-2640: 19 P0 auto-stub commands removed — Stage-1 sourcemap reconstruction
+// KOSAX-2640: 19 P0 auto-stub commands removed — Stage-1 sourcemap reconstruction
 // gap (Initiative #2636 / Epic #2640). All were NO-OP Proxy stubs from
 // Epic #1633 dead-code elimination tracking. See
 // `specs/cc-migration-audit/scope-S5-commands-input.md § DROP-CANDIDATE`.
@@ -111,12 +111,12 @@ const peersCmd = feature('UDS_INBOX')
       require('./commands/peers/index.js') as typeof import('./commands/peers/index.js')
     ).default
   : null
-// KOSMOS: `/fork` is a first-class session-fork command (delegates to
+// KOSAX: `/fork` is a first-class session-fork command (delegates to
 // branch.ts at runtime). The CC `FORK_SUBAGENT` feature flag gates a
 // different concept (subagent fork) and is permanently `false` per
 // tui/src/stubs/bun-bundle.ts; keeping the feature() check here would
 // suppress the citizen-facing /fork promised by docs/requirements/
-// kosmos-migration-tree.md § A5. Decision: docs/decisions/
+// kosax-migration-tree.md § A5. Decision: docs/decisions/
 // fork-command-decision.md (2026-05-04).
 const forkCmd = (
   require('./commands/fork/index.js') as typeof import('./commands/fork/index.js')
@@ -132,16 +132,16 @@ import thinkbackPlay from './commands/thinkback-play/index.js'
 import permissions from './commands/permissions/index.js'
 import plan from './commands/plan/index.js'
 import fast from './commands/fast/index.js'
-// passes command removed — claude.ai guest passes SaaS dead in KOSMOS
+// passes command removed — claude.ai guest passes SaaS dead in KOSAX
 import privacySettings from './commands/privacy-settings/index.js'
 import hooks from './commands/hooks/index.js'
 import files from './commands/files/index.js'
 import branch from './commands/branch/index.js'
 import agents from './commands/agents/index.js'
-// Spec 1979 T021 — KOSMOS citizen plugin command (singular file). The previous
+// Spec 1979 T021 — KOSAX citizen plugin command (singular file). The previous
 // import (`./commands/plugin/index.js`) routed `/plugin` to the CC marketplace
 // surface; the singular file emits `plugin_op_request` IPC frames consumed by
-// the backend dispatcher in `src/kosmos/ipc/plugin_op_dispatcher.py`. The CC
+// the backend dispatcher in `src/kosax/ipc/plugin_op_dispatcher.py`. The CC
 // marketplace residue under `commands/plugin/`, `services/plugins/`, and
 // `utils/plugins/` is now unreachable from citizen surface; cleanup tracked
 // in #2242 (deferred to a Spec 1633-style follow-up Epic).
@@ -172,7 +172,7 @@ import {
   clearPluginSkillsCache,
 } from './utils/plugins/loadPluginCommands.js'
 import memoize from 'lodash-es/memoize.js'
-import { isFirstPartyKosmosBaseUrl } from './utils/model/providers.js'
+import { isFirstPartyKosaxBaseUrl } from './utils/model/providers.js'
 import exit from './commands/exit/index.js'
 import exportCommand from './commands/export/index.js'
 import model from './commands/model/index.js'
@@ -188,8 +188,8 @@ import rateLimitOptions from './commands/rate-limit-options/index.js'
 import statusline from './commands/statusline.js'
 import effort from './commands/effort/index.js'
 import stats from './commands/stats/index.js'
-// KOSMOS Spec 1633 / Epic #2293 — commands/insights.ts deleted (claude-code
-// internal /insights command; not a KOSMOS citizen use case).
+// KOSAX Spec 1633 / Epic #2293 — commands/insights.ts deleted (claude-code
+// internal /insights command; not a KOSAX citizen use case).
 import { getSettingSourceName } from './utils/settings/constants.js'
 import {
   type Command,
@@ -211,7 +211,7 @@ export { getCommandName, isCommandEnabled } from './types/command.js'
 
 // Commands that get eliminated from the external build
 //
-// KOSMOS-2640: 19 P0 auto-stub entries removed (backfillSessions, breakCache,
+// KOSAX-2640: 19 P0 auto-stub entries removed (backfillSessions, breakCache,
 // bughunter, ctx_viz, goodClaude, issue, mockLimits, resetLimits,
 // resetLimitsNonInteractive, share, summary, teleport, antTrace, perfIssue,
 // env, oauthRefresh, debugToolCall, autofixPr — all NO-OP Proxy stubs from
@@ -219,7 +219,7 @@ export { getCommandName, isCommandEnabled } from './types/command.js'
 // The remaining USER_TYPE-gated entries (commit, commitPushPr, initVerifiers,
 // bridgeKick, version, agentsPlatform, plus optional flag-gated forceSnip /
 // ultraplan / subscribePr) are kept; they have CC source-of-truth
-// implementations or KOSMOS-justified equivalents and are still surfaced for
+// implementations or KOSAX-justified equivalents and are still surfaced for
 // internal builds when `process.env.USER_TYPE === 'ant'`.
 export const INTERNAL_ONLY_COMMANDS = [
   commit,
@@ -399,11 +399,11 @@ export function meetsAvailabilityRequirement(cmd: Command): boolean {
   for (const a of cmd.availability) {
     switch (a) {
       case 'claude-ai':
-        // Anthropic claude.ai subscription check removed (KOSMOS uses FriendliAI)
+        // Anthropic claude.ai subscription check removed (KOSAX uses FriendliAI)
         break
       case 'console':
-        // Anthropic console API key check removed (KOSMOS uses FriendliAI)
-        if (isFirstPartyKosmosBaseUrl()) return true
+        // Anthropic console API key check removed (KOSAX uses FriendliAI)
+        if (isFirstPartyKosaxBaseUrl()) return true
         break
       default: {
         const _exhaustive: never = a
@@ -626,7 +626,7 @@ export const BRIDGE_SAFE_COMMANDS: Set<Command> = new Set(
     compact, // Shrink context — useful mid-session from a phone
     clear, // Wipe transcript
     cost, // Show session cost
-    // KOSMOS-2640: `summary` removed — was a P0 NO-OP Proxy stub (Stage-1
+    // KOSAX-2640: `summary` removed — was a P0 NO-OP Proxy stub (Stage-1
     // sourcemap reconstruction gap, Initiative #2636 / Epic #2640).
     releaseNotes, // Show changelog
     files, // List tracked files
@@ -727,7 +727,7 @@ export function formatDescriptionWithSource(cmd: Command): string {
   return `${cmd.description} (${getSettingSourceName(cmd.source)})`
 }
 
-// KOSMOS migration: re-export the dispatcher API so tests / consumers that
+// KOSAX migration: re-export the dispatcher API so tests / consumers that
 // `import { buildDefaultRegistry, dispatchCommand } from 'src/commands'`
 // resolve to the new dispatcher (Spec 1637 P6 T032). The legacy `commands.ts`
 // barrel takes precedence over `commands/index.ts` in Bun's module

@@ -1,25 +1,25 @@
 // SPDX-License-Identifier: Apache-2.0
-// Epic 1 finish — FR-012: KOSMOS bypass detection backstop.
+// Epic 1 finish — FR-012: KOSAX bypass detection backstop.
 //
-// The CC `bypassPermissions` flag gates the dangerous-mode UX.  In KOSMOS
+// The CC `bypassPermissions` flag gates the dangerous-mode UX.  In KOSAX
 // the gauntlet must NEVER be silently skipped for credentialed or side-
 // effecting primitives (verify / submit) regardless of bypassPermissions or
 // auto-mode state.
 //
 // This module exposes two guards:
-//   - isKosmosBypassAllowed(primitive, toolPermissionContext)
+//   - isKosaxBypassAllowed(primitive, toolPermissionContext)
 //     Returns true only when bypass is safe (lookup).
 //     Returns false for verify / submit.
 //
-//   - assertKosmosGauntletRequired(primitive, toolPermissionContext)
+//   - assertKosaxGauntletRequired(primitive, toolPermissionContext)
 //     Throws if a blocked primitive is called in bypass mode (test helper).
 //
 // CC reference: utils/permissions/bypassPermissionsKillswitch.ts (CC 2.1.88)
-// KOSMOS adaptation: stateless pure-function guard, no React hooks, no module
+// KOSAX adaptation: stateless pure-function guard, no React hooks, no module
 // singleton. Safe to call from any context (hooks, test fixtures, tool call).
 
 import type { ToolPermissionContext } from '../../Tool.js'
-import type { KosmosPrimitive } from './aalToLayer.js'
+import type { KosaxPrimitive } from './aalToLayer.js'
 
 // ---------------------------------------------------------------------------
 // Primitives that MUST always go through the gauntlet (fail-closed).
@@ -34,13 +34,13 @@ import type { KosmosPrimitive } from './aalToLayer.js'
  *   - submit: side-effecting, potentially irreversible (Layer 2/3).
  *   - lookup: read-only; intentionally excluded — bypass is safe here.
  */
-export const BYPASS_BLOCKED_PRIMITIVES: ReadonlySet<KosmosPrimitive> = new Set<KosmosPrimitive>([
+export const BYPASS_BLOCKED_PRIMITIVES: ReadonlySet<KosaxPrimitive> = new Set<KosaxPrimitive>([
   'verify',
   'submit',
 ])
 
 // ---------------------------------------------------------------------------
-// isKosmosBypassAllowed — fail-closed predicate
+// isKosaxBypassAllowed — fail-closed predicate
 // ---------------------------------------------------------------------------
 
 /**
@@ -52,8 +52,8 @@ export const BYPASS_BLOCKED_PRIMITIVES: ReadonlySet<KosmosPrimitive> = new Set<K
  *
  * Always returns `true` for `lookup` — it is read-only and side-effect-free.
  */
-export function isKosmosBypassAllowed(
-  primitive: KosmosPrimitive,
+export function isKosaxBypassAllowed(
+  primitive: KosaxPrimitive,
   _toolPermissionContext?: Pick<ToolPermissionContext, 'bypassPermissions'>,
 ): boolean {
   if (primitive === 'lookup') {
@@ -69,7 +69,7 @@ export function isKosmosBypassAllowed(
 }
 
 // ---------------------------------------------------------------------------
-// assertKosmosGauntletRequired — defensive check for tests / call-sites
+// assertKosaxGauntletRequired — defensive check for tests / call-sites
 // ---------------------------------------------------------------------------
 
 /**
@@ -79,14 +79,14 @@ export function isKosmosBypassAllowed(
  * Intended usage: call from `checkPermissions` implementations in each
  * primitive tool BEFORE delegating to the CC `{ behavior: 'ask' }` path.
  * In production, the CC pipeline never bypasses `{ behavior: 'ask' }` for
- * blocked primitives because KOSMOS does not wire `bypassPermissions: true`
+ * blocked primitives because KOSAX does not wire `bypassPermissions: true`
  * for citizen sessions.  This assert is a belt-and-suspenders guard for
  * future configuration drift.
  *
  * @throws Error if bypass is attempted on a blocked primitive.
  */
-export function assertKosmosGauntletRequired(
-  primitive: KosmosPrimitive,
+export function assertKosaxGauntletRequired(
+  primitive: KosaxPrimitive,
   toolPermissionContext?: Pick<ToolPermissionContext, 'bypassPermissions'>,
 ): void {
   if (
@@ -94,7 +94,7 @@ export function assertKosmosGauntletRequired(
     toolPermissionContext?.bypassPermissions === true
   ) {
     throw new Error(
-      `[KOSMOS FR-012] Bypass attempted on gauntlet-required primitive '${primitive}'. ` +
+      `[KOSAX FR-012] Bypass attempted on gauntlet-required primitive '${primitive}'. ` +
         `bypassPermissions must not be set for citizen-facing primitives.`,
     )
   }

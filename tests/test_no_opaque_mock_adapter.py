@@ -2,10 +2,10 @@
 tests/test_no_opaque_mock_adapter.py
 
 Spec 031 US5 — T062 (narrowed by Spec 2296 research): Enforce that no adapter
-under src/kosmos/tools/mock/ imports or references the remaining truly-OPAQUE
+under src/kosax/tools/mock/ imports or references the remaining truly-OPAQUE
 system identifiers.
 
-OPAQUE-forever systems (must stay in docs/scenarios/, never in src/kosmos/tools/mock/):
+OPAQUE-forever systems (must stay in docs/scenarios/, never in src/kosax/tools/mock/):
   - npki_portal_session  (NPKI portal session handshake — no LLM-callable
     channel exists or is policy-mandated; per delegation-flow-design.md § 2.5,
     yessign/NPKI is document-bound, not scope-bound)
@@ -13,12 +13,12 @@ OPAQUE-forever systems (must stay in docs/scenarios/, never in src/kosmos/tools/
 Scope reframing (Spec 2296 / Initiative #2290):
   - gov24, kec (and hometax, modid, simple_auth, geumyung, public_mydata) are
     NO LONGER OPAQUE under the canonical 3rd-correction framing in
-    delegation-flow-design.md § 12. KOSMOS = client-side reference
+    delegation-flow-design.md § 12. KOSAX = client-side reference
     implementation for Korea's national AX infrastructure; these channels
     are explicitly mocked under mock_*_module_* names with the six
     transparency fields stamped per spec FR-005.
 
-The check scans all .py files under src/kosmos/tools/mock/ for the remaining
+The check scans all .py files under src/kosax/tools/mock/ for the remaining
 OPAQUE identifier as a string-literal or import target.
 """
 
@@ -30,7 +30,7 @@ import re
 import pytest
 
 REPO_ROOT = pathlib.Path(__file__).parent.parent
-MOCK_ADAPTER_DIR = REPO_ROOT / "src" / "kosmos" / "tools" / "mock"
+MOCK_ADAPTER_DIR = REPO_ROOT / "src" / "kosax" / "tools" / "mock"
 
 # These strings must not appear in any mock adapter file.
 OPAQUE_IDENTIFIERS = [
@@ -55,7 +55,7 @@ _OPAQUE_PATTERNS = [
 
 
 def _mock_python_files() -> list[pathlib.Path]:
-    """Return all .py files under src/kosmos/tools/mock/."""
+    """Return all .py files under src/kosax/tools/mock/."""
     if not MOCK_ADAPTER_DIR.exists():
         return []
     return list(MOCK_ADAPTER_DIR.rglob("*.py"))
@@ -63,7 +63,7 @@ def _mock_python_files() -> list[pathlib.Path]:
 
 def test_mock_adapter_dir_exists_or_is_absent() -> None:
     """
-    src/kosmos/tools/mock/ may not exist yet (no mock adapters implemented).
+    src/kosax/tools/mock/ may not exist yet (no mock adapters implemented).
     If it exists, it must not contain OPAQUE system references.
     This test always passes — the parametrized tests below enforce the content rule.
     """
@@ -74,7 +74,7 @@ def test_mock_adapter_dir_exists_or_is_absent() -> None:
 @pytest.mark.parametrize("mock_file", _mock_python_files())
 def test_no_opaque_identifier_in_mock_adapter(mock_file: pathlib.Path) -> None:
     """
-    No .py file under src/kosmos/tools/mock/ may import or reference
+    No .py file under src/kosax/tools/mock/ may import or reference
     an OPAQUE system identifier (gov24, kec, npki_portal_session).
     """
     content = mock_file.read_text(encoding="utf-8")

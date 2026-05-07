@@ -18,7 +18,7 @@ unless explicitly noted. No `Any` types anywhere (Constitution §III).
 
 ---
 
-## 1. Shared module — SSIS code tables (`src/kosmos/tools/ssis/codes.py`)
+## 1. Shared module — SSIS code tables (`src/kosax/tools/ssis/codes.py`)
 
 ```python
 from __future__ import annotations
@@ -89,7 +89,7 @@ These enums are **shared** across the MOHW adapter (this spec) and the future
 
 ---
 
-## 2. NFA 119 — Input schema (`src/kosmos/tools/nfa119/emergency_info_service.py`)
+## 2. NFA 119 — Input schema (`src/kosax/tools/nfa119/emergency_info_service.py`)
 
 ```python
 from __future__ import annotations
@@ -385,7 +385,7 @@ NFA_EMERGENCY_INFO_SERVICE_TOOL = GovAPITool(
 
 ---
 
-## 5. MOHW — Input schema (`src/kosmos/tools/ssis/welfare_eligibility_search.py`)
+## 5. MOHW — Input schema (`src/kosax/tools/ssis/welfare_eligibility_search.py`)
 
 ```python
 from __future__ import annotations
@@ -394,7 +394,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from kosmos.tools.ssis.codes import (
+from kosax.tools.ssis.codes import (
     CallType,
     IntrsThemaCode,
     LifeArrayCode,
@@ -561,7 +561,7 @@ MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL = GovAPITool(
 
 ---
 
-## 8. `TOOL_MIN_AAL` diff (`src/kosmos/security/audit.py`)
+## 8. `TOOL_MIN_AAL` diff (`src/kosax/security/audit.py`)
 
 ```diff
  TOOL_MIN_AAL: Final[dict[str, AALLevel]] = {
@@ -594,10 +594,10 @@ load time — the exact guarantee spec 024 §V3 promises.
 **Status**: PLACEHOLDER — real DPA template pending Epic #16 / #20.
 This file exists to reserve the identifier for validator V2 traceability.
 
-**Scope (when authored)**: KOSMOS's §26 수탁자 (PIPA) relationship with SSIS
+**Scope (when authored)**: KOSAX's §26 수탁자 (PIPA) relationship with SSIS
 (한국사회보장정보원) governing the `NationalWelfarelistV001` endpoint. The
 template covers consent text for welfare-eligibility queries, retention windows
-for SSIS responses in KOSMOS session logs, and the synthesis-consent gate for
+for SSIS responses in KOSAX session logs, and the synthesis-consent gate for
 LLM-generated eligibility guidance.
 
 **Tracked under**: Epic #16 (Layer 3 auth gate) — a dedicated task to draft
@@ -611,11 +611,11 @@ the full DPA template must be created alongside the Layer 3 ship.
 ### New source files
 
 ```
-src/kosmos/tools/nfa119/__init__.py
-src/kosmos/tools/nfa119/emergency_info_service.py
-src/kosmos/tools/ssis/__init__.py
-src/kosmos/tools/ssis/codes.py
-src/kosmos/tools/ssis/welfare_eligibility_search.py
+src/kosax/tools/nfa119/__init__.py
+src/kosax/tools/nfa119/emergency_info_service.py
+src/kosax/tools/ssis/__init__.py
+src/kosax/tools/ssis/codes.py
+src/kosax/tools/ssis/welfare_eligibility_search.py
 docs/security/dpa/dpa-ssis-welfare-v1.md
 docs/tools/nfa119.md
 docs/tools/ssis.md
@@ -636,9 +636,9 @@ tests/fixtures/ssis/mohw_welfare_eligibility_search.json
 ### Modified source files
 
 ```
-src/kosmos/security/audit.py            # TOOL_MIN_AAL entries
-src/kosmos/tools/register_all.py        # register() calls for both new adapters
+src/kosax/security/audit.py            # TOOL_MIN_AAL entries
+src/kosax/tools/register_all.py        # register() calls for both new adapters
 ```
 
 No other file requires modification. No new runtime dependency. No new
-environment variable (the existing `KOSMOS_DATA_GO_KR_API_KEY` is reused).
+environment variable (the existing `KOSAX_DATA_GO_KR_API_KEY` is reused).

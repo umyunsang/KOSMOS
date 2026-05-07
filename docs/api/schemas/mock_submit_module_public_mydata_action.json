@@ -110,7 +110,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/mock_submit_module_public_mydata_action.json",
+  "$id": "https://kosax.example/api/schemas/mock_submit_module_public_mydata_action.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "Typed params for the public MyData action extension adapter.\n\nDomain vocabulary lives HERE, not on the main SubmitInput envelope (SC-002).\nReal-world counterpart: 마이데이터 액션 확장 API (금융보안원 v240930).",

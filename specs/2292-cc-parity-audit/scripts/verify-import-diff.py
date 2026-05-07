@@ -36,9 +36,9 @@ IMPORT_LINE_RE: Final = re.compile(
 )
 
 
-def diff_pair(kosmos_abs: Path, cc_abs: Path) -> list[str]:
+def diff_pair(kosax_abs: Path, cc_abs: Path) -> list[str]:
     proc = subprocess.run(
-        ["diff", "-u", str(cc_abs), str(kosmos_abs)],
+        ["diff", "-u", str(cc_abs), str(kosax_abs)],
         capture_output=True,
         text=True,
         check=False,
@@ -81,23 +81,23 @@ def main() -> int:
 
     entries = []
     pending = []
-    for kosmos_path in paths:
-        if not kosmos_path.startswith("tui/src/"):
+    for kosax_path in paths:
+        if not kosax_path.startswith("tui/src/"):
             return 2
-        cc_path_rel = f"{CC_SRC_REL}/{kosmos_path[len('tui/src/'):]}"
-        kosmos_abs = REPO_ROOT / kosmos_path
+        cc_path_rel = f"{CC_SRC_REL}/{kosax_path[len('tui/src/'):]}"
+        kosax_abs = REPO_ROOT / kosax_path
         cc_abs = REPO_ROOT / cc_path_rel
-        if not kosmos_abs.exists():
+        if not kosax_abs.exists():
             return 2
         if not cc_abs.exists():
             return 2
 
-        body = diff_pair(kosmos_abs, cc_abs)
+        body = diff_pair(kosax_abs, cc_abs)
         imports, bodies = split_diff(body)
         body_diff_present = bool(bodies)
         reclassified = body_diff_present
         entry = {
-            "kosmos_path": kosmos_path,
+            "kosax_path": kosax_path,
             "cc_source_path": cc_path_rel,
             "import_lines_changed": imports[:20],  # cap for JSON brevity
             "body_diff_present": body_diff_present,

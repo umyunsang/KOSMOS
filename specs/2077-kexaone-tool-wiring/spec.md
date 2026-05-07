@@ -3,21 +3,21 @@
 **Feature Branch**: `2077-kexaone-tool-wiring`
 **Created**: 2026-04-27
 **Status**: Draft
-**Input**: User description: "K-EXAONE tool wiring (CC reference migration): TUI ChatRequestFrame.tools 가 비어 있고 backend system prompt 에 도구 시그니처 inject 가 없어서 K-EXAONE 이 KOSMOS-등록 도구 (lookup/resolve_location/submit/subscribe/verify primitive 5종 + MVP-7 보조) 를 모르고 CC 학습 데이터 도구 (Read/Glob/Bash 등) 를 hallucinate 한다. 본 epic 은 (1) TUI Tool object pool 을 ToolDefinition[] 으로 직렬화해 ChatRequestFrame.tools 에 spread, (2) backend 가 system prompt 에 Available tools 섹션 자동 inject + frame.tools 빈 경우 ToolRegistry.export_core_tools_openai() fallback, (3) 5-primitive 화이트리스트를 primitives 카탈로그 single-source-of-truth 로 마이그레이션, (4) tool_call frame 을 SystemMessage 가 아닌 CC-style stream_event{tool_use content_block} 으로 paint 해서 AssistantToolUseMessage 가 native 렌더, (5) tool_result frame 을 user-role tool_result content block 으로 transcript 에 합류시켜 다음 turn LLM context 에 진입, (6) 자동 거부되던 permission_request frame 을 PermissionGauntletModal 실 modal 로 wire — 이 6 변경으로 K-EXAONE hallucination 0 회 + multi-turn agentic loop closure (citizen prompt → tool_use box → tool_result envelope → 자연어 응답) 를 보장한다."
+**Input**: User description: "K-EXAONE tool wiring (CC reference migration): TUI ChatRequestFrame.tools 가 비어 있고 backend system prompt 에 도구 시그니처 inject 가 없어서 K-EXAONE 이 KOSAX-등록 도구 (lookup/resolve_location/submit/subscribe/verify primitive 5종 + MVP-7 보조) 를 모르고 CC 학습 데이터 도구 (Read/Glob/Bash 등) 를 hallucinate 한다. 본 epic 은 (1) TUI Tool object pool 을 ToolDefinition[] 으로 직렬화해 ChatRequestFrame.tools 에 spread, (2) backend 가 system prompt 에 Available tools 섹션 자동 inject + frame.tools 빈 경우 ToolRegistry.export_core_tools_openai() fallback, (3) 5-primitive 화이트리스트를 primitives 카탈로그 single-source-of-truth 로 마이그레이션, (4) tool_call frame 을 SystemMessage 가 아닌 CC-style stream_event{tool_use content_block} 으로 paint 해서 AssistantToolUseMessage 가 native 렌더, (5) tool_result frame 을 user-role tool_result content block 으로 transcript 에 합류시켜 다음 turn LLM context 에 진입, (6) 자동 거부되던 permission_request frame 을 PermissionGauntletModal 실 modal 로 wire — 이 6 변경으로 K-EXAONE hallucination 0 회 + multi-turn agentic loop closure (citizen prompt → tool_use box → tool_result envelope → 자연어 응답) 를 보장한다."
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 — Citizen receives accurate answer grounded in real public-service data (Priority: P1)
 
-A citizen opens the KOSMOS terminal interface, types a Korean public-service question (e.g., "강남구 근처 24시간 응급실 알려주세요"), and within seconds receives a natural-language answer that is grounded in real government data — not fabricated. The agent autonomously selects the appropriate KOSMOS-registered tool, calls it, observes the result, and synthesizes the final answer.
+A citizen opens the KOSAX terminal interface, types a Korean public-service question (e.g., "강남구 근처 24시간 응급실 알려주세요"), and within seconds receives a natural-language answer that is grounded in real government data — not fabricated. The agent autonomously selects the appropriate KOSAX-registered tool, calls it, observes the result, and synthesizes the final answer.
 
-**Why this priority**: Without this, KOSMOS fails its core mission. The agent currently invents tool names (e.g., `Read`, `Glob`, `Bash`) it learned from Claude Code training data, none of which exist in KOSMOS. The citizen sees neither tool execution nor a useful answer — only a hallucinated transcript. Fixing this is the platform's table-stakes correctness.
+**Why this priority**: Without this, KOSAX fails its core mission. The agent currently invents tool names (e.g., `Read`, `Glob`, `Bash`) it learned from Claude Code training data, none of which exist in KOSAX. The citizen sees neither tool execution nor a useful answer — only a hallucinated transcript. Fixing this is the platform's table-stakes correctness.
 
 **Independent Test**: A citizen prompt that requires a public-service lookup ("강남구 응급실") completes end-to-end: tool invocation → tool result → natural-language answer paint, with zero references to tools the platform does not register.
 
 **Acceptance Scenarios**:
 
-1. **Given** the agent has just started a session, **When** the citizen asks "강남구 근처 24시간 응급실 알려주세요", **Then** the agent invokes one of the registered KOSMOS tools (e.g., a hospital-search lookup), receives a tool result envelope, and emits a final assistant message that incorporates that result.
+1. **Given** the agent has just started a session, **When** the citizen asks "강남구 근처 24시간 응급실 알려주세요", **Then** the agent invokes one of the registered KOSAX tools (e.g., a hospital-search lookup), receives a tool result envelope, and emits a final assistant message that incorporates that result.
 2. **Given** the agent receives a citizen prompt that does not require a tool, **When** the model decides to answer directly, **Then** the conversation completes in one turn with no tool invocation and no spurious tool-call output.
 3. **Given** the agent emits a tool name that does not exist in the platform's inventory, **When** the backend processes the model output, **Then** the platform returns a structured "unknown tool" error back to the model in the next turn so it can correct itself, instead of either silently dropping the call or executing an unrelated tool.
 
@@ -44,7 +44,7 @@ While the agent works on a citizen's request, the citizen watches each tool invo
 
 When the agent is about to perform an irreversible action on the citizen's behalf (e.g., submitting a form to a government API, subscribing to an alert stream), the platform pauses execution and shows the citizen an interactive consent prompt. The citizen reviews what the agent wants to do, in plain Korean, and either grants or denies the action. The agent only proceeds if consent is granted.
 
-**Why this priority**: KOSMOS's permission gauntlet (Spec 033) is the citizen's safety net against irreversible mistakes. Today, every gated request is silently auto-denied, which means submit-class primitives never run end-to-end. Without working consent, the platform cannot demonstrate any irreversible workflow at all.
+**Why this priority**: KOSAX's permission gauntlet (Spec 033) is the citizen's safety net against irreversible mistakes. Today, every gated request is silently auto-denied, which means submit-class primitives never run end-to-end. Without working consent, the platform cannot demonstrate any irreversible workflow at all.
 
 **Independent Test**: A citizen prompt that triggers a gated primitive (e.g., "출생신고 서류 제출") opens an on-screen consent prompt that the citizen can confirm, after which the underlying tool actually runs.
 
@@ -130,20 +130,20 @@ When the agent is about to perform an irreversible action on the citizen's behal
 
 ## Assumptions
 
-- The five primitive surface (`lookup`, `resolve_location`, `submit`, `subscribe`, `verify`) plus the MVP-7 auxiliary tools are stable and continue to be the only LLM-visible roots, per `docs/requirements/kosmos-migration-tree.md § L1-C.C6/C7`.
-- The platform's existing reference implementation of Claude Code's streaming + agentic loop (`src/kosmos/llm/_cc_reference/claude.ts`) is the canonical migration source for any unclear behavioral question, per `feedback_cc_source_migration_pattern`.
+- The five primitive surface (`lookup`, `resolve_location`, `submit`, `subscribe`, `verify`) plus the MVP-7 auxiliary tools are stable and continue to be the only LLM-visible roots, per `docs/requirements/kosax-migration-tree.md § L1-C.C6/C7`.
+- The platform's existing reference implementation of Claude Code's streaming + agentic loop (`src/kosax/llm/_cc_reference/claude.ts`) is the canonical migration source for any unclear behavioral question, per `feedback_cc_source_migration_pattern`.
 - The interactive consent prompt component is already mounted in the terminal screen (verified at `tui/src/screens/REPL.tsx:5275-5277`); this epic only wires the request/response flow through it.
 - The upstream model provider's free-tier rate budget (FriendliAI Tier 1, 60 RPM) is sufficient for typical citizen prompts that take 4–5 agentic turns, per `project_friendli_tier_wait`.
 - The platform's existing IPC frame catalogue (Spec 032 envelope: `chat_request`, `assistant_chunk`, `tool_call`, `tool_result`, `permission_request`, `permission_response`) is sufficient; no new frame arms are added by this epic.
 - The platform's session store (`useSessionStore`) can be extended with a pending-permission slot without breaking existing consumers.
 - The system prompt template (`prompts/system_v1.md`) currently carries no tool-list section; the epic appends the dynamically generated catalog there.
-- Korean is the primary language for citizen-facing copy; English is the fallback per `docs/requirements/kosmos-migration-tree.md § UI-A.A.3`.
+- Korean is the primary language for citizen-facing copy; English is the fallback per `docs/requirements/kosax-migration-tree.md § UI-A.A.3`.
 
 ## Scope Boundaries & Deferred Items *(mandatory)*
 
 ### Out of Scope (Permanent)
 
-- **Composite / macro tool combinations** — explicitly removed by `docs/requirements/kosmos-migration-tree.md § L1-B.B6`. The model chains primitives instead of invoking platform-side macros.
+- **Composite / macro tool combinations** — explicitly removed by `docs/requirements/kosax-migration-tree.md § L1-B.B6`. The model chains primitives instead of invoking platform-side macros.
 - **Hardcoded tool whitelists outside the registry** — the registry is the single source of truth (see FR-003); duplicate enumerations are forbidden.
 
 ### Deferred to Future Work

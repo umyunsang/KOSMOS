@@ -11,14 +11,14 @@ permission_tier: 1
 
 Queries the NFA (소방청, National Fire Agency) emergency activity statistics service for historical, anonymized EMS records by region, fire station, and report year-month. Covers six sub-operations: dispatch activity, patient transport, patient condition, first-aid treatment, vehicle dispatch, and vehicle fleet information.
 
-This tool is **not** a safety-instruction, AED-location, emergency-dispatch, or gas-leak guidance API. For those citizen questions KOSMOS should not force this statistical adapter; it should provide urgent 119 guidance or route to a future official safety-guidance adapter when one is registered.
+This tool is **not** a safety-instruction, AED-location, emergency-dispatch, or gas-leak guidance API. For those citizen questions KOSAX should not force this statistical adapter; it should provide urgent 119 guidance or route to a future official safety-guidance adapter when one is registered.
 
 | Field | Value |
 |---|---|
 | Classification | Live · Permission tier 1 |
 | Source | National Fire Agency (NFA / 소방청) / data.go.kr |
 | Primitive | `lookup` |
-| Module | `src/kosmos/tools/nfa119/emergency_info_service.py` |
+| Module | `src/kosax/tools/nfa119/emergency_info_service.py` |
 | Wire research | `specs/2522-tool-surface-v4/research-nfa-wire.md` |
 
 ## Envelope
@@ -77,7 +77,7 @@ This tool is **not** a safety-instruction, AED-location, emergency-dispatch, or 
 
 - **Base URL**: `https://apis.data.go.kr/1661000/EmergencyInformationService`
 - **Sub-endpoint**: `/{operation}` — mandatory suffix (e.g. `/getEmgencyActivityInfo`)
-- **Authentication**: API key via `KOSMOS_DATA_GO_KR_API_KEY` (공공데이터포털 통합키)
+- **Authentication**: API key via `KOSAX_DATA_GO_KR_API_KEY` (공공데이터포털 통합키)
 
 ## Wire quirks
 
@@ -238,7 +238,7 @@ Wire URL: `.../getEmgPatientTransferInfo?...&rsacGutFsttOgidNm=공주소방서&s
 
 ```text
 Citizen: 2021년 12월에 천안동남소방서 구급 출동이 얼마나 있었는지 알고 싶어요.
-KOSMOS: 2021년 12월 천안동남소방서 구급활동 정보를 조회했습니다. 해당 기간 총 112건의 출동 기록이 있으며, 예시로 1건을 살펴보면 60~69세 여성 환자가 기침 증세로 현장과 12m 거리에서 1급 응급구조사가 대응했습니다. 더 자세한 내용이나 다른 기간의 통계도 조회해 드릴 수 있습니다.
+KOSAX: 2021년 12월 천안동남소방서 구급활동 정보를 조회했습니다. 해당 기간 총 112건의 출동 기록이 있으며, 예시로 1건을 살펴보면 60~69세 여성 환자가 기침 증세로 현장과 12m 거리에서 1급 응급구조사가 대응했습니다. 더 자세한 내용이나 다른 기간의 통계도 조회해 드릴 수 있습니다.
 ```
 
 ## Constraints

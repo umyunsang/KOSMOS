@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — P6 smoke: KOSMOS welcome banner.
+// KOSAX-original — P6 smoke: KOSAX welcome banner.
 // Ported from CC 2.1.88 WelcomeV2 (orbital-satellite motif).
-// Replaced "Welcome to Claude Code" → "Welcome to KOSMOS" per migration-tree UI-A.
+// Replaced "Welcome to Claude Code" → "Welcome to KOSAX" per migration-tree UI-A.
 // Added `version` prop (with MACRO.VERSION fallback) for testability (FR-011).
 
 import React from 'react'
@@ -32,7 +32,7 @@ export interface WelcomeV2Props {
 }
 
 // ---------------------------------------------------------------------------
-// WelcomeV2 — KOSMOS welcome banner with orbital-satellite ASCII motif.
+// WelcomeV2 — KOSAX welcome banner with orbital-satellite ASCII motif.
 // Renders in two flavours: Apple Terminal (compact) and standard (full art).
 // ---------------------------------------------------------------------------
 export function WelcomeV2({ version }: WelcomeV2Props = {}): React.ReactElement {
@@ -50,7 +50,7 @@ export function WelcomeV2({ version }: WelcomeV2Props = {}): React.ReactElement 
       <Box width={WELCOME_V2_WIDTH}>
         <Text>
           <Text>
-            <Text color="claude">{'Welcome to KOSMOS'} </Text>
+            <Text color="claude">{'Welcome to KOSAX'} </Text>
             <Text dimColor>v{ver} </Text>
           </Text>
           {'…………………………………………………………………………………………………………………………………………………………'}
@@ -102,7 +102,7 @@ export function WelcomeV2({ version }: WelcomeV2Props = {}): React.ReactElement 
     <Box width={WELCOME_V2_WIDTH}>
       <Text>
         <Text>
-          <Text color="claude">{'Welcome to KOSMOS'} </Text>
+          <Text color="claude">{'Welcome to KOSAX'} </Text>
           <Text dimColor>v{ver} </Text>
         </Text>
         {'…………………………………………………………………………………………………………………………………………………………'}
@@ -168,7 +168,7 @@ function AppleTerminalWelcomeV2({
       <Box width={WELCOME_V2_WIDTH}>
         <Text>
           <Text>
-            <Text color="claude">{'Welcome to KOSMOS'} </Text>
+            <Text color="claude">{'Welcome to KOSAX'} </Text>
             <Text dimColor>v{version} </Text>
           </Text>
           {'…………………………………………………………………………………………………………………………………………………………'}
@@ -213,7 +213,7 @@ function AppleTerminalWelcomeV2({
     <Box width={WELCOME_V2_WIDTH}>
       <Text>
         <Text>
-          <Text color="claude">{'Welcome to KOSMOS'} </Text>
+          <Text color="claude">{'Welcome to KOSAX'} </Text>
           <Text dimColor>v{version} </Text>
         </Text>
         {'…………………………………………………………………………………………………………………………………………………………'}

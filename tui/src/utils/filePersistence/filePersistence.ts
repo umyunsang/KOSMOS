@@ -1,8 +1,8 @@
 /**
- * KOSMOS: File persistence stubs.
+ * KOSAX: File persistence stubs.
  * services/api/filesApi deleted (Anthropic BYOC/Cloud session API).
- * KOSMOS does not use Anthropic session ingress — all persistence uses
- * the KOSMOS memdir (~/.kosmos/memdir/) layer from Spec 027.
+ * KOSAX does not use Anthropic session ingress — all persistence uses
+ * the KOSAX memdir (~/.kosax/memdir/) layer from Spec 027.
  */
 
 import type {

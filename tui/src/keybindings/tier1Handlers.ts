@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Spec 288 Codex P1 follow-up.
+// KOSAX-original — Spec 288 Codex P1 follow-up.
 //
 // Wires the real Tier-1 action controllers (agent-interrupt, session-exit,
 // permission-mode-cycle, history-prev, history-next, history-search) into the
@@ -12,7 +12,7 @@
 // Wiring strategy:
 //   - Real deps are used wherever the surrounding TUI state already exists
 //     (session id, permission mode, IME-backed buffer probe, consent state).
-//   - Backend-bound deps that require an IPC protocol KOSMOS has not yet
+//   - Backend-bound deps that require an IPC protocol KOSAX has not yet
 //     implemented (Spec 027 cancellation envelope, Spec 024 audit writer) are
 //     supplied as fail-loud stubs — stderr traces identify the missing piece
 //     so the follow-up integration (tracked under Spec 288.1) has a
@@ -83,7 +83,7 @@ export type Tier1HandlerDeps = Readonly<{
   isBufferEmpty: () => boolean
 
   // -------------------------------------------------------------------------
-  // KOSMOS Spec 1979 — Spec 033 PermissionMode accessors removed.
+  // KOSAX Spec 1979 — Spec 033 PermissionMode accessors removed.
   // -------------------------------------------------------------------------
 
   // -------------------------------------------------------------------------
@@ -295,7 +295,7 @@ export function buildTier1Handlers(
   }
   const sessionExit = buildSessionExitHandler(sessionExitDeps)
 
-  // KOSMOS Spec 1979 — Spec 033 permission-mode-cycle removed.
+  // KOSAX Spec 1979 — Spec 033 permission-mode-cycle removed.
 
   // history-prev / history-next — FR-017 / FR-018 / FR-019
   const historyNavDeps: HistoryNavigatorDeps = {

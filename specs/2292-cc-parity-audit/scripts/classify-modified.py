@@ -6,10 +6,10 @@ Classifies every entry in `data/enumerated-modified.txt` into exactly one of
 {Legitimate, Cleanup-needed, Suspicious} using three signals defined in
 `research.md § R-4`:
 
-  (a) directory pattern  — known KOSMOS infra dirs vs known Spec 1633 residue
+  (a) directory pattern  — known KOSAX infra dirs vs known Spec 1633 residue
                            paths
   (b) git history        — `git log` first / last commits of the file
-                           grep'd for KOSMOS spec ids (`feat/NNNN-...`)
+                           grep'd for KOSAX spec ids (`feat/NNNN-...`)
   (c) import scan        — body grep for known residue tokens
                            (`@anthropic-ai/`, `claude.ts`,
                             `verifyApiKey`, etc.)
@@ -56,7 +56,7 @@ LEGITIMATE_DIR_PREFIXES: Final = (
 )
 CLEANUP_DIR_PREFIXES: Final = (
     "tui/src/services/api/",          # Spec 1633 closure pending (claude.ts etc.)
-    "tui/src/utils/permissions/",     # Spec 033 KOSMOS-invented residue
+    "tui/src/utils/permissions/",     # Spec 033 KOSAX-invented residue
     "tui/src/commands/permissions/",  # ditto
 )
 
@@ -79,11 +79,11 @@ RESIDUE_TOKENS: Final = (
     "5-mode spectrum",
 )
 
-# KOSMOS-specific tokens that strongly imply legitimate change
-KOSMOS_TOKENS: Final = (
-    "KOSMOS",
-    "kosmos",
-    "@kosmos/",
+# KOSAX-specific tokens that strongly imply legitimate change
+KOSAX_TOKENS: Final = (
+    "KOSAX",
+    "kosax",
+    "@kosax/",
     "EXAONE",
     "FriendliAI",
     "friendli",
@@ -106,10 +106,10 @@ def run(cmd: list[str], cwd: Path | None = None) -> str:
     return proc.stdout
 
 
-def collect_signals(kosmos_path: str) -> dict:
+def collect_signals(kosax_path: str) -> dict:
     """Compute the 3 signals for one file."""
-    abs_path = REPO_ROOT / kosmos_path
-    REPO_ROOT / CC_SRC_REL / kosmos_path[len("tui/src/"):]
+    abs_path = REPO_ROOT / kosax_path
+    REPO_ROOT / CC_SRC_REL / kosax_path[len("tui/src/"):]
     sig = {
         "directory_match": None,
         "git_history_match": None,
@@ -118,12 +118,12 @@ def collect_signals(kosmos_path: str) -> dict:
 
     # (a) directory match
     for pref in LEGITIMATE_DIR_PREFIXES:
-        if kosmos_path.startswith(pref):
+        if kosax_path.startswith(pref):
             sig["directory_match"] = f"legitimate:{pref}"
             break
     if sig["directory_match"] is None:
         for pref in CLEANUP_DIR_PREFIXES:
-            if kosmos_path.startswith(pref):
+            if kosax_path.startswith(pref):
                 sig["directory_match"] = f"cleanup:{pref}"
                 break
 
@@ -136,7 +136,7 @@ def collect_signals(kosmos_path: str) -> dict:
             "5",
             "--pretty=%s",
             "--",
-            kosmos_path,
+            kosax_path,
         ],
         cwd=REPO_ROOT,
     )
@@ -155,14 +155,14 @@ def collect_signals(kosmos_path: str) -> dict:
         except OSError:
             body = ""
     residue_hits = [tok for tok in RESIDUE_TOKENS if tok in body]
-    kosmos_hits = [tok for tok in KOSMOS_TOKENS if tok in body]
+    kosax_hits = [tok for tok in KOSAX_TOKENS if tok in body]
     if residue_hits:
         sig["import_scan_match"] = "residue:" + "|".join(residue_hits[:3])
-    elif kosmos_hits:
-        sig["import_scan_match"] = "kosmos:" + "|".join(kosmos_hits[:3])
+    elif kosax_hits:
+        sig["import_scan_match"] = "kosax:" + "|".join(kosax_hits[:3])
 
     sig["_residue_hits"] = residue_hits
-    sig["_kosmos_hits"] = kosmos_hits
+    sig["_kosax_hits"] = kosax_hits
     sig["_spec_ids"] = sorted(spec_ids)
     return sig
 
@@ -171,7 +171,7 @@ def classify(sig: dict) -> tuple[str, str, str]:
     """Return (classification, change_summary, reference_citation)."""
     dir_match = sig.get("directory_match") or ""
     residue_hits = sig.get("_residue_hits") or []
-    kosmos_hits = sig.get("_kosmos_hits") or []
+    kosax_hits = sig.get("_kosax_hits") or []
     spec_ids = sig.get("_spec_ids") or []
 
     # Decision tree (first hit wins).
@@ -186,16 +186,16 @@ def classify(sig: dict) -> tuple[str, str, str]:
 
     if dir_match.startswith("legitimate:"):
         prefix = dir_match.split(":", 1)[1]
-        summary = f"KOSMOS 인프라 디렉토리 ({prefix}) — 정당 변경"
+        summary = f"KOSAX 인프라 디렉토리 ({prefix}) — 정당 변경"
         ref = "Spec 287 (TUI Ink+React+Bun) 또는 Spec 032 (IPC stdio hardening)"
         return "Legitimate", summary, ref
 
-    if kosmos_hits:
-        summary = f"KOSMOS-only 토큰 ({', '.join(kosmos_hits[:3])}) 식별 — 정당 변경"
+    if kosax_hits:
+        summary = f"KOSAX-only 토큰 ({', '.join(kosax_hits[:3])}) 식별 — 정당 변경"
         ref = (
             f"Spec ids in git log: {', '.join(spec_ids)}"
             if spec_ids
-            else "KOSMOS i18n / branding"
+            else "KOSAX i18n / branding"
         )
         return "Legitimate", summary, ref
 
@@ -224,17 +224,17 @@ def main() -> int:
     ]
 
     entries = []
-    for kosmos_path in paths:
-        sig = collect_signals(kosmos_path)
+    for kosax_path in paths:
+        sig = collect_signals(kosax_path)
         classification, change_summary, reference_citation = classify(sig)
         cc_source_path = (
-            f"{CC_SRC_REL}/{kosmos_path[len('tui/src/'):]}"
-            if kosmos_path.startswith("tui/src/")
+            f"{CC_SRC_REL}/{kosax_path[len('tui/src/'):]}"
+            if kosax_path.startswith("tui/src/")
             else None
         )
         entries.append(
             {
-                "kosmos_path": kosmos_path,
+                "kosax_path": kosax_path,
                 "cc_source_path": cc_source_path,
                 "classification": classification,
                 "change_summary": change_summary,

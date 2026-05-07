@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosmos.dev/schemas/spec-287/ipc-frames.schema.json",
+  "$id": "https://kosax.dev/schemas/spec-287/ipc-frames.schema.json",
   "title": "IPCFrame",
-  "description": "Discriminated union of all frames exchanged between the KOSMOS Python backend and the TypeScript TUI over JSONL stdio. Source of truth: Python Pydantic v2 models at src/kosmos/ipc/frame_schema.py.",
+  "description": "Discriminated union of all frames exchanged between the KOSAX Python backend and the TypeScript TUI over JSONL stdio. Source of truth: Python Pydantic v2 models at src/kosax/ipc/frame_schema.py.",
   "x-ipc-protocol-version": "1",
   "type": "object",
   "required": ["kind", "session_id", "ts"],

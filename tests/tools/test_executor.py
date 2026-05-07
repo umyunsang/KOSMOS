@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for kosmos.tools.executor.ToolExecutor."""
+"""Unit tests for kosax.tools.executor.ToolExecutor."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ import json
 
 import pytest
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Helpers

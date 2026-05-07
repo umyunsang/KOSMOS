@@ -1,0 +1,71 @@
+name: Package npm
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "bin/kosax"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "src/kosax/**"
+      - "prompts/**"
+      - "tui/package.json"
+      - "tui/src/**"
+      - "docs/plugins/security-review.md"
+      - "tests/fixtures/plugin_validation/checklist_manifest.yaml"
+      - "scripts/check-npm-package.mjs"
+      - ".github/workflows/package-npm.yml"
+      - ".github/workflows/publish-npm.yml"
+      - ".github/workflows/publish-homebrew.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  npm-package:
+    name: npm Package Dry Run
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22.14.0"
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.12"
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+          python-version: "3.12"
+
+      - name: Install npm dependencies
+        run: npm install --ignore-scripts
+
+      - name: Check package contents
+        run: npm run package:check
+
+      - name: Build npm tarball
+        run: npm pack --json > package-evidence/npm-pack.json
+
+      - name: Clean global CLI smoke
+        run: |
+          prefix="${RUNNER_TEMP}/kosax-prefix"
+          npm install --global --prefix "${prefix}" ./kosax-0.1.0.tgz
+          "${prefix}/bin/kosax" --version
+
+      - name: Upload package evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-package-evidence
+          path: |
+            package-evidence/*
+            kosax-0.1.0.tgz
+          if-no-files-found: error
+          retention-days: 90

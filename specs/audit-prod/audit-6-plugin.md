@@ -13,7 +13,7 @@ blockers** stop a citizen from completing the install/list flow today.
 
 | Tier × Axis | Status | Blocker |
 |-------------|--------|---------|
-| Tier 1 template + `kosmos plugin init` TUI + `uvx` fallback | 🟢 OK | — |
+| Tier 1 template + `kosax plugin init` TUI + `uvx` fallback | 🟢 OK | — |
 | Tier 2 9 Korean docs (actually 11 .md, exceeds spec) | 🟢 OK | — |
 | Tier 3 4 example repos (live catalog has 4 entries verified) | 🟡 partial | provenance URLs 404 (P0) |
 | Tier 4 50-item validation matrix + reusable workflow + issue template | 🟢 OK | — |
@@ -35,12 +35,12 @@ blockers** stop a citizen from completing the install/list flow today.
 - **Fix**: change `isLocalJSXCommand: true` → `false` on line 3559 (and lines 3568 / 3576). One-line per call-site. Same fix that unblocked `/help` overlay during integration-verification (cited in AGENTS.md insight 3).
 - **Severity**: P0 — citizen cannot escape the overlay; effectively a session-lock UX bug.
 
-### P0-2 · Tier 5 provenance attestations 404 → SLSA gate forces `KOSMOS_PLUGIN_SLSA_SKIP=true` in production
-- **Symptom**: `https://github.com/kosmos-plugin-store/kosmos-plugin-seoul-subway/releases/download/v0.1.0/seoul_subway.intoto.jsonl` returns 404 (verified 2026-05-04 11:28 KST). All four catalog entries (seoul-subway / post-office / nts-homtax / nhis-check) point at provenance URLs that do not exist.
-- **Effect**: Without `KOSMOS_PLUGIN_SLSA_SKIP=true`, Phase 3 fails at `provenance_fetch_failed` (exit_code=6, IO error) — citizen cannot install any plugin.
-- **With `KOSMOS_PLUGIN_SLSA_SKIP=true`**, Phase 3 emits the warning "bypassing SLSA verification" and the install proceeds — but `installer.py:537` REFUSES to skip in `KOSMOS_ENV in {production, prod, release}`. So production deploys must publish real provenance attestations or remove the entries from the catalog.
-- **Compounding bug**: `~/.kosmos/vendor/slsa-verifier/` does not exist on this machine. First-time install would auto-bootstrap via `scripts/bootstrap_slsa_verifier.sh`, but the CI gate requires the binary pre-vendored (or the bootstrap step in install docs).
-- **Fix**: (a) generate + publish real `.intoto.jsonl` attestations for all 4 example repos using `slsa-framework/slsa-github-generator@v2.x`, or (b) revert the 4 example entries to "draft" / remove them from `kosmos-plugin-store/index/main` until provenance is published; (c) document the `bootstrap_slsa_verifier.sh` step in `docs/plugins/installation.md`.
+### P0-2 · Tier 5 provenance attestations 404 → SLSA gate forces `KOSAX_PLUGIN_SLSA_SKIP=true` in production
+- **Symptom**: `https://github.com/kosax-plugin-store/kosax-plugin-seoul-subway/releases/download/v0.1.0/seoul_subway.intoto.jsonl` returns 404 (verified 2026-05-04 11:28 KST). All four catalog entries (seoul-subway / post-office / nts-homtax / nhis-check) point at provenance URLs that do not exist.
+- **Effect**: Without `KOSAX_PLUGIN_SLSA_SKIP=true`, Phase 3 fails at `provenance_fetch_failed` (exit_code=6, IO error) — citizen cannot install any plugin.
+- **With `KOSAX_PLUGIN_SLSA_SKIP=true`**, Phase 3 emits the warning "bypassing SLSA verification" and the install proceeds — but `installer.py:537` REFUSES to skip in `KOSAX_ENV in {production, prod, release}`. So production deploys must publish real provenance attestations or remove the entries from the catalog.
+- **Compounding bug**: `~/.kosax/vendor/slsa-verifier/` does not exist on this machine. First-time install would auto-bootstrap via `scripts/bootstrap_slsa_verifier.sh`, but the CI gate requires the binary pre-vendored (or the bootstrap step in install docs).
+- **Fix**: (a) generate + publish real `.intoto.jsonl` attestations for all 4 example repos using `slsa-framework/slsa-github-generator@v2.x`, or (b) revert the 4 example entries to "draft" / remove them from `kosax-plugin-store/index/main` until provenance is published; (c) document the `bootstrap_slsa_verifier.sh` step in `docs/plugins/installation.md`.
 - **Severity**: P0 — production install is blocked.
 
 ## P1 issues (UX-blocking)
@@ -60,7 +60,7 @@ blockers** stop a citizen from completing the install/list flow today.
 ### P1-5 · `/plugin uninstall <not-installed>` reports "🗑️ 제거 완료" instead of "미설치"
 - **Symptom**: `uninstall_plugin` is documented as idempotent (returns exit_code=0 on no-op), but the TUI surfaces success ("🗑️ ... 플러그인 제거 완료") for a plugin that was never installed — misleading to citizens.
 - **Evidence**: `snap-6-plugin-install/snap-003-3-uninstall-miss.txt`.
-- **Root cause**: `kosmos/plugins/uninstall.py:114` returns `_EXIT_OK` with no signal that the no-op path was taken. The dispatcher then emits `result="success"`. PluginInstallFlow can't distinguish "really uninstalled" from "was never installed".
+- **Root cause**: `kosax/plugins/uninstall.py:114` returns `_EXIT_OK` with no signal that the no-op path was taken. The dispatcher then emits `result="success"`. PluginInstallFlow can't distinguish "really uninstalled" from "was never installed".
 - **Fix**: extend `UninstallResult` with `was_idempotent_noop: bool`, pipe it through `plugin_op_complete.idempotent_noop` field, render distinct citizen text ("이미 설치되어 있지 않습니다" / "Plugin was not installed").
 - **Severity**: P1 — wrong feedback enables accidental confusion ("did I really uninstall the right plugin?").
 
@@ -75,11 +75,11 @@ blockers** stop a citizen from completing the install/list flow today.
 ### P2-7 · Catalog `name` (hyphen) vs `plugin_id` (underscore) mismatch is undocumented for citizens
 - The catalog uses `name: "seoul-subway"` but `plugin_id: "seoul_subway"`. Citizens who type `/plugin install seoul_subway` (the more natural form, matching the directory layout) get exit_code=1 catalog miss. Either reject install on `name=seoul_subway` with a hint ("did you mean: seoul-subway?") or alias both forms in the catalog resolver.
 
-### P2-8 · `~/.kosmos/vendor/slsa-verifier/` not pre-vendored on dev machines
+### P2-8 · `~/.kosax/vendor/slsa-verifier/` not pre-vendored on dev machines
 - First-time install auto-runs `scripts/bootstrap_slsa_verifier.sh`, but the bootstrap step is silent and undocumented in `docs/plugins/quickstart.ko.md`. A failed bootstrap surfaces as `binary_not_found` (exit_code=7), not a clear "first-run setup required" message.
 
 ### P2-9 · `tui/src/commands/plugin/` CC marketplace residue remains in repo
-- `tui/src/commands/plugin/index.tsx` (description: "Manage Claude Code plugins") + sibling `.tsx` files (`AddMarketplace.tsx`, `BrowseMarketplace.tsx`, `DiscoverPlugins.tsx`, `ManageMarketplaces.tsx`, `ManagePlugins.tsx`, etc — 18 files total) are CC marketplace surface dead code. KOSMOS routes `/plugin` via the singular `plugin.tsx` (verified at `commands.ts:146`). Confirmed dead in commit message of Spec 1979 T021 ("CC marketplace residue ... is now unreachable from citizen surface; cleanup tracked"). Recommend explicit cleanup (rm -r `tui/src/commands/plugin/`) before v0.1 production.
+- `tui/src/commands/plugin/index.tsx` (description: "Manage Claude Code plugins") + sibling `.tsx` files (`AddMarketplace.tsx`, `BrowseMarketplace.tsx`, `DiscoverPlugins.tsx`, `ManageMarketplaces.tsx`, `ManagePlugins.tsx`, etc — 18 files total) are CC marketplace surface dead code. KOSAX routes `/plugin` via the singular `plugin.tsx` (verified at `commands.ts:146`). Confirmed dead in commit message of Spec 1979 T021 ("CC marketplace residue ... is now unreachable from citizen surface; cleanup tracked"). Recommend explicit cleanup (rm -r `tui/src/commands/plugin/`) before v0.1 production.
 
 ## Pass/fail axis matrix (P0/P1 surfaced above)
 

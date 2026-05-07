@@ -24,7 +24,7 @@ spec 전반 free-text 스캔: "separate epic", "future epic", "Phase 2+", "v2", 
 
 - **Decision**: OTel GenAI span을 `LLMClient.generate_stream`, `ToolExecutor.dispatch`, `engine/query.query` 안에서 `tracer.start_as_current_span(...)`로 **직접** 생성한다. `opentelemetry-instrumentation-openai-v2`, OpenLLMetry(traceloop-sdk), LangSmith wrapper 등은 사용하지 않는다.
 - **Rationale**:
-  - KOSMOS의 LLM 호출은 FriendliAI Serverless에 `httpx.AsyncClient`로 직접 요청(OpenAI-compatible endpoint). `openai` Python SDK의 `ChatCompletion` 객체가 존재하지 않기 때문에 auto-instrumentor가 훅 걸 대상이 원천적으로 없다.
+  - KOSAX의 LLM 호출은 FriendliAI Serverless에 `httpx.AsyncClient`로 직접 요청(OpenAI-compatible endpoint). `openai` Python SDK의 `ChatCompletion` 객체가 존재하지 않기 때문에 auto-instrumentor가 훅 걸 대상이 원천적으로 없다.
   - AGENTS.md § Hard rules: "Never add a dependency outside a spec-driven PR" — 의존성 최소화 원칙.
   - 수동 authoring은 속성 이름·값 통제가 명확해 PII whitelist 재사용이 단순해진다.
 - **Alternatives considered**:
@@ -37,13 +37,13 @@ spec 전반 free-text 스캔: "separate epic", "future epic", "Phase 2+", "v2", 
 ### D2. Span 이름과 속성 — OTel GenAI semconv v1.40
 
 - **Decision**: 세 종류 span의 이름·속성 셋은 OTel GenAI semconv v1.40을 따른다.
-  - `invoke_agent kosmos-query` — 속성: `gen_ai.operation.name=invoke_agent`, `gen_ai.agent.name=kosmos-query`, `gen_ai.conversation.id=<session_id>`
+  - `invoke_agent kosax-query` — 속성: `gen_ai.operation.name=invoke_agent`, `gen_ai.agent.name=kosax-query`, `gen_ai.conversation.id=<session_id>`
   - `chat` — 속성: `gen_ai.operation.name=chat`, `gen_ai.provider.name=friendliai`, `gen_ai.request.model=<model>`, `gen_ai.response.model=<model>`, `gen_ai.usage.input_tokens=<int>`, `gen_ai.usage.output_tokens=<int>`, `gen_ai.response.finish_reasons=[...]`
   - `execute_tool {tool_id}` — 속성: `gen_ai.operation.name=execute_tool`, `gen_ai.tool.name=<tool_id>`, `gen_ai.tool.type=function`
 - **Rationale**: Langfuse는 OTel GenAI semconv 속성을 1급으로 인식해 token 사용량·모델 필터링을 자동 제공. 속성 이름을 임의로 쓰면 Langfuse 대시보드의 gen_ai 전용 뷰가 비활성화된다.
 - **Alternatives considered**:
   - `gen_ai.system` (v1.37 이전 이름): v1.37에서 `gen_ai.provider.name`로 rename됨. **금지**(Epic #463 제약 #7).
-  - 자체 attribute key(`kosmos.llm.*`): Langfuse 자동 인식 손실. 기각.
+  - 자체 attribute key(`kosax.llm.*`): Langfuse 자동 인식 손실. 기각.
 - **Reference**: https://opentelemetry.io/docs/specs/semconv/gen-ai/ (v1.40 spans, Development stability).
 
 ### D3. OTLP HTTP/protobuf 프로토콜 고정
@@ -60,7 +60,7 @@ spec 전반 free-text 스캔: "separate epic", "future epic", "Phase 2+", "v2", 
 - **Decision**: 환경변수 `OTEL_SDK_DISABLED=true`이면 TracerProvider를 `NoOpTracerProvider`로 세팅하고 BatchSpanProcessor/Exporter를 전혀 초기화하지 않는다. 테스트 스위트의 CI 실행에서 기본값이 된다(CI env에서 주입).
 - **Rationale**: CI는 네트워크 제한 환경. OTel SDK는 `OTEL_SDK_DISABLED`를 표준 환경변수로 인식한다(OTel Configuration spec). 모든 OTel API 호출은 no-op이 되어 기존 테스트가 영향 받지 않는다.
 - **Alternatives considered**:
-  - 자체 feature flag(`KOSMOS_OTEL_ENABLED`): OTel 표준 변수와 이중 경로 발생. 기각.
+  - 자체 feature flag(`KOSAX_OTEL_ENABLED`): OTel 표준 변수와 이중 경로 발생. 기각.
 - **Reference**: https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/ (`OTEL_SDK_DISABLED`).
 
 ### D5. Stability opt-in: `gen_ai_latest_experimental`
@@ -76,11 +76,11 @@ spec 전반 free-text 스캔: "separate epic", "future epic", "Phase 2+", "v2", 
 - **Rationale**: OTel GenAI semconv는 span당 하나의 usage 속성 쌍(`input_tokens`, `output_tokens`)만 규정. 청크마다 속성을 갱신하면 Langfuse 파싱 비용 증가 + 속성 덮어쓰기 부작용.
 - **Alternatives considered**:
   - 청크마다 event 추가: 가능하나 본 epic 범위 밖(D11 참조).
-- **Reference**: OTel GenAI spec — streaming usage aggregation convention. 내부 레퍼런스: `src/kosmos/llm/usage.py`의 기존 누산 패턴.
+- **Reference**: OTel GenAI spec — streaming usage aggregation convention. 내부 레퍼런스: `src/kosax/llm/usage.py`의 기존 누산 패턴.
 
 ### D7. 429 retry counter를 별도 metric으로 추가
 
-- **Decision**: FriendliAI가 `429 Too Many Requests`를 반환해 LLM 재시도가 발생할 때마다 `kosmos_llm_rate_limit_retries_total` counter를 1 증가. `Retry-After` 헤더 존중 기존 로직(spec 019)은 변경 없음.
+- **Decision**: FriendliAI가 `429 Too Many Requests`를 반환해 LLM 재시도가 발생할 때마다 `kosax_llm_rate_limit_retries_total` counter를 1 증가. `Retry-After` 헤더 존중 기존 로직(spec 019)은 변경 없음.
 - **Rationale**: 재시도가 span 내 숨어 있으면 운영자가 "오늘 몇 번의 429가 있었나"를 쉽게 못 본다. Counter는 Langfuse의 metric 뷰에서 시계열로 즉시 확인 가능.
 - **Alternatives considered**:
   - 재시도마다 별도 span 생성: 노이즈. 기각(spec edge case 참조).
@@ -88,9 +88,9 @@ spec 전반 free-text 스캔: "separate epic", "future epic", "Phase 2+", "v2", 
 
 ### D8. PII whitelist 재사용 — 단일 진실 소스 보존
 
-- **Decision**: `src/kosmos/observability/event_logger.py`의 `_ALLOWED_METADATA_KEYS` frozenset(`tool_id`, `step`, `decision`, `error_class`, `model`)을 `otel_bridge.py`에서 import하여 span 속성 prefilter에도 사용한다. 중복 whitelist 정의 금지.
+- **Decision**: `src/kosax/observability/event_logger.py`의 `_ALLOWED_METADATA_KEYS` frozenset(`tool_id`, `step`, `decision`, `error_class`, `model`)을 `otel_bridge.py`에서 import하여 span 속성 prefilter에도 사용한다. 중복 whitelist 정의 금지.
 - **Rationale**: 두 곳에 whitelist를 두면 한쪽만 업데이트되는 drift 위험. Constitution II(fail-closed) 유지.
-- **Reference**: 기존 `src/kosmos/observability/event_logger.py:45-47` 주석 "(AC-A10)".
+- **Reference**: 기존 `src/kosax/observability/event_logger.py:45-47` 주석 "(AC-A10)".
 
 ### D9. Docker Compose — Langfuse v3 자체 호스팅
 
@@ -149,7 +149,7 @@ spec 전반 free-text 스캔: "separate epic", "future epic", "Phase 2+", "v2", 
 | OTLP HTTP/protobuf | Langfuse self-hosting 공식 docs | Export |
 | `OTEL_SDK_DISABLED` no-op | OTel Configuration spec (env vars) | Bootstrap |
 | PII whitelist 재사용 | 기존 `event_logger.py:_ALLOWED_METADATA_KEYS` + Constitution II | Observability |
-| Streaming usage aggregation | OTel GenAI spec + `src/kosmos/llm/usage.py` 누산 | LLM Client |
+| Streaming usage aggregation | OTel GenAI spec + `src/kosax/llm/usage.py` 누산 | LLM Client |
 | 429 retry counter | docs/vision.md § LangGraph RetryPolicy + 019 spec | LLM Client |
 | BatchSpanProcessor | OTel Python SDK default patterns | Export |
 | Langfuse v3 자체 호스팅 | Langfuse self-hosting docker-compose 공식 | Dev stack |

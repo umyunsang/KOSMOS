@@ -53,7 +53,7 @@ jobs:
               first_line=$(head -1 "$filepath")
               # Only check files that look like they should be lifted
               # (i.e., files added in a PR touching these directories).
-              # A KOSMOS-original file in a lifted dir has no header — that is
+              # A KOSAX-original file in a lifted dir has no header — that is
               # allowed ONLY if the file has never been a lift. We use the
               # absence of any "Source:" comment as the skip signal.
               if echo "$first_line" | grep -q "Source:"; then

@@ -2,7 +2,7 @@
 """Target-state citizen-demand dataset checks.
 
 This dataset is not a current ToolRegistry eval. It protects the product target:
-citizens ask for national administrative outcomes, and KOSMOS later maps those
+citizens ask for national administrative outcomes, and KOSAX later maps those
 requests onto live, mock, or handoff channels.
 """
 

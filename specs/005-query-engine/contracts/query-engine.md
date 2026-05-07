@@ -227,12 +227,12 @@ Internal functions may raise for programming errors (assertion failures, type er
 ## Module Exports
 
 ```python
-# src/kosmos/engine/__init__.py
+# src/kosax/engine/__init__.py
 
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.engine import QueryEngine
-from kosmos.engine.events import QueryEvent, StopReason
-from kosmos.engine.models import QueryContext, QueryState, SessionBudget
+from kosax.engine.config import QueryEngineConfig
+from kosax.engine.engine import QueryEngine
+from kosax.engine.events import QueryEvent, StopReason
+from kosax.engine.models import QueryContext, QueryState, SessionBudget
 
 __all__ = [
     "QueryEngine",

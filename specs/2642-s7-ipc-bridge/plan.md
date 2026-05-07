@@ -14,12 +14,12 @@ each design decision below cites a concrete reference.
 
 | Design decision | Reference cited |
 |---|---|
-| `remote/` 4 files DROP-FOR-SWAP, formal decision | `docs/vision.md § Reference materials` (Claude Code is the first reference; CC's `remote/` is the claude.ai cloud-session bridge — not in KOSMOS surface) + `specs/cc-migration-audit/decisions.md § S7 IPC Bridge` (decision row) + `specs/cc-migration-audit/scope-S7-ipc-bridge.md § 2.3 + § 5 Finding 2` |
+| `remote/` 4 files DROP-FOR-SWAP, formal decision | `docs/vision.md § Reference materials` (Claude Code is the first reference; CC's `remote/` is the claude.ai cloud-session bridge — not in KOSAX surface) + `specs/cc-migration-audit/decisions.md § S7 IPC Bridge` (decision row) + `specs/cc-migration-audit/scope-S7-ipc-bridge.md § 2.3 + § 5 Finding 2` |
 | `directConnectManager.ts` + `useDirectConnect.ts` + `createDirectConnectSession.ts` deletion (kept-stub paths previously alive only because of dead `remote/` references) | `specs/cc-migration-audit/scope-S7-ipc-bridge.md § 2.3` (audit "DROP + cleanup" recommendation) + verified call-graph trace (this plan, § 1.1) |
-| `notification_push` arm KOSMOS swap-2 justification (NO CC equivalent) | `.references/claude-code-sourcemap/restored-src/src/ink/useTerminalNotification.ts` (CC notification path = terminal OSC, in-process; no IPC arm) + `specs/031-five-primitive-harness/` (SubscriptionHandle for KMA/CBS/RSS push) + `specs/032-ipc-stdio-hardening/` (envelope arm contract) |
+| `notification_push` arm KOSAX swap-2 justification (NO CC equivalent) | `.references/claude-code-sourcemap/restored-src/src/ink/useTerminalNotification.ts` (CC notification path = terminal OSC, in-process; no IPC arm) + `specs/031-five-primitive-harness/` (SubscriptionHandle for KMA/CBS/RSS push) + `specs/032-ipc-stdio-hardening/` (envelope arm contract) |
 | codec.ts ↔ `_BaseFrame` field-level drift CI gate | `specs/032-ipc-stdio-hardening/` (envelope source-of-truth) + `tests/ipc/test_schema_python_ts_diff.py` (existing JSON-Schema parity gate; codec.ts gap identified by audit § 5 Finding 4) |
 | ADR-009 (mcpb-compat lazy shim) | `tui/src/mcpb-compat.ts` (existing implementation) + `specs/2293-ui-residue-cleanup/spec.md § FR-010 + § SC-007` + `specs/cc-migration-audit/scope-S7-ipc-bridge.md § 2.5 + § 5 Finding 5` (ADR registration recommendation) |
-| `docs/requirements/kosmos-migration-tree.md § L1-A A6` (Error recovery: simple network retry only) | Confirms `directConnect`/`remote/` retry surface has no role in KOSMOS — DROP justified |
+| `docs/requirements/kosax-migration-tree.md § L1-A A6` (Error recovery: simple network retry only) | Confirms `directConnect`/`remote/` retry surface has no role in KOSAX — DROP justified |
 
 ### 0.1 — `notification_push` baseline verification (this plan resolves audit § 5 Finding 3)
 
@@ -44,7 +44,7 @@ $ grep -rln 'notification_push' .references/.../src/
 (no results)
 ```
 
-**Verdict**: `notification_push` is a KOSMOS swap-2 add-on transporting
+**Verdict**: `notification_push` is a KOSAX swap-2 add-on transporting
 Spec 031 SubscriptionHandle pushes (KMA disaster CBS, RSS news,
 hospital alerts) over the same stdio plane as the rest of the IPC.
 **Orthogonal** to CC's terminal OSC notification path — neither
@@ -62,7 +62,7 @@ Per `AGENTS.md § Hard rules` "Stack changes require an ADR under
 loading* (lazy import shim) that diverges from CC. Even though the
 package itself (`@anthropic-ai/mcpb`) is allowed and was added in
 Spec 2293, the shim pattern (one isolated file, all callers go through
-it) is a KOSMOS-original architectural decision that future agents
+it) is a KOSAX-original architectural decision that future agents
 will need rationale for. ADR-009 captures this.
 
 ---
@@ -80,10 +80,10 @@ tui/src/screens/REPL.tsx
 └── const directConnect = useDirectConnect({ config: directConnectConfig, ...}) (line 1543)
     └── activeRemote = ... directConnect.isRemoteMode ? directConnect : remoteSession  (line 1563)
 
-tui/src/server/directConnectManager.ts (KOSMOS-stubbed; type-only deps to deleted remote/)
+tui/src/server/directConnectManager.ts (KOSAX-stubbed; type-only deps to deleted remote/)
 tui/src/server/createDirectConnectSession.ts (depends on directConnectManager.DirectConnectConfig)
 tui/src/server/types.ts (only consumed by createDirectConnectSession.ts)
-tui/src/hooks/useDirectConnect.ts (KOSMOS-stubbed; no-op hook)
+tui/src/hooks/useDirectConnect.ts (KOSAX-stubbed; no-op hook)
 ```
 
 Post-cleanup:
@@ -100,7 +100,7 @@ grep -rn 'directConnect\|DirectConnect\|createDirectConnectSession' tui/src/
 
 ### 1.2 — `notification_push` SWAP docstring + parity test
 
-Edit `src/kosmos/ipc/frame_schema.py:NotificationPushFrame.__doc__`:
+Edit `src/kosax/ipc/frame_schema.py:NotificationPushFrame.__doc__`:
 
 ```python
 """Push from subscription surfaces (Spec 031 SubscriptionHandle).
@@ -108,7 +108,7 @@ Edit `src/kosmos/ipc/frame_schema.py:NotificationPushFrame.__doc__`:
 CC parity: NO equivalent — Claude Code's notification surface is
 terminal OSC sequences (iTerm2, Kitty, Ghostty, bell) emitted
 in-process from ``ink/useTerminalNotification.ts``. There is no
-push-based IPC notification arm in CC. KOSMOS adds this arm as a
+push-based IPC notification arm in CC. KOSAX adds this arm as a
 swap-2 addition for Korean civic push channels (KMA disaster CBS,
 RSS newsroom, hospital alerts) carried over the same stdio plane to
 keep a single correlation plane.
@@ -128,7 +128,7 @@ Test `tests/ipc/test_notification_push_swap_parity.py`:
 
 `tests/ipc/test_codec_envelope_parity.py` strategy:
 
-1. Read `tui/src/ipc/codec.ts` as text (or `KOSMOS_IPC_PARITY_DRIFT_FIXTURE=1` → fixture path).
+1. Read `tui/src/ipc/codec.ts` as text (or `KOSAX_IPC_PARITY_DRIFT_FIXTURE=1` → fixture path).
 2. Regex-extract the envelope zod definition. The codec defines the trailer & frame envelope around lines 55-75 (verified):
    ```ts
    correlation_id: z.string().min(1),
@@ -158,19 +158,19 @@ const _baseFrame = z.object({
 Negative-test `test_drift_negative_fixture_triggers_failure`:
 ```python
 def test_drift_negative_fixture_triggers_failure(monkeypatch):
-    monkeypatch.setenv("KOSMOS_IPC_PARITY_DRIFT_FIXTURE", "1")
+    monkeypatch.setenv("KOSAX_IPC_PARITY_DRIFT_FIXTURE", "1")
     with pytest.raises(AssertionError, match="correlation_id"):
         run_codec_envelope_parity_check()
 ```
 
-`conftest.py` guard ensures `KOSMOS_IPC_PARITY_DRIFT_FIXTURE` defaults
+`conftest.py` guard ensures `KOSAX_IPC_PARITY_DRIFT_FIXTURE` defaults
 unset:
 ```python
 @pytest.fixture(autouse=True)
 def _guard_drift_fixture_env_default_off(monkeypatch):
-    if os.environ.get("KOSMOS_IPC_PARITY_DRIFT_FIXTURE") == "1":
+    if os.environ.get("KOSAX_IPC_PARITY_DRIFT_FIXTURE") == "1":
         # Test must explicitly opt in via monkeypatch; ambient set is rejected.
-        monkeypatch.delenv("KOSMOS_IPC_PARITY_DRIFT_FIXTURE", raising=False)
+        monkeypatch.delenv("KOSAX_IPC_PARITY_DRIFT_FIXTURE", raising=False)
 ```
 
 ### 1.4 — `tui-ipc-drift.yml` extension
@@ -217,10 +217,10 @@ uv run pytest tests/ipc/ -v
 
 1. Spawn `bun run tui`.
 2. `wait_for_pane "tool_registry: \\d+ entries verified" 30`.
-3. `wait_for_pane "KOSMOS" 5`.
-4. `tmux send-keys -t kosmos-2642 "/help" Enter`.
+3. `wait_for_pane "KOSAX" 5`.
+4. `tmux send-keys -t kosax-2642 "/help" Enter`.
 5. `wait_for_pane "Available commands" 10`.
-6. `tmux send-keys -t kosmos-2642 "" "C-c"` twice.
+6. `tmux send-keys -t kosax-2642 "" "C-c"` twice.
 
 Per AGENTS.md TUI verification mandate, capture:
 - `snap-001-boot.txt`
@@ -237,7 +237,7 @@ Read the PNGs to verify visual rendering (Layer 4).
 
 Run the negative fixture path and verify it fails:
 ```bash
-KOSMOS_IPC_PARITY_DRIFT_FIXTURE=1 uv run pytest \
+KOSAX_IPC_PARITY_DRIFT_FIXTURE=1 uv run pytest \
   tests/ipc/test_codec_envelope_parity.py::test_drift_negative_fixture_triggers_failure -v
 ```
 
@@ -250,7 +250,7 @@ KOSMOS_IPC_PARITY_DRIFT_FIXTURE=1 uv run pytest \
 | Task group | Files | Lead |
 |---|---|---|
 | TG-A: `remote/` DROP cleanup | tui/src/server/* (delete), tui/src/hooks/useDirectConnect.ts (delete), tui/src/screens/REPL.tsx (edit) | Sonnet teammate |
-| TG-B: `notification_push` SWAP doc + test | src/kosmos/ipc/frame_schema.py (edit), tests/ipc/test_notification_push_swap_parity.py (new) | Sonnet teammate |
+| TG-B: `notification_push` SWAP doc + test | src/kosax/ipc/frame_schema.py (edit), tests/ipc/test_notification_push_swap_parity.py (new) | Sonnet teammate |
 | TG-C: codec.ts envelope drift CI | tests/ipc/test_codec_envelope_parity.py (new), tests/ipc/fixtures/codec_drift_negative.ts (new), tests/ipc/conftest.py (edit), .github/workflows/tui-ipc-drift.yml (edit) | Sonnet teammate |
 | TG-D: ADR-009 + smoke + final verification | docs/adr/ADR-009-mcpb-compat-lazy-shim.md (new), specs/2642-s7-ipc-bridge/scripts/smoke-2642.sh (new), Layer 5 capture | Lead solo |
 
@@ -291,10 +291,10 @@ Task D depends on A+B+C completing first → Lead solo at end.
 - `specs/cc-migration-audit/scope-S7-ipc-bridge.md` (audit)
 - `specs/cc-migration-audit/decisions.md § S7 IPC Bridge` (canonical decisions)
 - `docs/vision.md § Reference materials`
-- `docs/requirements/kosmos-migration-tree.md`
+- `docs/requirements/kosax-migration-tree.md`
 - `specs/032-ipc-stdio-hardening/` (envelope source-of-truth)
 - `tests/ipc/test_schema_python_ts_diff.py` (existing JSON-Schema parity gate)
 - `tui/scripts/gen-ipc-types.ts` (existing TS-types codegen)
 - `.github/workflows/tui-ipc-drift.yml` (existing drift CI)
-- `tui/src/mcpb-compat.ts` (KOSMOS-original lazy shim)
+- `tui/src/mcpb-compat.ts` (KOSAX-original lazy shim)
 - `.references/claude-code-sourcemap/restored-src/src/ink/useTerminalNotification.ts` (CC notification baseline)

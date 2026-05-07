@@ -1,13 +1,13 @@
 name: Plugin submission
-description: Submit a new KOSMOS plugin for inclusion in the kosmos-plugin-store catalog
+description: Submit a new KOSAX plugin for inclusion in the kosax-plugin-store catalog
 title: "plugin: submit <plugin_id>"
 labels: ["plugin-submission", "triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        이 템플릿으로 `kosmos-plugin-store` 카탈로그 등록을 요청합니다.
-        제출 전 [docs/plugins/quickstart.ko.md](https://github.com/umyunsang/KOSMOS/blob/main/docs/plugins/quickstart.ko.md)
+        이 템플릿으로 `kosax-plugin-store` 카탈로그 등록을 요청합니다.
+        제출 전 [docs/plugins/quickstart.ko.md](https://github.com/umyunsang/KOSAX/blob/main/docs/plugins/quickstart.ko.md)
         의 9단계 walkthrough 를 마치고 `plugin-validation.yml` 가 50 / 50 녹색이어야 합니다.
 
   - type: input
@@ -23,7 +23,7 @@ body:
     id: repo_url
     attributes:
       label: Plugin GitHub repo URL
-      placeholder: https://github.com/<your-org>/kosmos-plugin-busan-bike
+      placeholder: https://github.com/<your-org>/kosax-plugin-busan-bike
     validations:
       required: true
 

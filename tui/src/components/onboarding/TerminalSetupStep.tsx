@@ -66,9 +66,9 @@ export function TerminalSetupStep({
   const theme = useTheme()
   const { isComposing } = useKoreanIME()
   const i18n = getUiL2I18n(
-    locale ?? ((process.env['KOSMOS_TUI_LOCALE'] as 'ko' | 'en') || 'ko'),
+    locale ?? ((process.env['KOSAX_TUI_LOCALE'] as 'ko' | 'en') || 'ko'),
   )
-  const isEn = (locale ?? process.env['KOSMOS_TUI_LOCALE']) === 'en'
+  const isEn = (locale ?? process.env['KOSAX_TUI_LOCALE']) === 'en'
 
   const [pref, setPref] = useState<AccessibilityPreferenceT>(
     initialPreference ?? freshAccessibilityPreference(),
@@ -175,7 +175,7 @@ export function TerminalSetupStep({
           const prefix = selected ? '[선택] ▶ ' : '        '
           return (
             <Box key={toggleKeyName} flexDirection="row">
-              <Text color={selected ? theme.kosmosCore : theme.subtle}>
+              <Text color={selected ? theme.kosaxCore : theme.subtle}>
                 {prefix}
               </Text>
               <Text color={enabled ? theme.success : theme.subtle}>{glyph} </Text>
@@ -192,21 +192,21 @@ export function TerminalSetupStep({
         </Text>
         <Box flexDirection="row">
           <Text color={theme.text}>{'  '}</Text>
-          <Text color={theme.kosmosCore}>{'Shift+Tab'}</Text>
+          <Text color={theme.kosaxCore}>{'Shift+Tab'}</Text>
           <Text color={theme.subtle}>
             {'  '}{isEn ? '— cycle permission modes (default → acceptEdits → bypassPermissions)' : '— 권한 모드 전환 (default → acceptEdits → bypassPermissions)'}
           </Text>
         </Box>
         <Box flexDirection="row">
           <Text color={theme.text}>{'  '}</Text>
-          <Text color={theme.kosmosCore}>{'Ctrl+C'}</Text>
+          <Text color={theme.kosaxCore}>{'Ctrl+C'}</Text>
           <Text color={theme.subtle}>
             {'  '}{isEn ? '— cancel / auto-deny current modal' : '— 작업 취소 / 현재 모달 자동 거부'}
           </Text>
         </Box>
         <Box flexDirection="row">
           <Text color={theme.text}>{'  '}</Text>
-          <Text color={theme.kosmosCore}>{'Ctrl-O'}</Text>
+          <Text color={theme.kosaxCore}>{'Ctrl-O'}</Text>
           <Text color={theme.subtle}>
             {'  '}{isEn ? '— expand / collapse long response blocks' : '— 긴 응답 블록 펼치기/접기'}
           </Text>
@@ -223,7 +223,7 @@ export function TerminalSetupStep({
 
       {saving && (
         <Box marginTop={1}>
-          <Text color={theme.kosmosCore}>
+          <Text color={theme.kosaxCore}>
             {isEn ? 'Saving preferences…' : '환경 설정 저장 중…'}
           </Text>
         </Box>

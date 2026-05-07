@@ -3,27 +3,27 @@
 //
 // Wires the backend permission_response echo (Gap A fix, role="backend")
 // into the PermissionReceiptContext.addReceipt() so that:
-//   1. User selection is captured in the KOSMOS modal (KosmosPrimitivePermissionRequest).
+//   1. User selection is captured in the KOSAX modal (KosaxPrimitivePermissionRequest).
 //   2. CC pipeline routes through toolUseConfirm.onAllow (→ tool executes).
 //   3. Backend writes the consent ledger and echoes back the receipt_id via
 //      a PermissionResponseFrame{role: "backend"} outbound frame.
 //   4. THIS HOOK detects that echo and calls addReceipt() so the context
 //      (and /consent list) shows the new receipt without a round-trip.
 //
-// CC reference: no upstream analog (KOSMOS-original, Spec 033 + Spec 1635).
+// CC reference: no upstream analog (KOSAX-original, Spec 033 + Spec 1635).
 // AGENTS.md rule: zero new runtime dependencies.
 // FR-018: receipt added after backend confirmation, not before.
 
 import { useEffect, useRef } from 'react'
-import { getOrCreateKosmosBridge } from '../ipc/bridgeSingleton.js'
+import { getOrCreateKosaxBridge } from '../ipc/bridgeSingleton.js'
 import { isPermissionResponse } from '../ipc/codec.js'
 import type { PermissionResponseFrame } from '../ipc/frames.generated.js'
 import type { PermissionReceiptT } from '../schemas/ui-l2/permission.js'
 import type { PermissionReceiptContextValue } from '../context/PermissionReceiptContext.js'
-import { getKosmosBridgeSessionId } from '../ipc/bridgeSingleton.js'
+import { getKosaxBridgeSessionId } from '../ipc/bridgeSingleton.js'
 import {
   aalToLayer,
-  type KosmosPrimitive,
+  type KosaxPrimitive,
 } from '../utils/permissions/aalToLayer.js'
 import { resolveAdapter } from '../services/api/adapterManifest.js'
 
@@ -57,7 +57,7 @@ function _mapDecision(
 // ---------------------------------------------------------------------------
 
 /**
- * Mounts a fire-and-forget listener on the KOSMOS IPC bridge that watches
+ * Mounts a fire-and-forget listener on the KOSAX IPC bridge that watches
  * for `permission_response` frames emitted by the **backend** (role="backend")
  * with a non-null `receipt_id`. On receipt, calls `addReceipt()` to update
  * the PermissionReceiptContext without a separate /consent list round-trip.
@@ -72,7 +72,7 @@ export function usePermissionReceiptWatcher(addReceipt: AddReceiptFn): void {
   addReceiptRef.current = addReceipt
 
   useEffect(() => {
-    const bridge = getOrCreateKosmosBridge()
+    const bridge = getOrCreateKosaxBridge()
 
     const prevHook = bridge.onFrame
 
@@ -104,7 +104,7 @@ export function usePermissionReceiptWatcher(addReceipt: AddReceiptFn): void {
       //     display name. Falls back to the raw tool_id, and finally to
       //     'unknown' for legacy backends.
       //   - session_id: pull from bridge singleton.
-      const sessionId = getKosmosBridgeSessionId() ?? 'unknown'
+      const sessionId = getKosaxBridgeSessionId() ?? 'unknown'
 
       // Resolve adapter manifest entry — gives us human-readable name + the
       // is_irreversible flag needed for Layer 2/3 distinction on submit.
@@ -126,7 +126,7 @@ export function usePermissionReceiptWatcher(addReceipt: AddReceiptFn): void {
         .primitive_kind
       const computedLayer: 1 | 2 | 3 = primitiveKind
         ? (aalToLayer(
-            primitiveKind as KosmosPrimitive,
+            primitiveKind as KosaxPrimitive,
             isIrreversible,
           ) ?? 1)
         : 1

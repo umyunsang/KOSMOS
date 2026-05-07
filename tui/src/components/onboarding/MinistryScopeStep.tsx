@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Source: KOSMOS Epic H #1302 (035-onboarding-brand-port), task T029
+// Source: KOSAX Epic H #1302 (035-onboarding-brand-port), task T029
 // Contract: specs/035-onboarding-brand-port/contracts/onboarding-step-registry.md § 2, § 4
 // Contract: specs/035-onboarding-brand-port/contracts/memdir-ministry-scope-schema.md § 3
 //
@@ -173,7 +173,7 @@ export function MinistryScopeStep({
         부처 API 사용 동의 ({CURRENT_SCOPE_VERSION})
       </Text>
       <Text color={theme.subtitle}>
-        KOSMOS가 호출할 수 있는 공개 API 부처를 선택하세요.
+        KOSAX가 호출할 수 있는 공개 API 부처를 선택하세요.
       </Text>
       <Box marginTop={1} flexDirection="column">
         {ROWS.map((row, idx) => {
@@ -190,7 +190,7 @@ export function MinistryScopeStep({
             typeof accent === 'string' ? accent : theme.text
           return (
             <Box key={row.code} flexDirection="row">
-              <Text color={selected ? theme.kosmosCore : theme.subtle}>
+              <Text color={selected ? theme.kosaxCore : theme.subtle}>
                 {prefix}
               </Text>
               <Text color={accentColor}>{glyph} </Text>
@@ -202,7 +202,7 @@ export function MinistryScopeStep({
         })}
       </Box>
       <Box marginTop={1}>
-        <Text color={theme.kosmosCore}>
+        <Text color={theme.kosaxCore}>
           {submitting
             ? '저장 중...'
             : '↑↓: 이동  ·  Space: 토글  ·  Enter: 확인하고 계속  ·  Esc: 종료'}

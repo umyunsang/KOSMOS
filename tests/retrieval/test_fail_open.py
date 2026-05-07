@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Fail-open degradation test — T026 (spec 026, US2 P1, SC-005, FR-002).
 
-When ``KOSMOS_RETRIEVAL_BACKEND=dense`` but the SentenceTransformer model
+When ``KOSAX_RETRIEVAL_BACKEND=dense`` but the SentenceTransformer model
 fails to load, the registry MUST:
 
 1. Fall back to ``BM25Backend`` silently from the caller's perspective.
@@ -30,7 +30,7 @@ import logging
 
 import pytest
 
-from kosmos.tools.retrieval.bm25_backend import BM25Backend
+from kosax.tools.retrieval.bm25_backend import BM25Backend
 
 
 def _patch_sentence_transformer(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -59,12 +59,12 @@ def _patch_sentence_transformer(monkeypatch: pytest.MonkeyPatch) -> None:
 
     # If dense_backend module exists (after US1/T021 lands), patch its
     # local SentenceTransformer reference too.
-    if importlib.util.find_spec("kosmos.tools.retrieval.dense_backend") is not None:
+    if importlib.util.find_spec("kosax.tools.retrieval.dense_backend") is not None:
         # Ensure the module is imported so setattr can target it.
-        import kosmos.tools.retrieval.dense_backend  # noqa: F401
+        import kosax.tools.retrieval.dense_backend  # noqa: F401
 
         monkeypatch.setattr(
-            "kosmos.tools.retrieval.dense_backend.SentenceTransformer",
+            "kosax.tools.retrieval.dense_backend.SentenceTransformer",
             _raise_on_construct,
             raising=False,
         )
@@ -82,11 +82,11 @@ def test_dense_load_failure_degrades_to_bm25(
     - exactly one WARN record has event="retrieval.degraded",
       requested_backend="dense", effective_backend="bm25"
     """
-    monkeypatch.setenv("KOSMOS_RETRIEVAL_BACKEND", "dense")
+    monkeypatch.setenv("KOSAX_RETRIEVAL_BACKEND", "dense")
     _patch_sentence_transformer(monkeypatch)
 
-    with caplog.at_level(logging.WARNING, logger="kosmos"):
-        from kosmos.eval.retrieval import _build_registry
+    with caplog.at_level(logging.WARNING, logger="kosax"):
+        from kosax.eval.retrieval import _build_registry
 
         registry, _ = _build_registry()
 
@@ -130,11 +130,11 @@ def test_second_search_call_emits_no_additional_warn(
     The FR-002 invariant: exactly one WARN per degraded registry instance,
     regardless of how many times ``score()``/``search()`` is called.
     """
-    monkeypatch.setenv("KOSMOS_RETRIEVAL_BACKEND", "dense")
+    monkeypatch.setenv("KOSAX_RETRIEVAL_BACKEND", "dense")
     _patch_sentence_transformer(monkeypatch)
 
-    with caplog.at_level(logging.WARNING, logger="kosmos"):
-        from kosmos.eval.retrieval import _build_registry
+    with caplog.at_level(logging.WARNING, logger="kosax"):
+        from kosax.eval.retrieval import _build_registry
 
         registry, _ = _build_registry()
 

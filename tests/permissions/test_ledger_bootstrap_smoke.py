@@ -2,7 +2,7 @@
 """P1-2/P1-3 smoke test — HMAC key bootstrap + first ledger append + verify.
 
 Audit-8 P1 fix validation:
-- P1-2: ``~/.kosmos/keys/registry.json`` auto-bootstrap on first boot.
+- P1-2: ``~/.kosax/keys/registry.json`` auto-bootstrap on first boot.
 - P1-3: First consent receipt written via ``ledger.append()`` + ``verify_ledger``
         returns ``passed=True`` (HMAC chain valid from genesis).
 
@@ -22,9 +22,9 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.permissions.hmac_key import HMACKeyFileModeError, bootstrap_hmac_key
-from kosmos.permissions.ledger import append as ledger_append
-from kosmos.permissions.ledger_verify import verify_ledger
+from kosax.permissions.hmac_key import HMACKeyFileModeError, bootstrap_hmac_key
+from kosax.permissions.ledger import append as ledger_append
+from kosax.permissions.ledger_verify import verify_ledger
 
 # ---------------------------------------------------------------------------
 # Fixtures

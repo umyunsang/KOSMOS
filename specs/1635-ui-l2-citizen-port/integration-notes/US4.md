@@ -87,14 +87,14 @@ When swarm mode is active, render `AgentVisibilityPanel` in the REPL output area
 
 ```typescript
 import { AgentVisibilityPanel } from '../components/agents/AgentVisibilityPanel.js'
-import { getOrCreateKosmosBridge } from '../ipc/bridgeSingleton.js'
+import { getOrCreateKosaxBridge } from '../ipc/bridgeSingleton.js'
 
 // In REPL render (when swarmMode is true):
 {swarmMode && (
   <AgentVisibilityPanel
     initialEntries={[]}          // Panel will self-populate from WorkerStatusFrames
     showDetail={false}            // Default; /agents --detail sets this to true
-    bridge={getOrCreateKosmosBridge()}
+    bridge={getOrCreateKosaxBridge()}
     primitiveByWorker={primitiveByWorkerMap}  // Map<worker_id, primitive_verb>
   />
 )}
@@ -111,7 +111,7 @@ import { emitSurfaceActivation } from '../observability/surface.js'
 
 // When AgentVisibilityPanel mounts in REPL context:
 useEffect(() => {
-  if (swarmMode) emitSurfaceActivation('agents', { 'kosmos.swarm.auto': true })
+  if (swarmMode) emitSurfaceActivation('agents', { 'kosax.swarm.auto': true })
 }, [swarmMode])
 ```
 

@@ -20,7 +20,7 @@ import type { SDKMessage } from '../entrypoints/agentSdkTypes.js'
 import type { SDKControlResponse } from '../entrypoints/sdk/controlTypes.js'
 import { getFeatureValue_CACHED_WITH_REFRESH } from '../services/analytics/growthbook.js'
 import { getOrganizationUUID } from '../services/oauth/client.js'
-// policyLimits removed in P1+P2 (Spec 1633); KOSMOS opens features by default via Spec 033 permission gauntlet.
+// policyLimits removed in P1+P2 (Spec 1633); KOSAX opens features by default via Spec 033 permission gauntlet.
 const isPolicyAllowed = (_policy: string): boolean => true
 const waitForPolicyLimitsToLoad = async (): Promise<void> => { /* no-op */ }
 import type { Message } from '../types/message.js'
@@ -324,7 +324,7 @@ export async function initReplBridge(
     }).catch(() => {})
   }
   // generateAndPatch removed — Anthropic queryHaiku-based title upgrader deleted (Spec 1633 / Epic #2293).
-  // KOSMOS title stays as deriveTitle placeholder (first 50 chars of first message).
+  // KOSAX title stays as deriveTitle placeholder (first 50 chars of first message).
   const onUserMessage = (text: string, bridgeSessionId: string): boolean => {
     if (hasExplicitTitle || getCurrentSessionTitle(getSessionId())) {
       return true

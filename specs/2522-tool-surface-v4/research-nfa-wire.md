@@ -1,7 +1,7 @@
 # T030 — NFA Wire Param Research
 
-Source: `/tmp/kosmos-domain-docs/nfa_emg.txt` (NIA-IFT 공공데이터 오픈API 활용가이드, 소방청 구급정보서비스 v1.0)
-Cross-checked: `/tmp/kosmos-evidence/medical-evidence.md`
+Source: `/tmp/kosax-domain-docs/nfa_emg.txt` (NIA-IFT 공공데이터 오픈API 활용가이드, 소방청 구급정보서비스 v1.0)
+Cross-checked: `/tmp/kosax-evidence/medical-evidence.md`
 
 ## Status: CONFIRMED (camelCase wire params, operation-specific ym field)
 

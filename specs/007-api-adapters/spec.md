@@ -10,10 +10,10 @@
 
 ## Overview and Context
 
-Scenario 1 is the primary acceptance test for Phase 1 of KOSMOS:
+Scenario 1 is the primary acceptance test for Phase 1 of KOSAX:
 
 > Citizen: "오늘 서울 가는 길 안전해?" (Is the road to Seoul safe today?)
-> KOSMOS: fuses KOROAD accident data + KMA weather alerts + road risk index
+> KOSAX: fuses KOROAD accident data + KMA weather alerts + road risk index
 >          → actionable route safety recommendation
 
 This epic implements the first three live government API adapters and one composite fusion adapter. These tools are the first concrete data sources loaded into the tool registry from Epic #6 (Tool System). They exercise the `GovAPITool` contract, demonstrate fail-closed defaults in practice, and prove Scenario 1 end-to-end.
@@ -55,7 +55,7 @@ This epic implements the first three live government API adapters and one compos
 
 ### US-001 — Query accident hotspot zones by municipality (P1)
 
-A citizen asks "서울 강남구 사고 많은 곳 알려줘" (Tell me the accident-prone areas in Gangnam-gu, Seoul). KOSMOS calls `koroad_accident_search` with `sido=11` (Seoul) and `gugun=680` (Gangnam-gu) and returns a list of accident hotspot locations with coordinates, accident counts, casualties, and road geometry.
+A citizen asks "서울 강남구 사고 많은 곳 알려줘" (Tell me the accident-prone areas in Gangnam-gu, Seoul). KOSAX calls `koroad_accident_search` with `sido=11` (Seoul) and `gugun=680` (Gangnam-gu) and returns a list of accident hotspot locations with coordinates, accident counts, casualties, and road geometry.
 
 **Why P1**: This is the primary data source for Scenario 1. Without accident hotspot data, the road risk answer is unfounded.
 
@@ -72,7 +72,7 @@ A citizen asks "서울 강남구 사고 많은 곳 알려줘" (Tell me the accid
 
 ### US-002 — Query current weather warning status by region (P1)
 
-A citizen asks "오늘 경부고속도로 가는데 기상 경보 있어?" (Any weather warnings on the Gyeongbu Expressway today?). KOSMOS calls `kma_weather_alert_status` to retrieve all currently active weather warnings. The system then filters by relevant `areaCode` values for the route.
+A citizen asks "오늘 경부고속도로 가는데 기상 경보 있어?" (Any weather warnings on the Gyeongbu Expressway today?). KOSAX calls `kma_weather_alert_status` to retrieve all currently active weather warnings. The system then filters by relevant `areaCode` values for the route.
 
 **Why P1**: Weather warnings are the fastest-changing safety signal. Stale data is worse than no data for this use case.
 
@@ -89,7 +89,7 @@ A citizen asks "오늘 경부고속도로 가는데 기상 경보 있어?" (Any 
 
 ### US-003 — Query current weather observation at a grid point (P1)
 
-A citizen provides a location (e.g., 서울 서초구). KOSMOS resolves it to KMA grid coordinates (nx, ny) and calls `kma_current_observation` to get current precipitation, temperature, and wind speed.
+A citizen provides a location (e.g., 서울 서초구). KOSAX resolves it to KMA grid coordinates (nx, ny) and calls `kma_current_observation` to get current precipitation, temperature, and wind speed.
 
 **Why P1**: Current precipitation and wind are the leading indicators of road hazard. The `getUltraSrtNcst` endpoint updates every 10 minutes — the freshest available data source.
 
@@ -106,7 +106,7 @@ A citizen provides a location (e.g., 서울 서초구). KOSMOS resolves it to KM
 
 ### US-004 — Compute road risk score by fusing KOROAD and KMA data (P1)
 
-A citizen asks "오늘 서울 강남 가는 길 안전해?" (Is the road to Gangnam, Seoul safe today?). KOSMOS calls `road_risk_score` with the origin/destination and date. The composite adapter internally calls `koroad_accident_search` (accident density) and `kma_current_observation` (current weather hazard) and returns a single risk score with justification.
+A citizen asks "오늘 서울 강남 가는 길 안전해?" (Is the road to Gangnam, Seoul safe today?). KOSAX calls `road_risk_score` with the origin/destination and date. The composite adapter internally calls `koroad_accident_search` (accident density) and `kma_current_observation` (current weather hazard) and returns a single risk score with justification.
 
 **Why P1**: This is the Scenario 1 acceptance test. The composite fusion is what turns two raw API calls into a citizen-facing answer.
 
@@ -130,7 +130,7 @@ A developer runs `uv run pytest` without any live API keys. All four adapters pa
 
 **Acceptance Scenarios**:
 
-1. **Given** no `KOSMOS_KOROAD_API_KEY` or `KOSMOS_DATA_GO_KR_KEY` env vars, **When** `uv run pytest tests/tools/` is run, **Then** all non-`@pytest.mark.live` tests pass using recorded JSON fixtures.
+1. **Given** no `KOSAX_KOROAD_API_KEY` or `KOSAX_DATA_GO_KR_KEY` env vars, **When** `uv run pytest tests/tools/` is run, **Then** all non-`@pytest.mark.live` tests pass using recorded JSON fixtures.
 2. **Given** a recorded fixture is present, **When** the fixture JSON is loaded, **Then** it parses cleanly against the tool's `output_schema` Pydantic model with no validation errors.
 
 ---
@@ -154,10 +154,10 @@ A developer registers the KOROAD adapter. The `searchYearCd`, `sido`, and `gugun
 ### FR-001: KOROAD AccidentHazard adapter
 
 - **Tool ID**: `koroad_accident_search`
-- **Module path**: `src/kosmos/tools/koroad/koroad_accident_search.py`
+- **Module path**: `src/kosax/tools/koroad/koroad_accident_search.py`
 - **Endpoint**: `http://apis.data.go.kr/B552061/frequentzoneLg/getRestFrequentzoneLg`
 - **HTTP method**: GET
-- **Auth**: `serviceKey` query parameter (URL-encoded); sourced from `KOSMOS_KOROAD_API_KEY`
+- **Auth**: `serviceKey` query parameter (URL-encoded); sourced from `KOSAX_KOROAD_API_KEY`
 - **Wire format**: XML by default; request JSON with `_type=json` parameter
 - **Auth type** on `GovAPITool`: `api_key`
 
@@ -218,10 +218,10 @@ A developer registers the KOROAD adapter. The `searchYearCd`, `sido`, and `gugun
 ### FR-002: KMA WeatherAlert adapter
 
 - **Tool ID**: `kma_weather_alert_status`
-- **Module path**: `src/kosmos/tools/kma/kma_weather_alert_status.py`
+- **Module path**: `src/kosax/tools/kma/kma_weather_alert_status.py`
 - **Endpoint**: `http://apis.data.go.kr/1360000/WthrWrnInfoService/getPwnStatus`
 - **HTTP method**: GET
-- **Auth**: `serviceKey` query parameter; sourced from `KOSMOS_DATA_GO_KR_KEY`
+- **Auth**: `serviceKey` query parameter; sourced from `KOSAX_DATA_GO_KR_KEY`
 - **Wire format**: XML (default) or JSON; request JSON with `dataType=JSON`
 - **Auth type** on `GovAPITool`: `api_key`
 
@@ -276,10 +276,10 @@ Note: `getPwnStatus` returns the current snapshot of all active warnings. No dat
 ### FR-003: KMA Current Observation adapter
 
 - **Tool ID**: `kma_current_observation`
-- **Module path**: `src/kosmos/tools/kma/kma_current_observation.py`
+- **Module path**: `src/kosax/tools/kma/kma_current_observation.py`
 - **Endpoint**: `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst`
 - **HTTP method**: GET
-- **Auth**: `serviceKey` query parameter; sourced from `KOSMOS_DATA_GO_KR_KEY`
+- **Auth**: `serviceKey` query parameter; sourced from `KOSAX_DATA_GO_KR_KEY`
 - **Wire format**: XML (default) or JSON; request JSON with `dataType=JSON`
 - **Auth type** on `GovAPITool`: `api_key`
 
@@ -341,7 +341,7 @@ Note: `getPwnStatus` returns the current snapshot of all active warnings. No dat
 ### FR-004: Road Risk Score composite adapter
 
 - **Tool ID**: `road_risk_score`
-- **Module path**: `src/kosmos/tools/composite/road_risk_score.py`
+- **Module path**: `src/kosax/tools/composite/road_risk_score.py`
 - **Endpoint**: N/A (no direct HTTP call; orchestrates inner tool calls)
 - **Auth type** on `GovAPITool`: `public` (auth handled by inner tools)
 
@@ -415,7 +415,7 @@ risk_score = min(1.0, base_score)
 
 ### FR-005: Shared code-table module
 
-- **Module path**: `src/kosmos/tools/koroad/code_tables.py`
+- **Module path**: `src/kosax/tools/koroad/code_tables.py`
 - **Purpose**: Pydantic-compatible Enum definitions for all KOROAD code table values
 
 **Enums to define**:
@@ -433,7 +433,7 @@ risk_score = min(1.0, base_score)
 
 ### FR-006: KMA grid coordinate utility
 
-- **Module path**: `src/kosmos/tools/kma/grid_coords.py`
+- **Module path**: `src/kosax/tools/kma/grid_coords.py`
 - **Purpose**: Lookup table mapping Korean administrative regions to KMA (nx, ny) grid coordinates
 - **Source**: KMA short-term forecast guide `별첨` Excel file (`kma_기상청41_단기예보 조회서비스_오픈API활용가이드_241128.md`)
 - **Implementation**: Pre-populated dict `REGION_TO_GRID: dict[str, tuple[int, int]]` for the 17 metropolitan cities/provinces and their major districts
@@ -478,8 +478,8 @@ Each test module must provide:
 ### NFR-001: No hardcoded credentials
 
 All API keys must be sourced from environment variables:
-- `KOSMOS_KOROAD_API_KEY` — for KOROAD `B552061/frequentzoneLg/` endpoints
-- `KOSMOS_DATA_GO_KR_KEY` — for KMA `1360000/WthrWrnInfoService/` and `1360000/VilageFcstInfoService_2.0/` endpoints
+- `KOSAX_KOROAD_API_KEY` — for KOROAD `B552061/frequentzoneLg/` endpoints
+- `KOSAX_DATA_GO_KR_KEY` — for KMA `1360000/WthrWrnInfoService/` and `1360000/VilageFcstInfoService_2.0/` endpoints
 
 If the relevant env var is not set, the adapter must raise a `ConfigurationError` (or equivalent) before making any HTTP call. Never fall back to a demo key or hardcoded value.
 
@@ -529,7 +529,7 @@ All adapters use `logging.getLogger(__name__)` (stdlib only). No `print()` state
 | SC-006 | Invalid `sido=99` raises `ValidationError` before any HTTP call is made | `pytest tests/tools/koroad/test_koroad_accident_search.py::test_error_path_bad_input` passes |
 | SC-007 | Missing API key raises a `ConfigurationError` before any HTTP call | `pytest tests/tools/koroad/test_koroad_accident_search.py::test_missing_api_key` passes |
 | SC-008 | All adapters are `is_personal_data=False` (aggregate data, no PII) | Code review check; confirmed by constitution compliance scan |
-| SC-009 | `uv run pytest tests/` passes with zero live API calls (no `KOSMOS_*_KEY` env vars set) | CI green badge |
+| SC-009 | `uv run pytest tests/` passes with zero live API calls (no `KOSAX_*_KEY` env vars set) | CI green badge |
 | SC-010 | The `road_risk_score` tool appears in `search_tools("오늘 서울 가는 길 안전해")` results | `pytest tests/tools/test_search_integration.py::test_scenario_1_discovery` passes |
 
 ---
@@ -589,8 +589,8 @@ The following items are explicitly deferred to future epics:
 | Epic #6 Tool System (`GovAPITool`, `ToolRegistry`, `ToolExecutor`) | Merged (#82) | All adapter fields and registration patterns are defined; this epic adds the first concrete adapter instances |
 | `httpx >= 0.27` | Available (`pyproject.toml`) | Async HTTP client for live API calls |
 | `pydantic >= 2.0` | Available (`pyproject.toml`) | Input/output schema validation |
-| `KOSMOS_KOROAD_API_KEY` env var | Not in repo | Developer must export before recording fixtures; never committed |
-| `KOSMOS_DATA_GO_KR_KEY` env var | Not in repo | Developer must export before recording fixtures; never committed |
+| `KOSAX_KOROAD_API_KEY` env var | Not in repo | Developer must export before recording fixtures; never committed |
+| `KOSAX_DATA_GO_KR_KEY` env var | Not in repo | Developer must export before recording fixtures; never committed |
 | KMA grid coordinate Excel attachment | `research/data/kma/` | Used to populate `grid_coords.py`; coordinates for Phase 1 cities hardcoded |
 | KOROAD AccidentHazard CodeList | `research/data/_converted/koroad_AccidentHazard_CodeList.md` | Source of truth for all enum values in `code_tables.py` |
 

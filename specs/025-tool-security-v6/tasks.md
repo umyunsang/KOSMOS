@@ -20,7 +20,7 @@ description: "Task list for Tool Template Security Spec V6 — auth_type ↔ aut
 ## Path Conventions
 
 Single-project layout per plan.md:
-- Source: `src/kosmos/tools/` and `src/kosmos/security/`
+- Source: `src/kosax/tools/` and `src/kosax/security/`
 - Tests: `tests/tools/`
 - Docs: `docs/security/`
 
@@ -40,7 +40,7 @@ Single-project layout per plan.md:
 
 **⚠️ CRITICAL**: US1 and US2 cannot proceed until T002 lands.
 
-- [ ] T002 Add the `_AUTH_TYPE_LEVEL_MAPPING: Final[dict[str, frozenset[str]]]` module-level constant to `src/kosmos/tools/models.py` (near the top of the module, next to other module-level constants). Content per data-model.md §1: `{"public": frozenset({"public", "AAL1"}), "api_key": frozenset({"AAL1", "AAL2", "AAL3"}), "oauth": frozenset({"AAL1", "AAL2", "AAL3"})}`. Add a short module-level docstring line naming FR-039/FR-040/FR-042 as the invariant owners. Do NOT wire it into any validator yet.
+- [ ] T002 Add the `_AUTH_TYPE_LEVEL_MAPPING: Final[dict[str, frozenset[str]]]` module-level constant to `src/kosax/tools/models.py` (near the top of the module, next to other module-level constants). Content per data-model.md §1: `{"public": frozenset({"public", "AAL1"}), "api_key": frozenset({"AAL1", "AAL2", "AAL3"}), "oauth": frozenset({"AAL1", "AAL2", "AAL3"})}`. Add a short module-level docstring line naming FR-039/FR-040/FR-042 as the invariant owners. Do NOT wire it into any validator yet.
 
 **Checkpoint**: Foundation ready — US1 and US2 can start in parallel.
 
@@ -61,7 +61,7 @@ Single-project layout per plan.md:
 
 ### Implementation for User Story 1
 
-- [X] T007 [US1] Extend `GovAPITool._validate_security_invariants` in `src/kosmos/tools/models.py` by appending a V6 block after V5 (per data-model.md §3.2). Logic: `allowed = _AUTH_TYPE_LEVEL_MAPPING.get(self.auth_type)`; if `allowed is None` raise the FR-048 fail-closed `ValueError` from contracts/v6-error-contract.md §Contract 1 fail-closed variant; else if `self.auth_level not in allowed` raise the main `ValueError` from contracts/v6-error-contract.md §Contract 1 with `sorted(allowed)` formatted deterministically. Preserve the `return self` at the end of the method. Do NOT mutate any field. Run T001's baseline command plus T003–T006 to confirm all 4 new tests pass and no V1–V5 test regresses.
+- [X] T007 [US1] Extend `GovAPITool._validate_security_invariants` in `src/kosax/tools/models.py` by appending a V6 block after V5 (per data-model.md §3.2). Logic: `allowed = _AUTH_TYPE_LEVEL_MAPPING.get(self.auth_type)`; if `allowed is None` raise the FR-048 fail-closed `ValueError` from contracts/v6-error-contract.md §Contract 1 fail-closed variant; else if `self.auth_level not in allowed` raise the main `ValueError` from contracts/v6-error-contract.md §Contract 1 with `sorted(allowed)` formatted deterministically. Preserve the `return self` at the end of the method. Do NOT mutate any field. Run T001's baseline command plus T003–T006 to confirm all 4 new tests pass and no V1–V5 test regresses.
 
 **Checkpoint**: US1 complete. `GovAPITool` model validation enforces V6 at the earliest point. Every existing adapter still constructs without change (verified by T001 re-run; registry-wide scan lives in T014).
 
@@ -82,7 +82,7 @@ Single-project layout per plan.md:
 
 ### Implementation for User Story 2
 
-- [X] T012 [US2] Extend `ToolRegistry.register()` in `src/kosmos/tools/registry.py` by adding a V6 backstop block immediately after the existing V3 FR-038 drift check (per data-model.md §3.3). Import `_AUTH_TYPE_LEVEL_MAPPING` from `kosmos.tools.models`. Logic: lookup `tool.auth_type`; if missing, emit structured ERROR log and raise `RegistrationError(tool.id, "V6 violation (FR-048): unknown auth_type ...")` per contracts/v6-error-contract.md §Contract 2 fail-closed variant; else if `tool.auth_level not in allowed`, emit structured log matching the V3 precedent format (`logger.error("V6 violation at registry.register: tool_id=%s auth_type=%s auth_level=%s allowed=%s", ...)`) and raise the main `RegistrationError` per Contract 2. Update the `register()` docstring's `Raises:` section to list the new V6 condition. Run T008–T011 to confirm all 4 pass and existing FR-038 backstop tests unchanged.
+- [X] T012 [US2] Extend `ToolRegistry.register()` in `src/kosax/tools/registry.py` by adding a V6 backstop block immediately after the existing V3 FR-038 drift check (per data-model.md §3.3). Import `_AUTH_TYPE_LEVEL_MAPPING` from `kosax.tools.models`. Logic: lookup `tool.auth_type`; if missing, emit structured ERROR log and raise `RegistrationError(tool.id, "V6 violation (FR-048): unknown auth_type ...")` per contracts/v6-error-contract.md §Contract 2 fail-closed variant; else if `tool.auth_level not in allowed`, emit structured log matching the V3 precedent format (`logger.error("V6 violation at registry.register: tool_id=%s auth_type=%s auth_level=%s allowed=%s", ...)`) and raise the main `RegistrationError` per Contract 2. Update the `register()` docstring's `Raises:` section to list the new V6 condition. Run T008–T011 to confirm all 4 pass and existing FR-038 backstop tests unchanged.
 
 **Checkpoint**: US2 complete. Defense-in-depth is now two-layered. V3 FR-038 pattern is preserved. Pydantic bypass via `model_construct` / `__setattr__` cannot land a V6-violating tool.
 

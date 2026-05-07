@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Spec 288 Codex P1 integration regression.
+// KOSAX-original — Spec 288 Codex P1 integration regression.
 //
 // Asserts the bridge between `buildTier1Handlers` and
 // `<KeybindingProviderSetup handlerOverrides={...}>`: once the bags are
@@ -279,7 +279,7 @@ describe('Tier 1 wiring — buildTier1Handlers × KeybindingProviderSetup', () =
     expect(probes.processExitCalls[0]).toBe(0)
   })
 
-  // KOSMOS Spec 1979 — Spec 033 permission-mode-cycle test removed.
+  // KOSAX Spec 1979 — Spec 033 permission-mode-cycle test removed.
 
   it('dispatches history-prev through the real navigator (setDraft fires)', async () => {
     const { probes } = await mount()

@@ -4,13 +4,13 @@
 Background
 ----------
 Pre-Audit-4 the Allow path in ``stdio._check_permission_gate`` wrote a JSON
-receipt under ``~/.kosmos/memdir/user/consent/<receipt_id>.json`` but never
-called ``kosmos.permissions.ledger.append``. Receipts therefore had no
+receipt under ``~/.kosax/memdir/user/consent/<receipt_id>.json`` but never
+called ``kosax.permissions.ledger.append``. Receipts therefore had no
 HMAC seal, no hash chain, no key_id — and the canonical Spec 033 PIPA
-ledger at ``~/.kosmos/consent_ledger.jsonl`` did not even exist on first
+ledger at ``~/.kosax/consent_ledger.jsonl`` did not even exist on first
 boot. Similarly the Revoke path used an ad-hoc unsealed
 ``hashlib.sha256(json.dumps(entry))`` plus a parallel
-``~/.kosmos/memdir/user/consent/ledger.jsonl`` file — entries forgeable.
+``~/.kosax/memdir/user/consent/ledger.jsonl`` file — entries forgeable.
 
 These tests verify the fix by:
 
@@ -37,8 +37,8 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.permissions.action_digest import compute_action_digest, generate_nonce
-from kosmos.permissions.ledger import append as ledger_append
+from kosax.permissions.action_digest import compute_action_digest, generate_nonce
+from kosax.permissions.ledger import append as ledger_append
 
 # ---------------------------------------------------------------------------
 # Fixture: isolated ledger + key + registry triple.
@@ -47,7 +47,7 @@ from kosmos.permissions.ledger import append as ledger_append
 
 @pytest.fixture()
 def isolated_ledger(tmp_path: Path) -> tuple[Path, Path, Path]:
-    """Spec 033 ledger triple in tmp_path — never touches ~/.kosmos."""
+    """Spec 033 ledger triple in tmp_path — never touches ~/.kosax."""
     keys_dir = tmp_path / "keys"
     keys_dir.mkdir(mode=0o700)
     key_path = keys_dir / "ledger.key"
@@ -217,7 +217,7 @@ class TestAuditP03RevokeLedger:
         import hashlib
         import hmac as hmac_lib
 
-        from kosmos.permissions.canonical_json import canonicalize
+        from kosax.permissions.canonical_json import canonicalize
 
         ledger_path, key_path, registry_path = isolated_ledger
 
@@ -258,7 +258,7 @@ class TestAuditP03RevokeLedger:
 
 def test_consent_ledger_record_action_field_default_allow() -> None:
     """Pre-WS3 records (no `action` field) deserialise as action='allow'."""
-    from kosmos.permissions.models import ConsentLedgerRecord
+    from kosax.permissions.models import ConsentLedgerRecord
 
     rec = ConsentLedgerRecord.model_validate(
         {

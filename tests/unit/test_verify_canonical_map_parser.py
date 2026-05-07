@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for ``kosmos.tools.verify_canonical_map``.
+"""Unit tests for ``kosax.tools.verify_canonical_map``.
 
 Asserts FR-008b regression criteria:
 - The canonical map has ≥10 entries.
@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.tools.verify_canonical_map import get_canonical_map, resolve_family
+from kosax.tools.verify_canonical_map import get_canonical_map, resolve_family
 
 # ---------------------------------------------------------------------------
 # Canonical expected mapping (per data-model.md § 2)

@@ -15,7 +15,7 @@ from uuid import UUID, uuid4
 import pytest
 from pydantic import ValidationError
 
-from kosmos.memdir.ministry_scope import (
+from kosax.memdir.ministry_scope import (
     CURRENT_SCOPE_VERSION,
     MINISTRY_CODES,
     MinistryOptIn,

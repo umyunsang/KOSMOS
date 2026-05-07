@@ -12,14 +12,14 @@
 The guard is invokable locally without spawning a CI job:
 
 ```bash
-cd /path/to/KOSMOS
+cd /path/to/KOSAX
 
 # 1. Baseline: confirm current main passes the guard.
 python3 scripts/cc_byte_identical_guard.py \
     --baseline specs/2639-s3-ui-guard/fixtures/cc-baseline-shas.txt \
     --whitelist tui/src/.cc-byte-identical-whitelist.yaml \
     --slice-root tui/src
-# expected: "PASS · scanned 454 files · 330 byte-identical · 60 whitelisted · 64 KOSMOS-only · 0 failed"
+# expected: "PASS · scanned 454 files · 330 byte-identical · 60 whitelisted · 64 KOSAX-only · 0 failed"
 
 # 2. Inject an intentional divergence into a byte-identical file.
 #    `tui/src/components/App.tsx` is byte-identical with CC and not in the
@@ -83,7 +83,7 @@ should be reviewed). When set, a SHA mismatch from the pin produces:
 
 | Case | Expected behaviour |
 |---|---|
-| KOSMOS-only file (e.g. `components/onboarding/Onboarding.tsx`) | PASS — counted as `kosmos_only`. |
+| KOSAX-only file (e.g. `components/onboarding/Onboarding.tsx`) | PASS — counted as `kosax_only`. |
 | CC-only file (e.g. `Feedback.tsx`) | Not present in slice → no enumeration, never failing. NEVER-PORT registry covers these (see `tui/src/components/.never-port.md`). |
 | Whitelist YAML malformed | exit 2 with `::error file=...whitelist.yaml::` annotation. |
 | Baseline fixture missing | exit 2 with `::error::baseline file not found:`. |

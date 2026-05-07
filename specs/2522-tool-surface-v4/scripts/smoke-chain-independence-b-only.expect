@@ -19,7 +19,7 @@ snapshot_pane "B-input-submitted"
 
 # Stage B4: Wait for first tool dispatch (resolve_location OR hira_hospital_search)
 # LLM may chain resolve_location → hira OR directly call hira if it knows coords.
-# Both are valid autonomous behaviors — KOSMOS does NOT mandate the chain.
+# Both are valid autonomous behaviors — KOSAX does NOT mandate the chain.
 # K-EXAONE high-effort reasoning: 30-90s → 120s deadline.
 wait_for_pane "(● resolve_location|● lookup.hira|hira_hospital_search)" 120
 snapshot_pane "B-first-tool"

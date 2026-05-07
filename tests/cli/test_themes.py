@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for kosmos.cli.themes — theme loading and default fallback."""
+"""Tests for kosax.cli.themes — theme loading and default fallback."""
 
 from __future__ import annotations
 
 import pytest
 from pydantic import ValidationError
 
-from kosmos.cli.themes import Theme, get_theme, load_theme
+from kosax.cli.themes import Theme, get_theme, load_theme
 
 
 class TestThemeModel:
@@ -48,26 +48,26 @@ class TestGetTheme:
 
 class TestLoadTheme:
     def test_returns_default_when_no_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.delenv("KOSMOS_THEME", raising=False)
-        monkeypatch.delenv("KOSMOS_CLI_THEME", raising=False)
+        monkeypatch.delenv("KOSAX_THEME", raising=False)
+        monkeypatch.delenv("KOSAX_CLI_THEME", raising=False)
         theme = load_theme()
         assert theme == get_theme("default")
 
-    def test_respects_kosmos_theme_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("KOSMOS_THEME", "dark")
-        monkeypatch.delenv("KOSMOS_CLI_THEME", raising=False)
+    def test_respects_kosax_theme_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("KOSAX_THEME", "dark")
+        monkeypatch.delenv("KOSAX_CLI_THEME", raising=False)
         theme = load_theme()
         assert theme == get_theme("dark")
 
-    def test_respects_kosmos_cli_theme_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.delenv("KOSMOS_THEME", raising=False)
-        monkeypatch.setenv("KOSMOS_CLI_THEME", "light")
+    def test_respects_kosax_cli_theme_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("KOSAX_THEME", raising=False)
+        monkeypatch.setenv("KOSAX_CLI_THEME", "light")
         theme = load_theme()
         assert theme == get_theme("light")
 
-    def test_kosmos_theme_takes_precedence(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("KOSMOS_THEME", "dark")
-        monkeypatch.setenv("KOSMOS_CLI_THEME", "light")
+    def test_kosax_theme_takes_precedence(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("KOSAX_THEME", "dark")
+        monkeypatch.setenv("KOSAX_CLI_THEME", "light")
         theme = load_theme()
         assert theme == get_theme("dark")
 
@@ -76,21 +76,21 @@ class TestLoadTheme:
     ) -> None:
         import logging  # noqa: PLC0415
 
-        monkeypatch.setenv("KOSMOS_THEME", "ultraviolet")
-        monkeypatch.delenv("KOSMOS_CLI_THEME", raising=False)
+        monkeypatch.setenv("KOSAX_THEME", "ultraviolet")
+        monkeypatch.delenv("KOSAX_CLI_THEME", raising=False)
         with caplog.at_level(logging.WARNING):
             theme = load_theme()
         assert theme == get_theme("default")
         assert any("ultraviolet" in rec.message for rec in caplog.records)
 
     def test_case_insensitive(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("KOSMOS_THEME", "DARK")
-        monkeypatch.delenv("KOSMOS_CLI_THEME", raising=False)
+        monkeypatch.setenv("KOSAX_THEME", "DARK")
+        monkeypatch.delenv("KOSAX_CLI_THEME", raising=False)
         theme = load_theme()
         assert theme == get_theme("dark")
 
     def test_whitespace_stripped(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("KOSMOS_THEME", "  light  ")
-        monkeypatch.delenv("KOSMOS_CLI_THEME", raising=False)
+        monkeypatch.setenv("KOSAX_THEME", "  light  ")
+        monkeypatch.delenv("KOSAX_CLI_THEME", raising=False)
         theme = load_theme()
         assert theme == get_theme("light")

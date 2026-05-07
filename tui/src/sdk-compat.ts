@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1633 P2 · @anthropic-ai/sdk compatibility shim.
+// KOSAX-original — Epic #1633 P2 · @anthropic-ai/sdk compatibility shim.
 //
 // Purpose: every TS/TSX file that used to import from '@anthropic-ai/sdk'
 // (or any sub-path like '/resources', '/resources/beta/messages/messages.mjs',
 // '/streaming.mjs', '/error') now imports from 'src/sdk-compat.js' instead.
-// The exports below are structural aliases into the KOSMOS-native
+// The exports below are structural aliases into the KOSAX-native
 // `tui/src/ipc/llmTypes.ts` type catalog, plus minimal stub classes for
 // the two runtime error types that propagate through catch sites.
 //
@@ -13,34 +13,34 @@
 // runtime code) and FR-001 (no Anthropic SDK in the runtime graph).
 
 import type {
-  KosmosContentBlockParam,
-  KosmosTextBlockParam,
-  KosmosToolUseBlockParam,
-  KosmosToolResultBlockParam,
-  KosmosMessageParam,
-  KosmosMessageStreamParams,
-  KosmosRawMessageStreamEvent,
-  KosmosToolDefinition,
-  KosmosUsage,
-  KosmosStopReason,
+  KosaxContentBlockParam,
+  KosaxTextBlockParam,
+  KosaxToolUseBlockParam,
+  KosaxToolResultBlockParam,
+  KosaxMessageParam,
+  KosaxMessageStreamParams,
+  KosaxRawMessageStreamEvent,
+  KosaxToolDefinition,
+  KosaxUsage,
+  KosaxStopReason,
 } from './ipc/llmTypes.js'
 
 // ---------------------------------------------------------------------------
 // Content block aliases (from the SDK's @anthropic-ai/sdk/resources/* tree)
 // ---------------------------------------------------------------------------
 
-export type ContentBlockParam = KosmosContentBlockParam
-export type TextBlockParam = KosmosTextBlockParam
-export type ToolUseBlock = KosmosToolUseBlockParam
-export type ToolUseBlockParam = KosmosToolUseBlockParam
-export type ToolResultBlockParam = KosmosToolResultBlockParam
-export type MessageParam = KosmosMessageParam
+export type ContentBlockParam = KosaxContentBlockParam
+export type TextBlockParam = KosaxTextBlockParam
+export type ToolUseBlock = KosaxToolUseBlockParam
+export type ToolUseBlockParam = KosaxToolUseBlockParam
+export type ToolResultBlockParam = KosaxToolResultBlockParam
+export type MessageParam = KosaxMessageParam
 
 /** Closed content-block representation (post-stream). Structurally identical
- * to the input-block form for KOSMOS purposes. */
-export type ContentBlock = KosmosContentBlockParam
+ * to the input-block form for KOSAX purposes. */
+export type ContentBlock = KosaxContentBlockParam
 
-// Image and thinking blocks are carried as opaque records — KOSMOS does not
+// Image and thinking blocks are carried as opaque records — KOSAX does not
 // introspect these but they must compile in the callers' type positions.
 export type Base64ImageSource = {
   type: 'base64'
@@ -65,34 +65,34 @@ export type ThinkingBlockParam = ThinkingBlock
 // Beta-prefixed aliases (SDK's @anthropic-ai/sdk/resources/beta/* tree)
 // ---------------------------------------------------------------------------
 //
-// All Beta* names resolve to the same Kosmos structures — the "beta"
+// All Beta* names resolve to the same Kosax structures — the "beta"
 // namespace existed in CC because Anthropic shipped thinking + tool-use
-// behind a beta flag; KOSMOS merges them into a single surface.
+// behind a beta flag; KOSAX merges them into a single surface.
 
-export type BetaContentBlock = KosmosContentBlockParam
-export type BetaContentBlockParam = KosmosContentBlockParam
-export type BetaTextBlockParam = KosmosTextBlockParam
+export type BetaContentBlock = KosaxContentBlockParam
+export type BetaContentBlockParam = KosaxContentBlockParam
+export type BetaTextBlockParam = KosaxTextBlockParam
 export type BetaImageBlockParam = ImageBlockParam
-export type BetaToolResultBlockParam = KosmosToolResultBlockParam
-export type BetaToolUseBlock = KosmosToolUseBlockParam
-export type BetaToolUseBlockParam = KosmosToolUseBlockParam
-export type BetaMessageParam = KosmosMessageParam
+export type BetaToolResultBlockParam = KosaxToolResultBlockParam
+export type BetaToolUseBlock = KosaxToolUseBlockParam
+export type BetaToolUseBlockParam = KosaxToolUseBlockParam
+export type BetaMessageParam = KosaxMessageParam
 export type BetaMessage = {
   id: string
   role: 'assistant'
   model: string
-  content: KosmosContentBlockParam[]
-  stop_reason: KosmosStopReason
-  usage: KosmosUsage
+  content: KosaxContentBlockParam[]
+  stop_reason: KosaxStopReason
+  usage: KosaxUsage
 }
-export type BetaMessageStreamParams = KosmosMessageStreamParams
-export type BetaMessageStreamEvent = KosmosRawMessageStreamEvent
-export type BetaRawMessageStreamEvent = KosmosRawMessageStreamEvent
-export type BetaMessageDeltaUsage = KosmosUsage
-export type BetaUsage = KosmosUsage
-export type BetaStopReason = KosmosStopReason
-export type BetaTool = KosmosToolDefinition
-export type BetaToolUnion = KosmosToolDefinition
+export type BetaMessageStreamParams = KosaxMessageStreamParams
+export type BetaMessageStreamEvent = KosaxRawMessageStreamEvent
+export type BetaRawMessageStreamEvent = KosaxRawMessageStreamEvent
+export type BetaMessageDeltaUsage = KosaxUsage
+export type BetaUsage = KosaxUsage
+export type BetaStopReason = KosaxStopReason
+export type BetaTool = KosaxToolDefinition
+export type BetaToolUnion = KosaxToolDefinition
 export type BetaToolChoiceAuto = { type: 'auto' }
 export type BetaToolChoiceTool = { type: 'tool'; name: string }
 export type BetaJSONOutputFormat = { type: 'json_object' }
@@ -101,14 +101,14 @@ export type BetaRequestDocumentBlock = Record<string, unknown>
 
 // Some call sites import `Usage` via alias (`BetaUsage as Usage`). Keep a
 // direct alias too.
-export type Usage = KosmosUsage
+export type Usage = KosaxUsage
 
 // ---------------------------------------------------------------------------
 // Streaming generator (SDK's @anthropic-ai/sdk/streaming.mjs)
 // ---------------------------------------------------------------------------
 //
 // The SDK's Stream<T> is an async iterable with a synchronous abort hook.
-// KOSMOS streams come from the Spec 032 IPC bridge, which naturally provides
+// KOSAX streams come from the Spec 032 IPC bridge, which naturally provides
 // AsyncIterable. We expose a structurally compatible shape.
 
 export interface Stream<T> extends AsyncIterable<T> {
@@ -119,7 +119,7 @@ export interface Stream<T> extends AsyncIterable<T> {
 // Client + ClientOptions (SDK's top-level `Anthropic` class)
 // ---------------------------------------------------------------------------
 //
-// Any `new Anthropic(...)` call site is dead in KOSMOS because LLM traffic
+// Any `new Anthropic(...)` call site is dead in KOSAX because LLM traffic
 // goes through `tui/src/ipc/llmClient.ts` via the stdio bridge. If one
 // remains, it throws at construction time — fail-closed.
 
@@ -157,7 +157,7 @@ export default Anthropic
 // Error classes (SDK's @anthropic-ai/sdk/error)
 // ---------------------------------------------------------------------------
 //
-// CC code catches these by instanceof. KOSMOS preserves the class hierarchy
+// CC code catches these by instanceof. KOSAX preserves the class hierarchy
 // so `catch (err) { if (err instanceof APIError) ... }` still compiles and
 // matches at runtime when the wire layer rethrows these shapes.
 

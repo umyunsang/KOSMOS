@@ -44,16 +44,16 @@ export function verifyBootRegistry(
 Korean diagnostic for the `offendingTool` failure case:
 
 ```text
-[KOSMOS][bootGuard] 도구 '<tool_id>' 등록 검증 실패. 누락 필드: <missingFields.join(', ')>.
-KOSMOS는 9-member ToolDef 계약을 준수하는 도구만 부팅 시점에 받아들입니다.
+[KOSAX][bootGuard] 도구 '<tool_id>' 등록 검증 실패. 누락 필드: <missingFields.join(', ')>.
+KOSAX는 9-member ToolDef 계약을 준수하는 도구만 부팅 시점에 받아들입니다.
 참조: specs/2294-5-primitive-align/contracts/primitive-shape.md
 ```
 
 Korean diagnostic for missing citation:
 
 ```text
-[KOSMOS][bootGuard] 어댑터 '<tool_id>'에 real_classification_url 또는 policy_authority가 비어 있습니다.
-KOSMOS는 정책 인용을 발명하지 않습니다 — 기관이 공개한 URL이 필수입니다.
+[KOSAX][bootGuard] 어댑터 '<tool_id>'에 real_classification_url 또는 policy_authority가 비어 있습니다.
+KOSAX는 정책 인용을 발명하지 않습니다 — 기관이 공개한 URL이 필수입니다.
 참조: docs/security/tool-template-security-spec-v1.md, AGENTS.md § CORE THESIS
 ```
 

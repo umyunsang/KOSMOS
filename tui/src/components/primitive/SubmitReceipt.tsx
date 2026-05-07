@@ -1,5 +1,5 @@
 /**
- * KOSMOS-original — SubmitReceipt renderer.
+ * KOSAX-original — SubmitReceipt renderer.
  *
  * Success receipt shown after a submit primitive completes.
  * Displays confirmation id, timestamp, and summary.

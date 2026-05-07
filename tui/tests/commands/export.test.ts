@@ -30,7 +30,7 @@ describe('executeExport (FR-032)', () => {
   it('returns the provided turns unchanged', () => {
     const turns: ConversationTurn[] = [
       { role: 'citizen', content: '안녕하세요', timestamp: '2026-04-25T00:00:00Z' },
-      { role: 'assistant', content: 'KOSMOS 응답', timestamp: '2026-04-25T00:00:01Z' },
+      { role: 'assistant', content: 'KOSAX 응답', timestamp: '2026-04-25T00:00:01Z' },
     ];
     const result = executeExport(turns, [], []);
     expect(result.turns).toHaveLength(2);

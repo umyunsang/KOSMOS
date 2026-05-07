@@ -25,7 +25,7 @@ status: draft
 
 **Purpose**: Establish the index page and document the shared page template so all per-adapter pages can follow it consistently.
 
-- [ ] T001 Write `docs/tools/README.md` index — table of all 7 tools (tool ID, Korean name, provider, one-line description), links to each adapter page, Authentication section (`KOSMOS_DATA_GO_KR_API_KEY`), shared error code summary referencing `koroad.md`
+- [ ] T001 Write `docs/tools/README.md` index — table of all 7 tools (tool ID, Korean name, provider, one-line description), links to each adapter page, Authentication section (`KOSAX_DATA_GO_KR_API_KEY`), shared error code summary referencing `koroad.md`
 - [ ] T002 [P] Verify `docs/tools/kma.md` has no inbound links in the codebase before deprecating (`grep -r "kma.md" docs/ src/ tests/`)
 
 **Checkpoint**: `docs/tools/README.md` exists and lists all 7 tools. Inbound-link audit for `kma.md` complete.
@@ -36,14 +36,14 @@ status: draft
 
 **Goal**: Correct all errors in `docs/tools/koroad.md`, expand the `GugunCode` table to include Busan Haeundae, and make the full error code table available as the shared reference.
 
-**Independent Test**: Open `koroad.md` and confirm: (1) auth field shows `KOSMOS_DATA_GO_KR_API_KEY`, (2) `gu_gun` Required column shows `Yes`, (3) `GugunCode` table includes `BUSAN_HAEUNDAE = 350`, (4) full error code table present.
+**Independent Test**: Open `koroad.md` and confirm: (1) auth field shows `KOSAX_DATA_GO_KR_API_KEY`, (2) `gu_gun` Required column shows `Yes`, (3) `GugunCode` table includes `BUSAN_HAEUNDAE = 350`, (4) full error code table present.
 
 ### Implementation for User Story 1
 
-- [ ] T003 [US1] Fix auth field in `docs/tools/koroad.md` Overview table: change `KOSMOS_KOROAD_API_KEY` → `KOSMOS_DATA_GO_KR_API_KEY`
+- [ ] T003 [US1] Fix auth field in `docs/tools/koroad.md` Overview table: change `KOSAX_KOROAD_API_KEY` → `KOSAX_DATA_GO_KR_API_KEY`
 - [ ] T004 [US1] Fix `gu_gun` optionality in `docs/tools/koroad.md` Input Schema table: change Required column from `No` → `Yes`; remove incorrect "omit to query entire province" note
 - [ ] T005 [US1] Add `resultCode="03"` → empty hotspots list (not error) note to Wire Format Quirks section in `docs/tools/koroad.md`
-- [ ] T006 [US1] Expand `GugunCode` table in `docs/tools/koroad.md`: add all 25 Seoul gu entries, all 16 Busan gu entries (must include `BUSAN_HAEUNDAE = 350`), all 5 Daejeon entries, and one anchor entry per remaining sido; add note linking to `src/kosmos/tools/koroad/code_tables.py` for the complete 250+ entry list
+- [ ] T006 [US1] Expand `GugunCode` table in `docs/tools/koroad.md`: add all 25 Seoul gu entries, all 16 Busan gu entries (must include `BUSAN_HAEUNDAE = 350`), all 5 Daejeon entries, and one anchor entry per remaining sido; add note linking to `src/kosax/tools/koroad/code_tables.py` for the complete 250+ entry list
 - [ ] T007 [US1] Add full shared error code table to `docs/tools/koroad.md` Error Codes section — resultCodes `"00"` through `"32"` matching spec Technical Design § Error code table
 - [ ] T008 [US1] Add cross-validation rules note to `docs/tools/koroad.md` Input Schema — clarify that `_validate_legacy_sido` uses `SearchYearCd.year` property (extracted from enum name suffix, e.g., `GENERAL_2024 → 2024`)
 - [ ] T009 [US1] Add runnable Python code example to `docs/tools/koroad.md` using `asyncio.run()` that passes with `uv run python` (uses fixture, no live API call)
@@ -80,7 +80,7 @@ status: draft
 
 ### Implementation for User Story 3
 
-- [ ] T017 [US3] Create `docs/tools/road-risk-score.md` — Overview table (endpoint `(none — composite)`, provider `KOSMOS (composite)`, rate limit 10/min, cache TTL 300 s, Personal Data No, `is_concurrency_safe: Yes`)
+- [ ] T017 [US3] Create `docs/tools/road-risk-score.md` — Overview table (endpoint `(none — composite)`, provider `KOSAX (composite)`, rate limit 10/min, cache TTL 300 s, Personal Data No, `is_concurrency_safe: Yes`)
 - [ ] T018 [US3] Add Architecture section to `docs/tools/road-risk-score.md` — fan-out via `asyncio.gather(return_exceptions=True)` calling `koroad_accident_search`, `kma_weather_alert_status`, `kma_current_observation` in parallel; note that date/time for KMA observation is derived internally from `datetime.now(UTC)` — callers cannot specify them; links to inner adapter docs
 - [ ] T019 [US3] Add Input Schema section to `docs/tools/road-risk-score.md` — full `RoadRiskScoreInput` field table (`si_do`, `gu_gun`, `search_year_cd`, `nx`, `ny`)
 - [ ] T020 [US3] Add Output Schema section to `docs/tools/road-risk-score.md` — full `RoadRiskScoreOutput` field table; note `temperature_c: float | None` is `None` when observation fails; note `summary` is Korean-language prose for citizen display, not for programmatic parsing
@@ -121,10 +121,10 @@ status: draft
 ### Implementation for User Story 5
 
 - [ ] T031 [P] [US5] Create `docs/tools/kma-alert.md` — migrate `kma_weather_alert_status` content from `docs/tools/kma.md`; add Overview table (`is_concurrency_safe: Yes`); add `resultCode="03"` → empty list note to Wire Format Quirks; add `warn_var` codes table (1=강풍…11=폭염); add `warn_stress` codes (0=주의보/watch, 1=경보/warning); condensed Error Codes section linking to `koroad.md`
-- [ ] T032 [P] [US5] Create `docs/tools/kma-observation.md` — migrate `kma_current_observation` content from `docs/tools/kma.md`; add full Grid Coordinates section from `src/kosmos/tools/kma/grid_coords.py` (use `<details>` block for the full 80+ row table, major cities visible by default); add category-to-field pivot mapping table (T1H→`t1h`, RN1→`rn1`, etc.); note `resultCode="03"` does NOT apply — empty items raises `ToolExecutionError`; note `base_time` rounds down to `HH00`; note `rn1` sentinel `"-"` normalized to `0.0`
+- [ ] T032 [P] [US5] Create `docs/tools/kma-observation.md` — migrate `kma_current_observation` content from `docs/tools/kma.md`; add full Grid Coordinates section from `src/kosax/tools/kma/grid_coords.py` (use `<details>` block for the full 80+ row table, major cities visible by default); add category-to-field pivot mapping table (T1H→`t1h`, RN1→`rn1`, etc.); note `resultCode="03"` does NOT apply — empty items raises `ToolExecutionError`; note `base_time` rounds down to `HH00`; note `rn1` sentinel `"-"` normalized to `0.0`
 - [ ] T033 [P] [US5] Create `docs/tools/kma-pre-warning.md` — Overview table (endpoint `http://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrPwnList`, rate limit 10/min, cache TTL 300 s); Input Schema (`KmaPreWarningInput`); Output Schema (`KmaPreWarningOutput` / `PreWarningItem`); camelCase wire mapping (`stnId→stn_id`, `tmFc→tm_fc`, `tmSeq→tm_seq`); Station IDs section (known: `"108"` Seoul, `"159"` Busan; full table deferred — reference tracking issue); Wire Format Quirks (`resultCode="03"` = calm weather, title format example); condensed Error Codes section
 - [ ] T034 [US5] Replace `docs/tools/kma.md` contents with deprecation redirect note pointing to `kma-alert.md` and `kma-observation.md`
-- [ ] T035 [US5] Spot-check all 7 doc Overview tables against current `GovAPITool` definitions in source (`src/kosmos/tools/`) — verify endpoint URL, rate_limit_per_minute, cache_ttl_seconds, requires_auth, is_personal_data match exactly
+- [ ] T035 [US5] Spot-check all 7 doc Overview tables against current `GovAPITool` definitions in source (`src/kosax/tools/`) — verify endpoint URL, rate_limit_per_minute, cache_ttl_seconds, requires_auth, is_personal_data match exactly
 
 **Checkpoint**: US-005 acceptance satisfied — all 7 docs have an Overview table; values verified against source code. `kma.md` contains only a redirect note.
 
@@ -139,7 +139,7 @@ status: draft
 - [ ] T038 [P] Verify cross-reference: `road-risk-score.md` links to `koroad.md`, `kma-alert.md`, and `kma-observation.md`
 - [ ] T039 [P] Verify `docs/tools/README.md` index lists all 7 tools with one-line descriptions
 - [ ] T040 Validate all Wire Format Quirks coverage from spec Acceptance Criteria — walk the checklist: KOROAD single-item dict normalization, KMA single-item dict normalization, XML/JSON guard, `resultCode="03"` semantics, `base_time` rounding (observation), `base_time` must-end-in-30 (ultra-short-term), `base_time` valid values (short-term), `rn1` sentinel normalization, KOROAD legacy sido codes, `road_risk_score` fan-out/partial-failure/scoring
-- [ ] T041 Structural validation of all code examples — run each `asyncio.run()` snippet with `KOSMOS_DATA_GO_KR_API_KEY` unset; confirm failure mode is `ConfigurationError` (not `ModuleNotFoundError` or `SyntaxError`)
+- [ ] T041 Structural validation of all code examples — run each `asyncio.run()` snippet with `KOSAX_DATA_GO_KR_API_KEY` unset; confirm failure mode is `ConfigurationError` (not `ModuleNotFoundError` or `SyntaxError`)
 - [ ] T042 Verify `kma-observation.md § Grid Coordinates` contains `nx=67, ny=100` for Daejeon (confirms `grid_coords.py: "대전": (67, 100)`)
 
 ---

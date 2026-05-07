@@ -42,7 +42,7 @@ import { isEnvTruthy } from '../utils/envUtils.js'
 import { isReplModeEnabled } from '../tools/REPLTool/constants.js'
 import { feature } from 'bun:bundle'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from 'src/services/analytics/growthbook.js'
-// KOSMOS: utils/betas.js deleted by Spec 1633 P1. shouldUseGlobalCacheScope → false (no Anthropic global cache).
+// KOSAX: utils/betas.js deleted by Spec 1633 P1. shouldUseGlobalCacheScope → false (no Anthropic global cache).
 const shouldUseGlobalCacheScope = (): false => false
 import { isForkSubagentEnabled } from '../tools/AgentTool/forkSubagent.js'
 import {
@@ -106,13 +106,13 @@ export const CLAUDE_CODE_DOCS_MAP_URL =
 export const SYSTEM_PROMPT_DYNAMIC_BOUNDARY =
   '__SYSTEM_PROMPT_DYNAMIC_BOUNDARY__'
 
-// KOSMOS-1633 P2: AGENTS.md "CC + 2 swaps" — LLM swap to LG AI Research's
+// KOSAX-1633 P2: AGENTS.md "CC + 2 swaps" — LLM swap to LG AI Research's
 // K-EXAONE on FriendliAI. The CC frontier-model constants previously named
 // 'Claude Opus 4.6' / 'claude-opus-4-6' / 'claude-sonnet-4-6' /
 // 'claude-haiku-4-5-20251001'; emitting any of those into the system prompt
 // caused K-EXAONE to echo the names back to citizens who asked
 // meta-identity questions ("너 어떤 모델이야?"). The constants are now
-// KOSMOS-canonical so every consumer (env-info builder, fast-mode line)
+// KOSAX-canonical so every consumer (env-info builder, fast-mode line)
 // references the actual model serving the citizen.
 const FRONTIER_MODEL_NAME = 'K-EXAONE'
 
@@ -206,7 +206,7 @@ function getSimpleDoingTasksSection(): string {
   ]
 
   const userHelpSubitems = [
-    `/help: Get help with using KOSMOS`,
+    `/help: Get help with using KOSAX`,
     `To give feedback, users should ${MACRO.ISSUES_EXPLAINER}`,
   ]
 
@@ -425,7 +425,7 @@ function getSimpleToneAndStyleSection(): string {
       ? null
       : `Your responses should be short and concise.`,
     `When referencing specific functions or pieces of code include the pattern file_path:line_number to allow the user to easily navigate to the source code location.`,
-    `When referencing GitHub issues or pull requests, use the owner/repo#123 format (e.g. umyunsang/KOSMOS#100) so they render as clickable links.`,
+    `When referencing GitHub issues or pull requests, use the owner/repo#123 format (e.g. umyunsang/KOSAX#100) so they render as clickable links.`,
     `Do not use a colon before tool calls. Your tool calls may not be shown directly in the output, so text like "Let me read the file:" followed by a read tool call should just be "Let me read the file." with a period.`,
   ].filter(item => item !== null)
 
@@ -440,7 +440,7 @@ export async function getSystemPrompt(
 ): Promise<string[]> {
   if (isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)) {
     return [
-      `You are KOSMOS, the open-source client-side caller for Korea's national AX channels (powered by ${FRONTIER_MODEL_NAME}).\n\nCWD: ${getCwd()}\nDate: ${getSessionStartDate()}`,
+      `You are KOSAX, the open-source client-side caller for Korea's national AX channels (powered by ${FRONTIER_MODEL_NAME}).\n\nCWD: ${getCwd()}\nDate: ${getSessionStartDate()}`,
     ]
   }
 
@@ -682,14 +682,14 @@ export async function computeSimpleEnvInfo(
     `OS Version: ${unameSR}`,
     modelDescription,
     knowledgeCutoffMessage,
-    // KOSMOS-1633 P2 — replaces three CC env-block lines that previously
+    // KOSAX-1633 P2 — replaces three CC env-block lines that previously
     // surfaced the Claude 4.5/4.6 model-family IDs, claude.ai web app, and
-    // a Fast-mode UX referencing Claude Opus 4.6. KOSMOS is single-LLM
+    // a Fast-mode UX referencing Claude Opus 4.6. KOSAX is single-LLM
     // (LG AI Research K-EXAONE on FriendliAI), single-surface (terminal
     // CLI + planned VS Code companion), and Fast mode reuses the same
     // K-EXAONE model with faster output (no model swap).
-    `KOSMOS is powered by ${FRONTIER_MODEL_NAME} (LG AI Research, served via FriendliAI Serverless) and is the open-source client-side caller for Korea's national AX channels — see AGENTS.md § CORE THESIS.`,
-    `KOSMOS is available as a CLI in the terminal. There is no web app and no third-party desktop app; the optional companion is the VS Code extension only.`,
+    `KOSAX is powered by ${FRONTIER_MODEL_NAME} (LG AI Research, served via FriendliAI Serverless) and is the open-source client-side caller for Korea's national AX channels — see AGENTS.md § CORE THESIS.`,
+    `KOSAX is available as a CLI in the terminal. There is no web app and no third-party desktop app; the optional companion is the VS Code extension only.`,
     `Fast mode reuses the same ${FRONTIER_MODEL_NAME} model with faster output. It does NOT switch to a different model. It can be toggled with /fast.`,
   ].filter(item => item !== null)
 
@@ -746,7 +746,7 @@ export function getUnameSR(): string {
   return `${osType()} ${osRelease()}`
 }
 
-export const DEFAULT_AGENT_PROMPT = `You are an agent for KOSMOS, the open-source client-side caller for Korea's national AX channels. Given the user's message, you should use the tools available to complete the task. Complete the task fully—don't gold-plate, but don't leave it half-done. When you complete the task, respond with a concise report covering what was done and any key findings — the caller will relay this to the user, so it only needs the essentials.`
+export const DEFAULT_AGENT_PROMPT = `You are an agent for KOSAX, the open-source client-side caller for Korea's national AX channels. Given the user's message, you should use the tools available to complete the task. Complete the task fully—don't gold-plate, but don't leave it half-done. When you complete the task, respond with a concise report covering what was done and any key findings — the caller will relay this to the user, so it only needs the essentials.`
 
 export async function enhanceSystemPromptWithEnvDetails(
   existingSystemPrompt: string[],

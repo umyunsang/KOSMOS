@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Concurrent tool dispatch tests for the KOSMOS Query Engine.
+"""Concurrent tool dispatch tests for the KOSAX Query Engine.
 
 Tests cover:
 - dispatch_tool_calls() directly (unit tests)
@@ -18,18 +18,18 @@ import time
 
 import pytest
 
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.events import StopReason
-from kosmos.engine.models import QueryContext, QueryState
-from kosmos.engine.query import dispatch_tool_calls, query
+from kosax.engine.config import QueryEngineConfig
+from kosax.engine.events import StopReason
+from kosax.engine.models import QueryContext, QueryState
+from kosax.engine.query import dispatch_tool_calls, query
 
 # LLMClient must be imported (not just under TYPE_CHECKING) so that
 # QueryContext.model_rebuild() can resolve the forward reference.
-from kosmos.llm.client import LLMClient  # noqa: F401
-from kosmos.llm.models import ChatMessage, FunctionCall, ToolCall
-from kosmos.llm.usage import UsageTracker
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.registry import ToolRegistry
+from kosax.llm.client import LLMClient  # noqa: F401
+from kosax.llm.models import ChatMessage, FunctionCall, ToolCall
+from kosax.llm.usage import UsageTracker
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.registry import ToolRegistry
 
 QueryContext.model_rebuild()
 
@@ -61,7 +61,7 @@ def _make_ctx(
     state = QueryState(
         usage=UsageTracker(budget=100_000),
         messages=[
-            ChatMessage(role="system", content="You are KOSMOS."),
+            ChatMessage(role="system", content="You are KOSAX."),
             ChatMessage(role="user", content="test"),
         ],
     )

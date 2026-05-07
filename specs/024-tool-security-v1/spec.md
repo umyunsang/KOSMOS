@@ -3,13 +3,13 @@
 **Feature Branch**: `024-tool-security-v1`
 **Created**: 2026-04-17
 **Status**: Draft
-**Input**: Epic #612 — synthesize 6 security research lanes (Epic #605) into a single normative spec for the KOSMOS Tool Template, hardened to a level that a Korean ministry reviewer can accept for a PR/trial partnership.
+**Input**: Epic #612 — synthesize 6 security research lanes (Epic #605) into a single normative spec for the KOSAX Tool Template, hardened to a level that a Korean ministry reviewer can accept for a PR/trial partnership.
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Ministry auditor validates KOSMOS tool-call behavior (Priority: P1)
+### User Story 1 - Ministry auditor validates KOSAX tool-call behavior (Priority: P1)
 
-A government security reviewer (e.g., 부처 정보보호 담당관 or KISA 평가위원) receives KOSMOS as a candidate system for a public-service pilot. The reviewer must be able to answer, from documentation alone, three questions: (1) what minimum authentication strength is required for each of the 8 canonical tools, (2) what immutable evidence is produced per tool call, and (3) how personal information handling responsibilities are split between the citizen, KOSMOS, and the ministry. The reviewer completes this assessment without reading source code and without requiring Q&A with the KOSMOS team.
+A government security reviewer (e.g., 부처 정보보호 담당관 or KISA 평가위원) receives KOSAX as a candidate system for a public-service pilot. The reviewer must be able to answer, from documentation alone, three questions: (1) what minimum authentication strength is required for each of the 8 canonical tools, (2) what immutable evidence is produced per tool call, and (3) how personal information handling responsibilities are split between the citizen, KOSAX, and the ministry. The reviewer completes this assessment without reading source code and without requiring Q&A with the KOSAX team.
 
 **Why this priority**: This is the binding outcome of the epic. If a ministry reviewer cannot self-serve answers to these three questions, the spec has failed its purpose regardless of how well the underlying controls are designed.
 
@@ -23,13 +23,13 @@ A government security reviewer (e.g., 부처 정보보호 담당관 or KISA 평�
 
 ---
 
-### User Story 2 - Citizen delegates authority to KOSMOS to call a ministry API (Priority: P1)
+### User Story 2 - Citizen delegates authority to KOSAX to call a ministry API (Priority: P1)
 
-A citizen interacts with KOSMOS to accomplish a government-service task that requires an authenticated call to a ministry API (e.g., 긴급복지 신청 자격 확인, 주민등록등본 발급 의뢰). The citizen's delegation must be expressible, time-bounded, scope-limited, and revocable without bypassing PASS/공동인증서's TEE-bound authentication constraints. The delegation protocol must be grounded in OAuth 2.1 practices and W3C Verifiable Credentials such that a future ministry MCP/API endpoint can adopt the same protocol without KOSMOS-specific coupling.
+A citizen interacts with KOSAX to accomplish a government-service task that requires an authenticated call to a ministry API (e.g., 긴급복지 신청 자격 확인, 주민등록등본 발급 의뢰). The citizen's delegation must be expressible, time-bounded, scope-limited, and revocable without bypassing PASS/공동인증서's TEE-bound authentication constraints. The delegation protocol must be grounded in OAuth 2.1 practices and W3C Verifiable Credentials such that a future ministry MCP/API endpoint can adopt the same protocol without KOSAX-specific coupling.
 
 **Why this priority**: Every non-trivial public-service tool call requires delegated authority. Without a documented protocol, the spec reduces to a catalog of controls rather than a usable platform contract. This is the second core asset for ministry PR positioning per Lane 4.
 
-**Independent Test**: A standards-literate reviewer reads the OpenAPI 3.0 skeleton plus the spec's delegation section and confirms it can be implemented by a ministry that adopts OAuth 2.1 + mTLS without depending on any KOSMOS proprietary artifact. The test passes if the skeleton validates under an OpenAPI 3.0 linter and references only IETF RFCs, W3C recommendations, or Korean statutory artifacts.
+**Independent Test**: A standards-literate reviewer reads the OpenAPI 3.0 skeleton plus the spec's delegation section and confirms it can be implemented by a ministry that adopts OAuth 2.1 + mTLS without depending on any KOSAX proprietary artifact. The test passes if the skeleton validates under an OpenAPI 3.0 linter and references only IETF RFCs, W3C recommendations, or Korean statutory artifacts.
 
 **Acceptance Scenarios**:
 
@@ -39,9 +39,9 @@ A citizen interacts with KOSMOS to accomplish a government-service task that req
 
 ---
 
-### User Story 3 - Tool-adapter developer ships a new KOSMOS tool through PR review (Priority: P2)
+### User Story 3 - Tool-adapter developer ships a new KOSAX tool through PR review (Priority: P2)
 
-A KOSMOS contributor (human or agent) adds or modifies a tool adapter. Before opening the PR, they consult the unified tool-adapters PR checklist and can self-verify compliance against all six security domains (Korean legal, international standards, LLM/tool threats, identity/delegation, public-sector precedent, supply-chain/audit) through a single checklist pass. A reviewer can complete the checklist-mediated review in under 30 minutes for a standard adapter.
+A KOSAX contributor (human or agent) adds or modifies a tool adapter. Before opening the PR, they consult the unified tool-adapters PR checklist and can self-verify compliance against all six security domains (Korean legal, international standards, LLM/tool threats, identity/delegation, public-sector precedent, supply-chain/audit) through a single checklist pass. A reviewer can complete the checklist-mediated review in under 30 minutes for a standard adapter.
 
 **Why this priority**: The checklist is the operational instrument that prevents drift between the normative spec and shipped code over time. Without it, the spec decays into aspirational prose. Lower priority than P1 stories because it is enabling infrastructure rather than a direct ministry-facing deliverable, but still P2 because without it the epic's controls are unenforceable.
 
@@ -60,9 +60,9 @@ A KOSMOS contributor (human or agent) adds or modifies a tool adapter. Before op
 - **Delegation revocation race**: A citizen revokes delegation while an in-flight tool call is mid-execution. The spec must declare whether the call completes, is aborted, or is completed-then-voided, and how the audit record reflects the citizen's revocation intent.
 - **AAL downgrade attempts**: A tool-call request arrives with a credential bound to a lower AAL than the tool's `TOOL_MIN_AAL`. The fail-closed invariant applies, but the spec must also state that the audit record for the rejected call is retained at the same evidentiary level as successful calls.
 - **`check_eligibility` public_path**: For pure rules-only eligibility checks over public inputs, the spec permits an AAL1 `public_path`. The spec must state the exact conditions under which this fallback is allowed and require an explicit marker in the audit record so the path cannot be confused post-hoc with an authenticated call.
-- **LLM synthesis carve-out**: When KOSMOS's synthesis stage combines citizen PII with ministry API response text, the processor/controller boundary shifts mid-session. The spec must declare the carve-out explicitly and require the consent record to separate "forward raw response" consent from "synthesize response" consent.
+- **LLM synthesis carve-out**: When KOSAX's synthesis stage combines citizen PII with ministry API response text, the processor/controller boundary shifts mid-session. The spec must declare the carve-out explicitly and require the consent record to separate "forward raw response" consent from "synthesize response" consent.
 - **SBOM divergence**: A dependency bump in `uv.lock` diverges from the last-signed SBOM. The spec must state the build-gate behavior (fail fast) and the review path (force-regenerate with a signed note, not silent override).
-- **Stale token reuse**: A delegation token expires or is revoked but remains cached in a long-running KOSMOS session. The spec must require token introspection per RFC 7662 at a minimum cadence and on every irreversible-action tool call regardless of cache state.
+- **Stale token reuse**: A delegation token expires or is revoked but remains cached in a long-running KOSAX session. The spec must require token introspection per RFC 7662 at a minimum cadence and on every irreversible-action tool call regardless of cache state.
 
 ## Requirements *(mandatory)*
 
@@ -86,7 +86,7 @@ A KOSMOS contributor (human or agent) adds or modifies a tool adapter. Before op
 
 - **FR-009**: The `ToolCallAuditRecord` pydantic model and its JSON Schema (Draft 2020-12) MUST include at minimum the following fields: `tool_id`, `session_id`, `caller_identity`, `permission_decision`, `input_hash`, `output_hash`, `sanitized_output_hash` (nullable, string), `timestamp` (RFC 3339 with timezone), `cost_tokens`, `rate_limit_bucket`, `auth_level_presented`, `pipa_class`, `dpa_reference`, and `merkle_leaf_id`.
 - **FR-010**: The spec MUST explicitly declare which hash the Merkle chain covers. The declaration MUST state that the Merkle leaf binds `sanitized_output_hash` when present and `output_hash` otherwise, with the chosen variant recorded in a dedicated `merkle_covered_hash` field so downstream verifiers do not need to re-examine the record's content to know which hash is authoritative.
-- **FR-011**: Audit retention MUST be reconciled between PIPA 안전조치 고시 §8 (2 years) and 전자정부법 §33 (5 years) by binding to the longer period (5 years) as the default, with a citation explaining that KOSMOS chooses the binding maximum to satisfy both statutes simultaneously.
+- **FR-011**: Audit retention MUST be reconciled between PIPA 안전조치 고시 §8 (2 years) and 전자정부법 §33 (5 years) by binding to the longer period (5 years) as the default, with a citation explaining that KOSAX chooses the binding maximum to satisfy both statutes simultaneously.
 - **FR-012**: Mock and live adapters MUST produce audit records against the identical schema. The spec MUST forbid transport-layer divergence in the record shape; only the `adapter_mode` field may differ to distinguish mock from live.
 
 **Identity, consent, and delegation**
@@ -94,7 +94,7 @@ A KOSMOS contributor (human or agent) adds or modifies a tool adapter. Before op
 - **FR-013**: The spec MUST include an OpenAPI 3.0 skeleton for an `/agent-delegation` endpoint family covering consent creation, token issuance, token refresh, token introspection, and revocation, grounded in RFC 8628, RFC 8693, RFC 9068, RFC 7636, RFC 7662, and RFC 7009.
 - **FR-014**: Every consent record issued through `/agent-delegation` MUST carry a `dpa_reference` field; the field MUST be non-null whenever the requested scope touches a PII-bound tool, closing the PIPA §26 위탁 documentation gap.
 - **FR-015**: Every consent record MUST also carry a `synthesis_consent: bool` field that is separate from the processing consent, reflecting the PIPA role carve-out whereby "forwarding a ministry response" and "synthesizing a response using LLM-combined PII" are distinct processing purposes.
-- **FR-016**: The spec MUST document that PASS and 공동인증서 are TEE-bound and cannot be programmatically exported to KOSMOS, and MUST explain that the delegation protocol intentionally does not attempt to bypass this constraint but instead builds on OAuth 2.1 + Verifiable Credentials to achieve equivalent assurance for agent-mediated actions.
+- **FR-016**: The spec MUST document that PASS and 공동인증서 are TEE-bound and cannot be programmatically exported to KOSAX, and MUST explain that the delegation protocol intentionally does not attempt to bypass this constraint but instead builds on OAuth 2.1 + Verifiable Credentials to achieve equivalent assurance for agent-mediated actions.
 
 **Supply chain and provenance**
 
@@ -109,9 +109,9 @@ A KOSMOS contributor (human or agent) adds or modifies a tool adapter. Before op
 
 ### Key Entities *(include if feature involves data)*
 
-- **`GovAPITool`**: Registry entry describing a KOSMOS tool adapter. Extended in this spec with `auth_level`, `pipa_class`, `is_irreversible`, and `dpa_reference`. All fields MUST be populated at registration time; fail-closed loading rejects incomplete entries.
+- **`GovAPITool`**: Registry entry describing a KOSAX tool adapter. Extended in this spec with `auth_level`, `pipa_class`, `is_irreversible`, and `dpa_reference`. All fields MUST be populated at registration time; fail-closed loading rejects incomplete entries.
 - **`ToolCallAuditRecord`**: Immutable per-call evidence artifact. Contains input/output hashing, sanitized-output hashing, permission decision, caller identity, and Merkle-chain binding metadata. Mock and live adapters produce identical record shape.
-- **`DelegationToken`**: Time-bounded, scope-limited token representing citizen authority delegated to KOSMOS. Carries `aal_asserted`, `scope`, `expires_at`, and `introspection_endpoint`. Revocation semantics defined per RFC 7009.
+- **`DelegationToken`**: Time-bounded, scope-limited token representing citizen authority delegated to KOSAX. Carries `aal_asserted`, `scope`, `expires_at`, and `introspection_endpoint`. Revocation semantics defined per RFC 7009.
 - **`ConsentRecord`**: Citizen-signed artifact linking a delegation event to one or more tool scopes. Carries `dpa_reference` (non-null for PII-bound scopes) and `synthesis_consent` (separate boolean for the LLM-synthesis carve-out).
 - **`SBOMArtifact`**: Build-time-generated bill of materials in both SPDX 2.3 and CycloneDX 1.6 formats. Signed per SLSA v1.0 provenance expectations.
 - **`TOOL_MIN_AAL`**: Static lookup table mapping each of the 8 canonical tools to its minimum AAL, with an explicit `public_path` exception for `check_eligibility` rules-only evaluation.
@@ -136,15 +136,15 @@ A KOSMOS contributor (human or agent) adds or modifies a tool adapter. Before op
 - The PIPA role interpretation (§26 수탁자 default + LLM-synthesis controller-level carve-out) is a pre-decided product judgment, recorded in auto-memory, and not re-litigated in this epic.
 - The four hard-contradiction resolutions listed in the epic brief are pre-decided inputs: `check_eligibility` = AAL2 with `public_path` marker, NIST 63-4 (not 63-3), retention = 5 years (binding maximum of PIPA §8 and 전자정부법 §33), `sanitized_output_hash` added to the audit record with explicit Merkle coverage declaration.
 - The full 8-tool mock implementation, the full Merkle chain implementation, the full `/agent-delegation` endpoint implementation, and the PIPC 유권해석 질의서 are separate efforts tracked in the deferred items table below.
-- The spec is written in English per KOSMOS hard rules; Korean legal citations retain their original Korean text where precision requires it.
+- The spec is written in English per KOSAX hard rules; Korean legal citations retain their original Korean text where precision requires it.
 - Reviewers of the spec are assumed to have working familiarity with either Korean public-sector compliance or international AppSec / identity standards, but not necessarily both; the spec must bridge the two audiences.
 
 ## Scope Boundaries & Deferred Items *(mandatory)*
 
 ### Out of Scope (Permanent)
 
-- PIPC (개인정보보호위원회) 유권해석 질의서 drafting and submission — this is a legal-process artifact, not a platform engineering output; KOSMOS's platform spec can stand independently of the 유권해석 outcome.
-- Real DPA (Data Processing Agreement) legal text — DPA template references in the spec are identifiers; the binding legal text is authored by counsel during ministry partnership negotiations, not in a KOSMOS spec.
+- PIPC (개인정보보호위원회) 유권해석 질의서 drafting and submission — this is a legal-process artifact, not a platform engineering output; KOSAX's platform spec can stand independently of the 유권해석 outcome.
+- Real DPA (Data Processing Agreement) legal text — DPA template references in the spec are identifiers; the binding legal text is authored by counsel during ministry partnership negotiations, not in a KOSAX spec.
 - Public Rekor-like transparency log for citizen sessions — transparency logs are appropriate for build provenance (handled here) but inappropriate for per-citizen tool-call records whose privacy posture requires the opposite of public append-only disclosure.
 
 ### Deferred to Future Work

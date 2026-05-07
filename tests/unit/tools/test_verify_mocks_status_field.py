@@ -22,22 +22,22 @@ import importlib
 
 import pytest
 
-from kosmos.primitives.verify import VerifyMismatchError
+from kosax.primitives.verify import VerifyMismatchError
 
 # All 10 verify mock adapter modules.
 _ALL_VERIFY_MOCKS = [
     # 5 retrofitted existing (Spec 2296 T022).
-    "kosmos.tools.mock.verify_mobile_id",
-    "kosmos.tools.mock.verify_mydata",
-    "kosmos.tools.mock.verify_gongdong_injeungseo",
-    "kosmos.tools.mock.verify_geumyung_injeungseo",
-    "kosmos.tools.mock.verify_ganpyeon_injeung",
+    "kosax.tools.mock.verify_mobile_id",
+    "kosax.tools.mock.verify_mydata",
+    "kosax.tools.mock.verify_gongdong_injeungseo",
+    "kosax.tools.mock.verify_geumyung_injeungseo",
+    "kosax.tools.mock.verify_ganpyeon_injeung",
     # 5 new AX-channel mocks (Spec 2296 FR-001).
-    "kosmos.tools.mock.verify_module_simple_auth",
-    "kosmos.tools.mock.verify_module_modid",
-    "kosmos.tools.mock.verify_module_kec",
-    "kosmos.tools.mock.verify_module_geumyung",
-    "kosmos.tools.mock.verify_module_any_id_sso",
+    "kosax.tools.mock.verify_module_simple_auth",
+    "kosax.tools.mock.verify_module_modid",
+    "kosax.tools.mock.verify_module_kec",
+    "kosax.tools.mock.verify_module_geumyung",
+    "kosax.tools.mock.verify_module_any_id_sso",
 ]
 
 

@@ -12,7 +12,7 @@
 #!/usr/bin/env bash
 # specs/2637-p0-regression/scripts/verify-byte-identical.sh
 set -e
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/KOSAX-w-2637
 
 PORTED_BYTE_IDENTICAL=(
   "types/generated/events_mono/claude_code/v1/claude_code_internal_event.ts"
@@ -26,11 +26,11 @@ PORTED_BYTE_IDENTICAL=(
 
 failed=0
 for rel in "${PORTED_BYTE_IDENTICAL[@]}"; do
-  kosmos="tui/src/$rel"
+  kosax="tui/src/$rel"
   cc=".references/claude-code-sourcemap/restored-src/src/$rel"
-  if ! diff -q "$kosmos" "$cc" > /dev/null 2>&1; then
+  if ! diff -q "$kosax" "$cc" > /dev/null 2>&1; then
     echo "FAIL: $rel — byte-identical 위반"
-    diff "$kosmos" "$cc" | head -20
+    diff "$kosax" "$cc" | head -20
     failed=$((failed + 1))
   else
     echo "PASS: $rel"
@@ -51,12 +51,12 @@ echo "All ${#PORTED_BYTE_IDENTICAL[@]} files byte-identical PASS"
 ### 2.1 `constants/oauth.ts` (R-4)
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/KOSAX-w-2637
 
 # 화이트리스트 식별자 (data-model.md § Swap1IdentifierWhitelist):
 # - OAuth client_id 상수 (line locations TBD by PORT)
 # - console.anthropic.com / claude.ai/oauth URL 상수
-# - 헤더 주석 (KOSMOS Epic #2637 — byte-copy from CC 2.1.88 ...)
+# - 헤더 주석 (KOSAX Epic #2637 — byte-copy from CC 2.1.88 ...)
 
 # Allowed diff line count (5-10 lines):
 diff_lines=$(diff tui/src/constants/oauth.ts \
@@ -74,11 +74,11 @@ echo "PASS: oauth.ts diff lines $diff_lines (whitelist 내)"
 ### 2.2 `cli/print.ts` (R-3)
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/KOSAX-w-2637
 
 # 화이트리스트 식별자:
-# - 헤더 주석 (KOSMOS Epic #2637 — byte-copy from CC 2.1.88, --print mode)
-# - cascade stub import path (변경 없음 — KOSMOS-side stub 이 같은 export 시그니처)
+# - 헤더 주석 (KOSAX Epic #2637 — byte-copy from CC 2.1.88, --print mode)
+# - cascade stub import path (변경 없음 — KOSAX-side stub 이 같은 export 시그니처)
 
 # Allowed diff line count (3-5 lines, 헤더만):
 diff_lines=$(diff tui/src/cli/print.ts \
@@ -94,12 +94,12 @@ echo "PASS: print.ts diff lines $diff_lines (whitelist 내)"
 ### 2.3 `utils/telemetry/instrumentation.ts` (R-5)
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/KOSAX-w-2637
 
 # 화이트리스트 식별자:
-# - 헤더 주석 (KOSMOS Epic #2637 — byte-copy from CC 2.1.88, OTEL instrumentation)
-# - swap-1 종속 import path: 변경 없음 (KOSMOS-side stub 이 같은 export 시그니처)
-# - 단, KOSMOS bootstrap/state.ts import path 가 CC 와 일치해야 함
+# - 헤더 주석 (KOSAX Epic #2637 — byte-copy from CC 2.1.88, OTEL instrumentation)
+# - swap-1 종속 import path: 변경 없음 (KOSAX-side stub 이 같은 export 시그니처)
+# - 단, KOSAX bootstrap/state.ts import path 가 CC 와 일치해야 함
 
 # Allowed diff line count (3-5 lines, 헤더만):
 diff_lines=$(diff tui/src/utils/telemetry/instrumentation.ts \
@@ -112,12 +112,12 @@ fi
 echo "PASS: instrumentation.ts diff lines $diff_lines (whitelist 내)"
 ```
 
-## 3. KOSMOS-original cascade stub (action=`create_kosmos_stub`) — 패턴 검증
+## 3. KOSAX-original cascade stub (action=`create_kosax_stub`) — 패턴 검증
 
-R-3-cascade (`remoteManagedSettings/index.ts`) + T004 의 cascade stubs (`betaSessionTracing.ts`, `bigqueryExporter.ts`, `logger.ts`, `perfettoTracing.ts`) 는 KOSMOS-original. 검증 패턴:
+R-3-cascade (`remoteManagedSettings/index.ts`) + T004 의 cascade stubs (`betaSessionTracing.ts`, `bigqueryExporter.ts`, `logger.ts`, `perfettoTracing.ts`) 는 KOSAX-original. 검증 패턴:
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/KOSAX-w-2637
 
 CASCADE_STUBS=(
   "tui/src/services/remoteManagedSettings/index.ts"
@@ -146,7 +146,7 @@ done
 ## 4. 헤더 박제 (action=`header_only_imprint`) — Stage-1 NO-OP 3건
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/KOSAX-w-2637
 
 NOOP_STUBS=(
   "tui/src/utils/protectedNamespace.ts"
@@ -169,10 +169,10 @@ for stub in "${NOOP_STUBS[@]}"; do
 done
 ```
 
-## 5. wire 검증 (action=`wire_kosmos_helper`) — `toolExecution.ts` 9 stub → import 교체
+## 5. wire 검증 (action=`wire_kosax_helper`) — `toolExecution.ts` 9 stub → import 교체
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/KOSAX-w-2637
 
 # pre-state: 9개 inline `const X = (..._args) => Y` 패턴
 pre_inline=$(grep -c "^const \(logOTelEvent\|addToolContentEvent\|endToolBlockedOnUserSpan\|endToolExecutionSpan\|endToolSpan\|isBetaTracingEnabled\|startToolBlockedOnUserSpan\|startToolExecutionSpan\|startToolSpan\) = " tui/src/services/tools/toolExecution.ts)
@@ -196,7 +196,7 @@ echo "PASS: toolExecution.ts wire complete"
 ## 6. 통합 audit 재실행 (Spec 검증)
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/KOSAX-w-2637
 
 # audit Initiative #2636 의 9-stream 결과 재실행
 # (specs/cc-migration-audit/scope-S2/S8/S9 의 grep 명령)

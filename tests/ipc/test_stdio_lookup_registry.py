@@ -33,11 +33,11 @@ from typing import Any
 
 import pytest
 
-from kosmos.ipc.frame_schema import (
+from kosax.ipc.frame_schema import (
     ChatMessage as IPCChatMessage,
 )
-from kosmos.ipc.frame_schema import ChatRequestFrame
-from kosmos.llm.models import StreamEvent
+from kosax.ipc.frame_schema import ChatRequestFrame
+from kosax.llm.models import StreamEvent
 
 _RUNNER_TIMEOUT = 30.0
 
@@ -138,8 +138,8 @@ class _LookupSearchOnceLLMClient:
 async def _run_lookup_search(
     frame: ChatRequestFrame, monkeypatch: pytest.MonkeyPatch
 ) -> _CaptureBuf:
-    from kosmos.ipc import stdio as stdio_mod
-    from kosmos.ipc.frame_schema import SessionEventFrame
+    from kosax.ipc import stdio as stdio_mod
+    from kosax.ipc.frame_schema import SessionEventFrame
 
     monkeypatch.setattr(stdio_mod, "_stdout_lock", None)
 
@@ -151,15 +151,15 @@ async def _run_lookup_search(
     class _FakeLLMConfig:
         pass
 
-    import kosmos.llm.client as llm_client_mod
-    import kosmos.llm.config as llm_config_mod
+    import kosax.llm.client as llm_client_mod
+    import kosax.llm.config as llm_config_mod
 
     monkeypatch.setattr(llm_client_mod, "LLMClient", _LookupSearchOnceLLMClient)
     monkeypatch.setattr(llm_config_mod, "LLMClientConfig", _FakeLLMConfig)
 
     # Stub the prompt loader so the test doesn't hit the manifest on disk.
     try:
-        import kosmos.context.prompt_loader as pl_mod
+        import kosax.context.prompt_loader as pl_mod
 
         class _FPL:
             def __init__(self, *, manifest_path: Any) -> None:
@@ -198,7 +198,7 @@ async def _run_lookup_search(
 
     import logging as _logging
 
-    from kosmos.ipc.stdio import run as ipc_run
+    from kosax.ipc.stdio import run as ipc_run
 
     try:
         await asyncio.wait_for(ipc_run(session_id=session_id), timeout=_RUNNER_TIMEOUT)

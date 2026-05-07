@@ -8,7 +8,7 @@ anyone adds a paraphrase query that accidentally shares a morpheme with the
 target adapter's search_hint.
 
 Uses the same kiwipiepy POS configuration (NNG/NNP/VV/VA/SL) as
-src/kosmos/tools/tokenizer.py (via kosmos.tools.tokenizer.tokenize).
+src/kosax/tools/tokenizer.py (via kosax.tools.tokenizer.tokenize).
 """
 
 from __future__ import annotations
@@ -41,7 +41,7 @@ def _load_adapter_search_hints() -> dict[str, str]:
     hints: dict[str, str] = {}
 
     try:
-        from kosmos.tools.koroad.accident_hazard_search import KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL
+        from kosax.tools.koroad.accident_hazard_search import KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL
 
         hints[KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL.id] = (
             KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL.search_hint
@@ -50,21 +50,21 @@ def _load_adapter_search_hints() -> dict[str, str]:
         pytest.fail(f"Failed to load koroad search_hint: {exc}")
 
     try:
-        from kosmos.tools.kma.forecast_fetch import KMA_FORECAST_FETCH_TOOL
+        from kosax.tools.kma.forecast_fetch import KMA_FORECAST_FETCH_TOOL
 
         hints[KMA_FORECAST_FETCH_TOOL.id] = KMA_FORECAST_FETCH_TOOL.search_hint
     except Exception as exc:  # pragma: no cover
         pytest.fail(f"Failed to load kma search_hint: {exc}")
 
     try:
-        from kosmos.tools.hira.hospital_search import HIRA_HOSPITAL_SEARCH_TOOL
+        from kosax.tools.hira.hospital_search import HIRA_HOSPITAL_SEARCH_TOOL
 
         hints[HIRA_HOSPITAL_SEARCH_TOOL.id] = HIRA_HOSPITAL_SEARCH_TOOL.search_hint
     except Exception as exc:  # pragma: no cover
         pytest.fail(f"Failed to load hira search_hint: {exc}")
 
     try:
-        from kosmos.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
+        from kosax.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
 
         hints[NMC_EMERGENCY_SEARCH_TOOL.id] = NMC_EMERGENCY_SEARCH_TOOL.search_hint
     except Exception as exc:  # pragma: no cover
@@ -75,7 +75,7 @@ def _load_adapter_search_hints() -> dict[str, str]:
 
 def _tokenize(text: str) -> frozenset[str]:
     """Tokenize text using the same kiwipiepy configuration as bm25_index.py."""
-    from kosmos.tools.tokenizer import tokenize
+    from kosax.tools.tokenizer import tokenize
 
     return frozenset(tokenize(text))
 

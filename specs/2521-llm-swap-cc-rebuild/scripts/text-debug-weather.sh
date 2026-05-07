@@ -7,7 +7,7 @@
 #
 # Capture intent:
 #   1. boot snapshot (이미 tui-text-debug.sh 가 자동 capture)
-#   2. branding 확인 — KOSMOS / ✻ glyph
+#   2. branding 확인 — KOSAX / ✻ glyph
 #   3. 사용자 입력 "오늘 서울 날씨 알려줘"
 #   4. 입력 직후 (도구 ui 없어야 함, internal BM25 hide 검증)
 #   5. reasoning 단계 (* Symbioting / Crunched 등 spinner)
@@ -16,8 +16,8 @@
 #   8. 한국어 답변 streaming
 #   9. 답변 완료 → /quit 으로 정상 종료
 
-# 1. 부팅 검증 — KOSMOS 브랜딩이 보일 때까지 polling.
-wait_for "KOSMOS|✻" "branding"
+# 1. 부팅 검증 — KOSAX 브랜딩이 보일 때까지 polling.
+wait_for "KOSAX|✻" "branding"
 
 # 2. 사용자 입력. literal 로 한 글자씩 보내야 IME / paste burst 회귀를 피함.
 send_keys "오늘 서울 날씨 알려줘"

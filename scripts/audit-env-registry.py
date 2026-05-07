@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Cross-check KOSMOS_* env-var surface vs. the registry in docs/configuration.md.
+"""Cross-check KOSAX_* env-var surface vs. the registry in docs/configuration.md.
 
 Contract: specs/026-secrets-infisical-oidc/contracts/audit-env-registry.md
 FR: FR-020, FR-022, FR-023 | NFR-006 (10 s wall-clock budget)
@@ -20,11 +20,11 @@ from pathlib import Path
 # Regex constants
 # ---------------------------------------------------------------------------
 
-_NAME_RE = re.compile(r"\bKOSMOS_[A-Z][A-Z0-9_]*\b")
+_NAME_RE = re.compile(r"\bKOSAX_[A-Z][A-Z0-9_]*\b")
 _LANGFUSE_RE = re.compile(r"\bLANGFUSE_[A-Z][A-Z0-9_]*\b")
 
-# Matches KOSMOS_<TOOL_ID>_API_KEY  where TOOL_ID = [A-Z][A-Z0-9_]*
-_OVERRIDE_KEY_RE = re.compile(r"^KOSMOS_([A-Z][A-Z0-9_]*)_API_KEY$")
+# Matches KOSAX_<TOOL_ID>_API_KEY  where TOOL_ID = [A-Z][A-Z0-9_]*
+_OVERRIDE_KEY_RE = re.compile(r"^KOSAX_([A-Z][A-Z0-9_]*)_API_KEY$")
 
 # Prefix-violation sweep: all-caps env-like tokens (3+ chars) in
 # assignment/env context lines.
@@ -58,7 +58,7 @@ _GITHUB_BUILTINS = frozenset({
     "PATH",
     "SHELL",
     "USER",
-    # OTEL vendor SDK defaults — explicitly listed as allowed non-KOSMOS_ vars
+    # OTEL vendor SDK defaults — explicitly listed as allowed non-KOSAX_ vars
     # because .env.example carries OTEL_* vars per spec §021 setup.
     "OTEL_EXPORTER_OTLP_ENDPOINT",
     "OTEL_EXPORTER_OTLP_PROTOCOL",
@@ -91,7 +91,7 @@ _RUNNER_PREFIX = "RUNNER_"
 _REGISTRY_HEADER = "| Variable | Required |"
 
 # The override-family placeholder that must appear in the registry.
-_OVERRIDE_FAMILY_PLACEHOLDER = "KOSMOS_{TOOL_ID}_API_KEY"
+_OVERRIDE_FAMILY_PLACEHOLDER = "KOSAX_{TOOL_ID}_API_KEY"
 
 # Registry deprecation sentinel.
 _DEPRECATED_MARKER = "**deprecated**"
@@ -184,8 +184,8 @@ def _parse_registry(  # noqa: C901
             has_override_family = True
             continue
 
-        # Skip rows that are not KOSMOS_ or LANGFUSE_ (e.g., prose rows).
-        if not (name.startswith("KOSMOS_") or name.startswith("LANGFUSE_")):
+        # Skip rows that are not KOSAX_ or LANGFUSE_ (e.g., prose rows).
+        if not (name.startswith("KOSAX_") or name.startswith("LANGFUSE_")):
             continue
 
         # Classify by Required cell (case-insensitive to tolerate **Deprecated**).
@@ -252,13 +252,13 @@ def _classify_file(path: Path) -> str:
 def _scan_file(  # noqa: C901
     path: Path,
     repo_root: Path,
-    kosmos_findings: dict[str, list[str]],
+    kosax_findings: dict[str, list[str]],
     langfuse_findings: dict[str, list[str]],
     prefix_violations: dict[str, list[str]],
 ) -> int:
     """Scan a single file for env-var tokens.
 
-    Mutates kosmos_findings, langfuse_findings, prefix_violations in place.
+    Mutates kosax_findings, langfuse_findings, prefix_violations in place.
     Returns number of tokens found (for stats).
     """
     try:
@@ -267,7 +267,7 @@ def _scan_file(  # noqa: C901
         return 0
 
     token_count = 0
-    # Emit repo-relative locations (e.g., `src/kosmos/foo.py:42`) so the JSON
+    # Emit repo-relative locations (e.g., `src/kosax/foo.py:42`) so the JSON
     # report is machine-independent and matches contract examples. Fall back
     # to absolute on the off chance `path` sits outside repo_root.
     try:
@@ -279,15 +279,15 @@ def _scan_file(  # noqa: C901
     for lineno, line in enumerate(text.splitlines(), start=1):
         location = f"{rel_path}:{lineno}"
 
-        # Extract KOSMOS_ tokens.
+        # Extract KOSAX_ tokens.
         for match in _NAME_RE.finditer(line):
             name = match.group()
-            # Skip bare prefix strings (e.g. env_prefix="KOSMOS_CLI_").
+            # Skip bare prefix strings (e.g. env_prefix="KOSAX_CLI_").
             # A trailing underscore means this is a prefix literal, not a
             # complete variable name.
             if name.endswith("_"):
                 continue
-            kosmos_findings.setdefault(name, []).append(location)
+            kosax_findings.setdefault(name, []).append(location)
             token_count += 1
 
         # Extract LANGFUSE_ tokens.
@@ -308,7 +308,7 @@ def _scan_file(  # noqa: C901
             for match in _ALL_CAPS_RE.finditer(line):
                 token = match.group()
                 # Skip allowlisted prefixes and known builtins.
-                if token.startswith("KOSMOS_"):
+                if token.startswith("KOSAX_"):
                     continue
                 if token.startswith("LANGFUSE_"):
                     continue
@@ -420,7 +420,7 @@ def audit(  # noqa: C901
 
     # --- Scan code ---
     targets = _collect_scan_targets(repo_root)
-    kosmos_findings: dict[str, list[str]] = {}
+    kosax_findings: dict[str, list[str]] = {}
     langfuse_findings: dict[str, list[str]] = {}
     prefix_violations_raw: dict[str, list[str]] = {}
     total_tokens = 0
@@ -429,24 +429,24 @@ def audit(  # noqa: C901
         total_tokens += _scan_file(
             path,
             repo_root,
-            kosmos_findings,
+            kosax_findings,
             langfuse_findings,
             prefix_violations_raw,
         )
 
     # Merge LANGFUSE_ into the full set for registry lookups.
     all_code_vars: dict[str, list[str]] = {}
-    all_code_vars.update(kosmos_findings)
+    all_code_vars.update(kosax_findings)
     all_code_vars.update(langfuse_findings)
 
     # --- Override-family analysis ---
-    # Identify which KOSMOS_*_API_KEY code-vars are override-family expansions.
+    # Identify which KOSAX_*_API_KEY code-vars are override-family expansions.
     override_family_members: dict[str, list[str]] = {}
     override_family_unmatched: dict[str, list[str]] = {}
 
     for name, locs in list(all_code_vars.items()):
         # Canonical registry rows take precedence over the override-family
-        # regex — KOSMOS_KAKAO_API_KEY and KOSMOS_DATA_GO_KR_API_KEY match
+        # regex — KOSAX_KAKAO_API_KEY and KOSAX_DATA_GO_KR_API_KEY match
         # _OVERRIDE_KEY_RE but are first-class registry entries, not
         # per-tool overrides.
         if name in registry_vars or name in deprecated_vars:
@@ -513,7 +513,7 @@ def audit(  # noqa: C901
             {
                 "name": name,
                 "source_files": sorted(set(locs), key=_location_sort_key),
-                "reason": "not KOSMOS_-prefixed and not in LANGFUSE_ allowlist",
+                "reason": "not KOSAX_-prefixed and not in LANGFUSE_ allowlist",
             }
             for name, locs in sorted(prefix_violations_out.items())
         ],
@@ -562,7 +562,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="audit-env-registry.py",
         description=(
-            "Cross-check KOSMOS_* env-var surface vs. the registry in "
+            "Cross-check KOSAX_* env-var surface vs. the registry in "
             "docs/configuration.md."
         ),
     )

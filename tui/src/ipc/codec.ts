@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — no upstream analog (Claude Code uses HTTP SSE, not stdio JSONL).
+// KOSAX-original — no upstream analog (Claude Code uses HTTP SSE, not stdio JSONL).
 //
-// Codec for the KOSMOS NDJSON IPC protocol.
+// Codec for the KOSAX NDJSON IPC protocol.
 //
 // Spec 032 WS1 T018: extended for all 19 frame kinds + kind-narrowed type guards.
 //
@@ -17,7 +17,7 @@
 //   Both layers must pass; a failure in either yields a DecodeError result.
 //
 // All frame types live in tui/src/ipc/frames.generated.ts (code-gen from
-// src/kosmos/ipc/frame_schema.py via bun run gen:ipc).
+// src/kosax/ipc/frame_schema.py via bun run gen:ipc).
 
 import { z } from 'zod'
 import type {
@@ -121,7 +121,7 @@ const AssistantChunkFrameSchema = BaseFrame.extend({
   // ``delta`` (visible answer) and ``thinking`` (chain-of-thought) are two
   // independent channels on the same frame — mirror of Anthropic's
   // ``content_block_delta`` (CC reference at
-  // ``src/kosmos/llm/_cc_reference/claude.ts:2053-2169``). Either may be
+  // ``src/kosax/llm/_cc_reference/claude.ts:2053-2169``). Either may be
   // empty on a given chunk; ``done=true`` terminates the message.
   delta: z.string().default(''),
   thinking: z.string().default(''),
@@ -446,7 +446,7 @@ export type DecodeResult = DecodeSuccess | DecodeError
  *
  * - 'granted' — citizen approved the primitive call.
  * - 'denied'  — citizen rejected the call (Esc / 'n' key / cleanup).
- * - 'timeout' — KOSMOS_PERMISSION_TIMEOUT_SEC elapsed with no response
+ * - 'timeout' — KOSAX_PERMISSION_TIMEOUT_SEC elapsed with no response
  *               (fail-closed per Constitution §II; backend treats identically
  *               to 'denied').
  *

@@ -18,11 +18,11 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from kosmos.context.attachments import AttachmentCollector
-from kosmos.context.models import SystemPromptConfig
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.models import QueryState
-from kosmos.llm.usage import UsageTracker
+from kosax.context.attachments import AttachmentCollector
+from kosax.context.models import SystemPromptConfig
+from kosax.engine.config import QueryEngineConfig
+from kosax.engine.models import QueryState
+from kosax.llm.usage import UsageTracker
 
 # ---------------------------------------------------------------------------
 # Helpers

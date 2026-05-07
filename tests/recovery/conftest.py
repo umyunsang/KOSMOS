@@ -10,7 +10,7 @@ import httpx
 import pytest
 from pydantic import BaseModel
 
-from kosmos.tools.models import GovAPITool
+from kosax.tools.models import GovAPITool
 
 
 class _DummyInput(BaseModel):

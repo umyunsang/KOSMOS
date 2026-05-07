@@ -8,7 +8,7 @@ Set Width 1600
 Set Height 900
 Set Theme "TokyoNightStorm"
 Hide
-Type "rm -rf ~/.kosmos/memdir/user/onboarding && cd /Users/um-yunsang/KOSMOS/tui && bun run tui"
+Type "rm -rf ~/.kosax/memdir/user/onboarding && cd /Users/um-yunsang/KOSAX/tui && bun run tui"
 Enter
 Sleep 6s
 Show

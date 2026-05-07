@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: KOSMOS Agent Delegation API (skeleton)
+  title: KOSAX Agent Delegation API (skeleton)
   version: 0.1.0-skeleton
   description: |
-    Skeleton OpenAPI 3.0 definition for KOSMOS's `/agent-delegation` endpoint family.
+    Skeleton OpenAPI 3.0 definition for KOSAX's `/agent-delegation` endpoint family.
     This skeleton lands with Tool Template Security Spec v1 (spec 024) and cites ONLY
     IETF RFCs, W3C recommendations, and Korean statutory artifacts. Full server-side
     implementation is deferred (spec.md Deferred Items table, row D2).
@@ -19,8 +19,8 @@ info:
       - W3C Decentralized Identifiers (DIDs) v1.0
       - PIPA §17, §22, §26, §28-2 (Korean Personal Information Protection Act)
   contact:
-    name: KOSMOS project
-    url: https://github.com/umyunsang/KOSMOS
+    name: KOSAX project
+    url: https://github.com/umyunsang/KOSAX
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
@@ -30,7 +30,7 @@ servers:
     description: Delegation endpoint family (host filled at deployment)
     variables:
       host:
-        default: kosmos.example.gov.kr
+        default: kosax.example.gov.kr
 
 tags:
   - name: consent
@@ -217,7 +217,7 @@ components:
         subject_token_type: { type: string, nullable: true }
         audience:
           type: string
-          default: kosmos-agent
+          default: kosax-agent
         scope:
           type: string
           description: Space-separated scope string.

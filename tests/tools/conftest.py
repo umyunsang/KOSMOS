@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for the KOSMOS Tool System module.
+"""Shared pytest fixtures for the KOSAX Tool System module.
 
 All tests use mock tools — no live API calls are made here.
 """
@@ -6,8 +6,8 @@ All tests use mock tools — no live API calls are made here.
 import pytest
 from pydantic import BaseModel
 
-from kosmos.tools.models import GovAPITool
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.models import GovAPITool
+from kosax.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Schema stubs used across tool tests
@@ -42,7 +42,7 @@ def sample_tool_factory():
     Korean values (name_ko, provider, category, search_hint) are domain data
     and are intentionally kept in Korean.
 
-    Note: KOSMOS-invented Spec 033/024/025 fields (auth_level, pipa_class,
+    Note: KOSAX-invented Spec 033/024/025 fields (auth_level, pipa_class,
     is_irreversible, dpa_reference, requires_auth, is_personal_data) are
     removed per Epic δ #2295 (Constitution § II cleanup). Use AdapterRealDomainPolicy
     for agency-published policy citations instead.
@@ -58,7 +58,7 @@ def sample_tool_factory():
         search_hint: str = "날씨 예보 weather forecast 기상청",
         **overrides,
     ) -> GovAPITool:
-        # Strip out removed KOSMOS-invented Spec 033/024/025 fields if callers
+        # Strip out removed KOSAX-invented Spec 033/024/025 fields if callers
         # still pass them (backward-compat shim for test migration window).
         for _removed in (
             "auth_level",

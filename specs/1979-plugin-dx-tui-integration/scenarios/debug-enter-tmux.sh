@@ -40,7 +40,7 @@
 
 # ── 1. Boot ──────────────────────────────────────────────────────────────────
 wait_for_pane "tool_registry: [0-9]+ entries verified" 60
-wait_for_pane "KOSMOS" 15
+wait_for_pane "KOSAX" 15
 snapshot_pane boot
 
 # ── 2. STAGE-1: /help with CRLF encoding test ───────────────────────────────

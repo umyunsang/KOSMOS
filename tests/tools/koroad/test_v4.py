@@ -10,7 +10,7 @@ Covers:
   T037-E  _strip_geom_json applied in handle() — output items must not contain geom_json
 
 2-digit + 3-digit wire param scheme confirmed by evidence:
-  /tmp/kosmos-evidence/koroad-mohw-evidence.md § "siDo/guGun Code Scheme"
+  /tmp/kosax-evidence/koroad-mohw-evidence.md § "siDo/guGun Code Scheme"
   Live: siDo=11 / guGun=680 → HTTP 200, resultCode="00", totalCount=3
   4-digit values (siDo=1100) are rejected by SidoCode enum validation.
 """
@@ -24,14 +24,14 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from kosmos.tools.koroad._short_references import KOROAD_SIDO_SHORT_REFERENCE
-from kosmos.tools.koroad.accident_hazard_search import (
+from kosax.tools.koroad._short_references import KOROAD_SIDO_SHORT_REFERENCE
+from kosax.tools.koroad.accident_hazard_search import (
     AccidentHazardSearchInput,
     _strip_geom_json,
     handle,
 )
-from kosmos.tools.koroad.code_tables import GugunCode, SearchYearCd, SidoCode
-from kosmos.tools.koroad.koroad_accident_search import (
+from kosax.tools.koroad.code_tables import GugunCode, SearchYearCd, SidoCode
+from kosax.tools.koroad.koroad_accident_search import (
     KoroadAccidentSearchInput,
     _call,
 )
@@ -205,7 +205,7 @@ async def test_accident_hazard_search_live_gangnam() -> None:
 @pytest.mark.asyncio
 async def test_handle_strips_geom_json_via_mock(monkeypatch: pytest.MonkeyPatch) -> None:
     """handle() must strip geom_json from all output items (mock-based, no API key needed)."""
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key")
+    monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key")
 
     raw_response: dict[str, Any] = {
         "resultCode": "00",
@@ -270,7 +270,7 @@ async def test_handle_strips_geom_json_via_mock(monkeypatch: pytest.MonkeyPatch)
 
 def test_sido_short_reference_inline_in_si_do_description() -> None:
     """KOROAD_SIDO_SHORT_REFERENCE must be embedded in si_do Field description."""
-    from kosmos.tools.koroad.koroad_accident_search import KoroadAccidentSearchInput
+    from kosax.tools.koroad.koroad_accident_search import KoroadAccidentSearchInput
 
     field_desc = KoroadAccidentSearchInput.model_fields["si_do"].description or ""
     assert KOROAD_SIDO_SHORT_REFERENCE in field_desc, (
@@ -281,7 +281,7 @@ def test_sido_short_reference_inline_in_si_do_description() -> None:
 
 def test_gu_gun_description_contains_wire_format_note() -> None:
     """gu_gun Field description must mention the 2+3-digit wire format and reject 4-digit."""
-    from kosmos.tools.koroad.koroad_accident_search import KoroadAccidentSearchInput
+    from kosax.tools.koroad.koroad_accident_search import KoroadAccidentSearchInput
 
     field_desc = KoroadAccidentSearchInput.model_fields["gu_gun"].description or ""
     assert "3-digit" in field_desc, "gu_gun description must mention '3-digit'"

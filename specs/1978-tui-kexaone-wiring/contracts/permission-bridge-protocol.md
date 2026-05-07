@@ -150,7 +150,7 @@ case 'permission_request':
 On `decision != "deny"`, backend writes:
 
 ```
-Path: ~/.kosmos/memdir/user/consent/<receipt_id>.json
+Path: ~/.kosax/memdir/user/consent/<receipt_id>.json
 Content: {
     "receipt_id": "<uuid>",
     "session_id": "<session>",
@@ -166,14 +166,14 @@ Append-only — no overwrite. Revocation creates `<receipt_id>.json.revoked` mar
 
 ## Telemetry
 
-Span `kosmos.frame.permission_request` opened on emit, closed on response or timeout. Attributes:
+Span `kosax.frame.permission_request` opened on emit, closed on response or timeout. Attributes:
 
 ```
-kosmos.permission.tool_id        = <tool_id>
-kosmos.permission.gauntlet_step  = <int>
-kosmos.permission.pii_class      = <enum>
-kosmos.permission.decision       = <on close: allow_once | allow_session | deny | timeout>
-kosmos.consent.receipt_id        = <on allow: receipt_id>
+kosax.permission.tool_id        = <tool_id>
+kosax.permission.gauntlet_step  = <int>
+kosax.permission.pii_class      = <enum>
+kosax.permission.decision       = <on close: allow_once | allow_session | deny | timeout>
+kosax.consent.receipt_id        = <on allow: receipt_id>
 ```
 
 Per Spec 033 attribute names — no new attribute conventions introduced.

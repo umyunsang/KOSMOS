@@ -7,7 +7,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/koroad_accident_hazard_search.json",
+  "$id": "https://kosax.example/api/schemas/koroad_accident_hazard_search.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "Input schema for koroad_accident_hazard_search.\n\nUses a 10-digit 행정동 code (adm_cd) and a calendar year to look up\nthe KOROAD accident hazard spots for that municipality.",

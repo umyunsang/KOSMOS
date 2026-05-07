@@ -1,11 +1,11 @@
-# kosmos-plugin-my_plugin
+# kosax-plugin-my_plugin
 
-KOSMOS 플러그인 — `my_plugin` 어댑터.
+KOSAX 플러그인 — `my_plugin` 어댑터.
 
 ## 설치
 
 ```bash
-kosmos plugin install my_plugin
+kosax plugin install my_plugin
 ```
 
 ## 개발

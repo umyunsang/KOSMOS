@@ -17,9 +17,9 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from kosmos.agents.context import AgentContext
-from kosmos.llm.client import LLMClient
-from kosmos.tools.registry import ToolRegistry
+from kosax.agents.context import AgentContext
+from kosax.llm.client import LLMClient
+from kosax.tools.registry import ToolRegistry
 
 
 def _mock_registry() -> ToolRegistry:

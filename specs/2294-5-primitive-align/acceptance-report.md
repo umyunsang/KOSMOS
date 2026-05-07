@@ -10,11 +10,11 @@ This document records the Phase 8 final-acceptance battery measurements for Epic
 
 The captured transcript at `specs/2294-5-primitive-align/smoke-emergency-lookup-pty.txt` (7977 lines) contains:
 - `tool_registry: 14 entries verified (4 primitives) in 0ms` (twice — boot + reload)
-- `KOSMOS v0.1.0-alpha+1978` branding banner with `K-EXAONE with high effort`
+- `KOSAX v0.1.0-alpha+1978` branding banner with `K-EXAONE with high effort`
 - `의정부 응급실 알려줘` Korean input echoed in the REPL prompt area
 - `Actioning…` indicator confirming the agentic loop entered (LLM dispatch)
 
-The PTY smoke validates the **stale-import / dead-JSX-path regression gate** (the canonical purpose of the harness per memory `feedback_pr_pre_merge_interactive_test`). Live LLM-side response is not exercised here; the harness uses `KOSMOS_BACKEND_CMD=sleep 60` to keep CI deterministic. Live verification ships with Epic ε once the NMC mock fixtures land.
+The PTY smoke validates the **stale-import / dead-JSX-path regression gate** (the canonical purpose of the harness per memory `feedback_pr_pre_merge_interactive_test`). Live LLM-side response is not exercised here; the harness uses `KOSAX_BACKEND_CMD=sleep 60` to keep CI deterministic. Live verification ships with Epic ε once the NMC mock fixtures land.
 
 **Wall-clock**: from spawn → "Actioning…" displayed: ~6 s (within the 8 s SC-001 budget on the developer laptop).
 
@@ -29,9 +29,9 @@ Both the dev-mode boot (captured twice in the PTY transcript: `tool_registry: 14
 **Result**: ✅ PASS
 
 `bun test src/tools/__tests__/permission-citation.test.ts` — 20 pass / 0 fail / 75 expect() calls. Coverage:
-- 4/4 primitives populate `kosmosCitations[0].real_classification_url` byte-identically against the synthetic NMC adapter.
-- 4/4 primitives populate `kosmosCitations[0].policy_authority` byte-identically.
-- 4/4 `renderToolResultMessage` outputs grep-clean of all 6 KOSMOS-invented blocklist phrases (`안전한 권한 등급`, `본 시스템은`, `KOSMOS는 다음과 같이`, `권한 등급 1/2/3`).
+- 4/4 primitives populate `kosaxCitations[0].real_classification_url` byte-identically against the synthetic NMC adapter.
+- 4/4 primitives populate `kosaxCitations[0].policy_authority` byte-identically.
+- 4/4 `renderToolResultMessage` outputs grep-clean of all 6 KOSAX-invented blocklist phrases (`안전한 권한 등급`, `본 시스템은`, `KOSAX는 다음과 같이`, `권한 등급 1/2/3`).
 - 4/4 fail-closed paths (`AdapterNotFound`, `CitationMissing`) return the correct `errorCode`.
 
 ## SC-004 — `bun typecheck` 0 errors
@@ -86,7 +86,7 @@ The 71 LOC overrun (4.7%) is concentrated in tests, which the spec explicitly ma
 
 `bun test src/tools/__tests__/span-attribute-parity.test.ts` — 14 pass / 0 fail.
 
-The TUI primitive layer does NOT emit OTEL spans directly (Spec 021 emits `gen_ai.client.invoke` from `tui/src/ipc/llmClient.ts`; the analytics service is a Spec 1633 dead-code stub). The test therefore locks the *intent surface* — `extractCitation()` returns exactly two canonical keys; `validateInput` populates `kosmosCitations[0]` with the byte-identical citation that a future OTEL emitter will read into `kosmos.adapter.real_classification_url`; the input schema preserves `tool_id` and `mode` (the source fields for `kosmos.tool.id` and `kosmos.tool.mode`). The fallback rationale is documented at the top of the test file.
+The TUI primitive layer does NOT emit OTEL spans directly (Spec 021 emits `gen_ai.client.invoke` from `tui/src/ipc/llmClient.ts`; the analytics service is a Spec 1633 dead-code stub). The test therefore locks the *intent surface* — `extractCitation()` returns exactly two canonical keys; `validateInput` populates `kosaxCitations[0]` with the byte-identical citation that a future OTEL emitter will read into `kosax.adapter.real_classification_url`; the input schema preserves `tool_id` and `mode` (the source fields for `kosax.tool.id` and `kosax.tool.mode`). The fallback rationale is documented at the top of the test file.
 
 ## Sub-issue closure plan
 
@@ -101,7 +101,7 @@ After PR merge of `Closes #2294`:
 | Principle | Status |
 |---|---|
 | I. Reference-Driven Development | ✅ PASS — every decision traces to `Tool.ts` / `AgentTool.tsx` / `cc-source-migration-plan` |
-| II. Fail-Closed Security | ✅ PASS — `validateInput` fail-closed on missing citation; KOSMOS-invented language enforced absent by `permission-citation.test.ts` blocklist |
+| II. Fail-Closed Security | ✅ PASS — `validateInput` fail-closed on missing citation; KOSAX-invented language enforced absent by `permission-citation.test.ts` blocklist |
 | III. Pydantic v2 Strict Typing | ✅ PASS — backend Pydantic untouched; TS uses `zod/v4` discriminated unions; no `Any` |
 | IV. Government API Compliance | ✅ PASS — PTY smoke uses mock backend; no live `data.go.kr` |
 | V. Policy Alignment | ✅ PASS — single-window contract preserved; PIPA pathway intact |

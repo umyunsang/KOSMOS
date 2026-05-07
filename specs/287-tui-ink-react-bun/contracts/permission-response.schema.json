@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosmos.dev/schemas/spec-287/permission-response.schema.json",
+  "$id": "https://kosax.dev/schemas/spec-287/permission-response.schema.json",
   "title": "PermissionResponseFrame",
   "description": "TUI → backend: citizen's decision on a permission_request. Direction: TUI → backend. Input is unblocked only after this frame is sent (FR-046).",
   "type": "object",

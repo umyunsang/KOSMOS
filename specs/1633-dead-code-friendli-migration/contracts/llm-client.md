@@ -10,9 +10,9 @@ This contract fixes the TypeScript surface that `tui/src/query.ts` and `tui/src/
 
 ```ts
 import type {
-  KosmosMessageStreamParams,
-  KosmosRawMessageStreamEvent,
-  KosmosMessageFinal,
+  KosaxMessageStreamParams,
+  KosaxRawMessageStreamEvent,
+  KosaxMessageFinal,
 } from './llmTypes.js';
 import type { IPCBridge } from './bridge.js';
 
@@ -27,17 +27,17 @@ export class LLMClient {
    *  1. Construct UserInputFrame with fresh correlation_id (makeUUIDv7).
    *  2. Push via bridge.sendFrame(frame); start OTEL gen_ai.client.invoke span.
    *  3. Consume inbound AssistantChunkFrame/ToolCallFrame stream on the correlation_id.
-   *  4. Translate each inbound frame to a KosmosRawMessageStreamEvent; yield.
+   *  4. Translate each inbound frame to a KosaxRawMessageStreamEvent; yield.
    *  5. On done=true trailer, emit message_stop + finalize span, close generator.
    *  6. On ErrorFrame, throw LLMClientError(class, code, message).
    */
-  stream(params: KosmosMessageStreamParams): AsyncGenerator<KosmosRawMessageStreamEvent, KosmosMessageFinal, void>;
+  stream(params: KosaxMessageStreamParams): AsyncGenerator<KosaxRawMessageStreamEvent, KosaxMessageFinal, void>;
 
   /**
    * Non-streaming convenience — awaits stream to completion and collects text.
    * Used for short synchronous classifier calls that don't need token-by-token UI.
    */
-  complete(params: KosmosMessageStreamParams): Promise<KosmosMessageFinal>;
+  complete(params: KosaxMessageStreamParams): Promise<KosaxMessageFinal>;
 }
 
 export class LLMClientError extends Error {
@@ -54,7 +54,7 @@ export class LLMClientError extends Error {
 - **G3** The `model` constructor argument MUST be `'LGAI-EXAONE/K-EXAONE-236B-A23B'` in production builds. Tests may pass a mock value.
 - **G4** If the bridge emits an `ErrorFrame` with `class=llm, code=auth` (missing `FRIENDLI_API_KEY`), `stream()` MUST throw `LLMClientError` without retrying.
 - **G5** Rate-limit handling: `BackpressureSignalFrame` with `kind=llm_rate_limit` pauses consumption until `retry_after_ms` elapses; `stream()` does NOT retry the full turn — that is the Python backend's responsibility (Spec 019 semantics).
-- **G6** The generator's return value (final `KosmosMessageFinal`) carries `{ stop_reason, usage: { input_tokens, output_tokens, cache_read_input_tokens? } }` populated from the Python backend's done-frame trailer.
+- **G6** The generator's return value (final `KosaxMessageFinal`) carries `{ stop_reason, usage: { input_tokens, output_tokens, cache_read_input_tokens? } }` populated from the Python backend's done-frame trailer.
 
 ### 1.3 Non-goals
 
@@ -68,70 +68,70 @@ Complete structural definitions (extracted + finalized from [data-model.md § TS
 
 ```ts
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1633 P2 · Anthropic→FriendliAI type shim.
+// KOSAX-original — Epic #1633 P2 · Anthropic→FriendliAI type shim.
 
-export type KosmosRole = 'user' | 'assistant';
+export type KosaxRole = 'user' | 'assistant';
 
-export type KosmosTextBlockParam = { type: 'text'; text: string };
-export type KosmosToolUseBlockParam = {
+export type KosaxTextBlockParam = { type: 'text'; text: string };
+export type KosaxToolUseBlockParam = {
   type: 'tool_use';
   id: string;
   name: string;
   input: Record<string, unknown>;
 };
-export type KosmosToolResultBlockParam = {
+export type KosaxToolResultBlockParam = {
   type: 'tool_result';
   tool_use_id: string;
-  content: string | KosmosContentBlockParam[];
+  content: string | KosaxContentBlockParam[];
   is_error?: boolean;
 };
-export type KosmosContentBlockParam =
-  | KosmosTextBlockParam
-  | KosmosToolUseBlockParam
-  | KosmosToolResultBlockParam;
+export type KosaxContentBlockParam =
+  | KosaxTextBlockParam
+  | KosaxToolUseBlockParam
+  | KosaxToolResultBlockParam;
 
-export type KosmosMessageParam = {
-  role: KosmosRole;
-  content: string | KosmosContentBlockParam[];
+export type KosaxMessageParam = {
+  role: KosaxRole;
+  content: string | KosaxContentBlockParam[];
 };
 
-export type KosmosToolDefinition = {
+export type KosaxToolDefinition = {
   name: string;
   description?: string;
   input_schema: { type: 'object'; [k: string]: unknown };
 };
 
-export type KosmosMessageStreamParams = {
+export type KosaxMessageStreamParams = {
   model: string;
   system?: string;             // resolved from PromptLoader via backend
-  messages: KosmosMessageParam[];
-  tools?: KosmosToolDefinition[];
+  messages: KosaxMessageParam[];
+  tools?: KosaxToolDefinition[];
   max_tokens: number;
   temperature?: number;
   metadata?: Record<string, string>;
 };
 
-export type KosmosUsage = {
+export type KosaxUsage = {
   input_tokens: number;
   output_tokens: number;
   cache_read_input_tokens?: number;
 };
 
-export type KosmosRawMessageStreamEvent =
+export type KosaxRawMessageStreamEvent =
   | { type: 'message_start'; message: { id: string; role: 'assistant'; model: string } }
-  | { type: 'content_block_start'; index: number; content_block: KosmosContentBlockParam }
+  | { type: 'content_block_start'; index: number; content_block: KosaxContentBlockParam }
   | { type: 'content_block_delta'; index: number; delta: { type: 'text_delta'; text: string } | { type: 'input_json_delta'; partial_json: string } }
   | { type: 'content_block_stop'; index: number }
-  | { type: 'message_delta'; delta: { stop_reason?: 'end_turn' | 'max_tokens' | 'tool_use' | 'stop_sequence' }; usage?: KosmosUsage }
+  | { type: 'message_delta'; delta: { stop_reason?: 'end_turn' | 'max_tokens' | 'tool_use' | 'stop_sequence' }; usage?: KosaxUsage }
   | { type: 'message_stop' };
 
-export type KosmosMessageFinal = {
+export type KosaxMessageFinal = {
   id: string;
   role: 'assistant';
   model: string;
-  content: KosmosContentBlockParam[];
+  content: KosaxContentBlockParam[];
   stop_reason: 'end_turn' | 'max_tokens' | 'tool_use' | 'stop_sequence';
-  usage: KosmosUsage;
+  usage: KosaxUsage;
 };
 ```
 
@@ -193,14 +193,14 @@ Emitted in TS by `LLMClient.stream()` on entry. Parent span set from the current
 | `gen_ai.system` | string | ✅ | `"friendli_exaone"` (constant) |
 | `gen_ai.operation.name` | string | ✅ | `"chat"` |
 | `gen_ai.request.model` | string | ✅ | `LLMClient` constructor `model` arg |
-| `gen_ai.request.max_tokens` | int | ✅ | from `KosmosMessageStreamParams.max_tokens` |
+| `gen_ai.request.max_tokens` | int | ✅ | from `KosaxMessageStreamParams.max_tokens` |
 | `gen_ai.request.temperature` | float | ⬜ | if provided |
-| `gen_ai.usage.input_tokens` | int | ✅ | from final `KosmosMessageFinal.usage.input_tokens` |
-| `gen_ai.usage.output_tokens` | int | ✅ | from final `KosmosMessageFinal.usage.output_tokens` |
-| `kosmos.prompt.hash` | string | ✅ | SHA-256 hex, forwarded by backend in response metadata |
-| `kosmos.correlation_id` | string | ✅ | the envelope `correlation_id` used for this turn |
-| `kosmos.transaction_id` | string | ⬜ | envelope `transaction_id` if set |
-| `kosmos.session_id` | string | ✅ | active session |
+| `gen_ai.usage.input_tokens` | int | ✅ | from final `KosaxMessageFinal.usage.input_tokens` |
+| `gen_ai.usage.output_tokens` | int | ✅ | from final `KosaxMessageFinal.usage.output_tokens` |
+| `kosax.prompt.hash` | string | ✅ | SHA-256 hex, forwarded by backend in response metadata |
+| `kosax.correlation_id` | string | ✅ | the envelope `correlation_id` used for this turn |
+| `kosax.transaction_id` | string | ⬜ | envelope `transaction_id` if set |
+| `kosax.session_id` | string | ✅ | active session |
 
 ### 4.2 Span status
 

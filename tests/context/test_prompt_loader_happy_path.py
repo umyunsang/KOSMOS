@@ -1,7 +1,7 @@
 """T008 — PromptLoader happy-path tests (FR-C10).
 
 Uses the shared `valid_prompt_tree` fixture from tests/context/conftest.py.
-All tests are intentionally RED until src/kosmos/context/prompt_loader.py exists (T025).
+All tests are intentionally RED until src/kosax/context/prompt_loader.py exists (T025).
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ import collections.abc
 import hashlib
 import logging
 
-from kosmos.context.prompt_loader import (  # noqa: F401 — RED import
+from kosax.context.prompt_loader import (  # noqa: F401 — RED import
     PromptLoader,
     PromptRegistryError,
 )
@@ -64,12 +64,12 @@ def test_all_hashes_returns_exactly_three_entries(valid_prompt_tree):
 
 def test_info_log_emitted_per_resolved_prompt(valid_prompt_tree, caplog):
     """FR-C10: at least one INFO record per resolved prompt must be emitted
-    on the kosmos.context.prompt_loader logger during PromptLoader construction."""
-    with caplog.at_level(logging.INFO, logger="kosmos.context.prompt_loader"):
+    on the kosax.context.prompt_loader logger during PromptLoader construction."""
+    with caplog.at_level(logging.INFO, logger="kosax.context.prompt_loader"):
         _loader = PromptLoader(manifest_path=valid_prompt_tree)
 
-    loader_records = [r for r in caplog.records if r.name == "kosmos.context.prompt_loader"]
+    loader_records = [r for r in caplog.records if r.name == "kosax.context.prompt_loader"]
     assert len(loader_records) >= 3, (
-        f"Expected >= 3 INFO records from 'kosmos.context.prompt_loader', "
+        f"Expected >= 3 INFO records from 'kosax.context.prompt_loader', "
         f"got {len(loader_records)}: {[r.message for r in loader_records]}"
     )

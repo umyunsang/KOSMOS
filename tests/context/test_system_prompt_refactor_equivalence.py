@@ -29,8 +29,8 @@ import pathlib
 
 import pytest
 
-from kosmos.context.models import SystemPromptConfig
-from kosmos.context.system_prompt import SystemPromptAssembler
+from kosax.context.models import SystemPromptConfig
+from kosax.context.system_prompt import SystemPromptAssembler
 
 # ---------------------------------------------------------------------------
 # Path constants — all absolute, resolved from this file's location.

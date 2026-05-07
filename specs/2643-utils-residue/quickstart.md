@@ -6,7 +6,7 @@ This document provides the verification chain (Layer 1a → 5) for Epic G plus t
 
 ## Prerequisites
 
-- Worktree at `/Users/um-yunsang/KOSMOS-w-2643/` checked out on branch `feat/2643-s9-utils-residue`.
+- Worktree at `/Users/um-yunsang/KOSAX-w-2643/` checked out on branch `feat/2643-s9-utils-residue`.
 - `bun install` complete in `tui/`.
 - `uv sync` complete at repo root.
 - `.env` populated with `FRIENDLI_TOKEN` (for SC-007 manual measurement only — never used in CI).
@@ -16,7 +16,7 @@ This document provides the verification chain (Layer 1a → 5) for Epic G plus t
 ### Layer 1a — Python `pytest`
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2643
+cd /Users/um-yunsang/KOSAX-w-2643
 uv run pytest --quiet 2>&1 | tail -20
 ```
 
@@ -25,7 +25,7 @@ uv run pytest --quiet 2>&1 | tail -20
 ### Layer 1b — Ink snapshot / unit `bun test`
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2643/tui
+cd /Users/um-yunsang/KOSAX-w-2643/tui
 bun test 2>&1 | tail -30
 ```
 
@@ -38,7 +38,7 @@ bun test 2>&1 | tail -30
 ### Layer 2 — stdio JSONL probe
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2643/tui
+cd /Users/um-yunsang/KOSAX-w-2643/tui
 bun typecheck 2>&1 | tail -20
 ```
 
@@ -47,7 +47,7 @@ bun typecheck 2>&1 | tail -20
 ### Layer 3 — Interactive PTY text-log scenario
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2643
+cd /Users/um-yunsang/KOSAX-w-2643
 scripts/tui-tmux-capture.sh \
   specs/2643-utils-residue/smoke-frames \
   specs/2643-utils-residue/scripts/smoke-session-title.sh
@@ -122,7 +122,7 @@ for (const description of inputs) {
 **Run** (manual, never in CI):
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2643/tui
+cd /Users/um-yunsang/KOSAX-w-2643/tui
 bun run specs/2643-utils-residue/scripts/measure-session-title-latency.ts > specs/2643-utils-residue/sc-007-measurements.json
 ```
 
@@ -146,7 +146,7 @@ bun run specs/2643-utils-residue/scripts/measure-session-title-latency.ts > spec
 ## Diff Audit (post-implementation)
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2643
+cd /Users/um-yunsang/KOSAX-w-2643
 diff -u .references/claude-code-sourcemap/restored-src/src/utils/sessionTitle.ts \
         tui/src/utils/sessionTitle.ts | head -20
 diff -u .references/claude-code-sourcemap/restored-src/src/utils/mcp/dateTimeParser.ts \

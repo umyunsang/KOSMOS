@@ -12,9 +12,9 @@ import pytest
 from pydantic import BaseModel
 from rich.console import Console
 
-from kosmos.engine.events import QueryEvent, StopReason
-from kosmos.llm.models import TokenUsage
-from kosmos.tools.models import GovAPITool
+from kosax.engine.events import QueryEvent, StopReason
+from kosax.llm.models import TokenUsage
+from kosax.tools.models import GovAPITool
 
 # ---------------------------------------------------------------------------
 # Helpers

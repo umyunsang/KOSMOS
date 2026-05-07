@@ -6,8 +6,8 @@ from __future__ import annotations
 import pytest
 from pydantic import BaseModel, ConfigDict
 
-from kosmos.tools.models import GovAPITool
-from kosmos.tools.routing_index import (
+from kosax.tools.models import GovAPITool
+from kosax.tools.routing_index import (
     RoutingIndex,
     RoutingValidationError,
     build_routing_index,

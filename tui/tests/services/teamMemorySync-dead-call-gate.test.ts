@@ -2,10 +2,10 @@
 // Spec 2641 · T004 — teamMemorySync dead-call gate unit tests.
 //
 // Verifies the four public entry-points throw when the
-// KOSMOS_ENABLE_DEAD_TEAM_MEM_SYNC env override is unset (the production
+// KOSAX_ENABLE_DEAD_TEAM_MEM_SYNC env override is unset (the production
 // state). This enforces, at unit-test time, that no axios call to
 // claude.ai's `/api/claude_code/team_memory` endpoint can ever leave a
-// KOSMOS process unintentionally — defense-in-depth atop the
+// KOSAX process unintentionally — defense-in-depth atop the
 // `feature('TEAMMEM')=false` gate at tui/src/setup.ts:358.
 
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
@@ -18,7 +18,7 @@ import {
   syncTeamMemory,
 } from '../../src/services/teamMemorySync/index'
 
-const ENV_KEY = 'KOSMOS_ENABLE_DEAD_TEAM_MEM_SYNC'
+const ENV_KEY = 'KOSAX_ENABLE_DEAD_TEAM_MEM_SYNC'
 
 describe('teamMemorySync dead-call gate (Spec 2641)', () => {
   let originalEnv: string | undefined
@@ -38,28 +38,28 @@ describe('teamMemorySync dead-call gate (Spec 2641)', () => {
 
   test('isTeamMemorySyncAvailable throws without env override', () => {
     expect(() => isTeamMemorySyncAvailable()).toThrow(
-      /isTeamMemorySyncAvailable: dead in KOSMOS/,
+      /isTeamMemorySyncAvailable: dead in KOSAX/,
     )
   })
 
   test('pullTeamMemory throws without env override', async () => {
     const state = createSyncState()
     await expect(pullTeamMemory(state)).rejects.toThrow(
-      /pullTeamMemory: dead in KOSMOS/,
+      /pullTeamMemory: dead in KOSAX/,
     )
   })
 
   test('pushTeamMemory throws without env override', async () => {
     const state = createSyncState()
     await expect(pushTeamMemory(state)).rejects.toThrow(
-      /pushTeamMemory: dead in KOSMOS/,
+      /pushTeamMemory: dead in KOSAX/,
     )
   })
 
   test('syncTeamMemory throws without env override', async () => {
     const state = createSyncState()
     await expect(syncTeamMemory(state)).rejects.toThrow(
-      /syncTeamMemory: dead in KOSMOS/,
+      /syncTeamMemory: dead in KOSAX/,
     )
   })
 
@@ -69,7 +69,7 @@ describe('teamMemorySync dead-call gate (Spec 2641)', () => {
     expect(state.serverChecksums.size).toBe(0)
     expect(state.serverMaxEntries).toBeNull()
 
-    const hash = hashContent('hello kosmos')
+    const hash = hashContent('hello kosax')
     expect(hash).toMatch(/^sha256:[0-9a-f]{64}$/)
   })
 
@@ -78,7 +78,7 @@ describe('teamMemorySync dead-call gate (Spec 2641)', () => {
     // With the gate disabled, isTeamMemorySyncAvailable should return false
     // (no OAuth tokens) rather than throw the dead-call error.
     expect(() => isTeamMemorySyncAvailable()).not.toThrow(
-      /dead in KOSMOS/,
+      /dead in KOSAX/,
     )
   })
 
@@ -88,16 +88,16 @@ describe('teamMemorySync dead-call gate (Spec 2641)', () => {
   // dead path by accident.
   test('env override "0" keeps the gate closed (rejects truthy fallthrough)', () => {
     process.env[ENV_KEY] = '0'
-    expect(() => isTeamMemorySyncAvailable()).toThrow(/dead in KOSMOS/)
+    expect(() => isTeamMemorySyncAvailable()).toThrow(/dead in KOSAX/)
   })
 
   test('env override "false" keeps the gate closed', () => {
     process.env[ENV_KEY] = 'false'
-    expect(() => isTeamMemorySyncAvailable()).toThrow(/dead in KOSMOS/)
+    expect(() => isTeamMemorySyncAvailable()).toThrow(/dead in KOSAX/)
   })
 
   test('env override "true" keeps the gate closed (only "1" is valid)', () => {
     process.env[ENV_KEY] = 'true'
-    expect(() => isTeamMemorySyncAvailable()).toThrow(/dead in KOSMOS/)
+    expect(() => isTeamMemorySyncAvailable()).toThrow(/dead in KOSAX/)
   })
 })

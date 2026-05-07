@@ -1,8 +1,8 @@
 """Smoke test to verify test infrastructure works."""
 
 
-def test_import_kosmos() -> None:
-    """Verify the kosmos package is importable."""
-    import kosmos
+def test_import_kosax() -> None:
+    """Verify the kosax package is importable."""
+    import kosax
 
-    assert kosmos.__doc__ is not None
+    assert kosax.__doc__ is not None

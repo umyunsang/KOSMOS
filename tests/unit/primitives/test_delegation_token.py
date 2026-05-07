@@ -20,7 +20,7 @@ from unittest.mock import AsyncMock
 import pytest
 from pydantic import ValidationError
 
-from kosmos.primitives.delegation import (
+from kosax.primitives.delegation import (
     DelegationContext,
     DelegationToken,
     DelegationValidationOutcome,

@@ -29,10 +29,10 @@ from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from pydantic import BaseModel
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
-from kosmos.tools.models import LookupError as LookupErrorModel
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.models import AdapterRealDomainPolicy, GovAPITool
+from kosax.tools.models import LookupError as LookupErrorModel
+from kosax.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # OTel span-capture fixture — monkeypatches the executor module's _tracer and
@@ -54,9 +54,9 @@ def span_capture(
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))
 
-    import kosmos.tools.executor as executor_mod
+    import kosax.tools.executor as executor_mod
 
-    monkeypatch.setattr(executor_mod, "_tracer", provider.get_tracer("kosmos.tools.executor"))
+    monkeypatch.setattr(executor_mod, "_tracer", provider.get_tracer("kosax.tools.executor"))
 
     exporter.clear()
     return exporter, provider

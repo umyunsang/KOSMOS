@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1634 P4 · TranslateTool prompt strings.
+// KOSAX-original — Epic #1634 P4 · TranslateTool prompt strings.
 
 export const TRANSLATE_TOOL_NAME = 'Translate'
 

@@ -8,7 +8,7 @@ Asserts:
   (b) exact subdirectory names == {data_go_kr, omnione, barocert, mydata, npki_crypto, cbs}
   (c) docs/scenarios/*.md count == 3 (README.md is excluded)
   (d) each of the 3 scenario files contains the heading
-      "## KOSMOS ↔ real system handoff point"
+      "## KOSAX ↔ real system handoff point"
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ SCENARIOS_DIR = REPO_ROOT / "docs" / "scenarios"
 EXPECTED_MOCK_NAMES = {"data_go_kr", "omnione", "barocert", "mydata", "npki_crypto", "cbs"}
 EXPECTED_MOCK_COUNT = 6
 EXPECTED_SCENARIO_COUNT = 8  # Spec 031 baseline 3 + Epic ζ #2297 5 OPAQUE Korean-AX scenarios = 8.
-HANDOFF_HEADING = "## KOSMOS ↔ real system handoff point"
+HANDOFF_HEADING = "## KOSAX ↔ real system handoff point"
 
 
 # ---------------------------------------------------------------------------
@@ -81,7 +81,7 @@ def test_scenario_file_count() -> None:
 
 @pytest.mark.parametrize("scenario_file", _scenario_files())
 def test_scenario_has_handoff_heading(scenario_file: pathlib.Path) -> None:
-    """Each scenario file must contain '## KOSMOS ↔ real system handoff point'."""
+    """Each scenario file must contain '## KOSAX ↔ real system handoff point'."""
     content = scenario_file.read_text(encoding="utf-8")
     assert HANDOFF_HEADING in content, (
         f"{scenario_file.name} is missing the required heading: '{HANDOFF_HEADING}'"

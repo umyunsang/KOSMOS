@@ -14,20 +14,20 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from kosmos.context.builder import ContextBuilder
-from kosmos.context.models import SystemPromptConfig
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.engine import QueryEngine
-from kosmos.engine.events import QueryEvent, StopReason
+from kosax.context.builder import ContextBuilder
+from kosax.context.models import SystemPromptConfig
+from kosax.engine.config import QueryEngineConfig
+from kosax.engine.engine import QueryEngine
+from kosax.engine.events import QueryEvent, StopReason
 
 # Force QueryContext to resolve the LLMClient forward reference so that
 # mock subclasses pass the isinstance check inside QueryContext validation.
-from kosmos.engine.models import QueryContext  # noqa: E402
-from kosmos.llm.client import LLMClient
-from kosmos.llm.models import ChatMessage, StreamEvent, TokenUsage
-from kosmos.llm.usage import UsageTracker
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.registry import ToolRegistry
+from kosax.engine.models import QueryContext  # noqa: E402
+from kosax.llm.client import LLMClient
+from kosax.llm.models import ChatMessage, StreamEvent, TokenUsage
+from kosax.llm.usage import UsageTracker
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.registry import ToolRegistry
 
 QueryContext.model_rebuild()
 

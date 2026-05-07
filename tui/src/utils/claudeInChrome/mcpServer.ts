@@ -7,7 +7,7 @@ import {
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { format } from 'util'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — vendor analytics modules deleted;
+// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — vendor analytics modules deleted;
 // canonical surface lives in analytics/index.ts.
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,

@@ -5,7 +5,7 @@ Verifies the adaptive top_k clamp contract (FR-009):
     effective_top_k = max(1, min(top_k if top_k else default_k, len(registry), 20))
 
 Test cases:
-    1. top_k=None → effective 5 (default from KOSMOS_LOOKUP_TOPK, default=5).
+    1. top_k=None → effective 5 (default from KOSAX_LOOKUP_TOPK, default=5).
     2. top_k=0     → LookupSearchInput clamps min to 1 (ge=1 validator).
        We test the boundary by using top_k=1 explicitly.
     3. top_k=99    → LookupSearchInput clamps max to 20 (le=20 validator),
@@ -20,12 +20,12 @@ from __future__ import annotations
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from kosmos.tools.lookup import lookup
-from kosmos.tools.models import (
+from kosax.tools.lookup import lookup
+from kosax.tools.models import (
     LookupSearchInput,
     LookupSearchResult,
 )
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Minimal fixtures — build small test registries in-process
@@ -46,7 +46,7 @@ class _MinimalOutput(BaseModel):
 
 def _make_tool(tool_id: str, search_hint: str) -> object:
     """Create a minimal GovAPITool for testing."""
-    from kosmos.tools.models import GovAPITool
+    from kosax.tools.models import GovAPITool
 
     return GovAPITool(
         id=tool_id,

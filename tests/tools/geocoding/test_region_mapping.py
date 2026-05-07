@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for kosmos.tools.geocoding.region_mapping."""
+"""Tests for kosax.tools.geocoding.region_mapping."""
 
 from __future__ import annotations
 
-from kosmos.tools.geocoding.region_mapping import region1_to_sido, region2_to_gugun
-from kosmos.tools.koroad.code_tables import GugunCode, SidoCode
+from kosax.tools.geocoding.region_mapping import region1_to_sido, region2_to_gugun
+from kosax.tools.koroad.code_tables import GugunCode, SidoCode
 
 
 class TestRegion1ToSido:

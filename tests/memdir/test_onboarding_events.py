@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for kosmos.memdir.onboarding_events (Epic H #1302, B1 remediation).
+"""Tests for kosax.memdir.onboarding_events (Epic H #1302, B1 remediation).
 
 Round-trips the stdio envelope shape emitted by the TUI
 (`Onboarding.tsx::defaultWriteConsentRecord` + `defaultWriteScopeRecord`)
@@ -16,7 +16,7 @@ from uuid import UUID
 
 import pytest
 
-from kosmos.memdir.onboarding_events import (
+from kosax.memdir.onboarding_events import (
     OnboardingEventError,
     UnknownOnboardingEventError,
     handle_onboarding_event,

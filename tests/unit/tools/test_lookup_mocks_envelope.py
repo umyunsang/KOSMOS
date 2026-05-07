@@ -6,7 +6,7 @@ mock adapters (``mock_lookup_module_gov24_certificate`` /
 ``mock_lookup_module_hometax_simplified``) returned a flat stamped dict
 without the ``kind`` discriminator, causing
 ``EnvelopeNormalizationError: tagged-union[…] Unable to extract tag``
-inside ``kosmos.tools.envelope.normalize`` and triggering 2× LLM retry.
+inside ``kosax.tools.envelope.normalize`` and triggering 2× LLM retry.
 
 This regression test pins the contract:
   - ``handle()`` returns a dict shaped ``{"kind": "record", "item": {...}}``
@@ -22,34 +22,34 @@ This regression test pins the contract:
     ``item``.
 
 Linked surfaces:
-  - ``src/kosmos/tools/models.py``  — LookupOutput discriminated union.
-  - ``src/kosmos/tools/envelope.py`` — normalize() / TypeAdapter.
-  - ``src/kosmos/tools/mock/lookup_module_gov24_certificate.py`` (fix B1).
-  - ``src/kosmos/tools/mock/lookup_module_hometax_simplified.py`` (fix B1).
+  - ``src/kosax/tools/models.py``  — LookupOutput discriminated union.
+  - ``src/kosax/tools/envelope.py`` — normalize() / TypeAdapter.
+  - ``src/kosax/tools/mock/lookup_module_gov24_certificate.py`` (fix B1).
+  - ``src/kosax/tools/mock/lookup_module_hometax_simplified.py`` (fix B1).
 """
 
 from __future__ import annotations
 
 import pytest
 
-from kosmos.tools.envelope import normalize
-from kosmos.tools.errors import LookupErrorReason
-from kosmos.tools.mock.lookup_module_gov24_certificate import (
+from kosax.tools.envelope import normalize
+from kosax.tools.errors import LookupErrorReason
+from kosax.tools.mock.lookup_module_gov24_certificate import (
     MOCK_LOOKUP_MODULE_GOV24_CERTIFICATE_TOOL,
     Gov24CertificateInput,
 )
-from kosmos.tools.mock.lookup_module_gov24_certificate import (
+from kosax.tools.mock.lookup_module_gov24_certificate import (
     handle as gov24_handle,
 )
-from kosmos.tools.mock.lookup_module_hometax_simplified import (
+from kosax.tools.mock.lookup_module_hometax_simplified import (
     MOCK_LOOKUP_MODULE_HOMETAX_SIMPLIFIED_TOOL,
     HometaxSimplifiedInput,
 )
-from kosmos.tools.mock.lookup_module_hometax_simplified import (
+from kosax.tools.mock.lookup_module_hometax_simplified import (
     handle as hometax_handle,
 )
-from kosmos.tools.models import LookupError as KosmosLookupError
-from kosmos.tools.models import LookupRecord
+from kosax.tools.models import LookupError as KosaxLookupError
+from kosax.tools.models import LookupRecord
 
 # ---------------------------------------------------------------------------
 # Fixtures — minimal valid inputs for both adapters.
@@ -176,7 +176,7 @@ async def test_hometax_envelope_normalize_passes() -> None:
 def _delegation(scope: str) -> object:
     from datetime import UTC, datetime, timedelta
 
-    from kosmos.primitives.delegation import DelegationContext, DelegationToken
+    from kosax.primitives.delegation import DelegationContext, DelegationToken
 
     token = DelegationToken(
         vp_jwt="eyJhbGciOiJub25lIiwidHlwIjoidnArand0In0.eyJzdWIiOiJtb2NrIn0.mock-signature-not-cryptographic",
@@ -213,7 +213,7 @@ async def test_gov24_scope_violation_returns_error_envelope() -> None:
         request_id="test-scope-violation-0001",
         elapsed_ms=3,
     )
-    assert isinstance(validated, KosmosLookupError)
+    assert isinstance(validated, KosaxLookupError)
     assert validated.kind == "error"
     assert validated.reason == LookupErrorReason.auth_required
     assert validated.retryable is False
@@ -238,7 +238,7 @@ async def test_hometax_scope_violation_returns_error_envelope() -> None:
         request_id="test-scope-violation-0002",
         elapsed_ms=5,
     )
-    assert isinstance(validated, KosmosLookupError)
+    assert isinstance(validated, KosaxLookupError)
     assert validated.kind == "error"
     assert validated.reason == LookupErrorReason.auth_required
     assert validated.retryable is False
@@ -256,14 +256,14 @@ async def test_hometax_scope_violation_returns_error_envelope() -> None:
 @pytest.fixture
 def registry_with_mocks():
     """Fresh ToolRegistry + ToolExecutor with both lookup mocks registered."""
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.mock.lookup_module_gov24_certificate import (
+    from kosax.tools.executor import ToolExecutor
+    from kosax.tools.mock.lookup_module_gov24_certificate import (
         register as register_gov24,
     )
-    from kosmos.tools.mock.lookup_module_hometax_simplified import (
+    from kosax.tools.mock.lookup_module_hometax_simplified import (
         register as register_hometax,
     )
-    from kosmos.tools.registry import ToolRegistry
+    from kosax.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -277,8 +277,8 @@ async def test_primitive_lookup_fetch_gov24_returns_typed_record(
     registry_with_mocks: tuple[object, object],
 ) -> None:
     """End-to-end: lookup primitive surfaces a LookupRecord — no validation error."""
-    from kosmos.tools.lookup import lookup
-    from kosmos.tools.models import LookupFetchInput
+    from kosax.tools.lookup import lookup
+    from kosax.tools.models import LookupFetchInput
 
     _registry, executor = registry_with_mocks
     inp = LookupFetchInput(
@@ -311,8 +311,8 @@ async def test_primitive_lookup_fetch_hometax_returns_typed_record(
     registry_with_mocks: tuple[object, object],
 ) -> None:
     """End-to-end: hometax mock also surfaces a typed LookupRecord."""
-    from kosmos.tools.lookup import lookup
-    from kosmos.tools.models import LookupFetchInput
+    from kosax.tools.lookup import lookup
+    from kosax.tools.models import LookupFetchInput
 
     _registry, executor = registry_with_mocks
     inp = LookupFetchInput(

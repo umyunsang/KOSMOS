@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNotifications } from 'src/context/notifications.js';
 import { Text } from 'src/ink.js';
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — services/claudeAiLimits +
+// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — services/claudeAiLimits +
 // claudeAiLimitsHook deleted. FriendliAI K-EXAONE has no Claude.ai usage
 // envelope to surface — all rate-limit notifications are silently no-op.
 const getRateLimitWarning = (_limits: unknown, _model: unknown): string | null => null;

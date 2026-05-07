@@ -3,7 +3,7 @@
  */
 
 import axios from 'axios'
-// KOSMOS: constants/oauth.js deleted by Spec 1633 P1+P2. OAUTH_BETA_HEADER → '' (OAuth not used with FriendliAI).
+// KOSAX: constants/oauth.js deleted by Spec 1633 P1+P2. OAUTH_BETA_HEADER → '' (OAuth not used with FriendliAI).
 const OAUTH_BETA_HEADER = ''
 import {
   getAnthropicApiKey,

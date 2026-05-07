@@ -3,7 +3,7 @@
 
 Strategy
 --------
-The IPC stdio bridge (`kosmos.ipc.stdio`) reads JSONL frames from stdin and
+The IPC stdio bridge (`kosax.ipc.stdio`) reads JSONL frames from stdin and
 writes JSONL frames to stdout.  This test exercises the *layer below* the TUI:
 it drives the Python backend's QueryEngine directly via the same
 infrastructure the e2e suite uses, then validates that the frame sequence a
@@ -27,8 +27,8 @@ Live API note
 -------------
 Neither sub-test calls a live data.go.kr endpoint.  All HTTP interactions are
 intercepted by the AsyncMock seam from ``tests.e2e.conftest``.  If a live
-KOROAD API key is configured (``KOSMOS_KOROAD_API_KEY`` or
-``KOSMOS_DATA_GO_KR_API_KEY``), the test does NOT automatically become live;
+KOROAD API key is configured (``KOSAX_KOROAD_API_KEY`` or
+``KOSAX_DATA_GO_KR_API_KEY``), the test does NOT automatically become live;
 it still uses the fixture.  A ``@pytest.mark.live`` variant would be required
 for real live calls (out of scope for this task per AGENTS.md hard rules).
 
@@ -53,7 +53,7 @@ import httpx
 import pytest
 from pydantic import TypeAdapter
 
-from kosmos.ipc.frame_schema import (
+from kosax.ipc.frame_schema import (
     AssistantChunkFrame,
     IPCFrame,
     ToolCallFrame,
@@ -112,11 +112,11 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:  # noqa: C901
     """
     import uuid
 
-    from kosmos.context.builder import ContextBuilder
-    from kosmos.engine.config import QueryEngineConfig
-    from kosmos.engine.engine import QueryEngine
-    from kosmos.engine.events import QueryEvent
-    from kosmos.ipc.frame_schema import ToolResultEnvelope
+    from kosax.context.builder import ContextBuilder
+    from kosax.engine.config import QueryEngineConfig
+    from kosax.engine.engine import QueryEngine
+    from kosax.engine.events import QueryEvent
+    from kosax.ipc.frame_schema import ToolResultEnvelope
     from tests.e2e.conftest import (
         TRIGGER_QUERY,
         _build_httpx_mock,
@@ -132,9 +132,9 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:  # noqa: C901
     context_builder = ContextBuilder(registry=registry)
 
     # Wrap MockLLMClient in LLMClient-compatible adapter
-    from kosmos.llm.client import LLMClient
-    from kosmos.llm.models import ChatMessage
-    from kosmos.llm.usage import UsageTracker
+    from kosax.llm.client import LLMClient
+    from kosax.llm.models import ChatMessage
+    from kosax.llm.usage import UsageTracker
 
     class _Adapter(LLMClient):
         def __new__(cls, *args: object, **kwargs: object) -> _Adapter:

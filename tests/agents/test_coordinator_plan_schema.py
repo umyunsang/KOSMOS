@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from uuid import uuid4
 
-from kosmos.agents.plan import (
+from kosax.agents.plan import (
     CoordinatorPlan,
     ExecutionMode,
     PlanStatus,

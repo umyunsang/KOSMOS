@@ -9,7 +9,7 @@
 // session as assistant-backed. This module enumerates those files with stat-
 // mtime sorting (no full content read) and exposes a picker-ready result.
 //
-// Upstream CC gates this behind `feature('KAIROS')`; in KOSMOS we leave it
+// Upstream CC gates this behind `feature('KAIROS')`; in KOSAX we leave it
 // functional so that (a) the types are honest, (b) if KAIROS is ever
 // enabled, the picker works.
 

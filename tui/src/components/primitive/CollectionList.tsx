@@ -1,5 +1,5 @@
 /**
- * KOSMOS-original — CollectionList renderer.
+ * KOSAX-original — CollectionList renderer.
  *
  * Renders a numbered list of records.  Each item shows a left-padded index,
  * a title, and optional trailing metadata.

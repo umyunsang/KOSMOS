@@ -26,7 +26,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kosmos.tools.retrieval.manifest import RetrievalManifest
+from kosax.tools.retrieval.manifest import RetrievalManifest
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures

@@ -18,15 +18,15 @@ Represents the new `otelcol` entry added to `docker-compose.dev.yml`.
 | `restart` | enum | `unless-stopped` | Matches sibling Langfuse services |
 | `depends_on.langfuse-web.condition` | enum | `service_healthy` | Blocks collector start until Langfuse web is responsive |
 | `volumes` | list[VolumeMount] | `["./infra/otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml:ro"]` | Read-only mount (`:ro` required by FR-002) |
-| `ports` | list[PortMap] | `["${KOSMOS_OTEL_COLLECTOR_PORT:-4318}:4318"]` | Only OTLP HTTP exposed; gRPC port 4317 intentionally unexposed (FR-003) |
-| `environment` | map[string, string] | See E3 EnvironmentContract | All keys `KOSMOS_`-prefixed |
+| `ports` | list[PortMap] | `["${KOSAX_OTEL_COLLECTOR_PORT:-4318}:4318"]` | Only OTLP HTTP exposed; gRPC port 4317 intentionally unexposed (FR-003) |
+| `environment` | map[string, string] | See E3 EnvironmentContract | All keys `KOSAX_`-prefixed |
 | `healthcheck.test` | list[string] | `["CMD", "wget", "--spider", "-q", "http://localhost:13133/"]` | Hits health_check extension endpoint |
 | `healthcheck.interval` | duration | `5s` | |
 | `healthcheck.retries` | int | `10` | Matches FR-004 "10 times at 5-second intervals" |
 
 **Relationships**:
 - Depends on `langfuse-web` (healthcheck-gated).
-- Consumed by external KOSMOS app process (outside compose network) via host port `:4318`.
+- Consumed by external KOSAX app process (outside compose network) via host port `:4318`.
 
 **Invariants**:
 - The `:ro` flag on the config volume is a **fail-closed invariant** — a compose file without it must fail `/speckit-analyze`.
@@ -67,9 +67,9 @@ Represents the collector's declarative YAML pipeline. Schema is owned by the OTe
 | `delete` | `patient.phone` | delete | PIPA §26 |
 | `delete` | `patient.rrn` | delete | PIPA §26 — resident registration number |
 | `delete` | `patient.address` | delete | PIPA §26 |
-| `hash` | `kosmos.location.query` | SHA-256 | Preserves cardinality for analytics while redacting raw query text |
+| `hash` | `kosax.location.query` | SHA-256 | Preserves cardinality for analytics while redacting raw query text |
 
-Note: The OTel Collector `attributes` processor does **not support wildcard matching** in `actions[].key`. The spec.md phrasing "Delete `patient.*` (wildcard pattern)" is therefore realised as an **explicit enumeration** of the four known `patient.*` keys used by KOSMOS tool adapters. New `patient.*` keys must be added here. This is documented at the top of `infra/otel-collector/config.yaml` and cross-linked from the adapter authoring guide.
+Note: The OTel Collector `attributes` processor does **not support wildcard matching** in `actions[].key`. The spec.md phrasing "Delete `patient.*` (wildcard pattern)" is therefore realised as an **explicit enumeration** of the four known `patient.*` keys used by KOSAX tool adapters. New `patient.*` keys must be added here. This is documented at the top of `infra/otel-collector/config.yaml` and cross-linked from the adapter authoring guide.
 
 **`batch`** (FR-007):
 
@@ -83,8 +83,8 @@ Note: The OTel Collector `attributes` processor does **not support wildcard matc
 
 | Field | Value / Source |
 |---|---|
-| `endpoint` | `${KOSMOS_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel/v1/traces}` |
-| `headers.Authorization` | `${KOSMOS_LANGFUSE_OTLP_AUTH_HEADER}` (empty = anonymous) |
+| `endpoint` | `${KOSAX_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel/v1/traces}` |
+| `headers.Authorization` | `${KOSAX_LANGFUSE_OTLP_AUTH_HEADER}` (empty = anonymous) |
 | `headers.x-langfuse-ingestion-version` | `"4"` |
 | `tls.insecure` | `true` (local only; Phase 3 flips to TLS) |
 | `compression` | `gzip` |
@@ -107,27 +107,27 @@ service:
 
 ---
 
-## E3. EnvironmentContract (three new `KOSMOS_` vars + inherited)
+## E3. EnvironmentContract (three new `KOSAX_` vars + inherited)
 
 Represents the new rows appended to `.env.example` (FR-010).
 
 | Key | Default | Consumer | Sensitivity |
 |---|---|---|---|
-| `KOSMOS_OTEL_COLLECTOR_PORT` | `4318` | `docker-compose.dev.yml` — host port map | Non-sensitive |
-| `KOSMOS_LANGFUSE_OTLP_ENDPOINT` | `http://langfuse-web:3000/api/public/otel/v1/traces` | `infra/otel-collector/config.yaml` — exporter `endpoint` | Non-sensitive |
-| `KOSMOS_LANGFUSE_OTLP_AUTH_HEADER` | `` (empty) | `infra/otel-collector/config.yaml` — exporter `headers.Authorization` | **SENSITIVE** — base64 of `pk-xxx:sk-xxx` |
+| `KOSAX_OTEL_COLLECTOR_PORT` | `4318` | `docker-compose.dev.yml` — host port map | Non-sensitive |
+| `KOSAX_LANGFUSE_OTLP_ENDPOINT` | `http://langfuse-web:3000/api/public/otel/v1/traces` | `infra/otel-collector/config.yaml` — exporter `endpoint` | Non-sensitive |
+| `KOSAX_LANGFUSE_OTLP_AUTH_HEADER` | `` (empty) | `infra/otel-collector/config.yaml` — exporter `headers.Authorization` | **SENSITIVE** — base64 of `pk-xxx:sk-xxx` |
 
 **Inherited from spec 021** (unchanged, listed for completeness):
 
 | Key | Role in 028 |
 |---|---|
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | KOSMOS Python app points here; set to `http://localhost:4318` in dev |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | KOSAX Python app points here; set to `http://localhost:4318` in dev |
 | `OTEL_SDK_DISABLED` | Must remain effective — SC-004 |
 
 **Validation rules**:
-- `KOSMOS_OTEL_COLLECTOR_PORT` must be a valid TCP port (1024 ≤ n ≤ 65535 for unprivileged). Compose rejects malformed values at `config` time.
-- `KOSMOS_LANGFUSE_OTLP_ENDPOINT` must be a URL with scheme `http` or `https`. The `:ro` collector config does not validate the URL format; malformed URLs surface as exporter errors at first span.
-- `KOSMOS_LANGFUSE_OTLP_AUTH_HEADER`, when set, must begin with `Basic ` (RFC 7617 token prefix). Empty string disables auth.
+- `KOSAX_OTEL_COLLECTOR_PORT` must be a valid TCP port (1024 ≤ n ≤ 65535 for unprivileged). Compose rejects malformed values at `config` time.
+- `KOSAX_LANGFUSE_OTLP_ENDPOINT` must be a URL with scheme `http` or `https`. The `:ro` collector config does not validate the URL format; malformed URLs surface as exporter errors at first span.
+- `KOSAX_LANGFUSE_OTLP_AUTH_HEADER`, when set, must begin with `Basic ` (RFC 7617 token prefix). Empty string disables auth.
 
 ---
 
@@ -169,7 +169,7 @@ The collector does not probe Langfuse's ingest path from inside its own healthch
 
 ```text
 ┌─────────────┐     OTLP HTTP      ┌──────────────┐     OTLP HTTP      ┌──────────────┐
-│ KOSMOS app  │ ─────────────────▶ │   otelcol    │ ─────────────────▶ │ langfuse-web │
+│ KOSAX app  │ ─────────────────▶ │   otelcol    │ ─────────────────▶ │ langfuse-web │
 │ (host proc) │   :4318 (host)     │  (container) │   :3000/api/...    │  (container) │
 └─────────────┘                    └──────────────┘                    └──────────────┘
                                           │                                   │

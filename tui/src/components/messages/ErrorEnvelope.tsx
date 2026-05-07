@@ -8,7 +8,7 @@
 //
 // Source reference: cc:components/FallbackToolUseErrorMessage.tsx (Tool path)
 //   + Spec 019 LLM 429 / Spec 032 Network HUD patterns.
-// KOSMOS adaptation: unified 3-type envelope with KOSMOS i18n + color tokens.
+// KOSAX adaptation: unified 3-type envelope with KOSAX i18n + color tokens.
 
 import React from 'react';
 import { Box, Text } from '../../ink.js';
@@ -25,7 +25,7 @@ import { useUiL2I18n } from '../../i18n/uiL2.js';
 // theme — per FR-012 "unique color" requirement.
 // ---------------------------------------------------------------------------
 const ERROR_COLOR: Record<ErrorEnvelopeT['type'], string> = {
-  llm: '#a78bfa',      // purple (KOSMOS brand / LLM layer)
+  llm: '#a78bfa',      // purple (KOSAX brand / LLM layer)
   tool: '#f97316',     // orange (tool layer, CC-style)
   network: '#ef4444',  // red (network layer)
 };
@@ -43,7 +43,7 @@ export type ErrorEnvelopeProps = {
   error: ErrorEnvelopeT;
   /** When provided, called when the citizen presses R to retry */
   onRetry?: () => void;
-  /** Locale override — falls back to KOSMOS_TUI_LOCALE env var */
+  /** Locale override — falls back to KOSAX_TUI_LOCALE env var */
   locale?: 'ko' | 'en';
 };
 
@@ -65,7 +65,7 @@ export function ErrorEnvelope({
   const borderColor = ERROR_BORDER_COLOR[error.type];
 
   // Locale-select title and detail.
-  const locale = (process.env['KOSMOS_TUI_LOCALE'] ?? 'ko') as 'ko' | 'en';
+  const locale = (process.env['KOSAX_TUI_LOCALE'] ?? 'ko') as 'ko' | 'en';
   const title = locale === 'en' ? error.title_en : error.title_ko;
   const detail = locale === 'en' ? error.detail_en : error.detail_ko;
 

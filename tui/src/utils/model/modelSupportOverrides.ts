@@ -1,6 +1,6 @@
-// KOSMOS Epic #2112: legacy 3-tier per-model env-var overrides removed.
-// KOSMOS uses a single FriendliAI Serverless deployment configured via
-// KOSMOS_FRIENDLI_MODEL only. Helper signature preserved for caller import-graph.
+// KOSAX Epic #2112: legacy 3-tier per-model env-var overrides removed.
+// KOSAX uses a single FriendliAI Serverless deployment configured via
+// KOSAX_FRIENDLI_MODEL only. Helper signature preserved for caller import-graph.
 
 import memoize from 'lodash-es/memoize.js'
 

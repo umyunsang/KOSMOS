@@ -2,7 +2,7 @@
 
 **Spec**: [spec.md](./spec.md) · **Plan**: [plan.md](./plan.md) · **Research**: [research.md](./research.md)
 
-All types are Pydantic v2 frozen models (constitution Principle III; `Any` forbidden in I/O schemas). Types live in `src/kosmos/llm/prompt_assembler.py` unless noted.
+All types are Pydantic v2 frozen models (constitution Principle III; `Any` forbidden in I/O schemas). Types live in `src/kosax/llm/prompt_assembler.py` unless noted.
 
 ---
 
@@ -46,7 +46,7 @@ The fully-assembled output of `PromptAssembler.build(ctx)`. The bytes that get s
 |---|---|---|
 | `static_prefix` | `str` | The four-XML-section body of `prompts/system_v1.md`, concatenated with `## Available tools` (R6 enriched), terminated with the literal boundary marker `\nSYSTEM_PROMPT_DYNAMIC_BOUNDARY\n`. |
 | `dynamic_suffix` | `str` | Concatenation of every registered decorator's return value (skipping `None` returns). Empty string when no decorator is registered or all return `None`. |
-| `prefix_hash` | `str` | SHA-256 of `static_prefix.encode("utf-8")` rendered as 64 lowercase hex chars. Emitted as the OTEL `kosmos.prompt.hash` attribute. |
+| `prefix_hash` | `str` | SHA-256 of `static_prefix.encode("utf-8")` rendered as 64 lowercase hex chars. Emitted as the OTEL `kosax.prompt.hash` attribute. |
 
 **Validation**: `static_prefix` MUST end with `\nSYSTEM_PROMPT_DYNAMIC_BOUNDARY\n`. `prefix_hash` MUST equal `sha256(static_prefix)` — enforced by a `@model_validator(mode="after")` that re-derives the hash and raises if it diverges.
 
@@ -58,7 +58,7 @@ The fully-assembled output of `PromptAssembler.build(ctx)`. The bytes that get s
 
 ## 4. `ToolTriggerExamples` (extension to existing `GovAPITool` schema)
 
-Additive Pydantic field on the existing tool-adapter schema. Lives in `src/kosmos/tools/_base.py` (existing module, additive change).
+Additive Pydantic field on the existing tool-adapter schema. Lives in `src/kosax/tools/_base.py` (existing module, additive change).
 
 | Field | Type | Notes |
 |---|---|---|
@@ -70,7 +70,7 @@ Additive Pydantic field on the existing tool-adapter schema. Lives in `src/kosmo
 
 ## 5. `CitizenRequestEnvelope`
 
-A pure formatting helper (not a Pydantic model — it returns `str` directly). Lives in `src/kosmos/ipc/citizen_request.py` (new file, single function).
+A pure formatting helper (not a Pydantic model — it returns `str` directly). Lives in `src/kosax/ipc/citizen_request.py` (new file, single function).
 
 ```python
 def wrap_citizen_request(text: str) -> str: ...
@@ -120,7 +120,7 @@ prompts/system_v1.md ──parsed by──▶ PromptLoader
 PromptAssembler(static_prefix, registry) ──build(ctx)──▶ SystemPromptManifest
                                                               │
                                                               ├── static_prefix (cacheable)
-                                                              ├── prefix_hash (kosmos.prompt.hash)
+                                                              ├── prefix_hash (kosax.prompt.hash)
                                                               └── dynamic_suffix (per-turn)
 
 ChatRequestFrame.messages[].content (citizen) ──wrap_citizen_request──▶ <citizen_request>...</citizen_request>

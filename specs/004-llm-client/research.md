@@ -20,9 +20,9 @@
 - LiteLLM: rejected — too heavy for a focused integration; we need precise control over streaming and retry behavior.
 
 **Key findings**:
-- Auth header: `Authorization: Bearer $KOSMOS_FRIENDLI_TOKEN`
-- Base URL: configurable via `KOSMOS_FRIENDLI_BASE_URL` (default: `https://api.friendli.ai/v1`)
-- Model identifier: configurable via `KOSMOS_FRIENDLI_MODEL` (default: `dep89a2fde0e09`)
+- Auth header: `Authorization: Bearer $KOSAX_FRIENDLI_TOKEN`
+- Base URL: configurable via `KOSAX_FRIENDLI_BASE_URL` (default: `https://api.friendli.ai/v1`)
+- Model identifier: configurable via `KOSAX_FRIENDLI_MODEL` (default: `dep89a2fde0e09`)
 - Streaming: `stream: true` returns SSE chunks with `delta.content` and `delta.tool_calls`
 - Tool calling: OpenAI function-calling format (`tools` parameter with `type: "function"`)
 - Token usage: returned in final chunk when streaming, or in response body for non-streaming
@@ -117,15 +117,15 @@ delay = random.uniform(0, exp_delay)
 
 **Question**: How should the LLM client be configured?
 
-**Decision**: Environment variables with Pydantic Settings model. All env vars use `KOSMOS_` prefix per AGENTS.md.
+**Decision**: Environment variables with Pydantic Settings model. All env vars use `KOSAX_` prefix per AGENTS.md.
 
-**Rationale**: Constitution requires `KOSMOS_` prefix for all env vars. Pydantic Settings (`pydantic-settings`) integrates naturally with Pydantic v2 validation and provides type-safe configuration with clear error messages for missing required fields.
+**Rationale**: Constitution requires `KOSAX_` prefix for all env vars. Pydantic Settings (`pydantic-settings`) integrates naturally with Pydantic v2 validation and provides type-safe configuration with clear error messages for missing required fields.
 
 **Key env vars**:
-- `KOSMOS_FRIENDLI_TOKEN` (required): API authentication token
-- `KOSMOS_FRIENDLI_BASE_URL` (optional, default: `https://api.friendli.ai/v1`): API base URL
-- `KOSMOS_FRIENDLI_MODEL` (optional, default: `dep89a2fde0e09`): Model identifier
-- `KOSMOS_LLM_SESSION_BUDGET` (optional, default: `100000`): Max tokens per session
+- `KOSAX_FRIENDLI_TOKEN` (required): API authentication token
+- `KOSAX_FRIENDLI_BASE_URL` (optional, default: `https://api.friendli.ai/v1`): API base URL
+- `KOSAX_FRIENDLI_MODEL` (optional, default: `dep89a2fde0e09`): Model identifier
+- `KOSAX_LLM_SESSION_BUDGET` (optional, default: `100000`): Max tokens per session
 
 **Alternatives considered**:
 - YAML/JSON config file: rejected for Phase 1 — env vars are simpler and more secure

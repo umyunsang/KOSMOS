@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Integration tests for session_event frame routing in the stdio IPC loop.
 
-Spawns ``python -m kosmos.cli --ipc stdio`` as a subprocess with a hermetic
-``KOSMOS_SESSION_DIR`` pointing at ``tmp_path/sessions``.  All tests exercise
+Spawns ``python -m kosax.cli --ipc stdio`` as a subprocess with a hermetic
+``KOSAX_SESSION_DIR`` pointing at ``tmp_path/sessions``.  All tests exercise
 the session lifecycle without touching the user's home directory or any live
 data.go.kr APIs.
 
@@ -23,7 +23,7 @@ from pathlib import Path
 import pytest
 from pydantic import TypeAdapter
 
-from kosmos.ipc.frame_schema import (
+from kosax.ipc.frame_schema import (
     IPCFrame,
     SessionEventFrame,
 )
@@ -79,21 +79,27 @@ async def _read_lines(
 async def session_backend(
     tmp_path: Path,
 ) -> AsyncIterator[tuple[asyncio.subprocess.Process, Path]]:
-    """Spawn the backend with KOSMOS_SESSION_DIR overriding the real session dir.
+    """Spawn the backend with KOSAX_SESSION_DIR overriding the real session dir.
 
     Yields (proc, session_dir) so tests can inspect the filesystem.
     """
     session_dir = tmp_path / "sessions"
     session_dir.mkdir(parents=True, exist_ok=True)
 
-    # Inherit the current environment so KOSMOS_* API-key vars are available
+    # Inherit the current environment so KOSAX_* API-key vars are available
     # (required by verify_startup guard in app.py), then override session dir.
-    env = {**os.environ, "KOSMOS_SESSION_DIR": str(session_dir)}
+    env = {
+        **os.environ,
+        "KOSAX_SESSION_DIR": str(session_dir),
+        "KOSAX_DATA_GO_KR_API_KEY": "test-dummy",
+        "KOSAX_FRIENDLI_TOKEN": "test-dummy",
+        "KOSAX_KAKAO_API_KEY": "test-dummy",
+    }
 
     proc = await asyncio.create_subprocess_exec(
         sys.executable,
         "-m",
-        "kosmos.cli",
+        "kosax.cli",
         "--ipc",
         "stdio",
         stdin=asyncio.subprocess.PIPE,

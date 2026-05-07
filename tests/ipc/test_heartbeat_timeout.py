@@ -17,7 +17,7 @@ from datetime import datetime
 
 import pytest
 
-from kosmos.ipc.heartbeat import DeadlineState, HeartbeatSettings, HeartbeatState
+from kosax.ipc.heartbeat import DeadlineState, HeartbeatSettings, HeartbeatState
 from tests.ipc.conftest import FakeClock
 
 # ---------------------------------------------------------------------------

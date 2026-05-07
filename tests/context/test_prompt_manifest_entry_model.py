@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kosmos.context.prompt_models import PromptManifestEntry
+from kosax.context.prompt_models import PromptManifestEntry
 
 # ---------------------------------------------------------------------------
 # Shared valid fixture values — all invariants satisfied simultaneously.

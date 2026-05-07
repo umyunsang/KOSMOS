@@ -110,7 +110,7 @@ The discriminator field (`kind`) now accepts 21 distinct literal values. Spec 03
 
 ### 5.1 Backend emission (Python)
 
-The backend emits exactly one `AdapterManifestSyncFrame` after `register_all_tools()` completes successfully and `build_routing_index()` validates. The frame is the **first non-handshake frame** the TUI receives. Implementation in `src/kosmos/ipc/adapter_manifest_emitter.py`:
+The backend emits exactly one `AdapterManifestSyncFrame` after `register_all_tools()` completes successfully and `build_routing_index()` validates. The frame is the **first non-handshake frame** the TUI receives. Implementation in `src/kosax/ipc/adapter_manifest_emitter.py`:
 
 ```python
 async def emit_manifest(stdout_writer, registry, sub_registries, *, pid: int) -> None:
@@ -185,7 +185,7 @@ async validateInput(input, context) {
     const citation = backendEntry.policy_authority_url
       ? { url: backendEntry.policy_authority_url, source: 'agency-published' }
       : null;
-    setKosmosCitations(context, citation);
+    setKosaxCitations(context, citation);
     return { result: 'allow' };
   }
 
@@ -193,7 +193,7 @@ async validateInput(input, context) {
   const internalTool = context.options.tools.find(t => t.name === input.tool_id);
   if (internalTool) {
     const citation = extractCitation(internalTool);
-    setKosmosCitations(context, citation);
+    setKosaxCitations(context, citation);
     return { result: 'allow' };
   }
 

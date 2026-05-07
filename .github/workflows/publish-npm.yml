@@ -1,0 +1,123 @@
+name: Publish npm
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+concurrency:
+  group: publish-npm-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build npm Distribution
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22.14.0"
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.12"
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+          python-version: "3.12"
+
+      - name: Install npm CLI
+        run: npm install --global npm@11.5.1
+
+      - name: Install npm dependencies
+        run: npm install --ignore-scripts
+
+      - name: Check package contents
+        run: npm run package:check
+
+      - name: Build npm tarball
+        run: npm pack --json > package-evidence/npm-pack.json
+
+      - name: Clean global CLI smoke
+        run: |
+          prefix="${RUNNER_TEMP}/kosax-prefix"
+          npm install --global --prefix "${prefix}" ./kosax-0.1.0.tgz
+          "${prefix}/bin/kosax" --version
+
+      - name: Record distribution hashes
+        run: |
+          sha256sum kosax-0.1.0.tgz | tee package-evidence/SHA256SUMS
+
+      - name: Upload npm distribution
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-dist
+          path: kosax-0.1.0.tgz
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload package evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-package-evidence
+          path: package-evidence/*
+          if-no-files-found: error
+          retention-days: 90
+
+  attest:
+    name: Attest npm Distribution
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    steps:
+      - name: Retrieve npm distribution
+        uses: actions/download-artifact@v5
+        with:
+          name: npm-dist
+          path: dist/
+
+      - name: Generate provenance attestation
+        uses: actions/attest@v4
+        with:
+          subject-path: "dist/*"
+
+  publish:
+    name: Publish npm Package
+    needs:
+      - build
+      - attest
+    if: github.ref_type == 'tag' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22.14.0"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install npm CLI
+        run: npm install --global npm@11.5.1
+
+      - name: Publish with npm Trusted Publishing
+        run: npm publish

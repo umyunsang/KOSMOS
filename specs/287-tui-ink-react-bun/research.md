@@ -79,7 +79,7 @@ Every design decision in `plan.md` maps here to a concrete reference source. Thi
 
 - Constitution Principle III (Pydantic v2 strict typing) forbids `Any`; Spec 031's SC-008 hard rule forbids duplicating Python schemas in TypeScript. Code-gen from Pydantic is the only path that satisfies both.
 - Pydantic 2 exposes `model.model_json_schema()` → JSON Schema Draft 2020-12. Two Python tools consume it cleanly: `datamodel-code-generator` (JSON Schema → TS via json-schema-to-typescript) and `pydantic-to-typescript` (direct). Both are devtools, not runtime deps; neither ships in the compiled TUI binary.
-- Claude Code's upstream types are hand-written TS (no code-gen) because the upstream backend is Anthropic's API, which publishes an OpenAPI schema. KOSMOS inverts this — the backend is our own Python, so Pydantic is the source of truth.
+- Claude Code's upstream types are hand-written TS (no code-gen) because the upstream backend is Anthropic's API, which publishes an OpenAPI schema. KOSAX inverts this — the backend is our own Python, so Pydantic is the source of truth.
 
 **Alternatives considered**:
 
@@ -118,23 +118,23 @@ Every design decision in `plan.md` maps here to a concrete reference source. Thi
 
 ### 2.5 Command dispatcher + theme engine (User Story 2)
 
-**Decision**: Lift `restored-src/src/commands/dispatcher.ts` + registry shape verbatim; subset the command set to `/save`, `/sessions`, `/resume`, `/new` + a future-proof registry slot for Phase 2 commands. Theme engine lifted from `restored-src/src/theme.ts` (and related); three built-in themes (`default`, `dark`, `light`) via `KOSMOS_TUI_THEME` env var.
+**Decision**: Lift `restored-src/src/commands/dispatcher.ts` + registry shape verbatim; subset the command set to `/save`, `/sessions`, `/resume`, `/new` + a future-proof registry slot for Phase 2 commands. Theme engine lifted from `restored-src/src/theme.ts` (and related); three built-in themes (`default`, `dark`, `light`) via `KOSAX_TUI_THEME` env var.
 **Rationale**:
 
 - FR-036: registry shape MUST stay upstream-compatible for future diff tracking. Renaming or restructuring blocks `diff-upstream.sh` from locating the canonical file.
-- Claude Code's `commands/` directory has 50+ entries (observed via `ls`); KOSMOS's v1 command set is 4. The registry can hold either — upstream shape is preserved even with a smaller enabled set.
+- Claude Code's `commands/` directory has 50+ entries (observed via `ls`); KOSAX's v1 command set is 4. The registry can hold either — upstream shape is preserved even with a smaller enabled set.
 - Theme tokens (`ThemeToken` named set, FR-040) forbid inline hex colors — this is Claude Code's existing pattern; lifting it avoids recreating a less-rigorous equivalent.
 
 **Alternatives considered**:
 
 - **Hand-roll a minimal dispatcher**: Rejected — violates FR-036 + sabotages upstream diff tracking (SC-9 spirit).
-- **Full command-set lift (50+)**: Rejected for v1 — most Claude Code commands (`/debug-tool-call`, `/autofix-pr`, `/break-cache`) have no KOSMOS analog. Deferred items table is the correct place for extending the set.
+- **Full command-set lift (50+)**: Rejected for v1 — most Claude Code commands (`/debug-tool-call`, `/autofix-pr`, `/break-cache`) have no KOSAX analog. Deferred items table is the correct place for extending the set.
 
 **References**:
 
 - `.references/claude-code-sourcemap/restored-src/src/commands/` (50+ commands, preserve registry shape)
 - `restored-src/src/components/design-system/` + theme tokens
-- `#468` env registry (FR-041 `KOSMOS_TUI_THEME` registration)
+- `#468` env registry (FR-041 `KOSAX_TUI_THEME` registration)
 
 ### 2.6 Korean IME strategy (R1 blocker)
 
@@ -197,14 +197,14 @@ Every design decision in `plan.md` maps here to a concrete reference source. Thi
 - Spec 027 `data-model.md` — `permission_request` mailbox schema
 - `docs/vision.md § Layer 6` — human interface permission-delegation flow
 
-### 2.9 Backend: `kosmos-backend --ipc stdio` entrypoint
+### 2.9 Backend: `kosax-backend --ipc stdio` entrypoint
 
-**Decision**: Add one module `src/kosmos/ipc/stdio.py` implementing an `asyncio` reader+writer loop that dispatches JSONL IPC frames to existing Spec 031 primitive handlers + Spec 027 coordinator mailbox. Add one CLI flag `--ipc stdio` to `src/kosmos/cli/__main__.py`. No new Python runtime deps (AGENTS.md hard rule).
+**Decision**: Add one module `src/kosax/ipc/stdio.py` implementing an `asyncio` reader+writer loop that dispatches JSONL IPC frames to existing Spec 031 primitive handlers + Spec 027 coordinator mailbox. Add one CLI flag `--ipc stdio` to `src/kosax/cli/__main__.py`. No new Python runtime deps (AGENTS.md hard rule).
 **Rationale**:
 
-- Existing Phase 1 CLI (`src/kosmos/cli/`) is retained unchanged per spec Assumptions. The `--ipc stdio` mode is an additional dispatch target — it reuses the same primitive registry, session store, observability span emission.
+- Existing Phase 1 CLI (`src/kosax/cli/`) is retained unchanged per spec Assumptions. The `--ipc stdio` mode is an additional dispatch target — it reuses the same primitive registry, session store, observability span emission.
 - Pure-stdlib implementation: `asyncio.StreamReader` bound to `sys.stdin.buffer`, `sys.stdout.buffer.write` + `.flush()` for output. Pydantic v2 `model_validate_json` + `model_dump_json` handle framing. Zero new imports beyond stdlib.
-- Observability: every IPC frame emits a `kosmos.ipc.frame` span child of the session span (Spec 021), so frame-level latency is visible in the same OTEL pipeline (#501).
+- Observability: every IPC frame emits a `kosax.ipc.frame` span child of the session span (Spec 021), so frame-level latency is visible in the same OTEL pipeline (#501).
 
 **Alternatives considered**:
 
@@ -213,8 +213,8 @@ Every design decision in `plan.md` maps here to a concrete reference source. Thi
 
 **References**:
 
-- `src/kosmos/cli/__main__.py` (existing entrypoint)
-- `src/kosmos/primitives/` (existing primitive registry)
+- `src/kosax/cli/__main__.py` (existing entrypoint)
+- `src/kosax/primitives/` (existing primitive registry)
 - Spec 027 `data-model.md § Coordinator` (mailbox contract)
 - Spec 021 `plan.md` (OTEL span emission pattern)
 
@@ -263,7 +263,7 @@ None. All technical context fields in `plan.md` are resolved at plan-time.
 | 6 | Korean IME: forced ADR choice; recommend `@jrichman/ink@6.6.9` fork | Gemini CLI `package.json`, Claude Code IME issues |
 | 7 | Lift VirtualizedList + `useSyncExternalStore` + `overflowToBackbuffer` | `restored-src/src/components/`, Gemini CLI, React docs |
 | 8 | Lift permission-gauntlet modal wholesale | `restored-src/src/components/ToolPermission*`, Spec 027 |
-| 9 | Python `src/kosmos/ipc/stdio.py` + `--ipc stdio` CLI flag; no new deps | AGENTS.md hard rule, existing CLI |
+| 9 | Python `src/kosax/ipc/stdio.py` + `--ipc stdio` CLI flag; no new deps | AGENTS.md hard rule, existing CLI |
 | 10 | Header + NOTICE + diff script for every lifted file | `restored-src/README.md`, FR-011/012/013 |
 
 **Phase 0 exit**: All NEEDS CLARIFICATION resolved; all deferred items validated; all design decisions traced to concrete references. Ready for Phase 1.

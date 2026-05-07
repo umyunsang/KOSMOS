@@ -1,4 +1,4 @@
-# KOSMOS Final Packaging Readiness Audit
+# KOSAX Final Packaging Readiness Audit
 
 Date: 2026-05-07
 
@@ -13,10 +13,10 @@ mock adapters remain evidence-graded mocks.
 
 | Source | Authority | Decision Supported |
 | --- | --- | --- |
-| `.agents/skills/kosmos-reference-first/SKILL.md` | Skill gate | Reference-first workflow, curl-first live API validation, no fallback routing. |
-| `docs/onboarding/codex-continuation.md` | KOSMOS Codex setup | Continuation requirements, OpenAI docs MCP check, Spec Kit skill location. |
+| `.agents/skills/kosax-reference-first/SKILL.md` | Skill gate | Reference-first workflow, curl-first live API validation, no fallback routing. |
+| `docs/onboarding/codex-continuation.md` | KOSAX Codex setup | Continuation requirements, OpenAI docs MCP check, Spec Kit skill location. |
 | `docs/vision.md` | Canonical thesis | CC harness + FriendliAI/K-EXAONE + Korean public-service tool surface. |
-| `docs/requirements/kosmos-migration-tree.md` | Requirement tree | P0-P6 scope and migration-readiness boundaries. |
+| `docs/requirements/kosax-migration-tree.md` | Requirement tree | P0-P6 scope and migration-readiness boundaries. |
 | `.references/claude-code-sourcemap/restored-src/src/components/permissions/PermissionPrompt.tsx` | CC restored source | Permission prompt follows CC Select interaction. |
 | `.references/claude-code-sourcemap/restored-src/src/hooks/toolPermission/handlers/interactiveHandler.ts` | CC restored source | Permission denial is terminal and must propagate. |
 | `specs/2773-rollback-debug-infra/codex-goal-final-packaging.md` | Reviewed goal | Acceptance criteria and LLMOps/rendering-flow artifact requirements. |
@@ -194,7 +194,7 @@ No vhs artifact exceeds 1 MB.
 Already passed during the recovery loop:
 
 ```text
-uv run ruff check src/kosmos/ipc/stdio.py src/kosmos/tools/nmc/emergency_search.py tests/ipc/test_stdio_chain_followup_gate.py tests/tools/nmc/test_field_semantics_enrichment.py
+uv run ruff check src/kosax/ipc/stdio.py src/kosax/tools/nmc/emergency_search.py tests/ipc/test_stdio_chain_followup_gate.py tests/tools/nmc/test_field_semantics_enrichment.py
 uv run pytest tests/ipc/test_stdio_chain_followup_gate.py tests/tools/nmc/test_field_semantics_enrichment.py -q
 bun test tui/src/tools/_shared/verboseRender.test.ts
 cd tui && bun run typecheck

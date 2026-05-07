@@ -10,39 +10,39 @@
 
 ## Phase 1 — Foundational (sonnet-foundational)
 
-### T001 — Add canonical KOSMOS path env var to backend pydantic-settings catalog
+### T001 — Add canonical KOSAX path env var to backend pydantic-settings catalog
 
 **Files**:
-- `src/kosmos/config.py` (or wherever `BaseSettings` lives — verify in R-2 mapping).
+- `src/kosax/config.py` (or wherever `BaseSettings` lives — verify in R-2 mapping).
 
 **Action**:
-- Confirm `KOSMOS_MEMDIR_USER` is declared in the pydantic-settings env catalog. If absent (Spec 027 may have added it; otherwise Spec 1635 P4 introduced it for `uiL2Memdir.ts:25`), add it as `KOSMOS_MEMDIR_USER: Path = Path.home() / ".kosmos" / "memdir" / "user"` with description: `"USER-tier memdir root (Spec 027). Sessions, consent, ministry-scope, plugins, onboarding, preferences live here."`
-- Confirm `KOSMOS_SESSION_DIR` continues to exist for back-compat with the existing Python override at `src/kosmos/session/store.py:42`.
+- Confirm `KOSAX_MEMDIR_USER` is declared in the pydantic-settings env catalog. If absent (Spec 027 may have added it; otherwise Spec 1635 P4 introduced it for `uiL2Memdir.ts:25`), add it as `KOSAX_MEMDIR_USER: Path = Path.home() / ".kosax" / "memdir" / "user"` with description: `"USER-tier memdir root (Spec 027). Sessions, consent, ministry-scope, plugins, onboarding, preferences live here."`
+- Confirm `KOSAX_SESSION_DIR` continues to exist for back-compat with the existing Python override at `src/kosax/session/store.py:42`.
 
 **Acceptance**:
-- `uv run python -c "from kosmos.config import settings; print(settings.kosmos_memdir_user)"` prints the expected default.
-- Setting `KOSMOS_MEMDIR_USER=/tmp/test` env then re-running prints `/tmp/test`.
+- `uv run python -c "from kosax.config import settings; print(settings.kosax_memdir_user)"` prints the expected default.
+- Setting `KOSAX_MEMDIR_USER=/tmp/test` env then re-running prints `/tmp/test`.
 
 **Reference**: Spec 1635 P4 `tui/src/utils/uiL2Memdir.ts:25-26` (pattern to mirror).
 
 ---
 
-### T002 — Create `tui/src/utils/kosmosPaths.ts` with `getKosmosSessionsDir()` helper [P]
+### T002 — Create `tui/src/utils/kosaxPaths.ts` with `getKosaxSessionsDir()` helper [P]
 
 **Files**:
-- `tui/src/utils/kosmosPaths.ts` (NEW, ~40 LOC).
+- `tui/src/utils/kosaxPaths.ts` (NEW, ~40 LOC).
 
 **Action**:
 - New module exporting:
-  - `getKosmosUserTierRoot()`: returns `process.env['KOSMOS_MEMDIR_USER'] ?? join(homedir(), '.kosmos', 'memdir', 'user')` (string).
-  - `getKosmosSessionsDir()`: returns `join(getKosmosUserTierRoot(), 'sessions')`.
-  - `getKosmosTranscriptPath(sessionId)`: returns `join(getKosmosSessionsDir(), '<sessionId>.jsonl')`.
-- Each helper memoized via `lodash-es/memoize` keyed off `process.env['KOSMOS_MEMDIR_USER']` (matches `getClaudeConfigHomeDir` pattern at `tui/src/utils/envUtils.ts:7-14`).
+  - `getKosaxUserTierRoot()`: returns `process.env['KOSAX_MEMDIR_USER'] ?? join(homedir(), '.kosax', 'memdir', 'user')` (string).
+  - `getKosaxSessionsDir()`: returns `join(getKosaxUserTierRoot(), 'sessions')`.
+  - `getKosaxTranscriptPath(sessionId)`: returns `join(getKosaxSessionsDir(), '<sessionId>.jsonl')`.
+- Each helper memoized via `lodash-es/memoize` keyed off `process.env['KOSAX_MEMDIR_USER']` (matches `getClaudeConfigHomeDir` pattern at `tui/src/utils/envUtils.ts:7-14`).
 - Fail-closed: import-time check is NOT done (helpers are called per-request); the actual `mkdir -p` happens at write time inside the existing `appendEntryToFile` machinery.
 - File header comment cites Spec 027 + Spec 1635 P4 precedent.
 
 **Acceptance**:
-- `bun test tui/src/utils/__tests__/kosmosPaths.test.ts` — 3 tests pass: default path, env override, memoization clears on env change.
+- `bun test tui/src/utils/__tests__/kosaxPaths.test.ts` — 3 tests pass: default path, env override, memoization clears on env change.
 
 **Reference**: `tui/src/utils/uiL2Memdir.ts:25-26`.
 
@@ -58,15 +58,15 @@
 - `tui/src/utils/sessionStorage.ts` (single-line behavior change at line 203-205, plus 2-line comment update).
 
 **Action**:
-- Change `getProjectsDir()` body from `return join(getClaudeConfigHomeDir(), 'projects')` to `return getKosmosSessionsDir()`. Add `import { getKosmosSessionsDir } from './kosmosPaths.js'` at top.
-- Add comment block above the function: `// KOSMOS Spec 027 path migration: returns the canonical USER-tier sessions dir. The CC native '<config-home>/projects' layout is now legacy-discovery only via getCCLegacyProjectsDir() below.`
+- Change `getProjectsDir()` body from `return join(getClaudeConfigHomeDir(), 'projects')` to `return getKosaxSessionsDir()`. Add `import { getKosaxSessionsDir } from './kosaxPaths.js'` at top.
+- Add comment block above the function: `// KOSAX Spec 027 path migration: returns the canonical USER-tier sessions dir. The CC native '<config-home>/projects' layout is now legacy-discovery only via getCCLegacyProjectsDir() below.`
 - Add a new helper `getCCLegacyProjectsDir(): string` that returns the *old* `join(getClaudeConfigHomeDir(), 'projects')` value for FR-005 dual-path read-only enumeration.
-- Audit lines 4122-4173 and 3986-4031 (existing `readdir(projectsDir, ...)` enumeration call-sites) — those become *legacy*-readers; add a new sibling enumeration that walks the KOSMOS path, then merge results (T008 covers tests).
+- Audit lines 4122-4173 and 3986-4031 (existing `readdir(projectsDir, ...)` enumeration call-sites) — those become *legacy*-readers; add a new sibling enumeration that walks the KOSAX path, then merge results (T008 covers tests).
 - Keep `getProjectDir(projectDir)` (memoized cwd-sanitizer) intact — it is now used ONLY by the legacy-discovery surface.
 
 **Acceptance**:
 - `bun test tui/src/utils/__tests__/sessionStorage.test.ts` passes (existing snapshots; FR-013 backward-compat).
-- Manual smoke: launch TUI, type a prompt, exit, verify new JSONL appears under `~/.kosmos/memdir/user/sessions/` not `~/.claude/projects/`.
+- Manual smoke: launch TUI, type a prompt, exit, verify new JSONL appears under `~/.kosax/memdir/user/sessions/` not `~/.claude/projects/`.
 
 **Reference**: `.references/claude-code-sourcemap/restored-src/utils/sessionStorage.ts` (CC native shape we are leaving in place for legacy reads).
 
@@ -80,7 +80,7 @@
 - `tui/src/utils/sessionStoragePortable.ts` (single-line behavior change at line 325-327).
 
 **Action**:
-- Identical change to T003 but for the portable variant. Add `import { getKosmosSessionsDir } from './kosmosPaths.js'`.
+- Identical change to T003 but for the portable variant. Add `import { getKosaxSessionsDir } from './kosaxPaths.js'`.
 - Add `getCCLegacyProjectsDir()` sibling here too (the portable variant is consumed by the SDK + agent-sdk path; both need dual-path discovery).
 
 **Acceptance**:
@@ -102,19 +102,19 @@
 **Action**:
 - Export `async function migrateSessions(opts: { prune?: boolean }): Promise<MigrationSummary>`.
 - Behavior: enumerate every `<sanitized-cwd>/<session_id>.jsonl` under `getCCLegacyProjectsDir()`. For each:
-  - Compute KOSMOS dest = `getKosmosTranscriptPath(sessionId)`.
+  - Compute KOSAX dest = `getKosaxTranscriptPath(sessionId)`.
   - If dest exists → skip with `action: 'skip-collision'`.
   - Else → byte-copy with `fs.copyFile(src, dest, COPYFILE_EXCL)`, then explicit `fsync` on dest.
   - If `opts.prune === true` AND copy succeeded → `fs.unlink(src)`.
 - Aggregate `MigrationSummary { copied: number, skipped: number, pruned: number, bytes: number, errors: Array<{path, errno}> }`.
-- Emit OTEL spans per FR-012 with attributes `kosmos.session.path_root`, `kosmos.session.migration_action`.
+- Emit OTEL spans per FR-012 with attributes `kosax.session.path_root`, `kosax.session.migration_action`.
 - Crash-safety: never unlink before fsync resolves. Abort entire batch on any non-EEXIST/ENOENT error to avoid partial-prune state.
 
 **Acceptance**:
 - 8 unit tests (Bun `bun:test`):
   1. Empty legacy dir → summary `{copied: 0, ...}`.
-  2. 3 legacy files, no collisions → 3 copied, KOSMOS dir contains 3.
-  3. 3 legacy files, 1 collision (same `session_id` already at KOSMOS) → 2 copied, 1 skip-collision.
+  2. 3 legacy files, no collisions → 3 copied, KOSAX dir contains 3.
+  3. 3 legacy files, 1 collision (same `session_id` already at KOSAX) → 2 copied, 1 skip-collision.
   4. Idempotent re-run → second invocation returns `{copied: 0, skipped: 3, ...}`.
   5. `prune: true` → legacy files unlinked after fsync.
   6. `prune: true` + simulated fsync error → no files unlinked, summary contains error entry.
@@ -155,19 +155,19 @@
 ### T007 — Repoint Python `_DEFAULT_SESSION_DIR` + add `--gc-empty-stubs` CLI flag
 
 **Files**:
-- `src/kosmos/session/store.py` (lines 32, 42 — change default + comment).
-- `src/kosmos/cli/app.py` (add CLI flag handler).
+- `src/kosax/session/store.py` (lines 32, 42 — change default + comment).
+- `src/kosax/cli/app.py` (add CLI flag handler).
 - `tests/session/test_store_path.py` (NEW, ~80 LOC).
 
 **Action**:
-- Change `_DEFAULT_SESSION_DIR = Path.home() / ".kosmos" / "sessions"` → `_DEFAULT_SESSION_DIR = Path.home() / ".kosmos" / "memdir" / "user" / "sessions"`.
+- Change `_DEFAULT_SESSION_DIR = Path.home() / ".kosax" / "sessions"` → `_DEFAULT_SESSION_DIR = Path.home() / ".kosax" / "memdir" / "user" / "sessions"`.
 - Update docstring at line 4 to cite Spec 027 invariant + this Epic.
-- `KOSMOS_SESSION_DIR` env override stays for back-compat (some tests rely on it; verify in R-2 grep).
-- Add `kosmos --gc-empty-stubs` CLI flag: enumerates `~/.kosmos/sessions/` (the NOW-legacy path), reads each `<uuid>.jsonl`, parses first line, asserts `entry_type == 'metadata'` AND `data.message_count == 0` AND total file lines == 1, then `unlink` only those that pass all three checks. Logs `N stubs collected, M bytes freed`. Refuses to delete any file that does not pass content inspection.
+- `KOSAX_SESSION_DIR` env override stays for back-compat (some tests rely on it; verify in R-2 grep).
+- Add `kosax --gc-empty-stubs` CLI flag: enumerates `~/.kosax/sessions/` (the NOW-legacy path), reads each `<uuid>.jsonl`, parses first line, asserts `entry_type == 'metadata'` AND `data.message_count == 0` AND total file lines == 1, then `unlink` only those that pass all three checks. Logs `N stubs collected, M bytes freed`. Refuses to delete any file that does not pass content inspection.
 
 **Acceptance**:
 - `uv run pytest tests/session/test_store_path.py -v` — 6 tests pass (default path, env override, write succeeds at new path, gc identifies stubs by content, gc refuses non-stubs, gc handles missing legacy dir).
-- Smoke: `kosmos --gc-empty-stubs` reports the expected stub count from the audited dev machine (≈3,572 if no stubs have been added since).
+- Smoke: `kosax --gc-empty-stubs` reports the expected stub count from the audited dev machine (≈3,572 if no stubs have been added since).
 
 **Reference**: spec.md US5 + plan.md R-3.
 
@@ -179,15 +179,15 @@
 
 **Files**:
 - `tui/src/__tests__/sessionStorage.dual-path.test.ts` (NEW, ~120 LOC).
-- `tui/src/test-utils/dualPathFixtures.ts` (NEW, ~40 LOC; helper to seed both legacy + KOSMOS paths from a temp dir).
+- `tui/src/test-utils/dualPathFixtures.ts` (NEW, ~40 LOC; helper to seed both legacy + KOSAX paths from a temp dir).
 
 **Action**:
-- Use `KOSMOS_MEMDIR_USER` + `CLAUDE_CONFIG_DIR` env redirects to point at temp dirs.
-- Pre-seed: 1 JSONL at legacy CC path, 1 at KOSMOS path, 1 with colliding `session_id` at both.
+- Use `KOSAX_MEMDIR_USER` + `CLAUDE_CONFIG_DIR` env redirects to point at temp dirs.
+- Pre-seed: 1 JSONL at legacy CC path, 1 at KOSAX path, 1 with colliding `session_id` at both.
 - Invoke `listSessionsImpl()` (or whichever surface `/resume` ultimately calls — verify in R-2).
-- Assert: 2 unique entries (collision deduplicated), KOSMOS-tier copy preferred on tie, sorted by `last_active_at` desc.
+- Assert: 2 unique entries (collision deduplicated), KOSAX-tier copy preferred on tie, sorted by `last_active_at` desc.
 
-**Acceptance**: 5 tests pass (legacy-only, KOSMOS-only, both, collision, ENOENT-on-legacy).
+**Acceptance**: 5 tests pass (legacy-only, KOSAX-only, both, collision, ENOENT-on-legacy).
 
 **Depends on**: T003, T004.
 
@@ -195,7 +195,7 @@
 
 ---
 
-### T009 — `/fork` writes new JSONL to KOSMOS path regardless of parent path [P with T008]
+### T009 — `/fork` writes new JSONL to KOSAX path regardless of parent path [P with T008]
 
 **Files**:
 - `tui/src/__tests__/forkSession.dual-path.test.ts` (NEW, ~80 LOC).
@@ -203,10 +203,10 @@
 **Action**:
 - Pre-seed parent JSONL at legacy CC path with 50 entries.
 - Invoke fork command at message 25.
-- Assert: new file appears under KOSMOS path, contains 25 entries, header includes `parent_session_id == <legacy parent uuid>`.
-- Assert: subsequent appends to the fork go to the KOSMOS path (mock 3 follow-up appends, re-inspect file).
+- Assert: new file appears under KOSAX path, contains 25 entries, header includes `parent_session_id == <legacy parent uuid>`.
+- Assert: subsequent appends to the fork go to the KOSAX path (mock 3 follow-up appends, re-inspect file).
 
-**Acceptance**: 3 tests pass (fork-from-legacy, fork-from-kosmos, follow-up-appends-stay-kosmos).
+**Acceptance**: 3 tests pass (fork-from-legacy, fork-from-kosax, follow-up-appends-stay-kosax).
 
 **Depends on**: T003, T004.
 
@@ -225,14 +225,14 @@
 
 **Action**:
 - tmux scenario:
-  1. Pre-seed 2 fake legacy sessions under `~/.claude/projects/-Users-um-yunsang-KOSMOS-tui/`.
+  1. Pre-seed 2 fake legacy sessions under `~/.claude/projects/-Users-um-yunsang-KOSAX-tui/`.
   2. `bun run tui` in tmux pane.
   3. `wait_for_pane "tool_registry: \d+ entries verified" 30`
   4. Type `/resume\r`. `wait_for_pane "Resume session" 5`. Snapshot.
   5. Press Esc to dismiss. Type `안녕\r`. `wait_for_pane "안녕" 5`. Snapshot.
   6. Send Ctrl-C twice. Snapshot final state.
   7. Re-launch. Type `/migrate-sessions\r`. `wait_for_pane "copied" 10`. Snapshot.
-  8. Inspect `~/.kosmos/memdir/user/sessions/` — assert exactly 3 files (1 from the new chat + 2 migrated).
+  8. Inspect `~/.kosax/memdir/user/sessions/` — assert exactly 3 files (1 from the new chat + 2 migrated).
 - vhs `.tape`:
   - `Output specs/spec-027-session-storage-migration/smoke-resume-fork.gif`
   - `Output specs/spec-027-session-storage-migration/smoke-resume-fork.txt` (mandatory per AGENTS.md insight #1)
@@ -244,7 +244,7 @@
 - `frames/` directory exists with ≥10 numbered text snapshots.
 - All 4 PNG keyframes present and visually coherent (Lead reads each via Read tool — multimodal verification per AGENTS.md anti-pattern #1 countermeasure).
 - `bun test tui/src/__tests__/migrateSessionsFrames.test.ts` — 1 test passes (frame sequence assertion).
-- `bun typecheck` clean (KOSMOS narrows to `src/stubs/**` only — verify no new TS errors leak in).
+- `bun typecheck` clean (KOSAX narrows to `src/stubs/**` only — verify no new TS errors leak in).
 - `bun test` total: green delta vs main (no new failures; 1 pre-existing PdfInlineViewer Kitty intermittent acceptable per recent change history).
 - `uv run pytest` total: green delta vs main.
 

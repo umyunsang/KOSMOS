@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Spec 288 — Tier 1 keybinding defaults.
 //
-// This file exports KOSMOS Tier 1 defaults as a flat `KeybindingEntry[]` so
+// This file exports KOSAX Tier 1 defaults as a flat `KeybindingEntry[]` so
 // the registry, loader, and validate tests consume a single typed surface.
 // The old `KeybindingBlock[]` format is retained under `DEFAULT_BINDING_BLOCKS`
 // for the legacy `KeybindingSetup` component; it is NOT the canonical source.

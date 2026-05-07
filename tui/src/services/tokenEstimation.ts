@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS Epic β #2293 — services/tokenEstimation stub:
+// KOSAX Epic β #2293 — services/tokenEstimation stub:
 //   AWS Bedrock + Anthropic SDK token-counting APIs removed;
 //   uses simple heuristic (character length / 4) for all estimates.
 //   Callers receive the same numeric type as before — accuracy is
@@ -81,7 +81,7 @@ export function roughTokenCountEstimationForFileType(
 
 /**
  * Count tokens by calling the provider counting API.
- * KOSMOS uses FriendliAI (no dedicated counting endpoint) — always returns null
+ * KOSAX uses FriendliAI (no dedicated counting endpoint) — always returns null
  * so callers fall through to their heuristic fallback.
  */
 export async function countTokensWithAPI(
@@ -92,7 +92,7 @@ export async function countTokensWithAPI(
 
 /**
  * Count tokens via the messages counting API.
- * KOSMOS uses FriendliAI (no dedicated counting endpoint) — always returns null
+ * KOSAX uses FriendliAI (no dedicated counting endpoint) — always returns null
  * so callers fall through to roughTokenCountEstimation.
  */
 export async function countMessagesTokensWithAPI(
@@ -104,7 +104,7 @@ export async function countMessagesTokensWithAPI(
 
 /**
  * Count tokens via a small model (Haiku/fallback).
- * KOSMOS has a single fixed model (K-EXAONE on FriendliAI) with no dedicated
+ * KOSAX has a single fixed model (K-EXAONE on FriendliAI) with no dedicated
  * counting call — always returns null so callers fall through to heuristics.
  */
 export async function countTokensViaHaikuFallback(

@@ -1,11 +1,11 @@
 import axios from 'axios'
-// constants/oauth removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI, not Anthropic OAuth.
+// constants/oauth removed in P1+P2 (Spec 1633); KOSAX uses FriendliAI, not Anthropic OAuth.
 const getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })
 import { logForDebugging } from '../../utils/debug.js'
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — utils/teleport/ deleted; stub.
 const getOAuthHeaders = (_token: string): Record<string, string> => ({})
 const prepareApiRequest = async (): Promise<{ accessToken: string; orgUUID: string }> => {
-  throw new Error('KOSMOS: remote CCR sessions not supported')
+  throw new Error('KOSAX: remote CCR sessions not supported')
 }
 type EnvironmentKind = 'anthropic_cloud' | 'byoc' | 'bridge'
 type EnvironmentResource = { kind: EnvironmentKind; environment_id: string; name: string; created_at: string; state: 'active' }

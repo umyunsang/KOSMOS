@@ -12,16 +12,16 @@ Per Constitution § I, every design decision MUST trace to a concrete reference.
 
 | Decision | Reference | Source verbatim |
 |---|---|---|
-| **D-1** Replace line-14 lock string with 5-tool catalog | `docs/requirements/kosmos-migration-tree.md § L1-C C4` | "system prompt에 primitive 서명만 + BM25 동적 제시" |
+| **D-1** Replace line-14 lock string with 5-tool catalog | `docs/requirements/kosax-migration-tree.md § L1-C C4` | "system prompt에 primitive 서명만 + BM25 동적 제시" |
 | **D-2** Preserve XML scaffolding `<role>` / `<core_rules>` / `<tool_usage>` / `<output_style>` | `specs/2152-system-prompt-redesign/spec.md` | XML-tag scaffolding source-of-truth (4-tag structure ratified 2026-04-26) |
 | **D-3** Teach citizen verify→lookup→submit chain pattern with worked example | `specs/1979-plugin-dx-tui-integration/delegation-flow-design.md § 12.4` | "FINAL canonical AX-infrastructure caller" diagram (3rd correction final 2026-04-29) |
 | **D-4** Teach scope grammar `<verb>:<adapter_family>.<action>` + comma-joined multi-scope | `specs/2296-ax-mock-adapters/contracts/delegation-token-envelope.md § 3` | Scope grammar canonical (Epic ε ships single-scope-per-call; comma-joined regex is forward-compatible) |
 | **D-5** Recompute `prompts/manifest.yaml` SHA-256 entry; rely on Spec 026 boot fail-closed | `specs/026-cicd-prompt-registry/spec.md` | PromptLoader fail-closed boot invariant (any prompt edit forces manifest hash recompute, otherwise SystemExit(78)) |
 | **D-6** Trigger shadow-eval workflow for fixture-only twin-run validation | `.github/workflows/shadow-eval.yml` | Fires on `prompts/**` PRs; emits `deployment.environment=main\|shadow` attribute pair |
 
-**Claude Code restored-src consultation**: Not applicable. The rewrite is content-only on a KOSMOS-specific prompt; no equivalent construct exists in CC's developer-domain prompt. The CC reconstructed reference for prompt-cache + system-prompt assembly was already mined exhaustively for Spec 2152; Epic η extends Spec 2152 without creating new architecture.
+**Claude Code restored-src consultation**: Not applicable. The rewrite is content-only on a KOSAX-specific prompt; no equivalent construct exists in CC's developer-domain prompt. The CC reconstructed reference for prompt-cache + system-prompt assembly was already mined exhaustively for Spec 2152; Epic η extends Spec 2152 without creating new architecture.
 
-**Escalation log** (per Constitution § I — "document the escalation in research.md"): None. All references are KOSMOS-internal specs.
+**Escalation log** (per Constitution § I — "document the escalation in research.md"): None. All references are KOSAX-internal specs.
 
 ---
 
@@ -31,14 +31,14 @@ Every component this Epic relies on already ships in `main`:
 
 | Component | Status | Source |
 |---|---|---|
-| `PromptLoader` (manifest validation, fail-closed boot) | EXISTING | `src/kosmos/context/prompt_loader.py` (Spec 026) |
+| `PromptLoader` (manifest validation, fail-closed boot) | EXISTING | `src/kosax/context/prompt_loader.py` (Spec 026) |
 | `prompts/manifest.yaml` schema (3-entry list) | EXISTING | `prompts/manifest.yaml` (Spec 026) |
 | Shadow-eval twin-run workflow | EXISTING | `.github/workflows/shadow-eval.yml` (Spec 026) |
-| `kosmos.prompt.hash` OTEL attribute | EXISTING | `src/kosmos/observability/tracing.py` (Spec 026 + Spec 021) |
-| 10 active verify mock adapters | EXISTING | `src/kosmos/tools/mock/verify_*.py` + `verify_module_*.py` (Spec 031 + Spec 2296) |
-| 11-arm `AuthContext` discriminated union | EXISTING | `src/kosmos/primitives/verify.py:351-365` (Spec 031 + Spec 2296) |
-| `verify(family_hint: str, ...)` dispatcher (plain `str` accepts unknown families) | EXISTING | `src/kosmos/primitives/verify.py:420-440` |
-| `mock_lookup_module_hometax_simplified` + `mock_submit_module_hometax_taxreturn` | EXISTING | `src/kosmos/tools/mock/lookup_module_hometax_simplified.py` + `src/kosmos/tools/mock/submit_module_hometax_taxreturn.py` (Spec 2296) |
+| `kosax.prompt.hash` OTEL attribute | EXISTING | `src/kosax/observability/tracing.py` (Spec 026 + Spec 021) |
+| 10 active verify mock adapters | EXISTING | `src/kosax/tools/mock/verify_*.py` + `verify_module_*.py` (Spec 031 + Spec 2296) |
+| 11-arm `AuthContext` discriminated union | EXISTING | `src/kosax/primitives/verify.py:351-365` (Spec 031 + Spec 2296) |
+| `verify(family_hint: str, ...)` dispatcher (plain `str` accepts unknown families) | EXISTING | `src/kosax/primitives/verify.py:420-440` |
+| `mock_lookup_module_hometax_simplified` + `mock_submit_module_hometax_taxreturn` | EXISTING | `src/kosax/tools/mock/lookup_module_hometax_simplified.py` + `src/kosax/tools/mock/submit_module_hometax_taxreturn.py` (Spec 2296) |
 | Consent ledger 3-line append protocol per chain | EXISTING | `tests/integration/test_e2e_citizen_taxreturn_chain.py` (Spec 2296) |
 | `<citizen_request>` injection-guard sentence | EXISTING | `prompts/system_v1.md:10` (Spec 2152) |
 | vhs `Screenshot` directive support | EXISTING | vhs ≥ 0.11 (AGENTS.md § Layer 4) |
@@ -49,7 +49,7 @@ Every component this Epic relies on already ships in `main`:
 
 ## R-3 Schema Gap Analysis — Why Prompt-Only Is Sufficient
 
-**Finding (discovered Phase 0)**: `src/kosmos/primitives/verify.py:35-42` defines `FamilyHint` Literal with **6 values** — missing the 5 Epic ε families:
+**Finding (discovered Phase 0)**: `src/kosax/primitives/verify.py:35-42` defines `FamilyHint` Literal with **6 values** — missing the 5 Epic ε families:
 
 ```python
 FamilyHint = Literal[
@@ -67,11 +67,11 @@ FamilyHint = Literal[
 
 **Analysis** — three call-path candidates:
 
-1. **`VerifyInput` model** (line 45–51): declares `family_hint: FamilyHint`. **Used by**: only the 6 OLD verify mocks (`verify_ganpyeon_injeung.py`, `verify_mobile_id.py`, `verify_gongdong_injeungseo.py`, `verify_geumyung_injeungseo.py`, `verify_mydata.py` — 5 of them; the 6th was `verify_digital_onepass.py` which was deleted) — they declare `input_model_ref="kosmos.primitives.verify:VerifyInput"`. The 5 NEW `verify_module_*.py` mocks (Epic ε) explicitly do NOT declare `VerifyInput` as their input model — verified by `grep -nE "input_model_ref.*VerifyInput" src/kosmos/tools/mock/verify_module_*.py` returning 0 matches.
+1. **`VerifyInput` model** (line 45–51): declares `family_hint: FamilyHint`. **Used by**: only the 6 OLD verify mocks (`verify_ganpyeon_injeung.py`, `verify_mobile_id.py`, `verify_gongdong_injeungseo.py`, `verify_geumyung_injeungseo.py`, `verify_mydata.py` — 5 of them; the 6th was `verify_digital_onepass.py` which was deleted) — they declare `input_model_ref="kosax.primitives.verify:VerifyInput"`. The 5 NEW `verify_module_*.py` mocks (Epic ε) explicitly do NOT declare `VerifyInput` as their input model — verified by `grep -nE "input_model_ref.*VerifyInput" src/kosax/tools/mock/verify_module_*.py` returning 0 matches.
 2. **`verify()` dispatcher** (line 420–440): takes `family_hint: str` (plain str, NOT Literal). Returns `AuthContext | VerifyMismatchError` from the full 11-arm union. **Used by**: every test in `test_verify_module_dispatch.py` and the citizen chain integration test.
 3. **`VerifyOutput` model** (line 385–399): `result` field is a 6-arm Annotated union (5 OLD families + `VerifyMismatchError`). **Used by**: search returns no production callers — only `output_model_ref` declarations in the 5 OLD mocks. The 5 NEW Epic ε mocks do NOT use `VerifyOutput` either.
 
-**Verdict**: The LLM's tool_call lands in path (2), which validates `family_hint` only against the dispatcher's `_VERIFY_ADAPTERS` registry — not against the `FamilyHint` Literal. Since all 10 active mocks register themselves into `_VERIFY_ADAPTERS` at import time (verified: `src/kosmos/tools/mock/verify_module_modid.py:163` `register_verify_adapter("modid", invoke)`), the dispatcher will correctly route `family_hint="modid"` and friends.
+**Verdict**: The LLM's tool_call lands in path (2), which validates `family_hint` only against the dispatcher's `_VERIFY_ADAPTERS` registry — not against the `FamilyHint` Literal. Since all 10 active mocks register themselves into `_VERIFY_ADAPTERS` at import time (verified: `src/kosax/tools/mock/verify_module_modid.py:163` `register_verify_adapter("modid", invoke)`), the dispatcher will correctly route `family_hint="modid"` and friends.
 
 **Therefore**: prompt-only teaching is sufficient for the infinite-spinner fix. The schema gap is a hardening concern, not a functional blocker.
 
@@ -81,7 +81,7 @@ FamilyHint = Literal[
 
 ## R-4 AAL Tier Reference Table
 
-Per FR-003, the rewritten prompt MUST hint each family's canonical AAL tier. KOSMOS does not invent these — the table cites the agency's published policy via `published_tier` enum values that already live in `src/kosmos/tools/registry.py:68-93` (the `PublishedTier` Literal of 18 entries — extended in Epic ε from 13).
+Per FR-003, the rewritten prompt MUST hint each family's canonical AAL tier. KOSAX does not invent these — the table cites the agency's published policy via `published_tier` enum values that already live in `src/kosax/tools/registry.py:68-93` (the `PublishedTier` Literal of 18 entries — extended in Epic ε from 13).
 
 | Family | LLM emits `family_hint` = | Canonical `published_tier` (registry) | NIST AAL hint | Real-domain reference |
 |---|---|---|---|---|
@@ -147,7 +147,7 @@ Per `/speckit-plan` Outline step 2 ("Validate Deferred Items"), every item in sp
 |---|---|---|
 | `FamilyHint` Literal expansion + `VerifyOutput.result` union expansion | Epic ζ #2297 (existing OPEN issue) | OK — issue exists per gh issue verification (open status as of 2026-04-30 per next-session-prompt-v9-handoff.md line 4). To be resolved by `/speckit-taskstoissues` adding to ζ scope. |
 | Multi-scope token comma-joining beyond US1 2-scope example | NEEDS TRACKING | OK — placeholder marker valid per spec template; resolved by `/speckit-taskstoissues`. |
-| OTEL `kosmos.prompt.shadow_eval.version` attribute extension | NEEDS TRACKING | OK — placeholder valid. |
+| OTEL `kosax.prompt.shadow_eval.version` attribute extension | NEEDS TRACKING | OK — placeholder valid. |
 | Prompt versioning bump (`version: 1` → `version: 2`) | NEEDS TRACKING | OK — placeholder valid. |
 | `digital_onepass` mock re-add if FR-004 reverses | NEEDS TRACKING | OK — placeholder valid. |
 | Layer 5 tape with subscribe primitive | NEEDS TRACKING | OK — placeholder valid. |
@@ -165,7 +165,7 @@ Per `/speckit-plan` Outline step 2 ("Validate Deferred Items"), every item in sp
 | Zero new dependencies | `git diff main..HEAD -- pyproject.toml tui/package.json` produces no `+` lines | Will be verified in Phase 6 (PR finalization). |
 | XML well-formedness preserved | `python -c "from xml.etree import ElementTree as ET; ET.fromstring('<root>' + open('prompts/system_v1.md').read() + '</root>')"` exits 0 | Current pre-rewrite file passes; rewrite must keep passing. |
 | TUI no-change | `git diff main..HEAD -- tui/src/` produces 0 lines | Will be verified in Phase 6. |
-| Spec 026 boot guard active | `uv run python -c "from pathlib import Path; from kosmos.context.prompt_loader import PromptLoader; PromptLoader(manifest_path=Path('prompts/manifest.yaml'))"` exits 0 | Will be verified in Phase 5 (smoke). |
+| Spec 026 boot guard active | `uv run python -c "from pathlib import Path; from kosax.context.prompt_loader import PromptLoader; PromptLoader(manifest_path=Path('prompts/manifest.yaml'))"` exits 0 | Will be verified in Phase 5 (smoke). |
 
 ---
 

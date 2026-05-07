@@ -1,4 +1,4 @@
-# Specification Quality Checklist: KOSMOS-original UI Residue Cleanup (Epic β)
+# Specification Quality Checklist: KOSAX-original UI Residue Cleanup (Epic β)
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-04-29
@@ -33,5 +33,5 @@
 
 - Validation iteration 1 — all 16 items pass.
 - 1 conditional `NEEDS TRACKING` deferred item (보존 결정 도구의 i18n) — `/speckit-taskstoissues` 단계에서 placeholder 또는 자연 close.
-- "users" = KOSMOS Lead + Epic γ/δ 후속 팀 (내부 spec-driven 산출물 수령자).
+- "users" = KOSAX Lead + Epic γ/δ 후속 팀 (내부 spec-driven 산출물 수령자).
 - spec 본문에서 "bun typecheck" / "bun test" 같은 도구 명을 명시한 부분은 측정 invariant 의 자기-검증 procedure 로, FR 자체는 "0 errors" / "no NEW failures" 의 결과 기반.

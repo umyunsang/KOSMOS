@@ -6,7 +6,7 @@ the wrapped ``BM25Index.score()``: both objects are constructed from the same
 corpus dict (4 seed adapters), and every query in the committed 30-query set
 must produce byte-identical ``list[tuple[str, float]]`` output.
 
-Adapter sourcing: delegates to ``kosmos.eval.retrieval._build_registry()``,
+Adapter sourcing: delegates to ``kosax.eval.retrieval._build_registry()``,
 which registers each seed adapter individually (resilient to partial imports)
 and returns a populated ``ToolRegistry``.  The corpus is extracted as
 ``{tool_id: search_hint}`` for the 4 canonical seed IDs.
@@ -65,8 +65,8 @@ def _build_seed_corpus() -> dict[str, str]:
     Delegates registry construction to the eval harness builder so adapter
     sourcing logic is DRY and resilient to import errors in one module.
     """
-    from kosmos.eval.retrieval import _build_registry
-    from kosmos.tools.registry import ToolRegistry
+    from kosax.eval.retrieval import _build_registry
+    from kosax.tools.registry import ToolRegistry
 
     registry, _ = _build_registry()
     assert isinstance(registry, ToolRegistry)
@@ -108,8 +108,8 @@ def test_bm25_backend_score_parity(entry: dict[str, Any]) -> None:
     object identity. This is the stricter test: even if the wrapper were
     replaced by a non-delegating copy, numeric drift would surface here.
     """
-    from kosmos.tools.bm25_index import BM25Index
-    from kosmos.tools.retrieval.bm25_backend import BM25Backend
+    from kosax.tools.bm25_index import BM25Index
+    from kosax.tools.retrieval.bm25_backend import BM25Backend
 
     corpus = _build_seed_corpus()
     query: str = entry["query"]

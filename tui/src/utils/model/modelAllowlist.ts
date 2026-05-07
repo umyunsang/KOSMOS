@@ -1,10 +1,10 @@
-// KOSMOS Epic #2112: legacy family-alias and version-prefix allowlist matchers
+// KOSAX Epic #2112: legacy family-alias and version-prefix allowlist matchers
 // removed. Single-fixed K-EXAONE means availableModels semantics collapse to
 // "is the user-supplied name K-EXAONE or in the user's explicit allowlist?".
 
 import { getSettings_DEPRECATED } from '../settings/settings.js'
 import { isModelAlias } from './aliases.js'
-import { KOSMOS_K_EXAONE_MODEL } from './constants.js'
+import { KOSAX_K_EXAONE_MODEL } from './constants.js'
 import { resolveOverriddenModel } from './modelStrings.js'
 
 export function isModelAllowed(model: string): boolean {
@@ -26,7 +26,7 @@ export function isModelAllowed(model: string): boolean {
   }
   // The canonical K-EXAONE identifier is always allowed when the allowlist
   // is non-empty — required so getDefaultMainLoopModel() never trips its own gate.
-  if (normalised === KOSMOS_K_EXAONE_MODEL.toLowerCase()) {
+  if (normalised === KOSAX_K_EXAONE_MODEL.toLowerCase()) {
     return true
   }
   // Aliases (e.g. legacy 'default') resolve via parseUserSpecifiedModel — if

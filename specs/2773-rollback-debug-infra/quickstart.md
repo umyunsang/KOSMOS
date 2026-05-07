@@ -3,7 +3,7 @@
 Run the two regression scenarios locally with fixture/mock credentials or a local model fixture. Do not run live public-service API calls in CI.
 
 ```bash
-KOSMOS_PTY_SAMPLE_FRAMES=1 \
+KOSAX_PTY_SAMPLE_FRAMES=1 \
   bun scripts/bun-pty-capture.ts \
   specs/2773-rollback-debug-infra/captures/hadan-emergency \
   specs/2773-rollback-debug-infra/scripts/hadan-emergency.bun-pty.ts
@@ -16,7 +16,7 @@ python scripts/tui-realuse-audit.py \
 ```
 
 ```bash
-KOSMOS_PTY_SAMPLE_FRAMES=1 \
+KOSAX_PTY_SAMPLE_FRAMES=1 \
   bun scripts/bun-pty-capture.ts \
   specs/2773-rollback-debug-infra/captures/dadae-weather \
   specs/2773-rollback-debug-infra/scripts/dadae-weather.bun-pty.ts

@@ -127,7 +127,7 @@ describe('LookupPrimitive.validateInput: tier-1 backend manifest resolution', ()
 
     expect(result.result).toBe(true)
     // Citation must be populated from the manifest entry
-    const citations = (ctx as { kosmosCitations?: { real_classification_url: string }[] }).kosmosCitations
+    const citations = (ctx as { kosaxCitations?: { real_classification_url: string }[] }).kosaxCitations
     expect(citations).toBeDefined()
     expect(citations![0]?.real_classification_url).toBe('https://www.e-gen.or.kr/nemc/main.do')
   })

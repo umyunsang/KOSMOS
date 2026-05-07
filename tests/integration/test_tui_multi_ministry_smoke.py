@@ -56,7 +56,7 @@ import httpx
 import pytest
 from pydantic import TypeAdapter
 
-from kosmos.ipc.frame_schema import (
+from kosax.ipc.frame_schema import (
     AssistantChunkFrame,
     IPCFrame,
     ToolCallFrame,
@@ -189,7 +189,7 @@ def _build_multi_ministry_script():  # type: ignore[no-untyped-def]
     event_sequences: list of per-turn StreamEvent lists consumed by MockLLMClient.
     expected_tool_order: ordered list of tool names for assertion.
     """
-    from kosmos.llm.models import TokenUsage
+    from kosax.llm.models import TokenUsage
     from tests.e2e.conftest import _make_text_events, _tce
 
     _u = TokenUsage(input_tokens=200, output_tokens=50)
@@ -237,14 +237,14 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:  # noqa: 
     """
     import uuid
 
-    from kosmos.context.builder import ContextBuilder
-    from kosmos.engine.config import QueryEngineConfig
-    from kosmos.engine.engine import QueryEngine
-    from kosmos.engine.events import QueryEvent, StopReason
-    from kosmos.llm.client import LLMClient
-    from kosmos.llm.models import ChatMessage, StreamEvent
-    from kosmos.llm.usage import UsageTracker
-    from kosmos.tools.hira.hospital_search import register as reg_hira
+    from kosax.context.builder import ContextBuilder
+    from kosax.engine.config import QueryEngineConfig
+    from kosax.engine.engine import QueryEngine
+    from kosax.engine.events import QueryEvent, StopReason
+    from kosax.llm.client import LLMClient
+    from kosax.llm.models import ChatMessage, StreamEvent
+    from kosax.llm.usage import UsageTracker
+    from kosax.tools.hira.hospital_search import register as reg_hira
     from tests.e2e.conftest import _build_registry_and_executor
     from tests.engine.conftest import MockLLMClient
 

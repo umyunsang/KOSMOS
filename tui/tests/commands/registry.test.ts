@@ -1,5 +1,5 @@
 // T043 — Registry-shape test
-// Asserts the default KOSMOS registry shape (keys, per-entry interface) is
+// Asserts the default KOSAX registry shape (keys, per-entry interface) is
 // structurally well-formed and consistent with FR-036 / US2 scenario 5.
 
 import { describe, expect, it } from 'bun:test'

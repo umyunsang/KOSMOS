@@ -1,14 +1,14 @@
 # Quickstart: Full TUI (Ink + React + Bun)
 
 **Branch**: `287-tui-ink-react-bun`
-**Audience**: KOSMOS contributor who wants to run the TUI locally, verify the IPC bridge, and exercise the permission-gauntlet + primitive renderers without touching live `data.go.kr` APIs.
+**Audience**: KOSAX contributor who wants to run the TUI locally, verify the IPC bridge, and exercise the permission-gauntlet + primitive renderers without touching live `data.go.kr` APIs.
 
 ---
 
 ## Prerequisites
 
 - Bun v1.2.x (`curl -fsSL https://bun.sh/install | bash`)
-- Python 3.12+ with `uv` (existing KOSMOS baseline)
+- Python 3.12+ with `uv` (existing KOSAX baseline)
 - Terminal that supports truecolor + UTF-8 (kitty, alacritty, iTerm2, Konsole, macOS Terminal, gnome-terminal)
 - macOS or Linux (Windows is best-effort only)
 - For Korean IME testing: macOS Korean IME (built-in) OR Linux with fcitx5 / ibus + `korean-hangul` input method
@@ -50,7 +50,7 @@ Expected result:
 
 ```bash
 # From repo root
-uv run kosmos-backend --ipc stdio &        # Starts Python backend in stdio IPC mode
+uv run kosax-backend --ipc stdio &        # Starts Python backend in stdio IPC mode
 # (or let the TUI spawn it:)
 
 cd tui/
@@ -59,13 +59,13 @@ bun run tui
 
 What happens:
 
-1. `tui/src/main.tsx` invokes `Bun.spawn(["uv", "run", "kosmos-backend", "--ipc", "stdio"], {stdio: ["pipe","pipe","pipe"]})`.
+1. `tui/src/main.tsx` invokes `Bun.spawn(["uv", "run", "kosax-backend", "--ipc", "stdio"], {stdio: ["pipe","pipe","pipe"]})`.
 2. Python side binds `asyncio.StreamReader` to `sys.stdin.buffer` and writes JSONL frames to `sys.stdout.buffer`.
 3. TUI renders a welcome message and a prompt.
 4. Type `안녕하세요, 강남역 주변 사고 위험 알려줘`; the model streams back a response; the streaming chunks render within 50 ms each.
 5. If the model calls `lookup`, the result renders via `<CollectionList />` / `<PointCard />` / etc.
 
-**Crash demo**: `kill -9 <backend-pid>` → TUI shows `<CrashNotice />` within 5 s with KOSMOS_* env vars redacted.
+**Crash demo**: `kill -9 <backend-pid>` → TUI shows `<CrashNotice />` within 5 s with KOSAX_* env vars redacted.
 
 ---
 
@@ -128,7 +128,7 @@ For every file in `tui/src/` carrying the attribution header, the script diffs i
 
 ## 8. Observability
 
-Every IPC frame emits a `kosmos.ipc.frame` OTEL span (child of the session span from Spec 021):
+Every IPC frame emits a `kosax.ipc.frame` OTEL span (child of the session span from Spec 021):
 
 ```bash
 # Start the local OTEL collector
@@ -138,7 +138,7 @@ docker compose -f docker-compose.dev.yml up -d otel-collector
 cd tui/ && bun run tui
 ```
 
-Span attributes: `kosmos.session.id`, `kosmos.frame.kind`, `kosmos.frame.direction`, `kosmos.ipc.latency_ms`.
+Span attributes: `kosax.session.id`, `kosax.frame.kind`, `kosax.frame.direction`, `kosax.ipc.latency_ms`.
 
 ---
 
@@ -148,10 +148,10 @@ Span attributes: `kosmos.session.id`, `kosmos.frame.kind`, `kosmos.frame.directi
 |---|---|---|
 | `bun install` fails at Ink pin | ADR for IME missing | Create `docs/adr/NNN-korean-ime-strategy.md` per FR-057 |
 | TUI prompt shows boxes for Korean text | Terminal font lacks Hangul coverage | Install Pretendard or Noto Sans KR |
-| `assistant_chunk` render is choppy (> 50 ms) | Debug logging enabled | Set `KOSMOS_TUI_LOG_LEVEL=WARN` |
+| `assistant_chunk` render is choppy (> 50 ms) | Debug logging enabled | Set `KOSAX_TUI_LOG_LEVEL=WARN` |
 | Permission modal doesn't appear | Backend not emitting `permission_request` | Verify Spec 027 coordinator is in `waiting_permission` state |
 | CJK text wraps at wrong column | `string-width` edge case (ink#688, #759) | Accepted known issue; see `tui/docs/cjk-width-known-issues.md` |
-| `bun run tui` hangs on start | Backend spawn slower than 2 s on cold cache | Run `uv sync` + `uv run python -c "import kosmos"` once to warm import cache |
+| `bun run tui` hangs on start | Backend spawn slower than 2 s on cold cache | Run `uv sync` + `uv run python -c "import kosax"` once to warm import cache |
 
 ---
 
@@ -160,10 +160,10 @@ Span attributes: `kosmos.session.id`, `kosmos.frame.kind`, `kosmos.frame.directi
 Register the following in `.env` (never commit):
 
 ```bash
-KOSMOS_TUI_THEME=default             # default | dark | light
-KOSMOS_TUI_LOG_LEVEL=WARN            # DEBUG | INFO | WARN | ERROR
-KOSMOS_TUI_SUBSCRIBE_TIMEOUT_S=120   # subscribe stream timeout (seconds)
-KOSMOS_TUI_IME_STRATEGY=fork         # fork | readline  (value set by ADR)
+KOSAX_TUI_THEME=default             # default | dark | light
+KOSAX_TUI_LOG_LEVEL=WARN            # DEBUG | INFO | WARN | ERROR
+KOSAX_TUI_SUBSCRIBE_TIMEOUT_S=120   # subscribe stream timeout (seconds)
+KOSAX_TUI_IME_STRATEGY=fork         # fork | readline  (value set by ADR)
 ```
 
-All `KOSMOS_TUI_*` values are redacted from crash notices per #468 guard pattern (FR-004).
+All `KOSAX_TUI_*` values are redacted from crash notices per #468 guard pattern (FR-004).

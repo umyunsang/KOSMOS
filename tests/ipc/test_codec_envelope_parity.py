@@ -6,7 +6,7 @@ Spec 2642 / Epic F · S7 / US3.
 Background
 ----------
 ``tui/src/ipc/frames.generated.ts`` is auto-generated from
-``src/kosmos/ipc/frame_schema.py`` (covered by the existing
+``src/kosax/ipc/frame_schema.py`` (covered by the existing
 ``test_schema_python_ts_diff.py`` JSON-Schema parity gate).
 
 ``tui/src/ipc/codec.ts`` is **hand-written** and provides runtime
@@ -23,7 +23,7 @@ A negative-fixture (``tests/ipc/fixtures/codec_drift_negative.ts``)
 proves the gate fails when an intentional drift is injected (the
 companion ``test_drift_negative_fixture_triggers_failure`` test).
 
-Drift fixture is opt-in only via ``KOSMOS_IPC_PARITY_DRIFT_FIXTURE=1``;
+Drift fixture is opt-in only via ``KOSAX_IPC_PARITY_DRIFT_FIXTURE=1``;
 ``conftest.py`` enforces the env var defaults to OFF in CI.
 """
 
@@ -36,7 +36,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from kosmos.ipc.frame_schema import _BaseFrame
+from kosax.ipc.frame_schema import _BaseFrame
 
 # ---------------------------------------------------------------------------
 # Path constants
@@ -45,7 +45,7 @@ from kosmos.ipc.frame_schema import _BaseFrame
 _REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 _REAL_CODEC_PATH = _REPO_ROOT / "tui" / "src" / "ipc" / "codec.ts"
 _DRIFT_FIXTURE_PATH = _REPO_ROOT / "tests" / "ipc" / "fixtures" / "codec_drift_negative.ts"
-_DRIFT_ENV_VAR = "KOSMOS_IPC_PARITY_DRIFT_FIXTURE"
+_DRIFT_ENV_VAR = "KOSAX_IPC_PARITY_DRIFT_FIXTURE"
 
 
 # ---------------------------------------------------------------------------
@@ -331,7 +331,7 @@ def run_codec_envelope_parity_check(codec_path: pathlib.Path | None = None) -> N
     assert not extra, (
         f"codec.ts BaseFrame has extra fields not in Pydantic _BaseFrame: "
         f"{sorted(extra)}. Either delete them from codec.ts or add them to "
-        f"_BaseFrame in src/kosmos/ipc/frame_schema.py."
+        f"_BaseFrame in src/kosax/ipc/frame_schema.py."
     )
 
     # Per-field constraint parity.

@@ -11,8 +11,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from kosmos.tools.kma.projection import latlon_to_lcc
-from kosmos.tools.models import (
+from kosax.tools.kma.projection import latlon_to_lcc
+from kosax.tools.models import (
     AddressResult,
     AdmCodeResult,
     CoordResult,
@@ -22,7 +22,7 @@ from kosmos.tools.models import (
     ResolveError,
     ResolveLocationInput,
 )
-from kosmos.tools.resolve_location import _keyword_doc_matches_query, resolve_location
+from kosax.tools.resolve_location import _keyword_doc_matches_query, resolve_location
 
 # ---------------------------------------------------------------------------
 # Shared mock return values
@@ -123,7 +123,7 @@ class TestResolveCoords:
     async def test_returns_coord_result_on_kakao_success(self):
         inp = ResolveLocationInput(query="서울 강남구", want="coords")
         with patch(
-            "kosmos.tools.resolve_location._kakao_coords",
+            "kosax.tools.resolve_location._kakao_coords",
             new=AsyncMock(return_value=_COORD),
         ):
             result = await resolve_location(inp)
@@ -135,7 +135,7 @@ class TestResolveCoords:
     async def test_returns_error_when_kakao_fails(self):
         inp = ResolveLocationInput(query="존재하지않는장소", want="coords")
         with patch(
-            "kosmos.tools.resolve_location._kakao_coords",
+            "kosax.tools.resolve_location._kakao_coords",
             new=AsyncMock(return_value=None),
         ):
             result = await resolve_location(inp)
@@ -154,15 +154,15 @@ class TestResolveAdmCd:
         inp = ResolveLocationInput(query="서울 강남구", want="adm_cd")
         with (
             patch(
-                "kosmos.tools.resolve_location._juso_adm_cd",
+                "kosax.tools.resolve_location._juso_adm_cd",
                 new=AsyncMock(return_value=_ADM),
             ),
             patch(
-                "kosmos.tools.resolve_location._kakao_coords",
+                "kosax.tools.resolve_location._kakao_coords",
                 new=AsyncMock(return_value=None),
             ),
             patch(
-                "kosmos.tools.resolve_location._sgis_adm_cd",
+                "kosax.tools.resolve_location._sgis_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
         ):
@@ -180,23 +180,23 @@ class TestResolveAdmCd:
         inp = ResolveLocationInput(query="서울 강남구", want="adm_cd")
         with (
             patch(
-                "kosmos.tools.resolve_location._juso_adm_cd",
+                "kosax.tools.resolve_location._juso_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
             patch(
-                "kosmos.tools.resolve_location._kakao_adm_cd",
+                "kosax.tools.resolve_location._kakao_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
             patch(
-                "kosmos.tools.resolve_location._kakao_coords",
+                "kosax.tools.resolve_location._kakao_coords",
                 new=AsyncMock(return_value=_COORD),
             ),
             patch(
-                "kosmos.tools.resolve_location._kakao_adm_cd_from_coords",
+                "kosax.tools.resolve_location._kakao_adm_cd_from_coords",
                 new=AsyncMock(return_value=None),
             ),
             patch(
-                "kosmos.tools.resolve_location._sgis_adm_cd",
+                "kosax.tools.resolve_location._sgis_adm_cd",
                 new=AsyncMock(return_value=sgis_adm),
             ),
         ):
@@ -208,10 +208,10 @@ class TestResolveAdmCd:
     async def test_error_when_all_backends_fail(self):
         inp = ResolveLocationInput(query="알수없는장소", want="adm_cd")
         with (
-            patch("kosmos.tools.resolve_location._juso_adm_cd", new=AsyncMock(return_value=None)),
-            patch("kosmos.tools.resolve_location._kakao_adm_cd", new=AsyncMock(return_value=None)),
-            patch("kosmos.tools.resolve_location._kakao_coords", new=AsyncMock(return_value=None)),
-            patch("kosmos.tools.resolve_location._sgis_adm_cd", new=AsyncMock(return_value=None)),
+            patch("kosax.tools.resolve_location._juso_adm_cd", new=AsyncMock(return_value=None)),
+            patch("kosax.tools.resolve_location._kakao_adm_cd", new=AsyncMock(return_value=None)),
+            patch("kosax.tools.resolve_location._kakao_coords", new=AsyncMock(return_value=None)),
+            patch("kosax.tools.resolve_location._sgis_adm_cd", new=AsyncMock(return_value=None)),
         ):
             result = await resolve_location(inp)
         assert isinstance(result, ResolveError)
@@ -229,7 +229,7 @@ class TestResolveAddress:
         inp = ResolveLocationInput(query="서울 강남구 테헤란로 152", want="road_address")
         with (
             patch(
-                "kosmos.tools.resolve_location._kakao_geocode",
+                "kosax.tools.resolve_location._kakao_geocode",
                 new=AsyncMock(return_value=_ADDRESS),
             ),
         ):
@@ -252,11 +252,11 @@ class TestResolveAddress:
         )
         with (
             patch(
-                "kosmos.tools.resolve_location._kakao_geocode",
+                "kosax.tools.resolve_location._kakao_geocode",
                 new=AsyncMock(return_value=None),
             ),
             patch(
-                "kosmos.tools.resolve_location._juso_adm_cd",
+                "kosax.tools.resolve_location._juso_adm_cd",
                 new=AsyncMock(return_value=juso_adm),
             ),
         ):
@@ -269,8 +269,8 @@ class TestResolveAddress:
     async def test_error_when_all_fail(self):
         inp = ResolveLocationInput(query="알수없는주소", want="jibun_address")
         with (
-            patch("kosmos.tools.resolve_location._kakao_geocode", new=AsyncMock(return_value=None)),
-            patch("kosmos.tools.resolve_location._juso_adm_cd", new=AsyncMock(return_value=None)),
+            patch("kosax.tools.resolve_location._kakao_geocode", new=AsyncMock(return_value=None)),
+            patch("kosax.tools.resolve_location._juso_adm_cd", new=AsyncMock(return_value=None)),
         ):
             result = await resolve_location(inp)
         assert isinstance(result, ResolveError)
@@ -304,7 +304,7 @@ class TestResolvePOI:
 
         inp = ResolveLocationInput(query="강남역", want="poi")
         with patch(
-            "kosmos.tools.geocoding.kakao_client.search_keyword",
+            "kosax.tools.geocoding.kakao_client.search_keyword",
             new=AsyncMock(return_value=mock_result),
         ):
             result = await resolve_location(inp)
@@ -320,7 +320,7 @@ class TestResolvePOI:
         mock_result.meta.total_count = 0
 
         with patch(
-            "kosmos.tools.geocoding.kakao_client.search_keyword",
+            "kosax.tools.geocoding.kakao_client.search_keyword",
             new=AsyncMock(return_value=mock_result),
         ):
             result = await resolve_location(inp)
@@ -339,11 +339,11 @@ class TestResolveRegion:
         inp = ResolveLocationInput(query="하단역", want="region")
         with (
             patch(
-                "kosmos.tools.resolve_location._kakao_coords",
+                "kosax.tools.resolve_location._kakao_coords",
                 new=AsyncMock(return_value=_COORD),
             ),
             patch(
-                "kosmos.tools.resolve_location._kakao_region_from_coords",
+                "kosax.tools.resolve_location._kakao_region_from_coords",
                 new=AsyncMock(return_value=_REGION_BUSAN),
             ),
         ):
@@ -356,7 +356,7 @@ class TestResolveRegion:
     async def test_region_requires_coords_first(self):
         inp = ResolveLocationInput(query="알수없는곳", want="region")
         with patch(
-            "kosmos.tools.resolve_location._kakao_coords",
+            "kosax.tools.resolve_location._kakao_coords",
             new=AsyncMock(return_value=None),
         ):
             result = await resolve_location(inp)
@@ -375,11 +375,11 @@ class TestResolveCoordsAndAdmCd:
         inp = ResolveLocationInput(query="서울 강남구", want="coords_and_admcd")
         with (
             patch(
-                "kosmos.tools.resolve_location._kakao_coords",
+                "kosax.tools.resolve_location._kakao_coords",
                 new=AsyncMock(return_value=_COORD),
             ),
             patch(
-                "kosmos.tools.resolve_location._juso_adm_cd",
+                "kosax.tools.resolve_location._juso_adm_cd",
                 new=AsyncMock(return_value=_ADM),
             ),
         ):
@@ -402,23 +402,23 @@ class TestResolveCoordsAndAdmCd:
         inp = ResolveLocationInput(query="강남역", want="coords_and_admcd")
         with (
             patch(
-                "kosmos.tools.resolve_location._kakao_coords",
+                "kosax.tools.resolve_location._kakao_coords",
                 new=AsyncMock(return_value=_COORD),
             ),
             patch(
-                "kosmos.tools.resolve_location._juso_adm_cd",
+                "kosax.tools.resolve_location._juso_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
             patch(
-                "kosmos.tools.resolve_location._kakao_adm_cd",
+                "kosax.tools.resolve_location._kakao_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
             patch(
-                "kosmos.tools.resolve_location._kakao_adm_cd_from_coords",
+                "kosax.tools.resolve_location._kakao_adm_cd_from_coords",
                 new=AsyncMock(return_value=kakao_adm),
             ),
             patch(
-                "kosmos.tools.resolve_location._sgis_adm_cd",
+                "kosax.tools.resolve_location._sgis_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
         ):
@@ -431,23 +431,23 @@ class TestResolveCoordsAndAdmCd:
         inp = ResolveLocationInput(query="서울 강남구", want="coords_and_admcd")
         with (
             patch(
-                "kosmos.tools.resolve_location._kakao_coords",
+                "kosax.tools.resolve_location._kakao_coords",
                 new=AsyncMock(return_value=_COORD),
             ),
             patch(
-                "kosmos.tools.resolve_location._juso_adm_cd",
+                "kosax.tools.resolve_location._juso_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
             patch(
-                "kosmos.tools.resolve_location._kakao_adm_cd",
+                "kosax.tools.resolve_location._kakao_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
             patch(
-                "kosmos.tools.resolve_location._kakao_adm_cd_from_coords",
+                "kosax.tools.resolve_location._kakao_adm_cd_from_coords",
                 new=AsyncMock(return_value=None),
             ),
             patch(
-                "kosmos.tools.resolve_location._sgis_adm_cd",
+                "kosax.tools.resolve_location._sgis_adm_cd",
                 new=AsyncMock(return_value=None),
             ),
         ):
@@ -461,9 +461,9 @@ class TestResolveCoordsAndAdmCd:
     async def test_error_when_both_fail(self):
         inp = ResolveLocationInput(query="알수없는곳", want="coords_and_admcd")
         with (
-            patch("kosmos.tools.resolve_location._kakao_coords", new=AsyncMock(return_value=None)),
-            patch("kosmos.tools.resolve_location._juso_adm_cd", new=AsyncMock(return_value=None)),
-            patch("kosmos.tools.resolve_location._sgis_adm_cd", new=AsyncMock(return_value=None)),
+            patch("kosax.tools.resolve_location._kakao_coords", new=AsyncMock(return_value=None)),
+            patch("kosax.tools.resolve_location._juso_adm_cd", new=AsyncMock(return_value=None)),
+            patch("kosax.tools.resolve_location._sgis_adm_cd", new=AsyncMock(return_value=None)),
         ):
             result = await resolve_location(inp)
         assert isinstance(result, ResolveError)
@@ -524,19 +524,19 @@ class TestResolveAll:
 
         with (
             patch(
-                "kosmos.tools.resolve_location._juso_adm_cd",
+                "kosax.tools.resolve_location._juso_adm_cd",
                 new=AsyncMock(return_value=_ADM),
             ),
             patch(
-                "kosmos.tools.geocoding.kakao_client.search_address",
+                "kosax.tools.geocoding.kakao_client.search_address",
                 new=AsyncMock(return_value=mock_addr_result),
             ),
             patch(
-                "kosmos.tools.geocoding.kakao_client.search_keyword",
+                "kosax.tools.geocoding.kakao_client.search_keyword",
                 new=AsyncMock(return_value=mock_kw_result),
             ),
             patch(
-                "kosmos.tools.resolve_location._kakao_region_from_coords",
+                "kosax.tools.resolve_location._kakao_region_from_coords",
                 new=AsyncMock(return_value=_REGION_SEOUL),
             ),
         ):

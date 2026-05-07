@@ -19,7 +19,7 @@ from pathlib import Path
 
 def test_geumyung_invoke_returns_transparency_fields(tmp_path: Path) -> None:
     """invoke() returns a dict with all six transparency fields non-empty."""
-    from kosmos.tools.mock.verify_module_geumyung import invoke
+    from kosax.tools.mock.verify_module_geumyung import invoke
 
     result = invoke(
         {
@@ -46,7 +46,7 @@ def test_geumyung_invoke_returns_transparency_fields(tmp_path: Path) -> None:
 
 def test_geumyung_international_reference(tmp_path: Path) -> None:
     """_international_reference must be 'Singapore Myinfo'."""
-    from kosmos.tools.mock.verify_module_geumyung import invoke
+    from kosax.tools.mock.verify_module_geumyung import invoke
 
     result = invoke(
         {
@@ -60,7 +60,7 @@ def test_geumyung_international_reference(tmp_path: Path) -> None:
 
 def test_geumyung_reference_impl(tmp_path: Path) -> None:
     """_reference_implementation must be 'public-mydata-read-v240930'."""
-    from kosmos.tools.mock.verify_module_geumyung import invoke
+    from kosax.tools.mock.verify_module_geumyung import invoke
 
     result = invoke(
         {
@@ -74,7 +74,7 @@ def test_geumyung_reference_impl(tmp_path: Path) -> None:
 
 def test_geumyung_delegation_token_format(tmp_path: Path) -> None:
     """The delegation token starts with 'del_' and scope is embedded correctly."""
-    from kosmos.tools.mock.verify_module_geumyung import invoke
+    from kosax.tools.mock.verify_module_geumyung import invoke
 
     result = invoke(
         {
@@ -91,7 +91,7 @@ def test_geumyung_delegation_token_format(tmp_path: Path) -> None:
 
 def test_geumyung_ledger_append(tmp_path: Path) -> None:
     """delegation_issued event written to ledger after invoke."""
-    from kosmos.tools.mock.verify_module_geumyung import invoke
+    from kosax.tools.mock.verify_module_geumyung import invoke
 
     ledger_dir = tmp_path / "ledger"
     invoke(
@@ -112,7 +112,7 @@ def test_geumyung_ledger_append(tmp_path: Path) -> None:
 
 def test_geumyung_is_registered() -> None:
     """Importing the module registers 'geumyung_module' in _VERIFY_ADAPTERS."""
-    import kosmos.tools.mock.verify_module_geumyung  # noqa: F401
-    from kosmos.primitives.verify import _VERIFY_ADAPTERS
+    import kosax.tools.mock.verify_module_geumyung  # noqa: F401
+    from kosax.primitives.verify import _VERIFY_ADAPTERS
 
     assert "geumyung_module" in _VERIFY_ADAPTERS

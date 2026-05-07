@@ -15,14 +15,14 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.models import QueryContext, QueryState
-from kosmos.engine.query import dispatch_tool_calls
-from kosmos.llm.client import LLMClient  # noqa: F401 — needed by model_rebuild
-from kosmos.llm.models import FunctionCall, ToolCall
-from kosmos.llm.usage import UsageTracker
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.registry import ToolRegistry
+from kosax.engine.config import QueryEngineConfig
+from kosax.engine.models import QueryContext, QueryState
+from kosax.engine.query import dispatch_tool_calls
+from kosax.llm.client import LLMClient  # noqa: F401 — needed by model_rebuild
+from kosax.llm.models import FunctionCall, ToolCall
+from kosax.llm.usage import UsageTracker
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -42,7 +42,7 @@ def _make_registry(
     """Return a ToolRegistry populated with a single minimal GovAPITool."""
     from pydantic import BaseModel
 
-    from kosmos.tools.models import GovAPITool
+    from kosax.tools.models import GovAPITool
 
     class _In(BaseModel):
         query: str = ""

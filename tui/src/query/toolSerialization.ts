@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #2077 K-EXAONE tool wiring · T005.
+// KOSAX-original — Epic #2077 K-EXAONE tool wiring · T005.
 //
 // Mirrors _cc_reference/api.ts:toolToAPISchema (line 119-266)
 // Converts the TUI's Zod-defined tool catalog into ToolDefinition[] for
@@ -14,7 +14,7 @@ import { getAllBaseTools } from '../tools.js'
 // Published-to-LLM name set — FR-003 single-source rule (TUI side).
 //
 // Includes ONLY the active reserved primitives (Migration Tree § L1-C.C1).
-// subscribe is deferred until KOSMOS has a real app/push-notification runtime.
+// subscribe is deferred until KOSAX has a real app/push-notification runtime.
 // MVP-7 auxiliary tools (Migration Tree § L1-C.C6) are tracked client-side
 // for permissions / sandbox infrastructure but NOT yet exposed to the LLM:
 // their TUI-side execution path (``runTools`` → ``tool_result`` frame back
@@ -55,7 +55,7 @@ function isPublishedToLLM(tool: Tool): boolean {
  * - `function.parameters`  = z.toJSONSchema(tool.inputSchema) — Draft 2020-12
  */
 export async function toolToFunctionSchema(tool: Tool): Promise<ToolDefinition> {
-  // KOSMOS primitives implement description() and prompt() as zero-arg constants.
+  // KOSAX primitives implement description() and prompt() as zero-arg constants.
   // Auxiliary tools (e.g. WebFetchTool) implement description(input, opts) and
   // require a real input value to produce a meaningful string.  We call with no
   // args and catch any destructuring error, falling back to an empty string.

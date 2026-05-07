@@ -16,7 +16,7 @@ description: "Tasks — Epic η #2298 system prompt rewrite (infinite-spinner fi
 
 - **[P]**: Different file + no dependencies on incomplete tasks → parallelizable
 - **[Story]**: US1 (P1 modid chain), US2 (P2 5-family disambiguation), US3 (P3 lookup-only regression). Setup / Foundational / Polish: no story label
-- File paths are absolute from worktree root (`/Users/um-yunsang/KOSMOS-w-2298/`)
+- File paths are absolute from worktree root (`/Users/um-yunsang/KOSAX-w-2298/`)
 
 ## Path Conventions
 
@@ -26,7 +26,7 @@ Single-project monorepo. This Epic touches:
 - `tests/integration/` (new fixture loader test)
 - `specs/2298-system-prompt-rewrite/` (smoke scripts + captured artefacts)
 
-NO edits to `src/kosmos/**` or `tui/src/**` (FR-019 + AGENTS.md TUI no-change exemption).
+NO edits to `src/kosax/**` or `tui/src/**` (FR-019 + AGENTS.md TUI no-change exemption).
 
 ---
 
@@ -34,7 +34,7 @@ NO edits to `src/kosmos/**` or `tui/src/**` (FR-019 + AGENTS.md TUI no-change ex
 
 **Purpose**: Confirm Epic ε infrastructure is intact before authoring the rewrite.
 
-- [x] T001 (#2447) Run pre-flight invariant check from `specs/2298-system-prompt-rewrite/quickstart.md § Step 1` and write the captured output to `specs/2298-system-prompt-rewrite/preflight-check.txt` (commit). The 5 checks: (a) `uv run pytest tests/integration/test_verify_module_dispatch.py -q` passes; (b) `uv run pytest tests/integration/test_e2e_citizen_taxreturn_chain.py::test_happy_chain_verify_lookup_submit -q` passes; (c) `grep -E '"(simple_auth_module|modid|kec|geumyung_module|any_id_sso)' src/kosmos/tools/registry.py | wc -l` returns 5; (d) the 11-arm AuthContext union check returns 11; (e) current `shasum -a 256 prompts/system_v1.md` matches the manifest entry. ABORT THE EPIC if any check fails — file an Epic ε regression issue and STOP.
+- [x] T001 (#2447) Run pre-flight invariant check from `specs/2298-system-prompt-rewrite/quickstart.md § Step 1` and write the captured output to `specs/2298-system-prompt-rewrite/preflight-check.txt` (commit). The 5 checks: (a) `uv run pytest tests/integration/test_verify_module_dispatch.py -q` passes; (b) `uv run pytest tests/integration/test_e2e_citizen_taxreturn_chain.py::test_happy_chain_verify_lookup_submit -q` passes; (c) `grep -E '"(simple_auth_module|modid|kec|geumyung_module|any_id_sso)' src/kosax/tools/registry.py | wc -l` returns 5; (d) the 11-arm AuthContext union check returns 11; (e) current `shasum -a 256 prompts/system_v1.md` matches the manifest entry. ABORT THE EPIC if any check fails — file an Epic ε regression issue and STOP.
 
 ---
 
@@ -63,8 +63,8 @@ NO edits to `src/kosmos/**` or `tui/src/**` (FR-019 + AGENTS.md TUI no-change ex
 - [x] T005 (#2451) [US1] Rewrite `prompts/system_v1.md` end-to-end per `contracts/system-prompt-section-grammar.md`. Preserve the 4 top-level XML tags `<role>` / `<core_rules>` / `<tool_usage>` / `<output_style>`. Inside `<tool_usage>` add 4 new nested tags in order — `<primitives>` (5-tool catalog), `<verify_families>` (10-row table per `contracts § 3.2`), `<verify_chain_pattern>` (worked example modid → hometax_simplified → hometax_taxreturn per `research.md § R-5` + `any_id_sso` exception note + no-coercion note), `<scope_grammar>` (BNF + comma-joined example). Keep the existing OPAQUE-forever fallback paragraph + `tool_calls` discipline sentence at the tail of `<tool_usage>` verbatim. Add 2 new `<core_rules>` bullets: AAL-default policy (FR-003) + `any_id_sso` exception cross-reference (FR-008). Total file size MUST stay ≤ 8 KB.
 - [x] T006 (#2452) [US1] Recompute `prompts/manifest.yaml` SHA-256 entry for `system_v1` per `quickstart.md § Step 3` — `NEW_SHA="$(shasum -a 256 prompts/system_v1.md | awk '{print $1}')"` then patch via `yq -i` (or sed fallback). Confirm via assertion that the post-edit manifest entry equals the file's SHA byte-for-byte.
 - [x] T007 (#2453) [US1] Run `bash specs/2298-system-prompt-rewrite/scripts/lint-prompt.sh prompts/system_v1.md` → must exit 0. If any check fails, iterate on T005 until all 7 invariants pass. Commit only after lint passes.
-- [x] T008 (#2454) [US1] Run boot fail-closed verification: `uv run python -c "from pathlib import Path; from kosmos.context.prompt_loader import PromptLoader; PromptLoader(manifest_path=Path('prompts/manifest.yaml')); print('OK')"` → must print `OK` and exit 0. If `PromptRegistryError` raises, T006 was performed incorrectly — re-run.
-- [X] T009 (#2455) [US1] Author `specs/2298-system-prompt-rewrite/scripts/smoke-citizen-taxreturn.expect` (~80 LOC) per `contracts/smoke-checkpoint-protocol.md § 1`. Spawns `bun run tui`, asserts `KOSMOS` banner, sends the citizen prompt, polls assistant_chunk frames for the receipt regex, emits `CHECKPOINTreceipt token observed\n` exactly once on first match, double-Ctrl-C exit. Tee output to `specs/2298-system-prompt-rewrite/smoke-citizen-taxreturn-pty.txt`.
+- [x] T008 (#2454) [US1] Run boot fail-closed verification: `uv run python -c "from pathlib import Path; from kosax.context.prompt_loader import PromptLoader; PromptLoader(manifest_path=Path('prompts/manifest.yaml')); print('OK')"` → must print `OK` and exit 0. If `PromptRegistryError` raises, T006 was performed incorrectly — re-run.
+- [X] T009 (#2455) [US1] Author `specs/2298-system-prompt-rewrite/scripts/smoke-citizen-taxreturn.expect` (~80 LOC) per `contracts/smoke-checkpoint-protocol.md § 1`. Spawns `bun run tui`, asserts `KOSAX` banner, sends the citizen prompt, polls assistant_chunk frames for the receipt regex, emits `CHECKPOINTreceipt token observed\n` exactly once on first match, double-Ctrl-C exit. Tee output to `specs/2298-system-prompt-rewrite/smoke-citizen-taxreturn-pty.txt`.
 - [X] T010 (#2456) [US1] Author `specs/2298-system-prompt-rewrite/scripts/smoke-citizen-taxreturn.tape` (~30 LOC) per `contracts/smoke-checkpoint-protocol.md § 2`. `Output … .gif` directive, 3 `Screenshot` directives at boot+branding / input-accepted / post-submit-response stages, Sleep 12s before keyframe 3 (extend to 18s if LLM is slow in CI), final double Ctrl+C cleanup.
 - [~] T011 (#2457) [US1] **DEFERRED to Epic ζ #2297 Phase 0** — Capture both smokes was attempted 3× during Epic η implementation. Each attempt produced a complete PTY log but the citizen tax-return chain produced 0 receipt + 0 CHECKPOINT marker. Root-cause: TUI 4 primitive `call()` functions are stubs (`tui/src/tools/{Lookup,Verify,Submit,Subscribe}Primitive/*.ts:248-263` return `{status: 'stub'}`). Even with the system prompt teaching the chain AND `mvp_surface.py` exposing the 5 tools to the LLM, the actual dispatch path is broken. Epic ζ #2297 Phase 0 wires the call() bodies to backend; T011 re-runs there. The attempt-3 PTY log (`specs/2298-system-prompt-rewrite/smoke-citizen-taxreturn-pty.txt`) is committed as evidence of the stub-blocker.
 - [~] T012 (#2458) [US1] **DEFERRED to Epic ζ #2297 Phase 0** — Visual verification gated by T011. Once Epic ζ wires the primitives + re-captures keyframes, Lead Opus visually verifies receipt id rendering.
@@ -73,7 +73,7 @@ NO edits to `src/kosmos/**` or `tui/src/**` (FR-019 + AGENTS.md TUI no-change ex
 
 ### Phase 3.5 — Mid-Epic scope expansion (Lead bonus)
 
-- [x] T029 [US1] Extend `src/kosmos/tools/mvp_surface.py` with `VERIFY_TOOL` + `SUBMIT_TOOL` + `SUBSCRIBE_TOOL` GovAPITool registrations (FR-021). Each declares `is_core=True`, `primitive` field set, `auth_type='api_key'` for verify/submit (V6 invariant) + `auth_type='public'` for subscribe (read-only stream). `register_mvp_surface()` extended to register all 5. Boot-test verifies `len(registry.core_tools()) == 5` (SC-010). Rationale: without this, `registry.export_core_tools_openai()` only returns `[resolve_location, lookup]` → LLM cannot emit `verify(...)` even if the system prompt teaches the chain.
+- [x] T029 [US1] Extend `src/kosax/tools/mvp_surface.py` with `VERIFY_TOOL` + `SUBMIT_TOOL` + `SUBSCRIBE_TOOL` GovAPITool registrations (FR-021). Each declares `is_core=True`, `primitive` field set, `auth_type='api_key'` for verify/submit (V6 invariant) + `auth_type='public'` for subscribe (read-only stream). `register_mvp_surface()` extended to register all 5. Boot-test verifies `len(registry.core_tools()) == 5` (SC-010). Rationale: without this, `registry.export_core_tools_openai()` only returns `[resolve_location, lookup]` → LLM cannot emit `verify(...)` even if the system prompt teaches the chain.
 
 ---
 
@@ -121,7 +121,7 @@ NO edits to `src/kosmos/**` or `tui/src/**` (FR-019 + AGENTS.md TUI no-change ex
 - [x] T024 (#2470) Stage + commit all artefacts. One commit per logical group: (a) `feat(2298): rewrite system_v1 — 4-primitive vocabulary + citizen chain teaching` covers `prompts/`, `tests/fixtures/`, `tests/integration/`; (b) `docs(2298): smoke artefacts + verification notes` covers `specs/2298-system-prompt-rewrite/scripts/` + captured PNG/GIF/PTY/MD files; (c) optional separate `chore(2298): preflight check log` for the T001 captured output. Push to `origin 2298-system-prompt-rewrite`.
 - [x] T025 (#2471) Open PR with `gh pr create --title "feat(2298): system prompt rewrite — infinite-spinner fix" --body @<heredoc>` per `quickstart.md § Step 8` template. PR body MUST cite (a) all canonical references from spec.md header (FR-020); (b) all 5 verification artefacts; (c) `Closes #2298` ONLY (no Task sub-issue closes per AGENTS.md PR closing rule); (d) the 6 deferred items deliberately scoped out. Do NOT use `--draft`.
 - [ ] T026 (#2472) Monitor CI to completion: `gh pr checks --watch --interval 10` until all checks `completed`. Required green: `shadow-eval` (SC-004), `prompt-manifest-integrity` (SC-003), pytest. After every push, also verify `gh pr view --json reviewDecision` reports Copilot Gate `completed` (per AGENTS.md § Copilot Review Gate); if stuck `in_progress` 2+ min, re-request Copilot review via GraphQL or instruct user to add `copilot-review-bypass` label.
-- [ ] T027 (#2473) Read every Codex review comment via `gh api repos/umyunsang/KOSMOS/pulls/<N>/comments --jq '.[] | select(.user.login == "chatgpt-codex-connector[bot]") | "\(.path):\(.line) \(.body)"'`. P2 = fix immediately + push + reply. P1 (architecture mismatch) = create deferred sub-issue + back-fill spec.md `Deferred to Future Work` table + reply with the deferred issue link. Repeat the loop until Codex returns 0 outstanding P1/P2 OR all P1s have a deferred-issue ack.
+- [ ] T027 (#2473) Read every Codex review comment via `gh api repos/umyunsang/KOSAX/pulls/<N>/comments --jq '.[] | select(.user.login == "chatgpt-codex-connector[bot]") | "\(.path):\(.line) \(.body)"'`. P2 = fix immediately + push + reply. P1 (architecture mismatch) = create deferred sub-issue + back-fill spec.md `Deferred to Future Work` table + reply with the deferred issue link. Repeat the loop until Codex returns 0 outstanding P1/P2 OR all P1s have a deferred-issue ack.
 - [ ] T028 (#2474) Final acceptance verification — re-run T011 + T012 (Layer 2 + Layer 4 smokes) on the PR's final HEAD AFTER all Codex fixes land. Update the PR body with the new artefact paths if they changed. Confirm SC-001 / SC-002 / SC-003 / SC-005 / SC-008 still pass on the post-Codex HEAD.
 
 **Checkpoint**: Epic η ready for merge. SC-009 (Codex clean + Copilot completed + shadow-eval success + manifest integrity success) PASS.
@@ -205,4 +205,4 @@ After US1 lands and the infinite-spinner gate closes, US2 broadens family covera
 - Vhs Sleep duration in T010 may need extension; document the actual Sleep used in `visual-verification.md` (T012).
 - AGENTS.md § Codex Gate: every push triggers re-review; T026 includes the 2-min wait + bypass-label fallback.
 - Total task count: **28** — within the 90-task budget (62 slots headroom). No consolidation required.
-- Zero source-code (`src/kosmos/**` / `tui/src/**`) edits planned. Any task that drifts into source code is a scope violation — escalate to Lead Opus.
+- Zero source-code (`src/kosax/**` / `tui/src/**`) edits planned. Any task that drifts into source code is a scope violation — escalate to Lead Opus.

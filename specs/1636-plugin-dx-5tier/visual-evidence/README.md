@@ -1,9 +1,9 @@
-# Visual Evidence — KOSMOS Plugin Surfaces
+# Visual Evidence — KOSAX Plugin Surfaces
 
 > 측정일: 2026-04-26
 > 측정자: Lead 자동화 (umyunsang)
 >
-> ink-testing-library 로 KOSMOS plugin 관련 인터랙티브 UI surface 의 lastFrame() 을 dump 한 시각 검증 산출물. PTY 인 실제 TUI 호스트 없이도 frame 의 정확성을 review 할 수 있도록 plain text + ANSI 양 형식으로 보존.
+> ink-testing-library 로 KOSAX plugin 관련 인터랙티브 UI surface 의 lastFrame() 을 dump 한 시각 검증 산출물. PTY 인 실제 TUI 호스트 없이도 frame 의 정확성을 review 할 수 있도록 plain text + ANSI 양 형식으로 보존.
 
 ## 재현 절차
 
@@ -32,7 +32,7 @@ bun scripts/dump-plugin-frames.tsx
 | 파일 | 로케일 |
 |---|---|
 | `pipa-consent-step-ko.txt` | 한국어 (default) |
-| `pipa-consent-step-en.txt` | English (KOSMOS_TUI_LOCALE=en) |
+| `pipa-consent-step-en.txt` | English (KOSAX_TUI_LOCALE=en) |
 
 5-step onboarding 의 step 3 — 한국어가 primary, 동의 모달의 dot-progress + warning border + `[Y/Enter]` `[N/Esc]` 프롬프트.
 
@@ -64,7 +64,7 @@ bun scripts/dump-plugin-frames.tsx
 
 ## 보완 검증
 
-- backend 통합 테스트: `src/kosmos/plugins/tests/test_install_e2e.py` — SC-004 / SC-005 / SC-007 / SC-010 모두 PASS.
+- backend 통합 테스트: `src/kosax/plugins/tests/test_install_e2e.py` — SC-004 / SC-005 / SC-007 / SC-010 모두 PASS.
 - TUI 단위 테스트: `tui/tests/commands/plugin.test.ts` — 13 tests (frame envelope shape + 7 contract negative cases + IPC 분리).
 - 외부 repo pytest: SC-006 evidence (`sc006-evidence.md`) — 4 example repos × 4 tests = 16/16 pass.
 

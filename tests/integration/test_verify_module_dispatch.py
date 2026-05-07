@@ -13,7 +13,7 @@ IdentityAssertion (any_id_sso).
 
 Reference:
 - specs/2296-ax-mock-adapters/contracts/delegation-token-envelope.md § 1
-- src/kosmos/primitives/verify.py — AuthContext discriminated union (11 variants
+- src/kosax/primitives/verify.py — AuthContext discriminated union (11 variants
   after Spec 2296: original 6 + 5 new AX-channel variants)
 """
 
@@ -21,9 +21,9 @@ from __future__ import annotations
 
 import pytest
 
-import kosmos.tools.mock  # noqa: F401 — register all 5 new verify mocks at import time
-from kosmos.primitives.delegation import DelegationContext, IdentityAssertion
-from kosmos.primitives.verify import (
+import kosax.tools.mock  # noqa: F401 — register all 5 new verify mocks at import time
+from kosax.primitives.delegation import DelegationContext, IdentityAssertion
+from kosax.primitives.verify import (
     AnyIdSsoContext,
     GeumyungModuleContext,
     KECContext,

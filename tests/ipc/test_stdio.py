@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""T011 — Five new scenarios for _handle_chat_request in kosmos.ipc.stdio.
+"""T011 — Five new scenarios for _handle_chat_request in kosax.ipc.stdio.
 
 Tests added per Epic #2077 T011:
 
@@ -13,29 +13,29 @@ Tests added per Epic #2077 T011:
 
 (c) test_unknown_tool_in_frame_dropped_silently
     xfail — current _handle_chat_request does not emit a
-    kosmos.tool.unknown_in_frame OTEL span event when frame.tools contains
+    kosax.tool.unknown_in_frame OTEL span event when frame.tools contains
     names outside the registry. The dispatch whitelist (lines 1281-1300)
     only filters at invocation time, not at frame-tool validation time.
     Contract ref: chat-request-frame.md § Validation contract.
 
 (d) test_agentic_loop_max_turns_honored
     A fixture LLM that always returns a tool_call_delta causes the agentic
-    loop to terminate after KOSMOS_AGENTIC_LOOP_MAX_TURNS iterations
+    loop to terminate after KOSAX_AGENTIC_LOOP_MAX_TURNS iterations
     (default 8) per FR-011.
 
 (e) test_otel_spans_preserved
     After one chat_request with a non-gated tool call (lookup), spans with
     at minimum these attribute keys are emitted:
-    kosmos.tool.dispatched, kosmos.permission.mode, kosmos.permission.decision,
-    kosmos.session.id.  Exact values are not asserted — only key presence.
+    kosax.tool.dispatched, kosax.permission.mode, kosax.permission.decision,
+    kosax.session.id.  Exact values are not asserted — only key presence.
 
 Strategy: in-process harness using an OS pipe for stdin + monkeypatched
 LLMClient.  The os.pipe() call returns real file descriptors so that
 loop.connect_read_pipe() can attach asyncio's event loop.  The fake
 sys.stdout.buffer captures all emitted frames.
 
-Note: kosmos.tool.name and kosmos.tool.call_id are listed in the contract
-(chat-request-frame.md) but the current code uses 'kosmos.tool.dispatched'
+Note: kosax.tool.name and kosax.tool.call_id are listed in the contract
+(chat-request-frame.md) but the current code uses 'kosax.tool.dispatched'
 instead.  Test (e) asserts on the actual emitted attributes.
 """
 
@@ -59,15 +59,15 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
-from kosmos.ipc.frame_schema import (
+from kosax.ipc.frame_schema import (
     ChatMessage as IPCChatMessage,
 )
-from kosmos.ipc.frame_schema import (
+from kosax.ipc.frame_schema import (
     ChatRequestFrame,
     ToolDefinition,
     ToolDefinitionFunction,
 )
-from kosmos.llm.models import StreamEvent
+from kosax.llm.models import StreamEvent
 
 logger = logging.getLogger(__name__)
 
@@ -76,26 +76,26 @@ logger = logging.getLogger(__name__)
 def _restore_llmclient_pydantic_validators_after_module() -> Any:  # noqa: ANN401
     """Reset Pydantic validator caches after this module's tests run.
 
-    ``monkeypatch.setattr(kosmos.llm.client, 'LLMClient', _FakeLLMClient...)``
+    ``monkeypatch.setattr(kosax.llm.client, 'LLMClient', _FakeLLMClient...)``
     inside ``_run_with_frame`` correctly restores the module attribute on
     teardown — but Pydantic v2 validators built against ``LLMClient`` (e.g.,
-    ``QueryContext.llm_client`` in ``kosmos.engine.models``) capture the class
+    ``QueryContext.llm_client`` in ``kosax.engine.models``) capture the class
     reference at model-build time. When a sibling test (``test_tui_backend_smoke``,
     ``test_tui_multi_ministry_smoke``) constructs ``QueryContext`` with a real
     ``_Adapter(LLMClient)`` AFTER this module ran, Pydantic still validates
     against the cached fake class reference, raising
     ``Input should be an instance of _FakeLLMClientNoTools``.
 
-    Fix: at end of module, reload ``kosmos.engine.models`` so the Pydantic
+    Fix: at end of module, reload ``kosax.engine.models`` so the Pydantic
     validator re-resolves ``LLMClient`` against the current (restored) class.
     Module-scoped fixture so the reload runs once after all tests in this
     file complete, not after every test.
     """
     yield
-    # Cascade reload — kosmos.engine.models defines QueryContext whose
+    # Cascade reload — kosax.engine.models defines QueryContext whose
     # ``llm_client: LLMClient`` field is built into a Pydantic validator
     # that captured the *monkeypatched* fake class while T011 ran. The
-    # restoration on monkeypatch teardown only touches kosmos.llm.client
+    # restoration on monkeypatch teardown only touches kosax.llm.client
     # itself; it does not invalidate the cached schema. Reload the engine
     # chain (models → engine → query) so the next module that imports
     # QueryContext sees a freshly-built validator bound to the (restored)
@@ -107,14 +107,14 @@ def _restore_llmclient_pydantic_validators_after_module() -> Any:  # noqa: ANN40
     # an unrelated pre-existing leak in ``register_verify_adapter`` — that test
     # is order-sensitive (passes in isolation) regardless of this reload, and
     # the failure is documented in the epic PR body rather than blocked here.
-    import kosmos.engine.engine  # noqa: PLC0415
-    import kosmos.engine.models  # noqa: PLC0415
-    import kosmos.engine.query  # noqa: PLC0415
+    import kosax.engine.engine  # noqa: PLC0415
+    import kosax.engine.models  # noqa: PLC0415
+    import kosax.engine.query  # noqa: PLC0415
 
-    importlib.reload(kosmos.engine.models)
-    importlib.reload(kosmos.engine.engine)
-    importlib.reload(kosmos.engine.query)
-    kosmos.engine.models.QueryContext.model_rebuild(force=True)
+    importlib.reload(kosax.engine.models)
+    importlib.reload(kosax.engine.engine)
+    importlib.reload(kosax.engine.query)
+    kosax.engine.models.QueryContext.model_rebuild(force=True)
 
 
 # ---------------------------------------------------------------------------
@@ -265,7 +265,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
     - EOF after the chat_request so the reader drains background
       chat_request handlers before the IPC loop exits.
     """
-    from kosmos.ipc import stdio as stdio_mod
+    from kosax.ipc import stdio as stdio_mod
 
     # --- Patch stdout ---
     fake_stdout = _FakeStdout()
@@ -289,8 +289,8 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
     class _FakeLLMClientConfig:
         pass
 
-    import kosmos.llm.client as llm_client_mod
-    import kosmos.llm.config as llm_config_mod
+    import kosax.llm.client as llm_client_mod
+    import kosax.llm.config as llm_config_mod
 
     monkeypatch.setattr(llm_client_mod, "LLMClient", fake_client_cls)
     monkeypatch.setattr(llm_config_mod, "LLMClientConfig", _FakeLLMClientConfig)
@@ -334,7 +334,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
         },
     ]
 
-    import kosmos.tools.registry as registry_mod
+    import kosax.tools.registry as registry_mod
 
     def _fake_export_core_tools_openai(self: Any) -> list[dict[str, object]]:  # type: ignore[misc]
         return _MINIMAL_TEST_TOOLS
@@ -351,7 +351,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
 
     # --- Patch PromptLoader so _ensure_system_prompt() returns quickly ---
     try:
-        import kosmos.context.prompt_loader as pl_mod
+        import kosax.context.prompt_loader as pl_mod
 
         class _FakePromptLoader:
             def __init__(self, *, manifest_path: Any) -> None:
@@ -390,7 +390,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
     monkeypatch.setattr(sys, "stdin", _FakeStdinWrapper())
 
     # --- Run ---
-    from kosmos.ipc.stdio import run as ipc_run
+    from kosax.ipc.stdio import run as ipc_run
 
     try:
         await asyncio.wait_for(ipc_run(session_id=session_id), timeout=_RUNNER_TIMEOUT)
@@ -495,13 +495,13 @@ async def test_chat_request_appends_available_tools_section(
 
 @pytest.mark.xfail(
     reason=(
-        "Current _handle_chat_request does not emit a 'kosmos.tool.unknown_in_frame' "
+        "Current _handle_chat_request does not emit a 'kosax.tool.unknown_in_frame' "
         "OTEL span event when frame.tools contains names not in the registry. "
         "The current implementation only validates tool names at dispatch time "
         "(lines 1281-1300 in stdio.py) using a hardcoded whitelist — not at "
         "frame.tools ingestion time. "
         "Contract reference: chat-request-frame.md § Validation contract "
-        "('backend silently drops unknown entries and logs a kosmos.tool.unknown_in_frame "
+        "('backend silently drops unknown entries and logs a kosax.tool.unknown_in_frame "
         "OTEL span event'). "
         "FR-005 acceptance: backend must refuse execution of unknown tools; "
         "the span event emission is a future requirement. "
@@ -514,7 +514,7 @@ async def test_chat_request_appends_available_tools_section(
 async def test_unknown_tool_in_frame_dropped_silently(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Unknown tool names in frame.tools emit kosmos.tool.unknown_in_frame span.
+    """Unknown tool names in frame.tools emit kosax.tool.unknown_in_frame span.
 
     Contract: chat-request-frame.md § Validation contract.
     """
@@ -524,9 +524,9 @@ async def test_unknown_tool_in_frame_dropped_silently(
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))
 
-    import kosmos.ipc.stdio as stdio_mod
+    import kosax.ipc.stdio as stdio_mod
 
-    monkeypatch.setattr(stdio_mod, "_tracer", provider.get_tracer("kosmos.ipc"))
+    monkeypatch.setattr(stdio_mod, "_tracer", provider.get_tracer("kosax.ipc"))
     exporter.clear()
 
     # Build a frame with one valid + one unknown tool
@@ -550,11 +550,11 @@ async def test_unknown_tool_in_frame_dropped_silently(
 
     await _run_with_frame(frame, _FakeLLMClientNoTools, monkeypatch=monkeypatch)
 
-    # Assert that a span with name 'kosmos.tool.unknown_in_frame' was emitted.
+    # Assert that a span with name 'kosax.tool.unknown_in_frame' was emitted.
     spans = exporter.get_finished_spans()
     span_names = [s.name for s in spans]
-    assert "kosmos.tool.unknown_in_frame" in span_names, (
-        f"Expected a 'kosmos.tool.unknown_in_frame' span event. Actual span names: {span_names}"
+    assert "kosax.tool.unknown_in_frame" in span_names, (
+        f"Expected a 'kosax.tool.unknown_in_frame' span event. Actual span names: {span_names}"
     )
 
 
@@ -609,7 +609,7 @@ class _EternalToolCallLLMClient(_BaseFakeLLMClient):
 async def test_agentic_loop_max_turns_honored(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Agentic loop terminates after KOSMOS_AGENTIC_LOOP_MAX_TURNS turns (FR-011).
+    """Agentic loop terminates after KOSAX_AGENTIC_LOOP_MAX_TURNS turns (FR-011).
 
     Uses a fixture LLM that always emits tool_call_delta, causing the loop to
     continue each turn.  The tool dispatch is mocked to immediately resolve
@@ -619,8 +619,8 @@ async def test_agentic_loop_max_turns_honored(
     max_turns = 3  # Use 3 (not 8) to keep test fast
 
     # Patch the tool result timeout very low so the loop doesn't hang
-    monkeypatch.setenv("KOSMOS_TOOL_RESULT_TIMEOUT_SECONDS", "1")
-    monkeypatch.setenv("KOSMOS_AGENTIC_LOOP_MAX_TURNS", str(max_turns))
+    monkeypatch.setenv("KOSAX_TOOL_RESULT_TIMEOUT_SECONDS", "1")
+    monkeypatch.setenv("KOSAX_AGENTIC_LOOP_MAX_TURNS", str(max_turns))
 
     frame = _make_chat_request(tools=[])
 
@@ -629,8 +629,8 @@ async def test_agentic_loop_max_turns_honored(
         _EternalToolCallLLMClient,
         monkeypatch=monkeypatch,
         env_overrides={
-            "KOSMOS_TOOL_RESULT_TIMEOUT_SECONDS": "1",
-            "KOSMOS_AGENTIC_LOOP_MAX_TURNS": str(max_turns),
+            "KOSAX_TOOL_RESULT_TIMEOUT_SECONDS": "1",
+            "KOSAX_AGENTIC_LOOP_MAX_TURNS": str(max_turns),
         },
     )
 
@@ -644,7 +644,7 @@ async def test_agentic_loop_max_turns_honored(
     turn_count = _EternalToolCallLLMClient.turn_count
     assert 1 <= turn_count <= max_turns + 1, (
         f"Expected between 1 and {max_turns + 1} LLM stream() calls "
-        f"(KOSMOS_AGENTIC_LOOP_MAX_TURNS={max_turns}), got {turn_count}. "
+        f"(KOSAX_AGENTIC_LOOP_MAX_TURNS={max_turns}), got {turn_count}. "
         f"FR-011: loop must terminate at max-turns boundary."
     )
 
@@ -760,7 +760,7 @@ async def test_terminal_permission_denial_does_not_reinvoke_llm(
 ) -> None:
     """A terminal permission denial/timeout must end the current agentic turn.
 
-    CC rejects interactive user-deny through the cancellation path; KOSMOS
+    CC rejects interactive user-deny through the cancellation path; KOSAX
     should not feed permission_denied back to the model as a recoverable tool
     error that invites another verify/submit attempt.
     """
@@ -771,8 +771,8 @@ async def test_terminal_permission_denial_does_not_reinvoke_llm(
         _SingleSubmitPermissionTimeoutLLMClient,
         monkeypatch=monkeypatch,
         env_overrides={
-            "KOSMOS_PERMISSION_TIMEOUT_SECONDS": "0.1",
-            "KOSMOS_TOOL_RESULT_TIMEOUT_SECONDS": "2",
+            "KOSAX_PERMISSION_TIMEOUT_SECONDS": "0.1",
+            "KOSAX_TOOL_RESULT_TIMEOUT_SECONDS": "2",
         },
     )
 
@@ -801,19 +801,19 @@ async def test_otel_spans_preserved(
 
     Asserts key PRESENCE only — not exact values (FR-019/SC-005).
     Required attributes (at least one span must carry each):
-      - kosmos.tool.dispatched  (current implementation; contract lists kosmos.tool.name)
-      - kosmos.permission.mode
-      - kosmos.permission.decision
-      - kosmos.session.id
+      - kosax.tool.dispatched  (current implementation; contract lists kosax.tool.name)
+      - kosax.permission.mode
+      - kosax.permission.decision
+      - kosax.session.id
     """
     monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
     exporter = InMemorySpanExporter()
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))
 
-    import kosmos.ipc.stdio as stdio_mod
+    import kosax.ipc.stdio as stdio_mod
 
-    monkeypatch.setattr(stdio_mod, "_tracer", provider.get_tracer("kosmos.ipc.test"))
+    monkeypatch.setattr(stdio_mod, "_tracer", provider.get_tracer("kosax.ipc.test"))
     exporter.clear()
 
     # Use short tool result timeout so dispatch resolves via internal async task
@@ -823,7 +823,7 @@ async def test_otel_spans_preserved(
         frame,
         _SingleLookupLLMClient,
         monkeypatch=monkeypatch,
-        env_overrides={"KOSMOS_TOOL_RESULT_TIMEOUT_SECONDS": "5"},
+        env_overrides={"KOSAX_TOOL_RESULT_TIMEOUT_SECONDS": "5"},
     )
 
     spans = exporter.get_finished_spans()
@@ -835,16 +835,16 @@ async def test_otel_spans_preserved(
         all_attr_keys.update(span.attributes or {})
 
     # Required attribute keys per FR-019/SC-005.
-    # NOTE: The current implementation uses 'kosmos.tool.dispatched' rather than
-    # 'kosmos.tool.name' and 'kosmos.tool.call_id' as listed in the contract
+    # NOTE: The current implementation uses 'kosax.tool.dispatched' rather than
+    # 'kosax.tool.name' and 'kosax.tool.call_id' as listed in the contract
     # (chat-request-frame.md § OTEL attributes).  These tests assert on the
     # *actual* emitted attributes.  When the contract-specified names are
     # implemented, this list can be updated accordingly.
     required_keys = {
-        "kosmos.tool.dispatched",  # actual impl (contract: kosmos.tool.name)
-        "kosmos.permission.mode",
-        "kosmos.permission.decision",
-        "kosmos.session.id",
+        "kosax.tool.dispatched",  # actual impl (contract: kosax.tool.name)
+        "kosax.permission.mode",
+        "kosax.permission.decision",
+        "kosax.session.id",
     }
 
     missing = required_keys - all_attr_keys
@@ -923,7 +923,7 @@ async def test_render_order_tool_call_emitted_before_preamble_prose(
         frame,
         _PreambleThenToolCallLLMClient,
         monkeypatch=monkeypatch,
-        env_overrides={"KOSMOS_TOOL_RESULT_TIMEOUT_SECONDS": "5"},
+        env_overrides={"KOSAX_TOOL_RESULT_TIMEOUT_SECONDS": "5"},
     )
 
     emitted = buf.as_frames()

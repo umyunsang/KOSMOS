@@ -1,10 +1,10 @@
 /* eslint-disable custom-rules/no-process-exit -- CLI subcommand handler intentionally exits */
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — FriendliAI session-auth CLI stubs.
+// KOSAX-original — FriendliAI session-auth CLI stubs.
 //
-// FriendliAI API keys are process-scoped in KOSMOS. The interactive TUI /login
+// FriendliAI API keys are process-scoped in KOSAX. The interactive TUI /login
 // command can place a key into the running process and its lazily spawned
-// Python backend. A standalone `kosmos auth login` process cannot mutate the
+// Python backend. A standalone `kosax auth login` process cannot mutate the
 // parent shell or an already running TUI without persisting a secret, so it
 // intentionally guides citizens back to the in-session command.
 
@@ -15,7 +15,7 @@ import {
 import { jsonStringify } from '../../utils/slowOperations.js'
 
 export async function installOAuthTokens(_tokens: unknown): Promise<void> {
-  throw new Error('KOSMOS does not install Anthropic OAuth tokens. Use /login inside the TUI.')
+  throw new Error('KOSAX does not install Anthropic OAuth tokens. Use /login inside the TUI.')
 }
 
 export async function authLogin(_opts: {
@@ -25,7 +25,7 @@ export async function authLogin(_opts: {
   claudeai?: boolean
 } = {}): Promise<void> {
   process.stdout.write(
-    'KOSMOS FriendliAI login is session-scoped. Start the TUI and run /login; the API key is not saved to disk.\n',
+    'KOSAX FriendliAI login is session-scoped. Start the TUI and run /login; the API key is not saved to disk.\n',
   )
   process.exit(0)
 }
@@ -41,7 +41,7 @@ export async function authStatus(opts: {
     if (loggedIn) {
       process.stdout.write(`FriendliAI API key: ${source}\n`)
     } else {
-      process.stdout.write('Not logged in. Start the KOSMOS TUI and run /login.\n')
+      process.stdout.write('Not logged in. Start the KOSAX TUI and run /login.\n')
     }
   } else {
     process.stdout.write(

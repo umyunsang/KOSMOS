@@ -2,9 +2,9 @@ import { c as _c } from "react/compiler-runtime";
 import React, { useEffect, useMemo, useState } from 'react';
 import { extraUsage } from 'src/commands/extra-usage/index.js';
 import { Box, Text } from 'src/ink.js';
-// KOSMOS: services/claudeAiLimitsHook.js deleted by Spec 1633 P1. useClaudeAiLimits → null stub (no Anthropic limits in KOSMOS).
+// KOSAX: services/claudeAiLimitsHook.js deleted by Spec 1633 P1. useClaudeAiLimits → null stub (no Anthropic limits in KOSAX).
 const useClaudeAiLimits = (): null => null
-// KOSMOS Epic #2112: shouldProcessMockLimits removed — rateLimitMocking.ts deleted.
+// KOSAX Epic #2112: shouldProcessMockLimits removed — rateLimitMocking.ts deleted.
 import { getRateLimitTier, getSubscriptionType, isClaudeAISubscriber } from 'src/utils/auth.js';
 import { hasClaudeAiBillingAccess } from 'src/utils/billing.js';
 import { MessageResponse } from '../MessageResponse.js';

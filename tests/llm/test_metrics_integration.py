@@ -16,9 +16,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from kosmos.llm.config import LLMClientConfig
-from kosmos.llm.models import ChatMessage
-from kosmos.observability.metrics import MetricsCollector
+from kosax.llm.config import LLMClientConfig
+from kosax.llm.models import ChatMessage
+from kosax.observability.metrics import MetricsCollector
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
@@ -26,7 +26,7 @@ from kosmos.observability.metrics import MetricsCollector
 
 
 def _make_config(monkeypatch: pytest.MonkeyPatch) -> LLMClientConfig:
-    monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-token-12345")
+    monkeypatch.setenv("KOSAX_FRIENDLI_TOKEN", "test-token-12345")
     return LLMClientConfig()
 
 
@@ -81,7 +81,7 @@ def _messages() -> list[ChatMessage]:
 @pytest.mark.asyncio
 async def test_complete_increments_token_counters(monkeypatch: pytest.MonkeyPatch) -> None:
     """complete() causes UsageTracker.debit() to increment token counters."""
-    from kosmos.llm.client import LLMClient  # noqa: PLC0415
+    from kosax.llm.client import LLMClient  # noqa: PLC0415
 
     config = _make_config(monkeypatch)
     mc = MetricsCollector()
@@ -107,7 +107,7 @@ async def test_complete_increments_token_counters(monkeypatch: pytest.MonkeyPatc
 @pytest.mark.asyncio
 async def test_complete_observes_duration(monkeypatch: pytest.MonkeyPatch) -> None:
     """complete() records a call duration histogram entry."""
-    from kosmos.llm.client import LLMClient  # noqa: PLC0415
+    from kosax.llm.client import LLMClient  # noqa: PLC0415
 
     config = _make_config(monkeypatch)
     mc = MetricsCollector()
@@ -134,7 +134,7 @@ async def test_complete_observes_duration(monkeypatch: pytest.MonkeyPatch) -> No
 @pytest.mark.asyncio
 async def test_stream_increments_token_counters(monkeypatch: pytest.MonkeyPatch) -> None:
     """stream() causes UsageTracker.debit() to increment token counters."""
-    from kosmos.llm.client import LLMClient  # noqa: PLC0415
+    from kosax.llm.client import LLMClient  # noqa: PLC0415
 
     config = _make_config(monkeypatch)
     mc = MetricsCollector()
@@ -175,7 +175,7 @@ async def test_stream_increments_token_counters(monkeypatch: pytest.MonkeyPatch)
 @pytest.mark.asyncio
 async def test_no_metrics_no_error(monkeypatch: pytest.MonkeyPatch) -> None:
     """When no MetricsCollector is provided, complete() works without error."""
-    from kosmos.llm.client import LLMClient  # noqa: PLC0415
+    from kosax.llm.client import LLMClient  # noqa: PLC0415
 
     config = _make_config(monkeypatch)
     client = LLMClient(config=config)  # no metrics
@@ -199,7 +199,7 @@ async def test_no_metrics_no_error(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.mark.asyncio
 async def test_histogram_percentiles_10_observations(monkeypatch: pytest.MonkeyPatch) -> None:
     """After 10 complete() calls, histogram p50/p95/p99 are non-zero."""
-    from kosmos.llm.client import LLMClient  # noqa: PLC0415
+    from kosax.llm.client import LLMClient  # noqa: PLC0415
 
     config = _make_config(monkeypatch)
     mc = MetricsCollector()
@@ -230,7 +230,7 @@ async def test_histogram_percentiles_10_observations(monkeypatch: pytest.MonkeyP
 @pytest.mark.asyncio
 async def test_complete_increments_call_count(monkeypatch: pytest.MonkeyPatch) -> None:
     """complete() increments llm.call_count with model label."""
-    from kosmos.llm.client import LLMClient  # noqa: PLC0415
+    from kosax.llm.client import LLMClient  # noqa: PLC0415
 
     config = _make_config(monkeypatch)
     mc = MetricsCollector()

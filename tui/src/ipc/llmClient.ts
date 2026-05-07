@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1633 P2 · Anthropic→FriendliAI LLM client.
+// KOSAX-original — Epic #1633 P2 · Anthropic→FriendliAI LLM client.
 //
 // Emulates the Anthropic SDK Messages.create streaming-generator surface
 // consumed by QueryEngine.ts and query.ts, but all wire traffic goes over the
@@ -8,10 +8,10 @@
 // Constitution Principle I rewrite boundary).
 //
 // T007: stream() — async generator body translating Spec 032 frames into
-//       KosmosRawMessageStreamEvent values.
-// T008: complete() — drives stream() to exhaustion, returns KosmosMessageFinal.
+//       KosaxRawMessageStreamEvent values.
+// T008: complete() — drives stream() to exhaustion, returns KosaxMessageFinal.
 // T009: OTEL gen_ai.client.invoke span — emitted on every stream() call.
-// T010: kosmos.prompt.hash — sourced from bridge.systemPromptHash if available;
+// T010: kosax.prompt.hash — sourced from bridge.systemPromptHash if available;
 //       placeholder empty string with TODO(T091) if not yet wired.
 
 import { trace, SpanStatusCode } from '@opentelemetry/api'
@@ -22,15 +22,15 @@ import type { AssistantChunkFrame, BackpressureSignalFrame, ChatMessage as IPCCh
 import type { PendingCallRegistry } from '../tools/_shared/pendingCallRegistry.js'
 import { getOrCreatePendingCallRegistry } from './pendingCallSingleton.js'
 import type {
-  KosmosMessageStreamParams,
-  KosmosRawMessageStreamEvent,
-  KosmosMessageFinal,
-  KosmosUsage,
-  KosmosContentBlockParam,
-  KosmosStopReason,
+  KosaxMessageStreamParams,
+  KosaxRawMessageStreamEvent,
+  KosaxMessageFinal,
+  KosaxUsage,
+  KosaxContentBlockParam,
+  KosaxStopReason,
 } from './llmTypes.js'
 
-export const KOSMOS_DEFAULT_MODEL = 'LGAI-EXAONE/K-EXAONE-236B-A23B'
+export const KOSAX_DEFAULT_MODEL = 'LGAI-EXAONE/K-EXAONE-236B-A23B'
 
 export type LLMClientErrorClass = 'llm' | 'tool' | 'network'
 
@@ -69,7 +69,7 @@ export interface LLMClientOptions {
 // OTEL tracer (T009)
 // ---------------------------------------------------------------------------
 
-const _tracer = trace.getTracer('kosmos.tui.llm', '0.1.0')
+const _tracer = trace.getTracer('kosax.tui.llm', '0.1.0')
 
 // ---------------------------------------------------------------------------
 // Internal usage accumulator populated from the done-frame trailer
@@ -77,10 +77,10 @@ const _tracer = trace.getTracer('kosmos.tui.llm', '0.1.0')
 
 interface _TurnAccumulator {
   messageId: string | null
-  contentBlocks: KosmosContentBlockParam[]
-  usage: KosmosUsage
-  stopReason: KosmosStopReason
-  /** Index of the single text block. KOSMOS streams text into one block per
+  contentBlocks: KosaxContentBlockParam[]
+  usage: KosaxUsage
+  stopReason: KosaxStopReason
+  /** Index of the single text block. KOSAX streams text into one block per
    *  turn, so this stays at 0 and is the target of every `content_block_delta`
    *  and the final `content_block_stop` for text. */
   blockIndex: number
@@ -124,7 +124,7 @@ function _defaultAccumulator(): _TurnAccumulator {
 // to zeros.  A TODO(T091) marks the binding point for the actual backend wiring.
 // ---------------------------------------------------------------------------
 
-function _extractUsage(frame: AssistantChunkFrame): KosmosUsage {
+function _extractUsage(frame: AssistantChunkFrame): KosaxUsage {
   // TODO(T091): Once the Python backend embeds usage in the done-frame's trailer
   // extension fields, read them here.  For now, read from an optional `usage`
   // property that the backend may attach to the frame as a forward-compat field.
@@ -158,7 +158,7 @@ export class LLMClient {
 
   constructor(opts: LLMClientOptions) {
     this.bridge = opts.bridge
-    this.model = opts.model ?? KOSMOS_DEFAULT_MODEL
+    this.model = opts.model ?? KOSAX_DEFAULT_MODEL
     this.sessionId = opts.sessionId
     this.pendingCallRegistry = opts.pendingCallRegistry ?? getOrCreatePendingCallRegistry()
   }
@@ -170,8 +170,8 @@ export class LLMClient {
   /**
    * Begin an LLM turn.
    *
-   * Yields {@link KosmosRawMessageStreamEvent} values, returning a
-   * {@link KosmosMessageFinal} from the generator on normal completion.
+   * Yields {@link KosaxRawMessageStreamEvent} values, returning a
+   * {@link KosaxMessageFinal} from the generator on normal completion.
    *
    * Implementation follows contracts/llm-client.md § 1.1 / § 1.2 (G1..G6):
    *  G1 — no direct HTTPS; all traffic via bridge.send().
@@ -182,8 +182,8 @@ export class LLMClient {
    *  G6 — return value carries stop_reason + usage from done-frame trailer.
    */
   async *stream(
-    params: KosmosMessageStreamParams,
-  ): AsyncGenerator<KosmosRawMessageStreamEvent, KosmosMessageFinal, void> {
+    params: KosaxMessageStreamParams,
+  ): AsyncGenerator<KosaxRawMessageStreamEvent, KosaxMessageFinal, void> {
     // ------------------------------------------------------------------
     // Step 1: mint a fresh correlation_id for this turn (V1 invariant).
     // ------------------------------------------------------------------
@@ -192,7 +192,7 @@ export class LLMClient {
     // ------------------------------------------------------------------
     // Step 2: open OTEL span gen_ai.client.invoke (T009).
     //
-    // T010: kosmos.prompt.hash — read from bridge.systemPromptHash if
+    // T010: kosax.prompt.hash — read from bridge.systemPromptHash if
     // present; US4 task T091 wires the actual handshake extension.
     // TODO(T091): replace placeholder once bridge exposes systemPromptHash.
     // ------------------------------------------------------------------
@@ -209,10 +209,10 @@ export class LLMClient {
         ...(params.temperature !== undefined
           ? { 'gen_ai.request.temperature': params.temperature }
           : {}),
-        'kosmos.correlation_id': correlationId,
-        'kosmos.session_id': this.sessionId,
-        // T010: kosmos.prompt.hash from bridge handshake metadata.
-        'kosmos.prompt.hash': promptHash,
+        'kosax.correlation_id': correlationId,
+        'kosax.session_id': this.sessionId,
+        // T010: kosax.prompt.hash from bridge handshake metadata.
+        'kosax.prompt.hash': promptHash,
       },
     })
 
@@ -226,7 +226,7 @@ export class LLMClient {
       // Step 3: construct ChatRequestFrame (Spec 1978 ADR-0001).
       //
       // ChatRequestFrame is the tools-aware frame consumed by the backend's
-      // _handle_chat_request handler (src/kosmos/ipc/stdio.py:1130). It
+      // _handle_chat_request handler (src/kosax/ipc/stdio.py:1130). It
       // carries:
       //   - `messages`: full conversation history flattened to plain text
       //   - `tools`: OpenAI-style function-calling tool definitions
@@ -239,14 +239,14 @@ export class LLMClient {
       // sees the tool inventory + autonomously routes to lookup / kma /
       // hira / nmc / etc. tools.
       //
-      // Per Epic #2112 (memory feedback_kosmos_uses_cc_query_engine): the
+      // Per Epic #2112 (memory feedback_kosax_uses_cc_query_engine): the
       // agentic loop runs INSIDE the backend's _handle_chat_request — TS
       // sends one ChatRequestFrame per user turn, backend loops internally
-      // (LLM → tool_use → tool_result → LLM → … up to KOSMOS_AGENTIC_LOOP_
+      // (LLM → tool_use → tool_result → LLM → … up to KOSAX_AGENTIC_LOOP_
       // MAX_TURNS) and emits AssistantChunkFrame on the final answer.
       // ----------------------------------------------------------------
 
-      // Translate Anthropic-shape KosmosMessageParam[] → OpenAI-shape ChatMessage[].
+      // Translate Anthropic-shape KosaxMessageParam[] → OpenAI-shape ChatMessage[].
       // ChatRequestFrame.messages.content is a plain string (frames.generated.ts
       // Content = string), so multi-block content is flattened to a single
       // text payload. tool_use and tool_result blocks from prior turns are
@@ -273,7 +273,7 @@ export class LLMClient {
         ? ipcMessages
         : [{ role: 'user', content: '' }]
 
-      // Translate Anthropic-shape KosmosToolDefinition[] → OpenAI-shape ToolDefinition[].
+      // Translate Anthropic-shape KosaxToolDefinition[] → OpenAI-shape ToolDefinition[].
       const ipcTools: IPCToolDefinition[] | undefined = params.tools && params.tools.length > 0
         ? params.tools.map<IPCToolDefinition>(t => ({
             type: 'function',
@@ -318,7 +318,7 @@ export class LLMClient {
       //
       // CC reference: services/api/claude.ts:1980-2295 — CC's streaming-event
       // taxonomy (message_start, content_block_start, content_block_delta,
-      // content_block_stop, message_delta, message_stop). KOSMOS's IPC bridge
+      // content_block_stop, message_delta, message_stop). KOSAX's IPC bridge
       // converts AssistantChunkFrame / ToolCallFrame / ToolResultFrame back
       // into the same event shapes so the rest of the SDK (assembly, history,
       // rendering) stays byte-equivalent with CC.
@@ -328,14 +328,14 @@ export class LLMClient {
       //     input_json_delta (2087), tool_use start (1997), text start (2019),
       //     thinking start (2030), content_block_stop (2171), message_start (1980),
       //     message_delta (2213), message_stop (2295)
-      //   // SKIPPED — KOSMOS-N/A: signature_delta (2127) — K-EXAONE/FriendliAI
+      //   // SKIPPED — KOSAX-N/A: signature_delta (2127) — K-EXAONE/FriendliAI
       //     does not emit thinking signatures (verified by probe_friendli_channels.py
       //     2026-05-01)
-      //   // SKIPPED — KOSMOS-N/A: citations_delta (2084) — KOSMOS adapters
+      //   // SKIPPED — KOSAX-N/A: citations_delta (2084) — KOSAX adapters
       //     return citations in tool_result envelopes, not stream events
-      //   // SKIPPED — KOSMOS-N/A: connector_text_delta (2068) — Anthropic-only
-      //     connector blocks; KOSMOS does not use connectors
-      //   // SKIPPED — KOSMOS-N/A: server_tool_use start (2003) — KOSMOS uses IPC
+      //   // SKIPPED — KOSAX-N/A: connector_text_delta (2068) — Anthropic-only
+      //     connector blocks; KOSAX does not use connectors
+      //   // SKIPPED — KOSAX-N/A: server_tool_use start (2003) — KOSAX uses IPC
       //     primitive bridge for all tool dispatch; no server-side tools
       // ----------------------------------------------------------------
       let streamDone = false
@@ -366,13 +366,13 @@ export class LLMClient {
                   role: 'assistant',
                   model: this.model,
                 },
-              } satisfies KosmosRawMessageStreamEvent
+              } satisfies KosaxRawMessageStreamEvent
 
               yield {
                 type: 'content_block_start',
                 index: 0,
                 content_block: { type: 'text', text: '' },
-              } satisfies KosmosRawMessageStreamEvent
+              } satisfies KosaxRawMessageStreamEvent
 
               acc.blockIndex = 0
               acc.contentBlocks[0] = { type: 'text', text: '' }
@@ -391,7 +391,7 @@ export class LLMClient {
                   type: 'content_block_start',
                   index: thinkingIdx,
                   content_block: { type: 'thinking', thinking: '' },
-                } satisfies KosmosRawMessageStreamEvent
+                } satisfies KosaxRawMessageStreamEvent
                 acc.contentBlocks[thinkingIdx] = { type: 'thinking', thinking: '' }
               }
               const thinkingIdx = acc.thinkingBlockIndex
@@ -399,7 +399,7 @@ export class LLMClient {
                 type: 'content_block_delta',
                 index: thinkingIdx,
                 delta: { type: 'thinking_delta', thinking: chunk.thinking },
-              } satisfies KosmosRawMessageStreamEvent
+              } satisfies KosaxRawMessageStreamEvent
               const existing = acc.contentBlocks[thinkingIdx]
               if (existing && existing.type === 'thinking') {
                 existing.thinking += chunk.thinking
@@ -412,7 +412,7 @@ export class LLMClient {
                 type: 'content_block_delta',
                 index: acc.blockIndex,
                 delta: { type: 'text_delta', text: chunk.delta },
-              } satisfies KosmosRawMessageStreamEvent
+              } satisfies KosaxRawMessageStreamEvent
 
               // Accumulate text into the content block for the final object.
               const existing = acc.contentBlocks[acc.blockIndex]
@@ -434,12 +434,12 @@ export class LLMClient {
               yield {
                 type: 'message_start',
                 message: { id: chunk.message_id, role: 'assistant', model: this.model },
-              } satisfies KosmosRawMessageStreamEvent
+              } satisfies KosaxRawMessageStreamEvent
               yield {
                 type: 'content_block_start',
                 index: 0,
                 content_block: { type: 'text', text: '' },
-              } satisfies KosmosRawMessageStreamEvent
+              } satisfies KosaxRawMessageStreamEvent
               acc.blockIndex = 0
             }
 
@@ -449,7 +449,7 @@ export class LLMClient {
                 type: 'content_block_delta',
                 index: acc.blockIndex,
                 delta: { type: 'text_delta', text: chunk.delta },
-              } satisfies KosmosRawMessageStreamEvent
+              } satisfies KosaxRawMessageStreamEvent
               const existing = acc.contentBlocks[acc.blockIndex]
               if (existing && existing.type === 'text') {
                 existing.text += chunk.delta
@@ -463,7 +463,7 @@ export class LLMClient {
             acc.usage = usage
 
             // CC reference: services/api/claude.ts:2171 (content_block_stop).
-            yield { type: 'content_block_stop', index: acc.blockIndex } satisfies KosmosRawMessageStreamEvent
+            yield { type: 'content_block_stop', index: acc.blockIndex } satisfies KosaxRawMessageStreamEvent
 
             // CC reference: services/api/claude.ts:2213 (message_delta with
             // stop_reason + usage).
@@ -471,10 +471,10 @@ export class LLMClient {
               type: 'message_delta',
               delta: { stop_reason: acc.stopReason },
               usage,
-            } satisfies KosmosRawMessageStreamEvent
+            } satisfies KosaxRawMessageStreamEvent
 
             // CC reference: services/api/claude.ts:2295 (message_stop).
-            yield { type: 'message_stop' } satisfies KosmosRawMessageStreamEvent
+            yield { type: 'message_stop' } satisfies KosaxRawMessageStreamEvent
 
             streamDone = true
             break
@@ -484,7 +484,7 @@ export class LLMClient {
         // ---- ToolCallFrame ----------------------------------------------
         // CC reference: services/api/claude.ts:1997 (content_block_start with
         // tool_use type) + services/api/claude.ts:2087 (input_json_delta for
-        // streaming arguments). KOSMOS pre-buffers arguments at the backend
+        // streaming arguments). KOSAX pre-buffers arguments at the backend
         // (stdio.py tool_call_buf) and emits the complete tool_use block in a
         // single ToolCallFrame, so input_json_delta is collapsed into the
         // initial content_block_start payload.
@@ -513,12 +513,12 @@ export class LLMClient {
               name: toolFrame.name,
               input: toolFrame.arguments as Record<string, unknown>,
             },
-          } satisfies KosmosRawMessageStreamEvent
+          } satisfies KosaxRawMessageStreamEvent
 
           yield {
             type: 'content_block_stop',
             index: toolBlockIndex,
-          } satisfies KosmosRawMessageStreamEvent
+          } satisfies KosaxRawMessageStreamEvent
 
           acc.contentBlocks[toolBlockIndex] = {
             type: 'tool_use',
@@ -540,7 +540,7 @@ export class LLMClient {
           // when a submit primitive's tool_result envelope contains a
           // hometax receipt id matching the regex. This is the convergence
           // marker the PTY smoke harness (T015 .expect script) greps for.
-          if (process.env['KOSMOS_SMOKE_CHECKPOINTS'] === 'true') {
+          if (process.env['KOSAX_SMOKE_CHECKPOINTS'] === 'true') {
             try {
               const env = trFrame.envelope as Record<string, unknown>
               const envKind = typeof env?.['kind'] === 'string' ? env['kind'] : ''
@@ -595,7 +595,7 @@ export class LLMClient {
         else {
           // Log at WARN and skip (forward compatibility).
           process.stderr.write(
-            `[KOSMOS LLMClient WARN] Unexpected frame kind="${(frame as { kind?: string }).kind}" for correlation_id=${correlationId}\n`,
+            `[KOSAX LLMClient WARN] Unexpected frame kind="${(frame as { kind?: string }).kind}" for correlation_id=${correlationId}\n`,
           )
         }
       }
@@ -623,7 +623,7 @@ export class LLMClient {
       span.end()
 
       // ------------------------------------------------------------------
-      // Step 8: return KosmosMessageFinal (G6).
+      // Step 8: return KosaxMessageFinal (G6).
       //
       // SWAP/llm-provider(2521, 2026-05-02): K-EXAONE on FriendliAI emits
       // `delta.reasoning_content` and `delta.tool_calls` on independent
@@ -654,7 +654,7 @@ export class LLMClient {
       }
       reorderedContent.push(..._thinking, ..._text, ..._tools, ..._other)
 
-      const finalMessage: KosmosMessageFinal = {
+      const finalMessage: KosaxMessageFinal = {
         id: acc.messageId ?? correlationId,
         role: 'assistant',
         model: this.model,
@@ -690,21 +690,21 @@ export class LLMClient {
 
   /**
    * Non-streaming convenience — awaits stream() and collects text deltas into
-   * a single {@link KosmosMessageFinal}.
+   * a single {@link KosaxMessageFinal}.
    *
    * The generator's return value already includes the assembled content blocks
    * built inside stream(); we simply drain events and return the final object.
    */
-  async complete(params: KosmosMessageStreamParams): Promise<KosmosMessageFinal> {
+  async complete(params: KosaxMessageStreamParams): Promise<KosaxMessageFinal> {
     const chunks: string[] = []
-    let final: KosmosMessageFinal | null = null
+    let final: KosaxMessageFinal | null = null
 
     const gen = this.stream(params)
     while (true) {
       const result = await gen.next()
       if (result.done) {
-        // result.value is the KosmosMessageFinal returned by stream().
-        final = result.value as KosmosMessageFinal
+        // result.value is the KosaxMessageFinal returned by stream().
+        final = result.value as KosaxMessageFinal
         break
       }
       const event = result.value
@@ -720,7 +720,7 @@ export class LLMClient {
       return final
     }
 
-    // Fallback: fabricate a minimal KosmosMessageFinal from accumulated chunks.
+    // Fallback: fabricate a minimal KosaxMessageFinal from accumulated chunks.
     // This path should not be reached in normal operation because stream()
     // always returns the final object — it's here as a safety net.
     return {

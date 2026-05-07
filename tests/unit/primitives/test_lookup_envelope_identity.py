@@ -3,13 +3,13 @@
 
 Proves two guarantees introduced by Spec 031 Phase 2:
 
-1. FR-016 (byte-identity): ``kosmos.primitives.lookup`` is the *same coroutine*
-   as ``kosmos.tools.lookup.lookup`` — not a wrapper that alters input/output
+1. FR-016 (byte-identity): ``kosax.primitives.lookup`` is the *same coroutine*
+   as ``kosax.tools.lookup.lookup`` — not a wrapper that alters input/output
    schema shapes.  Tests load Spec 022 contract JSON schemas and round-trip
    fixture payloads through both import paths to confirm they validate
    identically.
 
-2. T031 (re-export contract): ``kosmos.primitives.__init__`` does NOT introduce
+2. T031 (re-export contract): ``kosax.primitives.__init__`` does NOT introduce
    any attribute change on the re-exported symbol.  ``__signature__``,
    ``__doc__``, ``__module__``, and ``__name__`` must be identical to the
    canonical Spec 022 source.
@@ -27,9 +27,9 @@ from pydantic import TypeAdapter
 # ---------------------------------------------------------------------------
 # Import both paths and assert identity
 # ---------------------------------------------------------------------------
-import kosmos.primitives as _primitives_module
-from kosmos.tools.lookup import lookup as _canonical_lookup
-from kosmos.tools.models import (
+import kosax.primitives as _primitives_module
+from kosax.tools.lookup import lookup as _canonical_lookup
+from kosax.tools.models import (
     LookupError,  # noqa: A004
     LookupSearchResult,
 )
@@ -50,8 +50,8 @@ _OUTPUT_SCHEMA_PATH = _CONTRACTS_DIR / "lookup.output.schema.json"
 def test_primitives_lookup_is_same_object_as_canonical() -> None:
     """FR-016: primitives.lookup IS the spec-022 coroutine, not a wrapper."""
     assert _primitives_lookup is _canonical_lookup, (
-        "kosmos.primitives.lookup must be the identical object to "
-        "kosmos.tools.lookup.lookup — any wrapping would break byte-identity."
+        "kosax.primitives.lookup must be the identical object to "
+        "kosax.tools.lookup.lookup — any wrapping would break byte-identity."
     )
 
 
@@ -63,7 +63,7 @@ def test_primitives_lookup_preserves_dunder_name() -> None:
 def test_primitives_lookup_preserves_dunder_module() -> None:
     """T031: __module__ still points to the Spec 022 source module."""
     assert _primitives_lookup.__module__ == _canonical_lookup.__module__
-    assert "kosmos.tools.lookup" in _primitives_lookup.__module__
+    assert "kosax.tools.lookup" in _primitives_lookup.__module__
 
 
 def test_primitives_lookup_preserves_dunder_doc() -> None:
@@ -105,7 +105,7 @@ class TestLookupInputSchemaShape:
     """Validate that LookupSearchInput / LookupFetchInput match the contract."""
 
     def test_search_input_valid_fixture(self) -> None:
-        from kosmos.tools.models import LookupSearchInput
+        from kosax.tools.models import LookupSearchInput
 
         ta = TypeAdapter(LookupSearchInput)
         fixture = {"mode": "search", "query": "교통사고 위험지점"}
@@ -114,7 +114,7 @@ class TestLookupInputSchemaShape:
         assert parsed.query == "교통사고 위험지점"
 
     def test_fetch_input_valid_fixture(self) -> None:
-        from kosmos.tools.models import LookupFetchInput
+        from kosax.tools.models import LookupFetchInput
 
         ta = TypeAdapter(LookupFetchInput)
         fixture = {
@@ -129,7 +129,7 @@ class TestLookupInputSchemaShape:
     def test_search_input_rejects_empty_query(self) -> None:
         from pydantic import ValidationError
 
-        from kosmos.tools.models import LookupSearchInput
+        from kosax.tools.models import LookupSearchInput
 
         ta = TypeAdapter(LookupSearchInput)
         with pytest.raises(ValidationError):

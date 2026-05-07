@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
-// Epic #1636 P5 — `kosmos plugin init <name>` scaffold command.
+// Epic #1636 P5 — `kosax plugin init <name>` scaffold command.
 //
 // Surface contract: specs/1636-plugin-dx-5tier/contracts/plugin-init.cli.md
 //
@@ -160,8 +160,8 @@ function manifestForOptions(opts: PluginInitOptions): Record<string, unknown> {
     pipa_trustee_acknowledgment: opts.pipaAcknowledgment ?? null,
     slsa_provenance_url:
       opts.slsaProvenanceUrl ??
-      `https://github.com/kosmos-plugin-store/kosmos-plugin-${opts.name}/releases/download/v0.1.0/${opts.name}.intoto.jsonl`,
-    otel_attributes: { 'kosmos.plugin.id': opts.name },
+      `https://github.com/kosax-plugin-store/kosax-plugin-${opts.name}/releases/download/v0.1.0/${opts.name}.intoto.jsonl`,
+    otel_attributes: { 'kosax.plugin.id': opts.name },
     search_hint_ko: opts.searchHintKo,
     search_hint_en: opts.searchHintEn,
     permission_layer: opts.layer,
@@ -169,9 +169,9 @@ function manifestForOptions(opts: PluginInitOptions): Record<string, unknown> {
 }
 
 const PYPROJECT_TEMPLATE = (name: string) => `[project]
-name = "kosmos-plugin-${name}"
+name = "kosax-plugin-${name}"
 version = "0.1.0"
-description = "KOSMOS plugin scaffolded by 'kosmos plugin init'"
+description = "KOSAX plugin scaffolded by 'kosax plugin init'"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 dependencies = [
@@ -193,9 +193,9 @@ asyncio_mode = "auto"
 `
 
 const ADAPTER_TEMPLATE_LIVE = (name: string, layerNote: string) => `# SPDX-License-Identifier: Apache-2.0
-"""KOSMOS plugin adapter for ${name}.
+"""KOSAX plugin adapter for ${name}.
 
-Scaffolded by 'kosmos plugin init'. Replace the placeholder lookup logic
+Scaffolded by 'kosax plugin init'. Replace the placeholder lookup logic
 with a real call to the upstream public API. ${layerNote}
 """
 
@@ -208,8 +208,8 @@ import httpx  # noqa: F401 — kept so Q7-LIVE-USES-NETWORK passes; uncomment re
 from .schema import LookupInput, LookupOutput
 
 
-# The KOSMOS host expects two module-level symbols:
-#   - TOOL: a kosmos.tools.models.GovAPITool instance describing the adapter.
+# The KOSAX host expects two module-level symbols:
+#   - TOOL: a kosax.tools.models.GovAPITool instance describing the adapter.
 #   - adapter: an async callable accepting a validated LookupInput and
 #     returning a dict matching LookupOutput.
 #
@@ -217,17 +217,17 @@ from .schema import LookupInput, LookupOutput
 # 'plugin.${name}.lookup' through the registry.
 
 # NOTE: GovAPITool is imported lazily so the scaffold's tests can run
-# without the kosmos package installed (CI uses the published wheel; local
+# without the kosax package installed (CI uses the published wheel; local
 # dev imports the in-tree module).
 def _build_tool() -> Any:
     """Construct the GovAPITool registry entry on first access.
 
     Imported lazily so the scaffold's tests (which do not require the
-    KOSMOS host) can run without \`kosmos\` installed. The host triggers
+    KOSAX host) can run without \`kosax\` installed. The host triggers
     construction at install time when reading the module-level \`TOOL\`
     attribute via PEP 562.
     """
-    from kosmos.tools.models import GovAPITool
+    from kosax.tools.models import GovAPITool
 
     return GovAPITool(
         id="plugin.${name}.lookup",
@@ -255,7 +255,7 @@ _TOOL_CACHE: Any = None
 
 def __getattr__(name: str) -> Any:
     """PEP 562: provide lazy module-level \`TOOL\` so this file imports
-    without \`kosmos\` being available (e.g. scaffold tests)."""
+    without \`kosax\` being available (e.g. scaffold tests)."""
     global _TOOL_CACHE
     if name == "TOOL":
         if _TOOL_CACHE is None:
@@ -270,14 +270,14 @@ async def adapter(payload: LookupInput) -> dict[str, Any]:
 `
 
 const ADAPTER_TEMPLATE_MOCK = (name: string, layerNote: string) => `# SPDX-License-Identifier: Apache-2.0
-"""KOSMOS plugin adapter for ${name} (Mock tier).
+"""KOSAX plugin adapter for ${name} (Mock tier).
 
 ${layerNote}
 
 This adapter does NOT call the upstream API — it replays a recorded
 fixture under tests/fixtures/. Mock tier is the right choice when the
 upstream system has no public API, requires partnership credentials
-KOSMOS does not have, or the integration is documented but not
+KOSAX does not have, or the integration is documented but not
 implementable today (memory feedback_mock_evidence_based).
 
 When the partnership / API access is established, swap this adapter
@@ -305,7 +305,7 @@ _FIXTURE_PATH = (
 
 def _build_tool() -> Any:
     """Construct the GovAPITool registry entry on first access (PEP 562)."""
-    from kosmos.tools.models import GovAPITool
+    from kosax.tools.models import GovAPITool
 
     return GovAPITool(
         id="plugin.${name}.lookup",
@@ -386,11 +386,11 @@ class LookupOutput(BaseModel):
 `
 
 const PKG_INIT_TEMPLATE = (name: string) => `# SPDX-License-Identifier: Apache-2.0
-"""KOSMOS plugin package: ${name}.
+"""KOSAX plugin package: ${name}.
 
 NOTE: \`TOOL\` is intentionally NOT re-exported here. It is built
 lazily at access time (PEP 562) by \`adapter.py\` so the scaffold's
-tests can run without \`kosmos\` installed.
+tests can run without \`kosax\` installed.
 """
 
 from .adapter import adapter
@@ -512,14 +512,14 @@ const FIXTURE_TEMPLATE = (name: string) =>
     2,
   ) + '\n'
 
-const README_KO_TEMPLATE = (name: string, tier: string) => `# kosmos-plugin-${name}
+const README_KO_TEMPLATE = (name: string, tier: string) => `# kosax-plugin-${name}
 
-KOSMOS 플러그인 — \`${name}\` 어댑터.
+KOSAX 플러그인 — \`${name}\` 어댑터.
 
 ## 설치
 
 \`\`\`bash
-kosmos plugin install ${name}
+kosax plugin install ${name}
 \`\`\`
 
 ## 개발
@@ -535,22 +535,22 @@ uv run pytest
 
 ## 참고
 
-- [docs/plugins/quickstart.ko.md](https://github.com/umyunsang/KOSMOS/blob/main/docs/plugins/quickstart.ko.md)
-- [docs/plugins/architecture.md](https://github.com/umyunsang/KOSMOS/blob/main/docs/plugins/architecture.md)
+- [docs/plugins/quickstart.ko.md](https://github.com/umyunsang/KOSAX/blob/main/docs/plugins/quickstart.ko.md)
+- [docs/plugins/architecture.md](https://github.com/umyunsang/KOSAX/blob/main/docs/plugins/architecture.md)
 
 ## 라이선스
 
 Apache-2.0
 `
 
-const README_EN_TEMPLATE = (name: string, tier: string) => `# kosmos-plugin-${name}
+const README_EN_TEMPLATE = (name: string, tier: string) => `# kosax-plugin-${name}
 
-KOSMOS plugin — \`${name}\` adapter.
+KOSAX plugin — \`${name}\` adapter.
 
 ## Install
 
 \`\`\`bash
-kosmos plugin install ${name}
+kosax plugin install ${name}
 \`\`\`
 
 ## Develop
@@ -566,8 +566,8 @@ This plugin ships at **${tier}** tier.
 
 ## Documentation
 
-- [docs/plugins/quickstart.ko.md](https://github.com/umyunsang/KOSMOS/blob/main/docs/plugins/quickstart.ko.md)
-- [docs/plugins/architecture.md](https://github.com/umyunsang/KOSMOS/blob/main/docs/plugins/architecture.md)
+- [docs/plugins/quickstart.ko.md](https://github.com/umyunsang/KOSAX/blob/main/docs/plugins/quickstart.ko.md)
+- [docs/plugins/architecture.md](https://github.com/umyunsang/KOSAX/blob/main/docs/plugins/architecture.md)
 
 ## License
 
@@ -607,7 +607,7 @@ on:
 
 jobs:
   validate:
-    uses: umyunsang/KOSMOS/.github/workflows/plugin-validation.yml@main
+    uses: umyunsang/KOSAX/.github/workflows/plugin-validation.yml@main
     secrets: inherit
 `
 

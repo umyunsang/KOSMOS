@@ -21,9 +21,9 @@ Phase 7 Verification (T017-T027):  Lead solo (smoke + PR + CI + Codex + merge-re
 
 ### `sonnet-us1-remote-drop` (TG-A)
 
-> You are a Sonnet teammate for KOSMOS Spec 2642 / Epic #2642 / TG-A.
+> You are a Sonnet teammate for KOSAX Spec 2642 / Epic #2642 / TG-A.
 >
-> Worktree: `/Users/um-yunsang/KOSMOS-w-2642`. Branch already checked out.
+> Worktree: `/Users/um-yunsang/KOSAX-w-2642`. Branch already checked out.
 > Read first: `specs/2642-s7-ipc-bridge/spec.md` § US1 + § FR-001 to FR-004 +
 > `specs/2642-s7-ipc-bridge/plan.md` § 1.1.
 >
@@ -45,15 +45,15 @@ Phase 7 Verification (T017-T027):  Lead solo (smoke + PR + CI + Codex + merge-re
 
 ### `sonnet-us2-notif-swap` (TG-B)
 
-> You are a Sonnet teammate for KOSMOS Spec 2642 / Epic #2642 / TG-B.
+> You are a Sonnet teammate for KOSAX Spec 2642 / Epic #2642 / TG-B.
 >
-> Worktree: `/Users/um-yunsang/KOSMOS-w-2642`. Branch already checked out.
+> Worktree: `/Users/um-yunsang/KOSAX-w-2642`. Branch already checked out.
 > Read first: `specs/2642-s7-ipc-bridge/spec.md` § US2 + § FR-005 to FR-006 +
 > `specs/2642-s7-ipc-bridge/plan.md` § 1.2 +
 > existing test pattern in `tests/ipc/test_envelope_roundtrip.py:test_e3_notification_push_requires_notification_role`.
 >
 > Tasks T008-T010:
-> 1. Edit `src/kosmos/ipc/frame_schema.py` — replace
+> 1. Edit `src/kosax/ipc/frame_schema.py` — replace
 >    `NotificationPushFrame.__doc__` with the extended version from plan § 1.2.
 >    Preserve the role allow-list and field definitions byte-identical.
 > 2. Create `tests/ipc/test_notification_push_swap_parity.py` per spec § US2.
@@ -68,9 +68,9 @@ Phase 7 Verification (T017-T027):  Lead solo (smoke + PR + CI + Codex + merge-re
 
 ### `sonnet-us3-codec-parity` (TG-C)
 
-> You are a Sonnet teammate for KOSMOS Spec 2642 / Epic #2642 / TG-C.
+> You are a Sonnet teammate for KOSAX Spec 2642 / Epic #2642 / TG-C.
 >
-> Worktree: `/Users/um-yunsang/KOSMOS-w-2642`. Branch already checked out.
+> Worktree: `/Users/um-yunsang/KOSAX-w-2642`. Branch already checked out.
 > Read first: `specs/2642-s7-ipc-bridge/spec.md` § US3 + § FR-007 to FR-009 +
 > `specs/2642-s7-ipc-bridge/plan.md` § 1.3 + § 1.4.
 > Reference: existing `tests/ipc/test_schema_python_ts_diff.py` for style.
@@ -80,7 +80,7 @@ Phase 7 Verification (T017-T027):  Lead solo (smoke + PR + CI + Codex + merge-re
 > 1. Create `tests/ipc/test_codec_envelope_parity.py` per plan § 1.3.
 > 2. Create `tests/ipc/fixtures/codec_drift_negative.ts` (test-only fixture).
 > 3. Find/edit appropriate `conftest.py` (likely `tests/conftest.py` or
->    `tests/ipc/conftest.py`) to add the `KOSMOS_IPC_PARITY_DRIFT_FIXTURE`
+>    `tests/ipc/conftest.py`) to add the `KOSAX_IPC_PARITY_DRIFT_FIXTURE`
 >    default-OFF guard.
 > 4. Edit `.github/workflows/tui-ipc-drift.yml` — add `tui/src/ipc/codec.ts`
 >    to triggered paths and add the new pytest step.

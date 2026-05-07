@@ -7,10 +7,10 @@ import httpx
 import pytest
 from pydantic import BaseModel
 
-from kosmos.recovery.circuit_breaker import CircuitBreakerConfig, CircuitState
-from kosmos.recovery.executor import RecoveryExecutor
-from kosmos.recovery.retry import ToolRetryPolicy
-from kosmos.tools.models import GovAPITool
+from kosax.recovery.circuit_breaker import CircuitBreakerConfig, CircuitState
+from kosax.recovery.executor import RecoveryExecutor
+from kosax.recovery.retry import ToolRetryPolicy
+from kosax.tools.models import GovAPITool
 
 
 class _DummyInput(BaseModel):

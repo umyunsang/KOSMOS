@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a defect in KOSMOS
+description: Report a defect in KOSAX
 title: "bug: "
 labels: ["bug", "triage"]
 body:

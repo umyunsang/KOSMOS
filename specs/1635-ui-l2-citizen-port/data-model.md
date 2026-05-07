@@ -11,7 +11,7 @@ All schemas live (or will live) under `tui/src/schemas/ui-l2/`.
 
 ## 1 · OnboardingState
 
-Persisted at `~/.kosmos/memdir/user/onboarding/state.json`. Owned by this epic.
+Persisted at `~/.kosax/memdir/user/onboarding/state.json`. Owned by this epic.
 
 ```ts
 import { z } from "zod";
@@ -183,7 +183,7 @@ export type SlashCommandCatalogEntry = z.infer<typeof SlashCommandCatalogEntry>;
 
 ## 5 · AccessibilityPreference
 
-Persisted at `~/.kosmos/memdir/user/preferences/a11y.json`. New path owned by this epic (D-5 in `research.md`).
+Persisted at `~/.kosax/memdir/user/preferences/a11y.json`. New path owned by this epic (D-5 in `research.md`).
 
 ```ts
 export const AccessibilityPreference = z.object({

@@ -8,7 +8,7 @@
 
 ```
 SC-009 success criterion: a native-Korean-speaking reviewer who has
-NEVER touched KOSMOS completes the quickstart (with English source
+NEVER touched KOSAX completes the quickstart (with English source
 files closed) and lands a green pytest within 30 minutes (SC-001
 budget). Validates that the Korean-primary documentation is
 self-sufficient.
@@ -16,11 +16,11 @@ self-sufficient.
 
 ## 현재 상태
 
-본 epic 의 PR 작성자 (umyunsang) 는 native Korean speaker 이지만 KOSMOS 를 처음부터 작성한 lead — **외부 reviewer 자격이 아닙니다**. SC-009 의 본질은 "처음 보는 Korean speaker 가 영문 source 없이 Korean 문서만으로 quickstart 완주 가능한가" 이므로 self-review 는 invalid.
+본 epic 의 PR 작성자 (umyunsang) 는 native Korean speaker 이지만 KOSAX 를 처음부터 작성한 lead — **외부 reviewer 자격이 아닙니다**. SC-009 의 본질은 "처음 보는 Korean speaker 가 영문 source 없이 Korean 문서만으로 quickstart 완주 가능한가" 이므로 self-review 는 invalid.
 
 ## Deferred 사유
 
-1. **Reviewer 풀 부재**: 현재 KOSMOS 에 외부 native-Korean reviewer 가 commit 한 PR 이 없습니다 (SC-008 baseline = 0).
+1. **Reviewer 풀 부재**: 현재 KOSAX 에 외부 native-Korean reviewer 가 commit 한 PR 이 없습니다 (SC-008 baseline = 0).
 2. **3개월 자연 발견**: SC-008 의 3개월 외부 contributor 측정 사이클과 동일한 시간대에 자연스러운 외부 reviewer 가 발생할 가능성이 높음.
 3. **Non-blocking**: tasks.md T072 가 명시적으로 "deferred-checkbox if no reviewer available, tracked but non-blocking for PR merge" 라고 적시.
 
@@ -68,7 +68,7 @@ uv run python scripts/check_md_links.py docs/plugins/  # 가상의 미래 도구
 ## SC-009 PASS 기준 (재측정 시)
 
 ```
-✓ Native Korean speaker (KOSMOS 처음 보는 사람)
+✓ Native Korean speaker (KOSAX 처음 보는 사람)
 ✓ 영문 source 파일 (quickstart.md, spec.md 등) 닫고 한국어 가이드만 사용
 ✓ git clone → uv sync → 9-step walkthrough → 50-item green
 ✓ Wall-clock ≤ 30분

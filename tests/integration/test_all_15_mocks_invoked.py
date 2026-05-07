@@ -29,7 +29,7 @@ from pathlib import Path
 import pytest
 
 # Ensure all mock adapters are registered at import time.
-import kosmos.tools.mock  # noqa: F401
+import kosax.tools.mock  # noqa: F401
 
 # ---------------------------------------------------------------------------
 # Fixture helpers
@@ -92,8 +92,8 @@ async def _invoke_verify_family(fixture_name: str) -> str:
     Confirms SC-004 (10 verify adapters) and that fixture schema is consistent
     with the canonical map (family_hint matches the loaded mapping).
     """
-    from kosmos.primitives.verify import VerifyMismatchError, verify
-    from kosmos.tools.verify_canonical_map import get_canonical_map
+    from kosax.primitives.verify import VerifyMismatchError, verify
+    from kosax.tools.verify_canonical_map import get_canonical_map
 
     fixture = _load_fixture(fixture_name)
     tool_id = fixture["tool_id"]
@@ -151,7 +151,7 @@ async def test_verify_family_invoked(fixture_name: str) -> None:
 
 async def _invoke_lookup_hometax_simplified() -> str:
     """mock_lookup_module_hometax_simplified invoked ≥1 time."""
-    from kosmos.tools.mock.lookup_module_hometax_simplified import (
+    from kosax.tools.mock.lookup_module_hometax_simplified import (
         HometaxSimplifiedInput,
         handle,
     )
@@ -173,7 +173,7 @@ async def test_lookup_hometax_simplified_invoked() -> None:
 
 async def _invoke_lookup_gov24_certificate() -> str:
     """mock_lookup_module_gov24_certificate invoked ≥1 time."""
-    from kosmos.tools.mock.lookup_module_gov24_certificate import (
+    from kosax.tools.mock.lookup_module_gov24_certificate import (
         Gov24CertificateInput,
         handle,
     )
@@ -203,11 +203,11 @@ async def _invoke_submit_hometax_taxreturn(tmp_path: Path) -> str:
     import uuid
     from unittest.mock import patch
 
-    import kosmos.tools.mock.submit_module_hometax_taxreturn as _smod
-    from kosmos.memdir.consent_ledger import DelegationUsedEvent, append_delegation_used
-    from kosmos.primitives.verify import ModidContext
-    from kosmos.tools.mock.submit_module_hometax_taxreturn import invoke
-    from kosmos.tools.mock.verify_module_modid import invoke as verify_invoke
+    import kosax.tools.mock.submit_module_hometax_taxreturn as _smod
+    from kosax.memdir.consent_ledger import DelegationUsedEvent, append_delegation_used
+    from kosax.primitives.verify import ModidContext
+    from kosax.tools.mock.submit_module_hometax_taxreturn import invoke
+    from kosax.tools.mock.verify_module_modid import invoke as verify_invoke
 
     ledger_root = tmp_path / "consent"
     session_id = str(uuid.uuid4())
@@ -231,12 +231,12 @@ async def _invoke_submit_hometax_taxreturn(tmp_path: Path) -> str:
         result_path: Path = original_append(event, ledger_root=ledger_root)
         return result_path
 
-    from kosmos.memdir.consent_ledger import FileLedgerReader
+    from kosax.memdir.consent_ledger import FileLedgerReader
 
     patched_reader = FileLedgerReader(ledger_root=ledger_root)
     with (
         patch.object(_smod, "append_delegation_used", side_effect=_patched_append),
-        patch("kosmos.memdir.consent_ledger.FileLedgerReader", return_value=patched_reader),
+        patch("kosax.memdir.consent_ledger.FileLedgerReader", return_value=patched_reader),
     ):
         result = await invoke(
             {
@@ -248,7 +248,7 @@ async def _invoke_submit_hometax_taxreturn(tmp_path: Path) -> str:
             }
         )
 
-    from kosmos.primitives.submit import SubmitOutput, SubmitStatus
+    from kosax.primitives.submit import SubmitOutput, SubmitStatus
 
     assert isinstance(result, SubmitOutput)
     assert result.status == SubmitStatus.succeeded
@@ -270,11 +270,11 @@ async def _invoke_submit_gov24_minwon(tmp_path: Path) -> str:
     import uuid
     from unittest.mock import patch
 
-    import kosmos.tools.mock.submit_module_gov24_minwon as _smod
-    from kosmos.memdir.consent_ledger import DelegationUsedEvent, append_delegation_used
-    from kosmos.primitives.verify import ModidContext
-    from kosmos.tools.mock.submit_module_gov24_minwon import invoke
-    from kosmos.tools.mock.verify_module_modid import invoke as verify_invoke
+    import kosax.tools.mock.submit_module_gov24_minwon as _smod
+    from kosax.memdir.consent_ledger import DelegationUsedEvent, append_delegation_used
+    from kosax.primitives.verify import ModidContext
+    from kosax.tools.mock.submit_module_gov24_minwon import invoke
+    from kosax.tools.mock.verify_module_modid import invoke as verify_invoke
 
     ledger_root = tmp_path / "consent"
     session_id = str(uuid.uuid4())
@@ -297,12 +297,12 @@ async def _invoke_submit_gov24_minwon(tmp_path: Path) -> str:
         result_path: Path = original_append(event, ledger_root=ledger_root)
         return result_path
 
-    from kosmos.memdir.consent_ledger import FileLedgerReader
+    from kosax.memdir.consent_ledger import FileLedgerReader
 
     patched_reader = FileLedgerReader(ledger_root=ledger_root)
     with (
         patch.object(_smod, "append_delegation_used", side_effect=_patched_append),
-        patch("kosmos.memdir.consent_ledger.FileLedgerReader", return_value=patched_reader),
+        patch("kosax.memdir.consent_ledger.FileLedgerReader", return_value=patched_reader),
     ):
         result = await invoke(
             {
@@ -314,7 +314,7 @@ async def _invoke_submit_gov24_minwon(tmp_path: Path) -> str:
             }
         )
 
-    from kosmos.primitives.submit import SubmitOutput
+    from kosax.primitives.submit import SubmitOutput
 
     assert isinstance(result, SubmitOutput), (
         f"Expected SubmitOutput from gov24 minwon, got {type(result).__name__}"

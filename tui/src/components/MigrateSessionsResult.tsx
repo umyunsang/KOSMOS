@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
-// KOSMOS-original Ink component: migration summary renderer.
+// KOSAX-original Ink component: migration summary renderer.
 //
 // Renders the result of a /migrate-sessions operation as a coloured summary
 // table. Intended to be embedded in the REPL conversation stream as a

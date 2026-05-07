@@ -17,13 +17,13 @@ must route each failure class to a specific recovery strategy rather than
 surfacing raw errors to the citizen.
 
 Today the codebase has retry logic only at the LLM client level
-(`src/kosmos/llm/retry.py`). Tool adapters have no retry, no circuit
+(`src/kosax/llm/retry.py`). Tool adapters have no retry, no circuit
 breakers, and no error classification. The `ToolExecutor` captures errors as
 `ToolResult(success=False)` but makes no attempt at recovery. The
 `cache_ttl_seconds` field on `GovAPITool` exists but is unused.
 `StreamInterruptedError` is terminal with no retry path.
 
-V1 introduces a new `src/kosmos/recovery/` package that provides:
+V1 introduces a new `src/kosax/recovery/` package that provides:
 
 - A **retry matrix** for tool adapter calls (the `data.go.kr` counterpart of
   the existing LLM `RetryPolicy`)
@@ -53,7 +53,7 @@ the engine's perspective is that failed `ToolResult` objects now carry richer
 error information via extended `error_type` values and an optional
 `error_context` field.
 
-The existing `RetryPolicy` in `src/kosmos/llm/retry.py` is NOT reused. It is
+The existing `RetryPolicy` in `src/kosax/llm/retry.py` is NOT reused. It is
 tightly coupled to LLM-specific exception types (`AuthenticationError`,
 `LLMConnectionError`). The recovery layer defines its own
 `ToolRetryPolicy` with `data.go.kr`-specific classification.
@@ -249,7 +249,7 @@ then asserts that `query()` completes normally with a `stop` event.
 ## Functional Requirements
 
 - **FR-001**: `ToolRetryPolicy` MUST be a frozen Pydantic v2 model with fields: `max_retries` (default 3, >=0), `base_delay` (default 1.0, >0), `multiplier` (default 2.0, >=1.0), `max_delay` (default 60.0, >0), `retryable_error_classes` (default: `{RATE_LIMIT, TRANSIENT, TIMEOUT}`).
-- **FR-002**: `retry_tool_call()` MUST implement exponential backoff with full jitter: `delay = random.uniform(0, min(max_delay, base_delay * multiplier^attempt))`. This matches the formula already used in `src/kosmos/llm/retry.py`.
+- **FR-002**: `retry_tool_call()` MUST implement exponential backoff with full jitter: `delay = random.uniform(0, min(max_delay, base_delay * multiplier^attempt))`. This matches the formula already used in `src/kosax/llm/retry.py`.
 - **FR-003**: `retry_tool_call()` MUST respect the foreground/background distinction by capping effective `max_retries` to `min(1, policy.max_retries)` for background calls.
 - **FR-004**: `CircuitBreaker` MUST implement the standard three-state machine (CLOSED, OPEN, HALF_OPEN) with configurable `failure_threshold` (default 5) and `recovery_timeout` (default 30.0 seconds).
 - **FR-005**: `CircuitBreaker` MUST track per-tool-id state. Each tool ID gets its own breaker instance, created lazily.
@@ -378,7 +378,7 @@ CacheEntry (frozen):
 ## Module Layout
 
 ```
-src/kosmos/recovery/
+src/kosax/recovery/
     __init__.py
     classifier.py       # DataGoKrErrorClassifier, ErrorClass, ClassifiedError, DataGoKrErrorCode
     retry.py            # ToolRetryPolicy, retry_tool_call()
@@ -396,7 +396,7 @@ src/kosmos/recovery/
 - **NFR-002**: `CircuitBreaker` state transitions MUST be thread-safe within a single event loop (no locking required for asyncio, but state mutations must be atomic with respect to concurrent coroutines).
 - **NFR-003**: `ResponseCache` MUST use bounded memory: LRU eviction with a configurable `max_entries` (default 256).
 - **NFR-004**: All logging MUST use `logging.getLogger(__name__)` at appropriate levels; no `print()` statements.
-- **NFR-005**: The module MUST be located at `src/kosmos/recovery/` (new sub-package).
+- **NFR-005**: The module MUST be located at `src/kosax/recovery/` (new sub-package).
 - **NFR-006**: `DataGoKrErrorClassifier` MUST NOT import `xml.etree.ElementTree` for parsing the XML gateway error. Use simple string operations (`str.find`, `str[start:end]`) to extract `returnReasonCode` from the XML prefix. This avoids XML parser overhead and XXE attack surface for what is a fixed-format 3-line error response.
 - **NFR-007**: All tests MUST be CI-safe: no live `data.go.kr` API calls. Use recorded fixtures and mock adapters.
 
@@ -504,10 +504,10 @@ Per constitution Section I, every design decision must trace to a source in
 | Foreground vs background retry distinction | `docs/vision.md Section Layer 6` — "aggressive retry" vs "fails fast" |
 | Cached fallback using `cache_ttl_seconds` | `docs/vision.md Section Layer 2` — `cache_ttl_seconds` field on `GovAPITool` |
 | Graceful message + in-person service guidance | `docs/vision.md Section Layer 6` — hard failure terminal path |
-| `ToolRetryPolicy` as frozen Pydantic v2 model | Constitution Section III; `RetryPolicy` in `src/kosmos/llm/retry.py` as structural precedent |
+| `ToolRetryPolicy` as frozen Pydantic v2 model | Constitution Section III; `RetryPolicy` in `src/kosax/llm/retry.py` as structural precedent |
 | `data.go.kr` error code classification | PublicDataReader (`WooilJeong/PublicDataReader`) — wire format ground truth |
 | XML gateway error detection (`<OpenAPI_ServiceResponse>` prefix) | PublicDataReader — XML/JSON response normalization |
 | Fail-closed for unknown error codes | Constitution Section II — fail-closed defaults |
 | Streaming retry for `StreamInterruptedError` | OpenAI Agents SDK — retry matrix pattern; Claude Agent SDK — error handling |
 | `RecoveryExecutor` never raises, returns `ToolResult` | Existing `ToolExecutor` convention — executor never raises |
-| `src/kosmos/recovery/` new sub-package | Layer separation principle — `docs/vision.md` six-layer architecture |
+| `src/kosax/recovery/` new sub-package | Layer separation principle — `docs/vision.md` six-layer architecture |

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Spec 1635 P4 UI L2 — OnboardingState entity (data-model.md §1, FR-001/002).
 //
-// Persisted at ~/.kosmos/memdir/user/onboarding/state.json. Owned by Epic #1635.
+// Persisted at ~/.kosax/memdir/user/onboarding/state.json. Owned by Epic #1635.
 // Five-step sequence is canonical: preflight → theme → pipa-consent →
 // ministry-scope → terminal-setup. Reordering requires a migration tree ADR.
 import { z } from 'zod';

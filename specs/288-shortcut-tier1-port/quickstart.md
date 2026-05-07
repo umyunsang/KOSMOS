@@ -24,7 +24,7 @@ cd tui && bun run dev
 
 **Expected**: the loop aborts within 500 ms; the status bar returns to "Ready"; the session indicator remains green; a new typed message is accepted without a consent re-prompt.
 
-**Verify**: `tail -20 ~/.kosmos/logs/audit.jsonl` shows one `user-interrupted` record with the current session ID and the interrupted tool-call ID.
+**Verify**: `tail -20 ~/.kosax/logs/audit.jsonl` shows one `user-interrupted` record with the current session ID and the interrupted tool-call ID.
 
 ### 3. IME composition safety (User Story 3)
 
@@ -42,7 +42,7 @@ cd tui && bun run dev
 # Press Shift+Tab
 ```
 
-**Expected**: indicator advances to "default" within 200 ms; no buffer content changes; an OTel span `kosmos.permission.mode=default` is emitted (visible in Langfuse local, `docker-compose up -d` of Spec 028 collector).
+**Expected**: indicator advances to "default" within 200 ms; no buffer content changes; an OTel span `kosax.permission.mode=default` is emitted (visible in Langfuse local, `docker-compose up -d` of Spec 028 collector).
 
 ### 5. Clean exit (User Story 2)
 
@@ -54,7 +54,7 @@ cd tui && bun run dev
 
 **Verify** (after exit):
 ```bash
-jq '.event_type' ~/.kosmos/logs/audit.jsonl | tail -5
+jq '.event_type' ~/.kosax/logs/audit.jsonl | tail -5
 # Should include "session-exited"
 echo $?
 # Should be 0
@@ -75,7 +75,7 @@ echo $?
 ### 7. User override — disable history search (User Story 7)
 
 ```bash
-echo '{"ctrl+r": null}' > ~/.kosmos/keybindings.json
+echo '{"ctrl+r": null}' > ~/.kosax/keybindings.json
 cd tui && bun run dev
 # In the TUI, press Ctrl+R
 ```
@@ -84,13 +84,13 @@ cd tui && bun run dev
 
 **Reset**:
 ```bash
-rm ~/.kosmos/keybindings.json
+rm ~/.kosax/keybindings.json
 ```
 
 ### 8. User override — remap history search (User Story 7)
 
 ```bash
-echo '{"ctrl+f": "history-search", "ctrl+r": null}' > ~/.kosmos/keybindings.json
+echo '{"ctrl+f": "history-search", "ctrl+r": null}' > ~/.kosax/keybindings.json
 cd tui && bun run dev
 # In the TUI, press Ctrl+F
 ```
@@ -100,7 +100,7 @@ cd tui && bun run dev
 ### 9. User override — attempted remap of reserved action (fails safely)
 
 ```bash
-echo '{"ctrl+c": "draft-cancel"}' > ~/.kosmos/keybindings.json
+echo '{"ctrl+c": "draft-cancel"}' > ~/.kosax/keybindings.json
 cd tui && bun run dev
 # Look at stdout on launch
 ```

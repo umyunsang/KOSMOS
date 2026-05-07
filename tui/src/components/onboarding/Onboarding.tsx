@@ -1,5 +1,5 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/components/Onboarding.tsx (Claude Code 2.1.88, research-use)
-// KOSMOS REWRITE per Epic H #1302 (035-onboarding-brand-port) — ADR-006 A-9
+// KOSAX REWRITE per Epic H #1302 (035-onboarding-brand-port) — ADR-006 A-9
 //
 // Three-step linear citizen onboarding state machine:
 //   splash → pipa-consent → ministry-scope-ack → done
@@ -74,7 +74,7 @@ const SplashStep: React.FC<StepComponentProps> = () => {
     <Box flexDirection="column" alignItems="center">
       <WelcomeV2 />
       <Box marginTop={1}>
-        <Text color={theme.kosmosCore}>
+        <Text color={theme.kosaxCore}>
           계속하려면 Enter  ·  종료하려면 Esc
         </Text>
       </Box>
@@ -159,7 +159,7 @@ export const STEPS: readonly OnboardingStep[] = [
 // ---------------------------------------------------------------------------
 // Default consent-write side-effect — direct-filesystem atomic write.
 //
-// Writes the record to `~/.kosmos/memdir/user/{consent,ministry-scope}/`
+// Writes the record to `~/.kosax/memdir/user/{consent,ministry-scope}/`
 // via `tui/src/memdir/io.ts` using the tmp + fsync + rename pattern.  The
 // Python backend reads the same directory through `latest_consent()` /
 // `latest_scope()`; both producers share POSIX fsync ordering for
@@ -226,7 +226,7 @@ export function emitOnboardingSpan(
   kind: OnboardingSpanKind,
 ): void {
   const envelope = {
-    span: 'kosmos.onboarding.step',
+    span: 'kosax.onboarding.step',
     step: stepId,
     kind,
     ts: new Date().toISOString(),

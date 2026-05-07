@@ -1,4 +1,4 @@
-name = "kosmos-copilot-gate"
+name = "kosax-copilot-gate"
 main = "src/index.ts"
 compatibility_date = "2025-04-01"
 

@@ -1,4 +1,4 @@
-# Handoff prompt — KOSMOS K-EXAONE tool wiring (CC reference migration)
+# Handoff prompt — KOSAX K-EXAONE tool wiring (CC reference migration)
 
 > **이 파일을 다음 세션에 그대로 붙여넣어 시작하세요.** 전 세션 컨텍스트 없이 cold start로 동작하도록 self-contained로 작성됐습니다.
 >
@@ -8,18 +8,18 @@
 
 ## 1. 작업 목적 (한 문단)
 
-K-EXAONE이 `<tool_call>{"name":"Read",...}</tool_call>` 같은 **CC 학습 데이터 도구를 hallucinate하는 문제**를 해결한다. 진짜 원인은 **TUI가 `ChatRequestFrame.tools`를 비워 보내고 backend도 fallback inject가 없어서** K-EXAONE이 `tools=None`으로 호출되는 것. 그 결과 모델은 KOSMOS의 active primitives(`lookup`, `resolve_location`, `submit`, `verify`)를 모르고 자기 학습 데이터에 있는 CC tool들(Read, Glob, Bash 등)을 응답에 박는다. 본 epic은 CC 소스맵의 tool wiring + agentic loop 패턴을 KOSMOS로 마이그레이션해서 K-EXAONE이 KOSMOS-등록 도구만 호출하고, 호출 결과가 `tool_use` content block으로 transcript에 paint되고, follow-up turn까지 진행되도록 만든다.
+K-EXAONE이 `<tool_call>{"name":"Read",...}</tool_call>` 같은 **CC 학습 데이터 도구를 hallucinate하는 문제**를 해결한다. 진짜 원인은 **TUI가 `ChatRequestFrame.tools`를 비워 보내고 backend도 fallback inject가 없어서** K-EXAONE이 `tools=None`으로 호출되는 것. 그 결과 모델은 KOSAX의 active primitives(`lookup`, `resolve_location`, `submit`, `verify`)를 모르고 자기 학습 데이터에 있는 CC tool들(Read, Glob, Bash 등)을 응답에 박는다. 본 epic은 CC 소스맵의 tool wiring + agentic loop 패턴을 KOSAX로 마이그레이션해서 K-EXAONE이 KOSAX-등록 도구만 호출하고, 호출 결과가 `tool_use` content block으로 transcript에 paint되고, follow-up turn까지 진행되도록 만든다.
 
 ## 2. 시작 전에 반드시 읽을 문서
 
 순서대로:
 
-1. `AGENTS.md` — KOSMOS 룰 (Conventional Commits, English source, no Co-Authored-By 등)
+1. `AGENTS.md` — KOSAX 룰 (Conventional Commits, English source, no Co-Authored-By 등)
 2. `docs/vision.md` — 6-layer 아키텍처
-3. `docs/requirements/kosmos-migration-tree.md § L1-A.A3 + § P3` — Tool protocol = K-EXAONE native function calling, P3 phase 정의
+3. `docs/requirements/kosax-migration-tree.md § L1-A.A3 + § P3` — Tool protocol = K-EXAONE native function calling, P3 phase 정의
 4. `docs/spec-streaming-ui-projection/epic-plan.md` — 직전 epic, paint chain root cause + 디버깅 패턴
-5. `src/kosmos/llm/_cc_reference/claude.ts:1900-2304` — 직전 commit `33478d4`로 cp 된 CC streaming/agentic baseline
-6. **메모리 파일들** (`/Users/um-yunsang/.claude/projects/-Users-um-yunsang-KOSMOS/memory/`):
+5. `src/kosax/llm/_cc_reference/claude.ts:1900-2304` — 직전 commit `33478d4`로 cp 된 CC streaming/agentic baseline
+6. **메모리 파일들** (`/Users/um-yunsang/.claude/projects/-Users-um-yunsang-KOSAX/memory/`):
    - `feedback_cc_source_migration_pattern.md` — "task-level implementation은 CC 소스맵 복사 → 마이그레이션. 새로 작성 X"
    - `feedback_check_references_first.md` — 코딩 전에 reference 인용 후 정합 확인
    - `feedback_runtime_verification.md` — PTY로 TUI 직접 띄워 사용자 시점 검증까지
@@ -27,13 +27,13 @@ K-EXAONE이 `<tool_call>{"name":"Read",...}</tool_call>` 같은 **CC 학습 데�
 ## 3. 환경 사전 점검
 
 ```bash
-cd ~/KOSMOS
+cd ~/KOSAX
 git log -3 --oneline
-# 33478d4 feat(llm): KOSMOS-1633 P3 — wire K-EXAONE thinking via CC reference
-# a7fc8f6 fix(tui): KOSMOS-1633 P3 — assistant message paint chain unblocked
-# f459bfb feat(tui): KOSMOS-1633 P3 — stream-event projection for incremental paint
+# 33478d4 feat(llm): KOSAX-1633 P3 — wire K-EXAONE thinking via CC reference
+# a7fc8f6 fix(tui): KOSAX-1633 P3 — assistant message paint chain unblocked
+# f459bfb feat(tui): KOSAX-1633 P3 — stream-event projection for incremental paint
 git status                  # clean (또는 docs/* dirty만 OK)
-ls .env                     # KOSMOS_FRIENDLI_TOKEN 필수
+ls .env                     # KOSAX_FRIENDLI_TOKEN 필수
 
 cd tui && bun run typecheck && bun test tests/adr-precheck.test.ts tests/entrypoints tests/hooks tests/i18n tests/ink tests/ipc tests/memdir tests/permissions tests/primitive tests/store tests/theme tests/unit
 # 286 pass / 0 fail
@@ -44,7 +44,7 @@ cd .. && uv run pytest tests/llm tests/ipc
 
 ## 4. 핵심 진단 결과 (이전 세션에서 line-cited 확정)
 
-### 4.1 Backend 누락 (`src/kosmos/ipc/stdio.py`)
+### 4.1 Backend 누락 (`src/kosax/ipc/stdio.py`)
 
 | 영역 | 현재 상태 | 필요 변경 |
 |---|---|---|
@@ -52,7 +52,7 @@ cd .. && uv run pytest tests/llm tests/ipc
 | **frame.tools 빈 경우 fallback** | **없음** — `llm_tools=[]`로 LLM 호출 | `ToolRegistry().export_core_tools_openai()` 또는 active primitive 자동 inject |
 | **system prompt 도구 list 주입** | **없음** — `prompts/system_v1.md` 8 lines 순수 산문 | system prompt 끝에 `## Available tools` 섹션을 active primitive signature로 자동 append |
 | Registry 인스턴스화 (line 916) | `_dispatch_primitive()` 안에서만 매번 new — wasteful | session 시작 시 1회 instantiate, `_handle_chat_request` 진입 전 ready |
-| Whitelist (line 1278-1284) | 하드코딩된 primitive list | primitives 카탈로그(`src/kosmos/primitives/__init__.py` 또는 `manifest.yaml`)에서 single source of truth로 끌어오기 |
+| Whitelist (line 1278-1284) | 하드코딩된 primitive list | primitives 카탈로그(`src/kosax/primitives/__init__.py` 또는 `manifest.yaml`)에서 single source of truth로 끌어오기 |
 | Tool result follow-up (line 1412-1419) | `LLMChatMessage(role="tool", content=payload, name=fname, tool_call_id=cid)` | OK — 그대로 유지 |
 
 ### 4.2 TUI 누락 (`tui/src/query/deps.ts`)
@@ -78,7 +78,7 @@ P0 stub shadow `.ts` 추가 발견 0건 (직전 세션에서 6개 청소 완료)
 
 ## 5. CC reference cp 매핑 (이번 epic baseline)
 
-이전 세션에서 cp 완료(`src/kosmos/llm/_cc_reference/`):
+이전 세션에서 cp 완료(`src/kosax/llm/_cc_reference/`):
 - `claude.ts` (3419 lines)
 - `client.ts` (389 lines)
 - `errors.ts` (1207 lines)
@@ -88,20 +88,20 @@ P0 stub shadow `.ts` 추가 발견 0건 (직전 세션에서 6개 청소 완료)
 
 | CC 파일 | Lines | 본 epic에 필요한 이유 | cp 위치 |
 |---|---|---|---|
-| `src/utils/api.ts` | 718 | `toolToAPISchema()` (line 119-266) — Tool → BetaTool 변환. K-EXAONE OpenAI-compat 매핑 baseline | `src/kosmos/llm/_cc_reference/api.ts` |
-| `src/tools.ts` | 389 | `getAllBaseTools()` / `getTools()` / `assembleToolPool()` — tool catalog orchestration | `src/kosmos/llm/_cc_reference/tools.ts` |
-| `src/constants/prompts.ts` | 914 | system prompt 동적 composition — tool name/capability 섹션 baseline | `src/kosmos/llm/_cc_reference/prompts.ts` |
-| `src/query.ts` | 1729 | LLM ↔ tool_use ↔ tool_result 멀티턴 closure 본체 | `src/kosmos/llm/_cc_reference/query.ts` |
-| `src/services/tools/toolOrchestration.ts` | 188 | `runTools()` async generator — concurrent read / serial write 분기 | `src/kosmos/llm/_cc_reference/toolOrchestration.ts` |
-| `src/services/tools/toolExecution.ts` | 1745 | `runToolUse()` — input 검증, 실행, 에러 wrap, ToolResultBlockParam 직렬화 | `src/kosmos/llm/_cc_reference/toolExecution.ts` |
-| `src/utils/messages.ts` | 5512 | `normalizeContentFromAPI()` + `ensureToolResultPairing()` — Anthropic API content blocks → 내부 MessageType. tool_use ↔ tool_result 페어링 검증 | `src/kosmos/llm/_cc_reference/messages.ts` |
-| `src/utils/permissions/permissions.ts` | 1486 | permission gauntlet 본체 (Spec 033와 매핑) | `src/kosmos/llm/_cc_reference/permissions.ts` |
-| `src/utils/toolResultStorage.ts` | (검색 필요) | tool result token budgeting + `processToolResultBlock()` | `src/kosmos/llm/_cc_reference/toolResultStorage.ts` |
+| `src/utils/api.ts` | 718 | `toolToAPISchema()` (line 119-266) — Tool → BetaTool 변환. K-EXAONE OpenAI-compat 매핑 baseline | `src/kosax/llm/_cc_reference/api.ts` |
+| `src/tools.ts` | 389 | `getAllBaseTools()` / `getTools()` / `assembleToolPool()` — tool catalog orchestration | `src/kosax/llm/_cc_reference/tools.ts` |
+| `src/constants/prompts.ts` | 914 | system prompt 동적 composition — tool name/capability 섹션 baseline | `src/kosax/llm/_cc_reference/prompts.ts` |
+| `src/query.ts` | 1729 | LLM ↔ tool_use ↔ tool_result 멀티턴 closure 본체 | `src/kosax/llm/_cc_reference/query.ts` |
+| `src/services/tools/toolOrchestration.ts` | 188 | `runTools()` async generator — concurrent read / serial write 분기 | `src/kosax/llm/_cc_reference/toolOrchestration.ts` |
+| `src/services/tools/toolExecution.ts` | 1745 | `runToolUse()` — input 검증, 실행, 에러 wrap, ToolResultBlockParam 직렬화 | `src/kosax/llm/_cc_reference/toolExecution.ts` |
+| `src/utils/messages.ts` | 5512 | `normalizeContentFromAPI()` + `ensureToolResultPairing()` — Anthropic API content blocks → 내부 MessageType. tool_use ↔ tool_result 페어링 검증 | `src/kosax/llm/_cc_reference/messages.ts` |
+| `src/utils/permissions/permissions.ts` | 1486 | permission gauntlet 본체 (Spec 033와 매핑) | `src/kosax/llm/_cc_reference/permissions.ts` |
+| `src/utils/toolResultStorage.ts` | (검색 필요) | tool result token budgeting + `processToolResultBlock()` | `src/kosax/llm/_cc_reference/toolResultStorage.ts` |
 
 cp 명령 (한 번에):
 ```bash
 REF=.references/claude-code-sourcemap/restored-src/src
-DEST=src/kosmos/llm/_cc_reference
+DEST=src/kosax/llm/_cc_reference
 cp $REF/utils/api.ts $DEST/api.ts
 cp $REF/tools.ts $DEST/tools.ts
 cp $REF/constants/prompts.ts $DEST/prompts.ts
@@ -119,7 +119,7 @@ cp $REF/utils/toolResultStorage.ts $DEST/toolResultStorage.ts 2>/dev/null || ech
 
 ### Step 1 — CC reference cp + 인덱스 (작업량 30분)
 
-위 § 5의 9개 파일 cp. `src/kosmos/llm/_cc_reference/README.md` 작성: 파일별 1-line description + KOSMOS 매핑.
+위 § 5의 9개 파일 cp. `src/kosax/llm/_cc_reference/README.md` 작성: 파일별 1-line description + KOSAX 매핑.
 
 ### Step 2 — TUI Tool → ToolDefinition 직렬화 (작업량 2-3h)
 
@@ -139,24 +139,24 @@ CC reference: `_cc_reference/api.ts:toolToAPISchema()` (line 119-266).
 
 CC reference: `_cc_reference/api.ts:appendSystemContext()` + `_cc_reference/prompts.ts` 의 dynamic composition.
 
-`src/kosmos/llm/system_prompt_builder.py` (신규):
+`src/kosax/llm/system_prompt_builder.py` (신규):
 - `build_system_prompt_with_tools(base: str, tools: list[LLMToolDefinition]) -> str` — base 끝에 `\n\n## Available tools\n` 섹션 + 각 tool에 대해 `### {name}\n{description}\n\n**Parameters**: {parameters JSON, indent=2}\n` append
 
-`src/kosmos/ipc/stdio.py:_handle_chat_request` 진입 시:
+`src/kosax/ipc/stdio.py:_handle_chat_request` 진입 시:
 - `system_text = await _ensure_system_prompt()`
 - `if llm_tools: system_text = build_system_prompt_with_tools(system_text, llm_tools)`
 - `frame.system or system_text` 로 LLM 첫 메시지 설정
 
-검증: backend log에서 system prompt에 active primitive description 포함 확인. K-EXAONE 응답에서 `<tool_call>{"name":"Read"}` 가 사라지고 `<tool_call>{"name":"lookup"}` 또는 KOSMOS primitive 이름만 등장.
+검증: backend log에서 system prompt에 active primitive description 포함 확인. K-EXAONE 응답에서 `<tool_call>{"name":"Read"}` 가 사라지고 `<tool_call>{"name":"lookup"}` 또는 KOSAX primitive 이름만 등장.
 
 ### Step 4 — Backend registry fallback (작업량 1-2h)
 
 CC reference: `_cc_reference/tools.ts:assembleToolPool()` (line 345-367).
 
-`src/kosmos/ipc/stdio.py`:
+`src/kosax/ipc/stdio.py`:
 - session 시작(또는 첫 chat_request) 시 `ToolRegistry()` 1회 instantiate, module-level cache
 - `_handle_chat_request`에서 `if not frame.tools: llm_tools = registry.export_core_tools_openai()` fallback
-- `registry.export_core_tools_openai()` 가 active primitives + MVP 보조를 OpenAI function shape로 반환 (현재 정의는 `src/kosmos/tools/registry.py:373-378`, KOSMOS-1978 T053b의 `_dispatch_primitive` 가 사용 가능한지 확인)
+- `registry.export_core_tools_openai()` 가 active primitives + MVP 보조를 OpenAI function shape로 반환 (현재 정의는 `src/kosax/tools/registry.py:373-378`, KOSAX-1978 T053b의 `_dispatch_primitive` 가 사용 가능한지 확인)
 
 검증: TUI `frame.tools=[]` 로 보내도 backend가 fallback inject해서 K-EXAONE이 도구 사용. 이중 안전망.
 
@@ -189,7 +189,7 @@ CC reference: `_cc_reference/messages.ts:ensureToolResultPairing()` (line 1150-1
 
 ### Step 7 — PermissionGauntletModal 실 연결 (작업량 2-3h)
 
-CC reference: `_cc_reference/permissions.ts` (1486 lines, KOSMOS Spec 033와 매핑 검토 필요).
+CC reference: `_cc_reference/permissions.ts` (1486 lines, KOSAX Spec 033와 매핑 검토 필요).
 
 `tui/src/query/deps.ts:250-266`:
 - 현재 `createSystemMessage(... auto-deny)` + `permission_response` decision='denied' 즉시 send
@@ -226,9 +226,9 @@ cd .. && uv run pytest tests/llm tests/ipc
 Output "/tmp/probe-tool-loop.gif"
 Set Shell "bash"; Set FontSize 14; Set Width 1100; Set Height 700; Set Padding 16
 Hide
-Type "cd ~/KOSMOS/tui"; Enter; Sleep 200ms
+Type "cd ~/KOSAX/tui"; Enter; Sleep 200ms
 Type "set -a; source ../.env; set +a"; Enter; Sleep 200ms
-Type "export KOSMOS_FORCE_INTERACTIVE=1 OTEL_SDK_DISABLED=true"; Enter; Sleep 200ms
+Type "export KOSAX_FORCE_INTERACTIVE=1 OTEL_SDK_DISABLED=true"; Enter; Sleep 200ms
 Type "clear"; Enter; Sleep 200ms
 Show
 Type "bun run tui"; Enter; Sleep 12s
@@ -298,9 +298,9 @@ PR with `Closes #EPIC` only → CI watch → Copilot review gate → merge
 세션 진입 시 첫 명령:
 
 ```bash
-cd ~/KOSMOS
+cd ~/KOSAX
 git log -3 --oneline
-ls src/kosmos/llm/_cc_reference/
+ls src/kosax/llm/_cc_reference/
 gh issue create --title "Epic: K-EXAONE tool wiring (CC reference migration)" --body "$(cat docs/spec-kexaone-tool-wiring/handoff-prompt.md | head -80)" --label epic,agent-ready,size/L
 ```
 
@@ -309,11 +309,11 @@ gh issue create --title "Epic: K-EXAONE tool wiring (CC reference migration)" --
 ## 부록 A — 참조 commit history
 
 ```
-33478d4 feat(llm): KOSMOS-1633 P3 — wire K-EXAONE thinking via CC reference
-a7fc8f6 fix(tui): KOSMOS-1633 P3 — assistant message paint chain unblocked
-f459bfb feat(tui): KOSMOS-1633 P3 — stream-event projection for incremental paint
-148b0d1 docs(epic): KOSMOS streaming UI projection — plan + handoff prompt
-34304f6 feat(backend): KOSMOS-1633 P3 — parse K-EXAONE inline <tool_call> XML
+33478d4 feat(llm): KOSAX-1633 P3 — wire K-EXAONE thinking via CC reference
+a7fc8f6 fix(tui): KOSAX-1633 P3 — assistant message paint chain unblocked
+f459bfb feat(tui): KOSAX-1633 P3 — stream-event projection for incremental paint
+148b0d1 docs(epic): KOSAX streaming UI projection — plan + handoff prompt
+34304f6 feat(backend): KOSAX-1633 P3 — parse K-EXAONE inline <tool_call> XML
 ```
 
 ## 부록 B — 잠재 risk + mitigation
@@ -334,7 +334,7 @@ f459bfb feat(tui): KOSMOS-1633 P3 — stream-event projection for incremental pa
 
 `/tmp/probe-streaming.tape` (이전 세션 VHS) — 900×600 viewport, "한 문장으로 답해주세요…" prompt.
 
-backend stderr 가 PTY로 forward 안 되는 issue 있음 — backend 디버깅 필요시 `open("/tmp/kosmos-be.log", "a")` 패턴으로 file에 직접 write (이전 세션에서 검증된 우회).
+backend stderr 가 PTY로 forward 안 되는 issue 있음 — backend 디버깅 필요시 `open("/tmp/kosax-be.log", "a")` 패턴으로 file에 직접 write (이전 세션에서 검증된 우회).
 
 ---
 
@@ -345,7 +345,7 @@ backend stderr 가 PTY로 forward 안 되는 issue 있음 — backend 디버깅 
 ## 변경 파일 예상 list (커밋 대상)
 
 ```
-src/kosmos/llm/_cc_reference/
+src/kosax/llm/_cc_reference/
   + api.ts (cp from CC)
   + tools.ts (cp from CC)
   + prompts.ts (cp from CC)
@@ -357,10 +357,10 @@ src/kosmos/llm/_cc_reference/
   + toolResultStorage.ts (cp from CC)
   + README.md (인덱스)
 
-src/kosmos/llm/
+src/kosax/llm/
   + system_prompt_builder.py (신규)
 
-src/kosmos/ipc/
+src/kosax/ipc/
   M stdio.py (registry fallback + system prompt 도구 inject + whitelist source-of-truth)
 
 tui/src/query/

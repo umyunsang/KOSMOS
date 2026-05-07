@@ -17,18 +17,18 @@ Set FontFamily "JetBrains Mono"
 Set Theme "TokyoNightStorm"
 
 # Inject fixture catalog env vars so the backend can install the seoul-subway
-# fixture without going through the live kosmos-plugin-store catalog.
-Type "export KOSMOS_PLUGIN_CATALOG_URL=file:///Users/um-yunsang/KOSMOS/specs/1979-plugin-dx-tui-integration/scripts/fixtures/catalog.json"
+# fixture without going through the live kosax-plugin-store catalog.
+Type "export KOSAX_PLUGIN_CATALOG_URL=file:///Users/um-yunsang/KOSAX/specs/1979-plugin-dx-tui-integration/scripts/fixtures/catalog.json"
 Enter
-Type "export KOSMOS_PLUGIN_SLSA_SKIP=true"
+Type "export KOSAX_PLUGIN_SLSA_SKIP=true"
 Enter
-Type "export KOSMOS_ENV=development"
+Type "export KOSAX_ENV=development"
 Enter
-Type "export KOSMOS_BACKEND_STDERR_FILE=/tmp/kosmos-backend.stderr"
+Type "export KOSAX_BACKEND_STDERR_FILE=/tmp/kosax-backend.stderr"
 Enter
 Sleep 500ms
 
-# Launch KOSMOS TUI (mirrors Spec 2112 working pattern: cd tui && bun run tui 2>/tmp/tui-bun.stderr)
+# Launch KOSAX TUI (mirrors Spec 2112 working pattern: cd tui && bun run tui 2>/tmp/tui-bun.stderr)
 Type "cd tui && bun run tui 2>/tmp/tui-bun.stderr"
 Enter
 Sleep 8s

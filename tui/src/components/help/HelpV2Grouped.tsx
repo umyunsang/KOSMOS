@@ -53,13 +53,13 @@ function formatArgSig(sig: string | null): string {
 
 function CommandRow({ entry }: { entry: SlashCommandCatalogEntryT }): React.ReactElement {
   const theme = useTheme();
-  const locale = process.env['KOSMOS_TUI_LOCALE'] ?? 'ko';
+  const locale = process.env['KOSAX_TUI_LOCALE'] ?? 'ko';
   const description = locale === 'en' ? entry.description_en : entry.description_ko;
 
   return (
     <Box paddingLeft={2} marginBottom={0}>
       <Box width={28} flexShrink={0}>
-        <Text bold color={theme.kosmosCore}>
+        <Text bold color={theme.kosaxCore}>
           {entry.name}
           <Text color={theme.subtle}>{formatArgSig(entry.arg_signature)}</Text>
         </Text>
@@ -107,7 +107,7 @@ function GroupSection({
 // ---------------------------------------------------------------------------
 
 /**
- * Renders all KOSMOS slash commands grouped into the four canonical sections:
+ * Renders all KOSAX slash commands grouped into the four canonical sections:
  * Session / Permission / Tool / Storage (FR-029).
  *
  * Data sourced from `UI_L2_SLASH_COMMANDS` via `groupCatalog()` — never
@@ -123,7 +123,7 @@ export function HelpV2Grouped({ onDismiss }: HelpV2GroupedProps): React.ReactEle
   // the CC HelpV2 keybinding-registry contract and a direct `useInput`
   // Escape watcher for runtimes whose keybinding chord registry does NOT
   // bind `help:dismiss → Escape` by default (Tier 1 chord catalogue
-  // covers a fixed set; `help:dismiss` is not Tier 1 in KOSMOS, so the
+  // covers a fixed set; `help:dismiss` is not Tier 1 in KOSAX, so the
   // useKeybinding path needs a useInput fallback to actually fire on
   // raw Escape bytes from the PTY). With the Bun-native PTY harness
   // delivering raw `\x1b` immediately (no tmux escape-time race), the
@@ -143,8 +143,8 @@ export function HelpV2Grouped({ onDismiss }: HelpV2GroupedProps): React.ReactEle
     <Box flexDirection="column" paddingX={1} paddingY={1}>
       {/* Header — mirrors CC HelpV2 title bar */}
       <Box marginBottom={1}>
-        <Text bold color={theme.kosmosCore}>
-          {'✻ KOSMOS · '}
+        <Text bold color={theme.kosaxCore}>
+          {'✻ KOSAX · '}
         </Text>
         <Text color={theme.wordmark}>
           {'도움말 / Help'}

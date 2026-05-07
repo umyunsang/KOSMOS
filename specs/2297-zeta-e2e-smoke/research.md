@@ -14,12 +14,12 @@ Per Constitution § I (Reference-Driven Development) every design decision below
 | Backend `_VerifyInputForLLM` pre-validator (FR-008a) | Pydantic v2 official docs § "Validators / mode='before'" | Spec 025 V6 `@model_validator` pattern (auth_type↔auth_level invariant) — same library convention applied to a different invariant |
 | Canonical map sourced from markdown at boot (FR-008b) | Spec 026 PromptLoader (`prompts/manifest.yaml` SHA-256 fail-closed) — already-loaded markdown is the single source-of-truth | CC `restored-src/services/api/`-style read-once-at-boot pattern (no per-request markdown parsing) |
 | TUI `dispatchPrimitive.ts` shared helper (FR-005) | CC `restored-src/services/tools/toolExecution.ts:1207` (Tool.call invocation site, byte-identical signature preserved) | AutoGen AgentRuntime mailbox pattern (Spec 027 — Future-keyed-by-call-id registry) |
-| TUI `_pendingCallRegistry.ts` (FR-001-FR-004 backing) | Backend `_pending_calls: dict[str, asyncio.Future]` in `src/kosmos/ipc/stdio.py:1462` (the canonical pattern that this is mirroring on the TS side) | Spec 027 mailbox `replay_unread` state |
+| TUI `_pendingCallRegistry.ts` (FR-001-FR-004 backing) | Backend `_pending_calls: dict[str, asyncio.Future]` in `src/kosax/ipc/stdio.py:1462` (the canonical pattern that this is mirroring on the TS side) | Spec 027 mailbox `replay_unread` state |
 | Layer 4 vhs PNG keyframes (FR-012) | AGENTS.md § TUI verification methodology Layer 4 (canonical, 2026-04-29 promotion) | charm-vhs ≥ 0.11 native `Screenshot` directive (no ffmpeg post-extraction) |
 | Layer 2 PTY scenario (FR-011) | AGENTS.md § TUI verification methodology Layer 2 (`expect` / `asciinema` / `script`) | feedback memory `feedback_pr_pre_merge_interactive_test` |
 | 10-fixture verify-family battery (FR-019) | Spec ε #2296 5-family ε mocks + 5 inherited families = 10-row canonical map | η `prompts/system_v1.md` `<verify_families>` block (single source-of-truth) |
 | `policy-mapping.md` international gateway citations (FR-017) | AGENTS.md § CORE THESIS (Singapore APEX / Estonia X-Road / EU EUDI / Japan マイナポータル named explicitly) | Each foreign spec's own canonical URL |
-| 5 OPAQUE scenario docs (FR-018) | AGENTS.md § L1-B B3 ("OPAQUE domains are never wrapped — LLM hands off via `docs/scenarios/`") | `docs/requirements/kosmos-migration-tree.md` § L1-B B3 |
+| 5 OPAQUE scenario docs (FR-018) | AGENTS.md § L1-B B3 ("OPAQUE domains are never wrapped — LLM hands off via `docs/scenarios/`") | `docs/requirements/kosax-migration-tree.md` § L1-B B3 |
 
 ## Root-cause analysis (Phase 0 critical finding)
 
@@ -35,7 +35,7 @@ The η-Lead's "TUI Tool.call() stub blocker" hypothesis (η spec § Mid-Epic fin
                   "purpose_en": "Comprehensive income tax filing"})
    ```
 
-2. **`src/kosmos/tools/mvp_surface.py:243` `_VerifyInputForLLM`** declares:
+2. **`src/kosax/tools/mvp_surface.py:243` `_VerifyInputForLLM`** declares:
    ```python
    class _VerifyInputForLLM(BaseModel):
        family_hint: str = Field(...)
@@ -43,13 +43,13 @@ The η-Lead's "TUI Tool.call() stub blocker" hypothesis (η spec § Mid-Epic fin
    ```
    The OpenAI-compat schema published to K-EXAONE shows `family_hint` + `session_context` as the canonical fields.
 
-3. **`src/kosmos/ipc/stdio.py:993` `_dispatch_primitive`** for the `verify` arm reads:
+3. **`src/kosax/ipc/stdio.py:993` `_dispatch_primitive`** for the `verify` arm reads:
    ```python
    family_hint = str(args_obj.get("family_hint") or args_obj.get("family") or "")
    session_ctx = cast("dict[str, object]", args_obj.get("session_context") or {})
    raw = await verify(family_hint=family_hint, session_context=session_ctx)
    ```
-   When LLM emits `verify(tool_id=..., params=...)`, both `family_hint` and `family` are missing → `family_hint=""` → `kosmos.primitives.verify()` rejects empty family.
+   When LLM emits `verify(tool_id=..., params=...)`, both `family_hint` and `family` are missing → `family_hint=""` → `kosax.primitives.verify()` rejects empty family.
 
 4. **`specs/2298-system-prompt-rewrite/smoke-citizen-taxreturn-pty.txt` tail** (η T011 attempt 3) shows the LLM emitting **0 tool_calls** and producing a conversational fallback: "현재 공공서비스 시스템에는 종합소득세 신고 기능이 제공되지 않고 있습니다." This is consistent with the LLM seeing a contradictory instruction (prompt teaches `tool_id`, schema requires `family_hint`) and falling back to "I cannot do this" rather than emitting a malformed call.
 
@@ -65,7 +65,7 @@ The TUI Tool.call() stubs are still replaced (FR-001–FR-007) for correctness �
 
 ### Decision 1 — Backend pre-validator translates `tool_id` → `family_hint`
 
-**Choice**: Add `@model_validator(mode="before")` to `_VerifyInputForLLM` in `src/kosmos/tools/mvp_surface.py`.
+**Choice**: Add `@model_validator(mode="before")` to `_VerifyInputForLLM` in `src/kosax/tools/mvp_surface.py`.
 
 **Rationale**:
 - Pre-validator runs before field validation, so it can rebuild the dict shape.
@@ -76,11 +76,11 @@ The TUI Tool.call() stubs are still replaced (FR-001–FR-007) for correctness �
 **Alternatives considered**:
 - *Option A — TUI-side translation in `VerifyPrimitive.call()`* — rejected. The TUI stub is in a race with backend `_dispatch_primitive`; backend wins. TUI translation does not reach the dispatcher in time. Even if it did, two layers performing translation is brittle.
 - *Option C — change `prompts/system_v1.md` to teach `family_hint` instead of `tool_id`* — rejected. FR-022 forbids touching `prompts/`. Even without FR-022, the η-shipped `tool_id` convention is preferred — it matches `lookup(tool_id, params)` and `submit(tool_id, params)`.
-- *Option D — extend `kosmos.primitives.verify.dispatch()` to accept `tool_id`* — rejected. Dispatcher signature change cascades to integration tests; the schema layer is the right boundary.
+- *Option D — extend `kosax.primitives.verify.dispatch()` to accept `tool_id`* — rejected. Dispatcher signature change cascades to integration tests; the schema layer is the right boundary.
 
 ### Decision 2 — Canonical map read from `prompts/system_v1.md` at boot
 
-**Choice**: New module `src/kosmos/tools/verify_canonical_map.py` parses the `<verify_families>` markdown table on first import (lazy module-level `lru_cache`d call). Returns a frozen `dict[str, str]` mapping `tool_id → family_hint`.
+**Choice**: New module `src/kosax/tools/verify_canonical_map.py` parses the `<verify_families>` markdown table on first import (lazy module-level `lru_cache`d call). Returns a frozen `dict[str, str]` mapping `tool_id → family_hint`.
 
 **Rationale**:
 - Single source-of-truth = the markdown. No drift possible by construction.
@@ -177,7 +177,7 @@ Free-text scan for unregistered deferral patterns: spec.md searched for "separat
 ## Boot-order checklist
 
 1. ✅ `prompts/system_v1.md` v2 manifest hash `bda67fb…` already on `main` (η commit `1321f77`).
-2. ✅ `src/kosmos/tools/mvp_surface.py` already registers 5 core tools (η commit `1321f77`).
+2. ✅ `src/kosax/tools/mvp_surface.py` already registers 5 core tools (η commit `1321f77`).
 3. ✅ Backend `_dispatch_primitive` already routes verify/lookup/submit/subscribe (Spec 1978).
 4. ✅ TUI `bridge.ts` + `llmClient.ts` already handle `tool_call` frames (Spec 1978).
 5. ✅ TUI `frames.generated.ts` already declares `ToolResultFrame` schema (line 1253).

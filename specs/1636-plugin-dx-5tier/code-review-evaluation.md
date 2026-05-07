@@ -15,7 +15,7 @@
 PR을 **즉시 머지하지 않음**. 4-agent 합의로 7개 Critical 이슈가 식별되어 머지 차단. 그 중 2건은 사용자 작업 흐름을 즉시 깨는 empirical-verified 버그:
 
 1. **PIPA canonical hash 가 prose 텍스트 5자를 hash** — 540자 의무 본문이 enforce 안 됨. 운영중인 plugin manifest 의 acknowledgment_sha256 검증이 fictional.
-2. **Consent receipt 가 `~/.kosmos/consent/` 에 기록** — Spec 035 ledger (`~/.kosmos/memdir/user/consent/`) 와 분리되어 `/consent list` 에서 불가시.
+2. **Consent receipt 가 `~/.kosax/consent/` 에 기록** — Spec 035 ledger (`~/.kosax/memdir/user/consent/`) 와 분리되어 `/consent list` 에서 불가시.
 
 나머지 5건도 사양 대비 보안 가정 위반 / cosmetic enforcement claim / 사용자 첫 단계 차단.
 
@@ -25,12 +25,12 @@ PR을 **즉시 머지하지 않음**. 4-agent 합의로 7개 Critical 이슈가 
 
 | ID | 종류 | 위치 | 요지 | 검증 |
 |---|---|---|---|---|
-| C1 | 정합 | `installer.py:585` | Consent receipt 경로 `~/.kosmos/consent/` (data-model.md 명시는 `~/.kosmos/memdir/user/consent/`) → Spec 035 ledger 와 분리 | empirical: `print(consent_root)` 확인 |
+| C1 | 정합 | `installer.py:585` | Consent receipt 경로 `~/.kosax/consent/` (data-model.md 명시는 `~/.kosax/memdir/user/consent/`) → Spec 035 ledger 와 분리 | empirical: `print(consent_root)` 확인 |
 | C2 | 정합 | `registry.py:208-212` | `model_construct` bypass — 5개 cross-field validator (PluginManifest._v_*) 무효화 가능. Spec 025 V6 패턴 (registry-level backstop) 미적용 | docstring honor-system; runtime 무방어 |
 | C3 | 정합 | `tools/models.py:243` regex / `q8_namespace.py:18` | `plugin.<id>.resolve_location` 가 GovAPITool 등록 통과 (Q8-NO-ROOT-OVERRIDE 우회). 4-verb (manifest) vs 5-verb (registry) drift surface | dual source-of-truth |
 | C4 | 보안 (TS↔Py drift) | `plugin.ts:27` `_PIPA_HASH = '434074581cab...'` | TS hardcoded; Python 은 docs 추출 hash. 실제 runtime hash 와 무관 (C5 참고). 시민이 보는 안내값과 manifest 가 서로 다른 hash | C5 와 결합 |
 | C5 | 정합 (empirical) | `canonical_acknowledgment.py:60` `md.find()` | 첫 마커 occurrence 가 prose 설명문 안의 인용. `_extract_canonical_text()` 가 5자 (` ↔ `) 추출. Runtime 상수: `d159d8fd...`, docs 게시: `434074581cab...`. 실제 의무 텍스트 540자는 hash 영향권 밖 | empirical: 추출 텍스트 5자 + `d159d8fd02b2f4babb...` 검증 완료 |
-| C6 | 보안 | `installer.py:402` + `settings.py:200` 주장 | `KOSMOS_PLUGIN_SLSA_SKIP=1` 의 production gate **존재하지 않음**. settings.py 주석 / security-review.md L3 약속 모두 vapor. 어떤 환경 변수 1개로 SLSA 건너뛰고 모든 layer 설치 가능. `slsa_state="skipped"` 는 consent receipt 에만 기록되고 OTEL span 에 미부착 | grep `.github/workflows/` → 0 matches |
+| C6 | 보안 | `installer.py:402` + `settings.py:200` 주장 | `KOSAX_PLUGIN_SLSA_SKIP=1` 의 production gate **존재하지 않음**. settings.py 주석 / security-review.md L3 약속 모두 vapor. 어떤 환경 변수 1개로 SLSA 건너뛰고 모든 layer 설치 가능. `slsa_state="skipped"` 는 consent receipt 에만 기록되고 OTEL span 에 미부착 | grep `.github/workflows/` → 0 matches |
 | C7 | 보안 | `bootstrap_slsa_verifier.sh:101-120` | slsa-verifier 다운로드 TOFU. SHA-256 / cosign 검증 부재. MITM / 손상된 release asset → 임의 코드 실행 + 모든 후속 install gate 우회 | upstream `slsa-verifier-*.sha256` 미사용 |
 
 ### High (fix before public — 8건)
@@ -39,7 +39,7 @@ PR을 **즉시 머지하지 않음**. 4-agent 합의로 7개 Critical 이슈가 
 |---|---|---|---|
 | H1 | 정합 | `installer.py:279-287` | `os.fsync(O_RDONLY fd)` no-op. Receipt 내구성 미보장. Parent dir fsync 누락 → 정전 시 rename 손실 가능 |
 | H2 | 정합 | `registry.py:99-110` | `sys.modules` 누수 — 부분 실패 시 stale module 잔존 |
-| H3 | 보안 | adapter top-level code 권한 | 어댑터 모듈 import 가 KOSMOS process 권한으로 실행 (HMAC key / sessions JSONL / canonical hash 변조 등). `block_network` fixture 는 contributor's tests/conftest.py 한정 — 운영 환경 무영향 |
+| H3 | 보안 | adapter top-level code 권한 | 어댑터 모듈 import 가 KOSAX process 권한으로 실행 (HMAC key / sessions JSONL / canonical hash 변조 등). `block_network` fixture 는 contributor's tests/conftest.py 한정 — 운영 환경 무영향 |
 | H4 | 보안 | `installer.py:264-267` | Consent ledger position race + `uuid4()[:16]` 64-bit collision 리스크 + dir fsync 누락 |
 | H5 | 보안 | `manifest_schema.py:271-282` | Unicode confusable plugin_id (Cyrillic `о` 등) — `re.fullmatch(..., flags=re.ASCII)` 누락 |
 | H6 | 보안 | `installer.py:247-261` | `_safe_extract` symlink TOCTOU — `member.linkname` resolution 미수행. PEP 706 `data` 필터 보완에 불완전 의존 |
@@ -73,14 +73,14 @@ PR을 **즉시 머지하지 않음**. 4-agent 합의로 7개 Critical 이슈가 
 |---|---|---|---|
 | D1 | empirical 차단 | `security-review.md:12` | 게시 hash `434074581cab...` 와 runtime 상수 `d159d8fd...` 불일치 (C5 와 동일 root cause). 시민이 docs hash 를 manifest 에 복사하면 Q6-PIPA-HASH 즉시 fail |
 | D2 | enum mismatch | `permission-tier.md:76,105,210-211` + `security-review.md:92-93,101,112,147` + `contracts/manifest.schema.json:152-154` | `pipa_class` 값을 `personal_standard` / `personal_sensitive` / `personal_unique_id` 로 게시. 실제 `models.py:22` 는 `Literal["non_personal", "personal", "sensitive", "identifier"]`. Layer 2/3 manifest 모두 pydantic 검증 fail |
-| D3 | 부재 CLI | `quickstart.ko.md:248-250` + `quickstart.md:230-232` | `kosmos-plugin-validate` CLI 가 `pyproject.toml:38-41` 에 미등록 (등록된 entry: `kosmos`, `kosmos-permissions`, `kosmos-plugin-init`). step 8 의 50/50 green-light 도달 불가 |
-| D4 | env var typo | `quickstart.md:168` | 영문 source: `KOSMOS_DATA_GO_KR_KEY` (오타). `settings.py:55` 와 한국어 가이드: `KOSMOS_DATA_GO_KR_API_KEY` (정답). 영문 source 만 typo |
+| D3 | 부재 CLI | `quickstart.ko.md:248-250` + `quickstart.md:230-232` | `kosax-plugin-validate` CLI 가 `pyproject.toml:38-41` 에 미등록 (등록된 entry: `kosax`, `kosax-permissions`, `kosax-plugin-init`). step 8 의 50/50 green-light 도달 불가 |
+| D4 | env var typo | `quickstart.md:168` | 영문 source: `KOSAX_DATA_GO_KR_KEY` (오타). `settings.py:55` 와 한국어 가이드: `KOSAX_DATA_GO_KR_API_KEY` (정답). 영문 source 만 typo |
 | D5 | invalid pattern | `quickstart.md:147-184` Step 6 | 영문 가이드의 `class BusanBikeAdapter(GovAPITool):` declarative override 패턴이 `models.py:63-94` 의 frozen Pydantic BaseModel 과 충돌. `provider` 필드는 Spec 1634 FR-010 으로 `ministry` 로 대체됨. 영문 quickstart 전면 재작성 필요 |
 
 ### 문서 결함 (사용성 — 3건)
 
 - DG1 anchor links 깨짐 — `review-checklist.md` 의 em-dash slug `q4--discovery--docs-8` 인데 가이드 5곳이 single-hyphen 사용
-- DG2 `data-go-kr.md:209` 가 `kosmos plugin pipa-text` CLI 인용 — 존재하는 건 TUI slash command 만
+- DG2 `data-go-kr.md:209` 가 `kosax plugin pipa-text` CLI 인용 — 존재하는 건 TUI slash command 만
 - DG3 Step 7 `httpx.HTTPStatusError("404", request=None, response=None)` snippet 이 httpx 가 `request=None` 거부 → 그대로 실행 불가
 
 ### 문서 결함 (Korean register — 5건)
@@ -95,11 +95,11 @@ PR을 **즉시 머지하지 않음**. 4-agent 합의로 7개 Critical 이슈가 
 2. **C1 fix**: settings 에 `user_memdir_root` 추가, `consent_root = user_memdir_root / "consent"` 변경. test_install_e2e.py:179 fixture path 도 동기화.
 3. **C2 fix**: `register_plugin_adapter` 에서 V1 패턴 backstop — `isinstance(manifest, PluginManifest)` 외에 5 validator 재실행 (Spec 025 V6 패턴 재현).
 4. **C3 fix**: `_validate_id` regex 에서 `resolve_location` 제거 OR `ToolRegistry.register` 에 verb suffix backstop 추가.
-5. **C6 fix**: `installer.py` 에 `if manifest.permission_layer == 3 and slsa_state == "skipped": return _EXIT_SLSA` + OTEL `kosmos.plugin.slsa_verification` attribute. `KOSMOS_ENV=production` 시 `plugin_slsa_skip=True` 거부.
+5. **C6 fix**: `installer.py` 에 `if manifest.permission_layer == 3 and slsa_state == "skipped": return _EXIT_SLSA` + OTEL `kosax.plugin.slsa_verification` attribute. `KOSAX_ENV=production` 시 `plugin_slsa_skip=True` 거부.
 6. **C7 fix**: `bootstrap_slsa_verifier.sh` 에 SHA-256 dictionary + `sha256sum -c` (upstream `slsa-verifier-*.sha256` 사용).
 7. **D2 fix**: `pipa_class` enum 값 통일 — 실제 `models.py` 와 일치하도록 docs + manifest.schema.json 수정.
-8. **D3 fix**: `pyproject.toml` 에 `kosmos-plugin-validate = "kosmos.plugins.checks.framework:_cli_main"` entry 추가 + framework.py 에 CLI main 함수 작성.
-9. **D4 fix**: `quickstart.md:168` `KOSMOS_DATA_GO_KR_API_KEY` 로 정정.
+8. **D3 fix**: `pyproject.toml` 에 `kosax-plugin-validate = "kosax.plugins.checks.framework:_cli_main"` entry 추가 + framework.py 에 CLI main 함수 작성.
+9. **D4 fix**: `quickstart.md:168` `KOSAX_DATA_GO_KR_API_KEY` 로 정정.
 10. **D5 fix**: 영문 quickstart Step 6 을 한국어 가이드의 `_build_tool()` factory 패턴으로 통일.
 
 ### 2차 (follow-up PR — High 8)
@@ -127,12 +127,12 @@ H1-H8 모두 follow-up 으로 분리 — 보안 hardening + sandbox + dir fsync 
 2. 1차 10개 fix 를 별도 commit 으로 분리해 본 branch 에 추가 (PR 자체는 유지).
 3. 각 fix 별 단위 테스트 추가:
    - C5: extract → re-hash 후 docs hash 일치 (parity test).
-   - C1: install_e2e 가 `~/.kosmos/memdir/user/consent/` 에 receipt 작성 검증.
+   - C1: install_e2e 가 `~/.kosax/memdir/user/consent/` 에 receipt 작성 검증.
    - C2: `model_construct` 우회 시도 → `register_plugin_adapter` 가 거부.
    - C3: `register(GovAPITool(id="plugin.foo.resolve_location"))` 거부.
-   - C6: `KOSMOS_PLUGIN_SLSA_SKIP=1` + `permission_layer=3` → exit 3.
+   - C6: `KOSAX_PLUGIN_SLSA_SKIP=1` + `permission_layer=3` → exit 3.
    - D2: 잘못된 enum 값으로 manifest 파싱 → 명확한 에러.
-   - D3: `uvx kosmos-plugin-validate .` 통과.
+   - D3: `uvx kosax-plugin-validate .` 통과.
 4. 4-track agent 재평가 후 merge 가능 여부 확정.
 
 ## 첨부

@@ -78,7 +78,7 @@ const KO: UiL2Bundle = {
   pipaConsentTitle: 'PIPA 동의',
   pipaConsentBody: '이 시스템은 시민님의 개인정보를 처리하기 위해 동의가 필요합니다.',
   pipaTrusteeNotice:
-    'PIPA §26에 따라 KOSMOS는 개인정보 수탁자로서 책임을 집니다. 동의 후에도 언제든 /consent revoke 로 철회할 수 있습니다.',
+    'PIPA §26에 따라 KOSAX는 개인정보 수탁자로서 책임을 집니다. 동의 후에도 언제든 /consent revoke 로 철회할 수 있습니다.',
   ministryScopeTitle: '부처 옵트인 범위',
   terminalSetupTitle: '터미널 설정 + 접근성',
   a11yToggleLabel: (key) => {
@@ -131,10 +131,10 @@ const KO: UiL2Bundle = {
 
   ufoMascot: (pose) => {
     switch (pose) {
-      case 'idle': return 'KOSMOS UFO 마스코트 (대기)';
-      case 'thinking': return 'KOSMOS UFO 마스코트 (생각 중)';
-      case 'success': return 'KOSMOS UFO 마스코트 (성공)';
-      case 'error': return 'KOSMOS UFO 마스코트 (오류)';
+      case 'idle': return 'KOSAX UFO 마스코트 (대기)';
+      case 'thinking': return 'KOSAX UFO 마스코트 (생각 중)';
+      case 'success': return 'KOSAX UFO 마스코트 (성공)';
+      case 'error': return 'KOSAX UFO 마스코트 (오류)';
     }
   },
 };
@@ -151,7 +151,7 @@ const EN: UiL2Bundle = {
   pipaConsentTitle: 'PIPA consent',
   pipaConsentBody: 'This system requires your consent to process personal data.',
   pipaTrusteeNotice:
-    'Under PIPA §26, KOSMOS acts as a data trustee. You can revoke consent any time via /consent revoke.',
+    'Under PIPA §26, KOSAX acts as a data trustee. You can revoke consent any time via /consent revoke.',
   ministryScopeTitle: 'Ministry opt-in scope',
   terminalSetupTitle: 'Terminal setup + accessibility',
   a11yToggleLabel: (key) => {
@@ -205,28 +205,28 @@ const EN: UiL2Bundle = {
 
   ufoMascot: (pose) => {
     switch (pose) {
-      case 'idle': return 'KOSMOS UFO mascot (idle)';
-      case 'thinking': return 'KOSMOS UFO mascot (thinking)';
-      case 'success': return 'KOSMOS UFO mascot (success)';
-      case 'error': return 'KOSMOS UFO mascot (error)';
+      case 'idle': return 'KOSAX UFO mascot (idle)';
+      case 'thinking': return 'KOSAX UFO mascot (thinking)';
+      case 'success': return 'KOSAX UFO mascot (success)';
+      case 'error': return 'KOSAX UFO mascot (error)';
     }
   },
 };
 
 /**
- * Resolve the current locale from KOSMOS_TUI_LOCALE on every call so that
+ * Resolve the current locale from KOSAX_TUI_LOCALE on every call so that
  * /lang ko|en (which mutates process.env at runtime) takes effect on the
  * next render without a process restart. Per Codex review on PR #1847.
  */
 function currentLocale(): 'ko' | 'en' {
-  return process.env['KOSMOS_TUI_LOCALE'] === 'en' ? 'en' : 'ko';
+  return process.env['KOSAX_TUI_LOCALE'] === 'en' ? 'en' : 'ko';
 }
 
-/** Backwards-compat default export — equals KO unless KOSMOS_TUI_LOCALE=en at module load. */
+/** Backwards-compat default export — equals KO unless KOSAX_TUI_LOCALE=en at module load. */
 export const uiL2I18n: UiL2Bundle = currentLocale() === 'en' ? EN : KO;
 
 /**
- * Hook returning the active i18n bundle. Reads KOSMOS_TUI_LOCALE on every
+ * Hook returning the active i18n bundle. Reads KOSAX_TUI_LOCALE on every
  * call so /lang ko|en applies on the next render frame. Components that
  * already capture this value into closures (event handlers, useCallback
  * deps) will need to remount or re-execute the closure to pick up the

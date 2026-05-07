@@ -1,5 +1,5 @@
 {
-  "_comment": "Spec 2522 T048 Scenario B — address-only query '강남구 병원'. LLM must autonomously call resolve_location first (turn 1), then hira_hospital_search (turn 2). Verifies LLM-driven chain without KOSMOS hardcoding.",
+  "_comment": "Spec 2522 T048 Scenario B — address-only query '강남구 병원'. LLM must autonomously call resolve_location first (turn 1), then hira_hospital_search (turn 2). Verifies LLM-driven chain without KOSAX hardcoding.",
   "fixtures": [
     {
       "match": {

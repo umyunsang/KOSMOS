@@ -35,7 +35,7 @@ import {
   STOPPED_DISPLAY_MS,
 } from '../task/framework.js'
 import { createTeammateContext } from '../teammateContext.js'
-// KOSMOS: utils/telemetry/perfettoTracing.js deleted by Spec 1633 P1. Stubs provided.
+// KOSAX: utils/telemetry/perfettoTracing.js deleted by Spec 1633 P1. Stubs provided.
 const isPerfettoTracingEnabled = (): false => false
 const registerPerfettoAgent = (_agentId: unknown, _agentType: unknown, _parentId: unknown): void => {}
 const unregisterPerfettoAgent = (_agentId: unknown): void => {}

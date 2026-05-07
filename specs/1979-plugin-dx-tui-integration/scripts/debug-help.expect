@@ -8,7 +8,7 @@ set log_path "$spec_dir/debug-help.txt"
 spawn script -q $log_path bash -c "cd tui && bun run tui"
 
 expect {
-  -re ".*KOSMOS.*" { puts "✓ KOSMOS branding observed" }
+  -re ".*KOSAX.*" { puts "✓ KOSAX branding observed" }
   timeout { exit 1 }
 }
 

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for kosmos.tools.kma.kma_short_term_forecast."""
+"""Tests for kosax.tools.kma.kma_short_term_forecast."""
 
 from __future__ import annotations
 
@@ -11,9 +11,9 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from kosmos.tools.errors import ConfigurationError, ToolExecutionError
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.kma.kma_short_term_forecast import (
+from kosax.tools.errors import ConfigurationError, ToolExecutionError
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.kma.kma_short_term_forecast import (
     KMA_SHORT_TERM_FORECAST_TOOL,
     KmaShortTermForecastInput,
     KmaShortTermForecastOutput,
@@ -22,7 +22,7 @@ from kosmos.tools.kma.kma_short_term_forecast import (
     _parse_response,
     register,
 )
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Fixture helpers
@@ -227,7 +227,7 @@ class TestCall:
     @pytest.mark.asyncio
     async def test_success_flow(self, monkeypatch):
         """_call with a mocked httpx client returns a dict matching output schema."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-abc")
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-abc")
         fixture_data = _load_fixture("kma_short_term_forecast_success.json")
         mock_client = _make_mock_client(fixture_data)
 
@@ -241,8 +241,8 @@ class TestCall:
 
     @pytest.mark.asyncio
     async def test_missing_api_key(self, monkeypatch):
-        """Absent KOSMOS_DATA_GO_KR_API_KEY raises ConfigurationError."""
-        monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
+        """Absent KOSAX_DATA_GO_KR_API_KEY raises ConfigurationError."""
+        monkeypatch.delenv("KOSAX_DATA_GO_KR_API_KEY", raising=False)
 
         params = KmaShortTermForecastInput(base_date="20260414", base_time="0800", nx=61, ny=126)
         with pytest.raises(ConfigurationError):
@@ -251,7 +251,7 @@ class TestCall:
     @pytest.mark.asyncio
     async def test_xml_content_type_guard(self, monkeypatch):
         """An XML content-type response must raise ToolExecutionError."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-abc")
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-abc")
 
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 200
@@ -268,7 +268,7 @@ class TestCall:
     @pytest.mark.asyncio
     async def test_xml_data_type_raises(self, monkeypatch):
         """Setting data_type='XML' must raise ToolExecutionError immediately."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-abc")
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-abc")
 
         params = KmaShortTermForecastInput(
             base_date="20260414", base_time="0800", nx=61, ny=126, data_type="XML"
@@ -280,7 +280,7 @@ class TestCall:
     @pytest.mark.asyncio
     async def test_http_status_error(self, monkeypatch):
         """An HTTP 500 must raise ToolExecutionError."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-abc")
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-abc")
 
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 500

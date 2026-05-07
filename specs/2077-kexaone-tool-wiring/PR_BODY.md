@@ -4,31 +4,31 @@ Closes #2077
 
 ## Summary
 
-Restores the Claude Code "tool inventory + agentic loop" pattern so K-EXAONE invokes only KOSMOS-registered tools (`lookup` / `resolve_location` / `submit` / `subscribe` / `verify` + MVP-7 auxiliary), eliminating training-data hallucinations of CC tools (`Read` / `Glob` / `Bash` / etc.).
+Restores the Claude Code "tool inventory + agentic loop" pattern so K-EXAONE invokes only KOSAX-registered tools (`lookup` / `resolve_location` / `submit` / `subscribe` / `verify` + MVP-7 auxiliary), eliminating training-data hallucinations of CC tools (`Read` / `Glob` / `Bash` / etc.).
 
 Three-layer migration:
 
 1. **TUI** (`tui/src/query/toolSerialization.ts` + `tui/src/query/deps.ts`) — serializes the primitive catalogue via `zod/v4`'s built-in `z.toJSONSchema()` (Draft 2020-12 native) and emits it as `ChatRequestFrame.tools` on every turn.
-2. **Backend** (`src/kosmos/llm/system_prompt_builder.py` + `src/kosmos/ipc/stdio.py`) — appends a `## Available tools` section to the system prompt, falls back to `ToolRegistry.export_core_tools_openai()` when the frame omits tools, and migrates the hardcoded primitive whitelist to a `kosmos.primitives.PRIMITIVE_REGISTRY` single source of truth.
+2. **Backend** (`src/kosax/llm/system_prompt_builder.py` + `src/kosax/ipc/stdio.py`) — appends a `## Available tools` section to the system prompt, falls back to `ToolRegistry.export_core_tools_openai()` when the frame omits tools, and migrates the hardcoded primitive whitelist to a `kosax.primitives.PRIMITIVE_REGISTRY` single source of truth.
 3. **CC stream-event projection** (`tui/src/query/deps.ts`) — projects backend `tool_call` / `tool_result` / `permission_request` frames into the canonical Claude Code `stream_event{content_block_*}` shape so existing native components (`AssistantToolUseMessage`, `PermissionGauntletModal`) finally light up.
 
-Every change is migrated from `src/kosmos/llm/_cc_reference/` (CC 2.1.88 research-use mirror, Constitution §I) — no new abstractions, **zero new runtime dependencies** (SC-006 verified, see `specs/2077-kexaone-tool-wiring/sc006-evidence.txt`).
+Every change is migrated from `src/kosax/llm/_cc_reference/` (CC 2.1.88 research-use mirror, Constitution §I) — no new abstractions, **zero new runtime dependencies** (SC-006 verified, see `specs/2077-kexaone-tool-wiring/sc006-evidence.txt`).
 
 ## What changed
 
 ### Backend Python
 
-- `src/kosmos/llm/_cc_reference/` — 9 new cp files (api.ts, tools.ts, prompts.ts, query.ts, toolOrchestration.ts, toolExecution.ts, messages.ts, permissions.ts, toolResultStorage.ts) + index `README.md`. All 13 cp files carry a research-use header per Constitution §I (4 retro-fitted from `fdfd3e9`).
-- `src/kosmos/llm/system_prompt_builder.py` — new module exporting `build_system_prompt_with_tools(base, tools)`. Byte-stable composition (sort_keys, ensure_ascii=False) for Spec 026 prompt-hash invariant.
-- `src/kosmos/ipc/stdio.py` — module-level `_TOOL_REGISTRY` cache + `_ensure_tool_registry()`, registry fallback when `frame.tools=[]`, `build_system_prompt_with_tools` wired into `_handle_chat_request`, `_PERMISSION_GATED_PRIMITIVES` migrated to `from kosmos.primitives import GATED_PRIMITIVES`. Pre-existing schema bug fixed: `ErrorFrame(role="llm")` → `role="backend"` (rejected by E3 role-kind allow-list).
-- `src/kosmos/primitives/__init__.py` — adds `PRIMITIVE_REGISTRY` + `GATED_PRIMITIVES` constants (kept out of `__all__` to preserve Spec 031 SC-001 5-primitive surface invariant).
+- `src/kosax/llm/_cc_reference/` — 9 new cp files (api.ts, tools.ts, prompts.ts, query.ts, toolOrchestration.ts, toolExecution.ts, messages.ts, permissions.ts, toolResultStorage.ts) + index `README.md`. All 13 cp files carry a research-use header per Constitution §I (4 retro-fitted from `fdfd3e9`).
+- `src/kosax/llm/system_prompt_builder.py` — new module exporting `build_system_prompt_with_tools(base, tools)`. Byte-stable composition (sort_keys, ensure_ascii=False) for Spec 026 prompt-hash invariant.
+- `src/kosax/ipc/stdio.py` — module-level `_TOOL_REGISTRY` cache + `_ensure_tool_registry()`, registry fallback when `frame.tools=[]`, `build_system_prompt_with_tools` wired into `_handle_chat_request`, `_PERMISSION_GATED_PRIMITIVES` migrated to `from kosax.primitives import GATED_PRIMITIVES`. Pre-existing schema bug fixed: `ErrorFrame(role="llm")` → `role="backend"` (rejected by E3 role-kind allow-list).
+- `src/kosax/primitives/__init__.py` — adds `PRIMITIVE_REGISTRY` + `GATED_PRIMITIVES` constants (kept out of `__all__` to preserve Spec 031 SC-001 5-primitive surface invariant).
 
 ### TUI TypeScript
 
 - `tui/src/query/toolSerialization.ts` — new module exporting `toolToFunctionSchema(tool)` and `getToolDefinitionsForFrame()`. `isPublishedToLLM` filter restricts emission to 5 primitives + MVP-7 auxiliary.
 - `tui/src/query/deps.ts` — `frame.tools` populated via `await getToolDefinitionsForFrame()`, `tool_call`/`tool_result` branches now yield CC `stream_event{content_block_*}` instead of transient `SystemMessage`, terminal `AssistantMessage` content array carries text + tool_use blocks, `permission_request` branch wires through `setPendingPermission()` Promise. Includes per-turn `seenToolUseIds: Set<string>` for orphan detection (FR-009).
-- `tui/src/store/pendingPermissionSlot.ts` (new) + `tui/src/store/session-store.ts` — Promise-based pending permission slot with FIFO queue + 5-minute timeout (`KOSMOS_PERMISSION_TIMEOUT_SEC`). `_resetPermissionSlotForTest` exported for test isolation.
-- `tui/src/screens/REPL.tsx` — `KosmosActivePermissionGate` component subscribes to `getActivePermission()` selector and bridges `onGrant`/`onDeny` to `resolvePermissionDecision`.
+- `tui/src/store/pendingPermissionSlot.ts` (new) + `tui/src/store/session-store.ts` — Promise-based pending permission slot with FIFO queue + 5-minute timeout (`KOSAX_PERMISSION_TIMEOUT_SEC`). `_resetPermissionSlotForTest` exported for test isolation.
+- `tui/src/screens/REPL.tsx` — `KosaxActivePermissionGate` component subscribes to `getActivePermission()` selector and bridges `onGrant`/`onDeny` to `resolvePermissionDecision`.
 - `tui/src/utils/messages.ts` — `handleMessageFromStream` reuses orphan helpers from deps.ts.
 - `tui/src/ipc/codec.ts` — re-exports `ToolDefinition`, `ToolDefinitionFunction`, `PermissionDecision` types.
 
@@ -40,7 +40,7 @@ Every change is migrated from `src/kosmos/llm/_cc_reference/` (CC 2.1.88 researc
 - `tui/tests/store/sessionStore.test.ts` (new, 9 cases) — round-trip + permission lifecycle
 - `tui/tests/integration/permission-modal.test.ts` (new, 14 cases) — grant/deny/timeout/queue
 - `tests/llm/test_system_prompt_builder.py` (new, 7 cases) — byte-stable composition
-- `tests/ipc/test_stdio.py` (new, 4 pass + 1 xfail) — fallback / system-prompt inject / max-turns / OTEL preservation. Includes module-scoped `_restore_llmclient_pydantic_validators_after_module` fixture that reloads the engine chain (`kosmos.engine.{models,engine,query}`) to discard the Pydantic validator capture left over from `LLMClient` monkeypatch.
+- `tests/ipc/test_stdio.py` (new, 4 pass + 1 xfail) — fallback / system-prompt inject / max-turns / OTEL preservation. Includes module-scoped `_restore_llmclient_pydantic_validators_after_module` fixture that reloads the engine chain (`kosax.engine.{models,engine,query}`) to discard the Pydantic validator capture left over from `LLMClient` monkeypatch.
 - `tests/integration/test_agentic_loop.py` (new, 3 scenarios) — single tool-call closure + 5-turn rate-limit budget + 3-tools-per-turn pairing
 
 ### Constitution §I research-use headers retro-fitted
@@ -52,7 +52,7 @@ Every change is migrated from `src/kosmos/llm/_cc_reference/` (CC 2.1.88 researc
 | Criterion | Status | Evidence |
 |---|---|---|
 | FR-001/002 — Tool inventory in both channels | ✓ | `tests/ipc/test_stdio.py::test_chat_request_appends_available_tools_section` |
-| FR-003 — Single-source registry | ✓ | `kosmos.primitives.PRIMITIVE_REGISTRY` is the only enumeration; `_PERMISSION_GATED_PRIMITIVES` reads from `GATED_PRIMITIVES` |
+| FR-003 — Single-source registry | ✓ | `kosax.primitives.PRIMITIVE_REGISTRY` is the only enumeration; `_PERMISSION_GATED_PRIMITIVES` reads from `GATED_PRIMITIVES` |
 | FR-004 — Fallback inventory | ✓ | `tests/ipc/test_stdio.py::test_chat_request_with_empty_tools_uses_registry_fallback` |
 | FR-005 — Refuse unknown tool | xfail (contract documented) | `tests/ipc/test_stdio.py::test_unknown_tool_in_frame_dropped_silently` xfail with citation; existing dispatch whitelist handles invocation-time refusal |
 | FR-006/007 — Transcript-native records | ✓ | `tui/tests/ipc/handlers.test.ts` (6 invariants) |
@@ -76,7 +76,7 @@ Every change is migrated from `src/kosmos/llm/_cc_reference/` (CC 2.1.88 researc
 | Suite | Pass | Fail | Notes |
 |---|---:|---:|---|
 | `bun test` (TUI) | **990** | **0** | 4 skip + 3 todo, 45 snapshots, baseline was 945 → +45 |
-| `uv run pytest tests/ --ignore=live --ignore=e2e` | **3302** | **1** | 9 skipped + 2 xfailed; the 1 fail is `test_adapter_returns_auth_context_shape[ganpyeon_injeung]` — passes in isolation, order-sensitive due to a pre-existing leak in `kosmos.primitives.verify.register_verify_adapter` (unrelated to this epic; documented as a follow-up) |
+| `uv run pytest tests/ --ignore=live --ignore=e2e` | **3302** | **1** | 9 skipped + 2 xfailed; the 1 fail is `test_adapter_returns_auth_context_shape[ganpyeon_injeung]` — passes in isolation, order-sensitive due to a pre-existing leak in `kosax.primitives.verify.register_verify_adapter` (unrelated to this epic; documented as a follow-up) |
 
 ## Known issues
 
@@ -99,10 +99,10 @@ Every change is migrated from `src/kosmos/llm/_cc_reference/` (CC 2.1.88 researc
 
 ## Files changed (summary)
 
-- 9 new CC reference cp files + README index in `src/kosmos/llm/_cc_reference/`
+- 9 new CC reference cp files + README index in `src/kosax/llm/_cc_reference/`
 - 4 retro-fitted research-use headers on existing `_cc_reference/` files
-- 1 new Python module: `src/kosmos/llm/system_prompt_builder.py`
-- 3 modified Python modules: `src/kosmos/ipc/stdio.py`, `src/kosmos/primitives/__init__.py`, plus 1 ErrorFrame role fix
+- 1 new Python module: `src/kosax/llm/system_prompt_builder.py`
+- 3 modified Python modules: `src/kosax/ipc/stdio.py`, `src/kosax/primitives/__init__.py`, plus 1 ErrorFrame role fix
 - 2 new TS modules: `tui/src/query/toolSerialization.ts`, `tui/src/store/pendingPermissionSlot.ts`
 - 4 modified TS modules: `tui/src/query/deps.ts`, `tui/src/store/session-store.ts`, `tui/src/screens/REPL.tsx`, `tui/src/ipc/codec.ts`, `tui/src/utils/messages.ts`
 - 1 stale snapshot updated: `tui/tests/onboarding/__snapshots__/Onboarding.snap.test.tsx.snap` (`vunknown` → `v0.1.0-alpha+1978`)

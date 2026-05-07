@@ -7,7 +7,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/hira_hospital_search.json",
+  "$id": "https://kosax.example/api/schemas/hira_hospital_search.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "Input schema for hira_hospital_search.\n\nQueries HIRA's hospital basis list endpoint by WGS84 coordinate and\nradius. All three parameters are required.\n\nObtain xPos / yPos from resolve_location(want='coords') before calling\nthis tool — never guess coordinate values from model memory.",
@@ -55,7 +55,7 @@
     },
     "radius": {
       "default": 2000,
-      "description": "Search radius in meters. Default 2000 m (2 km). Max 10 000 m. Citizen vocabulary mapping: '근처' / 'nearby' = 1500 m, '주변' = 3000 m, '인근' = 2000 m, '한 5km 안' = 5000 m. Do NOT inflate radius to grow result count — KOSMOS sorts results client-side by distance ascending, so a tighter radius is more relevant. Increasing radius only adds farther matches.",
+      "description": "Search radius in meters. Default 2000 m (2 km). Max 10 000 m. Citizen vocabulary mapping: '근처' / 'nearby' = 1500 m, '주변' = 3000 m, '인근' = 2000 m, '한 5km 안' = 5000 m. Do NOT inflate radius to grow result count — KOSAX sorts results client-side by distance ascending, so a tighter radius is more relevant. Increasing radius only adds farther matches.",
       "maximum": 10000,
       "minimum": 1,
       "title": "Radius",

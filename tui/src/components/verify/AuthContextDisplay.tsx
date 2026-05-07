@@ -3,7 +3,7 @@
 //
 // Renders an AuthContext-shaped object returned by the verify primitive in a
 // citizen-readable form. Mirrors the field set of the Python
-// _AuthContextBase + per-family variants from src/kosmos/primitives/verify.py.
+// _AuthContextBase + per-family variants from src/kosax/primitives/verify.py.
 //
 // Design-system: uses existing theme tokens (text, inactive, subtle, success)
 // from tui/src/theme/tokens.ts. No new color constants introduced.

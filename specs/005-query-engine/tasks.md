@@ -17,9 +17,9 @@
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-**Purpose**: Create the `kosmos.engine` package structure and test scaffolding
+**Purpose**: Create the `kosax.engine` package structure and test scaffolding
 
-- [ ] T001 Create src/kosmos/engine/ package directory and tests/engine/ test directory with __init__.py files
+- [ ] T001 Create src/kosax/engine/ package directory and tests/engine/ test directory with __init__.py files
 
 ---
 
@@ -27,11 +27,11 @@
 
 **Purpose**: Core data models, enums, and config that ALL user stories depend on. No user story work can begin until this phase is complete.
 
-- [ ] T002 [P] Implement QueryEngineConfig with validators in src/kosmos/engine/config.py (fields: max_iterations, max_turns, context_window, preprocessing_threshold, tool_result_budget, snip_turn_age, microcompact_turn_age — all positive-int validated, threshold in (0.0, 1.0])
-- [ ] T003 [P] Implement StopReason enum and QueryEvent discriminated union with model validators in src/kosmos/engine/events.py (8 stop reasons, 5 event types with type-specific field enforcement)
-- [ ] T004 [P] Implement QueryEngineError hierarchy in src/kosmos/engine/errors.py (base KosmosEngineError, BudgetExhaustedError, MaxIterationsError, QueryCancelledError)
-- [ ] T005 [P] Implement QueryState, QueryContext, and SessionBudget models in src/kosmos/engine/models.py (QueryState mutable with messages/turn_count/usage/resolved_tasks; QueryContext frozen Pydantic with arbitrary_types_allowed; SessionBudget frozen read-only view)
-- [ ] T006 [P] Implement estimate_tokens() heuristic in src/kosmos/engine/tokens.py (Korean U+AC00-U+D7A3 at 2 chars/token, other at 4 chars/token)
+- [ ] T002 [P] Implement QueryEngineConfig with validators in src/kosax/engine/config.py (fields: max_iterations, max_turns, context_window, preprocessing_threshold, tool_result_budget, snip_turn_age, microcompact_turn_age — all positive-int validated, threshold in (0.0, 1.0])
+- [ ] T003 [P] Implement StopReason enum and QueryEvent discriminated union with model validators in src/kosax/engine/events.py (8 stop reasons, 5 event types with type-specific field enforcement)
+- [ ] T004 [P] Implement QueryEngineError hierarchy in src/kosax/engine/errors.py (base KosaxEngineError, BudgetExhaustedError, MaxIterationsError, QueryCancelledError)
+- [ ] T005 [P] Implement QueryState, QueryContext, and SessionBudget models in src/kosax/engine/models.py (QueryState mutable with messages/turn_count/usage/resolved_tasks; QueryContext frozen Pydantic with arbitrary_types_allowed; SessionBudget frozen read-only view)
+- [ ] T006 [P] Implement estimate_tokens() heuristic in src/kosax/engine/tokens.py (Korean U+AC00-U+D7A3 at 2 chars/token, other at 4 chars/token)
 - [ ] T007 Create shared test fixtures in tests/engine/conftest.py (mock LLM client with streaming, mock tool registry with 4 tools, mock tool executor with adapters, sample QueryEngineConfig, sample ChatMessage histories)
 - [ ] T008 [P] Unit tests for QueryEngineConfig validation in tests/engine/test_config.py (positive-int enforcement, threshold range, defaults, frozen immutability)
 - [ ] T009 [P] Unit tests for StopReason and QueryEvent in tests/engine/test_events.py (all 8 stop reasons, all 5 event types, type-specific field validators, discriminated union serialization)
@@ -49,9 +49,9 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Implement query() async generator core loop in src/kosmos/engine/query.py (preprocess -> immutable snapshot -> LLM stream -> collect response -> check tool_calls -> dispatch tools sequentially -> append results -> yield events -> decide continue/stop; max_iterations guard)
-- [ ] T012 [US1] Implement QueryEngine class with run() and properties in src/kosmos/engine/engine.py (constructor with LLM client/registry/executor/config/system_prompt; run() creates QueryContext, appends user message, delegates to query(), increments turn_count; budget and message_count properties; basic observability logging per FR-011: log token usage, cache hit ratio, per-tool call counts via stdlib logging)
-- [ ] T013 [US1] Create module exports in src/kosmos/engine/__init__.py (export QueryEngine, QueryEngineConfig, QueryEvent, StopReason, QueryState, QueryContext, SessionBudget)
+- [ ] T011 [US1] Implement query() async generator core loop in src/kosax/engine/query.py (preprocess -> immutable snapshot -> LLM stream -> collect response -> check tool_calls -> dispatch tools sequentially -> append results -> yield events -> decide continue/stop; max_iterations guard)
+- [ ] T012 [US1] Implement QueryEngine class with run() and properties in src/kosax/engine/engine.py (constructor with LLM client/registry/executor/config/system_prompt; run() creates QueryContext, appends user message, delegates to query(), increments turn_count; budget and message_count properties; basic observability logging per FR-011: log token usage, cache hit ratio, per-tool call counts via stdlib logging)
+- [ ] T013 [US1] Create module exports in src/kosax/engine/__init__.py (export QueryEngine, QueryEngineConfig, QueryEvent, StopReason, QueryState, QueryContext, SessionBudget)
 - [ ] T014 [P] [US1] Unit tests for query() in tests/engine/test_query.py (single tool call loop, no-tool direct answer, two sequential tool calls, unknown tool error injection, max_iterations termination, usage_update event emission, cancellation via async generator break cancels in-flight work per FR-010)
 - [ ] T015 [P] [US1] Integration tests for single-turn scenarios in tests/engine/test_engine.py (US1 acceptance scenarios 1-3: one tool call -> task_complete, two sequential tool calls -> task_complete, no tool call -> end_turn; event ordering guarantee; no-raise contract verification)
 
@@ -67,8 +67,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Implement PreprocessingPipeline with 4 stage functions in src/kosmos/engine/preprocessing.py (tool_result_budget: truncate oversized results; snip: remove stale tool results older than N turns; microcompact: strip whitespace and compact JSON for old messages; collapse: merge consecutive same-role messages; pipeline.run() applies stages sequentially without mutating original list)
-- [ ] T017 [US2] Integrate preprocessing pipeline into query() loop in src/kosmos/engine/query.py (call pipeline.run() before creating immutable snapshot each iteration; pass config thresholds)
+- [ ] T016 [US2] Implement PreprocessingPipeline with 4 stage functions in src/kosax/engine/preprocessing.py (tool_result_budget: truncate oversized results; snip: remove stale tool results older than N turns; microcompact: strip whitespace and compact JSON for old messages; collapse: merge consecutive same-role messages; pipeline.run() applies stages sequentially without mutating original list)
+- [ ] T017 [US2] Integrate preprocessing pipeline into query() loop in src/kosax/engine/query.py (call pipeline.run() before creating immutable snapshot each iteration; pass config thresholds)
 - [ ] T018 [P] [US2] Unit tests for each preprocessing stage in tests/engine/test_preprocessing.py (tool_result_budget truncation with token estimation; snip removes old synthesized results; microcompact strips whitespace/JSON; collapse merges consecutive same-role; pipeline.run() sequential application; original list not mutated)
 - [ ] T019 [US2] Multi-turn integration tests in tests/engine/test_engine.py (US2 acceptance scenarios: 3-turn history accumulation, immutable snapshot verification, preprocessing triggers near context limit, turn_count tracking across turns, 20-turn coherence stress test per SC-002, 50-turn preprocessing window test per SC-005)
 
@@ -84,7 +84,7 @@
 
 ### Implementation for User Story 3
 
-- [ ] T020 [US3] Add turn budget check and token budget check at the start of QueryEngine.run() in src/kosmos/engine/engine.py (check turn_count < max_turns before processing; check usage.can_afford() before LLM call in query(); yield stop with api_budget_exceeded and remaining budget info as stop_message; integrate SessionBudget into usage_update events)
+- [ ] T020 [US3] Add turn budget check and token budget check at the start of QueryEngine.run() in src/kosax/engine/engine.py (check turn_count < max_turns before processing; check usage.can_afford() before LLM call in query(); yield stop with api_budget_exceeded and remaining budget info as stop_message; integrate SessionBudget into usage_update events)
 - [ ] T021 [US3] Budget enforcement tests in tests/engine/test_engine_budget.py (US3 acceptance scenarios: turn limit reached, token budget exceeded via UsageTracker, graceful stop_message content, SessionBudget property accuracy, error_unrecoverable with guidance message for hard failures)
 
 **Checkpoint**: Budget enforcement works across all dimensions. All US1 + US2 + US3 tests pass.
@@ -99,7 +99,7 @@
 
 ### Implementation for User Story 4
 
-- [ ] T022 [US4] Implement dispatch_tool_calls() with partition-sort algorithm in src/kosmos/engine/query.py (lookup is_concurrency_safe per tool; group consecutive safe tools; execute safe groups via asyncio.TaskGroup; serialize non-safe tools; preserve result ordering; replace sequential dispatch in query() loop)
+- [ ] T022 [US4] Implement dispatch_tool_calls() with partition-sort algorithm in src/kosax/engine/query.py (lookup is_concurrency_safe per tool; group consecutive safe tools; execute safe groups via asyncio.TaskGroup; serialize non-safe tools; preserve result ordering; replace sequential dispatch in query() loop)
 - [ ] T023 [US4] Concurrent dispatch tests in tests/engine/test_engine_concurrent.py (US4 acceptance scenarios: two concurrent-safe tools execute in parallel with timing assertion; one fails + one succeeds both results injected; non-safe tool forces sequential; mixed safe/non-safe partition-sort correctness; result ordering preserved)
 
 **Checkpoint**: Concurrent tool dispatch operational. All US1-US4 tests pass. SC-004 latency target met.
@@ -110,10 +110,10 @@
 
 **Purpose**: Final quality pass across all user stories
 
-- [ ] T024 [P] Add module-level docstrings and SPDX headers to all src/kosmos/engine/*.py files
-- [ ] T025 Run mypy strict type checking across src/kosmos/engine/ and fix any type errors
-- [ ] T026 Run ruff linting and formatting across src/kosmos/engine/ and tests/engine/
-- [ ] T027 Run full test suite with coverage: `uv run pytest tests/engine/ --cov=kosmos.engine --cov-fail-under=80` and verify all quickstart.md scenarios pass
+- [ ] T024 [P] Add module-level docstrings and SPDX headers to all src/kosax/engine/*.py files
+- [ ] T025 Run mypy strict type checking across src/kosax/engine/ and fix any type errors
+- [ ] T026 Run ruff linting and formatting across src/kosax/engine/ and tests/engine/
+- [ ] T027 Run full test suite with coverage: `uv run pytest tests/engine/ --cov=kosax.engine --cov-fail-under=80` and verify all quickstart.md scenarios pass
 
 ---
 
@@ -157,11 +157,11 @@
 
 ```bash
 # Launch all model files in parallel (5 different source files):
-Task: "Implement QueryEngineConfig in src/kosmos/engine/config.py"        # T002
-Task: "Implement StopReason + QueryEvent in src/kosmos/engine/events.py"  # T003
-Task: "Implement error hierarchy in src/kosmos/engine/errors.py"          # T004
+Task: "Implement QueryEngineConfig in src/kosax/engine/config.py"        # T002
+Task: "Implement StopReason + QueryEvent in src/kosax/engine/events.py"  # T003
+Task: "Implement error hierarchy in src/kosax/engine/errors.py"          # T004
 Task: "Implement QueryState/QueryContext/SessionBudget in models.py"      # T005
-Task: "Implement estimate_tokens() in src/kosmos/engine/tokens.py"        # T006
+Task: "Implement estimate_tokens() in src/kosax/engine/tokens.py"        # T006
 
 # Then fixtures (depends on models):
 Task: "Create shared test fixtures in tests/engine/conftest.py"           # T007

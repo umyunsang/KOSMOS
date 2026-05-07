@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS hotfix (2026-05-04, KMA base_time hallucination 차단):
+// KOSAX hotfix (2026-05-04, KMA base_time hallucination 차단):
 // `getKstTimeParts()` returns the current KST date + HH:MM + HHMM tuple
 // that `getUserContext()` emits as the `currentKstTime` field. The LLM
 // uses this to pick KMA `base_time` (KST publication slots: 0200/0500/
@@ -9,13 +9,13 @@
 //   1. Output structure: { iso: 'YYYY-MM-DD', hm: 'HH:MM', hhmm: 'HHMM' }
 //      with HH:MM and HHMM internally consistent.
 //   2. Timezone correctness: Asia/Seoul wall-clock, NOT UTC. We probe with
-//      KOSMOS_OVERRIDE_KST_TIME so the test is independent of the host's
+//      KOSAX_OVERRIDE_KST_TIME so the test is independent of the host's
 //      wall-clock and timezone.
 
 import { afterEach, describe, expect, it } from 'bun:test'
 import { getKstTimeParts } from '../../src/constants/common.js'
 
-const ENV_KEY = 'KOSMOS_OVERRIDE_KST_TIME'
+const ENV_KEY = 'KOSAX_OVERRIDE_KST_TIME'
 
 afterEach(() => {
   delete process.env[ENV_KEY]
@@ -34,14 +34,14 @@ describe('getKstTimeParts', () => {
     expect(parts.hm.replace(':', '')).toBe(parts.hhmm)
   })
 
-  it('honours KOSMOS_OVERRIDE_KST_TIME with HH:MM input', () => {
+  it('honours KOSAX_OVERRIDE_KST_TIME with HH:MM input', () => {
     process.env[ENV_KEY] = '07:35'
     const parts = getKstTimeParts()
     expect(parts.hm).toBe('07:35')
     expect(parts.hhmm).toBe('0735')
   })
 
-  it('honours KOSMOS_OVERRIDE_KST_TIME with full ISO-8601 input', () => {
+  it('honours KOSAX_OVERRIDE_KST_TIME with full ISO-8601 input', () => {
     process.env[ENV_KEY] = '2026-05-04T16:42:00+09:00'
     const parts = getKstTimeParts()
     expect(parts.iso).toBe('2026-05-04')

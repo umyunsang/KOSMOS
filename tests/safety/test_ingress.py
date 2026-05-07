@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
-from kosmos.safety._ingress import apply_ingress_safety
-from kosmos.safety._settings import SafetySettings
+from kosax.safety._ingress import apply_ingress_safety
+from kosax.safety._settings import SafetySettings
 
 
 def test_ingress_preserves_koroad_coordinate_strings() -> None:

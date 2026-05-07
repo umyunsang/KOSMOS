@@ -1,7 +1,7 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`WelcomeV2 renders the Korean welcome header + kosmosCore cluster (shimmer on) 1`] = `
-"Welcome to KOSMOS v0.1.0
+exports[`WelcomeV2 renders the Korean welcome header + kosaxCore cluster (shimmer on) 1`] = `
+"Welcome to KOSAX v0.1.0
 …………………………………………………………………………………………………………………………………………………………
 *                                       █████▓▓░
 *         ███▓░     ░░               ░░░░░░
@@ -15,7 +15,7 @@ exports[`WelcomeV2 renders the Korean welcome header + kosmosCore cluster (shimm
 `;
 
 exports[`WelcomeV2 renders identically under reduced-motion 1`] = `
-"Welcome to KOSMOS v0.1.0
+"Welcome to KOSAX v0.1.0
 …………………………………………………………………………………………………………………………………………………………
 *                                       █████▓▓░
 *         ███▓░     ░░               ░░░░░░

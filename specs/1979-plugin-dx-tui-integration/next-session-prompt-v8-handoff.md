@@ -38,9 +38,9 @@
 ### Epic ε #2296 — AX-mock-adapters (Codex P1 #2395 piggyback 권장)
 
 ```bash
-cd /Users/um-yunsang/KOSMOS && git pull --ff-only
-git worktree add ../KOSMOS-w-2296 -b 2296-ax-mock-adapters
-cd ../KOSMOS-w-2296
+cd /Users/um-yunsang/KOSAX && git pull --ff-only
+git worktree add ../KOSAX-w-2296 -b 2296-ax-mock-adapters
+cd ../KOSAX-w-2296
 # /speckit-specify Epic ε — 9 mock adapter (5 verify + 3 submit + 1 subscribe)
 # + DelegationToken/Context 스키마 + Codex P1 #2395 (adapter manifest IPC sync)
 ```
@@ -50,10 +50,10 @@ cd ../KOSMOS-w-2296
 ### Epic ζ #2297 — E2E smoke + 정책 매핑 doc
 
 ```bash
-cd /Users/um-yunsang/KOSMOS && git pull --ff-only
-git worktree add ../KOSMOS-w-2297 -b 2297-e2e-smoke
-cd ../KOSMOS-w-2297
-# /speckit-specify Epic ζ — End-to-end 시나리오 + docs/scenarios OPAQUE + KOSMOS v0.1-beta tag
+cd /Users/um-yunsang/KOSAX && git pull --ff-only
+git worktree add ../KOSAX-w-2297 -b 2297-e2e-smoke
+cd ../KOSAX-w-2297
+# /speckit-specify Epic ζ — End-to-end 시나리오 + docs/scenarios OPAQUE + KOSAX v0.1-beta tag
 ```
 
 ### Epic η #2298 — 본문 미정

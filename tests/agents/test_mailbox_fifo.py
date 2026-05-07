@@ -16,14 +16,14 @@ from uuid import uuid4
 
 import pytest
 
-from kosmos.agents.mailbox.file_mailbox import FileMailbox
-from kosmos.agents.mailbox.messages import (
+from kosax.agents.mailbox.file_mailbox import FileMailbox
+from kosax.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     ResultPayload,
     TaskPayload,
 )
-from kosmos.tools.models import LookupMeta, LookupRecord
+from kosax.tools.models import LookupMeta, LookupRecord
 
 # ---------------------------------------------------------------------------
 # Helpers

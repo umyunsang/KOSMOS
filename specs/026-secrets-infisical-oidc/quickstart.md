@@ -1,6 +1,6 @@
 # Quickstart — New Contributor Onboarding (post-#468)
 
-**Target audience**: a developer who just cloned `umyunsang/KOSMOS` for the first time.
+**Target audience**: a developer who just cloned `umyunsang/KOSAX` for the first time.
 **Goal**: reach green `uv run pytest` inside 10 minutes (SC-007).
 **Reference**: Epic #468 · `docs/configuration.md` · `spec.md §User Story 2`.
 
@@ -20,8 +20,8 @@ uv --version            # expect 0.4+
 ## 1. Clone + install
 
 ```bash
-git clone git@github.com:umyunsang/KOSMOS.git
-cd KOSMOS
+git clone git@github.com:umyunsang/KOSAX.git
+cd KOSAX
 uv sync
 ```
 
@@ -39,26 +39,26 @@ Open `.env` and replace each `<redacted>` with your credential. **Mandatory** in
 
 | Variable | How to obtain |
 |----------|---------------|
-| `KOSMOS_FRIENDLI_TOKEN` | [FriendliAI Suite](https://suite.friendli.ai/) → Personal Settings → Tokens |
-| `KOSMOS_KAKAO_API_KEY` | [Kakao Developers](https://developers.kakao.com) → Apps → REST API key |
-| `KOSMOS_DATA_GO_KR_API_KEY` | [data.go.kr](https://www.data.go.kr/) → 마이페이지 → 인증키 |
+| `KOSAX_FRIENDLI_TOKEN` | [FriendliAI Suite](https://suite.friendli.ai/) → Personal Settings → Tokens |
+| `KOSAX_KAKAO_API_KEY` | [Kakao Developers](https://developers.kakao.com) → Apps → REST API key |
+| `KOSAX_DATA_GO_KR_API_KEY` | [data.go.kr](https://www.data.go.kr/) → 마이페이지 → 인증키 |
 
 **Optional** (only if you plan to exercise those surfaces):
 
 | Variable | Used by |
 |----------|---------|
-| `KOSMOS_JUSO_CONFM_KEY` | 행정안전부 도로명주소 (JUSO tool) |
-| `KOSMOS_SGIS_KEY` / `KOSMOS_SGIS_SECRET` | SGIS 통계지리정보 |
+| `KOSAX_JUSO_CONFM_KEY` | 행정안전부 도로명주소 (JUSO tool) |
+| `KOSAX_SGIS_KEY` / `KOSAX_SGIS_SECRET` | SGIS 통계지리정보 |
 | `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` | Langfuse trace export (#501) |
 
-**Complete registry**: `docs/configuration.md` (the canonical `KOSMOS_*` reference table).
+**Complete registry**: `docs/configuration.md` (the canonical `KOSAX_*` reference table).
 
 ## 4. Verify startup guard
 
 Run the CLI once to confirm the guard is satisfied:
 
 ```bash
-uv run kosmos --help
+uv run kosax --help
 ```
 
 **Expected (all required vars set)**: the CLI `--help` text prints immediately (<100 ms guard budget).
@@ -66,7 +66,7 @@ uv run kosmos --help
 **If a required var is missing**, you'll see exactly one line on stderr:
 
 ```
-KOSMOS config error [env=dev]: missing required variables: KOSMOS_KAKAO_API_KEY. See https://github.com/umyunsang/KOSMOS/blob/main/docs/configuration.md
+KOSAX config error [env=dev]: missing required variables: KOSAX_KAKAO_API_KEY. See https://github.com/umyunsang/KOSAX/blob/main/docs/configuration.md
 ```
 
 → edit `.env`, re-run. That single line is the complete remediation path.
@@ -90,10 +90,10 @@ Both should exit `0` / print `"clean"`. CI runs them as pre-test gates; running 
 
 ## 7. Environment activation flag (optional)
 
-By default `KOSMOS_ENV=dev`. Set to `prod` only when running against production APIs with full credentials:
+By default `KOSAX_ENV=dev`. Set to `prod` only when running against production APIs with full credentials:
 
 ```bash
-KOSMOS_ENV=prod uv run kosmos
+KOSAX_ENV=prod uv run kosax
 ```
 
 In `prod` mode the guard demands *all* conditional-required variables (e.g., `LANGFUSE_*`) — missing any of them fails fast with the same single-line error.
@@ -115,11 +115,11 @@ No data-store changes occurred — configuration is code + env vars only. SC-008
 
 | Symptom | Diagnosis | Fix |
 |---------|-----------|-----|
-| `KOSMOS config error [env=dev]: missing required variables: ...` | `.env` missing or incomplete | edit `.env`; re-run |
+| `KOSAX config error [env=dev]: missing required variables: ...` | `.env` missing or incomplete | edit `.env`; re-run |
 | `pytest` fails with "live API quota exceeded" | you ran `-m live` without credits | drop `-m live` (default skip) |
 | `audit-secrets.sh: FORBIDDEN pattern` | you added a `${{ secrets.X_TOKEN }}` to `ci.yml` | move to Infisical + OIDC per `contracts/ci-workflow.md` |
-| `audit-env-registry.py: in_code_not_in_registry` | you added a `KOSMOS_*` var without a registry row | add row to `docs/configuration.md` |
-| Guard exits 78 but all vars look set | values are whitespace-only; the guard treats them as missing | re-check `.env` for `KOSMOS_X= ` (trailing space) |
+| `audit-env-registry.py: in_code_not_in_registry` | you added a `KOSAX_*` var without a registry row | add row to `docs/configuration.md` |
+| Guard exits 78 but all vars look set | values are whitespace-only; the guard treats them as missing | re-check `.env` for `KOSAX_X= ` (trailing space) |
 
 ## Where to ask
 

@@ -22,7 +22,7 @@ The operator must activate the Kakao Local API before running this suite:
 
 Platform registration is **not** required for server-side REST calls — only
 the one-time service activation listed above.  The REST API key is supplied
-via ``KOSMOS_KAKAO_API_KEY``.
+via ``KOSAX_KAKAO_API_KEY``.
 
 Running these tests
 -------------------
@@ -30,7 +30,7 @@ Tests are opt-in and never run in CI::
 
     uv run pytest tests/live/test_live_geocoding.py -m live -v
 
-``KOSMOS_KAKAO_API_KEY`` must be set; the suite hard-fails immediately if the
+``KOSAX_KAKAO_API_KEY`` must be set; the suite hard-fails immediately if the
 variable is absent (FR-004 / Story 1 AS-8).
 """
 
@@ -42,7 +42,7 @@ from typing import Any
 
 import pytest
 
-from kosmos.tools.geocoding.kakao_client import search_address
+from kosax.tools.geocoding.kakao_client import search_address
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ async def test_live_kakao_search_address_happy(
     - ``x`` (longitude) parses to a float in the Korea bounding box [124, 132].
     - ``y`` (latitude) parses to a float in the Korea bounding box [33, 39].
     """
-    monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", kakao_api_key)
+    monkeypatch.setenv("KOSAX_KAKAO_API_KEY", kakao_api_key)
 
     result = await search_address("서울특별시 강남구 테헤란로 152")
     await kakao_rate_limit_delay()
@@ -116,7 +116,7 @@ async def test_live_kakao_search_address_nonsense(
     function returns a ``KakaoSearchResult`` with an empty ``documents`` list
     rather than raising any exception.
     """
-    monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", kakao_api_key)
+    monkeypatch.setenv("KOSAX_KAKAO_API_KEY", kakao_api_key)
 
     result = await search_address("xyzzy_qwerty_무의미한쿼리_12345_!@#")
     await kakao_rate_limit_delay()

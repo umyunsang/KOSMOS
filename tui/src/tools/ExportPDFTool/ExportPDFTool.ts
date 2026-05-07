@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS Epic #1634 · T026 · P3 Tool System Wiring
+// KOSAX Epic #1634 · T026 · P3 Tool System Wiring
 //
 // ExportPDFTool — exports citizen-facing markdown to the Memdir USER tier.
 //
 // Input/Output contract (from specs/1634-tool-system-wiring/contracts/
 //   primitive-envelope.md § 6):
 //   Input : { markdown: string, title: string, include_attachments?: boolean }
-//   Output: { pdf_path: string }   ← absolute path under ~/.kosmos/memdir/user/exports/
+//   Output: { pdf_path: string }   ← absolute path under ~/.kosax/memdir/user/exports/
 //
 // STUB (P3): writes an HTML file, not a binary PDF.  The `pdf_path` field
 // deliberately ends in `.html` so the LLM can inform the citizen accurately.
@@ -65,7 +65,7 @@ const outputSchema = lazySchema(() =>
     pdf_path: z
       .string()
       .describe(
-        'Absolute path of the exported file under ~/.kosmos/memdir/user/exports/. ' +
+        'Absolute path of the exported file under ~/.kosax/memdir/user/exports/. ' +
           'In P3 this is an HTML file; the field name is kept for API stability.',
       ),
   }),
@@ -82,11 +82,11 @@ export type Output = z.infer<OutputSchema>
  * Mirrors the pattern used in tui/src/memdir/io.ts for the USER tier.
  *
  * Priority:
- *   1. KOSMOS_MEMDIR_ROOT env var (testing / integration override)
- *   2. DEFAULT_MEMDIR_ROOT (~/.kosmos/memdir) from memdir/io.ts
+ *   1. KOSAX_MEMDIR_ROOT env var (testing / integration override)
+ *   2. DEFAULT_MEMDIR_ROOT (~/.kosax/memdir) from memdir/io.ts
  */
 export function exportsDir(
-  root: string = process.env.KOSMOS_MEMDIR_ROOT ?? DEFAULT_MEMDIR_ROOT,
+  root: string = process.env.KOSAX_MEMDIR_ROOT ?? DEFAULT_MEMDIR_ROOT,
 ): string {
   return join(root, 'user', 'exports')
 }

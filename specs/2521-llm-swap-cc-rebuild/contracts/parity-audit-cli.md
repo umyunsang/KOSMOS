@@ -34,25 +34,25 @@ No new runtime dependencies (spec FR-012).
 
 ### Per-file outcomes
 
-| KOSMOS file | Procedure | Byte-copy SHA match | Swap commits | Unjustified hunks | Missing citations |
+| KOSAX file | Procedure | Byte-copy SHA match | Swap commits | Unjustified hunks | Missing citations |
 |---|---|---|---|---|---|
 | tui/src/services/api/claude.ts | A | ✅ | 12 | 0 | n/a |
 | tui/src/ipc/llmClient.ts | B | n/a | 4 | 0 | 0 |
-| src/kosmos/llm/client.py | B | n/a | 8 | 0 | 0 |
-| src/kosmos/ipc/stdio.py | B | n/a | 6 | 0 | 0 |
+| src/kosax/llm/client.py | B | n/a | 8 | 0 | 0 |
+| src/kosax/ipc/stdio.py | B | n/a | 6 | 0 | 0 |
 
 ### Stream-event channel coverage (CC services/api/claude.ts:1980-2295)
 
-| CC event | KOSMOS handler | Status |
+| CC event | KOSAX handler | Status |
 |---|---|---|
 | message_start (1980) | claude.ts:1980 | ✅ byte-copied |
 | content_block_start text (2019) | claude.ts:2019 | ✅ byte-copied |
 | content_block_start thinking (2030) | claude.ts:2030 | ✅ byte-copied |
 | content_block_start tool_use (1997) | claude.ts:1997 | ✅ byte-copied |
-| content_block_start server_tool_use (2003) | (skipped) | ⏭ KOSMOS-N/A: server-side tools not used |
+| content_block_start server_tool_use (2003) | (skipped) | ⏭ KOSAX-N/A: server-side tools not used |
 | content_block_delta text_delta (2113) | claude.ts:2113 | ✅ byte-copied |
 | content_block_delta thinking_delta (2148) | claude.ts:2148 | ✅ byte-copied |
-| content_block_delta signature_delta (2127) | (skipped) | ⏭ KOSMOS-N/A: K-EXAONE does not emit signatures |
+| content_block_delta signature_delta (2127) | (skipped) | ⏭ KOSAX-N/A: K-EXAONE does not emit signatures |
 | ...
 
 ### Summary
@@ -71,7 +71,7 @@ No new runtime dependencies (spec FR-012).
   "branch": "2521-llm-swap-cc-rebuild",
   "per_file": [
     {
-      "kosmos_path": "tui/src/services/api/claude.ts",
+      "kosax_path": "tui/src/services/api/claude.ts",
       "procedure": "A",
       "byte_copy_sha_match": true,
       "swap_commit_count": 12,
@@ -86,8 +86,8 @@ No new runtime dependencies (spec FR-012).
       "cc_event_path": "services/api/claude.ts:2148:thinking_delta",
       "cc_event_kind": "content_block_delta",
       "cc_event_subtype": "thinking_delta",
-      "kosmos_handler_path": "tui/src/services/api/claude.ts:2148",
-      "kosmos_skip_reason": null,
+      "kosax_handler_path": "tui/src/services/api/claude.ts:2148",
+      "kosax_skip_reason": null,
       "byte_copied": true
     }
   ],
@@ -108,12 +108,12 @@ No new runtime dependencies (spec FR-012).
 
 1. Resolve repo root (`git rev-parse --show-toplevel`); cd there.
 2. Resolve current branch.
-3. For each KOSMOSTargetFile (parsed from `parity-matrix.md`):
-   a. If `procedure=A`: compute `sha256sum <kosmos_path>` AT byte-copy commit (parsed from git log subject `byte-copy(2521): import CC <cc_source_path>`); compare with `sha256sum <cc_source_path>`. Mismatch → mark `byte_copy_sha_match=false`.
+3. For each KOSAXTargetFile (parsed from `parity-matrix.md`):
+   a. If `procedure=A`: compute `sha256sum <kosax_path>` AT byte-copy commit (parsed from git log subject `byte-copy(2521): import CC <cc_source_path>`); compare with `sha256sum <cc_source_path>`. Mismatch → mark `byte_copy_sha_match=false`.
    b. For each commit between byte-copy and HEAD touching this file: parse subject for `swap/<category>:`. Reject category-less commits. Tally `swap_commit_count`.
-   c. Compute `git diff <byte_copy_sha>..HEAD -- <kosmos_path>`; for each hunk, find which SwapCommit owns it. Hunks owned by NO commit (e.g., merge commits without category) → add to `unjustified_hunks`.
+   c. Compute `git diff <byte_copy_sha>..HEAD -- <kosax_path>`; for each hunk, find which SwapCommit owns it. Hunks owned by NO commit (e.g., merge commits without category) → add to `unjustified_hunks`.
    d. If `procedure=B`: grep file for `CC reference:\s+\S+:\d+` pattern; any function/handler in file lacking the pattern → add to `missing_cc_citations`.
-4. Enumerate StreamEventChannel from `.references/claude-code-sourcemap/restored-src/src/services/api/claude.ts:1980-2295` using `awk` on `case '...'` blocks. For each channel, find KOSMOS handler (grep for the same `case '...'` token in target files) OR a `// SKIPPED — KOSMOS-N/A:` comment.
+4. Enumerate StreamEventChannel from `.references/claude-code-sourcemap/restored-src/src/services/api/claude.ts:1980-2295` using `awk` on `case '...'` blocks. For each channel, find KOSAX handler (grep for the same `case '...'` token in target files) OR a `// SKIPPED — KOSAX-N/A:` comment.
 5. Aggregate into ParityAuditOutcome; emit per `--json` flag.
 
 ## CI integration

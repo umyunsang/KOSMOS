@@ -19,13 +19,13 @@ from uuid import uuid4
 
 import pytest
 
-from kosmos.agents.context import AgentContext
-from kosmos.agents.errors import AgentConfigurationError
-from kosmos.agents.mailbox.messages import AgentMessage, MessageType
-from kosmos.agents.worker import Worker
-from kosmos.llm.client import LLMClient
-from kosmos.llm.models import StreamEvent, TokenUsage
-from kosmos.tools.registry import ToolRegistry
+from kosax.agents.context import AgentContext
+from kosax.agents.errors import AgentConfigurationError
+from kosax.agents.mailbox.messages import AgentMessage, MessageType
+from kosax.agents.worker import Worker
+from kosax.llm.client import LLMClient
+from kosax.llm.models import StreamEvent, TokenUsage
+from kosax.tools.registry import ToolRegistry
 from tests.agents.conftest import StubLLMClient, build_test_registry
 
 # ---------------------------------------------------------------------------
@@ -157,7 +157,7 @@ async def test_worker_posts_result_after_text_response() -> None:
 @pytest.mark.asyncio
 async def test_worker_result_contains_lookup_output() -> None:
     """FR-008: The result payload must contain a LookupRecord or similar."""
-    from kosmos.agents.mailbox.messages import ResultPayload
+    from kosax.agents.mailbox.messages import ResultPayload
 
     llm = StubLLMClient(responses=["Transport info found."])
     mailbox = _InMemoryMailbox()
@@ -191,7 +191,7 @@ async def test_worker_posts_error_on_exception() -> None:
     assert len(errors) == 1, f"Expected 1 error message, got {len(errors)}"
     assert len(results) == 0
 
-    from kosmos.agents.mailbox.messages import ErrorPayload
+    from kosax.agents.mailbox.messages import ErrorPayload
 
     payload = errors[0].payload
     assert isinstance(payload, ErrorPayload)
@@ -237,7 +237,7 @@ async def test_worker_tool_restriction_empty_registry() -> None:
 @pytest.mark.asyncio
 async def test_worker_correlation_id_from_task_message() -> None:
     """Worker uses task message's ID as correlation_id when provided."""
-    from kosmos.agents.mailbox.messages import TaskPayload
+    from kosax.agents.mailbox.messages import TaskPayload
 
     llm = StubLLMClient(responses=["Result."])
     mailbox = _InMemoryMailbox()

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosmos.spec/030-scenario1-route-safety-rebase/eval-output.schema.json",
-  "title": "KOSMOS Scenario 1 RunReport",
-  "description": "JSON schema for the RunReport artifact emitted by the Scenario 1 (route safety) end-to-end test suite when KOSMOS_E2E_DUMP_DIR is set. Mirrors the Pydantic v2 RunReport model defined in specs/030-scenario1-route-safety-rebase/data-model.md §2.5.",
+  "$id": "https://kosax.spec/030-scenario1-route-safety-rebase/eval-output.schema.json",
+  "title": "KOSAX Scenario 1 RunReport",
+  "description": "JSON schema for the RunReport artifact emitted by the Scenario 1 (route safety) end-to-end test suite when KOSAX_E2E_DUMP_DIR is set. Mirrors the Pydantic v2 RunReport model defined in specs/030-scenario1-route-safety-rebase/data-model.md §2.5.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -131,11 +131,11 @@
         "outcome": {
           "type": "string",
           "enum": ["ok", "error"],
-          "description": "Value of kosmos.tool.outcome (FR-017). Absence is an assertion failure."
+          "description": "Value of kosax.tool.outcome (FR-017). Absence is an assertion failure."
         },
         "adapter_id": {
           "type": ["string", "null"],
-          "description": "Value of kosmos.tool.adapter (FR-018). Present iff the span corresponds to lookup(mode='fetch')."
+          "description": "Value of kosax.tool.adapter (FR-018). Present iff the span corresponds to lookup(mode='fetch')."
         },
         "error_type": {
           "type": ["string", "null"]

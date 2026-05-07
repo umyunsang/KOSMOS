@@ -75,7 +75,7 @@ def _invoke_modid_verify(
 
     Imports are lazy so the test module can be collected without circular imports.
     """
-    from kosmos.tools.mock.verify_module_modid import invoke  # noqa: PLC0415
+    from kosax.tools.mock.verify_module_modid import invoke  # noqa: PLC0415
 
     return invoke(
         {
@@ -96,7 +96,7 @@ async def _invoke_hometax_lookup(
     ledger_root: Path | None = None,
 ) -> dict:
     """Invoke the hometax simplified lookup adapter."""
-    from kosmos.tools.mock.lookup_module_hometax_simplified import (  # noqa: PLC0415
+    from kosax.tools.mock.lookup_module_hometax_simplified import (  # noqa: PLC0415
         HometaxSimplifiedInput,
         handle,
     )
@@ -104,7 +104,7 @@ async def _invoke_hometax_lookup(
     inp = HometaxSimplifiedInput(year=year, resident_id_prefix=resident_id_prefix)
 
     # If a delegation_context is provided, validate scope + append ledger event.
-    from kosmos.primitives.delegation import DelegationContext  # noqa: PLC0415
+    from kosax.primitives.delegation import DelegationContext  # noqa: PLC0415
 
     if isinstance(delegation_context, DelegationContext) and ledger_root is not None:
         # Manually append delegation_used for lookup (the handle() function does not
@@ -113,7 +113,7 @@ async def _invoke_hometax_lookup(
         # adapter's own scope check).  For the integration test we simulate the
         # delegation_used event for a lookup (mirrors quickstart § 4).
         token = delegation_context.token
-        from kosmos.memdir.consent_ledger import (  # noqa: PLC0415
+        from kosax.memdir.consent_ledger import (  # noqa: PLC0415
             DelegationUsedEvent,
             append_delegation_used,
         )
@@ -142,16 +142,16 @@ async def _invoke_hometax_submit(
 
     The submit adapter imports ``append_delegation_used`` at module level (top-level import),
     so we must patch it at the submit module's namespace:
-        ``kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used``
+        ``kosax.tools.mock.submit_module_hometax_taxreturn.append_delegation_used``
 
     ``FileLedgerReader`` is imported lazily inside ``invoke()``, so patching
-    ``kosmos.memdir.consent_ledger.FileLedgerReader`` (the source module) ensures the
+    ``kosax.memdir.consent_ledger.FileLedgerReader`` (the source module) ensures the
     lazy import gets the test-scoped class.
     """
     from unittest.mock import patch  # noqa: PLC0415
 
-    import kosmos.tools.mock.submit_module_hometax_taxreturn as _submit_mod  # noqa: PLC0415
-    from kosmos.tools.mock.submit_module_hometax_taxreturn import invoke  # noqa: PLC0415
+    import kosax.tools.mock.submit_module_hometax_taxreturn as _submit_mod  # noqa: PLC0415
+    from kosax.tools.mock.submit_module_hometax_taxreturn import invoke  # noqa: PLC0415
 
     params = {
         "tax_year": 2024,
@@ -161,7 +161,7 @@ async def _invoke_hometax_submit(
         "delegation_context": delegation_context,
     }
 
-    from kosmos.memdir.consent_ledger import (  # noqa: PLC0415
+    from kosax.memdir.consent_ledger import (  # noqa: PLC0415
         DelegationUsedEvent,
         FileLedgerReader,
         append_delegation_used,
@@ -178,7 +178,7 @@ async def _invoke_hometax_submit(
     with (
         patch.object(_submit_mod, "append_delegation_used", side_effect=_patched_append),
         patch(
-            "kosmos.memdir.consent_ledger.FileLedgerReader",
+            "kosax.memdir.consent_ledger.FileLedgerReader",
             return_value=patched_reader,
         ),
     ):
@@ -187,7 +187,7 @@ async def _invoke_hometax_submit(
 
 def _read_ledger_events(ledger_root: Path) -> list:
     """Read all delegation events from the ledger root."""
-    from kosmos.memdir.consent_ledger import read_delegation_events  # noqa: PLC0415
+    from kosax.memdir.consent_ledger import read_delegation_events  # noqa: PLC0415
 
     return read_delegation_events(ledger_root=ledger_root)
 
@@ -232,7 +232,7 @@ async def test_happy_chain_verify_lookup_submit(tmp_path: Path) -> None:
     # variants instead of stamped dicts. ModidContext wraps the DelegationContext
     # under the `delegation_context` field; transparency fields surface as
     # `transparency_*` attributes.
-    from kosmos.primitives.verify import ModidContext  # noqa: PLC0415
+    from kosax.primitives.verify import ModidContext  # noqa: PLC0415
 
     assert isinstance(verify_result, ModidContext), (
         f"verify result must be a typed ModidContext (Codex P1 #2446); "
@@ -260,7 +260,7 @@ async def test_happy_chain_verify_lookup_submit(tmp_path: Path) -> None:
     # Step 3: submit — _invoke_hometax_submit patches the ledger helpers internally.
     submit_result = await _invoke_hometax_submit(delegation_ctx, session_id, ledger_root)
 
-    from kosmos.primitives.submit import SubmitOutput, SubmitStatus  # noqa: PLC0415
+    from kosax.primitives.submit import SubmitOutput, SubmitStatus  # noqa: PLC0415
 
     assert isinstance(submit_result, SubmitOutput), (
         f"Expected SubmitOutput, got {type(submit_result).__name__}"
@@ -316,7 +316,7 @@ async def test_submit_succeeds_with_matching_scope(tmp_path: Path) -> None:
 
     submit_result = await _invoke_hometax_submit(delegation_ctx, session_id, ledger_root)
 
-    from kosmos.primitives.submit import SubmitOutput, SubmitStatus  # noqa: PLC0415
+    from kosax.primitives.submit import SubmitOutput, SubmitStatus  # noqa: PLC0415
 
     assert isinstance(submit_result, SubmitOutput)
     assert submit_result.status == SubmitStatus.succeeded
@@ -328,7 +328,7 @@ async def test_submit_succeeds_with_matching_scope(tmp_path: Path) -> None:
 
     # The delegation_used event in the ledger must carry the receipt_id.
     events = _read_ledger_events(ledger_root)
-    from kosmos.memdir.consent_ledger import DelegationUsedEvent  # noqa: PLC0415
+    from kosax.memdir.consent_ledger import DelegationUsedEvent  # noqa: PLC0415
 
     used_events = [
         e
@@ -365,7 +365,7 @@ async def test_scope_violation_rejected(tmp_path: Path) -> None:
 
     submit_result = await _invoke_hometax_submit(delegation_ctx, session_id, ledger_root)
 
-    from kosmos.primitives.submit import SubmitOutput, SubmitStatus  # noqa: PLC0415
+    from kosax.primitives.submit import SubmitOutput, SubmitStatus  # noqa: PLC0415
 
     assert isinstance(submit_result, SubmitOutput), (
         f"Expected SubmitOutput on scope violation, got {type(submit_result).__name__}"
@@ -390,7 +390,7 @@ async def test_scope_violation_rejected(tmp_path: Path) -> None:
         f"Expected >= 2 ledger events for scope-violation scenario, got {len(relevant)}"
     )
 
-    from kosmos.memdir.consent_ledger import DelegationUsedEvent  # noqa: PLC0415
+    from kosax.memdir.consent_ledger import DelegationUsedEvent  # noqa: PLC0415
 
     used_events = [
         e for e in relevant if isinstance(e, DelegationUsedEvent) and e.outcome == "scope_violation"
@@ -448,7 +448,7 @@ async def test_all_transparency_fields_in_chain(tmp_path: Path) -> None:
     # Step 3: submit — ledger patched inside _invoke_hometax_submit.
     submit_result = await _invoke_hometax_submit(delegation_ctx, session_id, ledger_root)
 
-    from kosmos.primitives.submit import SubmitOutput  # noqa: PLC0415
+    from kosax.primitives.submit import SubmitOutput  # noqa: PLC0415
 
     assert isinstance(submit_result, SubmitOutput)
     # The adapter_receipt carries the transparency fields (merged by stamp_mock_response).

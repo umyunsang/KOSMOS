@@ -16,11 +16,11 @@ import asyncio
 
 import pytest
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.lookup import lookup
-from kosmos.tools.models import LookupSearchInput
-from kosmos.tools.register_all import register_all_tools
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.lookup import lookup
+from kosax.tools.models import LookupSearchInput
+from kosax.tools.register_all import register_all_tools
+from kosax.tools.registry import ToolRegistry
 
 
 @pytest.fixture(scope="module")

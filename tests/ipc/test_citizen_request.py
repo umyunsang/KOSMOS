@@ -7,7 +7,7 @@ invariants I-C3, I-C4, I-C6.
 
 from __future__ import annotations
 
-from kosmos.ipc.citizen_request import wrap_citizen_request
+from kosax.ipc.citizen_request import wrap_citizen_request
 
 
 def test_user_message_wrapped() -> None:

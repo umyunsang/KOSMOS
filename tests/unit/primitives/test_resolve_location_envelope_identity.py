@@ -3,12 +3,12 @@
 
 Proves two guarantees introduced by Spec 031 Phase 2:
 
-1. FR-017 (byte-identity): ``kosmos.primitives.resolve_location`` is the *same
-   coroutine* as ``kosmos.tools.resolve_location.resolve_location`` — no wrapper
+1. FR-017 (byte-identity): ``kosax.primitives.resolve_location`` is the *same
+   coroutine* as ``kosax.tools.resolve_location.resolve_location`` — no wrapper
    that alters input/output schema shapes.  Tests load Spec 022 contract JSON
    schemas and validate fixture payloads through both import paths identically.
 
-2. T031 (re-export contract): ``kosmos.primitives.__init__`` does NOT introduce
+2. T031 (re-export contract): ``kosax.primitives.__init__`` does NOT introduce
    any attribute change on the re-exported symbol.  ``__signature__``,
    ``__doc__``, ``__module__``, and ``__name__`` must be identical to the
    canonical Spec 022 source.
@@ -26,8 +26,8 @@ from pydantic import TypeAdapter
 # ---------------------------------------------------------------------------
 # Import both paths and assert identity
 # ---------------------------------------------------------------------------
-import kosmos.primitives as _primitives_module
-from kosmos.tools.models import (
+import kosax.primitives as _primitives_module
+from kosax.tools.models import (
     AddressResult,
     AdmCodeResult,
     CoordResult,
@@ -36,7 +36,7 @@ from kosmos.tools.models import (
     ResolveError,
     ResolveLocationInput,
 )
-from kosmos.tools.resolve_location import resolve_location as _canonical_rl
+from kosax.tools.resolve_location import resolve_location as _canonical_rl
 
 _primitives_rl = _primitives_module.resolve_location
 
@@ -54,8 +54,8 @@ _OUTPUT_SCHEMA_PATH = _CONTRACTS_DIR / "resolve_location.output.schema.json"
 def test_primitives_resolve_location_is_same_object_as_canonical() -> None:
     """FR-017: primitives.resolve_location IS the spec-022 coroutine."""
     assert _primitives_rl is _canonical_rl, (
-        "kosmos.primitives.resolve_location must be the identical object to "
-        "kosmos.tools.resolve_location.resolve_location — any wrapping would "
+        "kosax.primitives.resolve_location must be the identical object to "
+        "kosax.tools.resolve_location.resolve_location — any wrapping would "
         "break byte-identity."
     )
 
@@ -68,7 +68,7 @@ def test_primitives_resolve_location_preserves_dunder_name() -> None:
 def test_primitives_resolve_location_preserves_dunder_module() -> None:
     """T031: __module__ still points to the Spec 022 source module."""
     assert _primitives_rl.__module__ == _canonical_rl.__module__
-    assert "kosmos.tools.resolve_location" in _primitives_rl.__module__
+    assert "kosax.tools.resolve_location" in _primitives_rl.__module__
 
 
 def test_primitives_resolve_location_preserves_dunder_doc() -> None:

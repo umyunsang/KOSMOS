@@ -204,7 +204,7 @@ export function parseBindings(blocks: KeybindingBlock[]): ParsedBinding[] {
 }
 
 // ---------------------------------------------------------------------------
-// KOSMOS canonical chord parser — re-exports from chord.ts so that
+// KOSAX canonical chord parser — re-exports from chord.ts so that
 // `import { parseChord, tryParseChord } from './parser'` uses the
 // canonical throwing + null-returning variants (Spec 288 T022).
 //

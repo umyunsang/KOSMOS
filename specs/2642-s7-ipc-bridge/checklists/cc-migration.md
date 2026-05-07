@@ -1,6 +1,6 @@
 # Constitution + Migration compliance · Spec 2642
 
-**Source**: `.specify/memory/constitution.md` (project-wide hard rules) + `AGENTS.md § Hard rules` + `docs/requirements/kosmos-migration-tree.md`.
+**Source**: `.specify/memory/constitution.md` (project-wide hard rules) + `AGENTS.md § Hard rules` + `docs/requirements/kosax-migration-tree.md`.
 
 ---
 
@@ -9,7 +9,7 @@
 | Rule | Status | Note |
 |---|---|---|
 | All source text in English | ✅ | Korean only in domain strings (e.g. `payload` field description) — preserved unchanged |
-| Env vars prefixed `KOSMOS_` | ✅ | New env: `KOSMOS_IPC_PARITY_DRIFT_FIXTURE` (test-only) |
+| Env vars prefixed `KOSAX_` | ✅ | New env: `KOSAX_IPC_PARITY_DRIFT_FIXTURE` (test-only) |
 | Stdlib `logging` only | ✅ | No new logging surfaces |
 | Pydantic v2 for all tool I/O | ✅ | No new Pydantic models; existing `_BaseFrame` / `NotificationPushFrame` unchanged in shape (only docstring extended) |
 | Never call live `data.go.kr` from CI | ✅ | Test is pure stdlib regex + Pydantic introspection; no HTTP |
@@ -37,7 +37,7 @@
 
 ---
 
-## CC-Migration alignment (kosmos-migration-tree.md)
+## CC-Migration alignment (kosax-migration-tree.md)
 
 | L-pillar | Touched? | Justification |
 |---|---|---|

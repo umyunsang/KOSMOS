@@ -1,5 +1,5 @@
 ---
-# Session compaction template — consumed by src/kosmos/context/session_compact.py
+# Session compaction template — consumed by src/kosax/context/session_compact.py
 # T031 loader: call PromptLoader.load("compact_v1"), parse frontmatter with yaml.safe_load,
 # then map these keys into the builder constants that replace the inline Final[str] values.
 summary_header: "[Session Summary — older turns compacted]"
@@ -21,7 +21,7 @@ formatters:
 # Session compaction template v1
 
 This template carries the literal strings the rule-based compactor in
-`src/kosmos/context/session_compact.py` emits. The refactor (T031) loads this
+`src/kosax/context/session_compact.py` emits. The refactor (T031) loads this
 file via `PromptLoader.load("compact_v1")` and parses the frontmatter.
 
 ## Key mapping for T031

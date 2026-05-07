@@ -3,7 +3,7 @@
 # ~6-15 min each, total ~80-100 min. Logs to /tmp/scn-S{N}/...
 set -uo pipefail
 
-ROOT=/Users/um-yunsang/KOSMOS
+ROOT=/Users/um-yunsang/KOSAX
 CAPTURE=$ROOT/scripts/tui-tmux-capture.sh
 
 for sn in S1 S2 S3 S4 S5 S6 S7 S8 S9 S10; do
@@ -27,7 +27,7 @@ for sn in S1 S2 S3 S4 S5 S6 S7 S8 S9 S10; do
   # the 5-step onboarding wizard never blocks the scenario script. S1 is the
   # only scenario that needs onboarding verification — handled separately by a
   # dedicated agent that interacts with each step explicitly.
-  KOSMOS_ONBOARDING_AUTO_COMPLETE=1 \
+  KOSAX_ONBOARDING_AUTO_COMPLETE=1 \
     bash "$CAPTURE" "$outdir" "$script" 2>&1 | tail -5
   echo "=== [$(date +%H:%M:%S)] Done $sn ==="
 done

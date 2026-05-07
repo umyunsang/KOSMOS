@@ -12,7 +12,7 @@ description: "Task list for Epic α — CC Parity Audit (Initiative #2290)"
 
 - **[P]**: Different file / no incomplete dependency
 - **[Story]**: US1 (modified 분류), US2 (50 spot-check), US3 (73 import-diff)
-- 모든 경로는 repo root (`/Users/um-yunsang/KOSMOS`) 기준 상대경로
+- 모든 경로는 repo root (`/Users/um-yunsang/KOSAX`) 기준 상대경로
 
 ## Path Conventions
 
@@ -27,7 +27,7 @@ description: "Task list for Epic α — CC Parity Audit (Initiative #2290)"
 **Purpose**: 산출물 디렉토리 + Python venv 설정 (이미 프로젝트 baseline 있으면 skip)
 
 - [X] T001 [P] Create `specs/2292-cc-parity-audit/scripts/` and `specs/2292-cc-parity-audit/data/` directories with `.gitkeep` files
-- [X] T002 [P] Add `specs/2292-cc-parity-audit/scripts/_common.sh` shared helpers (repo root resolution, KOSMOS_DIR / CC_DIR constants, `LC_ALL=C` enforcement) — sourced by all R-step shell scripts
+- [X] T002 [P] Add `specs/2292-cc-parity-audit/scripts/_common.sh` shared helpers (repo root resolution, KOSAX_DIR / CC_DIR constants, `LC_ALL=C` enforcement) — sourced by all R-step shell scripts
 
 ---
 
@@ -37,7 +37,7 @@ description: "Task list for Epic α — CC Parity Audit (Initiative #2290)"
 
 **⚠️ CRITICAL**: T003 완료 전 어떤 user story task 도 진입 불가.
 
-- [X] T003 Implement `specs/2292-cc-parity-audit/scripts/enumerate-files.sh` — `find` + `diff -rq` + `comm` + `LC_ALL=C sort` 로 `data/enumerated-{keep-byte-identical,import-candidate,modified,kosmos-only,cc-only}.txt` 5 파일 산출 (quickstart.md § R1 + research.md § R-1 구현)
+- [X] T003 Implement `specs/2292-cc-parity-audit/scripts/enumerate-files.sh` — `find` + `diff -rq` + `comm` + `LC_ALL=C sort` 로 `data/enumerated-{keep-byte-identical,import-candidate,modified,kosax-only,cc-only}.txt` 5 파일 산출 (quickstart.md § R1 + research.md § R-1 구현)
 - [X] T004 Run T003 and assert produced row counts vs cc-source-scope-audit.md baseline (1,531 / 73 / 212 / 274 / 68); record actual numbers + drift delta in `specs/2292-cc-parity-audit/data/enumeration-summary.json` for FR-010 정정 input
 
 **Checkpoint**: `data/enumerated-*.txt` 5 파일 + `enumeration-summary.json` 박제 완료. user story 병렬 진입 가능.
@@ -55,7 +55,7 @@ description: "Task list for Epic α — CC Parity Audit (Initiative #2290)"
 - [X] T005 [US1] Implement `specs/2292-cc-parity-audit/scripts/classify-modified.py` — research.md § R-4 의 3 시그널 휴리스틱 (디렉토리 패턴 / git history / import scan) 자동 분류. 알려진 잔재 path + 토큰 list (`@anthropic-ai/`, `claude.ts`, `verifyApiKey`, `services/api/sonnet.ts`, `services/api/anthropic.ts`, `utils/permissions/`) 를 스크립트 상단 상수 박제
 - [X] T006 [US1] Run T005 to produce `specs/2292-cc-parity-audit/data/modified-212-classification.json` (data-model.md § AuditEntry 스키마); 자동 분류 결과 + 시그널 raw (`signals` 필드) 박제
 - [X] T007 [US1] Lead 수동 검토 — `Suspicious` 행 100% + `Legitimate / Cleanup-needed` 표본 5–10% 를 검수해 `notes` 필드 채우고 오분류 정정. 추가로 US2 / US3 의 staging 파일 (`spot-check-reclassify-pending.json` / `import-verify-reclassify-pending.json`) 이 존재하면 entry 를 `modified-212-classification.json` 으로 합류 후 동일 검수 절차 적용. 결과를 `modified-212-classification.json` 에 in-place 갱신
-- [X] T008 [US1] Generate `specs/2292-cc-parity-audit/data/suspicious-transfer.json` — Suspicious 부분집합을 data-model.md § SuspiciousTransferList 라우팅 룰 (services/api/* → Epic β #2293, src/kosmos/permissions/* → out-of-scope, 그 외 → uncategorized) 로 분류
+- [X] T008 [US1] Generate `specs/2292-cc-parity-audit/data/suspicious-transfer.json` — Suspicious 부분집합을 data-model.md § SuspiciousTransferList 라우팅 룰 (services/api/* → Epic β #2293, src/kosax/permissions/* → out-of-scope, 그 외 → uncategorized) 로 분류
 - [X] T009 [US1] Compose `specs/2292-cc-parity-audit/cc-parity-audit.md § Modified Files` 섹션 — JSON → markdown 표 변환, deep-link 셀에 `data/modified-212-classification.json#L<row>` 박제
 
 **Checkpoint**: US1 단독으로 산출물 검증 가능 — Modified Files 표 + Suspicious Transfer List 두 섹션이 자기-완결.

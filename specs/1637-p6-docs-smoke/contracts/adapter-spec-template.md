@@ -25,18 +25,18 @@ permission_tier: <1 | 2 | 3>
 | Classification | <Live | Mock> · Permission tier <N> |
 | Source | <ministry / agency / fixture origin> |
 | Primitive | `<lookup | submit | verify | resolve_location>` |
-| Module | `src/kosmos/tools/<path>.py` |
+| Module | `src/kosax/tools/<path>.py` |
 
 ## Envelope
 
-**Input model**: `<ModuleClass>` defined at `src/kosmos/tools/<path>.py:<line-range>`.
+**Input model**: `<ModuleClass>` defined at `src/kosax/tools/<path>.py:<line-range>`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | <field-1> | <type> | <yes/no> | <description> |
 | ... | | | |
 
-**Output model**: `<ModuleClass>` defined at `src/kosmos/tools/<path>.py:<line-range>`.
+**Output model**: `<ModuleClass>` defined at `src/kosax/tools/<path>.py:<line-range>`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -53,7 +53,7 @@ permission_tier: <1 | 2 | 3>
 <for Live tier>
 - **data.go.kr endpoint**: `<endpoint-id>`
 - **Source URL**: <ministry portal URL>
-- **Authentication**: API key via `KOSMOS_<NAME>_API_KEY` (per Constitution IV)
+- **Authentication**: API key via `KOSAX_<NAME>_API_KEY` (per Constitution IV)
 
 <for Mock tier>
 - **Mode**: Fixture-replay only
@@ -95,7 +95,7 @@ permission_tier: <1 | 2 | 3>
 
 ```text
 Citizen: <example Korean question>
-KOSMOS: <expected Korean answer summarizing the adapter response>
+KOSAX: <expected Korean answer summarizing the adapter response>
 ```
 
 ## Constraints
@@ -120,7 +120,7 @@ A structural linter (proposed `scripts/lint_adapter_specs.py`, deferred to "Auto
 3. Search-hints section contains at least one entry under `한국어:` and at least one under `English:`.
 4. Live-tier specs contain a `data.go.kr endpoint:` line OR an explicit "ministry direct API" justification.
 5. Mock-tier specs contain "Fixture-replay only" verbatim AND a public-spec citation.
-6. Every Markdown link to a `src/kosmos/tools/...` path resolves to an existing file.
+6. Every Markdown link to a `src/kosax/tools/...` path resolves to an existing file.
 
 For this Epic, manual review during PR review substitutes for the linter; the linter itself is deferred-to-future-work table row 4.
 

@@ -2,7 +2,7 @@
 
 **Mirror axis**: shape
 **Source reference**: https://developers.barocert.com (PASS 바로서트 개발자 포털)
-**License**: Proprietary SDK with public documentation; KOSMOS mock is an independent re-implementation based solely on the publicly documented API shape — not a derivative of the SDK source
+**License**: Proprietary SDK with public documentation; KOSAX mock is an independent re-implementation based solely on the publicly documented API shape — not a derivative of the SDK source
 **Scope**: Reproduces the request/response shape for the PASS 바로서트 identity verification and electronic signature APIs as documented at developers.barocert.com; does not reproduce the actual OTP/biometric challenge-response protocol executed on the end-user's device.
 
 ## What this mock reproduces
@@ -16,7 +16,7 @@
 ## What this mock deliberately does NOT reproduce
 
 - Actual PASS app push notification delivery — the mock immediately returns `state: 1` for happy-path fixtures
-- Device biometric verification — out of scope; KOSMOS only consumes the `signedData` result
+- Device biometric verification — out of scope; KOSAX only consumes the `signedData` result
 - `signedData` cryptographic validity — fixture `signedData` values are Base64-encoded placeholders, not real CMS SignedData objects
 - Production API key validation (`clientCode` and HMAC signing of requests) — the mock accepts any non-empty `clientCode`
 
@@ -32,4 +32,4 @@ When Barocert updates its API documentation:
 
 ## Upstream divergence policy
 
-Shape-axis mocks diverge when the upstream SDK documentation adds, removes, or renames fields. KOSMOS CI does not automatically detect this divergence — it relies on the engineering team to monitor the Barocert developer portal changelog. The `doc_version` field in `tests/fixtures/barocert/meta.json` is the canonical reference for the documented version the mock was built against.
+Shape-axis mocks diverge when the upstream SDK documentation adds, removes, or renames fields. KOSAX CI does not automatically detect this divergence — it relies on the engineering team to monitor the Barocert developer portal changelog. The `doc_version` field in `tests/fixtures/barocert/meta.json` is the canonical reference for the documented version the mock was built against.

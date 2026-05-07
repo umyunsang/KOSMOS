@@ -1,7 +1,7 @@
 [project]
-name = "kosmos-plugin-my_plugin"
+name = "kosax-plugin-my_plugin"
 version = "0.1.0"
-description = "KOSMOS plugin scaffolded by 'uvx kosmos-plugin-init'"
+description = "KOSAX plugin scaffolded by 'uvx kosax-plugin-init'"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 dependencies = [

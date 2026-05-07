@@ -17,8 +17,8 @@ from typing import Any
 
 import pytest
 
-from kosmos.ipc.frame_schema import IPCFrame, PermissionRequestFrame
-from kosmos.plugins.consent_bridge import IPCConsentBridge
+from kosax.ipc.frame_schema import IPCFrame, PermissionRequestFrame
+from kosax.plugins.consent_bridge import IPCConsentBridge
 
 # ---------------------------------------------------------------------------
 # Stub objects matching installer.ConsentPrompt signature

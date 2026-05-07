@@ -16,20 +16,20 @@ The scenario does not redefine these — it asserts them. Listed here for tracea
 
 | Entity | Module | Why it matters in this spec |
 |---|---|---|
-| `ResolveBundle` | `kosmos.tools.models` | Output of both `resolve_location` calls (Turns 1a/1b). |
-| `ResolveError` | `kosmos.tools.models` | Output of `resolve_location` when `reason ∈ {not_found, ambiguous}` (edge cases). |
-| `LookupSearchInput` / `LookupSearchResult` | `kosmos.tools.models` | Turns 2 and 4 (BM25 retrieval gate). |
-| `LookupFetchInput` | `kosmos.tools.models` | Turns 3 and 5 (`mode="fetch"`, `tool_id`, `args`). |
-| `LookupCollection` | `kosmos.tools.models` | KOROAD adapter output envelope (FR-005). |
-| `LookupTimeseries` | `kosmos.tools.models` | KMA adapter output envelope (FR-006). |
-| `LookupError` | `kosmos.tools.models` | Error variant of the envelope (FR-008, FR-021/022). |
-| `LookupMeta` | `kosmos.tools.models` | `source`, `fetched_at`, `request_id`, `elapsed_ms` (FR-007). |
-| `ToolResult` | `kosmos.tools.models` | Internal executor return. Carries `success`, `error_type`. |
-| `GovAPITool` | `kosmos.tools.models` | Adapter metadata. Must satisfy V1–V6 invariants (FR-009/010). |
-| `SidoCode` / `SearchYearCd` | `kosmos.tools.koroad.code_tables` | Drives the 2023 year-quirk mapping (FR-013/014). |
-| `QueryState` | `kosmos.engine.models` | Carries `stop_reason` (FR-022). |
-| `StreamEvent` / `TokenUsage` | `kosmos.llm.models` | MockLLMClient scripting units; FR-015 assertion surface. |
-| `UsageTracker` | `kosmos.llm.usage` | Token totals (FR-015). |
+| `ResolveBundle` | `kosax.tools.models` | Output of both `resolve_location` calls (Turns 1a/1b). |
+| `ResolveError` | `kosax.tools.models` | Output of `resolve_location` when `reason ∈ {not_found, ambiguous}` (edge cases). |
+| `LookupSearchInput` / `LookupSearchResult` | `kosax.tools.models` | Turns 2 and 4 (BM25 retrieval gate). |
+| `LookupFetchInput` | `kosax.tools.models` | Turns 3 and 5 (`mode="fetch"`, `tool_id`, `args`). |
+| `LookupCollection` | `kosax.tools.models` | KOROAD adapter output envelope (FR-005). |
+| `LookupTimeseries` | `kosax.tools.models` | KMA adapter output envelope (FR-006). |
+| `LookupError` | `kosax.tools.models` | Error variant of the envelope (FR-008, FR-021/022). |
+| `LookupMeta` | `kosax.tools.models` | `source`, `fetched_at`, `request_id`, `elapsed_ms` (FR-007). |
+| `ToolResult` | `kosax.tools.models` | Internal executor return. Carries `success`, `error_type`. |
+| `GovAPITool` | `kosax.tools.models` | Adapter metadata. Must satisfy V1–V6 invariants (FR-009/010). |
+| `SidoCode` / `SearchYearCd` | `kosax.tools.koroad.code_tables` | Drives the 2023 year-quirk mapping (FR-013/014). |
+| `QueryState` | `kosax.engine.models` | Carries `stop_reason` (FR-022). |
+| `StreamEvent` / `TokenUsage` | `kosax.llm.models` | MockLLMClient scripting units; FR-015 assertion surface. |
+| `UsageTracker` | `kosax.llm.usage` | Token totals (FR-015). |
 
 ---
 
@@ -96,22 +96,22 @@ Per-span snapshot. Narrow by design — only the fields this spec asserts on are
 | `operation_name` | `Literal["execute_tool"] \| None` | yes | Value of `gen_ai.operation.name` attribute, or None. |
 | `tool_name` | `str` | yes | Value of `gen_ai.tool.name`. |
 | `tool_call_id` | `str \| None` | yes | Value of `gen_ai.tool.call.id`. |
-| `outcome` | `Literal["ok", "error"]` | yes | Value of `kosmos.tool.outcome` (FR-017). Absence ⇒ assertion failure. |
-| `adapter_id` | `str \| None` | yes | Value of `kosmos.tool.adapter` (FR-018). Present iff span corresponds to `lookup(mode="fetch")`. |
+| `outcome` | `Literal["ok", "error"]` | yes | Value of `kosax.tool.outcome` (FR-017). Absence ⇒ assertion failure. |
+| `adapter_id` | `str \| None` | yes | Value of `kosax.tool.adapter` (FR-018). Present iff span corresponds to `lookup(mode="fetch")`. |
 | `error_type` | `str \| None` | conditional | Required when `outcome == "error"`. Maps from `error.type` attribute. |
 | `status_code` | `Literal["UNSET", "OK", "ERROR"]` | yes | Span `Status`. |
 | `attribute_keys` | `frozenset[str]` | yes | Full set of attribute names. Used by FR-019 to assert no Korean citizen string appears. |
 
 **Invariants**:
 - I4: `outcome == "error"` ⇒ `status_code == "ERROR"` and `error_type` is non-None.
-- I5: `adapter_id is not None` ⇒ `tool_name == "lookup"` (FR-018 gate; `resolve_location` / `search` spans never carry `kosmos.tool.adapter`).
+- I5: `adapter_id is not None` ⇒ `tool_name == "lookup"` (FR-018 gate; `resolve_location` / `search` spans never carry `kosax.tool.adapter`).
 - I6: No attribute value may equal the citizen trigger query string `"내일 강남구에서 서울역 가는데 날씨랑 사고다발지역 알려줘"` nor the `query=` argument of any `resolve_location` call (FR-019). Enforced by the span assertion helper, not by the model itself.
 
 ### 2.5 `RunReport`
 
 The top-level artifact every scenario test produces. Serves as both assertion surface and optional JSON export.
 
-**Purpose**: One Pydantic v2 aggregate that fully describes what happened — what the mock LLM scripted, what the engine executed, what the observability stack captured. Consumed by assertion helpers and (optionally) written to disk under `KOSMOS_E2E_DUMP_DIR`.
+**Purpose**: One Pydantic v2 aggregate that fully describes what happened — what the mock LLM scripted, what the engine executed, what the observability stack captured. Consumed by assertion helpers and (optionally) written to disk under `KOSAX_E2E_DUMP_DIR`.
 
 **Fields**:
 

@@ -15,7 +15,7 @@
 
 **Purpose**: Create module structure
 
-- [ ] T001 Create `src/kosmos/tools/` package directory with `__init__.py` and create `tests/tools/` package directory with `__init__.py`
+- [ ] T001 Create `src/kosax/tools/` package directory with `__init__.py` and create `tests/tools/` package directory with `__init__.py`
 
 ---
 
@@ -25,7 +25,7 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 [P] Implement error hierarchy (`KosmosToolError`, `DuplicateToolError`, `ToolNotFoundError`, `ToolValidationError`, `RateLimitExceededError`, `ToolExecutionError`) in `src/kosmos/tools/errors.py`
+- [ ] T002 [P] Implement error hierarchy (`KosaxToolError`, `DuplicateToolError`, `ToolNotFoundError`, `ToolValidationError`, `RateLimitExceededError`, `ToolExecutionError`) in `src/kosax/tools/errors.py`
 - [ ] T003 [P] Create test infrastructure with shared fixtures (mock Pydantic input/output schemas, sample `GovAPITool` factory, mock tool adapter function) in `tests/tools/conftest.py`
 
 **Checkpoint**: Foundation ready — error types and test fixtures are importable
@@ -40,9 +40,9 @@
 
 ### Implementation for User Story 1
 
-- [ ] T004 [P] [US1] Implement `GovAPITool` Pydantic v2 model with all fields (id, name_ko, provider, category, endpoint, auth_type, input_schema, output_schema, search_hint) and fail-closed defaults (requires_auth=True, is_personal_data=True, is_concurrency_safe=False, cache_ttl_seconds=0, rate_limit_per_minute=10, is_core=False) including id pattern validation (`^[a-z][a-z0-9_]*$`), non-empty category, and `to_openai_tool()` method in `src/kosmos/tools/models.py`
-- [ ] T005 [P] [US1] Implement `ToolResult`, `ToolSearchResult`, and `SearchToolMatch` Pydantic v2 models in `src/kosmos/tools/models.py` — ToolResult with success/data/error/error_type fields, ToolSearchResult with tool/score/matched_tokens
-- [ ] T006 [US1] Implement `ToolRegistry` with `register()`, `lookup()`, `all_tools()`, `__len__()`, `__contains__()` methods in `src/kosmos/tools/registry.py` — register raises `DuplicateToolError`, lookup raises `ToolNotFoundError`
+- [ ] T004 [P] [US1] Implement `GovAPITool` Pydantic v2 model with all fields (id, name_ko, provider, category, endpoint, auth_type, input_schema, output_schema, search_hint) and fail-closed defaults (requires_auth=True, is_personal_data=True, is_concurrency_safe=False, cache_ttl_seconds=0, rate_limit_per_minute=10, is_core=False) including id pattern validation (`^[a-z][a-z0-9_]*$`), non-empty category, and `to_openai_tool()` method in `src/kosax/tools/models.py`
+- [ ] T005 [P] [US1] Implement `ToolResult`, `ToolSearchResult`, and `SearchToolMatch` Pydantic v2 models in `src/kosax/tools/models.py` — ToolResult with success/data/error/error_type fields, ToolSearchResult with tool/score/matched_tokens
+- [ ] T006 [US1] Implement `ToolRegistry` with `register()`, `lookup()`, `all_tools()`, `__len__()`, `__contains__()` methods in `src/kosax/tools/registry.py` — register raises `DuplicateToolError`, lookup raises `ToolNotFoundError`
 - [ ] T007 [P] [US1] Write unit tests for GovAPITool validation (fail-closed defaults, id pattern rejection, non-empty category, explicit overrides, to_openai_tool format) in `tests/tools/test_models.py`
 - [ ] T008 [P] [US1] Write unit tests for ToolRegistry registration and lookup (register success, duplicate rejection, lookup success, not-found error, __len__, __contains__) in `tests/tools/test_registry.py`
 
@@ -58,9 +58,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T009 [US2] Implement bilingual search logic with token-overlap scoring (case-insensitive substring matching, query tokenization, score computation, ranking) in `src/kosmos/tools/search.py`
-- [ ] T010 [US2] Add `search()` method to `ToolRegistry` that delegates to search logic, accepts `query: str` and `max_results: int = 5`, returns `list[ToolSearchResult]` in `src/kosmos/tools/registry.py`
-- [ ] T011 [P] [US2] Implement `SearchToolsInput` and `SearchToolsOutput` Pydantic v2 models, and `create_search_meta_tool()` factory function that creates a `GovAPITool` for `search_tools` in `src/kosmos/tools/search.py`
+- [ ] T009 [US2] Implement bilingual search logic with token-overlap scoring (case-insensitive substring matching, query tokenization, score computation, ranking) in `src/kosax/tools/search.py`
+- [ ] T010 [US2] Add `search()` method to `ToolRegistry` that delegates to search logic, accepts `query: str` and `max_results: int = 5`, returns `list[ToolSearchResult]` in `src/kosax/tools/registry.py`
+- [ ] T011 [P] [US2] Implement `SearchToolsInput` and `SearchToolsOutput` Pydantic v2 models, and `create_search_meta_tool()` factory function that creates a `GovAPITool` for `search_tools` in `src/kosax/tools/search.py`
 - [ ] T012 [P] [US2] Write unit tests for bilingual search (Korean keyword match, English keyword match, mixed query, empty query returns empty, max_results limit, score ranking, no-match returns empty) in `tests/tools/test_search.py`
 
 **Checkpoint**: Tool search works for Korean and English queries. Relevant tools are ranked correctly.
@@ -75,7 +75,7 @@
 
 ### Implementation for User Story 3
 
-- [ ] T013 [US3] Add `core_tools()`, `situational_tools()`, and `export_core_tools_openai()` methods to `ToolRegistry` — core_tools sorted by id for deterministic output, export uses `to_openai_tool()` in `src/kosmos/tools/registry.py`
+- [ ] T013 [US3] Add `core_tools()`, `situational_tools()`, and `export_core_tools_openai()` methods to `ToolRegistry` — core_tools sorted by id for deterministic output, export uses `to_openai_tool()` in `src/kosax/tools/registry.py`
 - [ ] T014 [P] [US3] Write unit tests for prompt cache partitioning (core vs situational partition is disjoint, core_tools sorted by id, export_core_tools_openai deterministic across calls, empty core list, mixed registration order) in `tests/tools/test_registry.py`
 
 **Checkpoint**: Prompt cache partitioning works. Core tool export is deterministic.
@@ -90,8 +90,8 @@
 
 ### Implementation for User Story 4
 
-- [ ] T015 [US4] Implement `RateLimiter` with sliding-window algorithm using `collections.deque` — `check()`, `record()`, `remaining` property, `reset()` method in `src/kosmos/tools/rate_limiter.py`
-- [ ] T016 [US4] Integrate `RateLimiter` into `ToolRegistry` — auto-create per-tool rate limiter on registration, expose `get_rate_limiter(tool_id: str) -> RateLimiter` method in `src/kosmos/tools/registry.py`
+- [ ] T015 [US4] Implement `RateLimiter` with sliding-window algorithm using `collections.deque` — `check()`, `record()`, `remaining` property, `reset()` method in `src/kosax/tools/rate_limiter.py`
+- [ ] T016 [US4] Integrate `RateLimiter` into `ToolRegistry` — auto-create per-tool rate limiter on registration, expose `get_rate_limiter(tool_id: str) -> RateLimiter` method in `src/kosax/tools/registry.py`
 - [ ] T017 [P] [US4] Write unit tests for RateLimiter (check within limit, reject at limit, window expiry reset, remaining count, manual reset, independent per-tool limiters) in `tests/tools/test_rate_limiter.py`
 
 **Checkpoint**: Rate limiting works. Per-tool call counts are tracked independently.
@@ -106,7 +106,7 @@
 
 ### Implementation for User Story 5
 
-- [ ] T018 [US5] Implement `ToolExecutor` with `dispatch(tool_name, arguments_json) -> ToolResult` pipeline — lookup → validate input → check rate limit → execute adapter → validate output — returns ToolResult with success=False for any failure (never raises) in `src/kosmos/tools/executor.py`
+- [ ] T018 [US5] Implement `ToolExecutor` with `dispatch(tool_name, arguments_json) -> ToolResult` pipeline — lookup → validate input → check rate limit → execute adapter → validate output — returns ToolResult with success=False for any failure (never raises) in `src/kosax/tools/executor.py`
 - [ ] T019 [P] [US5] Write unit tests for ToolExecutor dispatch (valid call returns success, invalid input returns validation error, unknown tool returns not-found, rate limit exceeded returns rate_limit error, adapter exception returns execution error, output schema mismatch returns schema_mismatch error) in `tests/tools/test_executor.py`
 
 **Checkpoint**: Tool execution dispatch works. All error paths return ToolResult, never raise.
@@ -117,7 +117,7 @@
 
 **Purpose**: Finalize public API and validate documentation
 
-- [ ] T020 Finalize public exports in `src/kosmos/tools/__init__.py` — export `GovAPITool`, `ToolRegistry`, `ToolExecutor`, `ToolResult`, `ToolSearchResult`, `RateLimiter`, all error types, `SearchToolsInput`, `SearchToolsOutput`
+- [ ] T020 Finalize public exports in `src/kosax/tools/__init__.py` — export `GovAPITool`, `ToolRegistry`, `ToolExecutor`, `ToolResult`, `ToolSearchResult`, `RateLimiter`, all error types, `SearchToolsInput`, `SearchToolsOutput`
 - [ ] T021 Run `quickstart.md` code examples as validation (verify imports, API surface matches contract)
 
 ---

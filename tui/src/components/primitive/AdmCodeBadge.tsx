@@ -1,5 +1,5 @@
 /**
- * KOSMOS-original — AdmCodeBadge renderer.
+ * KOSAX-original — AdmCodeBadge renderer.
  *
  * Displays the administrative region code and name from the adm_cd slot
  * of a resolve_location result.

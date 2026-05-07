@@ -54,8 +54,8 @@
 - `specs/2152-system-prompt-redesign/spec.md` — 직전 system prompt 재설계 spec, XML-tag scaffolding 출처
 - `specs/2296-ax-mock-adapters/contracts/delegation-token-envelope.md § 1-3` — scope grammar + 시민 chain canonical sequence
 - `specs/1979-plugin-dx-tui-integration/delegation-flow-design.md § 12.4` — citizen verify→lookup→submit 흐름도 (FINAL canonical)
-- `src/kosmos/primitives/verify.py` — 11-arm AuthContext union + 11 family literal values
-- `src/kosmos/tools/registry.py:68-93` — 18-label `PublishedTier` Literal (5 신규 추가됨)
+- `src/kosax/primitives/verify.py` — 11-arm AuthContext union + 11 family literal values
+- `src/kosax/tools/registry.py:68-93` — 18-label `PublishedTier` Literal (5 신규 추가됨)
 - `tests/integration/test_e2e_citizen_taxreturn_chain.py` — 시민 chain integration test (현재 in-process로만 검증, LLM-driven smoke는 #2298 후 비로소 동작)
 - `tests/integration/test_verify_module_dispatch.py` — 6 dispatch test (Epic ε에서 추가)
 
@@ -78,9 +78,9 @@
 ## 다음 세션 진입
 
 ```bash
-cd /Users/um-yunsang/KOSMOS && git pull --ff-only
-git worktree add ../KOSMOS-w-2298 -b 2298-system-prompt-rewrite
-cd ../KOSMOS-w-2298
+cd /Users/um-yunsang/KOSAX && git pull --ff-only
+git worktree add ../KOSAX-w-2298 -b 2298-system-prompt-rewrite
+cd ../KOSAX-w-2298
 # /speckit-specify Epic η — system prompt teaching the LLM about
 # 4 primitives + 11 verify families + citizen verify→lookup→submit chain
 # pattern + delegation token vocabulary. The infinite-spinner gate.

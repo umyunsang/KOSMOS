@@ -1,6 +1,6 @@
 # Phase 1 Data Model: K-EXAONE Tool Wiring
 
-> Epic [#2077](https://github.com/umyunsang/KOSMOS/issues/2077) · 2026-04-27
+> Epic [#2077](https://github.com/umyunsang/KOSAX/issues/2077) · 2026-04-27
 > Companion to [plan.md](./plan.md). Defines every entity surfaced by the migration, with field shapes, validation rules, lifecycle, and pairing invariants.
 
 ## Overview
@@ -120,7 +120,7 @@ type ToolResultBlockParam = {
   type: 'tool_result'
   tool_use_id: string             // matches the originating tool_use block's id
   content: string | ContentBlock[]  // typically JSON-serialized envelope; CC also allows image / citation blocks
-  is_error?: boolean              // optional flag; backend signals via envelope.kind === 'error' for KOSMOS
+  is_error?: boolean              // optional flag; backend signals via envelope.kind === 'error' for KOSAX
 }
 ```
 
@@ -130,7 +130,7 @@ type ToolResultBlockParam = {
 |---|---|---|
 | `call_id` | `tool_use_id` | Pairing key |
 | `envelope` (PrimitiveOutput discriminated union) | `content` | `JSON.stringify(envelope)` — preserves the existing `_dispatch_primitive` payload shape |
-| `envelope.kind === 'error'` | `is_error: true` | KOSMOS convention |
+| `envelope.kind === 'error'` | `is_error: true` | KOSAX convention |
 
 **Lifecycle**:
 
@@ -214,7 +214,7 @@ deps.ts await resolves
 **Timeout behavior**:
 
 - Implemented via `setTimeout(resolver, timeoutMs)` set when the slot becomes head.
-- `timeoutMs` reads `KOSMOS_PERMISSION_TIMEOUT_SEC * 1000` (Spec 033 default 300).
+- `timeoutMs` reads `KOSAX_PERMISSION_TIMEOUT_SEC * 1000` (Spec 033 default 300).
 - On timeout, decision is `'timeout'`. The backend treats `'timeout'` identically to `'denied'` for fail-closed (Constitution §II).
 
 **Edge cases**:
@@ -226,7 +226,7 @@ deps.ts await resolves
 
 ## 5. System prompt augmentation
 
-**Source of truth**: Python helper `kosmos.llm.system_prompt_builder.build_system_prompt_with_tools()`.
+**Source of truth**: Python helper `kosax.llm.system_prompt_builder.build_system_prompt_with_tools()`.
 
 **Function signature**:
 
@@ -287,7 +287,7 @@ def build_system_prompt_with_tools(
 
 **Spec 026 prompt-hash interaction**:
 
-- The Spec 026 `kosmos.prompt.hash` OTEL span attribute hashes the **base** prompt (`prompts/system_v1.md`) — the augmentation is excluded from the hash so changing the inventory does not invalidate prompt-cache reuse.
+- The Spec 026 `kosax.prompt.hash` OTEL span attribute hashes the **base** prompt (`prompts/system_v1.md`) — the augmentation is excluded from the hash so changing the inventory does not invalidate prompt-cache reuse.
 - This is the documented behavior; this epic does not change it.
 
 ---

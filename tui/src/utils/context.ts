@@ -1,5 +1,5 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
-// KOSMOS-original: CC beta headers not used with FriendliAI provider.
+// KOSAX-original: CC beta headers not used with FriendliAI provider.
 const CONTEXT_1M_BETA_HEADER = ''
 import { getGlobalConfig } from './config.js'
 import { isEnvTruthy } from './envUtils.js'

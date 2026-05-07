@@ -35,16 +35,16 @@ from zoneinfo import ZoneInfo
 import pytest
 import respx
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.models import LookupCollection, LookupError  # noqa: A004
-from kosmos.tools.nmc.emergency_search import (
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.models import LookupCollection, LookupError  # noqa: A004
+from kosax.tools.nmc.emergency_search import (
     NmcEmergencySearchInput,
     _build_request,
     handle,
     register,
 )
-from kosmos.tools.nmc.freshness import check_freshness
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.nmc.freshness import check_freshness
+from kosax.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Shared constants
@@ -91,7 +91,7 @@ def nmc_reg_exec():
 
 
 class TestNmcLive:
-    """Live integration tests — only run with KOSMOS_DATA_GO_KR_API_KEY set.
+    """Live integration tests — only run with KOSAX_DATA_GO_KR_API_KEY set.
 
     These tests call the real NMC API and verify the live response structure.
     They are skipped in CI (AGENTS.md hard rule: never call live data.go.kr from CI).
@@ -180,7 +180,7 @@ class TestSpec023FreshnessGateParity:
     T023 requirement: 'hvidate 5분 이내 fresh / 그 외 stale_data 에러'
     """
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_hvidate_within_5min_is_fresh(self, mock_dt: object) -> None:
         """hvidate 5 min old with threshold=30 → is_fresh=True (US3 freshness parity).
 
@@ -195,7 +195,7 @@ class TestSpec023FreshnessGateParity:
         )
         assert abs(result.data_age_minutes - 5.0) < 0.1
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_hvidate_at_threshold_boundary_is_fresh(self, mock_dt: object) -> None:
         """hvidate exactly 30 min old with threshold=30 → is_fresh=True (boundary inclusive).
 
@@ -209,7 +209,7 @@ class TestSpec023FreshnessGateParity:
             f"(age={result.data_age_minutes:.1f} min)"
         )
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_hvidate_1min_past_threshold_is_stale(self, mock_dt: object) -> None:
         """hvidate 31 min old with threshold=30 → is_fresh=False (stale_data).
 
@@ -224,7 +224,7 @@ class TestSpec023FreshnessGateParity:
         )
         assert abs(result.data_age_minutes - 31.0) < 0.1
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_hvidate_70min_old_is_stale_data_error(self, mock_dt: object) -> None:
         """70 min old hvidate with threshold=30 → is_fresh=False (stale_data).
 
@@ -239,8 +239,8 @@ class TestSpec023FreshnessGateParity:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.tools.nmc.freshness.datetime")
-    @patch("kosmos.settings.settings")
+    @patch("kosax.tools.nmc.freshness.datetime")
+    @patch("kosax.settings.settings")
     async def test_fresh_fixture_pipeline_returns_collection(
         self, mock_settings: Any, mock_dt: Any, nmc_reg_exec: Any
     ) -> None:
@@ -271,8 +271,8 @@ class TestSpec023FreshnessGateParity:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.tools.nmc.freshness.datetime")
-    @patch("kosmos.settings.settings")
+    @patch("kosax.tools.nmc.freshness.datetime")
+    @patch("kosax.settings.settings")
     async def test_stale_fixture_pipeline_returns_stale_data_error(
         self, mock_settings: Any, mock_dt: Any, nmc_reg_exec: Any
     ) -> None:
@@ -325,7 +325,7 @@ class TestNmcUrlEncodingRegression:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.settings.settings")
+    @patch("kosax.settings.settings")
     async def test_params_dict_does_not_trigger_400(
         self, mock_settings: Any, nmc_reg_exec: Any
     ) -> None:
@@ -343,7 +343,7 @@ class TestNmcUrlEncodingRegression:
 
         inp = NmcEmergencySearchInput(mode="coordinate", lat=_SEOUL_LAT, lon=_SEOUL_LON, limit=3)
 
-        with patch("kosmos.tools.nmc.freshness.datetime") as mock_dt:
+        with patch("kosax.tools.nmc.freshness.datetime") as mock_dt:
             _mock_dt(mock_dt)
             result = await handle(inp)
 
@@ -364,7 +364,7 @@ class TestNmcUrlEncodingRegression:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.settings.settings")
+    @patch("kosax.settings.settings")
     async def test_korean_string_interpolation_would_trigger_400(self, mock_settings: Any) -> None:
         """Demonstrate HTTP 400 when Korean strings are interpolated into URL directly.
 
@@ -373,7 +373,7 @@ class TestNmcUrlEncodingRegression:
 
         The mock returns HTTP 400 for any URL containing raw (non-percent-encoded)
         Korean characters, matching the real NMC API behavior documented in
-        /tmp/kosmos-evidence/medical-evidence.md § Test 1.
+        /tmp/kosax-evidence/medical-evidence.md § Test 1.
         """
         mock_settings.data_go_kr_api_key = "test-key"
         mock_settings.nmc_freshness_minutes = 30
@@ -421,7 +421,7 @@ class TestNmcUrlEncodingRegression:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.settings.settings")
+    @patch("kosax.settings.settings")
     async def test_params_dict_encodes_all_query_params(
         self, mock_settings: Any, nmc_reg_exec: Any
     ) -> None:
@@ -441,7 +441,7 @@ class TestNmcUrlEncodingRegression:
 
         inp = NmcEmergencySearchInput(mode="coordinate", lat=_SEOUL_LAT, lon=_SEOUL_LON, limit=5)
 
-        with patch("kosmos.tools.nmc.freshness.datetime") as mock_dt:
+        with patch("kosax.tools.nmc.freshness.datetime") as mock_dt:
             _mock_dt(mock_dt)
             await handle(inp)
 
@@ -465,7 +465,7 @@ class TestNmcUrlEncodingRegression:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.settings.settings")
+    @patch("kosax.settings.settings")
     async def test_region_mode_uses_official_q0_q1_list_operation(self, mock_settings: Any) -> None:
         """Region mode maps directly to NMC getEgytListInfoInqire Q0/Q1.
 
@@ -542,7 +542,7 @@ class TestNmcDescriptionV4:
         not a plain string literal. This test verifies the result is a non-empty
         multi-section string.
         """
-        from kosmos.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
+        from kosax.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
 
         desc = NMC_EMERGENCY_SEARCH_TOOL.llm_description
         assert isinstance(desc, str), "llm_description must be a string"
@@ -550,8 +550,8 @@ class TestNmcDescriptionV4:
 
     def test_description_within_500_token_budget(self) -> None:
         """NMC description must not exceed 500-token budget (_description_template.py)."""
-        from kosmos.tools._description_template import _estimate_tokens
-        from kosmos.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
+        from kosax.tools._description_template import _estimate_tokens
+        from kosax.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
 
         token_count = _estimate_tokens(NMC_EMERGENCY_SEARCH_TOOL.llm_description)
         assert token_count <= 500, f"NMC description exceeds 500-token budget: {token_count} tokens"
@@ -561,7 +561,7 @@ class TestNmcDescriptionV4:
 
         T022 requirement: 'description 입력 quirk 섹션에 한국어 query param URL 인코딩 quirk 명시'.
         """
-        from kosmos.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
+        from kosax.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
 
         desc = NMC_EMERGENCY_SEARCH_TOOL.llm_description
         # The description must mention URL encoding and params dict
@@ -571,7 +571,7 @@ class TestNmcDescriptionV4:
 
     def test_description_contains_freshness_slo_mention(self) -> None:
         """NMC description must mention freshness SLO (hvidate / stale_data)."""
-        from kosmos.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
+        from kosax.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
 
         desc = NMC_EMERGENCY_SEARCH_TOOL.llm_description
         assert "hvidate" in desc, "NMC description must reference hvidate freshness field"
@@ -592,7 +592,7 @@ class TestNmcDescriptionV4:
         ``resolve_location`` and an ordering signal so K-EXAONE has
         unambiguous chain guidance.
         """
-        from kosmos.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
+        from kosax.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
 
         desc = NMC_EMERGENCY_SEARCH_TOOL.llm_description
         assert "resolve_location" in desc, (

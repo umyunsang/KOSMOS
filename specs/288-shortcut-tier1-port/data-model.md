@@ -20,7 +20,7 @@ export const KEYBINDING_CONTEXTS = [
 export type KeybindingContext = typeof KEYBINDING_CONTEXTS[number]
 ```
 
-**Contexts deliberately omitted from CC's full list**: `Autocomplete`, `Help`, `Transcript`, `Task`, `ThemePicker`, `Settings`, `Tabs`, `Attachments`, `Footer`, `MessageSelector`, `DiffDialog`, `ModelPicker`, `Select`, `Plugin` — none are live in KOSMOS Phase 2. Tier 2/3 ports (Epics E / post-launch) will broaden the enum.
+**Contexts deliberately omitted from CC's full list**: `Autocomplete`, `Help`, `Transcript`, `Task`, `ThemePicker`, `Settings`, `Tabs`, `Attachments`, `Footer`, `MessageSelector`, `DiffDialog`, `ModelPicker`, `Select`, `Plugin` — none are live in KOSAX Phase 2. Tier 2/3 ports (Epics E / post-launch) will broaden the enum.
 
 ### 2. `TierOneAction` (enum)
 
@@ -87,7 +87,7 @@ special     = "tab" | "enter" | "escape" | "up" | "down" | "left" | "right"
 
 ### 5. `UserOverrideFile`
 
-**Purpose**: Optional citizen-editable JSON file at `~/.kosmos/keybindings.json`.
+**Purpose**: Optional citizen-editable JSON file at `~/.kosax/keybindings.json`.
 
 **Shape** (see contracts/user-override.schema.json for the canonical JSON Schema):
 
@@ -186,15 +186,15 @@ Each successful Tier 1 dispatch emits an OTel span with attributes:
 
 | Attribute | Type | Example | Notes |
 |---|---|---|---|
-| `kosmos.tui.binding` | string | `agent-interrupt` | TierOneAction name |
-| `kosmos.tui.binding.context` | string | `Global` | KeybindingContext |
-| `kosmos.tui.binding.chord` | string | `ctrl+c` | effective chord at dispatch |
-| `kosmos.tui.binding.reserved` | bool | `true` | from KeybindingEntry |
+| `kosax.tui.binding` | string | `agent-interrupt` | TierOneAction name |
+| `kosax.tui.binding.context` | string | `Global` | KeybindingContext |
+| `kosax.tui.binding.chord` | string | `ctrl+c` | effective chord at dispatch |
+| `kosax.tui.binding.reserved` | bool | `true` | from KeybindingEntry |
 
 Blocked dispatches emit the same span with an additional:
 
 | Attribute | Type | Example |
 |---|---|---|
-| `kosmos.tui.binding.blocked.reason` | string | `ime-composing` |
+| `kosax.tui.binding.blocked.reason` | string | `ime-composing` |
 
 Reserved-action dispatches additionally write a `ToolCallAuditRecord` (Spec 024) with event types `user-interrupted` or `session-exited`.

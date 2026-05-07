@@ -12,7 +12,7 @@ Set Width 1200
 Set Height 700
 Set Theme "TokyoNightStorm"
 
-Type "cd /Users/um-yunsang/KOSMOS-w-2293/tui && KOSMOS_BACKEND_CMD='sleep 60' bun run tui"
+Type "cd /Users/um-yunsang/KOSAX-w-2293/tui && KOSAX_BACKEND_CMD='sleep 60' bun run tui"
 Enter
 Sleep 5s
 

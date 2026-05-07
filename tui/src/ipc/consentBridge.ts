@@ -4,7 +4,7 @@
 // Provides `requestRevoke()` — a Promise-based wrapper around the
 // consent_revoke_request / consent_revoke_response IPC round-trip.
 //
-// The bridge is the TS-side analog of kosmos.plugins.consent_bridge.IPCConsentBridge;
+// The bridge is the TS-side analog of kosax.plugins.consent_bridge.IPCConsentBridge;
 // it uses the same _pending Map pattern used by the existing permission
 // round-trip in stdio.py (_pending_perms).
 //
@@ -14,12 +14,12 @@
 //
 // Integration notes:
 // - The bridge registers itself as a listener on the IPC bridge singleton
-//   (getOrCreateKosmosBridge) so `_handleConsentRevokeResponse` is called
+//   (getOrCreateKosaxBridge) so `_handleConsentRevokeResponse` is called
 //   whenever the backend emits a consent_revoke_response frame.
 // - `_resetPending()` is exposed for tests to clear state between cases.
-// - Default timeout: 5 s (KOSMOS_CONSENT_REVOKE_TIMEOUT_MS env var overrides).
+// - Default timeout: 5 s (KOSAX_CONSENT_REVOKE_TIMEOUT_MS env var overrides).
 
-import { getOrCreateKosmosBridge } from './bridgeSingleton.js'
+import { getOrCreateKosaxBridge } from './bridgeSingleton.js'
 import type { ConsentRevokeResponseFrame, IPCFrame } from './frames.generated.js'
 
 // ---------------------------------------------------------------------------
@@ -43,7 +43,7 @@ type PendingEntry = {
 // ---------------------------------------------------------------------------
 
 const DEFAULT_TIMEOUT_MS = (() => {
-  const env = globalThis.process?.env?.['KOSMOS_CONSENT_REVOKE_TIMEOUT_MS']
+  const env = globalThis.process?.env?.['KOSAX_CONSENT_REVOKE_TIMEOUT_MS']
   const parsed = env ? parseInt(env, 10) : NaN
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 5000
 })()
@@ -131,7 +131,7 @@ export function requestRevoke(
 
   // Emit the request frame via the bridge singleton.
   // bridge.send() is synchronous (returns bool); false means backend exited.
-  const bridge = getOrCreateKosmosBridge()
+  const bridge = getOrCreateKosaxBridge()
   const sent = bridge.send({
     kind: 'consent_revoke_request',
     session_id: sessionId,
@@ -170,7 +170,7 @@ export function requestRevoke(
  * `_handleConsentRevokeResponse`.
  */
 export function installConsentRevokeBridgeListener(): void {
-  const bridge = getOrCreateKosmosBridge()
+  const bridge = getOrCreateKosaxBridge()
   const existingOnFrame = bridge.onFrame
   bridge.onFrame = (frame: IPCFrame, direction: 'recv' | 'send', latencyMs: number) => {
     if (direction === 'recv' && frame.kind === 'consent_revoke_response') {

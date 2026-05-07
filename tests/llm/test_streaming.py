@@ -10,10 +10,10 @@ import httpx
 import pytest
 import respx
 
-from kosmos.llm.client import LLMClient
-from kosmos.llm.config import LLMClientConfig
-from kosmos.llm.errors import AuthenticationError, StreamInterruptedError
-from kosmos.llm.models import ChatMessage, StreamEvent
+from kosax.llm.client import LLMClient
+from kosax.llm.config import LLMClientConfig
+from kosax.llm.errors import AuthenticationError, StreamInterruptedError
+from kosax.llm.models import ChatMessage, StreamEvent
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -91,11 +91,11 @@ def _stop_chunk(
 
 @pytest.fixture(autouse=True)
 def _clean_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Strip all KOSMOS_ env vars and inject a known test token."""
+    """Strip all KOSAX_ env vars and inject a known test token."""
     for key in list(os.environ):
-        if key.startswith("KOSMOS_"):
+        if key.startswith("KOSAX_"):
             monkeypatch.delenv(key, raising=False)
-    monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-token-12345")
+    monkeypatch.setenv("KOSAX_FRIENDLI_TOKEN", "test-token-12345")
 
 
 @pytest.fixture

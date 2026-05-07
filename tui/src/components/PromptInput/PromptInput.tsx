@@ -982,8 +982,8 @@ function PromptInput({
     setSuggestionsStateRaw(prev => typeof updater === 'function' ? updater(prev) : updater);
   }, []);
   const onSubmit = useCallback(async (inputParam: string, isSubmittingSlashCommand = false) => {
-    // KOSMOS-1978 T003 diag: trace which guard swallows Enter.
-    // Set KOSMOS_TUI_LOG_LEVEL=DEBUG and the entries below appear on stderr
+    // KOSAX-1978 T003 diag: trace which guard swallows Enter.
+    // Set KOSAX_TUI_LOG_LEVEL=DEBUG and the entries below appear on stderr
     // (per tui/src/ipc/bridge.ts:_log — stderr-only, never on the frame stdout).
     logForDebugging(`[onSubmit] enter input=${JSON.stringify(inputParam)} slashCmd=${isSubmittingSlashCommand}`);
     inputParam = inputParam.trimEnd();

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Spec 2294 — KOSMOS Primitive Permission UI — Korean strings.
+// Spec 2294 — KOSAX Primitive Permission UI — Korean strings.
 //
 // Citations:
 //   PIPA §22-2: 개인정보처리자는 개인정보 처리에 관한 사항을 공개하여야 한다

@@ -9,7 +9,7 @@ never sees the marker.
 
 from __future__ import annotations
 
-from kosmos.llm.tool_call_parser import (
+from kosax.llm.tool_call_parser import (
     ParsedToolCall,
     StreamGate,
     extract_textual_tool_calls,

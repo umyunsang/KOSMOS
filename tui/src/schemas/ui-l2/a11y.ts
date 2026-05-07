@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Spec 1635 P4 UI L2 — AccessibilityPreference entity (data-model.md §5, FR-005).
 //
-// Persisted at ~/.kosmos/memdir/user/preferences/a11y.json. Owned by Epic #1635.
+// Persisted at ~/.kosax/memdir/user/preferences/a11y.json. Owned by Epic #1635.
 // Each toggle is independent — combinations like screen_reader + high_contrast
 // are valid. SC-011: a toggle change must persist within 500 ms.
 import { z } from 'zod';

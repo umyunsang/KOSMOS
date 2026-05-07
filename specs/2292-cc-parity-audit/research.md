@@ -35,10 +35,10 @@
 
 **Question**: `cc-source-scope-audit.md § 1.1, § 1.2` 가 주장하는 분류 숫자 (1,531 / 73 / 212 / 274 / 68) 가 audit 시점 (2026-04-29) 에서도 유효한가? 그리고 분류 list 를 어떻게 deterministic 하게 추출하나?
 
-**Decision**: `find` + `diff -rq` 조합으로 두 디렉토리 (`tui/src/`, `.references/claude-code-sourcemap/restored-src/src/`) 의 매칭/비매칭 파일을 산출하고 `sort` 로 deterministic 순서 강제. 결과 list 를 `data/enumerated-{keep-1531|import-73|modified-212|kosmos-only-274|cc-only-68}.txt` 로 박제. 이 산출 단계가 FR-010 의 "drift 발견 시 정정" 요구를 자동 충족.
+**Decision**: `find` + `diff -rq` 조합으로 두 디렉토리 (`tui/src/`, `.references/claude-code-sourcemap/restored-src/src/`) 의 매칭/비매칭 파일을 산출하고 `sort` 로 deterministic 순서 강제. 결과 list 를 `data/enumerated-{keep-1531|import-73|modified-212|kosax-only-274|cc-only-68}.txt` 로 박제. 이 산출 단계가 FR-010 의 "drift 발견 시 정정" 요구를 자동 충족.
 
 **Rationale**:
-- `diff -rq` 는 텍스트/바이너리 무관 byte 비교만 보고 (not line-level). 이 단계에서 `Files differ` 행이 modified, `Only in restored-src` 가 cc-only DELETE, `Only in tui/src/` 가 KOSMOS-only ADDITIONS 후보.
+- `diff -rq` 는 텍스트/바이너리 무관 byte 비교만 보고 (not line-level). 이 단계에서 `Files differ` 행이 modified, `Only in restored-src` 가 cc-only DELETE, `Only in tui/src/` 가 KOSAX-only ADDITIONS 후보.
 - byte-identical 후보는 `diff -rq` 결과에 등장하지 않은 매칭 파일들. `comm` 으로 set 차집합으로 추출.
 - SDK-import-only-diff 후보는 modified set 의 부분집합으로, 별도 R-3 절차로 가려냄.
 - 모든 list 는 `LC_ALL=C sort` 로 환경 비의존 정렬 → 시드 사용시 reproducibility 보장.
@@ -77,7 +77,7 @@
 **Decision**: 각 파일 쌍 (`tui/src/X` vs `restored-src/src/X`) 에 대해 `diff` 출력에서 import 관련 라인을 필터링 후 잔여 diff hunk 가 비어있는지 확인. import 라인 패턴 = `^[+-]\s*(import|from|export\s+\*\s+from|export\s*\{[^}]*\}\s+from)\b`. 잔여 diff 가 비어있으면 import-only 확정, 아니면 reclassify-to-modified.
 
 **Rationale**:
-- TypeScript `import` / `re-export` 문법 한정 패턴. SDK swap (`@anthropic-ai/...` → `@kosmos/...`) 은 import line 1-2 줄에 국한된다는 cc-source-scope-audit § 1.1 가설을 직접 검증.
+- TypeScript `import` / `re-export` 문법 한정 패턴. SDK swap (`@anthropic-ai/...` → `@kosax/...`) 은 import line 1-2 줄에 국한된다는 cc-source-scope-audit § 1.1 가설을 직접 검증.
 - 잔여 diff 검사로 false-positive 방지 — 만약 본문에도 변경이 있으면 반드시 modified 로 분류 ([FR-008](spec.md#requirements)).
 - 단순 grep 이라 reproducibility 와 환경 의존성 모두 무난.
 
@@ -95,12 +95,12 @@
 
 | 시그널 | Legitimate 단서 | Cleanup-needed 단서 | Suspicious 단서 |
 |---|---|---|---|
-| **(a) 디렉토리 패턴** | `i18n/`, `ipc/`, `theme/`, `observability/`, `ssh/` (KOSMOS 인프라) — KEEP 후보가 modified 로 잘못 분류된 경우 reclassify | `services/api/claude.ts`, `services/api/sonnet.ts`, `services/api/anthropic.ts` (Spec 1633 잔재) | 기타 — 추가 검토 필요 |
-| **(b) Git history** | `git log --follow` 첫 커밋이 KOSMOS spec id (`feat/NNNN-...`) 매핑 가능 | `Spec 1633` 기간 (2026-04-23 ~ 2026-04-28) 내 마지막 변경 + 후속 cleanup 미완 | author/메시지에서 추적 불가 (예: 단순 `chore` / `refactor` 만) |
-| **(c) Import scan** | `@kosmos/...` import / 한국어 i18n key / EXAONE 모델 ID 등 KOSMOS-only 토큰 존재 | `claude.ts` / `Anthropic` / `claude-code-style` 잔재 import | KOSMOS 도 CC 도 아닌 외부 의존 또는 dead-code 감지 |
+| **(a) 디렉토리 패턴** | `i18n/`, `ipc/`, `theme/`, `observability/`, `ssh/` (KOSAX 인프라) — KEEP 후보가 modified 로 잘못 분류된 경우 reclassify | `services/api/claude.ts`, `services/api/sonnet.ts`, `services/api/anthropic.ts` (Spec 1633 잔재) | 기타 — 추가 검토 필요 |
+| **(b) Git history** | `git log --follow` 첫 커밋이 KOSAX spec id (`feat/NNNN-...`) 매핑 가능 | `Spec 1633` 기간 (2026-04-23 ~ 2026-04-28) 내 마지막 변경 + 후속 cleanup 미완 | author/메시지에서 추적 불가 (예: 단순 `chore` / `refactor` 만) |
+| **(c) Import scan** | `@kosax/...` import / 한국어 i18n key / EXAONE 모델 ID 등 KOSAX-only 토큰 존재 | `claude.ts` / `Anthropic` / `claude-code-style` 잔재 import | KOSAX 도 CC 도 아닌 외부 의존 또는 dead-code 감지 |
 
 자동 분류 알고리즘 (`scripts/classify-modified.py`):
-1. (a) 디렉토리 매칭 — KOSMOS 인프라 디렉토리 매칭이면 Legitimate, Spec 1633 알려진 잔재 path 매칭이면 Cleanup-needed.
+1. (a) 디렉토리 매칭 — KOSAX 인프라 디렉토리 매칭이면 Legitimate, Spec 1633 알려진 잔재 path 매칭이면 Cleanup-needed.
 2. (b) `git log --pretty='%H %s' -- <file>` 으로 마지막 5 commit 의 spec id grep — 매핑 가능하면 Legitimate.
 3. (c) 본문 grep — `@anthropic-ai/`, `claude.ts`, `verifyApiKey` 등 알려진 잔재 토큰이 있으면 Cleanup-needed; 없으면 (a)+(b) 결과 따름.
 4. 위 3 개 시그널 모두 결정짓지 못하는 파일 = Suspicious.
@@ -108,8 +108,8 @@
 Lead 의 2 차 수동 검토는 Suspicious + 일부 Legitimate sample (각 5–10 개) 만 대상으로 산출물 검수.
 
 **Rationale**:
-- KOSMOS 의 known cleanup 잔재 path 와 토큰 list (`docs/spec-1633-status` + `MEMORY.md § project_tui_anthropic_residue` + `project_frame_schema_dead_arms`) 가 이미 grounded-truth 제공 → 휴리스틱 base 무난.
-- spec history 매핑은 KOSMOS 의 `feat/NNNN-...` branch 컨벤션 덕에 grep 으로 충분.
+- KOSAX 의 known cleanup 잔재 path 와 토큰 list (`docs/spec-1633-status` + `MEMORY.md § project_tui_anthropic_residue` + `project_frame_schema_dead_arms`) 가 이미 grounded-truth 제공 → 휴리스틱 base 무난.
+- spec history 매핑은 KOSAX 의 `feat/NNNN-...` branch 컨벤션 덕에 grep 으로 충분.
 - 100% 자동 분류 목표는 비현실 — Suspicious 는 본질적으로 "휴리스틱이 결정 못한 파일" 이므로 산출물의 정의에 부합.
 
 **Alternatives considered**:
@@ -155,4 +155,4 @@ Lead 의 2 차 수동 검토는 Suspicious + 일부 Legitimate sample (각 5–1
 
 ## Constitution Re-check (post-research)
 
-R-1~R-6 모두 신규 의존성 0 건, source 변경 0 라인, KOSMOS-invented permission classification 도입 0 건. Constitution 전 항목 PASS 유지. Phase 1 진입 가능.
+R-1~R-6 모두 신규 의존성 0 건, source 변경 0 라인, KOSAX-invented permission classification 도입 0 건. Constitution 전 항목 PASS 유지. Phase 1 진입 가능.

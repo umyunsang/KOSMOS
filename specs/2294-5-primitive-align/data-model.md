@@ -31,7 +31,7 @@ The 9-member contract that every primitive (and every adapter that registers as 
 
 ## E2 — `PrimitiveInput` / `PrimitiveOutput` (cross-layer envelope; unchanged)
 
-**Source-of-truth**: `src/kosmos/primitives/__init__.py` (Python, Pydantic v2). TS-side mirror in zod under each primitive's `inputSchema` / `outputSchema`.
+**Source-of-truth**: `src/kosax/primitives/__init__.py` (Python, Pydantic v2). TS-side mirror in zod under each primitive's `inputSchema` / `outputSchema`.
 
 **Lookup primitive shape** (from existing `LookupPrimitive.ts` :22–71, retained verbatim):
 
@@ -50,7 +50,7 @@ Submit / verify / subscribe envelopes follow the analogous discriminated-union p
 
 ## E3 — `AdapterRealDomainPolicy` (Epic δ output; consumed verbatim here)
 
-**Source-of-truth**: `src/kosmos/tools/policy.py` — frozen Pydantic v2 model added by Epic δ in commit `c6747dd`.
+**Source-of-truth**: `src/kosax/tools/policy.py` — frozen Pydantic v2 model added by Epic δ in commit `c6747dd`.
 
 Fields used by this Epic:
 

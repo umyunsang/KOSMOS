@@ -1,15 +1,15 @@
-# KOSMOS Domain Harness Architecture — Research-Driven Redesign
+# KOSAX Domain Harness Architecture — Research-Driven Redesign
 
 **Status**: Research deliverable (informs follow-up epic)
 **Date**: 2026-04-29
-**Trigger**: User direction — KOSMOS does NOT invent domain permission policy; KOSMOS is a *harness* that calls real Korean public-service domains (정부24, 홈택스, 의약품안전나라, KOROAD, KMA, HIRA, NMC, NFA119, MOHW, MFDS, 마이데이터 등). Student team has no live API credentials, so mocks mirror the real shape and the harness flow runs end-to-end identically.
-**Research basis**: `feedback_harness_not_reimplementation`, `feedback_mock_evidence_based`, `feedback_mock_vs_scenario`, `feedback_kosmos_scope_cc_plus_two_swaps`. Domain-specific authoritative sources cited inline.
+**Trigger**: User direction — KOSAX does NOT invent domain permission policy; KOSAX is a *harness* that calls real Korean public-service domains (정부24, 홈택스, 의약품안전나라, KOROAD, KMA, HIRA, NMC, NFA119, MOHW, MFDS, 마이데이터 등). Student team has no live API credentials, so mocks mirror the real shape and the harness flow runs end-to-end identically.
+**Research basis**: `feedback_harness_not_reimplementation`, `feedback_mock_evidence_based`, `feedback_mock_vs_scenario`, `feedback_kosax_scope_cc_plus_two_swaps`. Domain-specific authoritative sources cited inline.
 
 ---
 
 ## 0. Thesis (one paragraph)
 
-KOSMOS is **not a domain implementer**. It is a Claude Code-style harness with two swaps from CC-original: (a) the LLM is K-EXAONE on FriendliAI, (b) the main-tool surface is the citizen-centric 5-primitive set (`lookup` / `submit` / `verify` / `subscribe` + `resolve_location`). Every tool the LLM calls represents a **real Korean public-service domain endpoint** that the agency itself operates and governs. KOSMOS' job is to (1) discover the right adapter, (2) honor whatever permission gate the agency itself publishes, (3) call the live endpoint when credentials are present, and (4) fall back to a shape-compatible mock when credentials are absent — *without altering the harness flow that the LLM and citizen observe*. KOSMOS never invents a permission classification; the adapter declares the real-domain policy and the harness routes accordingly.
+KOSAX is **not a domain implementer**. It is a Claude Code-style harness with two swaps from CC-original: (a) the LLM is K-EXAONE on FriendliAI, (b) the main-tool surface is the citizen-centric 5-primitive set (`lookup` / `submit` / `verify` / `subscribe` + `resolve_location`). Every tool the LLM calls represents a **real Korean public-service domain endpoint** that the agency itself operates and governs. KOSAX' job is to (1) discover the right adapter, (2) honor whatever permission gate the agency itself publishes, (3) call the live endpoint when credentials are present, and (4) fall back to a shape-compatible mock when credentials are absent — *without altering the harness flow that the LLM and citizen observe*. KOSAX never invents a permission classification; the adapter declares the real-domain policy and the harness routes accordingly.
 
 ---
 
@@ -21,7 +21,7 @@ Authoritative public sources for each domain. Full citations in the research del
 
 These domains publish JSON/XML schemas, accept a `serviceKey` query param, and return deterministic envelopes. Mocks can byte-mirror the response.
 
-| Domain | Endpoint family | Quota (dev) | KOSMOS adapter status |
+| Domain | Endpoint family | Quota (dev) | KOSAX adapter status |
 |---|---|---|---|
 | **KOROAD 도로교통공단** | `B552061/frequentzoneLg` 사고다발지역 | 10,000/day | **Live** — `koroad_accident_search`, `koroad_accident_hazard_search` |
 | **KMA 기상청** | `1360000/VilageFcstInfoService_2.0` 단기·초단기·중기·특보·사전영향 | 10,000/day | **Live × 6** |
@@ -52,7 +52,7 @@ These domains expose no public spec for the operation in question, or the operat
 | **모바일 신분증** | VC/VP 발급, 제시 | dev.mobileid.go.kr API surface (post-NDA) | DID exchange + TEE/SE binding, KOMSCO-controlled |
 | **공동인증서 / KEC 서명** | per-tx signing | KISA HTML5 PKI guideline, cert-chain validation | Local key + per-tx PIN, signing flow gated |
 | **금융인증서 (yessign)** | 전자서명 | KFTC openapi.kftc.or.kr surface (post-application) | 1:1 비공개 procurement, cloud cert ops gated |
-| **마이데이터 (금융위)** | live 표준 API 호출 | developers.mydatakorea.org spec, 표준동의서 UX | 신용정보업 허가 + 기능적합성 심사 + mTLS — KOSMOS student tier cannot legally call live |
+| **마이데이터 (금융위)** | live 표준 API 호출 | developers.mydatakorea.org spec, 표준동의서 UX | 신용정보업 허가 + 기능적합성 심사 + mTLS — KOSAX student tier cannot legally call live |
 | **디지털원패스 SSO** | (retired 2025-12-30) | — | **Dead infrastructure**. Successor: 정부 통합인증 (Any-ID). |
 
 ---
@@ -136,7 +136,7 @@ LLM continuation
 Citizen sees response
 ```
 
-### 3.2 Adapter declares real-domain policy (not KOSMOS-invented)
+### 3.2 Adapter declares real-domain policy (not KOSAX-invented)
 
 Replace the previous `permission_tier=1/2/3` + `pipa_class=일반/민감/...` invented schema with a **descriptive metadata block** that quotes the agency's own policy:
 
@@ -180,7 +180,7 @@ class CitizenGate(BaseModel):
     description_ko: str              # citizen-facing description from agency docs
 ```
 
-### 3.3 Permission gauntlet binds to CC `<PermissionRequest>` (no KOSMOS invention)
+### 3.3 Permission gauntlet binds to CC `<PermissionRequest>` (no KOSAX invention)
 
 The harness uses CC's canonical `<PermissionRequest>` pipeline (already byte-identical with CC restored-src per Spec 1979 Class A audit). When an adapter is about to execute, the harness asks:
 
@@ -194,7 +194,7 @@ adapter.real_domain_policy.citizen_facing_gate.kind
                              and does NOT call adapter.execute()
 ```
 
-Note: The previous KOSMOS-invented `Layer 1 green / 2 orange / 3 red` colour scheme can stay as a **visual hint** in the gauntlet UI, but it derives from `citizen_facing_gate.kind` (a small lookup table), not from a separate "permission_tier" field. The gauntlet's *trust boundary* is the citation URL — everything in the receipt traces back to the agency's own published policy.
+Note: The previous KOSAX-invented `Layer 1 green / 2 orange / 3 red` colour scheme can stay as a **visual hint** in the gauntlet UI, but it derives from `citizen_facing_gate.kind` (a small lookup table), not from a separate "permission_tier" field. The gauntlet's *trust boundary* is the citation URL — everything in the receipt traces back to the agency's own published policy.
 
 ### 3.4 Live-vs-mock mode switch
 
@@ -202,11 +202,11 @@ Note: The previous KOSMOS-invented `Layer 1 green / 2 orange / 3 red` colour sch
 @dataclass(frozen=True)
 class AdapterMode:
     """Per-adapter runtime mode resolved at boot from env vars."""
-    requested: Literal["live", "mock", "auto"]   # KOSMOS_<TOOL>_MODE
+    requested: Literal["live", "mock", "auto"]   # KOSAX_<TOOL>_MODE
     actual: Literal["live", "mock"]              # what we will use this session
 
 def resolve_mode(adapter, env) -> AdapterMode:
-    requested = env.get(f"KOSMOS_{adapter.tool_id.upper()}_MODE", "auto")
+    requested = env.get(f"KOSAX_{adapter.tool_id.upper()}_MODE", "auto")
     if requested == "live":
         if not has_credential(adapter, env):
             raise RuntimeError(f"{adapter.tool_id} requires credential; set "
@@ -224,7 +224,7 @@ def resolve_mode(adapter, env) -> AdapterMode:
 
 ### 3.5 Per-tool rate-limit bucket (research finding #9)
 
-`data.go.kr` quotas are **per-API**, not per-key. KOSMOS rate limiting must index on `tool_id`:
+`data.go.kr` quotas are **per-API**, not per-key. KOSAX rate limiting must index on `tool_id`:
 
 ```python
 class ToolRateLimiter:
@@ -250,7 +250,7 @@ This is a new contract; current `LLMClient` semaphore (Spec 019) is global.
 Implementation: fixture file checked into repo, JSON Schema validation against the real spec, deterministic hash:
 
 ```
-src/kosmos/tools/mock/<domain>/<tool>/
+src/kosax/tools/mock/<domain>/<tool>/
   ├── adapter.py                # implements 5-primitive interface
   ├── fixtures/
   │   ├── happy_path.json       # byte-identical to real API response
@@ -267,7 +267,7 @@ CI validates: fixture × schema × every adapter call returns byte-identical byt
 API surface published but no live observation. Fixture follows the documented shape but values are illustrative:
 
 ```
-src/kosmos/tools/mock/<domain>/<tool>/
+src/kosax/tools/mock/<domain>/<tool>/
   ├── adapter.py
   ├── fixtures/<scenario>.json  # shape-conforming, values illustrative
   ├── shape_contract.md         # cites public spec PDF/page sections
@@ -283,8 +283,8 @@ These do **not** become adapters. They live in `docs/scenarios/<domain>.md` as n
 ```markdown
 # Scenario: 홈택스 종합소득세 신고
 
-KOSMOS does not call NTS 홈택스 directly because no official Open API for
-filing exists (research note 2026-04-29). When a citizen asks KOSMOS to
+KOSAX does not call NTS 홈택스 directly because no official Open API for
+filing exists (research note 2026-04-29). When a citizen asks KOSAX to
 "종합소득세 신고", the LLM should respond with a step-by-step guide directing
 them to hometax.go.kr / 손택스 with their 간편인증 / 공동인증서.
 
@@ -343,7 +343,7 @@ The following changes implement this design. **Each item is a candidate sub-issu
 | E1 | Rewrite `docs/api/<adapter>.md` template — add "Real-domain policy" section with citation | Low |
 | E2 | New `docs/scenarios/` index for OPAQUE domains (홈택스, 정부24-submit, 모바일ID, KEC sign, 금융 sign, mydata-live) | Low |
 | E3 | Update `docs/vision.md § Reference materials` to cite this research deliverable | Low |
-| E4 | ADR — "KOSMOS does not invent permission policy; adapters cite agency policy" | Low |
+| E4 | ADR — "KOSAX does not invent permission policy; adapters cite agency policy" | Low |
 
 ### F. CI gates
 
@@ -351,16 +351,16 @@ The following changes implement this design. **Each item is a candidate sub-issu
 |---|---|---|
 | F1 | New CI check: every adapter must have non-empty `policy.real_classification_url` | Low |
 | F2 | New CI check: byte-mirror grade-5 mocks must produce JSON identical to fixture (sort_keys hash) | Low |
-| F3 | New CI check: scenario-only domains have no adapter file under `src/kosmos/tools/` | Low |
+| F3 | New CI check: scenario-only domains have no adapter file under `src/kosax/tools/` | Low |
 
 ---
 
 ## 6. What this design rejects (for clarity)
 
-- ❌ KOSMOS-invented `PermissionMode` 5-mode spectrum (`default/plan/acceptEdits/bypassPermissions/dontAsk`) — already deleted (Spec 1979 Wave 3).
-- ❌ KOSMOS-invented `pipa_class` enum (`일반/민감/고유식별/특수`) — replace with free-form citation.
-- ❌ KOSMOS-invented NIST AAL hint (`AAL1/AAL2/AAL3`) — agencies don't publish AAL hints; use `citizen_facing_gate.kind` instead.
-- ❌ KOSMOS-invented PIPA §15(2) `ConsentDecision` 4-tuple — agencies dictate their own consent shape (e.g. 마이데이터 표준동의서).
+- ❌ KOSAX-invented `PermissionMode` 5-mode spectrum (`default/plan/acceptEdits/bypassPermissions/dontAsk`) — already deleted (Spec 1979 Wave 3).
+- ❌ KOSAX-invented `pipa_class` enum (`일반/민감/고유식별/특수`) — replace with free-form citation.
+- ❌ KOSAX-invented NIST AAL hint (`AAL1/AAL2/AAL3`) — agencies don't publish AAL hints; use `citizen_facing_gate.kind` instead.
+- ❌ KOSAX-invented PIPA §15(2) `ConsentDecision` 4-tuple — agencies dictate their own consent shape (e.g. 마이데이터 표준동의서).
 - ❌ Building any tool that calls 홈택스 / 정부24 submit endpoints — OPAQUE, scenario-only.
 - ❌ Replicating 디지털원패스 — service retired; needs Any-ID successor stub.
 - ❌ Inventing colour-coded permission tiers for citizen-facing UI without traceability — every visible permission UI must trace back to a citation URL.

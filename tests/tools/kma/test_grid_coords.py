@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.tools.kma.grid_coords import REGION_TO_GRID, lookup_grid
+from kosax.tools.kma.grid_coords import REGION_TO_GRID, lookup_grid
 
 
 class TestRegionToGrid:

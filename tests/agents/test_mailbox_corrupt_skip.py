@@ -16,13 +16,13 @@ from uuid import uuid4
 
 import pytest
 
-from kosmos.agents.mailbox.file_mailbox import FileMailbox
-from kosmos.agents.mailbox.messages import (
+from kosax.agents.mailbox.file_mailbox import FileMailbox
+from kosax.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     ResultPayload,
 )
-from kosmos.tools.models import LookupMeta, LookupRecord
+from kosax.tools.models import LookupMeta, LookupRecord
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -98,7 +98,7 @@ async def test_corrupt_file_skipped_with_warning(
 
     mailbox = FileMailbox(session_id=session_id, root=tmp_path, max_messages=1000)
 
-    with caplog.at_level(logging.WARNING, logger="kosmos.agents.mailbox.file_mailbox"):
+    with caplog.at_level(logging.WARNING, logger="kosax.agents.mailbox.file_mailbox"):
         replayed: list[AgentMessage] = []
         async for msg in mailbox.replay_unread("coordinator"):
             replayed.append(msg)

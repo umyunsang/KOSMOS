@@ -10,7 +10,7 @@ import {
   InMemorySpanExporter,
   SimpleSpanProcessor,
 } from '@opentelemetry/sdk-trace-base'
-import { LLMClient, KOSMOS_DEFAULT_MODEL } from '../../src/ipc/llmClient.js'
+import { LLMClient, KOSAX_DEFAULT_MODEL } from '../../src/ipc/llmClient.js'
 import type { IPCBridge } from '../../src/ipc/bridge.js'
 import type { IPCFrame, AssistantChunkFrame } from '../../src/ipc/frames.generated.js'
 
@@ -108,12 +108,12 @@ describe('LLMClient.complete() — OTEL gen_ai.client.invoke span (T021, SC-008/
     const { bridge } = makeMockBridgeWithPromptHash(FAKE_PROMPT_HASH)
     const client = new LLMClient({
       bridge,
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       sessionId: SESSION_ID,
     })
 
     await client.complete({
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       messages: [{ role: 'user', content: '테스트' }],
       max_tokens: 50,
     })
@@ -127,12 +127,12 @@ describe('LLMClient.complete() — OTEL gen_ai.client.invoke span (T021, SC-008/
     const { bridge } = makeMockBridgeWithPromptHash(FAKE_PROMPT_HASH)
     const client = new LLMClient({
       bridge,
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       sessionId: SESSION_ID,
     })
 
     await client.complete({
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       messages: [{ role: 'user', content: '테스트' }],
       max_tokens: 50,
     })
@@ -142,94 +142,94 @@ describe('LLMClient.complete() — OTEL gen_ai.client.invoke span (T021, SC-008/
     expect(span!.attributes['gen_ai.system']).toBe('friendli_exaone')
   })
 
-  test('span gen_ai.request.model equals KOSMOS_DEFAULT_MODEL', async () => {
+  test('span gen_ai.request.model equals KOSAX_DEFAULT_MODEL', async () => {
     const { bridge } = makeMockBridgeWithPromptHash(FAKE_PROMPT_HASH)
     const client = new LLMClient({
       bridge,
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       sessionId: SESSION_ID,
     })
 
     await client.complete({
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       messages: [{ role: 'user', content: '테스트' }],
       max_tokens: 50,
     })
 
     const span = _exporter.getFinishedSpans().find(s => s.name === 'gen_ai.client.invoke')
     expect(span).toBeDefined()
-    expect(span!.attributes['gen_ai.request.model']).toBe(KOSMOS_DEFAULT_MODEL)
+    expect(span!.attributes['gen_ai.request.model']).toBe(KOSAX_DEFAULT_MODEL)
   })
 
-  test('span has kosmos.session_id === sess-1', async () => {
+  test('span has kosax.session_id === sess-1', async () => {
     const { bridge } = makeMockBridgeWithPromptHash(FAKE_PROMPT_HASH)
     const client = new LLMClient({
       bridge,
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       sessionId: SESSION_ID,
     })
 
     await client.complete({
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       messages: [{ role: 'user', content: '테스트' }],
       max_tokens: 50,
     })
 
     const span = _exporter.getFinishedSpans().find(s => s.name === 'gen_ai.client.invoke')
     expect(span).toBeDefined()
-    expect(span!.attributes['kosmos.session_id']).toBe(SESSION_ID)
+    expect(span!.attributes['kosax.session_id']).toBe(SESSION_ID)
   })
 
-  test('span kosmos.correlation_id matches UUIDv7 pattern', async () => {
+  test('span kosax.correlation_id matches UUIDv7 pattern', async () => {
     const { bridge } = makeMockBridgeWithPromptHash(FAKE_PROMPT_HASH)
     const client = new LLMClient({
       bridge,
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       sessionId: SESSION_ID,
     })
 
     await client.complete({
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       messages: [{ role: 'user', content: '테스트' }],
       max_tokens: 50,
     })
 
     const span = _exporter.getFinishedSpans().find(s => s.name === 'gen_ai.client.invoke')
     expect(span).toBeDefined()
-    const correlationId = span!.attributes['kosmos.correlation_id']
+    const correlationId = span!.attributes['kosax.correlation_id']
     expect(typeof correlationId).toBe('string')
     expect(correlationId as string).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-/)
   })
 
-  test('span kosmos.prompt.hash equals the bridge systemPromptHash', async () => {
+  test('span kosax.prompt.hash equals the bridge systemPromptHash', async () => {
     const { bridge } = makeMockBridgeWithPromptHash(FAKE_PROMPT_HASH)
     const client = new LLMClient({
       bridge,
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       sessionId: SESSION_ID,
     })
 
     await client.complete({
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       messages: [{ role: 'user', content: '테스트' }],
       max_tokens: 50,
     })
 
     const span = _exporter.getFinishedSpans().find(s => s.name === 'gen_ai.client.invoke')
     expect(span).toBeDefined()
-    expect(span!.attributes['kosmos.prompt.hash']).toBe(FAKE_PROMPT_HASH)
+    expect(span!.attributes['kosax.prompt.hash']).toBe(FAKE_PROMPT_HASH)
   })
 
   test('span is ended with status OK on successful complete()', async () => {
     const { bridge } = makeMockBridgeWithPromptHash(FAKE_PROMPT_HASH)
     const client = new LLMClient({
       bridge,
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       sessionId: SESSION_ID,
     })
 
     await client.complete({
-      model: KOSMOS_DEFAULT_MODEL,
+      model: KOSAX_DEFAULT_MODEL,
       messages: [{ role: 'user', content: '테스트' }],
       max_tokens: 50,
     })

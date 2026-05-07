@@ -20,7 +20,7 @@ The core design invariant is **cache prefix stability**: core tool schemas and t
 **Storage**: N/A — in-memory session state only; `ContextBuilder` is stateless
 **Testing**: `uv run pytest` — unit tests cover determinism, tool ordering, budget thresholds, reminder cadence, and engine integration. No live API calls (`@pytest.mark.live` absent).
 **Target Platform**: Linux server (CI) + developer macOS
-**Project Type**: Library module (`src/kosmos/context/`) consumed by `QueryEngine`
+**Project Type**: Library module (`src/kosax/context/`) consumed by `QueryEngine`
 **Performance Goals**: `build_assembled_context()` must complete in under 10 ms on a session with 50 resolved tasks and 20 registered tools (pure in-memory computation, enforced by `pytest-benchmark`)
 **Constraints**: Stateless between turns; `ContextBuilder` must not accumulate per-turn state. System prompt content must be byte-identical across calls for cache stability (NFR-003).
 **Scale/Scope**: Single session scope; the context package is entirely in-memory with no I/O.
@@ -40,7 +40,7 @@ The core design invariant is **cache prefix stability**: core tool schemas and t
 | V — Policy Alignment | PASS | System prompt includes language policy (Korean unless citizen writes in another language), tool-use policy (no fabricating government data), and personal-data handling reminder (FR-009). |
 | Dev Standards | PASS | `stdlib logging` only, `uv + pyproject.toml`, English source text, `estimate_tokens()` reused from existing `engine.tokens`. |
 
-**Complexity Justification**: No constitution violations. The `src/kosmos/context/` sub-package is the fourth Python package under `src/kosmos/`, joining `engine/`, `llm/`, and `tools/`. This is not an extra project; it is a lateral peer package that respects layer separation per `AGENTS.md § Directory layout`.
+**Complexity Justification**: No constitution violations. The `src/kosax/context/` sub-package is the fourth Python package under `src/kosax/`, joining `engine/`, `llm/`, and `tools/`. This is not an extra project; it is a lateral peer package that respects layer separation per `AGENTS.md § Directory layout`.
 
 ---
 
@@ -55,10 +55,10 @@ The core design invariant is **cache prefix stability**: core tool schemas and t
 | Cache boundary management | arXiv 2601.06007 "Don't Break the Cache" | Static core-tool schemas must form a stable prefix. Dynamic content appended after. 41–80% cost reduction in 30–50+ tool-call sessions. Cache partition ordering is an invariant, not a convention. |
 | Prompt cache strategy | Anthropic official docs (prompt caching guide) | Prefix stability requires that the same bytes appear in the same position across requests. This means: (a) system prompt content must be deterministic for given config, (b) core tools must be sorted by `id`, (c) no session-variable content in the prefix. |
 | Context management patterns | Claude Agent SDK (`anthropics/claude-agent-sdk-python`) | `api_health` passed as injected dependency — context assembly is a pure computation, not a I/O layer. |
-| Token budget accounting | Existing `kosmos.engine.tokens.estimate_tokens()` | Reuse for consistency with `PreprocessingPipeline`; avoids dual estimation paths with divergent heuristics. |
+| Token budget accounting | Existing `kosax.engine.tokens.estimate_tokens()` | Reuse for consistency with `PreprocessingPipeline`; avoids dual estimation paths with divergent heuristics. |
 | Tool schema export | Existing `ToolRegistry.export_core_tools_openai()` + `GovAPITool.to_openai_tool()` | `AssembledContext.tool_definitions` reuses the `dict[str, object]` format already consumed by `query.py`. |
 | Reminder cadence | `docs/vision.md § Layer 5 — Reminder cadence` | Every N turns inject reminder of unfinished tasks + auth expiry. V1: `turn_count % cadence == 0 and turn_count > 0`. |
-| Module isolation | `AGENTS.md § Directory layout` | New sub-package `src/kosmos/context/` keeps context assembly isolated from `engine/` and `llm/`. |
+| Module isolation | `AGENTS.md § Directory layout` | New sub-package `src/kosax/context/` keeps context assembly isolated from `engine/` and `llm/`. |
 
 ### Technical unknowns resolved
 
@@ -71,10 +71,10 @@ The core design invariant is **cache prefix stability**: core tool schemas and t
 
 ## Architecture
 
-### Module structure: `src/kosmos/context/`
+### Module structure: `src/kosax/context/`
 
 ```
-src/kosmos/context/
+src/kosax/context/
 ├── __init__.py           # Public exports: ContextBuilder, SystemPromptConfig,
 │                         #   AssembledContext, ContextLayer, ContextBudget
 ├── models.py             # Frozen Pydantic v2 models
@@ -129,7 +129,7 @@ One additive change to `engine/models.py`:
 class SystemPromptConfig(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    platform_identity: str = "KOSMOS"
+    platform_identity: str = "KOSAX"
     language_policy: str = (
         "Respond in Korean unless the citizen writes in another language."
     )
@@ -201,7 +201,7 @@ specs/009-context-assembly-v1/
 ### Source code
 
 ```
-src/kosmos/context/
+src/kosax/context/
 ├── __init__.py
 ├── models.py
 ├── builder.py
@@ -209,7 +209,7 @@ src/kosmos/context/
 ├── attachments.py
 └── budget.py
 
-src/kosmos/engine/
+src/kosax/engine/
 ├── engine.py         # Modified: system_prompt → context_builder parameter
 └── models.py         # Modified: active_situational_tools added to QueryState
 
@@ -232,9 +232,9 @@ tests/context/
 **Goal**: Lay down the complete data model layer and a bare `ContextBuilder` that assembles a valid `AssembledContext` with no attachment and no situational tools.
 
 **Files**:
-- `src/kosmos/context/models.py` — `SystemPromptConfig`, `ContextLayer`, `ContextBudget`, `AssembledContext`
-- `src/kosmos/context/__init__.py` — export all public types
-- `src/kosmos/context/builder.py` — `ContextBuilder` with all three public methods stubbed; `build_system_message()` returns a minimal static system message
+- `src/kosax/context/models.py` — `SystemPromptConfig`, `ContextLayer`, `ContextBudget`, `AssembledContext`
+- `src/kosax/context/__init__.py` — export all public types
+- `src/kosax/context/builder.py` — `ContextBuilder` with all three public methods stubbed; `build_system_message()` returns a minimal static system message
 - `tests/context/test_models.py` — validate frozen constraint, field validators, `ContextBudget` threshold logic
 
 **Completion gate**: `uv run pytest tests/context/test_models.py` passes; `AssembledContext` can be constructed with only `system_layer` populated.
@@ -244,8 +244,8 @@ tests/context/
 **Goal**: Implement the four mandatory system prompt sections and the core/situational tool partitioning with deterministic ordering.
 
 **Files**:
-- `src/kosmos/context/system_prompt.py` — `SystemPromptAssembler`; produces deterministic text from `SystemPromptConfig`; logs `WARNING` when no core tools are registered
-- `src/kosmos/context/builder.py` — wire `build_system_message()` to `SystemPromptAssembler`; wire `build_assembled_context()` tool_definitions to core-then-situational ordering
+- `src/kosax/context/system_prompt.py` — `SystemPromptAssembler`; produces deterministic text from `SystemPromptConfig`; logs `WARNING` when no core tools are registered
+- `src/kosax/context/builder.py` — wire `build_system_message()` to `SystemPromptAssembler`; wire `build_assembled_context()` tool_definitions to core-then-situational ordering
 - `tests/context/test_system_prompt.py` — determinism test (1,000 consecutive calls, same config), section presence assertions
 - `tests/context/test_builder.py` — tool ordering test: 3 core + 2 situational, verify `[core_a, core_b, core_c, sit_a, sit_b]` regardless of registration order; no-situational-tools edge case; all-situational-tools warning
 
@@ -256,8 +256,8 @@ tests/context/
 **Goal**: Implement the full per-turn attachment: resolved tasks, in-flight tool state, API health, auth expiry, reminder cadence.
 
 **Files**:
-- `src/kosmos/context/attachments.py` — `AttachmentCollector`; each section is a private method that returns `str | None`; the collector joins non-None sections with `\n\n`; returns `None` when result is empty
-- `src/kosmos/context/builder.py` — wire `build_turn_attachment()` to `AttachmentCollector`
+- `src/kosax/context/attachments.py` — `AttachmentCollector`; each section is a private method that returns `str | None`; the collector joins non-None sections with `\n\n`; returns `None` when result is empty
+- `src/kosax/context/builder.py` — wire `build_turn_attachment()` to `AttachmentCollector`
 - `tests/context/test_attachments.py` — US2 acceptance scenarios: empty session returns None; two resolved tasks listed; degraded API warning; auth expiry warning; reminder cadence at turn 10 with cadence=5; no reminder at turn 11
 
 **Completion gate**: US1, US2, US5 acceptance scenarios pass.
@@ -267,10 +267,10 @@ tests/context/
 **Goal**: Complete the token budget guard, integrate `ContextBuilder` into `QueryEngine`, and enforce the 10 ms performance requirement.
 
 **Files**:
-- `src/kosmos/context/budget.py` — `BudgetEstimator`; sums `estimate_tokens()` over all layers and tool definitions; produces `ContextBudget`
-- `src/kosmos/context/builder.py` — wire `build_assembled_context()` budget computation to `BudgetEstimator`
-- `src/kosmos/engine/engine.py` — replace `system_prompt` parameter with `context_builder`; insert `build_turn_attachment()` call in `run()`; handle `is_over_limit` → yield `StopReason.api_budget_exceeded`
-- `src/kosmos/engine/models.py` — add `active_situational_tools` to `QueryState`
+- `src/kosax/context/budget.py` — `BudgetEstimator`; sums `estimate_tokens()` over all layers and tool definitions; produces `ContextBudget`
+- `src/kosax/context/builder.py` — wire `build_assembled_context()` budget computation to `BudgetEstimator`
+- `src/kosax/engine/engine.py` — replace `system_prompt` parameter with `context_builder`; insert `build_turn_attachment()` call in `run()`; handle `is_over_limit` → yield `StopReason.api_budget_exceeded`
+- `src/kosax/engine/models.py` — add `active_situational_tools` to `QueryState`
 - `tests/context/test_budget.py` — US4 acceptance scenarios: over-limit fires, near-limit logs WARNING, within-limit both False
 - `tests/context/test_engine_integration.py` — SC-004: engine initialized without system_prompt produces history whose first message matches `build_system_message()` output; budget exceeded scenario
 - `tests/context/test_builder.py` — performance: `pytest-benchmark` assertion that `build_assembled_context()` < 10 ms on 50 tasks + 20 tools
@@ -289,10 +289,10 @@ Every design decision traces to a concrete source in `docs/vision.md § Referenc
 | Core tools in prefix, situational tools in suffix | arXiv 2601.06007 ("Don't Break the Cache"), §3.2 cache-boundary experiments; `docs/vision.md § Layer 2 — Prompt cache partitioning` | 41–80% cost reduction by placing dynamic content after stable prefix |
 | `ContextBuilder` stateless, called per turn | `ChinaSiro/claude-code-sourcemap` `context.ts` — context assembly is a pure functional per-turn pass | Stateless = no instance variables that accumulate per-turn state (NFR-002) |
 | Frozen Pydantic v2 models for all context objects | Constitution § III; `pydantic/pydantic-ai` schema-driven pattern | `ConfigDict(frozen=True)` on all three new models (FR-011) |
-| `estimate_tokens()` reuse | Existing `kosmos.engine.tokens.estimate_tokens()` — consistency with `PreprocessingPipeline` | Avoids dual estimation paths (FR-007) |
+| `estimate_tokens()` reuse | Existing `kosax.engine.tokens.estimate_tokens()` — consistency with `PreprocessingPipeline` | Avoids dual estimation paths (FR-007) |
 | Reminder cadence every N turns | `docs/vision.md § Layer 5 — Reminder cadence` | `turn_count % cadence == 0 and turn_count > 0` (FR-008) |
 | `api_health` as injected dependency | Constitution § IV; Claude Agent SDK dependency injection pattern | Context assembly must not call live APIs (FR-013) |
-| `src/kosmos/context/` new sub-package | `AGENTS.md § Directory layout` — layer separation | Isolated from `engine/` and `llm/` (NFR-005) |
+| `src/kosax/context/` new sub-package | `AGENTS.md § Directory layout` — layer separation | Isolated from `engine/` and `llm/` (NFR-005) |
 | System prompt sections (FR-009) | `docs/vision.md § Layer 5` platform policies; Anthropic official docs on system prompt structure | Platform identity + language policy + tool-use policy + personal-data reminder |
 | `active_situational_tools` on `QueryState` | `docs/vision.md § Layer 2 — Lazy tool discovery` — situational tools added mid-session via `search_tools` | FR-005: only explicitly activated situational tools appear in `tool_definitions` |
 
@@ -326,7 +326,7 @@ specs/009-context-assembly-v1/
 ### Source code layout
 
 ```
-src/kosmos/context/
+src/kosax/context/
 ├── __init__.py
 ├── models.py
 ├── builder.py
@@ -334,7 +334,7 @@ src/kosmos/context/
 ├── attachments.py
 └── budget.py
 
-src/kosmos/engine/
+src/kosax/engine/
 ├── engine.py         # Additive: context_builder parameter, turn attachment call
 └── models.py         # Additive: active_situational_tools on QueryState
 

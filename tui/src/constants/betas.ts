@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Spec 2521 byte-copy bridge stub (no live caller in KOSMOS).
+// KOSAX-original — Spec 2521 byte-copy bridge stub (no live caller in KOSAX).
 // SWAP/anti-anthropic-1p(2521): minimal stub for the byte-copied
 // services/api/claude.ts which references CC's beta-header constant set.
-// All headers are inert string constants — KOSMOS sends none of them to
+// All headers are inert string constants — KOSAX sends none of them to
 // FriendliAI; they exist only so byte-copied claude.ts compiles.
 
 export const ADVISOR_BETA_HEADER = 'advisor-2025-04-01'

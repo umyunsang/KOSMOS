@@ -10,7 +10,7 @@ import type { UUID } from 'crypto'
 import { open as fsOpen, readdir, realpath, stat } from 'fs/promises'
 import { join } from 'path'
 import { getClaudeConfigHomeDir } from './envUtils.js'
-import { getKosmosSessionsDir } from './kosmosPaths.js'
+import { getKosaxSessionsDir } from './kosaxPaths.js'
 import { getWorktreePathsPortable } from './getWorktreePathsPortable.js'
 import { djb2Hash } from './hash.js'
 
@@ -324,14 +324,14 @@ export function sanitizePath(name: string): string {
 // ---------------------------------------------------------------------------
 
 /**
- * KOSMOS canonical session storage root.
+ * KOSAX canonical session storage root.
  *
- * Returns `~/.kosmos/memdir/user/sessions/` (or the KOSMOS_MEMDIR_USER
+ * Returns `~/.kosax/memdir/user/sessions/` (or the KOSAX_MEMDIR_USER
  * override). Mirrors `sessionStorage.ts:getProjectsDir` — both must stay
  * in sync (Spec 027 / Initiative #2290).
  */
 export function getProjectsDir(): string {
-  return getKosmosSessionsDir()
+  return getKosaxSessionsDir()
 }
 
 /**
@@ -368,8 +368,8 @@ export async function canonicalizePath(dir: string): Promise<string> {
  * these produce different directory suffixes. This function falls back to
  * prefix-based scanning when the exact match doesn't exist.
  *
- * Dual-path: checks KOSMOS-native path first, then CC-legacy path as a
- * read-only fallback.  KOSMOS takes priority; if neither root has the
+ * Dual-path: checks KOSAX-native path first, then CC-legacy path as a
+ * read-only fallback.  KOSAX takes priority; if neither root has the
  * directory, returns undefined.
  */
 export async function findProjectDir(
@@ -398,9 +398,9 @@ export async function findProjectDir(
     }
   }
 
-  // KOSMOS-native path first (canonical, highest priority).
-  const kosmosResult = await findInRoot(getProjectsDir())
-  if (kosmosResult) return kosmosResult
+  // KOSAX-native path first (canonical, highest priority).
+  const kosaxResult = await findInRoot(getProjectsDir())
+  if (kosaxResult) return kosaxResult
 
   // CC-legacy fallback (read-only backwards-compat).
   return findInRoot(getCCLegacyProjectsDir())
@@ -472,7 +472,7 @@ export async function resolveSessionFilePath(
   }
 
   // No dir — scan all project directories.
-  // Walk KOSMOS-native root first (canonical, highest priority), then
+  // Walk KOSAX-native root first (canonical, highest priority), then
   // CC-legacy root as a read-only fallback.
   async function scanRoot(
     rootDir: string,
@@ -498,9 +498,9 @@ export async function resolveSessionFilePath(
     return undefined
   }
 
-  // KOSMOS-native root: highest priority.
-  const kosmosHit = await scanRoot(getProjectsDir())
-  if (kosmosHit) return kosmosHit
+  // KOSAX-native root: highest priority.
+  const kosaxHit = await scanRoot(getProjectsDir())
+  if (kosaxHit) return kosaxHit
 
   // CC-legacy root: read-only backwards-compat fallback.
   return scanRoot(getCCLegacyProjectsDir())

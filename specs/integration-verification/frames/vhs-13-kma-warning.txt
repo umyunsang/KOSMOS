@@ -251,12 +251,12 @@
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      KOSAX v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/KOSAX/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -300,12 +300,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      KOSAX v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/KOSAX/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -349,12 +349,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      KOSAX v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/KOSAX/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ 전국 기상특보 발효 현황 알려줘
@@ -398,12 +398,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/KOSAX/tui && KOSAX_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      KOSAX v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/KOSAX/tui
 
 ❯ 전국 기상특보 발효 현황 알려줘
 
@@ -447,9 +447,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      KOSAX v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/KOSAX/tui
 
 ❯ 전국 기상특보 발효 현황 알려줘
 
@@ -496,9 +496,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   현재 전국적으로는 발효 중인 기상특보가 없는 것으로 보입니다. 다른 지역의 상세한 기상상황이 궁금하시다면 특정 지역을 지정해주시면 더 자세한 정보를 확인해드릴 수
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      KOSAX v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/KOSAX/tui
 
 ❯ 전국 기상특보 발효 현황 알려줘
 
@@ -545,9 +545,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   현재 전국적으로는 발효 중인 기상특보가 없는 것으로 보입니다. 다른 지역의 상세한 기상상황이 궁금하시다면 특정 지역을 지정해주시면 더 자세한 정보를 확인해드릴 수
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      KOSAX v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/KOSAX/tui
 
 ❯ 전국 기상특보 발효 현황 알려줘
 
@@ -594,9 +594,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   현재 전국적으로는 발효 중인 기상특보가 없는 것으로 보입니다. 다른 지역의 상세한 기상상황이 궁금하시다면 특정 지역을 지정해주시면 더 자세한 정보를 확인해드릴 수
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      KOSAX v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/KOSAX/tui
 
 ❯ 전국 기상특보 발효 현황 알려줘
 
@@ -643,9 +643,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   현재 전국적으로는 발효 중인 기상특보가 없는 것으로 보입니다. 다른 지역의 상세한 기상상황이 궁금하시다면 특정 지역을 지정해주시면 더 자세한 정보를 확인해드릴 수
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      KOSAX v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/KOSAX/tui
 
 ❯ 전국 기상특보 발효 현황 알려줘
 
@@ -692,9 +692,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   현재 전국적으로는 발효 중인 기상특보가 없는 것으로 보입니다. 다른 지역의 상세한 기상상황이 궁금하시다면 특정 지역을 지정해주시면 더 자세한 정보를 확인해드릴 수
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      KOSAX v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/KOSAX/tui
 
 ❯ 전국 기상특보 발효 현황 알려줘
 
@@ -741,9 +741,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   현재 전국적으로는 발효 중인 기상특보가 없는 것으로 보입니다. 다른 지역의 상세한 기상상황이 궁금하시다면 특정 지역을 지정해주시면 더 자세한 정보를 확인해드릴 수
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      KOSAX v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/KOSAX/tui
 
 ❯ 전국 기상특보 발효 현황 알려줘
 
@@ -790,9 +790,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   현재 전국적으로는 발효 중인 기상특보가 없는 것으로 보입니다. 다른 지역의 상세한 기상상황이 궁금하시다면 특정 지역을 지정해주시면 더 자세한 정보를 확인해드릴 수
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      KOSAX v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/KOSAX/tui
 
 ❯ 전국 기상특보 발효 현황 알려줘
 

@@ -12,7 +12,7 @@ No live API calls are made.
 
 from __future__ import annotations
 
-from kosmos.tools.bm25_index import BM25Index
+from kosax.tools.bm25_index import BM25Index
 
 # ---------------------------------------------------------------------------
 # Fixtures — small synthetic corpora

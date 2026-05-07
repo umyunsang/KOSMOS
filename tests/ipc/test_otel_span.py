@@ -2,13 +2,13 @@
 """T121 — OTEL span emission tests for the IPC stdio frame layer (FR-053).
 
 Verifies:
-- Inbound ``user_input`` frame → one ``kosmos.ipc.frame`` span with
+- Inbound ``user_input`` frame → one ``kosax.ipc.frame`` span with
   ``direction=inbound``, ``kind=user_input``, and the correct ``session_id``.
 - Outbound ``assistant_chunk`` frame (via ``write_frame``) → one
-  ``kosmos.ipc.frame`` span with ``direction=outbound`` and
+  ``kosax.ipc.frame`` span with ``direction=outbound`` and
   ``kind=assistant_chunk``.
 
-Strategy: monkeypatch the module-level ``_tracer`` in ``kosmos.ipc.stdio``
+Strategy: monkeypatch the module-level ``_tracer`` in ``kosax.ipc.stdio``
 to use a dedicated ``TracerProvider`` backed by an ``InMemorySpanExporter``,
 mirroring the pattern established in ``tests/observability/test_tool_execute_span.py``.
 No subprocess is spawned; ``write_frame`` and ``_reader_loop`` are called
@@ -28,7 +28,7 @@ from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from opentelemetry.trace import StatusCode
 
-from kosmos.ipc.frame_schema import AssistantChunkFrame, UserInputFrame
+from kosax.ipc.frame_schema import AssistantChunkFrame, UserInputFrame
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -47,7 +47,7 @@ def _ts() -> str:
 
 @pytest.fixture()
 def mem_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
-    """Patch _tracer in kosmos.ipc.stdio with a dedicated test TracerProvider.
+    """Patch _tracer in kosax.ipc.stdio with a dedicated test TracerProvider.
 
     This mirrors the pattern from tests/observability/test_tool_execute_span.py
     so we do not touch the global OpenTelemetry SDK singleton.
@@ -57,12 +57,12 @@ def mem_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))
 
-    import kosmos.ipc.stdio as stdio_mod
+    import kosax.ipc.stdio as stdio_mod
 
     monkeypatch.setattr(
         stdio_mod,
         "_tracer",
-        provider.get_tracer("kosmos.ipc"),
+        provider.get_tracer("kosax.ipc"),
     )
 
     exporter.clear()
@@ -78,8 +78,8 @@ def mem_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
 async def test_inbound_user_input_span(
     mem_exporter: InMemorySpanExporter,
 ) -> None:
-    """Inbound user_input frame → one kosmos.ipc.frame span with direction=inbound."""
-    from kosmos.ipc.stdio import _reader_loop  # noqa: PLC0415
+    """Inbound user_input frame → one kosax.ipc.frame span with direction=inbound."""
+    from kosax.ipc.stdio import _reader_loop  # noqa: PLC0415
 
     session_id = str(uuid.uuid4())
     frame_in = UserInputFrame(
@@ -109,21 +109,21 @@ async def test_inbound_user_input_span(
 
     # Assert span.
     spans = mem_exporter.get_finished_spans()
-    ipc_spans = [s for s in spans if s.name == "kosmos.ipc.frame"]
+    ipc_spans = [s for s in spans if s.name == "kosax.ipc.frame"]
     assert len(ipc_spans) == 1, (
-        f"Expected exactly 1 kosmos.ipc.frame span, got {len(ipc_spans)}. "
+        f"Expected exactly 1 kosax.ipc.frame span, got {len(ipc_spans)}. "
         f"All spans: {[s.name for s in spans]}"
     )
     span = ipc_spans[0]
     attrs = dict(span.attributes or {})
 
-    assert attrs.get("kosmos.session.id") == session_id, f"kosmos.session.id mismatch: {attrs}"
-    assert attrs.get("kosmos.frame.kind") == "user_input", f"kosmos.frame.kind mismatch: {attrs}"
-    assert attrs.get("kosmos.frame.direction") == "inbound", (
-        f"kosmos.frame.direction mismatch: {attrs}"
+    assert attrs.get("kosax.session.id") == session_id, f"kosax.session.id mismatch: {attrs}"
+    assert attrs.get("kosax.frame.kind") == "user_input", f"kosax.frame.kind mismatch: {attrs}"
+    assert attrs.get("kosax.frame.direction") == "inbound", (
+        f"kosax.frame.direction mismatch: {attrs}"
     )
-    assert isinstance(attrs.get("kosmos.ipc.latency_ms"), float), (
-        f"kosmos.ipc.latency_ms must be a float: {attrs}"
+    assert isinstance(attrs.get("kosax.ipc.latency_ms"), float), (
+        f"kosax.ipc.latency_ms must be a float: {attrs}"
     )
     # Status must be UNSET on success.
     assert span.status.status_code == StatusCode.UNSET, (
@@ -141,8 +141,8 @@ async def test_outbound_assistant_chunk_span(
     mem_exporter: InMemorySpanExporter,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Outbound assistant_chunk via write_frame → kosmos.ipc.frame span (direction=outbound)."""
-    from kosmos.ipc import stdio as stdio_mod  # noqa: PLC0415
+    """Outbound assistant_chunk via write_frame → kosax.ipc.frame span (direction=outbound)."""
+    from kosax.ipc import stdio as stdio_mod  # noqa: PLC0415
 
     session_id = str(uuid.uuid4())
     chunk_frame = AssistantChunkFrame(
@@ -185,23 +185,23 @@ async def test_outbound_assistant_chunk_span(
 
     # Assert span.
     spans = mem_exporter.get_finished_spans()
-    ipc_spans = [s for s in spans if s.name == "kosmos.ipc.frame"]
+    ipc_spans = [s for s in spans if s.name == "kosax.ipc.frame"]
     assert len(ipc_spans) == 1, (
-        f"Expected exactly 1 kosmos.ipc.frame span, got {len(ipc_spans)}. "
+        f"Expected exactly 1 kosax.ipc.frame span, got {len(ipc_spans)}. "
         f"All spans: {[s.name for s in spans]}"
     )
     span = ipc_spans[0]
     attrs = dict(span.attributes or {})
 
-    assert attrs.get("kosmos.session.id") == session_id, f"kosmos.session.id mismatch: {attrs}"
-    assert attrs.get("kosmos.frame.kind") == "assistant_chunk", (
-        f"kosmos.frame.kind mismatch: {attrs}"
+    assert attrs.get("kosax.session.id") == session_id, f"kosax.session.id mismatch: {attrs}"
+    assert attrs.get("kosax.frame.kind") == "assistant_chunk", (
+        f"kosax.frame.kind mismatch: {attrs}"
     )
-    assert attrs.get("kosmos.frame.direction") == "outbound", (
-        f"kosmos.frame.direction mismatch: {attrs}"
+    assert attrs.get("kosax.frame.direction") == "outbound", (
+        f"kosax.frame.direction mismatch: {attrs}"
     )
-    assert isinstance(attrs.get("kosmos.ipc.latency_ms"), float), (
-        f"kosmos.ipc.latency_ms must be a float: {attrs}"
+    assert isinstance(attrs.get("kosax.ipc.latency_ms"), float), (
+        f"kosax.ipc.latency_ms must be a float: {attrs}"
     )
     assert span.status.status_code == StatusCode.UNSET, (
         f"Expected UNSET on success, got {span.status.status_code}"

@@ -16,7 +16,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
 
 - **No `[P]` marker** anywhere — sequential only.
 - **[Story]**: US1 (OTEL telemetry pipeline 회복) · US2 (Constants/Types byte-identical 회복) · US3 (Headless --print mode) · US4 (Stage-1 NO-OP 박제)
-- 모든 path 는 워크트리 `/Users/um-yunsang/KOSMOS-w-2637/` 기준 상대 경로.
+- 모든 path 는 워크트리 `/Users/um-yunsang/KOSAX-w-2637/` 기준 상대 경로.
 
 ## Path Conventions
 
@@ -37,7 +37,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
   - **Files changed (1)**: `tui/package.json` + `tui/bun.lock` (생성)
   - **Commands**:
     ```bash
-    cd /Users/um-yunsang/KOSMOS-w-2637
+    cd /Users/um-yunsang/KOSAX-w-2637
     bun test 2>&1 | tail -5  # baseline pass count 기록 (≥983 기대)
     uv run pytest 2>&1 | tail -5  # baseline pass count 기록 (≥3458 기대)
     bun typecheck 2>&1 | tail -5  # baseline pass 검증
@@ -62,9 +62,9 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
 
 ## Phase 2: User Story 1 — OTEL Telemetry Pipeline 회복 (Priority: P1) 🎯 MVP
 
-**Goal**: KOSMOS 4-tier OTEL 의 Tool layer span emission 회복. instrumentation.ts dynamic import boot path 복구. Spec 021 OTLP collector 가 client-side trace 받음.
+**Goal**: KOSAX 4-tier OTEL 의 Tool layer span emission 회복. instrumentation.ts dynamic import boot path 복구. Spec 021 OTLP collector 가 client-side trace 받음.
 
-**Independent Test**: `bun run tui` 부팅 후 1회 lookup primitive 호출 → Langfuse trace tree 에 `kosmos.tool.id=lookup` span pair 출현 (V5 + V9).
+**Independent Test**: `bun run tui` 부팅 후 1회 lookup primitive 호출 → Langfuse trace tree 에 `kosax.tool.id=lookup` span pair 출현 (V5 + V9).
 
 ### Implementation for User Story 1
 
@@ -90,7 +90,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
       - `tui/src/utils/telemetry/logger.ts` (NEW stub — exports: `ClaudeCodeDiagLogger`)
       - `tui/src/utils/telemetry/perfettoTracing.ts` (NEW stub — exports: `initializePerfettoTracing`)
       - `tui/src/utils/telemetry/sessionTracing.ts` (UPDATE — `endInteractionSpan` + `isEnhancedTelemetryEnabled` exports 추가, 기존 `isBetaTracingEnabled` 보존)
-  - **swap-1 화이트리스트** (data-model.md § Swap1IdentifierWhitelist): import path는 KOSMOS-side stub 이 같은 시그니처로 export → diff 0
+  - **swap-1 화이트리스트** (data-model.md § Swap1IdentifierWhitelist): import path는 KOSAX-side stub 이 같은 시그니처로 export → diff 0
   - **Verification**:
     - V1 (`bun typecheck` exit 0)
     - V4 (instrumentation.ts diff lines ≤ 20 via `contracts/byte-identical-verification.md § 2.3`)
@@ -98,7 +98,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
   - **Depends on**: T001 (deps), T002 (events_mono — auth.ts 가 telemetry 의존 가능성)
   - **Commit**: `feat(2637): port instrumentation.ts (825 LOC) + cascade stubs (R-5)`
 
-- [X] T004 [US1] toolExecution.ts 9 stub wire (KOSMOS Spec 021 OTEL helper, R-6)
+- [X] T004 [US1] toolExecution.ts 9 stub wire (KOSAX Spec 021 OTEL helper, R-6)
   - **FR**: FR-006
   - **Quickstart**: T005
   - **Files changed (2)**:
@@ -106,13 +106,13 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
     - `tui/src/services/tools/toolExecution.ts` (line 91-100 의 9 inline stub → import statement)
   - **9 함수 시그니처** (data-model.md § OtelAttributeContract):
     - `logOTelEvent(eventName, attrs)`, `addToolContentEvent(span, contentAttrs)`, `endToolBlockedOnUserSpan(reason, source)`, `endToolExecutionSpan(result)`, `endToolSpan(toolResultStr)`, `isBetaTracingEnabled()` → false, `startToolBlockedOnUserSpan(span)` → null, `startToolExecutionSpan(span, name)` → Span | null, `startToolSpan(name, attrs)` → Span | null
-  - **OTEL attribute namespace**: `kosmos.tool.{id,outcome,duration_ms,error_type,permission_decision,user_facing_name,input_size_bytes}`
+  - **OTEL attribute namespace**: `kosax.tool.{id,outcome,duration_ms,error_type,permission_decision,user_facing_name,input_size_bytes}`
   - **Verification**:
     - V1 (`bun typecheck` exit 0)
-    - V5 (PTY smoke — Layer 5 tmux capture, `bun run tui` 부팅 후 lookup 1회 → Langfuse trace 에 `kosmos.tool.id=lookup` span pair 출현)
+    - V5 (PTY smoke — Layer 5 tmux capture, `bun run tui` 부팅 후 lookup 1회 → Langfuse trace 에 `kosax.tool.id=lookup` span pair 출현)
     - wire 검증 (`contracts/byte-identical-verification.md § 5`): inline stub 잔존 0 + import statement 존재
   - **Depends on**: T003 (instrumentation.ts 가 TracerProvider 등록 → toolExecution wire 가 자동 라우팅)
-  - **Commit**: `feat(2637): wire toolExecution.ts 9 stubs to KOSMOS Spec 021 OTEL helper (R-6)`
+  - **Commit**: `feat(2637): wire toolExecution.ts 9 stubs to KOSAX Spec 021 OTEL helper (R-6)`
 
 **Checkpoint**: User Story 1 완료. 4-tier OTEL Tool layer 가 Langfuse 에 emit. instrumentation.ts dynamic import 회복. **MVP 가능.**
 
@@ -143,10 +143,10 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
   - **Quickstart**: T003
   - **Files changed (1)**: `tui/src/constants/oauth.ts` (신설 234 LOC byte-copy + swap-1 식별자 교체 + 헤더 주석)
   - **swap-1 화이트리스트** (data-model.md § Swap1IdentifierWhitelist):
-    - OAuth client_id 상수 → KOSMOS-side `null`
-    - `console.anthropic.com` / `claude.ai/oauth` URL 상수 → KOSMOS-side `null` 또는 자리표시자
+    - OAuth client_id 상수 → KOSAX-side `null`
+    - `console.anthropic.com` / `claude.ai/oauth` URL 상수 → KOSAX-side `null` 또는 자리표시자
     - `process.env.USER_TYPE === 'ant'` 가드 → CC 그대로 (자동 prod fallback)
-    - 헤더 주석 추가 (KOSMOS Epic #2637 cite)
+    - 헤더 주석 추가 (KOSAX Epic #2637 cite)
   - **Verification**: V4 (oauth.ts diff lines ≤ 30 via `contracts/byte-identical-verification.md § 2.1`) + V1
   - **Depends on**: T005 (constants 일관성)
   - **Commit**: `feat(2637): port constants/oauth.ts (234 LOC) with swap-1 identifier replace (R-4)`
@@ -167,20 +167,20 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
   - **FR**: FR-003 + FR-016
   - **Quickstart**: T006
   - **Files changed (3)**:
-    - `tui/src/services/remoteManagedSettings/index.ts` (신설 KOSMOS stub ~30 LOC, R-3-cascade — pattern: `tui/src/services/analytics/index.ts`)
+    - `tui/src/services/remoteManagedSettings/index.ts` (신설 KOSAX stub ~30 LOC, R-3-cascade — pattern: `tui/src/services/analytics/index.ts`)
     - `tui/src/cli/print.ts` (신설 5594 LOC byte-copy from CC + 헤더 주석)
     - `tui/src/main.tsx` (L1960 "--print not supported" 차단 메시지 + 관련 블록 제거 + cli/print 호출 wire)
   - **swap-1 화이트리스트**:
-    - `process.env.USER_TYPE === 'ant'` + `feature(...)` 가드 → CC 그대로 (KOSMOS 자동 비활성)
-    - 헤더 주석 추가 (KOSMOS Epic #2637 cite)
-    - cascade stub import resolution → KOSMOS-side stub 이 같은 시그니처
+    - `process.env.USER_TYPE === 'ant'` + `feature(...)` 가드 → CC 그대로 (KOSAX 자동 비활성)
+    - 헤더 주석 추가 (KOSAX Epic #2637 cite)
+    - cascade stub import resolution → KOSAX-side stub 이 같은 시그니처
   - **Verification**:
     - V4 (print.ts diff lines ≤ 20 via `contracts/byte-identical-verification.md § 2.2`)
     - V6 (`bun run tui --print "안녕"` 정상 응답 — 실제 LLM 호출이라 30-90s 소요 가능)
     - V1 + V2 (`bun typecheck` + `bun test` 회귀 0)
     - cascade stub 헤더 SWAP cite 검증 (`§ 3`)
   - **Depends on**: T005 (constants), T003 (instrumentation — 부팅 경로 의존)
-  - **추가 cascade dep 발견 시**: 본 task 안에서 KOSMOS-side stub 추가 (analytics/index.ts 패턴), 5+ 발견 시 Lead Opus 에 보고 (scope creep 결정)
+  - **추가 cascade dep 발견 시**: 본 task 안에서 KOSAX-side stub 추가 (analytics/index.ts 패턴), 5+ 발견 시 Lead Opus 에 보고 (scope creep 결정)
   - **Commit**: `feat(2637): port cli/print.ts (5594 LOC) + remoteManagedSettings cascade stub + main.tsx 차단 제거 (R-3, FR-016)`
 
 **Checkpoint**: User Story 3 완료. `--print` 헤드리스 mode 동작.
@@ -202,15 +202,15 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
     - `tui/src/utils/protectedNamespace.ts` (헤더 패턴 박제, body 그대로)
     - `tui/src/utils/systemThemeWatcher.ts` (헤더 패턴 박제)
     - `tui/src/utils/ultraplan/prompt.txt` (헤더 패턴 박제)
-    - `specs/cc-migration-audit/decisions.md` (S9 § Stage-1 행 업데이트 — "byte-copy 채우기" → "CC source 부재 확정 — KOSMOS-only stub 박제 처리, TUI Fidelity Meta-Epic deferred")
+    - `specs/cc-migration-audit/decisions.md` (S9 § Stage-1 행 업데이트 — "byte-copy 채우기" → "CC source 부재 확정 — KOSAX-only stub 박제 처리, TUI Fidelity Meta-Epic deferred")
   - **헤더 패턴**:
     ```
     // SPDX-License-Identifier: Apache-2.0
-    // SWAP/no-cc-source(2637): KOSMOS-only stub. CC source absent
+    // SWAP/no-cc-source(2637): KOSAX-only stub. CC source absent
     // (find .references/.../src -name "<file>" returns 0). decisions.md S9 § Stage-1 cite.
     // CC consumer references (envUtils.ts:142 / ThemeProvider.tsx:69) imply CC has
-    // runtime equivalents but they're not in restored-src — KOSMOS NO-OP is justified
-    // until TUI Fidelity Meta-Epic decides on KOSMOS-original implementation.
+    // runtime equivalents but they're not in restored-src — KOSAX NO-OP is justified
+    // until TUI Fidelity Meta-Epic decides on KOSAX-original implementation.
     ```
   - **Verification**: 헤더 박제 검증 (`contracts/byte-identical-verification.md § 4`)
   - **Depends on**: 없음 (independent)
@@ -230,7 +230,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
   - **Files changed (0)**: 검증 전용 (commit 없음, 별도 verification log 만 PR 본문에 첨부)
   - **Commands**:
     ```bash
-    cd /Users/um-yunsang/KOSMOS-w-2637
+    cd /Users/um-yunsang/KOSAX-w-2637
 
     # V1 — bun typecheck
     bun typecheck
@@ -250,7 +250,7 @@ description: "Task list for Epic A — P0 회귀 즉시 복구 (#2637)"
     # V7 — TUI 5-layer smoke (Layer 5 tmux capture)
     bash scripts/tui-tmux-capture.sh /tmp/2637-smoke specs/2637-p0-regression/scripts/smoke-2637.sh
     ls /tmp/2637-smoke/snap-*.txt
-    cat /tmp/2637-smoke/final.txt | grep -E "tool_registry: \d+ entries verified|KOSMOS"
+    cat /tmp/2637-smoke/final.txt | grep -E "tool_registry: \d+ entries verified|KOSAX"
 
     # V8 — audit 재실행 (`contracts/byte-identical-verification.md § 6`)
     # 9개 회귀 항목 모두 D-bucket 0 확인:
@@ -315,7 +315,7 @@ dispatch-tree.md 결정 근거:
 
 1. T001 Setup (deps + baseline)
 2. T002 + T003 + T004 (US1 완료)
-3. **STOP and VALIDATE**: V5 (Langfuse trace 에 kosmos.tool.id span pair 출현)
+3. **STOP and VALIDATE**: V5 (Langfuse trace 에 kosax.tool.id span pair 출현)
 4. MVP demo 가능 — 4-tier OTEL Tool layer 회복 단독으로 가치 있음.
 
 ### Incremental Delivery
@@ -340,7 +340,7 @@ dispatch-tree.md 결정 근거:
 - **Total tasks**: 9 (T001-T009). 100-cap 의 9% — 안전.
 - **Task budget**: 단일 Sonnet teammate 가 9 task sequential 처리 → AGENTS.md "≤ 5 tasks per teammate" 와 일부 충돌하지만, 본 Epic 은 task-당 1-2 file 평균이라 dispatch unit 측면에서 small. 만약 너무 큰 부하라 판단되면 T001-T004 (US1 MVP) + T005-T009 (잔여) 로 2-batch 분할 가능.
 - **Verification commands**: `contracts/byte-identical-verification.md` 가 모든 검증 절차 정의. T009 가 통합 실행.
-- **cascade dep 발견 시**: T003 (instrumentation) 또는 T007 (print) 안에서 추가 KOSMOS-side stub 신설. analytics/index.ts 패턴 일관 적용. 5+ 발견 시 Lead Opus scope 재검토.
+- **cascade dep 발견 시**: T003 (instrumentation) 또는 T007 (print) 안에서 추가 KOSAX-side stub 신설. analytics/index.ts 패턴 일관 적용. 5+ 발견 시 Lead Opus scope 재검토.
 - **Commit message format**: Conventional Commits — `feat(2637)`/`docs(2637)`/`chore(2637)`. PR open 후 Codex review 받음.
 - **PR 본문**: `Closes #2637` only (Task sub-issues는 close 마커 X — 머지 후 GraphQL 으로 별도 close).
 - **avoid**: vague tasks, swap-1 화이트리스트 외 diff, cascade dep 5+ 발견 시 silent fix (반드시 Lead Opus 보고).

@@ -5,14 +5,14 @@ bun test v1.3.12 (700fc117)
 
 tests/invariants/linecount.test.ts:
 [SC-003] main.tsx lines: 2819 (target ≤ 2500, aspirational 2000)
-[KOSMOS-TUI] Unknown theme "neon-cyberpunk", falling back to default
-[KOSMOS IPC ERROR] Backend crashed on reconnect: exitCode=143
-[KOSMOS IPC ERROR] Backend crashed on reconnect: exitCode=143
-[KOSMOS IPC ERROR] Backend crashed: exitCode=143
+[KOSAX-TUI] Unknown theme "neon-cyberpunk", falling back to default
+[KOSAX IPC ERROR] Backend crashed on reconnect: exitCode=143
+[KOSAX IPC ERROR] Backend crashed on reconnect: exitCode=143
+[KOSAX IPC ERROR] Backend crashed: exitCode=143
 
 tests/ipc/soak.test.ts:
 [soak] frames=416 p99=0.26ms rss_growth=-1.0MB
-[KOSMOS IPC ERROR] Backend crashed: exitCode=137
+[KOSAX IPC ERROR] Backend crashed: exitCode=137
 
 tests/commands/plugin.test.ts:
 53 | // ---------------------------------------------------------------------------
@@ -23,7 +23,7 @@ tests/commands/plugin.test.ts:
 58 |     const result = pluginCommand.handle(args('install seoul-subway'))
                                       ^
 TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("install seoul-subway"))', 'pluginCommand.handle' is undefined)
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:58:34)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/plugin.test.ts:58:34)
 (fail) /plugin install > emits plugin_op_request with op=request request_op=install [1.04ms]
 66 |     expect(frame.role).toBe('tui')
 67 |   })
@@ -33,7 +33,7 @@ TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(arg
 71 |     pluginCommand.handle(args('install seoul-subway --version 1.2.0'))
                        ^
 TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("install seoul-subway --version 1.2.0"))', 'pluginCommand.handle' is undefined)
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:71:19)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/plugin.test.ts:71:19)
 (fail) /plugin install > parses --version flag [0.04ms]
 74 |     expect(frame.requested_version).toBe('1.2.0')
 75 |   })
@@ -43,7 +43,7 @@ TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(arg
 79 |     pluginCommand.handle(args('install seoul-subway --dry-run'))
                        ^
 TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("install seoul-subway --dry-run"))', 'pluginCommand.handle' is undefined)
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:79:19)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/plugin.test.ts:79:19)
 (fail) /plugin install > parses --dry-run flag [0.02ms]
 82 |     expect(frame.dry_run).toBe(true)
 83 |   })
@@ -53,7 +53,7 @@ TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(arg
 87 |     const result = pluginCommand.handle(args('install'))
                                       ^
 TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("install"))', 'pluginCommand.handle' is undefined)
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:87:34)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/plugin.test.ts:87:34)
 (fail) /plugin install > returns help text when name is missing [0.02ms]
 92 |       throw new Error('expected sync result')
 93 |     }
@@ -63,7 +63,7 @@ TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(arg
 97 |     const result = pluginCommand.handle(makeArgsWithoutPluginOp('install seoul-subway'))
                                       ^
 TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(makeArgsWithoutPluginOp("install seoul-subway"))', 'pluginCommand.handle' is undefined)
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:97:34)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/plugin.test.ts:97:34)
 (fail) /plugin install > returns IPC-disconnected error when sendPluginOp is missing [0.02ms]
 108 | // ---------------------------------------------------------------------------
 109 | 
@@ -73,7 +73,7 @@ TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(mak
 113 |     pluginCommand.handle(args('list'))
                         ^
 TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("list"))', 'pluginCommand.handle' is undefined)
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:113:19)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/plugin.test.ts:113:19)
 (fail) /plugin list > emits plugin_op_request with request_op=list [0.02ms]
 123 | // ---------------------------------------------------------------------------
 124 | 
@@ -83,7 +83,7 @@ TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(arg
 128 |     pluginCommand.handle(args('uninstall seoul-subway'))
                         ^
 TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("uninstall seoul-subway"))', 'pluginCommand.handle' is undefined)
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:128:19)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/plugin.test.ts:128:19)
 (fail) /plugin uninstall > emits plugin_op_request with request_op=uninstall [0.03ms]
 132 |     expect(frame.name).toBe('seoul-subway')
 133 |   })
@@ -93,7 +93,7 @@ TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(arg
 137 |     const result = pluginCommand.handle(args('uninstall'))
                                        ^
 TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("uninstall"))', 'pluginCommand.handle' is undefined)
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:137:34)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/plugin.test.ts:137:34)
 (fail) /plugin uninstall > returns help text when name is missing [0.02ms]
 149 | // ---------------------------------------------------------------------------
 150 | 
@@ -103,7 +103,7 @@ TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(arg
 154 |     const result = pluginCommand.handle(args('pipa-text'))
                                        ^
 TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("pipa-text"))', 'pluginCommand.handle' is undefined)
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:154:34)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/plugin.test.ts:154:34)
 (fail) /plugin pipa-text > returns canonical hash without IPC traffic [0.02ms]
 169 | // ---------------------------------------------------------------------------
 170 | 
@@ -113,7 +113,7 @@ TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(arg
 174 |     const result = pluginCommand.handle(args(''))
                                        ^
 TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args(""))', 'pluginCommand.handle' is undefined)
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:174:34)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/plugin.test.ts:174:34)
 (fail) /plugin unknown / empty > shows usage when no subcommand [0.02ms]
 180 |     }
 181 |   })
@@ -123,7 +123,7 @@ TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(arg
 185 |     const result = pluginCommand.handle(args('reinstall foo'))
                                        ^
 TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("reinstall foo"))', 'pluginCommand.handle' is undefined)
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:185:34)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/plugin.test.ts:185:34)
 (fail) /plugin unknown / empty > shows error + usage for unknown subcommand [0.02ms]
 198 | // ---------------------------------------------------------------------------
 199 | 
@@ -133,7 +133,7 @@ TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(arg
 203 |     pluginCommand.handle(args('install seoul-subway'))
                         ^
 TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("install seoul-subway"))', 'pluginCommand.handle' is undefined)
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:203:19)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/plugin.test.ts:203:19)
 (fail) plugin_op frame envelope > every emitted frame carries kind / version / role / op [0.02ms]
 214 |     }
 215 |   })
@@ -143,7 +143,7 @@ TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(arg
 219 |     pluginCommand.handle(args('install seoul-subway'))
                         ^
 TypeError: pluginCommand.handle is not a function. (In 'pluginCommand.handle(args("install seoul-subway"))', 'pluginCommand.handle' is undefined)
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/plugin.test.ts:219:19)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/plugin.test.ts:219:19)
 (fail) plugin_op frame envelope > does not bleed into the session-event channel [0.02ms]
 
 tests/commands/registry.test.ts:
@@ -159,14 +159,14 @@ error: expect(received).toBe(expected)
 Expected: "function"
 Received: "undefined"
 
-      at <anonymous> (/Users/um-yunsang/KOSMOS-w-2293/tui/tests/commands/registry.test.ts:35:33)
+      at <anonymous> (/Users/um-yunsang/KOSAX-w-2293/tui/tests/commands/registry.test.ts:35:33)
 (fail) Default registry shape (FR-036) > every entry conforms to CommandDefinition interface [0.33ms]
-{"span":"kosmos.onboarding.step","step":"splash","kind":"enter","ts":"2026-04-28T19:56:20.823Z"}
-{"span":"kosmos.onboarding.step","step":"pipa-consent","kind":"enter","ts":"2026-04-28T19:56:20.826Z"}
-{"span":"kosmos.onboarding.step","step":"ministry-scope-ack","kind":"enter","ts":"2026-04-28T19:56:20.828Z"}
-{"span":"kosmos.onboarding.step","step":"splash","kind":"enter","ts":"2026-04-28T19:56:20.830Z"}
-{"span":"kosmos.onboarding.step","step":"ministry-scope-ack","kind":"enter","ts":"2026-04-28T19:56:20.832Z"}
-{"span":"kosmos.onboarding.step","step":"splash","kind":"enter","ts":"2026-04-28T19:56:20.833Z"}
+{"span":"kosax.onboarding.step","step":"splash","kind":"enter","ts":"2026-04-28T19:56:20.823Z"}
+{"span":"kosax.onboarding.step","step":"pipa-consent","kind":"enter","ts":"2026-04-28T19:56:20.826Z"}
+{"span":"kosax.onboarding.step","step":"ministry-scope-ack","kind":"enter","ts":"2026-04-28T19:56:20.828Z"}
+{"span":"kosax.onboarding.step","step":"splash","kind":"enter","ts":"2026-04-28T19:56:20.830Z"}
+{"span":"kosax.onboarding.step","step":"ministry-scope-ack","kind":"enter","ts":"2026-04-28T19:56:20.832Z"}
+{"span":"kosax.onboarding.step","step":"splash","kind":"enter","ts":"2026-04-28T19:56:20.833Z"}
 
 tests/store/session-store.test.ts:
 [session-store] SESSION_EVENT load: skipping entry missing required id field {
@@ -177,15 +177,15 @@ tests/store/session-store.test.ts:
   tool_results: [],
 }
 [session-store] SESSION_EVENT load: payload.messages is not an array — ignoring
-objc[3610]: Class GNotificationCenterDelegate is implemented in both /Users/um-yunsang/KOSMOS-w-2293/tui/node_modules/canvas/build/Release/libgio-2.0.0.dylib (0x13db00648) and /opt/homebrew/Cellar/glib/2.88.0/lib/libgio-2.0.0.dylib (0x1491504c8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+objc[3610]: Class GNotificationCenterDelegate is implemented in both /Users/um-yunsang/KOSAX-w-2293/tui/node_modules/canvas/build/Release/libgio-2.0.0.dylib (0x13db00648) and /opt/homebrew/Cellar/glib/2.88.0/lib/libgio-2.0.0.dylib (0x1491504c8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
 
 tests/components/messages/PdfInlineViewer.test.tsx:
 Warning: Cannot polyfill `DOMMatrix`, rendering may be broken.
 Warning: Cannot polyfill `Path2D`, rendering may be broken.
 (fail) PdfInlineViewer (FR-010) > Kitty detection: TERM=xterm-kitty sets graphics to kitty [16369.33ms]
   ^ this test timed out after 5000ms.
-{"span":"kosmos.onboarding.step","step":"splash","kind":"advance","ts":"2026-04-28T19:56:38.596Z"}
-{"span":"kosmos.onboarding.step","step":"done","kind":"enter","ts":"2026-04-28T19:56:38.629Z"}
+{"span":"kosax.onboarding.step","step":"splash","kind":"advance","ts":"2026-04-28T19:56:38.596Z"}
+{"span":"kosax.onboarding.step","step":"done","kind":"enter","ts":"2026-04-28T19:56:38.629Z"}
 
  843 pass
  4 skip

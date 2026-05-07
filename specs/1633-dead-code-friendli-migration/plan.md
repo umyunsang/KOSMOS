@@ -2,7 +2,7 @@
 
 **Branch**: `1633-dead-code-friendli-migration` | **Date**: 2026-04-24 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `./spec.md`
-**Epic**: [#1633](https://github.com/umyunsang/KOSMOS/issues/1633)
+**Epic**: [#1633](https://github.com/umyunsang/KOSAX/issues/1633)
 **Phase 0 research**: [research.md](./research.md)
 **Data model**: [data-model.md](./data-model.md)
 **Contracts**: [contracts/llm-client.md](./contracts/llm-client.md)
@@ -16,10 +16,10 @@ Rewire TUI's LLM path from Anthropic to FriendliAI K-EXAONE by (a) deleting Anth
 
 **Language/Version**: TypeScript 5.6+ (TUI layer, Bun v1.2.x runtime, existing from Spec 287); Python 3.12+ (backend, existing). No version bump.
 **Primary Dependencies**: TS — existing Bun stdlib + Ink + React; no new JS deps. Python — existing `httpx >= 0.27`, `pydantic >= 2.13`, `pydantic-settings >= 2.0`, `opentelemetry-sdk`, `opentelemetry-semantic-conventions`. **Zero new runtime dependencies** (AGENTS.md hard rule).
-**Storage**: N/A at feature layer. Session JSONL stays in `~/.kosmos/memdir/user/sessions/` (Spec 027); OTEL spans flow via Spec 028 OTLP collector to local Langfuse. No schema changes.
+**Storage**: N/A at feature layer. Session JSONL stays in `~/.kosax/memdir/user/sessions/` (Spec 027); OTEL spans flow via Spec 028 OTLP collector to local Langfuse. No schema changes.
 **Testing**: `bun test` (TUI, existing), `uv run pytest` (Python, existing). Epic P0 floor ≥ 540 TS tests preserved. New test targets: SC-based grep invariants (add to CI), `LLMClient` unit tests (mocked bridge), end-to-end resume smoke (Spec 032-backed).
 **Target Platform**: Developer / contributor terminals (Linux + macOS). TUI runs under Bun; Python backend under uv-managed virtualenv.
-**Project Type**: Bi-lingual monorepo — TS TUI (`tui/`) + Python backend (`src/kosmos/`). No new project directories.
+**Project Type**: Bi-lingual monorepo — TS TUI (`tui/`) + Python backend (`src/kosax/`). No new project directories.
 **Performance Goals**: First-streaming-token latency ≤ 5 s (SC-001). Stream throughput bounded by FriendliAI Serverless + stdio bridge (no additional budget).
 **Constraints**: Hard — (a) no direct HTTPS from TS runtime; (b) no `@anthropic-ai/sdk` runtime imports; (c) fail-closed on missing `FRIENDLI_API_KEY`; (d) `main.tsx` ≤ 2,500 lines; (e) zero external egress other than FriendliAI (Spec 021 A7).
 **Scale/Scope**: ~50 TS files deleted, ~5 TS files added/rewired, 1 Python line changed (`config.py:37`), ~137 Anthropic SDK import edits, `main.tsx` reduction ~4,693 → ≤ 2,500 lines.
@@ -59,7 +59,7 @@ specs/1633-dead-code-friendli-migration/
 ### Source Code (repository root — files this Epic touches)
 
 ```text
-src/kosmos/llm/
+src/kosax/llm/
 └── config.py                      # [EDIT 1 line] default model ID
 
 tui/src/                           # TS TUI — most of this Epic's surface
@@ -73,7 +73,7 @@ tui/src/                           # TS TUI — most of this Epic's surface
 │   ├── frames.generated.ts        # (existing, Spec 032; no change)
 │   ├── tx-registry.ts             # (existing, Spec 032)
 │   ├── llmClient.ts               # [NEW] LLMClient class (contract § 1)
-│   └── llmTypes.ts                # [NEW] Kosmos* type surface (contract § 2)
+│   └── llmTypes.ts                # [NEW] Kosax* type surface (contract § 2)
 ├── migrations/                    # [DELETE] 11 CC version migrations
 ├── services/
 │   ├── analytics/                 # [DELETE] 7 files (growthbook, datadog, firstParty, sink, metadata, index, sinkKillswitch)
@@ -111,7 +111,7 @@ tui/src/                           # TS TUI — most of this Epic's surface
 ├── types/types/generated/
 │   └── events_mono/               # [DELETE] generated event types
 └── entrypoints/
-    └── init.ts                    # [EDIT] replace initializeTelemetryAfterTrust with KOSMOS OTEL init
+    └── init.ts                    # [EDIT] replace initializeTelemetryAfterTrust with KOSAX OTEL init
 ```
 
 **Structure Decision**: Monorepo (TUI + Python backend) layout from Epic P0 is preserved. This Epic is subtractive on TUI (~50 deletions) plus two new TS files in `tui/src/ipc/`. One Python line change (`config.py:37`). No new top-level directories.
@@ -179,7 +179,7 @@ Expected total: **60-70 tasks**, well under the Sub-Issues 90-budget (AGENTS.md 
 - `contracts/llm-client.md` — the TS surface + IPC protocol
 - `quickstart.md` — how to verify
 - `docs/vision.md § 28-44` · `§ L1-A`
-- `docs/requirements/kosmos-migration-tree.md § L1-A · § Execution Phase`
+- `docs/requirements/kosax-migration-tree.md § L1-A · § Execution Phase`
 - `docs/requirements/epic-p1-p2-llm.md`
 - `.specify/memory/constitution.md` v1.1.1
 - Spec 019 · 021 · 026 · 028 · 032 · 035

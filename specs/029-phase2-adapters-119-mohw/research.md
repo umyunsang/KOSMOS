@@ -44,17 +44,17 @@ Each design decision in this plan maps to one concrete source:
 
 | Design decision | Primary reference | File path |
 |---|---|---|
-| Interface-only adapter pattern (stub handler + `Layer3GateViolation`) | NMC reference adapter | `src/kosmos/tools/nmc/emergency_search.py` |
-| Full-HTTP adapter pattern (httpx client, envelope parsing, fail-closed) | HIRA reference adapter | `src/kosmos/tools/hira/hospital_search.py` |
-| `GovAPITool` V1–V6 validator contract | Tool models | `src/kosmos/tools/models.py` §V1–V6 |
-| `TOOL_MIN_AAL` drift gate | Security audit table | `src/kosmos/security/audit.py` |
-| `LookupError` / `LookupCollection` envelopes | Envelope module | `src/kosmos/tools/envelope.py`, `errors.py` |
-| XML/JSON dual-format upstream handling | HIRA Content-Type guard | `src/kosmos/tools/hira/hospital_search.py` |
+| Interface-only adapter pattern (stub handler + `Layer3GateViolation`) | NMC reference adapter | `src/kosax/tools/nmc/emergency_search.py` |
+| Full-HTTP adapter pattern (httpx client, envelope parsing, fail-closed) | HIRA reference adapter | `src/kosax/tools/hira/hospital_search.py` |
+| `GovAPITool` V1–V6 validator contract | Tool models | `src/kosax/tools/models.py` §V1–V6 |
+| `TOOL_MIN_AAL` drift gate | Security audit table | `src/kosax/security/audit.py` |
+| `LookupError` / `LookupCollection` envelopes | Envelope module | `src/kosax/tools/envelope.py`, `errors.py` |
+| XML/JSON dual-format upstream handling | HIRA Content-Type guard | `src/kosax/tools/hira/hospital_search.py` |
 | `data.go.kr` error envelope detection | `PublicDataReader` (MIT) | `docs/vision.md § Reference materials` |
 | Retry/backoff policy for transient upstream failures | LangGraph `RetryPolicy` + stamina | `docs/vision.md § Reference materials` |
 | Pydantic v2 schema-driven registry | Pydantic AI | `docs/vision.md § Reference materials` |
 | Fail-closed adapter defaults | Constitution §II | `.specify/memory/constitution.md` |
-| Layer 3 auth-gate contract (FR-025, FR-026, SC-006) | Executor short-circuit | `src/kosmos/tools/executor.py` (invoke) |
+| Layer 3 auth-gate contract (FR-025, FR-026, SC-006) | Executor short-circuit | `src/kosax/tools/executor.py` (invoke) |
 | Korean domain search-hint bilingual pattern | Tool adapter guide | `docs/tool-adapters.md §Search hints` |
 
 No decision in this spec requires an architectural pattern outside of the
@@ -101,7 +101,7 @@ level** (`NationalWelfarelistV001`) as well.
 - `MohwWelfareEligibilitySearchInput` uses three `str | None` fields
   (`life_array`, `trgter_indvdl_array`, `intrs_thema_array`) **backed by
   Python `Enum` types** defined in a shared module
-  `src/kosmos/tools/ssis/codes.py`.
+  `src/kosax/tools/ssis/codes.py`.
 - Enum values extracted from `지자체복지서비스_코드표(v1.0).doc`:
   - `LifeArrayCode`: 001 영유아, 002 아동, 003 청소년, 004 청년, 005 중장년, 006 노년, 007 임신·출산
   - `TrgterIndvdlCode`: 010 다문화·탈북민, 020 다자녀, 030 보훈대상자, 040 장애인, 050 저소득, 060 한부모·조손
@@ -121,7 +121,7 @@ production deployment blocker at this spec level**.
 
 **Evidence**:
 
-1. Validator V2 (`src/kosmos/tools/models.py` §V2) enforces the pattern
+1. Validator V2 (`src/kosax/tools/models.py` §V2) enforces the pattern
    `^[A-Za-z][A-Za-z0-9_-]{5,63}$`. `dpa-ssis-welfare-v1` satisfies this
    (12 chars, letter-led, dash-separated).
 2. The placeholder passes load-time registration, which is what the interface-
@@ -133,7 +133,7 @@ production deployment blocker at this spec level**.
 **Production-deployment prerequisite (out of scope for this spec)**:
 
 Before `mohw_welfare_eligibility_search.handle()` is allowed to make real HTTP
-calls to SSIS, a DPA template document governing KOSMOS's §26 수탁자 relationship
+calls to SSIS, a DPA template document governing KOSAX's §26 수탁자 relationship
 with SSIS MUST exist at `docs/security/dpa/dpa-ssis-welfare-v1.md` and be
 referenced in `docs/security/tool-template-security-spec-v1.md`. This is a
 task for the Epic that lifts the Layer 3 auth-gate short-circuit (Epic #16 or
@@ -257,7 +257,7 @@ srvPvsnNm, rprsCtadr, onapPsbltYn`.
 
 ## 6. TOOL_MIN_AAL Integration
 
-The current `TOOL_MIN_AAL` table (`src/kosmos/security/audit.py`) lists only
+The current `TOOL_MIN_AAL` table (`src/kosax/security/audit.py`) lists only
 **canonical tools** (`lookup`, `resolve_location`, `check_eligibility`, etc.),
 not per-adapter rows. Existing full-HTTP adapters (`hira_hospital_search`,
 `nmc_emergency_search`, `kma_*`) do NOT have rows in `TOOL_MIN_AAL` because

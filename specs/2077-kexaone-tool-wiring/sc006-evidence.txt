@@ -27,6 +27,6 @@ Constitution Principle / AGENTS.md hard rule:
 
 Scope of changes — purely Pydantic v2 + existing httpx/opentelemetry on Python
 side; existing zod/v4 + ink + react on TUI side. CC reference cp files in
-src/kosmos/llm/_cc_reference/ are research-use mirrors (Constitution §I) and
+src/kosax/llm/_cc_reference/ are research-use mirrors (Constitution §I) and
 do not contribute to the runtime build (TS files there are read-only references,
-not imported by KOSMOS code).
+not imported by KOSAX code).

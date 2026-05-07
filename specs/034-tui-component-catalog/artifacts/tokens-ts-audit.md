@@ -140,14 +140,14 @@ All other `*Background*` identifiers (`clawd_background`, `userMessageBackground
 
 Catalog REWRITE rows owned by Epic H #1302 that reference new token names:
 
-- `AnimatedAsterisk.tsx` — references `kosmosCore` glyph (ADR-006 A-9), but this is a **component vocabulary** reference, not a token name required in `tokens.ts` today. Epic H will define the `kosmosCore*` token values.
-- `WelcomeV2.tsx` — references `kosmosCore` metaphor; same as above.
-- `KosmosCoreIcon.tsx` (`FastIcon.tsx` REWRITE) — references `kosmosCore` asterisk; same as above.
+- `AnimatedAsterisk.tsx` — references `kosaxCore` glyph (ADR-006 A-9), but this is a **component vocabulary** reference, not a token name required in `tokens.ts` today. Epic H will define the `kosaxCore*` token values.
+- `WelcomeV2.tsx` — references `kosaxCore` metaphor; same as above.
+- `KosaxCoreIcon.tsx` (`FastIcon.tsx` REWRITE) — references `kosaxCore` asterisk; same as above.
 - `CondensedLogo.tsx`, `Feed.tsx`, `feedConfigs.tsx`, `LogoV2.tsx` — brand rewrite targets; no token surface additions required today.
 
-**Conclusion**: All Epic H REWRITE rows that reference `kosmosCore*`, `orbitalRing*`, or `agentSatellite*` names are planned under Epic H #1302's own Spec Kit cycle. No Epic M REWRITE row requires a new token identifier to be added to `tokens.ts` under this Epic.
+**Conclusion**: All Epic H REWRITE rows that reference `kosaxCore*`, `orbitalRing*`, or `agentSatellite*` names are planned under Epic H #1302's own Spec Kit cycle. No Epic M REWRITE row requires a new token identifier to be added to `tokens.ts` under this Epic.
 
-Epic M REWRITE rows (Spinner/TeammateSpinnerLine, TeammateSpinnerTree, TaskAssignmentMessage, UserTeammateMessage, etc.) reference KOSMOS agent swarm vocabulary at the component and copy level, not at the theme token level.
+Epic M REWRITE rows (Spinner/TeammateSpinnerLine, TeammateSpinnerTree, TaskAssignmentMessage, UserTeammateMessage, etc.) reference KOSAX agent swarm vocabulary at the component and copy level, not at the theme token level.
 
 ---
 
@@ -161,7 +161,7 @@ Epic M REWRITE rows (Spinner/TeammateSpinnerLine, TeammateSpinnerTree, TaskAssig
 
 ## Rationale
 
-No additions are required under Epic M #1310. All candidate KOSMOS brand tokens (`kosmosCore*`, `orbitalRing*`, `agentSatellite{Ministry}*`, `wordmark*`, `subtitle*`) are planned as Epic H #1302's deliverables under its own Spec Kit cycle. Adding token NAME surface ahead of Epic H's palette VALUE definitions (FR-010 explicitly separates name surface from palette values) would create orphaned stubs with no palette binding and no consuming component — a spec violation of the Epic boundary contract.
+No additions are required under Epic M #1310. All candidate KOSAX brand tokens (`kosaxCore*`, `orbitalRing*`, `agentSatellite{Ministry}*`, `wordmark*`, `subtitle*`) are planned as Epic H #1302's deliverables under its own Spec Kit cycle. Adding token NAME surface ahead of Epic H's palette VALUE definitions (FR-010 explicitly separates name surface from palette values) would create orphaned stubs with no palette binding and no consuming component — a spec violation of the Epic boundary contract.
 
 The statement from `plan.md §Project Structure` is confirmed: **"Most Epics require zero additions — this Task completes as a no-op with an audit summary comment."**
 
@@ -175,13 +175,13 @@ The statement from `plan.md §Project Structure` is confirmed: **"Most Epics req
 
 ## Files Read
 
-- `/Users/um-yunsang/KOSMOS/tui/src/theme/tokens.ts`
-- `/Users/um-yunsang/KOSMOS/specs/034-tui-component-catalog/artifacts/existing-tokens.txt`
-- `/Users/um-yunsang/KOSMOS/specs/034-tui-component-catalog/contracts/token-naming-grammar.md`
-- `/Users/um-yunsang/KOSMOS/specs/034-tui-component-catalog/contracts/grep-gate-rules.md`
-- `/Users/um-yunsang/KOSMOS/specs/034-tui-component-catalog/spec.md` (lines 125–154)
-- `/Users/um-yunsang/KOSMOS/docs/tui/component-catalog.md` (grep scan for REWRITE rows + `kosmosCore` references)
+- `/Users/um-yunsang/KOSAX/tui/src/theme/tokens.ts`
+- `/Users/um-yunsang/KOSAX/specs/034-tui-component-catalog/artifacts/existing-tokens.txt`
+- `/Users/um-yunsang/KOSAX/specs/034-tui-component-catalog/contracts/token-naming-grammar.md`
+- `/Users/um-yunsang/KOSAX/specs/034-tui-component-catalog/contracts/grep-gate-rules.md`
+- `/Users/um-yunsang/KOSAX/specs/034-tui-component-catalog/spec.md` (lines 125–154)
+- `/Users/um-yunsang/KOSAX/docs/tui/component-catalog.md` (grep scan for REWRITE rows + `kosaxCore` references)
 
 ## Audit File Written
 
-- `/Users/um-yunsang/KOSMOS/specs/034-tui-component-catalog/artifacts/tokens-ts-audit.md`
+- `/Users/um-yunsang/KOSAX/specs/034-tui-component-catalog/artifacts/tokens-ts-audit.md`

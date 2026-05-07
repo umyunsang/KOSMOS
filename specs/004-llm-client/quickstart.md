@@ -9,12 +9,12 @@
 uv sync
 
 # Set required environment variable
-export KOSMOS_FRIENDLI_TOKEN="your-token-here"
+export KOSAX_FRIENDLI_TOKEN="your-token-here"
 
 # Optional configuration
-export KOSMOS_FRIENDLI_BASE_URL="https://api.friendli.ai/v1"
-export KOSMOS_FRIENDLI_MODEL="dep89a2fde0e09"
-export KOSMOS_LLM_SESSION_BUDGET="100000"
+export KOSAX_FRIENDLI_BASE_URL="https://api.friendli.ai/v1"
+export KOSAX_FRIENDLI_MODEL="dep89a2fde0e09"
+export KOSAX_LLM_SESSION_BUDGET="100000"
 ```
 
 ## Basic Usage
@@ -22,7 +22,7 @@ export KOSMOS_LLM_SESSION_BUDGET="100000"
 ### Non-streaming completion
 
 ```python
-from kosmos.llm import LLMClient, ChatMessage
+from kosax.llm import LLMClient, ChatMessage
 
 async with LLMClient() as client:
     response = await client.complete([
@@ -36,7 +36,7 @@ async with LLMClient() as client:
 ### Streaming completion
 
 ```python
-from kosmos.llm import LLMClient, ChatMessage
+from kosax.llm import LLMClient, ChatMessage
 
 async with LLMClient() as client:
     async for event in client.stream([
@@ -51,7 +51,7 @@ async with LLMClient() as client:
 ### With tool definitions
 
 ```python
-from kosmos.llm import LLMClient, ChatMessage, ToolDefinition, FunctionSchema
+from kosax.llm import LLMClient, ChatMessage, ToolDefinition, FunctionSchema
 
 tools = [
     ToolDefinition(
@@ -97,6 +97,6 @@ async with LLMClient() as client:
 # Unit tests (uses recorded fixtures, no API access needed)
 uv run pytest tests/llm/
 
-# Live tests are planned for Phase 2 (requires valid KOSMOS_FRIENDLI_TOKEN)
+# Live tests are planned for Phase 2 (requires valid KOSAX_FRIENDLI_TOKEN)
 # uv run pytest tests/llm/ -m live
 ```

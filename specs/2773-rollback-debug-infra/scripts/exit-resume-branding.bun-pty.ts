@@ -7,7 +7,7 @@ async function sleep(ms: number): Promise<void> {
 }
 
 export default async function run(h: Harness): Promise<void> {
-  await h.waitForPane(/KOSMOS|❯/, 60)
+  await h.waitForPane(/KOSAX|❯/, 60)
   if (/alpha\+1978/i.test(h.plain())) {
     throw new Error('Boot branding still contains alpha+1978')
   }
@@ -27,7 +27,7 @@ export default async function run(h: Harness): Promise<void> {
 
   await h.waitForPaneSince(
     exitMark,
-    /Resume this session with:[\s\S]*kosmos --resume [0-9a-f-]{36}/i,
+    /Resume this session with:[\s\S]*kosax --resume [0-9a-f-]{36}/i,
     20,
   )
 

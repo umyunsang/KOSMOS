@@ -2,7 +2,7 @@ import { isInBundledMode } from 'src/utils/bundledMode.js';
 import { getCurrentInstallationType } from 'src/utils/doctorDiagnostic.js';
 import { isEnvTruthy } from 'src/utils/envUtils.js';
 import { useStartupNotification } from './useStartupNotification.js';
-// KOSMOS — Anthropic claude.ai native installer notice removed. KOSMOS ships
+// KOSAX — Anthropic claude.ai native installer notice removed. KOSAX ships
 // from source via Bun + uv (Migration Tree § Stack); no npm distribution and
 // no native installer to migrate from. The hook is preserved as a no-op so
 // downstream notification subscribers stay wired.
@@ -10,7 +10,7 @@ export function useNpmDeprecationNotification() {
   useStartupNotification(_temp);
 }
 async function _temp() {
-  // Silence: nothing to deprecate in KOSMOS runtime.
+  // Silence: nothing to deprecate in KOSAX runtime.
   if (isInBundledMode() || isEnvTruthy(process.env.DISABLE_INSTALLATION_CHECKS)) {
     return null;
   }

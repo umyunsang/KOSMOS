@@ -4,7 +4,7 @@
 
 ## 0. Reference Mapping (Constitution Principle I)
 
-Every design decision traces to a concrete reference from `docs/vision.md § Reference materials` or established KOSMOS precedent.
+Every design decision traces to a concrete reference from `docs/vision.md § Reference materials` or established KOSAX precedent.
 
 | Design Area | Primary Reference | Rationale |
 |---|---|---|
@@ -12,7 +12,7 @@ Every design decision traces to a concrete reference from `docs/vision.md § Ref
 | Telemetry assertions (counter/event diff) | OpenAI Agents SDK (guardrail/telemetry pipeline) | Inject collector + logger, snapshot before/after, diff the deltas. |
 | Structural schema assertions | Pydantic AI (schema-driven registry) | Assert response conforms to existing Pydantic models; never assert specific values. |
 | Rate-limit / hard-fail fixture pattern | Existing `tests/live/conftest.py` (from #291) | Inherit `_require_env` + `_live_rate_limit_pause` pattern; add Kakao-specific equivalents. |
-| Fail-closed validation (unmapped region) | KOSMOS adapter contract (`address_to_region` docstring) | AS-7 asserts the documented fail-closed behavior — tests strengthen, never loosen. |
+| Fail-closed validation (unmapped region) | KOSAX adapter contract (`address_to_region` docstring) | AS-7 asserts the documented fail-closed behavior — tests strengthen, never loosen. |
 
 No architectural changes. This is a test-coverage extension that inherits #291's reference set.
 
@@ -33,17 +33,17 @@ No architectural changes. This is a test-coverage extension that inherits #291's
 - Single `test_live_phase1_extension.py` — would mix Kakao-only failures with KOROAD/FriendliAI-only failures, obscuring root cause.
 - Separate `test_live_natural_address.py` — fragments Scenario 1 coverage across files.
 
-### D2: Env var naming for Kakao — `KOSMOS_KAKAO_API_KEY`
+### D2: Env var naming for Kakao — `KOSAX_KAKAO_API_KEY`
 
-**Decision**: Use `KOSMOS_KAKAO_API_KEY` as the env var for the Kakao REST API key.
+**Decision**: Use `KOSAX_KAKAO_API_KEY` as the env var for the Kakao REST API key.
 
 **Rationale**:
-- Matches the `KOSMOS_` prefix hard rule (AGENTS.md).
-- Matches the local `.env` precedent already in place (verified during the prior session — file contains `KOSMOS_KAKAO_API_KEY=...`).
-- Spec FR-004 mandates the exact failure message `set KOSMOS_KAKAO_API_KEY to run live geocoding tests`; the env var name and the message must stay in sync.
+- Matches the `KOSAX_` prefix hard rule (AGENTS.md).
+- Matches the local `.env` precedent already in place (verified during the prior session — file contains `KOSAX_KAKAO_API_KEY=...`).
+- Spec FR-004 mandates the exact failure message `set KOSAX_KAKAO_API_KEY to run live geocoding tests`; the env var name and the message must stay in sync.
 
 **Alternatives rejected**:
-- `KOSMOS_KAKAO_REST_API_KEY` — more verbose, doesn't match `.env` precedent, would require renaming the existing local secret.
+- `KOSAX_KAKAO_REST_API_KEY` — more verbose, doesn't match `.env` precedent, would require renaming the existing local secret.
 - `KAKAO_API_KEY` (no prefix) — violates AGENTS.md hard rule.
 
 ### D3: Kakao rate-limit fixture — 200 ms default delay
@@ -62,7 +62,7 @@ No architectural changes. This is a test-coverage extension that inherits #291's
 
 ### D4: Hard-fail message — exact string from spec
 
-**Decision**: `pytest.fail("set KOSMOS_KAKAO_API_KEY to run live geocoding tests")` — no formatting, no trailing period, no prefix.
+**Decision**: `pytest.fail("set KOSAX_KAKAO_API_KEY to run live geocoding tests")` — no formatting, no trailing period, no prefix.
 
 **Rationale**:
 - Spec Story 1 AS-8 and FR-004 pin this string verbatim. SC-004 verifies by running without the env var and checking the exact output.
@@ -99,7 +99,7 @@ No architectural changes. This is a test-coverage extension that inherits #291's
 **Decision**: Assert tool-call sequence ordering (geocoding strictly before KOROAD), non-empty Hangul-containing final response, and presence of the three event pairs (LLM stream, geocoding tool, KOROAD tool) in the observability log.
 
 **Rationale**:
-- The premise of KOSMOS Scenario 1 is that the LLM *chooses* to call geocoding from a natural Korean prompt. This test is the single checkpoint that verifies the choice actually happens in production wiring.
+- The premise of KOSAX Scenario 1 is that the LLM *chooses* to call geocoding from a natural Korean prompt. This test is the single checkpoint that verifies the choice actually happens in production wiring.
 - Ordering assertion (geocoding before KOROAD) catches a latent regression where the LLM skips geocoding and calls KOROAD directly with a hallucinated region code — a silent quality failure.
 - Hangul check avoids asserting on LLM-generated text content while still confirming the response is in Korean.
 

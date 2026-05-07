@@ -16,18 +16,18 @@ Verifies a citizen's 모바일 신분증 (Mobile ID) session — either a mobile
 | Classification | Mock · Permission tier 2 |
 | Source | 행정안전부 모바일 신분증 SDK reference documentation (OOS shape-mirror) |
 | Primitive | `verify` |
-| Module | `src/kosmos/tools/mock/verify_mobile_id.py` |
+| Module | `src/kosax/tools/mock/verify_mobile_id.py` |
 
 ## Envelope
 
-**Input model**: `VerifyInput` defined at `src/kosmos/primitives/verify.py:44–51`.
+**Input model**: `VerifyInput` defined at `src/kosax/primitives/verify.py:44–51`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `family_hint` | `Literal["mobile_id"]` | yes | Must be `"mobile_id"`; dispatcher rejects any other value (FR-010). |
 | `session_context` | `dict[str, object]` | no | Opaque external evidence. Pass `{"_fixture_override": {"id_type": "resident"}}` in tests to exercise the resident-card variant. |
 
-**Output model**: `MobileIdContext` defined at `src/kosmos/primitives/verify.py:186–199`.
+**Output model**: `MobileIdContext` defined at `src/kosax/primitives/verify.py:186–199`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -51,7 +51,7 @@ Verifies a citizen's 모바일 신분증 (Mobile ID) session — either a mobile
 
 ## Permission tier rationale
 
-This adapter carries `auth_level="AAL2"` and `is_irreversible=False`. Per `src/kosmos/tools/permissions.py` `compute_permission_tier()` (Spec 033 FR-011), AAL2 maps to **permission tier 2** (orange ⓶ in UI-C). Mobile ID contains a unique personal identifier (`pipa_class="personal_unique_id"`), which is a higher-sensitivity PIPA class than `personal_standard`. The permission gauntlet must surface an explicit consent prompt and record an audit receipt before the first invocation. The citizen's `id_type` preference (driver's license vs. resident card) influences which physical credential is presented but does not change the tier; both variants are AAL2.
+This adapter carries `auth_level="AAL2"` and `is_irreversible=False`. Per `src/kosax/tools/permissions.py` `compute_permission_tier()` (Spec 033 FR-011), AAL2 maps to **permission tier 2** (orange ⓶ in UI-C). Mobile ID contains a unique personal identifier (`pipa_class="personal_unique_id"`), which is a higher-sensitivity PIPA class than `personal_standard`. The permission gauntlet must surface an explicit consent prompt and record an audit receipt before the first invocation. The citizen's `id_type` preference (driver's license vs. resident card) influences which physical credential is presented but does not change the tier; both variants are AAL2.
 
 ## Worked example
 
@@ -88,7 +88,7 @@ This adapter carries `auth_level="AAL2"` and `is_irreversible=False`. Per `src/k
 
 ```text
 시민: 모바일운전면허로 본인인증 해줘.
-KOSMOS: 모바일 신분증 (모바일운전면허, AAL2) 인증이 확인되었습니다. 인증 시각: 2026-04-19 09:00 UTC, 세션 참조: mock-mobile-id-ref-001.
+KOSAX: 모바일 신분증 (모바일운전면허, AAL2) 인증이 확인되었습니다. 인증 시각: 2026-04-19 09:00 UTC, 세션 참조: mock-mobile-id-ref-001.
 ```
 
 ## Constraints

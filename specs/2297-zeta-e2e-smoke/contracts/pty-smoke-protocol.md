@@ -5,12 +5,12 @@
 
 ## I-P1 — Driver script structure
 
-**Given** a clean working tree with η commit `1321f77` on `main` and `KOSMOS_FRIENDLI_TOKEN` set.
+**Given** a clean working tree with η commit `1321f77` on `main` and `KOSAX_FRIENDLI_TOKEN` set.
 
 **Then** `smoke-citizen-taxreturn.expect` MUST:
 1. `set timeout 90` (90s total budget).
-2. `spawn bash -c "cd $env(HOME)/KOSMOS-w-2297/tui && bun run tui"`.
-3. `expect "KOSMOS"` (boot+branding render).
+2. `spawn bash -c "cd $env(HOME)/KOSAX-w-2297/tui && bun run tui"`.
+3. `expect "KOSAX"` (boot+branding render).
 4. `send "종합소득세 신고해줘\r"`.
 5. `expect -re "접수번호: hometax-2026-\\d\\d-\\d\\d-RX-\[A-Z0-9\]\{5\}"` — strict regex on receipt id.
 6. Capture full PTY session via `log_file specs/2297-zeta-e2e-smoke/smoke-citizen-taxreturn-pty.txt`.
@@ -23,7 +23,7 @@
 
 **Then** the harness MUST emit `CHECKPOINTreceipt token observed` to stdout exactly once. This is a literal string the harness inserts when its `tool_result` parser sees `envelope.kind === 'submit'` AND `envelope.transaction_id` matches the receipt regex. The `expect` script MUST also `expect "CHECKPOINTreceipt token observed"` to assert convergence.
 
-The marker is implemented in the TUI side (e.g. in `dispatchPrimitive.ts` when `KOSMOS_SMOKE_CHECKPOINTS=true` env is set) — fire-and-forget `process.stderr.write` so it lands in PTY capture but does not pollute production output.
+The marker is implemented in the TUI side (e.g. in `dispatchPrimitive.ts` when `KOSAX_SMOKE_CHECKPOINTS=true` env is set) — fire-and-forget `process.stderr.write` so it lands in PTY capture but does not pollute production output.
 
 ## I-P3 — Captured log MUST contain three tool_call markers (FR-014)
 

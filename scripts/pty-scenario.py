@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""KOSMOS PTY scenario harness — Spec 1978 T001 skeleton.
+"""KOSAX PTY scenario harness — Spec 1978 T001 skeleton.
 
 Drives `bun run tui` inside a real PTY (so Ink's raw-mode `useInput` works) and
 captures the framed stdout (NDJSON IPC) and DEBUG stderr separately. Used by
 reviewers to verify Epic #1978 acceptance scenarios per
 `specs/1978-tui-kexaone-wiring/quickstart.md`.
 
-KOSMOS-original — Claude Code's restored source has no equivalent harness.
+KOSAX-original — Claude Code's restored source has no equivalent harness.
 The closest CC pattern is the inline reproduction recipes scattered through
 `.references/claude-code-sourcemap/restored-src/src/utils/expect/` for
 prompt fixtures, but those run against an in-process LLM mock, not a live
-TTY-driven binary. KOSMOS needs a dedicated harness because memory
+TTY-driven binary. KOSAX needs a dedicated harness because memory
 `feedback_runtime_verification` requires PTY-driven scenario capture rather
 than code-grep claims of closure.
 
@@ -29,8 +29,8 @@ Usage::
 
 Exit codes: 0 = scenario passed, 1 = scenario failed, 2 = harness error.
 
-This file is dependency-free Python stdlib only. ``KOSMOS_FRIENDLI_TOKEN`` is
-required for greeting / lookup; ``KOSMOS_DATA_GO_KR_API_KEY`` may be required
+This file is dependency-free Python stdlib only. ``KOSAX_FRIENDLI_TOKEN`` is
+required for greeting / lookup; ``KOSAX_DATA_GO_KR_API_KEY`` may be required
 for live lookup runs. Mock-based scenarios (submit / verify / subscribe) need
 no external secrets once Phase F adapter registration lands.
 """
@@ -106,7 +106,7 @@ class HarnessResult:
 def _spawn_tui(env_overrides: dict[str, str]) -> tuple[int, int]:
     """Fork the TUI under a PTY; returns (pid, master_fd).
 
-    KOSMOS-1978 T003b: invoke bun directly (bypassing `bun run` wrapper) AND
+    KOSAX-1978 T003b: invoke bun directly (bypassing `bun run` wrapper) AND
     explicitly preload the MACRO shim. `bun run` (a) loses TTY-ness on its
     child (process.stdout.isTTY=undefined → main.tsx isNonInteractive=true →
     --print branch crash) and (b) skips bunfig.toml's preload entry, which
@@ -116,17 +116,17 @@ def _spawn_tui(env_overrides: dict[str, str]) -> tuple[int, int]:
     cmd = ["bun", "--preload", "./src/stubs/macro-preload.ts", "src/main.tsx"]
     env = os.environ.copy()
     env.setdefault("DISABLE_INSTALLATION_CHECKS", "1")
-    env.setdefault("KOSMOS_TUI_LOG_LEVEL", "DEBUG")
+    env.setdefault("KOSAX_TUI_LOG_LEVEL", "DEBUG")
     env.setdefault("OTEL_SDK_DISABLED", "true")
     env.setdefault("TERM", "xterm-256color")
     env.setdefault("COLUMNS", "120")
     env.setdefault("LINES", "40")
     env.setdefault("FORCE_COLOR", "0")
-    # KOSMOS-1978 T003b: tell main.tsx that fd1 is a real TTY slave even
+    # KOSAX-1978 T003b: tell main.tsx that fd1 is a real TTY slave even
     # though Bun's `process.stdout.isTTY` reports undefined under wrapper
-    # invocations. See `tui/src/main.tsx` `kosmosForceInteractive` for the
+    # invocations. See `tui/src/main.tsx` `kosaxForceInteractive` for the
     # consuming side. NEVER set this in citizen runtimes.
-    env.setdefault("KOSMOS_FORCE_INTERACTIVE", "1")
+    env.setdefault("KOSAX_FORCE_INTERACTIVE", "1")
     env.update(env_overrides)
 
     pid, fd = pty.fork()
@@ -447,7 +447,7 @@ def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
 
 def _check_friendli_token(scenario: str) -> None:
     """Emit structured error JSON and raise SystemExit(1) if FRIENDLI_API_KEY is absent."""
-    if not os.environ.get("FRIENDLI_API_KEY") and not os.environ.get("KOSMOS_FRIENDLI_TOKEN"):
+    if not os.environ.get("FRIENDLI_API_KEY") and not os.environ.get("KOSAX_FRIENDLI_TOKEN"):
         raise SystemExit(1)
 
 
@@ -661,7 +661,7 @@ def cmd_subscribe_cbs(_args: argparse.Namespace) -> HarnessResult:
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="pty-scenario.py",
-        description="KOSMOS PTY scenario harness (Spec 1978).",
+        description="KOSAX PTY scenario harness (Spec 1978).",
     )
     parser.add_argument("--debug", action="store_true", help="Enable DEBUG logging to stderr.")
     sub = parser.add_subparsers(dest="cmd", required=True)

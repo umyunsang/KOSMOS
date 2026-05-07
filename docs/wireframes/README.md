@@ -1,4 +1,4 @@
-# KOSMOS UI Wireframes
+# KOSAX UI Wireframes
 
 Interactive wireframe previews rendered via Ink — 터미널에서 직접 비교 가능.
 

@@ -18,10 +18,10 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.context.auto_compact import AutoCompactor
-from kosmos.context.compact_models import CompactionConfig
-from kosmos.engine.tokens import estimate_tokens
-from kosmos.llm.models import ChatMessage
+from kosax.context.auto_compact import AutoCompactor
+from kosax.context.compact_models import CompactionConfig
+from kosax.engine.tokens import estimate_tokens
+from kosax.llm.models import ChatMessage
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -170,7 +170,7 @@ class TestAutoCompactorSessionSummaryEscalation:
         result_msgs, result = await compactor.maybe_compact(msgs, cfg)
         if result and result.strategy_used in ("session_summary", "aggressive"):
             # At least one system message with summary header should be present.
-            from kosmos.context.session_compact import _SUMMARY_HEADER  # noqa: PLC0415
+            from kosax.context.session_compact import _SUMMARY_HEADER  # noqa: PLC0415
 
             summary_msgs = [m for m in result_msgs if m.role == "system"]
             assert any(_SUMMARY_HEADER in (m.content or "") for m in summary_msgs)

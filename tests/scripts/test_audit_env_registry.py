@@ -71,7 +71,7 @@ def _run(repo_root: Path, registry_path: Path | None = None) -> tuple[int, dict]
 
 
 def _write_src_py(repo_root: Path, content: str, name: str = "module.py") -> None:
-    src = repo_root / "src" / "kosmos"
+    src = repo_root / "src" / "kosax"
     src.mkdir(parents=True, exist_ok=True)
     (src / name).write_text(content, encoding="utf-8")
 
@@ -93,13 +93,13 @@ def test_ar01_clean_state(tmp_path: Path) -> None:
     """T-AR01: 1:1 code↔registry match → exit 0, verdict=clean."""
     _write_src_py(
         tmp_path,
-        _make_py_source(["KOSMOS_SYNTHETIC_FOO", "KOSMOS_SYNTHETIC_BAR"]),
+        _make_py_source(["KOSAX_SYNTHETIC_FOO", "KOSAX_SYNTHETIC_BAR"]),
     )
     _write_registry(
         tmp_path,
         [
-            "| `KOSMOS_SYNTHETIC_FOO` | yes (all envs) | — | string | `kosmos.test` | — |",
-            "| `KOSMOS_SYNTHETIC_BAR` | yes (all envs) | — | string | `kosmos.test` | — |",
+            "| `KOSAX_SYNTHETIC_FOO` | yes (all envs) | — | string | `kosax.test` | — |",
+            "| `KOSAX_SYNTHETIC_BAR` | yes (all envs) | — | string | `kosax.test` | — |",
         ],
     )
 
@@ -120,15 +120,15 @@ def test_ar01_clean_state(tmp_path: Path) -> None:
 
 
 def test_ar02_code_var_not_in_registry(tmp_path: Path) -> None:
-    """T-AR02: KOSMOS_SYNTHETIC_NEW in code but not in registry → exit 1."""
+    """T-AR02: KOSAX_SYNTHETIC_NEW in code but not in registry → exit 1."""
     _write_src_py(
         tmp_path,
-        _make_py_source(["KOSMOS_SYNTHETIC_KNOWN", "KOSMOS_SYNTHETIC_NEW"]),
+        _make_py_source(["KOSAX_SYNTHETIC_KNOWN", "KOSAX_SYNTHETIC_NEW"]),
     )
     _write_registry(
         tmp_path,
         [
-            "| `KOSMOS_SYNTHETIC_KNOWN` | yes (all envs) | — | string | `kosmos.test` | — |",
+            "| `KOSAX_SYNTHETIC_KNOWN` | yes (all envs) | — | string | `kosax.test` | — |",
         ],
     )
 
@@ -137,7 +137,7 @@ def test_ar02_code_var_not_in_registry(tmp_path: Path) -> None:
     assert exit_code == 1, f"Expected exit 1, got {exit_code}"
     assert report.get("verdict") == "drift"
     missing = [f["name"] for f in report["findings"]["in_code_not_in_registry"]]
-    assert "KOSMOS_SYNTHETIC_NEW" in missing, f"Missing not flagged: {missing}"
+    assert "KOSAX_SYNTHETIC_NEW" in missing, f"Missing not flagged: {missing}"
 
 
 # ---------------------------------------------------------------------------
@@ -146,16 +146,16 @@ def test_ar02_code_var_not_in_registry(tmp_path: Path) -> None:
 
 
 def test_ar03_registry_var_not_in_code(tmp_path: Path) -> None:
-    """T-AR03: KOSMOS_SYNTHETIC_STALE in registry but not in code → exit 1."""
+    """T-AR03: KOSAX_SYNTHETIC_STALE in registry but not in code → exit 1."""
     _write_src_py(
         tmp_path,
-        _make_py_source(["KOSMOS_SYNTHETIC_ACTIVE"]),
+        _make_py_source(["KOSAX_SYNTHETIC_ACTIVE"]),
     )
     _write_registry(
         tmp_path,
         [
-            "| `KOSMOS_SYNTHETIC_ACTIVE` | yes (all envs) | — | string | `kosmos.test` | — |",
-            "| `KOSMOS_SYNTHETIC_STALE` | yes (all envs) | — | string | `kosmos.test` | — |",
+            "| `KOSAX_SYNTHETIC_ACTIVE` | yes (all envs) | — | string | `kosax.test` | — |",
+            "| `KOSAX_SYNTHETIC_STALE` | yes (all envs) | — | string | `kosax.test` | — |",
         ],
     )
 
@@ -164,7 +164,7 @@ def test_ar03_registry_var_not_in_code(tmp_path: Path) -> None:
     assert exit_code == 1, f"Expected exit 1, got {exit_code}"
     assert report.get("verdict") == "drift"
     stale = [f["name"] for f in report["findings"]["in_registry_not_in_code"]]
-    assert "KOSMOS_SYNTHETIC_STALE" in stale, f"Stale not flagged: {stale}"
+    assert "KOSAX_SYNTHETIC_STALE" in stale, f"Stale not flagged: {stale}"
 
 
 # ---------------------------------------------------------------------------
@@ -174,7 +174,7 @@ def test_ar03_registry_var_not_in_code(tmp_path: Path) -> None:
 
 def test_ar04_malformed_registry_missing_header(tmp_path: Path) -> None:
     """T-AR04: Registry with no `| Variable | Required |` header → exit 2."""
-    _write_src_py(tmp_path, _make_py_source(["KOSMOS_SYNTHETIC_OK"]))
+    _write_src_py(tmp_path, _make_py_source(["KOSAX_SYNTHETIC_OK"]))
 
     # Write a registry file that has no recognisable header.
     docs = tmp_path / "docs"
@@ -205,14 +205,14 @@ def test_ar05_langfuse_allowlist_clean(tmp_path: Path) -> None:
     """T-AR05: LANGFUSE_PUBLIC_KEY in code + registry → exit 0 (allowlist)."""
     _write_src_py(
         tmp_path,
-        _make_py_source(["KOSMOS_SYNTHETIC_BASE", "LANGFUSE_PUBLIC_KEY"]),
+        _make_py_source(["KOSAX_SYNTHETIC_BASE", "LANGFUSE_PUBLIC_KEY"]),
     )
     _write_registry(
         tmp_path,
         [
-            "| `KOSMOS_SYNTHETIC_BASE` | yes (all envs) | — | string | `kosmos.test` | — |",
+            "| `KOSAX_SYNTHETIC_BASE` | yes (all envs) | — | string | `kosax.test` | — |",
             "| `LANGFUSE_PUBLIC_KEY` | yes (prod only) | — | string "
-            "| `kosmos.observability.langfuse` | — |",
+            "| `kosax.observability.langfuse` | — |",
         ],
     )
 
@@ -236,17 +236,17 @@ def test_ar05_langfuse_allowlist_clean(tmp_path: Path) -> None:
 
 
 def test_ar06_override_family_clean(tmp_path: Path) -> None:
-    """T-AR06: KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY in code + family row → exit 0."""
+    """T-AR06: KOSAX_KOROAD_ACCIDENT_SEARCH_API_KEY in code + family row → exit 0."""
     _write_src_py(
         tmp_path,
-        _make_py_source(["KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY", "KOSMOS_SYNTHETIC_BASE"]),
+        _make_py_source(["KOSAX_KOROAD_ACCIDENT_SEARCH_API_KEY", "KOSAX_SYNTHETIC_BASE"]),
     )
     _write_registry(
         tmp_path,
         [
-            "| `KOSMOS_SYNTHETIC_BASE` | yes (all envs) | — | string | `kosmos.test` | — |",
-            "| `KOSMOS_{TOOL_ID}_API_KEY` | conditional (see note) | — | string "
-            "| `kosmos.permissions.credentials` | — |",
+            "| `KOSAX_SYNTHETIC_BASE` | yes (all envs) | — | string | `kosax.test` | — |",
+            "| `KOSAX_{TOOL_ID}_API_KEY` | conditional (see note) | — | string "
+            "| `kosax.permissions.credentials` | — |",
         ],
     )
 
@@ -266,11 +266,11 @@ def test_ar06_override_family_clean(tmp_path: Path) -> None:
 
 def test_ar07_performance(tmp_path: Path) -> None:
     """T-AR07: >1000 code files scanned within 10 s wall-clock (NFR-006)."""
-    src_dir = tmp_path / "src" / "kosmos" / "generated"
+    src_dir = tmp_path / "src" / "kosax" / "generated"
     src_dir.mkdir(parents=True)
 
     # Generate 1100 Python files each referencing one known var.
-    var_name = "KOSMOS_SYNTHETIC_PERF"
+    var_name = "KOSAX_SYNTHETIC_PERF"
     content = _make_py_source([var_name])
     for i in range(1100):
         (src_dir / f"module_{i:04d}.py").write_text(content, encoding="utf-8")
@@ -278,7 +278,7 @@ def test_ar07_performance(tmp_path: Path) -> None:
     _write_registry(
         tmp_path,
         [
-            f"| `{var_name}` | yes (all envs) | — | string | `kosmos.test` | — |",
+            f"| `{var_name}` | yes (all envs) | — | string | `kosax.test` | — |",
         ],
     )
 
@@ -294,7 +294,7 @@ def test_ar07_performance(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# T-AR08 (beyond contract): Prefix violation — non-KOSMOS_/non-LANGFUSE_ in .env.example
+# T-AR08 (beyond contract): Prefix violation — non-KOSAX_/non-LANGFUSE_ in .env.example
 #
 # Contract matrix does not list this as a numbered test, but §Allowlisted
 # prefixes mandates `prefix_violations` reporting. This is a regression guard.
@@ -302,22 +302,22 @@ def test_ar07_performance(tmp_path: Path) -> None:
 
 
 def test_ar08_prefix_violation(tmp_path: Path) -> None:
-    """T-AR08: NON_KOSMOS_VAR in .env.example → exit 1, prefix_violations."""
+    """T-AR08: NON_KOSAX_VAR in .env.example → exit 1, prefix_violations."""
     # Populate registry with one known var so the code scan won't drift.
-    _write_src_py(tmp_path, _make_py_source(["KOSMOS_SYNTHETIC_OK"]))
+    _write_src_py(tmp_path, _make_py_source(["KOSAX_SYNTHETIC_OK"]))
     _write_registry(
         tmp_path,
         [
-            "| `KOSMOS_SYNTHETIC_OK` | yes (all envs) | — | string | `kosmos.test` | — |",
+            "| `KOSAX_SYNTHETIC_OK` | yes (all envs) | — | string | `kosax.test` | — |",
         ],
     )
 
-    # Write .env.example with a non-KOSMOS_, non-LANGFUSE_ assignment.
+    # Write .env.example with a non-KOSAX_, non-LANGFUSE_ assignment.
     env_example = tmp_path / ".env.example"
     env_example.write_text(
         textwrap.dedent("""\
             # Example env
-            KOSMOS_SYNTHETIC_OK=
+            KOSAX_SYNTHETIC_OK=
             MY_TOTALLY_DIFFERENT_VAR=secret
         """),
         encoding="utf-8",
@@ -340,16 +340,16 @@ def test_ar08_prefix_violation(tmp_path: Path) -> None:
 
 
 def test_ar09_override_family_unmatched(tmp_path: Path) -> None:
-    """T-AR09: KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY in code, NO family row → exit 1."""
+    """T-AR09: KOSAX_KOROAD_ACCIDENT_SEARCH_API_KEY in code, NO family row → exit 1."""
     _write_src_py(
         tmp_path,
-        _make_py_source(["KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY", "KOSMOS_SYNTHETIC_BASE"]),
+        _make_py_source(["KOSAX_KOROAD_ACCIDENT_SEARCH_API_KEY", "KOSAX_SYNTHETIC_BASE"]),
     )
     # Registry has no family row.
     _write_registry(
         tmp_path,
         [
-            "| `KOSMOS_SYNTHETIC_BASE` | yes (all envs) | — | string | `kosmos.test` | — |",
+            "| `KOSAX_SYNTHETIC_BASE` | yes (all envs) | — | string | `kosax.test` | — |",
         ],
     )
 
@@ -357,6 +357,6 @@ def test_ar09_override_family_unmatched(tmp_path: Path) -> None:
 
     assert exit_code == 1, f"Expected exit 1, got {exit_code}"
     unmatched = [f["name"] for f in report["findings"]["override_family_unmatched"]]
-    assert "KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY" in unmatched, (
+    assert "KOSAX_KOROAD_ACCIDENT_SEARCH_API_KEY" in unmatched, (
         f"Expected override_family_unmatched entry; got: {unmatched}"
     )

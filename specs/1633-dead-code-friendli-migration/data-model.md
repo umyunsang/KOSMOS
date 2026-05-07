@@ -19,15 +19,15 @@ This Epic does **not** introduce new domain entities or persistent state. It per
 - **`FrameSeq`** — per-session monotonic ordering (used for gap detection during resume).
 - **`FrameTrailer`** — `{ final, transaction_id, checksum_sha256 }`, terminates logical payloads.
 
-### Spec 026 prompt entities (`src/kosmos/prompts/`)
+### Spec 026 prompt entities (`src/kosax/prompts/`)
 
 - **`PromptManifest`** (Python, already implemented) — parses `prompts/manifest.yaml`, validates SHA-256 integrity at boot.
 - **`PromptLoader`** (Python, already implemented) — returns `(content, hash)` tuple for `system_v1`.
 
 ### Spec 021 OTEL span attributes (Python, already implemented)
 
-- **`gen_ai.*`** — GenAI semconv v1.40 attributes already emitted by `src/kosmos/llm/client.py`.
-- **`kosmos.prompt.hash`** — KOSMOS extension from Spec 026; already emitted Python-side.
+- **`gen_ai.*`** — GenAI semconv v1.40 attributes already emitted by `src/kosax/llm/client.py`.
+- **`kosax.prompt.hash`** — KOSAX extension from Spec 026; already emitted Python-side.
 
 ## Frame usage for LLM turns (this Epic's contribution)
 
@@ -39,7 +39,7 @@ A single LLM invocation is a **sequence of frames** flowing through the Spec 032
 |---|---|---|---|
 | `UserInputFrame` | `tui` | TUI → backend | Citizen text + system prompt reference + tool list hint. Carries `text` (raw user input) plus metadata injected via envelope `correlation_id` for turn grouping. |
 
-The `UserInputFrame` payload is defined by Spec 032; this Epic does **not** extend its shape. System-prompt SHA-256 propagation happens via the envelope's `kosmos.prompt.hash` OTEL attribute, not a new payload field.
+The `UserInputFrame` payload is defined by Spec 032; this Epic does **not** extend its shape. System-prompt SHA-256 propagation happens via the envelope's `kosax.prompt.hash` OTEL attribute, not a new payload field.
 
 ### Inbound (Python backend → TUI) — streaming LLM response
 
@@ -83,49 +83,49 @@ Citizen types → TUI emits UserInputFrame
 
 ## TS type translation layer (in-process only, no wire change)
 
-The new file `tui/src/ipc/llmTypes.ts` defines KOSMOS-scoped types **structurally compatible** with the existing Anthropic SDK type surface that `QueryEngine.ts` + `query.ts` consume as type-only imports. These types are not serialized to the wire — they exist only so the agentic-loop code keeps compiling after `@anthropic-ai/sdk` imports are removed.
+The new file `tui/src/ipc/llmTypes.ts` defines KOSAX-scoped types **structurally compatible** with the existing Anthropic SDK type surface that `QueryEngine.ts` + `query.ts` consume as type-only imports. These types are not serialized to the wire — they exist only so the agentic-loop code keeps compiling after `@anthropic-ai/sdk` imports are removed.
 
 ### Types to introduce (TS-only, zero wire impact)
 
 ```ts
 // tui/src/ipc/llmTypes.ts (new — outline only, exact shape at contracts/)
 
-export type KosmosContentBlockParam =
-  | KosmosTextBlockParam
-  | KosmosToolUseBlockParam
-  | KosmosToolResultBlockParam;
+export type KosaxContentBlockParam =
+  | KosaxTextBlockParam
+  | KosaxToolUseBlockParam
+  | KosaxToolResultBlockParam;
 
-export type KosmosTextBlockParam = { type: 'text'; text: string };
+export type KosaxTextBlockParam = { type: 'text'; text: string };
 
-export type KosmosMessageParam = {
+export type KosaxMessageParam = {
   role: 'user' | 'assistant';
-  content: string | KosmosContentBlockParam[];
+  content: string | KosaxContentBlockParam[];
 };
 
-export type KosmosMessageStreamParams = {
+export type KosaxMessageStreamParams = {
   model: string;            // 'LGAI-EXAONE/K-EXAONE-236B-A23B'
   system?: string;          // loaded via PromptLoader
-  messages: KosmosMessageParam[];
-  tools?: KosmosToolDefinition[];
+  messages: KosaxMessageParam[];
+  tools?: KosaxToolDefinition[];
   max_tokens: number;
 };
 
-export type KosmosRawMessageStreamEvent =
+export type KosaxRawMessageStreamEvent =
   | { type: 'message_start'; message: { id: string; role: 'assistant' } }
-  | { type: 'content_block_start'; index: number; content_block: KosmosContentBlockParam }
+  | { type: 'content_block_start'; index: number; content_block: KosaxContentBlockParam }
   | { type: 'content_block_delta'; index: number; delta: { type: 'text_delta'; text: string } }
   | { type: 'content_block_stop'; index: number }
-  | { type: 'message_delta'; delta: { stop_reason?: string }; usage?: KosmosUsage }
+  | { type: 'message_delta'; delta: { stop_reason?: string }; usage?: KosaxUsage }
   | { type: 'message_stop' };
 
-export type KosmosUsage = {
+export type KosaxUsage = {
   input_tokens: number;
   output_tokens: number;
   cache_read_input_tokens?: number;  // rewired from FriendliAI prompt_tokens_details.cached_tokens
 };
 ```
 
-**Mapping from `AssistantChunkFrame` to `KosmosRawMessageStreamEvent`**:
+**Mapping from `AssistantChunkFrame` to `KosaxRawMessageStreamEvent`**:
 - First chunk for a `message_id` → emit `message_start` + `content_block_start`.
 - Subsequent chunks with `delta.text` → emit `content_block_delta`.
 - Chunk with `done=true` → emit `content_block_stop` + `message_delta` + `message_stop`. Usage totals pulled from the envelope trailer metadata (propagated by Python backend).
@@ -141,8 +141,8 @@ Carried forward to `tasks.md` / `contracts/`:
 - **V1**: Every `UserInputFrame` emitted for an LLM turn has a **fresh** `correlation_id` (UUIDv7).
 - **V2**: Every `AssistantChunkFrame` sequence terminates with exactly one `done=true` frame. Missing `done=true` is a protocol violation; TUI surfaces `ErrorFrame(class=network, code=ipc_transport)`.
 - **V3**: `ToolCallFrame` MUST have a non-null `transaction_id` (idempotency for irreversible operations).
-- **V4**: OTEL `gen_ai.client.invoke` span on the TUI side MUST attach `kosmos.prompt.hash` attribute with a 64-char hex SHA-256 value.
-- **V5**: FriendliAI usage fields from backend MUST map to `KosmosUsage.input_tokens` / `output_tokens` / `cache_read_input_tokens`. Ignore fields not in the KOSMOS schema (forward compatibility).
+- **V4**: OTEL `gen_ai.client.invoke` span on the TUI side MUST attach `kosax.prompt.hash` attribute with a 64-char hex SHA-256 value.
+- **V5**: FriendliAI usage fields from backend MUST map to `KosaxUsage.input_tokens` / `output_tokens` / `cache_read_input_tokens`. Ignore fields not in the KOSAX schema (forward compatibility).
 
 ## State transitions
 
@@ -150,7 +150,7 @@ This Epic introduces no new state machines. The existing Spec 032 session-ring-b
 
 ## Persistence
 
-**None introduced by this Epic.** Sessions remain in `~/.kosmos/memdir/user/sessions/` (Spec 027). OTEL spans go to local Langfuse via Spec 028 OTLP collector. Consent records in Spec 035 memdir. No schema changes to any persistent store.
+**None introduced by this Epic.** Sessions remain in `~/.kosax/memdir/user/sessions/` (Spec 027). OTEL spans go to local Langfuse via Spec 028 OTLP collector. Consent records in Spec 035 memdir. No schema changes to any persistent store.
 
 ## Schema change log
 

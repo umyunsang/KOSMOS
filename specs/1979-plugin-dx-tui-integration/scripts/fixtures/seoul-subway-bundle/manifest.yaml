@@ -15,12 +15,12 @@ search_hint_en: "subway arrival time station gangnam"
 
 # Stub provenance URL satisfies the `^https://github.com/` schema pattern;
 # the actual SLSA verification is bypassed at install time via
-# KOSMOS_PLUGIN_SLSA_SKIP=true (development environments only — production
+# KOSAX_PLUGIN_SLSA_SKIP=true (development environments only — production
 # refuses skip per installer.py:Phase 3 guard).
-slsa_provenance_url: "https://github.com/kosmos-plugin-store/seoul-subway-fixture/releases/v1.0.0/seoul-subway-1.0.0.intoto.jsonl"
+slsa_provenance_url: "https://github.com/kosax-plugin-store/seoul-subway-fixture/releases/v1.0.0/seoul-subway-1.0.0.intoto.jsonl"
 
 otel_attributes:
-  kosmos.plugin.id: seoul_subway
+  kosax.plugin.id: seoul_subway
 
 # AdapterRegistration (Spec 022 + Spec 031 dual-axis security).
 adapter:

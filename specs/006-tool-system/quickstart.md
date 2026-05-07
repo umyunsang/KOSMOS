@@ -16,7 +16,7 @@ No additional environment variables are required for the tool system itself. Ind
 
 ```python
 from pydantic import BaseModel
-from kosmos.tools import GovAPITool, ToolRegistry
+from kosax.tools import GovAPITool, ToolRegistry
 
 # Define input/output schemas
 class WeatherInput(BaseModel):
@@ -70,7 +70,7 @@ openai_tools = registry.export_core_tools_openai()
 ### Dispatching a tool call
 
 ```python
-from kosmos.tools import ToolExecutor
+from kosax.tools import ToolExecutor
 
 executor = ToolExecutor(registry)
 result = await executor.dispatch(

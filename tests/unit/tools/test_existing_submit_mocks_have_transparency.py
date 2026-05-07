@@ -60,9 +60,9 @@ async def test_existing_submit_mock_has_six_transparency_fields(
     and asserts that adapter_receipt contains each of the six fields as non-empty strings.
     """
     # Ensure mock modules are imported (they self-register on import)
-    import kosmos.tools.mock.data_go_kr.fines_pay  # noqa: F401
-    import kosmos.tools.mock.mydata.welfare_application  # noqa: F401
-    from kosmos.primitives.submit import _ADAPTER_REGISTRY
+    import kosax.tools.mock.data_go_kr.fines_pay  # noqa: F401
+    import kosax.tools.mock.mydata.welfare_application  # noqa: F401
+    from kosax.primitives.submit import _ADAPTER_REGISTRY
 
     assert adapter_id in _ADAPTER_REGISTRY, (
         f"Adapter {adapter_id!r} not found in submit _ADAPTER_REGISTRY after import. "
@@ -89,8 +89,8 @@ async def test_existing_submit_mock_has_six_transparency_fields(
 @pytest.mark.asyncio
 async def test_fines_pay_transparency_international_reference() -> None:
     """mock_traffic_fine_pay_v1 must reference 'UK GOV.UK Pay'."""
-    import kosmos.tools.mock.data_go_kr.fines_pay  # noqa: F401
-    from kosmos.primitives.submit import _ADAPTER_REGISTRY
+    import kosax.tools.mock.data_go_kr.fines_pay  # noqa: F401
+    from kosax.primitives.submit import _ADAPTER_REGISTRY
 
     _registration, invoke_fn = _ADAPTER_REGISTRY["mock_traffic_fine_pay_v1"]
     result = await invoke_fn({"fine_reference": "FINE-TEST-001", "payment_method": "bank_transfer"})
@@ -100,8 +100,8 @@ async def test_fines_pay_transparency_international_reference() -> None:
 @pytest.mark.asyncio
 async def test_welfare_application_transparency_international_reference() -> None:
     """mock_welfare_application_submit_v1 must reference 'Estonia X-Road'."""
-    import kosmos.tools.mock.mydata.welfare_application  # noqa: F401
-    from kosmos.primitives.submit import _ADAPTER_REGISTRY
+    import kosax.tools.mock.mydata.welfare_application  # noqa: F401
+    from kosax.primitives.submit import _ADAPTER_REGISTRY
 
     _registration, invoke_fn = _ADAPTER_REGISTRY["mock_welfare_application_submit_v1"]
     result = await invoke_fn(

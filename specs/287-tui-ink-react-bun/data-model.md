@@ -14,7 +14,7 @@ The single data plane between the TypeScript TUI and the Python backend. Encoded
 ### 1.1 Envelope
 
 ```python
-# Python source of truth — src/kosmos/ipc/frame_schema.py (new)
+# Python source of truth — src/kosax/ipc/frame_schema.py (new)
 from typing import Annotated, Literal, Union
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -62,7 +62,7 @@ IPCFrame = Annotated[
 ### 1.4 Crash / error invariants
 
 - If JSONL parse fails on a single frame, the TUI logs at `ERROR` level, renders `<UnrecognizedPayload />`, and continues — other frames are not discarded (FR-033, Edge Case: malformed JSONL).
-- If the backend process exits non-zero, the TUI surfaces `<CrashNotice />` within 5 s. All `KOSMOS_*` env var values in the trace are redacted (FR-004).
+- If the backend process exits non-zero, the TUI surfaces `<CrashNotice />` within 5 s. All `KOSAX_*` env var values in the trace are redacted (FR-004).
 
 ---
 
@@ -154,7 +154,7 @@ Traceability table for SC-9. Every file below carries the attribution header per
 | `tui/src/commands/dispatcher.ts` | `restored-src/src/commands.ts` + `restored-src/src/commands/` registry shape |
 | `tui/src/commands/save.ts` | `restored-src/src/commands/compact/` (pattern) |
 | `tui/src/commands/sessions.ts` | `restored-src/src/commands/context/` (pattern) |
-| `tui/src/commands/resume.ts` | (new, KOSMOS-original following registry shape) |
+| `tui/src/commands/resume.ts` | (new, KOSAX-original following registry shape) |
 | `tui/src/commands/new.ts` | `restored-src/src/commands/clear` (pattern) |
 
 ### 4.3 Theme (lift-as-is)
@@ -180,15 +180,15 @@ Traceability table for SC-9. Every file below carries the attribution header per
 | `tui/src/store/session-store.ts` | `restored-src/src/store/` `useSyncExternalStore` pattern (≈35-line store) |
 | `tui/src/components/conversation/StreamingMessage.tsx` | `restored-src/src/components/` streaming message pattern |
 
-### 4.6 KOSMOS-original (no upstream)
+### 4.6 KOSAX-original (no upstream)
 
 | TUI path | Why original |
 |---|---|
-| `tui/src/ipc/bridge.ts` / `codec.ts` / `crash-detector.ts` | KOSMOS stdio protocol; Claude Code uses HTTP SSE |
-| `tui/src/components/primitive/*` | KOSMOS 5-primitive renderers; no Claude Code analog |
+| `tui/src/ipc/bridge.ts` / `codec.ts` / `crash-detector.ts` | KOSAX stdio protocol; Claude Code uses HTTP SSE |
+| `tui/src/components/primitive/*` | KOSAX 5-primitive renderers; no Claude Code analog |
 | `tui/scripts/gen-ipc-types.ts` | Pydantic → TS code-gen; Claude Code uses hand-written TS types |
-| `tui/scripts/diff-upstream.sh` | KOSMOS traceability tool |
-| `src/kosmos/ipc/stdio.py` | Python multiplexer; Anthropic backend doesn't need this |
+| `tui/scripts/diff-upstream.sh` | KOSAX traceability tool |
+| `src/kosax/ipc/stdio.py` | Python multiplexer; Anthropic backend doesn't need this |
 
 ---
 
@@ -196,13 +196,13 @@ Traceability table for SC-9. Every file below carries the attribution header per
 
 | Name | Type | Default | Purpose |
 |---|---|---|---|
-| `KOSMOS_TUI_THEME` | `default \| dark \| light` | `default` | Theme selection (FR-039, FR-041) |
-| `KOSMOS_TUI_LOG_LEVEL` | `DEBUG \| INFO \| WARN \| ERROR` | `WARN` | IPC frame logging verbosity (FR-010) |
-| `KOSMOS_TUI_SUBSCRIBE_TIMEOUT_S` | int (seconds) | `120` | `subscribe` stream timeout (Edge Case) |
-| `KOSMOS_TUI_IME_STRATEGY` | `fork \| readline` | (set by ADR) | Korean IME strategy selector (FR-014) |
-| `KOSMOS_TUI_SOAK_EVENTS_PER_SEC` | int | `100` | Soak test rate (dev only; FR-007) |
+| `KOSAX_TUI_THEME` | `default \| dark \| light` | `default` | Theme selection (FR-039, FR-041) |
+| `KOSAX_TUI_LOG_LEVEL` | `DEBUG \| INFO \| WARN \| ERROR` | `WARN` | IPC frame logging verbosity (FR-010) |
+| `KOSAX_TUI_SUBSCRIBE_TIMEOUT_S` | int (seconds) | `120` | `subscribe` stream timeout (Edge Case) |
+| `KOSAX_TUI_IME_STRATEGY` | `fork \| readline` | (set by ADR) | Korean IME strategy selector (FR-014) |
+| `KOSAX_TUI_SOAK_EVENTS_PER_SEC` | int | `100` | Soak test rate (dev only; FR-007) |
 
-All `KOSMOS_TUI_*` values MUST be redacted from crash notices per #468 guard pattern (FR-004).
+All `KOSAX_TUI_*` values MUST be redacted from crash notices per #468 guard pattern (FR-004).
 
 ---
 
@@ -233,7 +233,7 @@ All `KOSMOS_TUI_*` values MUST be redacted from crash notices per #468 guard pat
 ```
   OPEN --(stream_event*)--> OPEN --(stream_closed: exhausted|revoked|timeout)--> CLOSED
          |
-         | no event for KOSMOS_TUI_SUBSCRIBE_TIMEOUT_S
+         | no event for KOSAX_TUI_SUBSCRIBE_TIMEOUT_S
          v
       CLOSED (reason: "timeout")
 ```

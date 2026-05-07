@@ -87,7 +87,7 @@ describe('assertFrameSequence', () => {
   })
 
   it('fails with preview lines in diagnostic for debugging', () => {
-    const fake = fakeResult(['KOSMOS boot', 'KOSMOS thinking', 'KOSMOS result'])
+    const fake = fakeResult(['KOSAX boot', 'KOSAX thinking', 'KOSAX result'])
     const wrong = [frameHash('different-a'), frameHash('different-b')]
     let thrown: Error | undefined
     try {
@@ -97,7 +97,7 @@ describe('assertFrameSequence', () => {
     }
     expect(thrown?.message).toContain('frame previews')
     // The actual frame content should appear in the diagnostic
-    expect(thrown?.message).toContain('KOSMOS')
+    expect(thrown?.message).toContain('KOSAX')
   })
 
   it('dedup of consecutive identical frames — de-duplicated sequence is asserted', () => {
@@ -162,7 +162,7 @@ describe('takeStreamSnapshot', () => {
   })
 
   it('hashes match frameHash of each preview text', () => {
-    const frames = ['KOSMOS boot', 'KOSMOS thinking', 'KOSMOS done']
+    const frames = ['KOSAX boot', 'KOSAX thinking', 'KOSAX done']
     const fake = fakeResult(frames)
     const snap = takeStreamSnapshot(fake)
     for (let i = 0; i < frames.length; i++) {

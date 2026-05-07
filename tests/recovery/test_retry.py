@@ -6,8 +6,8 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from kosmos.recovery.classifier import DataGoKrErrorClassifier, ErrorClass
-from kosmos.recovery.retry import ToolRetryPolicy, retry_tool_call
+from kosax.recovery.classifier import DataGoKrErrorClassifier, ErrorClass
+from kosax.recovery.retry import ToolRetryPolicy, retry_tool_call
 
 
 @pytest.fixture()

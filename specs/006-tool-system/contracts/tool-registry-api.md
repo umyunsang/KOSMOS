@@ -1,6 +1,6 @@
 # Contract: Tool System & Registry API
 
-**Module**: `kosmos.tools`
+**Module**: `kosax.tools`
 **Date**: 2026-04-12
 
 ## Public Interface
@@ -114,29 +114,29 @@ class RateLimiter:
 ## Error Hierarchy
 
 ```python
-class KosmosToolError(Exception):
+class KosaxToolError(Exception):
     """Base exception for tool system errors."""
 
-class DuplicateToolError(KosmosToolError):
+class DuplicateToolError(KosaxToolError):
     """Tool with this id is already registered."""
 
-class ToolNotFoundError(KosmosToolError):
+class ToolNotFoundError(KosaxToolError):
     """No tool with this id in the registry."""
 
-class ToolValidationError(KosmosToolError):
+class ToolValidationError(KosaxToolError):
     """Input or output validation failed against schema."""
 
-class RateLimitExceededError(KosmosToolError):
+class RateLimitExceededError(KosaxToolError):
     """Tool's rate limit has been exceeded."""
 
-class ToolExecutionError(KosmosToolError):
+class ToolExecutionError(KosaxToolError):
     """Tool adapter raised an error during execution."""
 ```
 
 ## Module Layout
 
 ```
-src/kosmos/tools/
+src/kosax/tools/
 ├── __init__.py          # Public exports: GovAPITool, ToolRegistry, ToolExecutor
 ├── models.py            # GovAPITool, ToolResult, ToolSearchResult, SearchToolsInput/Output
 ├── registry.py          # ToolRegistry implementation

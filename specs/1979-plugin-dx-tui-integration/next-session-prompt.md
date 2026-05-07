@@ -3,9 +3,9 @@
 **구조** (사용자 정정 2026-04-29):
 
 ```
-Initiative #2290 (KOSMOS · AX Infrastructure Callable-Channel Client Reference Implementation)
+Initiative #2290 (KOSAX · AX Infrastructure Callable-Channel Client Reference Implementation)
 ├─ Epic α (#2292) — CC parity audit (read-only)                          [size/M]
-├─ Epic β (#2293) — KOSMOS-original UI residue cleanup                    [size/S]
+├─ Epic β (#2293) — KOSAX-original UI residue cleanup                    [size/S]
 ├─ Epic γ (#2294) — 5-primitive align with CC Tool.ts interface           [size/L]
 ├─ Epic δ (#2295) — Backend permissions/ cleanup + AdapterRealDomainPolicy [size/M]
 ├─ Epic ε (#2296) — AX-infrastructure mock adapters                       [size/L]
@@ -91,17 +91,17 @@ Step 6-7: Epic ζ + Epic η 병렬
 다음 세션 시작 후 아래 코드 블록 내용 그대로 paste:
 
 ```text
-Initiative #2290 (KOSMOS · AX Infrastructure Callable-Channel Client Reference Implementation) 의 첫 Epic 진입.
+Initiative #2290 (KOSAX · AX Infrastructure Callable-Channel Client Reference Implementation) 의 첫 Epic 진입.
 
 # Active Epic
 Epic α — #2292 — CC parity audit (read-only, 위험 0, size/M)
 
 # Goal
-1,604 KEEP 파일이 진짜 byte-identical with `.references/claude-code-sourcemap/restored-src/` 인지 spot-check + 212 modified 파일의 KOSMOS-change 정당성 audit. read-only deliverable.
+1,604 KEEP 파일이 진짜 byte-identical with `.references/claude-code-sourcemap/restored-src/` 인지 spot-check + 212 modified 파일의 KOSAX-change 정당성 audit. read-only deliverable.
 
 # Authority — 반드시 인용 (per memory `feedback_check_references_first`)
 
-- `AGENTS.md § CORE THESIS` — 3차 thesis canonical (KOSMOS = AX-infrastructure callable-channel client)
+- `AGENTS.md § CORE THESIS` — 3차 thesis canonical (KOSAX = AX-infrastructure callable-channel client)
 - `specs/1979-plugin-dx-tui-integration/cc-source-scope-audit.md § 1.1, § 1.2` — 2,090 vs 1,884 file 분류 (이 Epic의 base scope)
 - `specs/1979-plugin-dx-tui-integration/delegation-flow-design.md § 12` — final canonical architecture
 - `.references/claude-code-sourcemap/restored-src/` — CC 2.1.88 byte-identical source-of-truth
@@ -112,7 +112,7 @@ Epic α — #2292 — CC parity audit (read-only, 위험 0, size/M)
 - 1,531 byte-identical 파일 spot-check (random sample 50개 실 검증)
 - 73 SDK-import-only-diff 파일 모두 검증 (간단 grep)
 - 212 modified 파일 each 정당성 분류:
-  - Legitimate (KOSMOS-needed change, 인정)
+  - Legitimate (KOSAX-needed change, 인정)
   - Cleanup-needed (Spec 1633 잔재 등 정리 후속)
   - Suspicious (의심 — 추가 audit 필요)
 - 파일별 변경 사유 + reference 인용
@@ -127,9 +127,9 @@ Epic α — #2292 — CC parity audit (read-only, 위험 0, size/M)
 
 # Memory guardrails (강제)
 
-- `feedback_kosmos_is_ax_gateway_client` — 3차 thesis
+- `feedback_kosax_is_ax_gateway_client` — 3차 thesis
 - `feedback_tool_wrapping_is_the_work` — 작업 단위 = 도구 래핑
-- `feedback_kosmos_scope_cc_plus_two_swaps` — CC + 2 swaps만
+- `feedback_kosax_scope_cc_plus_two_swaps` — CC + 2 swaps만
 - `feedback_check_references_first` — 모든 결정에 reference 인용
 - `feedback_speckit_autonomous` — speckit 단계 자율 진행, 단계별 승인 X
 - `feedback_codex_reviewer` — push 후 Codex inline review 처리

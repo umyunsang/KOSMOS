@@ -14,7 +14,7 @@ This document resolves all `NEEDS CLARIFICATION` markers in `spec.md`, validates
 
 **Method**: Queried the Docker Hub v2 registry API at `https://registry.hub.docker.com/v2/repositories/otel/opentelemetry-collector-contrib/tags/0.105.0/` (docker CLI not available in the plan sandbox; HTTP registry API returns the same manifest list data that `docker buildx imagetools inspect` would).
 
-**Resolution** — top-level manifest-list digest and the two arches KOSMOS cares about:
+**Resolution** — top-level manifest-list digest and the two arches KOSAX cares about:
 
 | Tag | Arch | Digest | Size (bytes) |
 |---|---|---|---|
@@ -38,7 +38,7 @@ image: otel/opentelemetry-collector-contrib@sha256:3ff721e65733a9c2d94e81cfb350e
 - **Floating `:0.105.0` tag (no digest)**: Rejected — violates spec SC-006 (explicit digest pins required for reproducibility) and risks silent upstream republish.
 - **Per-arch pin with build-time selection**: Rejected — Compose v2 does not support per-platform image overrides at the service level without a heavier Bake workflow.
 
-**Reference**: OpenTelemetry Collector Contrib release notes `v0.105.0` (2024-07-02) — the minor version that ships the `attributes` processor's `hash` action (required for FR-006 SHA-256 of `kosmos.location.query`). Actual minor that introduced `hash` is `v0.92.0` (2024-01), so `0.105.0` is comfortably within the supported range.
+**Reference**: OpenTelemetry Collector Contrib release notes `v0.105.0` (2024-07-02) — the minor version that ships the `attributes` processor's `hash` action (required for FR-006 SHA-256 of `kosax.location.query`). Actual minor that introduced `hash` is `v0.92.0` (2024-01), so `0.105.0` is comfortably within the supported range.
 
 ### Langfuse image digests (audit-trail companion to FR-008a)
 
@@ -66,7 +66,7 @@ Even though the floating `3.35.0` tag is acceptable per spec, the plan records t
 | Production OTLP collector deployment (Fly.io/Railway, TLS, subdomain) | `[NEEDS TRACKING — Phase 3 observability epic]` | RESOLVED BY `/speckit-taskstoissues` — placeholder will be back-filled with real issue number. |
 | Langfuse Cloud Hobby integration | `[NEEDS TRACKING]` | RESOLVED BY `/speckit-taskstoissues`. |
 | TLS configuration (receiver + exporter) | `[NEEDS TRACKING]` | RESOLVED BY `/speckit-taskstoissues`. |
-| CI `KOSMOS_LANGFUSE_OTLP_AUTH_HEADER` via Infisical OIDC | `[NEEDS TRACKING]`, dep on #468 | RESOLVED BY `/speckit-taskstoissues`; #468 is in-flight (Infisical IDs captured). |
+| CI `KOSAX_LANGFUSE_OTLP_AUTH_HEADER` via Infisical OIDC | `[NEEDS TRACKING]`, dep on #468 | RESOLVED BY `/speckit-taskstoissues`; #468 is in-flight (Infisical IDs captured). |
 | Per-environment Langfuse project isolation | `[NEEDS TRACKING]` | RESOLVED BY `/speckit-taskstoissues`. |
 | Live CI smoke test `tests/live/test_trace_emission.py` | `[NEEDS TRACKING]` | RESOLVED BY `/speckit-taskstoissues`. |
 | `redaction.yaml` split | `[NEEDS TRACKING]` | RESOLVED BY `/speckit-taskstoissues`. |
@@ -97,18 +97,18 @@ Every design decision in this plan traces to one of the following sources.
 | `attributes/pii_redact` processor with `delete` + `hash` actions | OpenTelemetry Collector Contrib — `processor/attributesprocessor` README | `hash` action introduced in v0.92.0 |
 | Langfuse OTLP ingest path `/api/public/otel/v1/traces` | Langfuse Self-Host docs — "OpenTelemetry / Get Started" | Confirmed v3.22.0+; HTTP/JSON and HTTP/protobuf; no gRPC |
 | `Authorization: Basic <base64(pk:sk)>` + `x-langfuse-ingestion-version: 4` | Langfuse self-host `docker-compose` reference | Matches header contract for real-time preview |
-| `batch` processor tuning (`timeout: 5s`, `send_batch_size: 512`) | OpenTelemetry Collector Contrib — `processor/batchprocessor` defaults | KOSMOS uses the recommended dev preset; production Epic may tune upward |
+| `batch` processor tuning (`timeout: 5s`, `send_batch_size: 512`) | OpenTelemetry Collector Contrib — `processor/batchprocessor` defaults | KOSAX uses the recommended dev preset; production Epic may tune upward |
 | Health extension on port `13133` | OpenTelemetry Collector — `extension/healthcheckextension` | Default port; no change needed |
-| PII whitelist single source of truth | KOSMOS spec 021 `_ALLOWED_METADATA_KEYS` frozenset | `src/kosmos/observability/event_logger.py` — Python-layer first gate; collector is second gate |
-| Warn-and-skip when endpoint unset | KOSMOS spec 021 FR-010 | Inherited behavior — observability failure never breaks app |
-| `OTEL_SDK_DISABLED=true` CI path | KOSMOS spec 021 FR-014 | Extended here — SC-004 |
+| PII whitelist single source of truth | KOSAX spec 021 `_ALLOWED_METADATA_KEYS` frozenset | `src/kosax/observability/event_logger.py` — Python-layer first gate; collector is second gate |
+| Warn-and-skip when endpoint unset | KOSAX spec 021 FR-010 | Inherited behavior — observability failure never breaks app |
+| `OTEL_SDK_DISABLED=true` CI path | KOSAX spec 021 FR-014 | Extended here — SC-004 |
 | Docker Hub multi-arch digest pinning | Docker Buildx docs — "imagetools inspect" | Used via v2 registry API (equivalent output) |
-| Environment variable `KOSMOS_` prefix | AGENTS.md hard rule | Applied to all three new vars |
+| Environment variable `KOSAX_` prefix | AGENTS.md hard rule | Applied to all three new vars |
 | Infrastructure directory layout (`infra/otel-collector/`) | Existing `infra/copilot-gate-app/` convention | One subdirectory per external infra component |
 
-**Six-layer KOSMOS architecture mapping**: This is an **infrastructure spec**, not a layer spec. However, it underwrites observability for **Layer 1 (Query Engine)**, **Layer 2 (Tool System)**, and **Layer 3 (Permission Pipeline)** by guaranteeing a working trace export path from those layers to Langfuse. The `docs/vision.md § Layer 1` cost-accounting paragraph ("OpenTelemetry-style counters emit metrics for model tokens, cache hits, and per-ministry call counts") is the foundational citation for the observability thesis this spec operationalises.
+**Six-layer KOSAX architecture mapping**: This is an **infrastructure spec**, not a layer spec. However, it underwrites observability for **Layer 1 (Query Engine)**, **Layer 2 (Tool System)**, and **Layer 3 (Permission Pipeline)** by guaranteeing a working trace export path from those layers to Langfuse. The `docs/vision.md § Layer 1` cost-accounting paragraph ("OpenTelemetry-style counters emit metrics for model tokens, cache hits, and per-ministry call counts") is the foundational citation for the observability thesis this spec operationalises.
 
-**Claude Code parallel**: Claude Code's internal tool loop is extensively traced; KOSMOS's "one Langfuse trace per agent turn, three spans per tool call" mirrors Claude Code's "visualise every tool call so the operator can audit what the model did" principle. The collector is the Bring-Your-Own-Telemetry equivalent of Claude Code's internal telemetry sink.
+**Claude Code parallel**: Claude Code's internal tool loop is extensively traced; KOSAX's "one Langfuse trace per agent turn, three spans per tool call" mirrors Claude Code's "visualise every tool call so the operator can audit what the model did" principle. The collector is the Bring-Your-Own-Telemetry equivalent of Claude Code's internal telemetry sink.
 
 ---
 
@@ -120,7 +120,7 @@ The following practices are applied inside this spec's scope. Broader hardening 
 2. **No gRPC receiver** — OTLP HTTP on `:4318` only. gRPC is not required for the local workflow and reducing the open-port surface simplifies the demo machine's security posture.
 3. **Health extension explicit** — `health_check` on `:13133`, `pprof` extension **disabled**. Avoids exposing a profiling endpoint.
 4. **Batch-queue cap** — `send_batch_size: 512` + `timeout: 5s` bounds the in-memory span buffer to ≤ 512 spans, which at ~2 KB/span is ≤ 1 MB worst case. Below any reasonable OOM threshold.
-5. **Env-var-sourced auth header** — `KOSMOS_LANGFUSE_OTLP_AUTH_HEADER` sourced from `.env`. Empty default means local dev works without an API key against an anonymous Langfuse project.
+5. **Env-var-sourced auth header** — `KOSAX_LANGFUSE_OTLP_AUTH_HEADER` sourced from `.env`. Empty default means local dev works without an API key against an anonymous Langfuse project.
 
 ---
 

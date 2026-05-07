@@ -8,7 +8,7 @@ import json
 import httpx
 import pytest
 
-from kosmos.recovery.classifier import (
+from kosax.recovery.classifier import (
     ClassifiedError,
     DataGoKrErrorClassifier,
     DataGoKrErrorCode,

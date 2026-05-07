@@ -4,8 +4,8 @@
 //   (CC 2.1.88, SHA-256 5ff457384f2fa4e8ead029bb8d3a8504ce0e822181b6ab57ba4430b816663f93).
 // Three labeled swaps layer atop the byte-copy:
 //   • swap/llm-provider(2641)      — `constants/oauth` import replaced with
-//     KOSMOS-1633 inline stubs (CLAUDE_AI_INFERENCE_SCOPE/OAUTH_BETA_HEADER/
-//     getOauthConfig). KOSMOS uses FriendliAI; no Anthropic OAuth tokens
+//     KOSAX-1633 inline stubs (CLAUDE_AI_INFERENCE_SCOPE/OAUTH_BETA_HEADER/
+//     getOauthConfig). KOSAX uses FriendliAI; no Anthropic OAuth tokens
 //     exist.
 //   • swap/anti-anthropic-1p(2641) — every entry-point that would issue an
 //     axios call to claude.ai's `/api/claude_code/user_settings` endpoint
@@ -19,7 +19,7 @@
 //     flags (always `false` per `tui/src/stubs/bun-bundle.ts`) form the
 //     1st gate; the env-override gate added here is the 2nd defense layer.
 //   • swap/identifier-rename(2641) — none required (file uses
-//     KOSMOS-neutral naming where applicable; CC settings-sync contract
+//     KOSAX-neutral naming where applicable; CC settings-sync contract
 //     names remain for byte-copy fidelity).
 // Two callers (`cli/print.ts` + `commands/reload-plugins/`) survive but
 // receive early-`false`/early-`void` from the dead-call gate; this file's
@@ -41,7 +41,7 @@ import { mkdir, readFile, stat, writeFile } from 'fs/promises'
 import pickBy from 'lodash-es/pickBy.js'
 import { dirname } from 'path'
 import { getIsInteractive } from '../../bootstrap/state.js'
-// constants/oauth removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI, not Anthropic OAuth.
+// constants/oauth removed in P1+P2 (Spec 1633); KOSAX uses FriendliAI, not Anthropic OAuth.
 const CLAUDE_AI_INFERENCE_SCOPE = ''
 const OAUTH_BETA_HEADER = ''
 const getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })
@@ -56,7 +56,7 @@ import { classifyAxiosError } from '../../utils/errors.js'
 import { getRepoRemoteHash } from '../../utils/git.js'
 import {
   getAPIProvider,
-  isFirstPartyKosmosBaseUrl,
+  isFirstPartyKosaxBaseUrl,
 } from '../../utils/model/providers.js'
 import { markInternalWrite } from '../../utils/settings/internalWrites.js'
 import { getSettingsFilePathForSource } from '../../utils/settings/settings.js'
@@ -65,7 +65,7 @@ import { sleep } from '../../utils/sleep.js'
 import { getClaudeCodeUserAgent } from '../../utils/userAgent.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../analytics/growthbook.js'
 import { logEvent } from '../analytics/index.js'
-// KOSMOS Spec 1633 / Epic #2293 — services/api/withRetry deleted; inline stub returns 1s baseline.
+// KOSAX Spec 1633 / Epic #2293 — services/api/withRetry deleted; inline stub returns 1s baseline.
 const getRetryDelay = (_attempt: number): number => 1000
 import {
   type SettingsSyncFetchResult,
@@ -85,10 +85,10 @@ const MAX_FILE_SIZE_BYTES = 500 * 1024 // 500 KB per file (matches backend limit
 //
 // Codex P2 (PR #2688): rejecting permissive truthy checks (`Boolean(...)`)
 // prevents accidental reactivation when CI or shell environments template
-// booleans as `KOSMOS_ENABLE_DEAD_SETTINGS_SYNC=0` or `=false`. Only the
+// booleans as `KOSAX_ENABLE_DEAD_SETTINGS_SYNC=0` or `=false`. Only the
 // literal string `'1'` opens the gate.
 function isDeadCallGateOpen(): boolean {
-  return process.env.KOSMOS_ENABLE_DEAD_SETTINGS_SYNC === '1'
+  return process.env.KOSAX_ENABLE_DEAD_SETTINGS_SYNC === '1'
 }
 
 /**
@@ -100,7 +100,7 @@ export async function uploadUserSettingsInBackground(): Promise<void> {
   if (!isDeadCallGateOpen()) {
     // Spec 2641 dead-call gate: claude.ai settings sync is not part of the
     // L1-A K-EXAONE harness. Surface preserved for CC parity; runtime is
-    // no-op. Set KOSMOS_ENABLE_DEAD_SETTINGS_SYNC=1 only for audit replay.
+    // no-op. Set KOSAX_ENABLE_DEAD_SETTINGS_SYNC=1 only for audit replay.
     return
   }
   try {
@@ -273,7 +273,7 @@ async function doDownloadUserSettings(
  * download a no-op there. Upload is independently guarded by getIsInteractive().
  */
 function isUsingOAuth(): boolean {
-  if (getAPIProvider() !== 'firstParty' || !isFirstPartyKosmosBaseUrl()) {
+  if (getAPIProvider() !== 'firstParty' || !isFirstPartyKosaxBaseUrl()) {
     return false
   }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env expect
-# KOSMOS Epic #2112 — Citizen E2E smoke (text-log capture, multi-scenario).
+# KOSAX Epic #2112 — Citizen E2E smoke (text-log capture, multi-scenario).
 # Companion to smoke.tape (visual capture). This file is the LLM/Codex grep
 # source-of-truth per memory feedback_vhs_tui_smoke.
 #

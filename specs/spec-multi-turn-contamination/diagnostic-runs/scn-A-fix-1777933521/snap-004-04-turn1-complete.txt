@@ -1,12 +1,12 @@
-[KOSMOS-QUERY] recv #21 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" clinics"
-[KOSMOS-QUERY] recv #22 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" near"
-[KOSMOS-QUERY] recv #23 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Gang"
-[KOSMOS-QUERY] recv #24 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="nam"
-[KOSMOS-QUERY] recv #25 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Station"
+[KOSAX-QUERY] recv #21 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" clinics"
+[KOSAX-QUERY] recv #22 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" near"
+[KOSAX-QUERY] recv #23 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Gang"
+[KOSAX-QUERY] recv #24 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="nam"
+[KOSAX-QUERY] recv #25 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Station"
 ⏺ 강남역 근처에서 내과를 진료하는 병원/의원을 찾아드렸습니다. 2km 반경 내에서 검색한 결과입니다:
-[KOSMOS-QUERY] recv #27 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="\n\n"
+[KOSAX-QUERY] recv #27 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="\n\n"
  K가장 가까운 내과 (병원/의원)                                  false delta="" thinking="To"
-[KOSMOS-QUERY] recv #29 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" fulfill"
+[KOSAX-QUERY] recv #29 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" fulfill"
 
   1. 선한목자병원 (824m)
 

@@ -1,5 +1,5 @@
 /**
- * KOSMOS-original — DetailView renderer.
+ * KOSAX-original — DetailView renderer.
  *
  * Renders key/value pairs for a single structured record in a two-column
  * grid layout.  Labels are right-aligned; values are left-aligned.

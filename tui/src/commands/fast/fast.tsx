@@ -11,10 +11,10 @@ import { type AppState, useAppState, useSetAppState } from '../../state/AppState
 import type { LocalJSXCommandOnDone } from '../../types/command.js';
 import { clearFastModeCooldown, FAST_MODE_MODEL_DISPLAY, getFastModeModel, getFastModeRuntimeState, getFastModeUnavailableReason, isFastModeEnabled, isFastModeSupportedByModel, prefetchFastModeStatus } from '../../utils/fastMode.js';
 import { formatDuration } from '../../utils/format.js';
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/modelCost deleted (Anthropic
-// per-token Claude.ai pricing). KOSMOS uses FriendliAI K-EXAONE; pricing
+// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — utils/modelCost deleted (Anthropic
+// per-token Claude.ai pricing). KOSAX uses FriendliAI K-EXAONE; pricing
 // information is not surfaced to the citizen TUI.
-const formatModelPricing = (_tier: unknown): string => '' /* KOSMOS: pricing not surfaced */;
+const formatModelPricing = (_tier: unknown): string => '' /* KOSAX: pricing not surfaced */;
 const getOpus46CostTier = (_includeOverage: boolean): unknown => null;
 import { updateSettingsForSource } from '../../utils/settings/settings.js';
 function applyFastMode(enable: boolean, setAppState: (f: (prev: AppState) => AppState) => void): void {

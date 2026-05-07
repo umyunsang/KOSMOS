@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS — ConsentListView component tests (FR-019).
+// KOSAX — ConsentListView component tests (FR-019).
 //
 // Pins the /consent list overlay contract:
 //   - mount with receipts → table contains receipt_id / layer / tool / decision

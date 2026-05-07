@@ -10,19 +10,19 @@ import { ThemeProvider } from '../../src/theme/provider'
 
 const SESSION = '018f8a72-d4c9-7a1e-9c8b-0b2c3d4e5f60'
 const SAVED_NO_COLOR = process.env.NO_COLOR
-const SAVED_REDUCED_MOTION = process.env.KOSMOS_REDUCED_MOTION
+const SAVED_REDUCED_MOTION = process.env.KOSAX_REDUCED_MOTION
 
 function disableReducedMotionForSnapshot(): void {
   delete process.env.NO_COLOR
-  delete process.env.KOSMOS_REDUCED_MOTION
+  delete process.env.KOSAX_REDUCED_MOTION
 }
 
 afterEach(() => {
   if (SAVED_NO_COLOR !== undefined) process.env.NO_COLOR = SAVED_NO_COLOR
   else delete process.env.NO_COLOR
   if (SAVED_REDUCED_MOTION !== undefined)
-    process.env.KOSMOS_REDUCED_MOTION = SAVED_REDUCED_MOTION
-  else delete process.env.KOSMOS_REDUCED_MOTION
+    process.env.KOSAX_REDUCED_MOTION = SAVED_REDUCED_MOTION
+  else delete process.env.KOSAX_REDUCED_MOTION
 })
 
 describe('Onboarding — initial splash', () => {
@@ -34,7 +34,7 @@ describe('Onboarding — initial splash', () => {
       </ThemeProvider>,
     )
     const frame = lastFrame() ?? ''
-    expect(frame).toContain('KOSMOS')
+    expect(frame).toContain('KOSAX')
     expect(frame).toMatchSnapshot()
   })
 })
@@ -79,7 +79,7 @@ describe('Onboarding — fast-path resolver', () => {
       </ThemeProvider>,
     )
     const frame = lastFrame() ?? ''
-    expect(frame).toContain('KOSMOS')
+    expect(frame).toContain('KOSAX')
     expect(frame).not.toContain('개인정보 활용 동의')
     expect(frame).not.toContain('부처 API 사용 동의')
   })
@@ -104,6 +104,6 @@ describe('Onboarding — fast-path resolver', () => {
       </ThemeProvider>,
     )
     const frame = lastFrame() ?? ''
-    expect(frame).toContain('KOSMOS')
+    expect(frame).toContain('KOSAX')
   })
 })

@@ -12,7 +12,7 @@ All models are Pydantic v2 `BaseModel`. No `Any` types. Per constitution § III.
 
 ### `KoroadAccidentSearchInput`
 
-Location: `src/kosmos/tools/koroad/koroad_accident_search.py`
+Location: `src/kosax/tools/koroad/koroad_accident_search.py`
 
 | Field | Python Type | Required | Default | Validation |
 |---|---|---|---|---|
@@ -37,7 +37,7 @@ Wire parameter name mapping (field → query param):
 
 ### `AccidentHotspot`
 
-Location: `src/kosmos/tools/koroad/koroad_accident_search.py`
+Location: `src/kosax/tools/koroad/koroad_accident_search.py`
 
 | Field | Python Type | Required | Wire Field | Notes |
 |---|---|---|---|---|
@@ -61,7 +61,7 @@ Location: `src/kosmos/tools/koroad/koroad_accident_search.py`
 
 ### `KoroadAccidentSearchOutput`
 
-Location: `src/kosmos/tools/koroad/koroad_accident_search.py`
+Location: `src/kosax/tools/koroad/koroad_accident_search.py`
 
 | Field | Python Type | Notes |
 |---|---|---|
@@ -76,7 +76,7 @@ Location: `src/kosmos/tools/koroad/koroad_accident_search.py`
 
 ### `KmaWeatherAlertStatusInput`
 
-Location: `src/kosmos/tools/kma/kma_weather_alert_status.py`
+Location: `src/kosax/tools/kma/kma_weather_alert_status.py`
 
 | Field | Python Type | Required | Default | Notes |
 |---|---|---|---|---|
@@ -93,7 +93,7 @@ Wire parameter name mapping:
 
 ### `WeatherWarning`
 
-Location: `src/kosmos/tools/kma/kma_weather_alert_status.py`
+Location: `src/kosax/tools/kma/kma_weather_alert_status.py`
 
 | Field | Python Type | Wire Field | Notes |
 |---|---|---|---|
@@ -113,7 +113,7 @@ Location: `src/kosmos/tools/kma/kma_weather_alert_status.py`
 
 ### `KmaWeatherAlertStatusOutput`
 
-Location: `src/kosmos/tools/kma/kma_weather_alert_status.py`
+Location: `src/kosax/tools/kma/kma_weather_alert_status.py`
 
 | Field | Python Type | Notes |
 |---|---|---|
@@ -126,7 +126,7 @@ Location: `src/kosmos/tools/kma/kma_weather_alert_status.py`
 
 ### `KmaCurrentObservationInput`
 
-Location: `src/kosmos/tools/kma/kma_current_observation.py`
+Location: `src/kosax/tools/kma/kma_current_observation.py`
 
 | Field | Python Type | Required | Default | Validation |
 |---|---|---|---|---|
@@ -153,7 +153,7 @@ Wire parameter name mapping:
 
 ### `KmaCurrentObservationOutput`
 
-Location: `src/kosmos/tools/kma/kma_current_observation.py`
+Location: `src/kosax/tools/kma/kma_current_observation.py`
 
 The wire format returns a list of `{baseDate, baseTime, nx, ny, category, obsrValue}` rows. The adapter pivots these rows into this flat model.
 
@@ -188,7 +188,7 @@ def normalize_rn1(cls, v: object) -> float:
 
 ### `RoadRiskScoreInput`
 
-Location: `src/kosmos/tools/composite/road_risk_score.py`
+Location: `src/kosax/tools/composite/road_risk_score.py`
 
 | Field | Python Type | Required | Default | Notes |
 |---|---|---|---|---|
@@ -205,7 +205,7 @@ Location: `src/kosmos/tools/composite/road_risk_score.py`
 
 ### `RoadRiskScoreOutput`
 
-Location: `src/kosmos/tools/composite/road_risk_score.py`
+Location: `src/kosax/tools/composite/road_risk_score.py`
 
 | Field | Python Type | Notes |
 |---|---|---|
@@ -225,7 +225,7 @@ Location: `src/kosmos/tools/composite/road_risk_score.py`
 
 ### `SidoCode`
 
-Location: `src/kosmos/tools/koroad/code_tables.py`
+Location: `src/kosax/tools/koroad/code_tables.py`
 
 ```
 11 = Seoul (서울특별시)
@@ -255,7 +255,7 @@ Source: `research/data/_converted/koroad_AccidentHazard_CodeList.md § Sheet: Si
 
 ### `SearchYearCd` (representative subset; full list in code_tables.py)
 
-Location: `src/kosmos/tools/koroad/code_tables.py`
+Location: `src/kosax/tools/koroad/code_tables.py`
 
 Category: 지자체별 (General municipality)
 ```
@@ -332,7 +332,7 @@ Source: `research/data/_converted/koroad_AccidentHazard_CodeList.md § Sheet: se
 
 ### `HazardType`
 
-Location: `src/kosmos/tools/koroad/code_tables.py`
+Location: `src/kosax/tools/koroad/code_tables.py`
 
 Maps the `hazard_type` field in `RoadRiskScoreInput` to a default `SearchYearCd`.
 
@@ -355,7 +355,7 @@ freight          → SearchYearCd.FREIGHT_2024
 
 ### `GugunCode`
 
-Location: `src/kosmos/tools/koroad/code_tables.py`
+Location: `src/kosax/tools/koroad/code_tables.py`
 
 The `GugunCode` enum uses integer values matching the API code table. Because district code integers overlap across sido (multiple sido use code `110` for their respective Jung-gu), the enum member names are qualified:
 

@@ -24,7 +24,7 @@ import pytest
 
 def test_simple_auth_invoke_returns_transparency_fields(tmp_path: Path) -> None:
     """invoke() returns a dict with all six transparency fields non-empty."""
-    from kosmos.tools.mock.verify_module_simple_auth import invoke
+    from kosax.tools.mock.verify_module_simple_auth import invoke
 
     result = invoke(
         {
@@ -51,7 +51,7 @@ def test_simple_auth_invoke_returns_transparency_fields(tmp_path: Path) -> None:
 
 def test_simple_auth_international_reference(tmp_path: Path) -> None:
     """_international_reference must be 'Japan マイナポータル API'."""
-    from kosmos.tools.mock.verify_module_simple_auth import invoke
+    from kosax.tools.mock.verify_module_simple_auth import invoke
 
     result = invoke(
         {
@@ -65,7 +65,7 @@ def test_simple_auth_international_reference(tmp_path: Path) -> None:
 
 def test_simple_auth_reference_impl(tmp_path: Path) -> None:
     """_reference_implementation must be 'ax-infrastructure-callable-channel'."""
-    from kosmos.tools.mock.verify_module_simple_auth import invoke
+    from kosax.tools.mock.verify_module_simple_auth import invoke
 
     result = invoke(
         {
@@ -79,7 +79,7 @@ def test_simple_auth_reference_impl(tmp_path: Path) -> None:
 
 def test_simple_auth_delegation_context_shape(tmp_path: Path) -> None:
     """invoke() result carries 'token' dict (DelegationContext payload)."""
-    from kosmos.tools.mock.verify_module_simple_auth import invoke
+    from kosax.tools.mock.verify_module_simple_auth import invoke
 
     result = invoke(
         {
@@ -98,7 +98,7 @@ def test_simple_auth_delegation_context_shape(tmp_path: Path) -> None:
 
 def test_simple_auth_multi_scope(tmp_path: Path) -> None:
     """Comma-joined multi-scope list is embedded in the token scope field."""
-    from kosmos.tools.mock.verify_module_simple_auth import invoke
+    from kosax.tools.mock.verify_module_simple_auth import invoke
 
     result = invoke(
         {
@@ -121,7 +121,7 @@ def test_simple_auth_scope_grammar_enforced(tmp_path: Path) -> None:
     """Invalid scope string causes DelegationToken validator to raise ValueError."""
     from pydantic import ValidationError
 
-    from kosmos.tools.mock.verify_module_simple_auth import invoke
+    from kosax.tools.mock.verify_module_simple_auth import invoke
 
     with pytest.raises(ValidationError):
         invoke(
@@ -140,7 +140,7 @@ def test_simple_auth_scope_grammar_enforced(tmp_path: Path) -> None:
 
 def test_simple_auth_ledger_append(tmp_path: Path) -> None:
     """After invoke, a delegation_issued event is appended to the ledger."""
-    from kosmos.tools.mock.verify_module_simple_auth import invoke
+    from kosax.tools.mock.verify_module_simple_auth import invoke
 
     ledger_dir = tmp_path / "ledger"
     invoke(
@@ -171,8 +171,8 @@ def test_simple_auth_ledger_append(tmp_path: Path) -> None:
 
 def test_simple_auth_is_registered() -> None:
     """Importing the module registers 'simple_auth_module' in _VERIFY_ADAPTERS."""
-    import kosmos.tools.mock.verify_module_simple_auth  # noqa: F401 — side-effect
-    from kosmos.primitives.verify import _VERIFY_ADAPTERS
+    import kosax.tools.mock.verify_module_simple_auth  # noqa: F401 — side-effect
+    from kosax.primitives.verify import _VERIFY_ADAPTERS
 
     assert "simple_auth_module" in _VERIFY_ADAPTERS, (
         "simple_auth_module not found in _VERIFY_ADAPTERS after import"

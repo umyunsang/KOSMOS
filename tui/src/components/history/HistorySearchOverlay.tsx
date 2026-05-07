@@ -211,7 +211,7 @@ export function HistorySearchOverlay({
         </Text>
       )}
       <Box marginTop={1}>
-        <Text color={theme.kosmosCore}>{`> ${needle}`}</Text>
+        <Text color={theme.kosaxCore}>{`> ${needle}`}</Text>
       </Box>
       <Box marginTop={1} flexDirection="column">
         {visible.length === 0 ? (
@@ -220,7 +220,7 @@ export function HistorySearchOverlay({
           visible.map((entry, idx) => (
             <Text
               key={`${entry.session_id}:${entry.timestamp}`}
-              color={idx === cursorInWindow ? theme.kosmosCore : theme.text}
+              color={idx === cursorInWindow ? theme.kosaxCore : theme.text}
             >
               {idx === cursorInWindow ? '› ' : '  '}
               {entry.query_text}

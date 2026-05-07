@@ -110,7 +110,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/mock_lookup_module_hometax_simplified.json",
+  "$id": "https://kosax.example/api/schemas/mock_lookup_module_hometax_simplified.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "Input schema for mock_lookup_module_hometax_simplified.\n\nPydantic v2 strict model (extra='forbid', frozen=True).",

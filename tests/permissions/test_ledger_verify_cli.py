@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Contract tests for ``kosmos-permissions verify`` — V-matrix scenarios.
+"""Contract tests for ``kosax-permissions verify`` — V-matrix scenarios.
 
 Covers all 12 scenarios from contracts/ledger-verify.cli.md §7:
 
@@ -30,8 +30,8 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.permissions.canonical_json import canonicalize
-from kosmos.permissions.ledger_verify import verify_ledger
+from kosax.permissions.canonical_json import canonicalize
+from kosax.permissions.ledger_verify import verify_ledger
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -376,7 +376,7 @@ def test_v09_schema_violation(tmp_path: Path) -> None:
 
 def test_v10_key_file_mode_mismatch(tmp_path: Path) -> None:
     """V10: HMAC key file mode 0644 instead of 0400. Expected exit 6."""
-    from kosmos.permissions.hmac_key import HMACKeyFileModeError
+    from kosax.permissions.hmac_key import HMACKeyFileModeError
 
     keys_dir = tmp_path / "keys"
     keys_dir.mkdir(mode=0o700, parents=True)
@@ -433,8 +433,8 @@ def test_v11_hash_only_acknowledge_key_loss(tmp_path: Path) -> None:
     assert report.passed is True
 
 
-# Note: V12 CLI test removed in Epic δ #2295 — kosmos.permissions.cli deleted as
-# Spec 033 KOSMOS-invented residue. The CLI gate logic is not part of Spec 035
+# Note: V12 CLI test removed in Epic δ #2295 — kosax.permissions.cli deleted as
+# Spec 033 KOSAX-invented residue. The CLI gate logic is not part of Spec 035
 # receipt set.
 # References: specs/2295-backend-permissions-cleanup/spec.md § FR-001
 

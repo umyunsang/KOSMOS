@@ -1,5 +1,5 @@
-KOSMOS TUI
-Copyright 2024-2026 The KOSMOS Contributors
+KOSAX TUI
+Copyright 2024-2026 The KOSAX Contributors
 
 This product is a student portfolio project (research use).
 It is not affiliated with Anthropic, LG AI Research, or the Korean government.
@@ -37,8 +37,8 @@ inline comment identifying the Gemini CLI Apache-2.0 source.
 
 ---
 
-KOSMOS-ORIGINAL CODE
+KOSAX-ORIGINAL CODE
 
 All files not carrying an upstream attribution header are original work by the
-KOSMOS contributors and are licensed under the Apache License, Version 2.0.
+KOSAX contributors and are licensed under the Apache License, Version 2.0.
 See the LICENSE file at the repository root for the full license text.

@@ -1,4 +1,4 @@
-# Specification Quality Checklist: TUI Component Catalog — CC → KOSMOS Verdict Matrix
+# Specification Quality Checklist: TUI Component Catalog — CC → KOSAX Verdict Matrix
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-04-20

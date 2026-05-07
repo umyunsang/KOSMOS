@@ -41,8 +41,8 @@ const _stubBridge = {
 };
 
 await mock.module('../../src/ipc/bridgeSingleton.js', () => ({
-  getOrCreateKosmosBridge: () => _stubBridge,
-  getKosmosBridgeSessionId: () => 'test-session',
+  getOrCreateKosaxBridge: () => _stubBridge,
+  getKosaxBridgeSessionId: () => 'test-session',
 }));
 
 await mock.module('../../src/observability/surface.js', () => ({

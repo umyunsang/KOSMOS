@@ -1,6 +1,6 @@
 # Infrastructure Survey: `submit` primitive
 
-> **범위**: KOSMOS active primitive 중 `submit` (쓰기 트랜잭션 — 민원 신청, 납부, 증명서 발급, 등록, 신고, 접수)의 실제 카운터파트인 한국 국가 인프라 시스템의 **외부 계약(external contract) 표면 캡처**.
+> **범위**: KOSAX active primitive 중 `submit` (쓰기 트랜잭션 — 민원 신청, 납부, 증명서 발급, 등록, 신고, 접수)의 실제 카운터파트인 한국 국가 인프라 시스템의 **외부 계약(external contract) 표면 캡처**.
 > **원칙**: drop-in replaceability — 라이브 자격증명 확보 시 `client` 레이어만 교체(`MockClient(fixtures) → LiveClient(base_url, auth)`)하고 harness는 불변. 따라서 본 조사는 request schema · response schema · error code · auth · rate limit · pagination · idempotency 의 **공개 문서 기반 역공학**에 집중한다.
 > **작성일**: 2026-04-19. **전 소스 공개 문서만** (공공데이터포털, 기관 공식 페이지, 법령, 공개 GitHub). 추측 구간은 모두 "⚠️ OPAQUE" 로 명시.
 > **대상 구현물 금지**: 본 문서는 계약 캡처이지 구현 설계가 아니다. 코드는 싣지 않는다 (OASIS WS-Security namespace 등 이미 공개된 식별자만 인용).
@@ -14,14 +14,14 @@
 1. **"정부가 자신을 위해 설계한 쓰기 통로"** — 전자세금계산서(KEC XML), 행정정보공동이용(PISC), 홈택스/위택스/EDI, 전자소송, 4대보험 통합징수, 정부24 어디서나연계. 이들은 **기관간·사업자간 시스템 통합용**이기 때문에 ① XML/ebXML/SOAP 같은 구형이지만 강하게 규격화된 포맷, ② GPKI(행정전자서명) 혹은 공동인증서(구 공인인증서) PKI 요구, ③ 별도의 사업자/기관 가입·연계 신청 절차를 전제한다. **공개 문서로 스키마·메시지 구조의 존재와 일부 조각은 확인되지만, 전체 XSD/WSDL/OpenAPI 는 비공개 내지 가입 후 제공**이다.
 2. **"시민이 직접 쓰는 웹 UI만 있는 쓰기 표면"** — 복지로 온라인 신청, 청원24, 국민동의청원, NEIS 대국민 증명서 발급, 지자체 전자민원창구. 이들은 **공식적으로 쓰기 Open API 가 존재하지 않는다** — `data.go.kr`·지자체 오픈데이터·NEIS 교육정보 개방 포털은 모두 **GET 조회 전용 Open API**만 노출한다. 쓰기는 로그인된 브라우저/앱 세션을 통해서만 가능하며 (간편인증 + 디지털원패스 + 공동인증서), **API 문서화가 아예 없다**.
 
-따라서 KOSMOS `submit` mock adapter 는 **두 tribe 모두를 shape-identically mirror 해야 한다**:
+따라서 KOSAX `submit` mock adapter 는 **두 tribe 모두를 shape-identically mirror 해야 한다**:
 
 - **Tribe 1 (기관용 쓰기 계약)** — mirrorability **3-4/5**: KEC XML 표준, `data.go.kr` 공통 응답 포맷, ebXML 메시지 헤더 구조가 공개되어 있어 **envelope shape 과 error-code enum** 은 정확히 미러 가능. 단 **개별 메시지의 field-by-field XSD** 는 가입 후에만 공개되므로 대표 필드 이름만 모델링하고 나머지는 `extension_xml: str` 슬롯으로 비우는 mock 설계가 불가피.
-- **Tribe 2 (시민용 웹 전용)** — mirrorability **1-2/5**: 계약이 존재하지 않으므로 KOSMOS 입장에서는 "mock 이 곧 사실상의 표준" 이 된다. `submit(domain=bokjiro, verb=apply, service_id=…)` 처럼 **정부24 서비스 식별자(CappBizCD 등) + HTTP-form multipart** 형태를 추측 없이 **documented form field 이름 그대로** 쓰는 conservative envelope 만 유지한다.
+- **Tribe 2 (시민용 웹 전용)** — mirrorability **1-2/5**: 계약이 존재하지 않으므로 KOSAX 입장에서는 "mock 이 곧 사실상의 표준" 이 된다. `submit(domain=bokjiro, verb=apply, service_id=…)` 처럼 **정부24 서비스 식별자(CappBizCD 등) + HTTP-form multipart** 형태를 추측 없이 **documented form field 이름 그대로** 쓰는 conservative envelope 만 유지한다.
 
 **공통 시민용 인증 축** (정부24·홈택스·복지로·위택스·EDI·전자소송): 공동인증서(구 공인인증서) + 간편인증(카카오/네이버/토스/PASS/삼성PASS/KB/PAYCO/신한 등) + 디지털원패스(**2025-12-30 서비스 종료 예정** — 당장 mock 에 반영 필요). 기관간 축: GPKI 인증서 (기관용·개인용 구분, `gpki.go.kr` 인증관리센터 발급).
 
-**핵심 gap matrix** (뒤 섹션 Unknowns matrix 와 교차): 전자세금계산서 SOAP endpoint URL·공식 XSD · 전자소송 서류제출 WSDL · 어디서나연계시스템 XML 서식 전문 · NHIS/NPS EDI 의 ebXML 바디 스키마 — 전부 기관 요청 후에만 공개. KOSMOS 는 지금 단계에서는 **shape-compatible 한 envelope 만 구현**하고, 기관 협업 진입 시 **field enrichment stage** 를 별도 epic 으로 분리하는 것이 합리적이다.
+**핵심 gap matrix** (뒤 섹션 Unknowns matrix 와 교차): 전자세금계산서 SOAP endpoint URL·공식 XSD · 전자소송 서류제출 WSDL · 어디서나연계시스템 XML 서식 전문 · NHIS/NPS EDI 의 ebXML 바디 스키마 — 전부 기관 요청 후에만 공개. KOSAX 는 지금 단계에서는 **shape-compatible 한 envelope 만 구현**하고, 기관 협업 진입 시 **field enrichment stage** 를 별도 epic 으로 분리하는 것이 합리적이다.
 
 본 문서의 Systems catalog 는 13개 시스템을 다루고, 각 시스템마다 엔드포인트 패턴·요청/응답 shape·에러 포맷·인증·레이트·gap·소스를 섹션별로 캡처했다. Cross-cutting patterns 섹션은 모든 시스템을 관통하는 계약 패턴 6개를 요약한다.
 
@@ -844,7 +844,7 @@ GPKI 기관 인증서 + 표준보안 API 발급.
 
 ## Cross-cutting patterns
 
-여러 시스템을 관통하는 계약 패턴. KOSMOS mock adapter 의 공통 베이스 클래스 설계에 직접 재사용 가능하다.
+여러 시스템을 관통하는 계약 패턴. KOSAX mock adapter 의 공통 베이스 클래스 설계에 직접 재사용 가능하다.
 
 ### Pattern 1 — `data.go.kr` 공통 오픈 API 에러 코드 표 (조회 계열)
 
@@ -909,13 +909,13 @@ response
 
 ### Pattern 4 — XML 표준 우위 · JSON 보조
 
-기관간 쓰기 계약은 대부분 XML (KEC, ebXML, 전자문서유통 ebMS, PISC 표준 API). Open API 조회 계열은 XML 응답이 **디폴트**, JSON 은 후발. 고용24 Open API 는 여전히 XML-only 명시. KOSMOS `submit` mock 의 직렬화 계층은 **XML 우선 + JSON 보조** 로 설계해야 실제 교체 시 cost 가 낮다.
+기관간 쓰기 계약은 대부분 XML (KEC, ebXML, 전자문서유통 ebMS, PISC 표준 API). Open API 조회 계열은 XML 응답이 **디폴트**, JSON 은 후발. 고용24 Open API 는 여전히 XML-only 명시. KOSAX `submit` mock 의 직렬화 계층은 **XML 우선 + JSON 보조** 로 설계해야 실제 교체 시 cost 가 낮다.
 
 출처: [워크넷 Open API 소개](https://m.work24.go.kr/cm/e/a/0110/selectOpenApiIntro.do), [KEC XML 표준 논문](https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART001582079).
 
 ### Pattern 5 — SOAP / WS-Security + ebXML messaging envelope
 
-전자세금계산서(KEC), 전자문서유통(gdoc), PISC, 건보·연금 EDI 모두 **SOAP 1.1 + OASIS WS-Security** 를 envelope 로 쓴다. ebXML Messaging Services (ebMS 2.0/3.0) 가 신뢰전송 층을 담당 (재전송·확인응답·중복 검증). KOSMOS mock 은 이 계층을 **공통 `EbxmlEnvelope` 모델** 로 추출 가능:
+전자세금계산서(KEC), 전자문서유통(gdoc), PISC, 건보·연금 EDI 모두 **SOAP 1.1 + OASIS WS-Security** 를 envelope 로 쓴다. ebXML Messaging Services (ebMS 2.0/3.0) 가 신뢰전송 층을 담당 (재전송·확인응답·중복 검증). KOSAX mock 은 이 계층을 **공통 `EbxmlEnvelope` 모델** 로 추출 가능:
 
 - `SOAP-ENV:Envelope/Header/wsse:Security/{UsernameToken | BinarySecurityToken(X.509)}`.
 - `eb:MessageHeader` with `From/To/CPAId/ConversationId/Service/Action/MessageData{MessageId, Timestamp}`.
@@ -931,7 +931,7 @@ UI 관찰 및 민원처리 법령상 **공통 상태머신** 이 반복된다:
 접수됨 → 처리중 → (보완요청 ↔ 재제출) → 완료 ∨ 반려 ∨ 취소
 ```
 
-+ 시한 필드 (청원 90일, 민원 통상 14일, EDI 익월 15일, 전자소송 사건별). KOSMOS mock 의 공통 `SubmitResult` pydantic 모델은 이 enum + `deadline_at: datetime` + `receipt_id: str` + `attached_artifacts: list[FileRef]` 로 통일 가능.
++ 시한 필드 (청원 90일, 민원 통상 14일, EDI 익월 15일, 전자소송 사건별). KOSAX mock 의 공통 `SubmitResult` pydantic 모델은 이 enum + `deadline_at: datetime` + `receipt_id: str` + `attached_artifacts: list[FileRef]` 로 통일 가능.
 
 출처: [청원24 처리 절차 (청원법 10조)](https://www.cheongwon.go.kr/), [정부24 민원처리법 안내](https://www.gov.kr/search/applyMw), [민원서비스 (공공데이터포털)](https://www.data.go.kr/dataset/15000896/openapi.do).
 
@@ -939,7 +939,7 @@ UI 관찰 및 민원처리 법령상 **공통 상태머신** 이 반복된다:
 
 ## Unknowns matrix
 
-공개 문서로 **확정 불가** 한 항목을 시스템 × 계약 차원 교차표로 요약. KOSMOS 가 기관 협업 진입 시 질의해야 할 우선순위다.
+공개 문서로 **확정 불가** 한 항목을 시스템 × 계약 차원 교차표로 요약. KOSAX 가 기관 협업 진입 시 질의해야 할 우선순위다.
 
 | 시스템 | Endpoint URL | Request XSD / JSON schema | Response schema | Error code 표 | Auth 프로토콜 | Rate limit | Idempotency |
 |---|---|---|---|---|---|---|---|

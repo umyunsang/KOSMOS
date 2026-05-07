@@ -4,8 +4,8 @@ Date: 2026-05-06
 
 ## Reference Bootstrap
 
-- KOSMOS thesis: `docs/vision.md` defines KOSMOS as a Claude Code harness migration; tool loop, permission gauntlet, context assembly, and TUI remain the reference substrate.
-- Canonical requirements: `docs/requirements/kosmos-migration-tree.md` requires the CC agent loop to be preserved and exposes only the five national-infrastructure primitives.
+- KOSAX thesis: `docs/vision.md` defines KOSAX as a Claude Code harness migration; tool loop, permission gauntlet, context assembly, and TUI remain the reference substrate.
+- Canonical requirements: `docs/requirements/kosax-migration-tree.md` requires the CC agent loop to be preserved and exposes only the five national-infrastructure primitives.
 - CC restored source:
   - `.references/claude-code-sourcemap/restored-src/src/query.ts` keeps recoverable tool failures in the conversation as `tool_result` blocks with `is_error: true`.
   - `.references/claude-code-sourcemap/restored-src/src/components/messages/UserToolResultMessage/UserToolResultMessage.tsx` routes `param.is_error` to `UserToolErrorMessage`.
@@ -24,10 +24,10 @@ Date: 2026-05-06
 
 - Bun `spawn` supports real PTY execution through the `terminal` option for interactive terminal apps: <https://bun.com/docs/runtime/child-process>
 - vhs supports output recording plus `Screenshot` PNG capture: <https://github.com/charmbracelet/vhs>
-- Ink testing library exposes both `lastFrame()` and the full `frames` array; KOSMOS audits must inspect the sequence, not only the last frame: <https://github.com/vadimdemedes/ink-testing-library>
+- Ink testing library exposes both `lastFrame()` and the full `frames` array; KOSAX audits must inspect the sequence, not only the last frame: <https://github.com/vadimdemedes/ink-testing-library>
 - tmux `capture-pane -p` writes pane content to stdout, which is suitable for text snapshots: <https://man7.org/linux/man-pages/man1/tmux.1.html>
 - pyte is an in-memory VTxxx-compatible terminal emulator for replay/screen-scrape workflows: <https://pyte.readthedocs.io/en/latest/>
-- MCP tool results may contain structured and unstructured content; KOSMOS should keep adapter envelopes structured and visible to the UI layer: <https://modelcontextprotocol.io/specification/draft/server/tools>
+- MCP tool results may contain structured and unstructured content; KOSAX should keep adapter envelopes structured and visible to the UI layer: <https://modelcontextprotocol.io/specification/draft/server/tools>
 - OpenTelemetry GenAI conventions include spans/events/exceptions for GenAI systems and tool flows: <https://opentelemetry.io/docs/specs/semconv/gen-ai/>
 - OpenAI trace grading recommends grading agent traces for workflow-level issues such as tool choice, handoff, instruction violations, and routing regressions: <https://developers.openai.com/api/docs/guides/agent-evals>
 
@@ -35,7 +35,7 @@ Date: 2026-05-06
 
 1. Roll back PR #2773 as a single revert commit rather than trying to salvage its 4,996-file mixed change set. The merged scope mixed source changes, prompts, docs, generated captures, and workflow-adjacent artifacts; fixing it in place would make the reference-first boundary unauditable.
 2. Keep the pre-#2773 chain guard pattern: a missing `lat/lon` failure for KMA/NMC must stay inside the agentic loop and force `resolve_location` before retrying the lookup. The user-visible failure was a terminal loop break, not merely a bad error string.
-3. Treat nested primitive result errors as CC tool errors. A KOSMOS envelope such as `{kind:"lookup", result:{kind:"error"}}` is semantically equivalent to CC's `is_error` tool result and must render through `UserToolErrorMessage`.
+3. Treat nested primitive result errors as CC tool errors. A KOSAX envelope such as `{kind:"lookup", result:{kind:"error"}}` is semantically equivalent to CC's `is_error` tool result and must render through `UserToolErrorMessage`.
 4. Add real-use trace grading as a repo-local script. The audit checks chronological frames, recoverable-error retry, CC error rendering, expanded trace visibility, and raw protocol leakage.
 5. Make frame sampling default-on in both PTY harnesses. Capturing only `final.txt` reproduces the exact blind spot that allowed the regression through.
 6. Split `nmc_emergency_search` into explicit `mode="coordinate"` and `mode="region"` contracts. Curl evidence proved the coordinate operation accepts valid Hadan parameters but returns 0 rows, while the official regional list operation returns `큐병원` for `Q0=부산광역시`, `Q1=사하구`. This is not implemented as fallback; the LLM must choose the official operation through schema and description.
@@ -45,7 +45,7 @@ Date: 2026-05-06
 10. Split the NFA scenario by real adapter contract. `nfa_emergency_info_service` is a monthly anonymized EMS-statistics API; gas-leak safety instructions are not that API. The real-use matrix now tests NFA with a direct-curl-proven statistical query and separately forbids misrouting a gas-safety question into the NFA statistics adapter.
 11. Add the official SSIS target-household code reference to the MOHW adapter metadata. Direct curl proved `trgterIndvdlArray=060` is the valid one-parent/grandparent household filter; both `searchWrd=한부모가족 아동양육비 지원` and `searchWrd=아동양육비` return `WLF00001068` with `resultCode=0`. The model's failed real-use path treated 한부모 as a life-stage problem, so the fix is to expose the agency code boundary, not to add fallback routing.
 12. Tighten the `passport_kr` PII pattern boundary instead of field-allowlisting MOHW IDs. Real-use welfare frames showed `WLF00001068` rendered as `WL<PASSPORT_KR>` because the old passport regex matched the `F00001068` substring inside a public service identifier. A surrounding alphanumeric boundary preserves standalone Korean passport redaction while leaving official welfare IDs readable.
-13. Remove KOSMOS-only Y/A/N permission hotkeys from the primitive permission surface. The CC reference `PermissionPrompt` presents a `Select` list driven by Up/Down + Enter, and only uses the optional option-level `keybinding` field when a caller explicitly opts in. KOSMOS should preserve that selector behavior and use CC's Tab amend flow for optional text instead of adding a separate visible hotkey contract.
+13. Remove KOSAX-only Y/A/N permission hotkeys from the primitive permission surface. The CC reference `PermissionPrompt` presents a `Select` list driven by Up/Down + Enter, and only uses the optional option-level `keybinding` field when a caller explicitly opts in. KOSAX should preserve that selector behavior and use CC's Tab amend flow for optional text instead of adding a separate visible hotkey contract.
 
 ## Rejected
 

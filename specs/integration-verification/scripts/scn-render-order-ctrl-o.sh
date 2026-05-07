@@ -2,8 +2,8 @@
 # Source-only — relies on tui-tmux-capture.sh helpers + env (TMUX_SESSION/OUTDIR)
 set -euo pipefail
 
-# Wait for KOSMOS REPL (~/KOSMOS/tui prompt). Boot may take 5–8s.
-wait_for_pane "KOSMOS|❯" 25
+# Wait for KOSAX REPL (~/KOSAX/tui prompt). Boot may take 5–8s.
+wait_for_pane "KOSAX|❯" 25
 snapshot_pane 01-boot
 
 # Type the citizen weather query

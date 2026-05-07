@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 wait_for_pane "tool_registry: [0-9]+ entries verified" 60
-wait_for_pane "KOSMOS" 10
+wait_for_pane "KOSAX" 10
 snapshot_pane "boot-ready"
 send_text_pane "/lang en"
 sleep 1.5

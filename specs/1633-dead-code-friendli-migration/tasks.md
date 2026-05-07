@@ -7,7 +7,7 @@ description: "Task list for Epic #1633 — P1+P2 Dead code elimination + Anthrop
 
 **Input**: Design documents from `/specs/1633-dead-code-friendli-migration/`
 **Prerequisites**: [spec.md](./spec.md), [plan.md](./plan.md), [research.md](./research.md), [data-model.md](./data-model.md), [contracts/llm-client.md](./contracts/llm-client.md), [quickstart.md](./quickstart.md)
-**Epic**: [#1633](https://github.com/umyunsang/KOSMOS/issues/1633)
+**Epic**: [#1633](https://github.com/umyunsang/KOSAX/issues/1633)
 **Branch**: `1633-dead-code-friendli-migration`
 
 **Tests**: Test tasks are included — the spec's SC-001..SC-010 each require a verifiable check, and the contract's fail-closed + IPC-protocol invariants need regression coverage.
@@ -23,7 +23,7 @@ description: "Task list for Epic #1633 — P1+P2 Dead code elimination + Anthrop
 ## Path conventions
 
 - TypeScript TUI: `tui/src/`
-- Python backend: `src/kosmos/`
+- Python backend: `src/kosax/`
 - Tests (TS): `tui/test/` (Bun + `bun:test`)
 - Tests (Python): `tests/` (pytest)
 
@@ -41,7 +41,7 @@ description: "Task list for Epic #1633 — P1+P2 Dead code elimination + Anthrop
 
 **⚠️ CRITICAL**: No user-story work can begin until T002 + T003 are merged or staged.
 
-- [ ] T002 [P] Create `tui/src/ipc/llmTypes.ts` with `KosmosRole`, `KosmosContentBlockParam` (Text / ToolUse / ToolResult variants), `KosmosMessageParam`, `KosmosToolDefinition`, `KosmosMessageStreamParams`, `KosmosUsage`, `KosmosRawMessageStreamEvent`, `KosmosMessageFinal` per [contracts/llm-client.md § 2](./contracts/llm-client.md). No runtime behavior; type-only exports. (FR-001, FR-017)
+- [ ] T002 [P] Create `tui/src/ipc/llmTypes.ts` with `KosaxRole`, `KosaxContentBlockParam` (Text / ToolUse / ToolResult variants), `KosaxMessageParam`, `KosaxToolDefinition`, `KosaxMessageStreamParams`, `KosaxUsage`, `KosaxRawMessageStreamEvent`, `KosaxMessageFinal` per [contracts/llm-client.md § 2](./contracts/llm-client.md). No runtime behavior; type-only exports. (FR-001, FR-017)
 - [ ] T003 Create `tui/src/ipc/llmClient.ts` exporting the `LLMClient` class skeleton (constructor accepting `{ bridge, model, sessionId }`, `stream()` returning a throwing async generator, `complete()` throwing `not implemented`, and `LLMClientError` subclass). This is the import target for T004/T005; full implementation arrives in US1. (FR-007, FR-017)
 
 **Checkpoint**: TypeScript compiles with `llmTypes.ts` + `llmClient.ts` present. `bun test` still passes at the P0 floor (≥ 540 passing).
@@ -52,21 +52,21 @@ description: "Task list for Epic #1633 — P1+P2 Dead code elimination + Anthrop
 
 **Goal**: End-to-end LLM turn from TUI REPL input through stdio IPC to Python backend to FriendliAI `K-EXAONE-236B-A23B` and back as streaming tokens within 5 seconds.
 
-**Independent Test**: With `KOSMOS_FRIENDLI_TOKEN` set, run `bun run tui/src/main.tsx`, type a citizen query, observe first token within 5 s. Without the env var, observe a bilingual fail-closed error envelope and non-zero exit. (Quickstart Scenarios 1 & 2 · SC-001)
+**Independent Test**: With `KOSAX_FRIENDLI_TOKEN` set, run `bun run tui/src/main.tsx`, type a citizen query, observe first token within 5 s. Without the env var, observe a bilingual fail-closed error envelope and non-zero exit. (Quickstart Scenarios 1 & 2 · SC-001)
 
 ### Implementation for User Story 1
 
 - [ ] T004 [P] [US1] In `tui/src/query.ts`, replace `import type { ... } from '@anthropic-ai/sdk/resources/index.mjs'` with imports from `tui/src/ipc/llmTypes.ts`. Preserve agentic-loop control flow (rewrite-boundary rule, Constitution I). (FR-001, FR-017)
-- [ ] T005 [P] [US1] In `tui/src/QueryEngine.ts`, replace `import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'` with `import type { KosmosContentBlockParam as ContentBlockParam } from './ipc/llmTypes.js'`. Rewire any `Stream` / `BetaMessageStreamParams` imports to their Kosmos counterparts. (FR-001, FR-017)
+- [ ] T005 [P] [US1] In `tui/src/QueryEngine.ts`, replace `import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'` with `import type { KosaxContentBlockParam as ContentBlockParam } from './ipc/llmTypes.js'`. Rewire any `Stream` / `BetaMessageStreamParams` imports to their Kosax counterparts. (FR-001, FR-017)
 - [ ] T006 [US1] In `tui/src/utils/model/model.ts`, modify `getDefaultMainLoopModel()` (line ~206) to return the string literal `"LGAI-EXAONE/K-EXAONE-236B-A23B"`. Remove any branch that reads `getAntModelOverrideConfig()?.defaultModel` or anthropic-scope fallbacks. The constant MUST be the sole production return value (Contract G3: model ID is a single constant in prod builds; tests may pass a mock through the LLMClient constructor). (FR-011, SC-010, Contract G3)
-- [ ] T007 [US1] In `tui/src/ipc/llmClient.ts`, implement `stream()`: construct `UserInputFrame` with fresh `makeUUIDv7()` correlation_id, send via `bridge.sendFrame()`, consume inbound `AssistantChunkFrame` / `ToolCallFrame` stream for that correlation_id, translate to `KosmosRawMessageStreamEvent` per [data-model.md](./data-model.md) mapping, finalize on `done=true` trailer. On `BackpressureSignalFrame(kind=llm_rate_limit)`, pause consumption for `retry_after_ms` before resuming the same generator — **do NOT** retry the full turn (Python backend owns retry per Spec 019; Contract G5). (FR-007, FR-017, Contract G1, G2, G5, G6)
-- [ ] T008 [US1] In `tui/src/ipc/llmClient.ts`, implement `complete()` as a thin wrapper that awaits `stream()` to exhaustion and returns `KosmosMessageFinal` (accumulated content blocks + stop_reason + usage). (Contract § 1.1)
-- [ ] T009 [US1] In `tui/src/ipc/llmClient.ts`, wire OTEL span `gen_ai.client.invoke` with attributes `gen_ai.system="friendli_exaone"`, `gen_ai.operation.name="chat"`, `gen_ai.request.model=<model>`, `gen_ai.request.max_tokens=<params.max_tokens>`, `kosmos.correlation_id=<envelope.correlation_id>`, `kosmos.session_id=<sessionId>`. Populate `gen_ai.usage.input_tokens` / `output_tokens` from final trailer. (FR-022, SC-008, Contract § 4)
-- [ ] T010 [US1] In `tui/src/ipc/llmClient.ts`, attach `kosmos.prompt.hash` span attribute by reading the hash from the backend's first response frame metadata (propagated via `PromptLoader` on Python side per Spec 026). If hash is absent, surface a warning log but do not fail — Spec 026 boot-time hash check already fails closed if manifest mismatch. (FR-022, SC-008)
-- [ ] T011 [US1] In `tui/src/entrypoints/init.ts`, add a pre-bridge env-var check: if neither `FRIENDLI_API_KEY` nor `KOSMOS_FRIENDLI_TOKEN` is set, print bilingual error envelope to stderr (`"FRIENDLI_API_KEY 환경변수가 필요합니다 / FRIENDLI_API_KEY environment variable required"`) and exit with status 1 before any bridge.ts invocation. No Anthropic credential lookup anywhere. (FR-004 Edge case, Contract § 5)
-- [ ] T012 [US1] In `tui/src/entrypoints/init.ts`, remove the `initializeTelemetryAfterTrust(...)` call and replace with a KOSMOS OTEL init that instantiates the OTLP exporter against Spec 021's default endpoint and sets `deployment.environment` from `KOSMOS_ENV`. (FR-016)
+- [ ] T007 [US1] In `tui/src/ipc/llmClient.ts`, implement `stream()`: construct `UserInputFrame` with fresh `makeUUIDv7()` correlation_id, send via `bridge.sendFrame()`, consume inbound `AssistantChunkFrame` / `ToolCallFrame` stream for that correlation_id, translate to `KosaxRawMessageStreamEvent` per [data-model.md](./data-model.md) mapping, finalize on `done=true` trailer. On `BackpressureSignalFrame(kind=llm_rate_limit)`, pause consumption for `retry_after_ms` before resuming the same generator — **do NOT** retry the full turn (Python backend owns retry per Spec 019; Contract G5). (FR-007, FR-017, Contract G1, G2, G5, G6)
+- [ ] T008 [US1] In `tui/src/ipc/llmClient.ts`, implement `complete()` as a thin wrapper that awaits `stream()` to exhaustion and returns `KosaxMessageFinal` (accumulated content blocks + stop_reason + usage). (Contract § 1.1)
+- [ ] T009 [US1] In `tui/src/ipc/llmClient.ts`, wire OTEL span `gen_ai.client.invoke` with attributes `gen_ai.system="friendli_exaone"`, `gen_ai.operation.name="chat"`, `gen_ai.request.model=<model>`, `gen_ai.request.max_tokens=<params.max_tokens>`, `kosax.correlation_id=<envelope.correlation_id>`, `kosax.session_id=<sessionId>`. Populate `gen_ai.usage.input_tokens` / `output_tokens` from final trailer. (FR-022, SC-008, Contract § 4)
+- [ ] T010 [US1] In `tui/src/ipc/llmClient.ts`, attach `kosax.prompt.hash` span attribute by reading the hash from the backend's first response frame metadata (propagated via `PromptLoader` on Python side per Spec 026). If hash is absent, surface a warning log but do not fail — Spec 026 boot-time hash check already fails closed if manifest mismatch. (FR-022, SC-008)
+- [ ] T011 [US1] In `tui/src/entrypoints/init.ts`, add a pre-bridge env-var check: if neither `FRIENDLI_API_KEY` nor `KOSAX_FRIENDLI_TOKEN` is set, print bilingual error envelope to stderr (`"FRIENDLI_API_KEY 환경변수가 필요합니다 / FRIENDLI_API_KEY environment variable required"`) and exit with status 1 before any bridge.ts invocation. No Anthropic credential lookup anywhere. (FR-004 Edge case, Contract § 5)
+- [ ] T012 [US1] In `tui/src/entrypoints/init.ts`, remove the `initializeTelemetryAfterTrust(...)` call and replace with a KOSAX OTEL init that instantiates the OTLP exporter against Spec 021's default endpoint and sets `deployment.environment` from `KOSAX_ENV`. (FR-016)
 - [ ] T013 [US1] In `tui/src/services/api/withRetry.ts`, strip the Anthropic-specific 401/529 branches and set the retry target set to `{ 429, 500, 502, 503, 504 }`. Keep exponential backoff (1 s / 2 s / 4 s) and add `Retry-After` header honouring. (FR-018, Research Decision 7)
-- [ ] T014 [US1] In `tui/src/services/api/errors.ts` + `errorUtils.ts`, remove Anthropic-specific codes (`invalid_request_error` Anthropic variant, `overloaded_error`, `permission_error` strings tied to anthropic surface) and re-map to KOSMOS envelope classes `llm`/`tool`/`network` per the Research Decision 6 matrix. Keep error-class structure + user-friendly message mapping. (FR-019, Research Decision 6)
+- [ ] T014 [US1] In `tui/src/services/api/errors.ts` + `errorUtils.ts`, remove Anthropic-specific codes (`invalid_request_error` Anthropic variant, `overloaded_error`, `permission_error` strings tied to anthropic surface) and re-map to KOSAX envelope classes `llm`/`tool`/`network` per the Research Decision 6 matrix. Keep error-class structure + user-friendly message mapping. (FR-019, Research Decision 6)
 - [ ] T015 [US1] In `tui/src/services/api/promptCacheBreakDetection.ts`, rewire the usage-field parsing to read `prompt_tokens_details.cached_tokens` (FriendliAI OpenAI-compat field) instead of Anthropic's `cache_creation_input_tokens` / `cache_read_input_tokens`. Detection logic (drop-between-turns threshold) unchanged. (FR-020, Research Decision 3)
 - [ ] T016 [US1] Delete `tui/src/services/api/claude.ts` (its role is fully replaced by `llmClient.ts`). Update any remaining callers to import from `tui/src/ipc/llmClient.ts`. (FR-007, FR-008)
 - [ ] T017 [US1] Delete `tui/src/services/api/client.ts` (direct FriendliAI HTTPS client superseded by IPC bridge). Update callers. (FR-007)
@@ -76,7 +76,7 @@ description: "Task list for Epic #1633 — P1+P2 Dead code elimination + Anthrop
 - [ ] T018 [P] [US1] Add `tui/test/ipc/llmClient.test.ts`: mock `IPCBridge`, emit a canned `AssistantChunkFrame` sequence, assert `stream()` yields `message_start` + N × `content_block_delta` + `content_block_stop` + `message_delta` + `message_stop` in order with accumulated text equal to concatenated deltas. (FR-017, Contract G1/G2/G6)
 - [ ] T019 [P] [US1] Add `tui/test/ipc/llmClient.error.test.ts`: mock `ErrorFrame(class=llm, code=auth)`, assert `stream()` throws `LLMClientError` with `class='llm'` + `code='auth'` and does not retry. (FR-019, Contract G4)
 - [ ] T020 [P] [US1] Add `tui/test/entrypoints/failClosed.test.ts`: simulate `FRIENDLI_API_KEY` unset, invoke the init path, assert process.exit(1) with bilingual stderr message. Assert zero imports of `@anthropic-ai/sdk` in `require.cache`. (FR-004 Edge case, SC-009 partial)
-- [ ] T021 [P] [US1] Add `tui/test/ipc/otelSpan.test.ts`: with a fake OTEL SDK recorder, invoke `LLMClient.complete()`, assert a `gen_ai.client.invoke` span is recorded with non-empty `kosmos.prompt.hash` attribute and `gen_ai.request.model = "LGAI-EXAONE/K-EXAONE-236B-A23B"`. (SC-008, SC-010)
+- [ ] T021 [P] [US1] Add `tui/test/ipc/otelSpan.test.ts`: with a fake OTEL SDK recorder, invoke `LLMClient.complete()`, assert a `gen_ai.client.invoke` span is recorded with non-empty `kosax.prompt.hash` attribute and `gen_ai.request.model = "LGAI-EXAONE/K-EXAONE-236B-A23B"`. (SC-008, SC-010)
 
 **Checkpoint**: User Story 1 functional. A citizen sees a K-EXAONE answer within 5 s. `@anthropic-ai/sdk` is still importable in some files (US2 handles full elimination), but the LLM call path no longer depends on it.
 
@@ -122,7 +122,7 @@ description: "Task list for Epic #1633 — P1+P2 Dead code elimination + Anthrop
 ### Model / OAuth / betas / policy config — delete (FR-010..FR-015)
 
 - [ ] T025 [P] [US2] Delete `tui/src/utils/model/antModels.ts` (Ant-only GrowthBook override; unused after T006). (FR-011, Finding C)
-- [ ] T026 [P] [US2] Delete `tui/src/utils/modelCost.ts` (Anthropic token pricing table; KOSMOS uses Python `UsageTracker`). (FR-012)
+- [ ] T026 [P] [US2] Delete `tui/src/utils/modelCost.ts` (Anthropic token pricing table; KOSAX uses Python `UsageTracker`). (FR-012)
 - [ ] T027 [P] [US2] Delete `tui/src/utils/betas.ts` and `tui/src/constants/betas.ts` (both carry Anthropic beta-header codes; Finding C adds the constants/-side sibling). (FR-013)
 - [ ] T028 [US2] In `tui/src/constants/constants/oauth.ts` (or wherever the Anthropic OAuth constants live — verify path via grep), remove `TOKEN_URL`, `CLIENT_ID`, `REDIRECT_URI`, and any `ANTHROPIC_*` constants. If the file becomes empty, delete it and scrub imports. (FR-010)
 
@@ -177,17 +177,17 @@ description: "Task list for Epic #1633 — P1+P2 Dead code elimination + Anthrop
 - [ ] T041 [P] [US3] Add `tui/test/invariants/deletions.test.ts`: assert directories `services/analytics`, `utils/telemetry`, `utils/secureStorage`, `services/oauth`, `remote` do NOT exist under `tui/src/`. Assert files `antModels.ts`, `auth.ts`, `betas.ts`, `claudeai.ts` do NOT exist. (FR-004..FR-006, FR-014, FR-015)
 - [ ] T042 [P] [US3] Add `tui/test/invariants/noExternalEgress.smoke.ts`: spawn TUI under a fake-OTLP stub, run a 10-second session with one query, assert `lsof`-equivalent output shows HTTPS connections only to `*.friendli.ai` domains. Expect zero connections to `*.anthropic.com`, `*.datadoghq.com`, `*.growthbook.io`, `*.statsig.com`. (SC-009)
 
-**Checkpoint**: All CC-internal surfaces gone. KOSMOS citizens cannot trip into Anthropic-account, telemetry-sink, remote-session code paths. Citizen telemetry flows to KOSMOS OTEL + local Langfuse (Spec 021/028) only.
+**Checkpoint**: All CC-internal surfaces gone. KOSAX citizens cannot trip into Anthropic-account, telemetry-sink, remote-session code paths. Citizen telemetry flows to KOSAX OTEL + local Langfuse (Spec 021/028) only.
 
 ---
 
 ## Phase 6: User Story 4 — System prompt via PromptLoader (Priority: P3)
 
-**Goal**: Ensure the system prompt shipped to K-EXAONE originates from `prompts/system_v1.md` via Spec 026 `PromptLoader`, not an inline TS constant. Emit `kosmos.prompt.hash` attribute on every LLM invocation span.
+**Goal**: Ensure the system prompt shipped to K-EXAONE originates from `prompts/system_v1.md` via Spec 026 `PromptLoader`, not an inline TS constant. Emit `kosax.prompt.hash` attribute on every LLM invocation span.
 
-**Independent Test**: Unit test that mocks `LLMClient.stream()` and asserts the `system` field in the outbound `UserInputFrame` matches `prompts/system_v1.md` content byte-for-byte, and the OTEL span carries `kosmos.prompt.hash` equal to that file's SHA-256. (SC-008, FR-021, FR-022)
+**Independent Test**: Unit test that mocks `LLMClient.stream()` and asserts the `system` field in the outbound `UserInputFrame` matches `prompts/system_v1.md` content byte-for-byte, and the OTEL span carries `kosax.prompt.hash` equal to that file's SHA-256. (SC-008, FR-021, FR-022)
 
-- [ ] T043 [US4] In `tui/src/constants/prompts.ts` (or wherever a hard-coded system-prompt string lives), remove the inline string and replace with a runtime call that retrieves the system prompt from the Python backend's `PromptLoader` via a handshake-time IPC metadata field. Update `tui/src/ipc/bridge.ts` so the session handshake frame carries `system_prompt` + `system_prompt_hash` fields populated by the Python backend (TUI caches; no new frame kind). Verify `LLMClient.stream()` passes the cached system prompt as `params.system` and populates `kosmos.prompt.hash` span attribute from the cached hash (T009 already wired; this task cross-checks the source). (FR-021, FR-022, SC-008)
+- [ ] T043 [US4] In `tui/src/constants/prompts.ts` (or wherever a hard-coded system-prompt string lives), remove the inline string and replace with a runtime call that retrieves the system prompt from the Python backend's `PromptLoader` via a handshake-time IPC metadata field. Update `tui/src/ipc/bridge.ts` so the session handshake frame carries `system_prompt` + `system_prompt_hash` fields populated by the Python backend (TUI caches; no new frame kind). Verify `LLMClient.stream()` passes the cached system prompt as `params.system` and populates `kosax.prompt.hash` span attribute from the cached hash (T009 already wired; this task cross-checks the source). (FR-021, FR-022, SC-008)
 - [ ] T044 [P] [US4] Add `tui/test/prompt/loader.test.ts`: mock the handshake response with a known system-prompt string + hash, invoke LLMClient.stream(), assert the UserInputFrame payload includes the exact system string and the span attribute matches the hash. (FR-021, FR-022, SC-008)
 
 **Checkpoint**: Every LLM turn now cites a hash-verified prompt. Langfuse UI can group sessions by prompt version.
@@ -255,4 +255,4 @@ Polish (T045..T050) ── after every story's Checkpoint passes
 - Every file-path reference in this document was verified against the real repository layout (research.md Finding A: single `services/`, not `services/services/`).
 - `getDefaultMainLoopModel()` line number (~206) is approximate; verify via `grep -n 'export function getDefaultMainLoopModel' tui/src/utils/model/model.ts` before editing.
 - Spec 032 resume semantics (T046) already covered by existing regression suite under `tui/test/ipc/` — T046 adds a specific cold-kill scenario rather than duplicating basic-resume coverage.
-- Python backend (`src/kosmos/llm/client.py`) is unchanged in this Epic per plan § Summary — model ID `K-EXAONE-236B-A23B` already matches.
+- Python backend (`src/kosax/llm/client.py`) is unchanged in this Epic per plan § Summary — model ID `K-EXAONE-236B-A23B` already matches.

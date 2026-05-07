@@ -62,7 +62,7 @@ The citizen cancels the in-progress multi-ministry request, or the coordinator d
 
 ### User Story 4 — File-Based Mailbox Crash Resilience (Priority: P2)
 
-The KOSMOS process crashes mid-session (e.g., OOM kill) after a worker has posted a `result` message but before the coordinator has read it. On process restart with the same `session_id`, the coordinator can replay unread messages from the file-based mailbox in per-sender FIFO order and resume synthesis.
+The KOSAX process crashes mid-session (e.g., OOM kill) after a worker has posted a `result` message but before the coordinator has read it. On process restart with the same `session_id`, the coordinator can replay unread messages from the file-based mailbox in per-sender FIFO order and resume synthesis.
 
 **Why this priority**: A file-based mailbox that does not survive crashes is equivalent to an in-memory queue and provides no durability guarantee. This story verifies the mailbox's at-least-once delivery contract, which is the stated rationale for choosing files over in-process queues in `docs/vision.md § Layer 4`.
 
@@ -70,7 +70,7 @@ The KOSMOS process crashes mid-session (e.g., OOM kill) after a worker has poste
 
 **Acceptance Scenarios**:
 
-1. **Given** a worker that has written a `result` message to `~/.kosmos/mailbox/<session_id>/` before the process terminates, **When** the coordinator restarts with the same `session_id`, **Then** it reads and processes the unread `result` message before dispatching new workers.
+1. **Given** a worker that has written a `result` message to `~/.kosax/mailbox/<session_id>/` before the process terminates, **When** the coordinator restarts with the same `session_id`, **Then** it reads and processes the unread `result` message before dispatching new workers.
 2. **Given** two workers that have both written messages to the mailbox, **When** the coordinator replays them, **Then** messages from each sender are delivered in the order they were written (per-sender FIFO).
 3. **Given** a partially written message file (simulating a crash mid-write), **When** the mailbox reader encounters it, **Then** it skips the corrupted file, logs a warning, and continues with the remaining valid messages — it does not crash.
 
@@ -82,12 +82,12 @@ The coordinator and workers emit OpenTelemetry spans that are compatible with th
 
 **Why this priority**: Without observability, diagnosing failures in the multi-worker flow requires log-scraping. The span schema is defined here so that #501's collector can ingest it without a breaking schema change. This is a deferrable quality-of-life item relative to correctness, but the attribute names must be frozen before any collector deploys.
 
-**Independent Test**: Run a coordinator session end-to-end with a recording exporter. Assert: (a) at least one `gen_ai.agent.coordinator.phase` span per phase transition appears in the trace; (b) each worker emits at least one `gen_ai.agent.worker.iteration` span per tool-loop turn; (c) each mailbox `send` operation emits a `gen_ai.agent.mailbox.message` span tagged with `msg_type`; (d) all attribute names are in the `kosmos.agent.*` namespace declared in this spec.
+**Independent Test**: Run a coordinator session end-to-end with a recording exporter. Assert: (a) at least one `gen_ai.agent.coordinator.phase` span per phase transition appears in the trace; (b) each worker emits at least one `gen_ai.agent.worker.iteration` span per tool-loop turn; (c) each mailbox `send` operation emits a `gen_ai.agent.mailbox.message` span tagged with `msg_type`; (d) all attribute names are in the `kosax.agent.*` namespace declared in this spec.
 
 **Acceptance Scenarios**:
 
 1. **Given** a coordinator executing all four phases, **When** the trace is exported, **Then** exactly four `gen_ai.agent.coordinator.phase` spans appear with `phase` attribute values `"research"`, `"synthesis"`, `"implementation"`, `"verification"`.
-2. **Given** a worker that executes two tool-loop iterations, **When** the trace is exported, **Then** exactly two `gen_ai.agent.worker.iteration` spans appear tagged with `kosmos.agent.role` set to the worker's specialist role value (from the `AgentContext`).
+2. **Given** a worker that executes two tool-loop iterations, **When** the trace is exported, **Then** exactly two `gen_ai.agent.worker.iteration` spans appear tagged with `kosax.agent.role` set to the worker's specialist role value (from the `AgentContext`).
 3. **Given** a `permission_request` message delivered via the mailbox, **When** the trace is exported, **Then** a `gen_ai.agent.mailbox.message` span appears with `msg_type="permission_request"` and the `correlation_id` as a span attribute.
 
 ---
@@ -95,7 +95,7 @@ The coordinator and workers emit OpenTelemetry spans that are compatible with th
 ### Edge Cases
 
 - **Worker exceeds iteration cap**: A worker that hits `max_iterations` inside its tool loop MUST send an `error` message to the coordinator (not silently terminate). The coordinator MUST include this error in the `CoordinatorPlan` and mark the affected ministry task as `status="failed"`.
-- **Coordinator mailbox full**: If the per-session mailbox directory contains more messages than `KOSMOS_AGENT_MAILBOX_MAX_MESSAGES`, new writes MUST fail with a structured `MailboxOverflowError` rather than silently dropping messages or growing unbounded.
+- **Coordinator mailbox full**: If the per-session mailbox directory contains more messages than `KOSAX_AGENT_MAILBOX_MAX_MESSAGES`, new writes MUST fail with a structured `MailboxOverflowError` rather than silently dropping messages or growing unbounded.
 - **Duplicate `result` message**: If a worker retries and delivers two `result` messages for the same `correlation_id`, the coordinator MUST use the first non-error result and log a warning for the duplicate. It MUST NOT produce a `CoordinatorPlan` with duplicate ministry entries.
 - **Worker spawned with no specialist role in `AgentContext`**: The coordinator MUST refuse to spawn a worker whose `AgentContext.role` is `None`. This is a programmer error and MUST raise `AgentConfigurationError` at spawn time.
 - **Synthesis called with zero worker results**: If the coordinator enters the Synthesis phase with an empty results set (all workers failed), the coordinator MUST yield a `CoordinatorPlan` with `status="no_results"` and an explanatory `message` field rather than producing a partial or empty plan silently.
@@ -110,7 +110,7 @@ The coordinator and workers emit OpenTelemetry spans that are compatible with th
 
 #### Coordinator loop
 
-- **FR-001**: The system MUST provide a `Coordinator` class at `src/kosmos/agents/coordinator.py` that orchestrates the 4-phase workflow: `Research → Synthesis → Implementation → Verification` as defined in `docs/vision.md § Layer 4`.
+- **FR-001**: The system MUST provide a `Coordinator` class at `src/kosax/agents/coordinator.py` that orchestrates the 4-phase workflow: `Research → Synthesis → Implementation → Verification` as defined in `docs/vision.md § Layer 4`.
 - **FR-002**: The coordinator MUST dispatch workers as `asyncio.Task` objects via `asyncio.create_task()`, each receiving an isolated `AgentContext` with no shared mutable state between workers.
 - **FR-003**: The coordinator MUST classify citizen intent to determine which specialist roles to spawn. Intent classification MUST be performed by the coordinator LLM, not by a static keyword table.
 - **FR-004**: The coordinator MUST execute the Synthesis phase itself — it MUST NOT delegate synthesis to a worker. During Synthesis, the coordinator LLM MUST NOT have `lookup` or `resolve_location` injected into its tool definitions.
@@ -120,8 +120,8 @@ The coordinator and workers emit OpenTelemetry spans that are compatible with th
 
 #### Worker lifecycle
 
-- **FR-008**: The system MUST provide a `Worker` class at `src/kosmos/agents/worker.py` that wraps one `QueryEngine` instance and drives it through the 2-tool surface (`lookup` + `resolve_location`).
-- **FR-009**: Workers MUST reuse `src/kosmos/engine/query.py`'s `_query_inner()` async generator as their inner tool loop verbatim. The worker MUST NOT reimplement the tool loop.
+- **FR-008**: The system MUST provide a `Worker` class at `src/kosax/agents/worker.py` that wraps one `QueryEngine` instance and drives it through the 2-tool surface (`lookup` + `resolve_location`).
+- **FR-009**: Workers MUST reuse `src/kosax/engine/query.py`'s `_query_inner()` async generator as their inner tool loop verbatim. The worker MUST NOT reimplement the tool loop.
 - **FR-010**: Each worker MUST receive an `AgentContext` at spawn time that pins the worker to a specific `session_id` and `specialist_role`. The `AgentContext` MUST be a Pydantic v2 frozen model with `extra="forbid"`.
 - **FR-011**: A worker MUST only see `lookup` and `resolve_location` in its tool registry — no other tools, no direct adapter references, no per-API tool names.
 - **FR-012**: When a worker's tool loop completes, the worker MUST post a `result` message to the coordinator mailbox containing a `LookupFetchOutput`-compatible payload (typed union member, not raw text).
@@ -129,14 +129,14 @@ The coordinator and workers emit OpenTelemetry spans that are compatible with th
 
 #### Mailbox IPC
 
-- **FR-014**: The system MUST provide a `Mailbox` class and related infrastructure at `src/kosmos/agents/mailbox/`. The file-based implementation MUST store messages under `KOSMOS_AGENT_MAILBOX_ROOT/<session_id>/<sender_id>/<message_id>.json`.
-- **FR-015**: `KOSMOS_AGENT_MAILBOX_ROOT` MUST default to `~/.kosmos/mailbox` and MUST be configurable as a `KOSMOS_AGENT_MAILBOX_ROOT` environment variable.
+- **FR-014**: The system MUST provide a `Mailbox` class and related infrastructure at `src/kosax/agents/mailbox/`. The file-based implementation MUST store messages under `KOSAX_AGENT_MAILBOX_ROOT/<session_id>/<sender_id>/<message_id>.json`.
+- **FR-015**: `KOSAX_AGENT_MAILBOX_ROOT` MUST default to `~/.kosax/mailbox` and MUST be configurable as a `KOSAX_AGENT_MAILBOX_ROOT` environment variable.
 - **FR-016**: The `AgentMessage` model MUST be a Pydantic v2 model with `extra="forbid"` and the following fields: `id: UUID`, `sender: str`, `recipient: str`, `msg_type: Literal["task", "result", "error", "permission_request", "permission_response", "cancel"]`, `payload: AgentMessagePayload` (a closed discriminated union — NOT `dict[str, Any]`), `timestamp: datetime`, `correlation_id: UUID | None`. The `Any` type is forbidden in the `payload` field and all its union members.
 - **FR-017**: The mailbox MUST guarantee at-least-once delivery: a message MUST be fully written to disk (fsync) before the `send()` call returns.
 - **FR-018**: Within a single sender, messages MUST be delivered in FIFO order. Cross-sender ordering is not guaranteed.
 - **FR-019**: On coordinator startup with an existing `session_id`, the mailbox MUST replay unread messages in per-sender FIFO order before the coordinator dispatches new workers.
 - **FR-020**: A partially-written or undeserializable message file MUST be skipped (logged at WARNING level) and MUST NOT crash the mailbox reader.
-- **FR-021**: The mailbox MUST enforce a per-session message cap of `KOSMOS_AGENT_MAILBOX_MAX_MESSAGES` (default: 1000, clamped to [100, 10000]). Writes beyond the cap MUST raise `MailboxOverflowError` immediately.
+- **FR-021**: The mailbox MUST enforce a per-session message cap of `KOSAX_AGENT_MAILBOX_MAX_MESSAGES` (default: 1000, clamped to [100, 10000]). Writes beyond the cap MUST raise `MailboxOverflowError` immediately.
 - **FR-022**: The `Mailbox` interface MUST be an abstract base class so that a future Redis Streams backend can be substituted without changing the coordinator or worker code.
 
 #### Permission delegation chain
@@ -149,18 +149,18 @@ The coordinator and workers emit OpenTelemetry spans that are compatible with th
 
 #### Observability
 
-- **FR-028**: The coordinator MUST emit one `gen_ai.agent.coordinator.phase` OTel span per phase transition. The span MUST carry the attribute `kosmos.agent.coordinator.phase: Literal["research", "synthesis", "implementation", "verification"]`.
-- **FR-029**: Each worker MUST emit one `gen_ai.agent.worker.iteration` span per tool-loop iteration. The span MUST carry `kosmos.agent.role` (the worker's specialist role string from `AgentContext`) and `kosmos.agent.session_id` (the session UUID, not PII).
-- **FR-030**: The mailbox `send()` operation MUST emit one `gen_ai.agent.mailbox.message` span per delivery. The span MUST carry `kosmos.agent.mailbox.msg_type` and `kosmos.agent.mailbox.correlation_id`.
-- **FR-031**: All new `kosmos.agent.*` attribute names MUST be declared as string constants in `src/kosmos/observability/semconv.py` (extending the existing module). The attribute names MUST be submitted to Epic #501's boundary table before any collector deployment.
+- **FR-028**: The coordinator MUST emit one `gen_ai.agent.coordinator.phase` OTel span per phase transition. The span MUST carry the attribute `kosax.agent.coordinator.phase: Literal["research", "synthesis", "implementation", "verification"]`.
+- **FR-029**: Each worker MUST emit one `gen_ai.agent.worker.iteration` span per tool-loop iteration. The span MUST carry `kosax.agent.role` (the worker's specialist role string from `AgentContext`) and `kosax.agent.session_id` (the session UUID, not PII).
+- **FR-030**: The mailbox `send()` operation MUST emit one `gen_ai.agent.mailbox.message` span per delivery. The span MUST carry `kosax.agent.mailbox.msg_type` and `kosax.agent.mailbox.correlation_id`.
+- **FR-031**: All new `kosax.agent.*` attribute names MUST be declared as string constants in `src/kosax/observability/semconv.py` (extending the existing module). The attribute names MUST be submitted to Epic #501's boundary table before any collector deployment.
 
 #### Configuration and environment
 
-- **FR-032**: `KOSMOS_AGENT_MAILBOX_ROOT` MUST default to `~/.kosmos/mailbox` and MUST accept any writable absolute path.
-- **FR-033**: `KOSMOS_AGENT_MAILBOX_MAX_MESSAGES` MUST default to 1000 and be clamped to [100, 10000].
-- **FR-034**: `KOSMOS_AGENT_MAX_WORKERS` MUST default to 4 and be clamped to [1, 16]. The coordinator MUST NOT spawn more concurrent workers than this cap.
-- **FR-035**: `KOSMOS_AGENT_WORKER_TIMEOUT_SECONDS` MUST default to 120 and be clamped to [10, 600]. A worker that does not post a `result` or `error` message within this timeout MUST be cancelled by the coordinator and treated as an error.
-- **FR-036**: All four `KOSMOS_AGENT_*` env vars MUST be documented in `docs/configuration.md` (the catalog owned by #468).
+- **FR-032**: `KOSAX_AGENT_MAILBOX_ROOT` MUST default to `~/.kosax/mailbox` and MUST accept any writable absolute path.
+- **FR-033**: `KOSAX_AGENT_MAILBOX_MAX_MESSAGES` MUST default to 1000 and be clamped to [100, 10000].
+- **FR-034**: `KOSAX_AGENT_MAX_WORKERS` MUST default to 4 and be clamped to [1, 16]. The coordinator MUST NOT spawn more concurrent workers than this cap.
+- **FR-035**: `KOSAX_AGENT_WORKER_TIMEOUT_SECONDS` MUST default to 120 and be clamped to [10, 600]. A worker that does not post a `result` or `error` message within this timeout MUST be cancelled by the coordinator and treated as an error.
+- **FR-036**: All four `KOSAX_AGENT_*` env vars MUST be documented in `docs/configuration.md` (the catalog owned by #468).
 
 #### Testing
 
@@ -180,7 +180,7 @@ The coordinator and workers emit OpenTelemetry spans that are compatible with th
 - **`CoordinatorPlan`**: Pydantic v2 model produced by Synthesis. Fields: `session_id: UUID`, `status: Literal["complete", "partial", "no_results", "failed"]`, `steps: list[PlanStep]`, `worker_correlation_ids: list[UUID]`, `message: str | None`.
 - **`PlanStep`**: `ministry: str`, `action: str`, `depends_on: list[int]` (indices into `steps` list), `execution_mode: Literal["sequential", "parallel"]`, `status: Literal["pending", "in_progress", "complete", "failed"]`.
 - **`Mailbox`** (abstract): `async send(message: AgentMessage) -> None`, `async receive(recipient: str) -> AsyncIterator[AgentMessage]`, `async replay_unread(recipient: str) -> AsyncIterator[AgentMessage]`.
-- **`FileMailbox`**: Concrete implementation. Stores messages as JSON files under `KOSMOS_AGENT_MAILBOX_ROOT/<session_id>/<sender_id>/`. At-least-once delivery via fsync.
+- **`FileMailbox`**: Concrete implementation. Stores messages as JSON files under `KOSAX_AGENT_MAILBOX_ROOT/<session_id>/<sender_id>/`. At-least-once delivery via fsync.
 - **`ConsentGateway`** (abstract): `async request_consent(tool_id: str, correlation_id: UUID) -> bool`. Stub implementation returns `True`. Real implementation is #287.
 
 ---
@@ -194,10 +194,10 @@ The coordinator and workers emit OpenTelemetry spans that are compatible with th
 - **SC-003**: `asyncio.CancelledError` propagates from the coordinator to all in-flight workers within 500 ms on local loopback (measured by wall-clock timer in the cancellation integration test).
 - **SC-004**: A worker that receives `LookupError(reason="auth_required")` triggers the full permission delegation chain (worker → coordinator → consent stub → coordinator → worker) and completes without lateral permission sharing (asserted by inspecting per-worker mailbox queues after the test run).
 - **SC-005**: The file-based mailbox survives a simulated mid-session process termination: pre-written result messages on disk are replayed in per-sender FIFO order on coordinator restart (crash-replay integration test green).
-- **SC-006**: `gen_ai.agent.coordinator.phase`, `gen_ai.agent.worker.iteration`, and `gen_ai.agent.mailbox.message` spans appear in the recording exporter output with all required attributes present (no missing `kosmos.agent.*` attributes).
+- **SC-006**: `gen_ai.agent.coordinator.phase`, `gen_ai.agent.worker.iteration`, and `gen_ai.agent.mailbox.message` spans appear in the recording exporter output with all required attributes present (no missing `kosax.agent.*` attributes).
 - **SC-007**: The Phase 1 single-agent flow (`role="solo"`) is unaffected — the existing `QueryEngine` integration tests remain green after this epic is merged.
 - **SC-008**: No `print()` calls, no `Any` on public model fields, no hardcoded paths, and no new runtime dependencies beyond those already declared in `pyproject.toml` appear in the merged diff.
-- **SC-009**: All four `KOSMOS_AGENT_*` env vars are listed in `docs/configuration.md` before the PR is merged.
+- **SC-009**: All four `KOSAX_AGENT_*` env vars are listed in `docs/configuration.md` before the PR is merged.
 - **SC-010**: Zero live `data.go.kr` API calls are made during the full CI test run (verified by fixture tape inspection).
 
 ---
@@ -206,11 +206,11 @@ The coordinator and workers emit OpenTelemetry spans that are compatible with th
 
 - Epic #507 (2-tool facade: `lookup` + `resolve_location` + 4 seed adapters) is merged and stable before implementation of this epic begins.
 - Epic #468 (env-var registry) is either merged or its `docs/configuration.md` section is open for additive edits when this epic lands.
-- Epic #501 (observability boundary table) is either merged or its attribute boundary table is available in draft form so that the `kosmos.agent.*` attribute names declared here can be submitted before any collector deploys.
+- Epic #501 (observability boundary table) is either merged or its attribute boundary table is available in draft form so that the `kosax.agent.*` attribute names declared here can be submitted before any collector deploys.
 - The FriendliAI K-EXAONE endpoint supports independent LLM clients for each coordinator and worker without additional provisioning (each `LLMClient` instance uses the per-session semaphore from #019; no new concurrency infrastructure is needed).
 - Ministry specialist system prompts (#14) are not required for this epic's integration tests — workers operate with a generic "specialist" system prompt stub that exercises the tool loop without ministry-specific intent.
-- The file system where `KOSMOS_AGENT_MAILBOX_ROOT` resides supports POSIX fsync semantics (macOS and Linux CI environments both satisfy this).
-- The `AgentContext` model uses `arbitrary_types_allowed=True` to accommodate `LLMClient` and `ToolRegistry` which are not Pydantic models. This follows the precedent set by `QueryContext` in `src/kosmos/engine/models.py`.
+- The file system where `KOSAX_AGENT_MAILBOX_ROOT` resides supports POSIX fsync semantics (macOS and Linux CI environments both satisfy this).
+- The `AgentContext` model uses `arbitrary_types_allowed=True` to accommodate `LLMClient` and `ToolRegistry` which are not Pydantic models. This follows the precedent set by `QueryContext` in `src/kosax/engine/models.py`.
 - No new Python runtime dependencies are introduced. All required primitives (`asyncio`, `uuid`, `datetime`, `pathlib`, `json`) are stdlib. All external imports (`pydantic`, `opentelemetry`, `httpx`) are already declared in `pyproject.toml`.
 
 ---
@@ -236,4 +236,4 @@ The coordinator and workers emit OpenTelemetry spans that are compatible with th
 | Account-wide LLM rate-limit orchestration across coordinator + N workers | Per-session semaphore from #019 is sufficient for Phase 2; account-wide budget is Layer 6 | Epic #21 / Layer 6 Error Recovery | NEEDS TRACKING |
 | Scenario graph / multi-turn planning above the coordinator | Scenario-level orchestration is a layer above the coordinator and depends on this substrate landing first | Scenario Graph epic | NEEDS TRACKING |
 | Agent-to-agent handoff (worker delegates to a peer worker) | Flat dispatch is the Phase 2 model; handoff patterns are Phase 3 multi-coordinator | Phase 3 | NEEDS TRACKING |
-| Formal observability attribute registration with OTel upstream | `kosmos.agent.*` attributes are KOSMOS-internal extensions; upstream registration is a post-Phase-2 contribution | Phase 3 / OSS contribution | NEEDS TRACKING |
+| Formal observability attribute registration with OTel upstream | `kosax.agent.*` attributes are KOSAX-internal extensions; upstream registration is a post-Phase-2 contribution | Phase 3 / OSS contribution | NEEDS TRACKING |

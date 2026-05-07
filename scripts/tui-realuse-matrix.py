@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Run the KOSMOS real-use TUI scenario matrix."""
+"""Run the KOSAX real-use TUI scenario matrix."""
 
 from __future__ import annotations
 
@@ -103,22 +103,22 @@ def build_scenario_env(scenario: Scenario, out_dir: Path) -> dict[str, str]:
     env = os.environ.copy()
     env.update(
         {
-            "KOSMOS_REALUSE_PROMPT": scenario.prompt_ko,
-            "KOSMOS_REALUSE_OBSERVE_REGEX": scenario.observe_regex,
-            "KOSMOS_REALUSE_EXPAND": "1" if scenario.expand else "0",
-            "KOSMOS_PTY_SAMPLE_FRAMES": env.get("KOSMOS_PTY_SAMPLE_FRAMES", "1"),
-            "KOSMOS_BACKEND_LOG_FILE": str(resolved_out_dir / "backend.log"),
-            "KOSMOS_CHAT_REQUEST_DUMP": env.get("KOSMOS_CHAT_REQUEST_DUMP", "1"),
+            "KOSAX_REALUSE_PROMPT": scenario.prompt_ko,
+            "KOSAX_REALUSE_OBSERVE_REGEX": scenario.observe_regex,
+            "KOSAX_REALUSE_EXPAND": "1" if scenario.expand else "0",
+            "KOSAX_PTY_SAMPLE_FRAMES": env.get("KOSAX_PTY_SAMPLE_FRAMES", "1"),
+            "KOSAX_BACKEND_LOG_FILE": str(resolved_out_dir / "backend.log"),
+            "KOSAX_CHAT_REQUEST_DUMP": env.get("KOSAX_CHAT_REQUEST_DUMP", "1"),
         }
     )
     optional_values = {
-        "KOSMOS_REALUSE_DECISION_PATH": scenario.decision_path,
-        "KOSMOS_REALUSE_DECISION_FEEDBACK": scenario.decision_feedback,
-        "KOSMOS_REALUSE_DECISION_READY_REGEX": scenario.decision_ready_regex,
-        "KOSMOS_REALUSE_AFTER_DECISION_TIMEOUT_SEC": scenario.after_decision_timeout_sec,
-        "KOSMOS_REALUSE_AFTER_DECISION_REGEX": scenario.after_decision_regex,
-        "KOSMOS_REALUSE_RESULT_REGEX": scenario.result_regex,
-        "KOSMOS_REALUSE_FINAL_REGEX": scenario.final_regex,
+        "KOSAX_REALUSE_DECISION_PATH": scenario.decision_path,
+        "KOSAX_REALUSE_DECISION_FEEDBACK": scenario.decision_feedback,
+        "KOSAX_REALUSE_DECISION_READY_REGEX": scenario.decision_ready_regex,
+        "KOSAX_REALUSE_AFTER_DECISION_TIMEOUT_SEC": scenario.after_decision_timeout_sec,
+        "KOSAX_REALUSE_AFTER_DECISION_REGEX": scenario.after_decision_regex,
+        "KOSAX_REALUSE_RESULT_REGEX": scenario.result_regex,
+        "KOSAX_REALUSE_FINAL_REGEX": scenario.final_regex,
     }
     env.update({key: value for key, value in optional_values.items() if value})
     return env

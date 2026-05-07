@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — ResolveLocationPrimitive.
+// KOSAX-original — ResolveLocationPrimitive.
 //
 // LLM-visible tool name: "resolve_location"
-// Primitive wrapper over Spec 031 kosmos.tools.resolve_location.
+// Primitive wrapper over Spec 031 kosax.tools.resolve_location.
 
 import React from 'react'
 import { z } from 'zod/v4'
@@ -20,7 +20,7 @@ import {
   renderVerboseInputJson,
   renderVerboseOutputJson,
 } from '../_shared/verboseRender.js'
-import { getOrCreateKosmosBridge } from '../../ipc/bridgeSingleton.js'
+import { getOrCreateKosaxBridge } from '../../ipc/bridgeSingleton.js'
 import { getOrCreatePendingCallRegistry } from '../../ipc/pendingCallSingleton.js'
 
 const WANT_VALUES = [
@@ -229,7 +229,7 @@ export const ResolveLocationPrimitive = buildTool({
       args: input as Record<string, unknown>,
       context,
       registry: getOrCreatePendingCallRegistry(),
-      bridge: getOrCreateKosmosBridge(),
+      bridge: getOrCreateKosaxBridge(),
     })
   },
 } satisfies ToolDef<InputSchema, Output>)

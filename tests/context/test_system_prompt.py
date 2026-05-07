@@ -11,9 +11,9 @@ Covers:
 
 from __future__ import annotations
 
-from kosmos.context.builder import ContextBuilder
-from kosmos.context.models import SystemPromptConfig
-from kosmos.context.system_prompt import SystemPromptAssembler
+from kosax.context.builder import ContextBuilder
+from kosax.context.models import SystemPromptConfig
+from kosax.context.system_prompt import SystemPromptAssembler
 
 
 class TestSystemPromptAssembler:
@@ -21,9 +21,9 @@ class TestSystemPromptAssembler:
         return SystemPromptAssembler()
 
     def test_contains_platform_identity(self) -> None:
-        cfg = SystemPromptConfig(platform_name="KOSMOS")
+        cfg = SystemPromptConfig(platform_name="KOSAX")
         result = self._assembler().assemble(cfg)
-        assert "KOSMOS" in result
+        assert "KOSAX" in result
         # Epic #2152 R1 — citizen-domain framing in Korean prose.
         assert "공공" in result and "시민" in result
 

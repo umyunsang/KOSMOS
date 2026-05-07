@@ -34,4 +34,4 @@
 - Items marked incomplete require spec updates before `/speckit.clarify` or `/speckit.plan`.
 - Validation iteration 1: all checklist items pass on first draft.
 - One conditional deferred item (`표본 50 개 → 100 개 확장`) carries `NEEDS TRACKING` because it is conditional on first-sample outcome; if first audit closes cleanly the item is dropped, otherwise `/speckit-taskstoissues` resolves the tracker.
-- Spec deliberately treats the audit document as the user-facing artefact; "users" here are KOSMOS Lead + downstream Epic teams, not end users — appropriate for an internal audit Epic.
+- Spec deliberately treats the audit document as the user-facing artefact; "users" here are KOSAX Lead + downstream Epic teams, not end users — appropriate for an internal audit Epic.

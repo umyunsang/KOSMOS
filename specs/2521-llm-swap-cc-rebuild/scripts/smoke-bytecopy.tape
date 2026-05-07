@@ -5,7 +5,7 @@
 # scenario emitting LLM-reviewable PNG keyframes.
 #
 # This scenario captures three canonical keyframes:
-#   1-boot       — KOSMOS branding paints (post-boot, pre-input)
+#   1-boot       — KOSAX branding paints (post-boot, pre-input)
 #   2-help       — /help slash command surface renders
 #   3-question   — citizen prompt input echo (no module-load crash)
 #
@@ -22,7 +22,7 @@ Set TypingSpeed 60ms
 Type "cd tui && bun run tui"
 Enter
 # Allow Ink the time it actually needs to negotiate raw-mode + paint the
-# initial KOSMOS REPL frame. PR #2577's tape used 7s here; this scenario
+# initial KOSAX REPL frame. PR #2577's tape used 7s here; this scenario
 # follows the same convention so the keyframe captures the rendered UI
 # rather than the bare boot log.
 Sleep 12s

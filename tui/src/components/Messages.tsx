@@ -377,7 +377,7 @@ const MessagesImpl = ({
   const {
     columns
   } = useTerminalSize();
-  useFrameCommitTracker(conversationId); // [Phase4] kosmos.tui.frame_commit OTEL event per Ink reconcile
+  useFrameCommitTracker(conversationId); // [Phase4] kosax.tui.frame_commit OTEL event per Ink reconcile
   const toggleShowAllShortcut = useShortcutDisplay('transcript:toggleShowAll', 'Transcript', 'Ctrl+E');
   const normalizedMessages = useMemo(() => normalizeMessages(messages).filter(isNotEmptyMessage), [messages]);
 

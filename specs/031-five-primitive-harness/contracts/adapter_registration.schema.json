@@ -35,7 +35,7 @@
     },
     "module_path": {
       "type": "string",
-      "description": "Dotted Python module path, e.g. kosmos.tools.mock.data_go_kr.fines_pay."
+      "description": "Dotted Python module path, e.g. kosax.tools.mock.data_go_kr.fines_pay."
     },
     "input_model_ref": {
       "type": "string",

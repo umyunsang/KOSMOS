@@ -17,14 +17,14 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from kosmos.agents.coordinator import Coordinator
-from kosmos.agents.mailbox.messages import (
+from kosax.agents.coordinator import Coordinator
+from kosax.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     ResultPayload,
 )
-from kosmos.agents.plan import CoordinatorPlan, ExecutionMode, PlanStatus, PlanStep
-from kosmos.tools.models import LookupMeta, LookupRecord
+from kosax.agents.plan import CoordinatorPlan, ExecutionMode, PlanStatus, PlanStep
+from kosax.tools.models import LookupMeta, LookupRecord
 from tests.agents.conftest import StubLLMClient, build_test_registry
 
 
@@ -220,7 +220,7 @@ async def test_spawn_worker_generates_unique_ids() -> None:
 @pytest.mark.asyncio
 async def test_spawn_worker_empty_role_raises() -> None:
     """T024: spawn_worker with empty role raises AgentConfigurationError."""
-    from kosmos.agents.errors import AgentConfigurationError
+    from kosax.agents.errors import AgentConfigurationError
 
     llm = StubLLMClient(responses=[])
     mailbox = _InMemoryMailbox()

@@ -2,16 +2,16 @@
 // Spec 1635 P4 UI L2 — T070 /history command (FR-033, US5).
 //
 // 3-filter session history search with AND composition.
-// Emits kosmos.ui.surface=history (FR-037).
+// Emits kosax.ui.surface=history (FR-037).
 //
-// Session data is loaded from ~/.kosmos/memdir/user/sessions/ (Spec 027).
+// Session data is loaded from ~/.kosax/memdir/user/sessions/ (Spec 027).
 // Each JSONL file is a session; the command enumerates them and builds
 // SessionHistoryEntry objects for HistorySearchDialog.
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { emitSurfaceActivation } from '../observability/surface.js';
-import { getKosmosSessionsDir } from '../utils/kosmosPaths.js';
+import { getKosaxSessionsDir } from '../utils/kosaxPaths.js';
 import {
   applyHistoryFilters,
   type HistorySearchFilters,
@@ -19,7 +19,7 @@ import {
 } from '../components/history/HistorySearchDialog.js';
 
 /**
- * Sentinel value written as the first line of KOSMOS JSONL session files by
+ * Sentinel value written as the first line of KOSAX JSONL session files by
  * the file-history compactor.  Must be skipped before parsing session entries.
  *
  * Format (literal string prefix): `file-history-snapshot`
@@ -65,7 +65,7 @@ function collectAllSessionJsonl(sessionsDirPath: string): Array<{ filePath: stri
     catch { continue; }
 
     if (st.isDirectory()) {
-      // Sanitized-cwd subdirectory (e.g. `-Users-um-yunsang-KOSMOS-tui/`).
+      // Sanitized-cwd subdirectory (e.g. `-Users-um-yunsang-KOSAX-tui/`).
       // Walk one level only — CC project dirs are flat.
       let subFiles: string[];
       try { subFiles = readdirSync(fullPath); }
@@ -91,8 +91,8 @@ function collectAllSessionJsonl(sessionsDirPath: string): Array<{ filePath: stri
 
 function loadSessionEntries(): SessionHistoryEntry[] {
   const entries: SessionHistoryEntry[] = [];
-  // Resolved lazily so KOSMOS_MEMDIR_USER overrides (tests/env) are respected.
-  const sessionsDir = getKosmosSessionsDir();
+  // Resolved lazily so KOSAX_MEMDIR_USER overrides (tests/env) are respected.
+  const sessionsDir = getKosaxSessionsDir();
   const sessionsDirPath = join(sessionsDir);
 
   // Audit-7 P0-4 fix: walk root + sanitized-cwd subdirectories.
@@ -126,7 +126,7 @@ function loadSessionEntries(): SessionHistoryEntry[] {
       // Audit-7 P0-4 stub filter: skip metadata-only stub files (1 JSON line
       // with entry_type='metadata' AND message_count=0). These were created
       // by the pre-lazy IPC boot before the create_session lazy fix landed.
-      // Render `kosmos session gc-stubs` would purge them — until then we
+      // Render `kosax session gc-stubs` would purge them — until then we
       // hide them from /history so the citizen sees only real sessions.
       const data = header['data'] as Record<string, unknown> | undefined;
       if (
@@ -243,7 +243,7 @@ export type HistoryCommandResult = {
 /**
  * Execute the /history command with optional pre-applied filters.
  *
- * Emits `kosmos.ui.surface=history` (FR-037).
+ * Emits `kosax.ui.surface=history` (FR-037).
  *
  * @param args  Raw arguments string (e.g. "--date 2026-04-01..2026-04-25 --layer 2")
  */

@@ -1,7 +1,7 @@
 """T009 — PromptLoader fail-closed tests (R1, R2, R3).
 
 Uses the shared `valid_prompt_tree` fixture from tests/context/conftest.py.
-All tests are intentionally RED until src/kosmos/context/prompt_loader.py exists (T025).
+All tests are intentionally RED until src/kosax/context/prompt_loader.py exists (T025).
 
 Fixture note: `valid_prompt_tree` is defined in conftest.py and returns the
 Path to prompts/manifest.yaml inside a fresh tmp_path per test.
@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.context.prompt_loader import (  # noqa: F401 — RED import
+from kosax.context.prompt_loader import (  # noqa: F401 — RED import
     PromptLoader,
     PromptRegistryError,
 )

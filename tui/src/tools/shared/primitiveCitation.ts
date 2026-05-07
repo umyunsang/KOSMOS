@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Epic γ #2294 · T003 · primitive citation helper.
 //
-// KOSMOS does not invent permission language. Every primitive call routed to
+// KOSAX does not invent permission language. Every primitive call routed to
 // an adapter MUST surface the agency's published policy URL + authority
 // verbatim. This helper centralises the extraction so adapter-backed primitives stay
 // uniform and the boot guard (T004) can verify presence in one place.
@@ -48,7 +48,7 @@ export type AdapterWithPolicy = {
  * `AdapterRealDomainPolicy` metadata.
  *
  * Returns `null` when either citation field is empty — the caller MUST fail
- * closed and surface `PrimitiveErrorCode.CitationMissing`. KOSMOS never
+ * closed and surface `PrimitiveErrorCode.CitationMissing`. KOSAX never
  * fabricates a citation.
  */
 export function extractCitation(

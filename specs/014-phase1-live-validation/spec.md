@@ -25,7 +25,7 @@ A developer runs the live test suite to validate that all Phase 1 adapters, the 
 
 **Acceptance Scenarios**:
 
-1. **Given** valid `KOSMOS_FRIENDLI_TOKEN`, `KOSMOS_DATA_GO_KR_API_KEY`, and `KOSMOS_KOROAD_API_KEY` environment variables are set, **When** the developer runs `uv run pytest -m live`, **Then** all live-marked tests pass with real API responses. If any external API is unreachable, tests fail (not skip) to prevent false green results.
+1. **Given** valid `KOSAX_FRIENDLI_TOKEN`, `KOSAX_DATA_GO_KR_API_KEY`, and `KOSAX_KOROAD_API_KEY` environment variables are set, **When** the developer runs `uv run pytest -m live`, **Then** all live-marked tests pass with real API responses. If any external API is unreachable, tests fail (not skip) to prevent false green results.
 2. **Given** the KOROAD adapter is tested against the live API, **When** a valid `sido_code` and `accident_type` are provided, **Then** the adapter returns structured accident hotspot data matching the Pydantic output schema.
 3. **Given** the KMA weather alert adapter is tested against the live API, **When** a request is made, **Then** the adapter returns structured alert data (or an empty list if no active alerts) without errors.
 4. **Given** the KMA current observation adapter is tested against the live API with valid grid coordinates, **When** a request is made for recent data, **Then** the adapter returns observation data with expected field structure.
@@ -35,7 +35,7 @@ A developer runs the live test suite to validate that all Phase 1 adapters, the 
 
 ### User Story 2 - End-to-End CLI Scenario 1 Conversation (Priority: P1)
 
-A user launches the KOSMOS CLI and conducts a Scenario 1 conversation ("safe route recommendation") using real K-EXAONE for reasoning and real data.go.kr/KOROAD APIs for data, verifying the full pipeline from user input through tool execution to Korean-language response.
+A user launches the KOSAX CLI and conducts a Scenario 1 conversation ("safe route recommendation") using real K-EXAONE for reasoning and real data.go.kr/KOROAD APIs for data, verifying the full pipeline from user input through tool execution to Korean-language response.
 
 **Why this priority**: Individual adapter tests confirm component-level correctness, but only a full end-to-end flow verifies that the QueryEngine, ToolExecutor, RecoveryExecutor, ContextBuilder, and LLM client orchestrate correctly together with real external services.
 
@@ -43,7 +43,7 @@ A user launches the KOSMOS CLI and conducts a Scenario 1 conversation ("safe rou
 
 **Acceptance Scenarios**:
 
-1. **Given** the KOSMOS CLI is started with valid credentials, **When** the user sends "내일 부산에서 서울 가는데, 안전한 경로 추천해줘", **Then** the system issues tool calls to KOROAD and KMA adapters, computes a road risk score, and returns a Korean route recommendation based on real data. Automated validation confirms tool calls and data fields; manual review confirms response coherence.
+1. **Given** the KOSAX CLI is started with valid credentials, **When** the user sends "내일 부산에서 서울 가는데, 안전한 경로 추천해줘", **Then** the system issues tool calls to KOROAD and KMA adapters, computes a road risk score, and returns a Korean route recommendation based on real data. Automated validation confirms tool calls and data fields; manual review confirms response coherence.
 2. **Given** the user has received an initial route recommendation, **When** the user sends a follow-up "대전-천안 구간 사고 이력 더 자세히 알려줘", **Then** the system maintains conversation context and issues additional tool calls to provide detailed accident history.
 3. **Given** the system is streaming a response, **When** the user presses Ctrl+C, **Then** the streaming cancels cleanly and the terminal state is restored without corruption.
 
@@ -139,7 +139,7 @@ A developer verifies that stateful components (RateLimiter, CircuitBreaker, Usag
 
 ## Assumptions
 
-- Valid API credentials (KOSMOS_FRIENDLI_TOKEN, KOSMOS_DATA_GO_KR_API_KEY, KOSMOS_KOROAD_API_KEY) are available and have sufficient quota for testing.
+- Valid API credentials (KOSAX_FRIENDLI_TOKEN, KOSAX_DATA_GO_KR_API_KEY, KOSAX_KOROAD_API_KEY) are available and have sufficient quota for testing.
 - The FriendliAI K-EXAONE serverless endpoint is operational and accepts the configured model ID.
 - data.go.kr and KOROAD portal APIs are available and responding within normal latency ranges during test execution.
 - The existing mock-based test suite (847+ tests) passes as a precondition before any live validation work begins.

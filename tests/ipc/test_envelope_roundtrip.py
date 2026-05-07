@@ -15,8 +15,8 @@ import json
 import pytest
 from pydantic import TypeAdapter, ValidationError
 
-from kosmos.ipc.envelope import emit_ndjson, parse_ndjson_line
-from kosmos.ipc.frame_schema import (
+from kosax.ipc.envelope import emit_ndjson, parse_ndjson_line
+from kosax.ipc.frame_schema import (
     AssistantChunkFrame,
     BackpressureSignalFrame,
     ChatMessage,

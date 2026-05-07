@@ -2,7 +2,7 @@
 
 exports[`MinistryScopeStep — initial render (all opted in) renders all four ministries with Korean names + English codes 1`] = `
 " 부처 API 사용 동의 (v1)
- KOSMOS가 호출할 수 있는 공개 API 부처를 선택하세요.
+ KOSAX가 호출할 수 있는 공개 API 부처를 선택하세요.
 
  [선택] ▶ ☑ 한국도로공사 (KOROAD) — 교통사고 잦은 곳, 도로 안전 정보
          ☑ 기상청 (KMA) — 기상 예보, 특보, 실황
@@ -14,7 +14,7 @@ exports[`MinistryScopeStep — initial render (all opted in) renders all four mi
 
 exports[`MinistryScopeStep — partial opt-in (KOROAD+KMA) renders mixed toggle state 1`] = `
 " 부처 API 사용 동의 (v1)
- KOSMOS가 호출할 수 있는 공개 API 부처를 선택하세요.
+ KOSAX가 호출할 수 있는 공개 API 부처를 선택하세요.
 
  [선택] ▶ ☑ 한국도로공사 (KOROAD) — 교통사고 잦은 곳, 도로 안전 정보
          ☑ 기상청 (KMA) — 기상 예보, 특보, 실황
@@ -26,7 +26,7 @@ exports[`MinistryScopeStep — partial opt-in (KOROAD+KMA) renders mixed toggle 
 
 exports[`MinistryScopeStep — all declined renders all four rows declined 1`] = `
 " 부처 API 사용 동의 (v1)
- KOSMOS가 호출할 수 있는 공개 API 부처를 선택하세요.
+ KOSAX가 호출할 수 있는 공개 API 부처를 선택하세요.
 
  [선택] ▶ ☐ 한국도로공사 (KOROAD) — 교통사고 잦은 곳, 도로 안전 정보
          ☐ 기상청 (KMA) — 기상 예보, 특보, 실황

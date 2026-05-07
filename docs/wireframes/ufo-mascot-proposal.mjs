@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS UFO 마스코트 · CC Clawd 기법 그대로
+// KOSAX UFO 마스코트 · CC Clawd 기법 그대로
 //
 // CC Clawd.tsx L34-63 POSES 구조를 그대로 따옴:
 //   · r1 (row 1): 좁은 돔 — bg-filled cockpit with eye-window cutouts
@@ -18,7 +18,7 @@ import { h, Box, Text, C, Divider } from './_shared.mjs'
 // ══ 팔레트 ═══════════════════════════════════════════════════════════════
 
 const PALETTES = {
-  teal:   { body: '#4fd1c5', background: '#134e4a', name: '청록 (kosmosCore)' },
+  teal:   { body: '#4fd1c5', background: '#134e4a', name: '청록 (kosaxCore)' },
   violet: { body: '#a78bfa', background: '#4c1d95', name: '보라 (우주)' },
   star:   { body: '#fbbf24', background: '#78350f', name: '별빛 (금)' },
   sky:    { body: '#7dd3fc', background: '#0c4a6e', name: '하늘 (UFO)' },
@@ -104,11 +104,11 @@ function Splash({ pose, palette }) {
     ),
     h(Box, { flexDirection: 'column' },
       h(Text, null,
-        h(Text, { bold: true }, 'KOSMOS '),
+        h(Text, { bold: true }, 'KOSAX '),
         h(Text, { color: C.subtle }, 'v0.1-alpha'),
       ),
       h(Text, { color: C.subtle }, 'K-EXAONE · FriendliAI'),
-      h(Text, { color: C.dim, dimColor: true }, '~/KOSMOS/tui'),
+      h(Text, { color: C.dim, dimColor: true }, '~/KOSAX/tui'),
     ),
   )
 }
@@ -141,14 +141,14 @@ function PaletteBlock({ paletteKey }) {
 function App() {
   return h(Box, { flexDirection: 'column' },
     h(Text, { bold: true, color: C.brand },
-      'KOSMOS UFO 마스코트 · CC Clawd 기법 (bg-fill) 이식'),
+      'KOSAX UFO 마스코트 · CC Clawd 기법 (bg-fill) 이식'),
     h(Text, { color: C.subtle },
       '3-row 구조: 돔(좁음) → 접시(넓음) → 착륙 라이트 · 4-pose'),
 
     h(Divider, { label: 'Sky 팔레트 (UFO 대표)' }),
     h(PaletteBlock, { paletteKey: 'sky' }),
 
-    h(Divider, { label: 'Teal 팔레트 (KOSMOS 기본)' }),
+    h(Divider, { label: 'Teal 팔레트 (KOSAX 기본)' }),
     h(PaletteBlock, { paletteKey: 'teal' }),
 
     h(Divider, { label: 'Violet 팔레트 (우주)' }),

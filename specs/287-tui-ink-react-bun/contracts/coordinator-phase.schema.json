@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosmos.dev/schemas/spec-287/coordinator-phase.schema.json",
+  "$id": "https://kosax.dev/schemas/spec-287/coordinator-phase.schema.json",
   "title": "CoordinatorPhaseFrame",
   "description": "backend → TUI: Spec 027 coordinator phase update. Direction: backend → TUI. Rendering MUST NOT disrupt an active streaming message (FR-043).",
   "type": "object",

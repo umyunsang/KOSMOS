@@ -1,6 +1,6 @@
 # Quickstart — IPC stdio hardening (Spec 032)
 
-**Audience**: KOSMOS developers validating Spec 032 end-to-end before merge.
+**Audience**: KOSAX developers validating Spec 032 end-to-end before merge.
 **Prerequisites**: `uv sync` complete, `tui/` bun deps installed, no `.env` tampering.
 **Time budget**: ~15 minutes on a modern laptop.
 
@@ -11,7 +11,7 @@
 ## 0. Environment sanity
 
 ```bash
-cd /Users/um-yunsang/KOSMOS
+cd /Users/um-yunsang/KOSAX
 uv sync
 cd tui && bun install && cd ..
 uv run pytest tests/ipc/ -q   # baseline: existing Spec 031 tests pass
@@ -29,7 +29,7 @@ Expected: all existing IPC tests (`tests/ipc/test_frame_schema.py`, etc.) stay g
 
 ```bash
 uv run python -c "
-from kosmos.ipc.frame_schema import ipc_frame_json_schema
+from kosax.ipc.frame_schema import ipc_frame_json_schema
 import json
 print(json.dumps(ipc_frame_json_schema(), indent=2, sort_keys=True))
 " > /tmp/frame.schema.actual.json
@@ -46,7 +46,7 @@ uv run python - <<'PY'
 import json
 from datetime import datetime, timezone
 from uuid import uuid4
-from kosmos.ipc.frame_schema import UserInputFrame
+from kosax.ipc.frame_schema import UserInputFrame
 
 f = UserInputFrame(
     version="1.0",
@@ -72,11 +72,11 @@ Expected: one NDJSON line, well-formed, with `"version":"1.0"` + `"role":"tui"` 
 ### 2.1 Boot the synthetic backend
 
 ```bash
-uv run python -m kosmos.ipc.demo.session_backend --session-id s-demo &
+uv run python -m kosax.ipc.demo.session_backend --session-id s-demo &
 BACKEND=$!
 ```
 
-(The synthetic backend is a Spec 032 test harness under `src/kosmos/ipc/demo/` — it drives a single session through a scripted frame sequence.)
+(The synthetic backend is a Spec 032 test harness under `src/kosax/ipc/demo/` — it drives a single session through a scripted frame sequence.)
 
 ### 2.2 Drive a TUI that survives a kill-9
 
@@ -110,7 +110,7 @@ kill $BACKEND
 ### 3.1 Fire a synthetic 429 from the mock ministry server
 
 ```bash
-uv run python -m kosmos.ipc.demo.upstream_429_probe --retry-after 15
+uv run python -m kosax.ipc.demo.upstream_429_probe --retry-after 15
 ```
 
 Expected one-line output (pretty-printed):
@@ -144,7 +144,7 @@ Expected: terminal shows a banner reading **"부처 API가 혼잡합니다. 15�
 ### 4.1 Register a fake irreversible tool
 
 ```bash
-uv run python -m kosmos.ipc.demo.register_irreversible_fixture  # seeds AdapterRegistration
+uv run python -m kosax.ipc.demo.register_irreversible_fixture  # seeds AdapterRegistration
 ```
 
 ### 4.2 Double-submit the same transaction_id
@@ -166,7 +166,7 @@ Expected:
 uv run pytest tests/ipc/test_tx_dedup.py::test_cache_state_span_attribute -q
 ```
 
-Expected: span for second call has attribute `kosmos.ipc.tx.cache_state = "hit"`.
+Expected: span for second call has attribute `kosax.ipc.tx.cache_state = "hit"`.
 
 ---
 
@@ -177,7 +177,7 @@ Expected: span for second call has attribute `kosmos.ipc.tx.cache_state = "hit"`
 ### 5.1 Drive a full turn
 
 ```bash
-uv run python -m kosmos.ipc.demo.full_turn_probe --session s-trace > /tmp/trace.ndjson
+uv run python -m kosax.ipc.demo.full_turn_probe --session s-trace > /tmp/trace.ndjson
 ```
 
 ### 5.2 Assert the correlation_id is stable across frames
@@ -194,7 +194,7 @@ Expected output: `1` — exactly one correlation_id threads through `user_input 
 uv run pytest tests/ipc/test_otel_correlation.py -q
 ```
 
-Expected: every span in the turn has `kosmos.ipc.correlation_id` set to the same UUIDv7 value.
+Expected: every span in the turn has `kosax.ipc.correlation_id` set to the same UUIDv7 value.
 
 ---
 
@@ -226,7 +226,7 @@ If the branch must be abandoned, `git checkout main && git branch -D 032-ipc-std
 | Symptom                                                                  | Likely cause                                                                        | Fix                                                                 |
 | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | `diff` in Scenario 1.1 reports `version` or `role` missing                | Pydantic model not rebuilt                                                          | Ensure all arms inherit extended `_BaseFrame`; re-run test.         |
-| `resume_rejected(reason="ring_evicted")` in Scenario 2                   | `--after-frames > 256`; ring overflowed during idle                                 | Use smaller value or increase `KOSMOS_IPC_RING_SIZE`.               |
+| `resume_rejected(reason="ring_evicted")` in Scenario 2                   | `--after-frames > 256`; ring overflowed during idle                                 | Use smaller value or increase `KOSAX_IPC_RING_SIZE`.               |
 | `throttle` frame missing `retry_after_ms`                                | Adapter forgot to parse `Retry-After`                                               | Add `clamp(retry_after_ms, 1000, 900000)` in adapter.               |
 | `test_double_submit_hits_cache` fails with two distinct `receipt_id`      | LRU not pinning `is_irreversible=true`                                             | Check `AdapterRegistration.is_irreversible` fixture.                |
 | `correlation_id` drift across frames                                     | Emitter forgot to propagate from originating `user_input`                          | Wire emission through `RunContext.correlation_id`.                  |

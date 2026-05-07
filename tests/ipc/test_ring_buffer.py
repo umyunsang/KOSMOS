@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.ipc.frame_schema import AssistantChunkFrame
-from kosmos.ipc.ring_buffer import SessionRingBuffer
+from kosax.ipc.frame_schema import AssistantChunkFrame
+from kosax.ipc.ring_buffer import SessionRingBuffer
 
 # ---------------------------------------------------------------------------
 # Helpers

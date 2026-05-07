@@ -9,9 +9,9 @@
 
 ### User Story 1 — Mid-query interrupt without losing the session (Priority: P1)
 
-A citizen typing a natural-language question realises partway through the agent's tool-loop execution that they asked the wrong thing ("아, 내가 잘못 말했네"). Today on ministry portals this requires closing the browser tab and re-authenticating with a public certificate (공동인증서). In KOSMOS the citizen presses `ctrl+c` once; the active agent loop aborts, any in-flight tool call is cancelled, the session and authentication state persist, and the citizen can re-ask immediately in the same session.
+A citizen typing a natural-language question realises partway through the agent's tool-loop execution that they asked the wrong thing ("아, 내가 잘못 말했네"). Today on ministry portals this requires closing the browser tab and re-authenticating with a public certificate (공동인증서). In KOSAX the citizen presses `ctrl+c` once; the active agent loop aborts, any in-flight tool call is cancelled, the session and authentication state persist, and the citizen can re-ask immediately in the same session.
 
-**Why this priority**: Without a reliable interrupt, every mistaken query forces the citizen back through PIPA re-consent and AAL authentication. This is a pre-launch blocker — a conversational AX surface without one-key interrupt is functionally worse than the very DX portal flows KOSMOS claims to replace.
+**Why this priority**: Without a reliable interrupt, every mistaken query forces the citizen back through PIPA re-consent and AAL authentication. This is a pre-launch blocker — a conversational AX surface without one-key interrupt is functionally worse than the very DX portal flows KOSAX claims to replace.
 
 **Independent Test**: Start a long-running agent loop (e.g., a multi-step ministry lookup chain), press `ctrl+c` mid-execution, verify the loop exits within 500 ms, the session remains logged in, and the next typed message is accepted normally.
 
@@ -25,7 +25,7 @@ A citizen typing a natural-language question realises partway through the agent'
 
 ### User Story 2 — Clean exit with audit flush (Priority: P1)
 
-A citizen finishes their session and wants to exit. Ministry portals auto-logout silently after 10 minutes; the explicit logout button's location differs per portal. In KOSMOS the citizen presses `ctrl+d` once; the session closes cleanly, all pending audit records are flushed to durable storage, any held consent tokens are marked as session-complete, and the TUI exits with status code 0.
+A citizen finishes their session and wants to exit. Ministry portals auto-logout silently after 10 minutes; the explicit logout button's location differs per portal. In KOSAX the citizen presses `ctrl+d` once; the session closes cleanly, all pending audit records are flushed to durable storage, any held consent tokens are marked as session-complete, and the TUI exits with status code 0.
 
 **Why this priority**: Regulatory — Spec 024 requires every tool call to produce an immutable audit record. An unclean exit that drops in-memory audit buffers is a PIPA §26 compliance failure. Also UX-critical: citizens must have a single, discoverable exit that is impossible to confuse with "cancel this query".
 
@@ -41,7 +41,7 @@ A citizen finishes their session and wants to exit. Ministry portals auto-logout
 
 ### User Story 3 — Cancel draft without breaking Hangul composition (Priority: P1)
 
-A citizen is composing a Korean query. Hangul input builds characters through IME composition ("ㄱ" → "가" → "간" → "간다"). Today on web forms, pressing `escape` mid-composition can commit or drop partial jamo unpredictably, corrupting the message. In KOSMOS, pressing `escape` while the IME is actively composing does nothing (the keystroke is consumed by the IME). Pressing `escape` when the IME is idle clears the input draft.
+A citizen is composing a Korean query. Hangul input builds characters through IME composition ("ㄱ" → "가" → "간" → "간다"). Today on web forms, pressing `escape` mid-composition can commit or drop partial jamo unpredictably, corrupting the message. In KOSAX, pressing `escape` while the IME is actively composing does nothing (the keystroke is consumed by the IME). Pressing `escape` when the IME is idle clears the input draft.
 
 **Why this priority**: Korean composition safety is the single most-likely source of user-visible regression in a keybinding port. Any Tier 1 binding that mutates the buffer without IME gating will produce intermittent, irreproducible character-loss bugs that destroy citizen trust. ADR-005 mandates this rule.
 
@@ -57,7 +57,7 @@ A citizen is composing a Korean query. Hangul input builds characters through IM
 
 ### User Story 4 — Permission mode cycle without leaving the conversation (Priority: P1)
 
-A citizen is asking read-only questions and wants to escalate to an actual action (e.g., submit a form via an adapter). Ministry portals force a redirect to a separate identity-verification page, breaking the conversation. In KOSMOS the citizen presses `shift+tab` to cycle through Permission Modes (Spec 033: `plan` → `default` → `acceptEdits` → `bypassPermissions`); the Permission Mode indicator updates in the status bar, and tool-call gating tightens or loosens per Spec 033's spectrum. Cycling into `bypassPermissions` is blocked when the session has an active irreversible-action flag (e.g., pending 정부24 submission).
+A citizen is asking read-only questions and wants to escalate to an actual action (e.g., submit a form via an adapter). Ministry portals force a redirect to a separate identity-verification page, breaking the conversation. In KOSAX the citizen presses `shift+tab` to cycle through Permission Modes (Spec 033: `plan` → `default` → `acceptEdits` → `bypassPermissions`); the Permission Mode indicator updates in the status bar, and tool-call gating tightens or loosens per Spec 033's spectrum. Cycling into `bypassPermissions` is blocked when the session has an active irreversible-action flag (e.g., pending 정부24 submission).
 
 **Why this priority**: `shift+tab` is the citizen-visible handle on the entire Permission Pipeline v2 (Spec 033). Without it, Permission Modes exist only in config files and CLI flags — inaccessible to the citizen mid-conversation.
 
@@ -74,7 +74,7 @@ A citizen is asking read-only questions and wants to escalate to an actual actio
 
 ### User Story 5 — History prev/next for past queries (Priority: P2)
 
-A citizen wants to re-ask or modify a question they asked earlier in the session (or in a previous session, if the memdir USER tier consent covers persistence). Ministry portals bury "recent inquiries" in different menus per ministry. In KOSMOS, when the input buffer is empty, pressing `up` loads the previous citizen query into the draft; `down` loads the next. When the buffer is non-empty, `up` and `down` pass through to the default buffer behaviour (cursor movement) so typed text is never clobbered.
+A citizen wants to re-ask or modify a question they asked earlier in the session (or in a previous session, if the memdir USER tier consent covers persistence). Ministry portals bury "recent inquiries" in different menus per ministry. In KOSAX, when the input buffer is empty, pressing `up` loads the previous citizen query into the draft; `down` loads the next. When the buffer is non-empty, `up` and `down` pass through to the default buffer behaviour (cursor movement) so typed text is never clobbered.
 
 **Why this priority**: Material UX improvement but not a safety-critical blocker — the session can ship without it (citizens can retype). Priority P2 reflects this.
 
@@ -107,7 +107,7 @@ A citizen remembers they asked something about "부산 응급실" last week but 
 
 ### User Story 7 — Disabling or remapping a binding (Priority: P2)
 
-A citizen uses an assistive device that claims `ctrl+r` for screen-reader reload, or an external keyboard where `shift+tab` is a hardware shortcut. WCAG 2.1.4 (Character Key Shortcuts) requires the citizen be able to turn off or remap any keyboard shortcut. KOSMOS reads a user-override file from `~/.kosmos/keybindings.json` (schema only shipped in this spec; graphical editor deferred). A disabled binding is a no-op; a remapped binding fires on the new key.
+A citizen uses an assistive device that claims `ctrl+r` for screen-reader reload, or an external keyboard where `shift+tab` is a hardware shortcut. WCAG 2.1.4 (Character Key Shortcuts) requires the citizen be able to turn off or remap any keyboard shortcut. KOSAX reads a user-override file from `~/.kosax/keybindings.json` (schema only shipped in this spec; graphical editor deferred). A disabled binding is a no-op; a remapped binding fires on the new key.
 
 **Why this priority**: Regulatory (WCAG 2.1.4) + accessibility inclusivity. Mandatory to ship, but the inline GUI editor is deferred to a later spec; config-file-only remapping is sufficient for this release.
 
@@ -115,7 +115,7 @@ A citizen uses an assistive device that claims `ctrl+r` for screen-reader reload
 
 **Acceptance Scenarios**:
 
-1. **Given** `~/.kosmos/keybindings.json` contains `{"ctrl+r": null}`, **When** `ctrl+r` is pressed, **Then** no action fires.
+1. **Given** `~/.kosax/keybindings.json` contains `{"ctrl+r": null}`, **When** `ctrl+r` is pressed, **Then** no action fires.
 2. **Given** the override file remaps `history-search` from `ctrl+r` to `ctrl+f`, **When** `ctrl+f` is pressed, **Then** the history-search overlay opens.
 3. **Given** an override attempts to remap a reserved binding (e.g., `ctrl+c` interrupt — per ADR-006 treated as safety-critical), **When** the TUI loads, **Then** the remap is rejected with a logged warning and the default binding remains active.
 
@@ -153,7 +153,7 @@ A citizen uses an assistive device that claims `ctrl+r` for screen-reader reload
 
 - **FR-008**: `shift+tab` MUST cycle through the Permission Modes defined by Spec 033's PermissionMode spectrum in the order `plan` → `default` → `acceptEdits` → `bypassPermissions` → `plan` (wrap).
 - **FR-009**: Cycling into `bypassPermissions` MUST be blocked whenever the session has an outstanding irreversible-action flag (e.g., a pending 정부24 submission or any ConsentRecord with `is_irreversible=true` that has not yet been executed). When blocked, the cycle holds at the previous mode and surfaces a citizen-readable notice.
-- **FR-010**: The Permission Mode status indicator in the TUI MUST update within 200 ms of a successful cycle and emit an OTel span attribute `kosmos.permission.mode` on the change.
+- **FR-010**: The Permission Mode status indicator in the TUI MUST update within 200 ms of a successful cycle and emit an OTel span attribute `kosax.permission.mode` on the change.
 - **FR-011**: The backend `ModeCycle.tsx` handler from Spec 033 MUST be the sole authority on permitted transitions; the keybinding layer only forwards the cycle request and renders the result.
 
 #### Session control (ctrl+c, ctrl+d)
@@ -175,7 +175,7 @@ A citizen uses an assistive device that claims `ctrl+r` for screen-reader reload
 
 #### User override schema (WCAG 2.1.4 compliance)
 
-- **FR-023**: The TUI MUST read an optional user-override file at `~/.kosmos/keybindings.json` at startup. Missing or unreadable file MUST degrade silently to defaults.
+- **FR-023**: The TUI MUST read an optional user-override file at `~/.kosax/keybindings.json` at startup. Missing or unreadable file MUST degrade silently to defaults.
 - **FR-024**: A corrupted or schema-invalid override file MUST NOT block startup; the parse error MUST be logged and defaults MUST apply.
 - **FR-025**: An override of `{"<chord>": null}` MUST disable the binding entirely (the chord becomes a no-op).
 - **FR-026**: An override of `{"<new-chord>": "<action-name>"}` MUST remap the action from its default chord to the new one.
@@ -191,13 +191,13 @@ A citizen uses an assistive device that claims `ctrl+r` for screen-reader reload
 
 #### Observability and audit
 
-- **FR-033**: Every successful Tier 1 activation MUST emit an OTel span with attribute `kosmos.tui.binding=<action-name>`; reserved bindings (`agent-interrupt`, `session-exit`) MUST additionally emit an audit record per Spec 024.
-- **FR-034**: Blocked activations (IME gate, Permission Mode block, consent scope) MUST emit a span with `kosmos.tui.binding.blocked.reason=<reason>` for post-hoc analysis; no audit record is emitted for benign blocks (IME still composing is not an audit event).
+- **FR-033**: Every successful Tier 1 activation MUST emit an OTel span with attribute `kosax.tui.binding=<action-name>`; reserved bindings (`agent-interrupt`, `session-exit`) MUST additionally emit an audit record per Spec 024.
+- **FR-034**: Blocked activations (IME gate, Permission Mode block, consent scope) MUST emit a span with `kosax.tui.binding.blocked.reason=<reason>` for post-hoc analysis; no audit record is emitted for benign blocks (IME still composing is not an audit event).
 
 ### Key Entities *(include if feature involves data)*
 
 - **Keybinding Registry Entry**: `{ action_name, default_chord, context, description, remappable, reserved }`. The registry holds these as an immutable in-memory map, rebuilt at TUI startup from `defaultBindings.ts` seed + user override.
-- **User Override File** (`~/.kosmos/keybindings.json`): JSON object mapping chord strings to either `null` (disable) or action names (remap). Schema frozen in this spec; editor UI deferred.
+- **User Override File** (`~/.kosax/keybindings.json`): JSON object mapping chord strings to either `null` (disable) or action names (remap). Schema frozen in this spec; editor UI deferred.
 - **Citizen Query History Entry**: `{ query_text, timestamp, session_id, consent_scope }`. Source of truth is memdir USER tier (when consent granted) or in-memory session state (always). Read-only from this spec's perspective.
 - **Permission Mode State** (Spec 033): `{ current_mode, allowed_transitions, pending_irreversible_action_flags }`. Read-only from this spec; the keybinding layer only forwards cycle requests.
 
@@ -213,7 +213,7 @@ A citizen uses an assistive device that claims `ctrl+r` for screen-reader reload
 - **SC-006**: After clean exit via `ctrl+d`, 100% of audit records produced during the session are present in durable storage (verified by a post-exit inspection of the audit store).
 - **SC-007**: The Tier 1 binding catalogue is discoverable to a citizen using only a screen reader in under 30 seconds from TUI launch (measured by a usability test with a blind participant).
 - **SC-008**: Zero new runtime dependencies are introduced by this spec (AGENTS.md hard rule — the registry, resolver, and IME gate are built with existing `ink` + `react` + Bun stdlib primitives only).
-- **SC-009**: At least 80% of the CC `defaultBindings.ts` binding schema shape (chord string format, action naming convention, context labels) is preserved in the KOSMOS registry to keep future Tier 2/3 ports mechanical.
+- **SC-009**: At least 80% of the CC `defaultBindings.ts` binding schema shape (chord string format, action naming convention, context labels) is preserved in the KOSAX registry to keep future Tier 2/3 ports mechanical.
 
 ## Assumptions
 
@@ -230,9 +230,9 @@ A citizen uses an assistive device that claims `ctrl+r` for screen-reader reload
 
 ### Out of Scope (Permanent)
 
-- **Image paste binding** — KOSMOS is a Korean-public-API harness; citizen queries are text-only. No image-input flow exists in the product vision (`docs/vision.md`).
+- **Image paste binding** — KOSAX is a Korean-public-API harness; citizen queries are text-only. No image-input flow exists in the product vision (`docs/vision.md`).
 - **External editor binding** (`ctrl+e` in CC) — citizens do not edit source files; this is a DX-only affordance.
-- **Model picker binding** (`meta+p` in CC) — KOSMOS uses K-EXAONE via FriendliAI as a single model; no picker surface exists.
+- **Model picker binding** (`meta+p` in CC) — KOSAX uses K-EXAONE via FriendliAI as a single model; no picker surface exists.
 - **Tier 3 killAll binding** (`ctrl+x ctrl+k`) — requires multi-worker supervision surface that the coordinator does not yet expose; and citizens do not multi-task across workers in the current TUI.
 
 ### Deferred to Future Work

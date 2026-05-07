@@ -33,5 +33,5 @@
 
 - Items marked incomplete require spec updates before `/speckit.clarify` or `/speckit.plan`
 - All checklist items pass on first iteration. No clarifications required (Epic body specified the Option A recommendation for FR-008; spec adopts it).
-- The spec adheres to AGENTS.md § Spec-driven workflow Reference source rule by citing all three canonical sources (`docs/vision.md`, `docs/requirements/kosmos-migration-tree.md`, `.references/claude-code-sourcemap/restored-src/`) in the Tracking + Canonical references blocks.
+- The spec adheres to AGENTS.md § Spec-driven workflow Reference source rule by citing all three canonical sources (`docs/vision.md`, `docs/requirements/kosax-migration-tree.md`, `.references/claude-code-sourcemap/restored-src/`) in the Tracking + Canonical references blocks.
 - Sub-issue #2481 closure is FR-026 + SC-011; PR will reference Epic #2297 only via `Closes #2297` per AGENTS.md § PR closing rule.

@@ -1,5 +1,5 @@
 /**
- * KOSMOS Copilot Review Gate — Cloudflare Worker
+ * KOSAX Copilot Review Gate — Cloudflare Worker
  *
  * GitHub App webhook handler that bridges Copilot Code Review (which only
  * leaves PR comments) into a Check Run gate (pass/fail in the Checks tab).
@@ -116,7 +116,7 @@ async function getInstallationToken(
       headers: {
         Authorization: `Bearer ${jwt}`,
         Accept: "application/vnd.github+json",
-        "User-Agent": "kosmos-copilot-gate/1.0",
+        "User-Agent": "kosax-copilot-gate/1.0",
         "X-GitHub-Api-Version": "2022-11-28",
       },
     }
@@ -140,7 +140,7 @@ async function githubApi(
     headers: {
       Authorization: `token ${token}`,
       Accept: "application/vnd.github+json",
-      "User-Agent": "kosmos-copilot-gate/1.0",
+      "User-Agent": "kosax-copilot-gate/1.0",
       "X-GitHub-Api-Version": "2022-11-28",
       ...(body ? { "Content-Type": "application/json" } : {}),
     },
@@ -163,7 +163,7 @@ async function githubGraphQL(
     headers: {
       Authorization: `bearer ${token}`,
       "Content-Type": "application/json",
-      "User-Agent": "kosmos-copilot-gate/1.0",
+      "User-Agent": "kosax-copilot-gate/1.0",
     },
     body: JSON.stringify({ query, variables }),
   });
@@ -674,7 +674,7 @@ async function handleReview(event: ReviewEvent, env: Env): Promise<Response> {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method !== "POST") {
-      return new Response("KOSMOS Copilot Gate is running.", { status: 200 });
+      return new Response("KOSAX Copilot Gate is running.", { status: 200 });
     }
 
     const signature = request.headers.get("x-hub-signature-256");

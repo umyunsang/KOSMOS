@@ -1,6 +1,6 @@
 # VHS Evidence — Citizen-perspective Visual Capture
 
-> Epic [#2077](https://github.com/umyunsang/KOSMOS/issues/2077) · 2026-04-27
+> Epic [#2077](https://github.com/umyunsang/KOSAX/issues/2077) · 2026-04-27
 > T024 deliverable per `quickstart.md § VHS GIF`. The VHS binary (`brew install vhs`) and the running TUI bridge are required for local capture; the templates are committed here for reproducibility.
 
 ## Step 5 — tool_use box paint
@@ -14,9 +14,9 @@ Set Width 1100
 Set Height 700
 Set Padding 16
 Hide
-Type "cd ~/KOSMOS/tui"; Enter; Sleep 200ms
+Type "cd ~/KOSAX/tui"; Enter; Sleep 200ms
 Type "set -a; source ../.env; set +a"; Enter; Sleep 200ms
-Type "export KOSMOS_FORCE_INTERACTIVE=1 OTEL_SDK_DISABLED=true"; Enter; Sleep 200ms
+Type "export KOSAX_FORCE_INTERACTIVE=1 OTEL_SDK_DISABLED=true"; Enter; Sleep 200ms
 Type "clear"; Enter; Sleep 200ms
 Show
 Type "bun run tui"; Enter; Sleep 12s
@@ -45,9 +45,9 @@ Set Width 1100
 Set Height 700
 Set Padding 16
 Hide
-Type "cd ~/KOSMOS/tui"; Enter; Sleep 200ms
+Type "cd ~/KOSAX/tui"; Enter; Sleep 200ms
 Type "set -a; source ../.env; set +a"; Enter; Sleep 200ms
-Type "export KOSMOS_FORCE_INTERACTIVE=1 OTEL_SDK_DISABLED=true"; Enter; Sleep 200ms
+Type "export KOSAX_FORCE_INTERACTIVE=1 OTEL_SDK_DISABLED=true"; Enter; Sleep 200ms
 Type "clear"; Enter; Sleep 200ms
 Show
 Type "bun run tui"; Enter; Sleep 12s

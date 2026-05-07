@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Build JSON Schema files for all registered KOSMOS tool adapters.
+"""Build JSON Schema files for all registered KOSAX tool adapters.
 
 Covers the active registries:
-  1. kosmos.tools.registry.ToolRegistry  — lookup-side tools (14 adapters)
-  2. kosmos.primitives.submit._ADAPTER_REGISTRY  — submit adapters (2 mocks)
-  3. kosmos.primitives.verify._VERIFY_ADAPTERS   — verify adapters (6 mocks)
+  1. kosax.tools.registry.ToolRegistry  — lookup-side tools (14 adapters)
+  2. kosax.primitives.submit._ADAPTER_REGISTRY  — submit adapters (2 mocks)
+  3. kosax.primitives.verify._VERIFY_ADAPTERS   — verify adapters (6 mocks)
 
 Subscribe schemas are intentionally not generated. National notification
-delivery is deferred until KOSMOS has an app/push runtime that can own delivery.
+delivery is deferred until KOSAX has an app/push runtime that can own delivery.
 
 Usage:
     python scripts/build_schemas.py [--check] [--output-dir DIR] [--quiet]
@@ -89,7 +89,7 @@ def _build_schema_payload(
 
     payload: dict[str, object] = {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": f"https://kosmos.example/api/schemas/{tool_id}.json",
+        "$id": f"https://kosax.example/api/schemas/{tool_id}.json",
         "title": tool_id,
     }
     # Merge root-level input schema fields (type, properties, required, etc.)
@@ -114,9 +114,9 @@ def _resolve_model_ref(ref: str) -> type | None:
 
     Two formats are supported:
     - ``module.path:ClassName``  (colon separator, e.g.
-      ``kosmos.primitives.verify:VerifyInput``)
+      ``kosax.primitives.verify:VerifyInput``)
     - ``module.path.ClassName``  (dot separator, e.g.
-      ``kosmos.tools.mock.data_go_kr.fines_pay.FinesPayParams``)
+      ``kosax.tools.mock.data_go_kr.fines_pay.FinesPayParams``)
 
     Returns the class object, or ``None`` if the module/attribute cannot be found.
     """
@@ -136,7 +136,7 @@ def _collect_primitive_adapters() -> list[tuple[str, type, type]]:
     """Collect (tool_id, input_model_class, output_model_class) from active
     primitive registries: submit and verify.
 
-    The caller must have already imported ``kosmos.tools.mock`` (which triggers
+    The caller must have already imported ``kosax.tools.mock`` (which triggers
     all adapter self-registration side-effects) before calling this function.
 
     For verify adapters the tool_id is sourced from the per-module
@@ -154,7 +154,7 @@ def _collect_primitive_adapters() -> list[tuple[str, type, type]]:
     # ------------------------------------------------------------------
     # 1. Submit adapters — _ADAPTER_REGISTRY: dict[tool_id, (reg, fn)]
     # ------------------------------------------------------------------
-    submit_mod = importlib.import_module("kosmos.primitives.submit")
+    submit_mod = importlib.import_module("kosax.primitives.submit")
     submit_output_cls = submit_mod.SubmitOutput
     submit_registry: dict[str, tuple] = getattr(submit_mod, "_ADAPTER_REGISTRY", {})
 
@@ -181,19 +181,19 @@ def _collect_primitive_adapters() -> list[tuple[str, type, type]]:
     #    Per-family tool_id comes from the ADAPTER_REGISTRATION on each mock module.
     #    All six share VerifyInput / VerifyOutput.
     # ------------------------------------------------------------------
-    verify_mod = importlib.import_module("kosmos.primitives.verify")
+    verify_mod = importlib.import_module("kosax.primitives.verify")
     verify_input_cls = verify_mod.VerifyInput
     verify_output_cls = verify_mod.VerifyOutput
     verify_registry: dict[str, object] = getattr(verify_mod, "_VERIFY_ADAPTERS", {})
 
     # Canonical mapping: family key → mock module path
     verify_family_module: dict[str, str] = {
-        "digital_onepass": "kosmos.tools.mock.verify_digital_onepass",
-        "ganpyeon_injeung": "kosmos.tools.mock.verify_ganpyeon_injeung",
-        "geumyung_injeungseo": "kosmos.tools.mock.verify_geumyung_injeungseo",
-        "gongdong_injeungseo": "kosmos.tools.mock.verify_gongdong_injeungseo",
-        "mobile_id": "kosmos.tools.mock.verify_mobile_id",
-        "mydata": "kosmos.tools.mock.verify_mydata",
+        "digital_onepass": "kosax.tools.mock.verify_digital_onepass",
+        "ganpyeon_injeung": "kosax.tools.mock.verify_ganpyeon_injeung",
+        "geumyung_injeungseo": "kosax.tools.mock.verify_geumyung_injeungseo",
+        "gongdong_injeungseo": "kosax.tools.mock.verify_gongdong_injeungseo",
+        "mobile_id": "kosax.tools.mock.verify_mobile_id",
+        "mydata": "kosax.tools.mock.verify_mydata",
     }
 
     for family in verify_registry:
@@ -218,7 +218,7 @@ def _collect_primitive_adapters() -> list[tuple[str, type, type]]:
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="build_schemas",
-        description="Generate JSON Schema files for all registered KOSMOS tool adapters.",
+        description="Generate JSON Schema files for all registered KOSAX tool adapters.",
     )
     parser.add_argument(
         "--check",
@@ -260,7 +260,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
     except FileNotFoundError:
         return 2
 
-    # Insert repo root into sys.path so the kosmos package is importable
+    # Insert repo root into sys.path so the kosax package is importable
     # even when the script is invoked without `uv run` / activated venv.
     src_path = repo_root / "src"
     if src_path.exists() and str(src_path) not in sys.path:
@@ -270,9 +270,9 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
     # 2. Import and populate the registry.
     # ------------------------------------------------------------------
     try:
-        from kosmos.tools.executor import ToolExecutor  # type: ignore[import]
-        from kosmos.tools.register_all import register_all_tools  # type: ignore[import]
-        from kosmos.tools.registry import ToolRegistry  # type: ignore[import]
+        from kosax.tools.executor import ToolExecutor  # type: ignore[import]
+        from kosax.tools.register_all import register_all_tools  # type: ignore[import]
+        from kosax.tools.registry import ToolRegistry  # type: ignore[import]
     except Exception:  # pragma: no cover
         logger.exception("Registry import failed")
         return 2
@@ -308,7 +308,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
 
     # Trigger mock adapter self-registration side effects (submit/verify).
     try:
-        import kosmos.tools.mock  # noqa: F401, PLC0415
+        import kosax.tools.mock  # noqa: F401, PLC0415
     except Exception:  # pragma: no cover
         logger.exception("Mock registry import failed")
         return 2

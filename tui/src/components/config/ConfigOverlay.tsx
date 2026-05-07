@@ -2,7 +2,7 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/components/InvalidConfigDialog.tsx (CC 2.1.88, research-use)
 // Spec 1635 P4 UI L2 — T062 ConfigOverlay (FR-030, US5).
 //
-// Non-secret configuration overlay.  Renders editable non-secret KOSMOS_*
+// Non-secret configuration overlay.  Renders editable non-secret KOSAX_*
 // settings with inline arrow-key navigation.  Secret / .env-file items
 // are represented as locked entries that open EnvSecretIsolatedEditor (T063).
 //
@@ -42,7 +42,7 @@ export type ConfigOverlayProps = {
 // ---------------------------------------------------------------------------
 
 /**
- * Inline configuration overlay for non-secret KOSMOS settings (FR-030).
+ * Inline configuration overlay for non-secret KOSAX settings (FR-030).
  *
  * Navigation:
  *   ↑/↓  move selection
@@ -61,7 +61,7 @@ export function ConfigOverlay({
 }: ConfigOverlayProps): React.ReactElement {
   const theme = useTheme();
   const i18n = useUiL2I18n();
-  const locale = (process.env['KOSMOS_TUI_LOCALE'] ?? 'ko') as 'ko' | 'en';
+  const locale = (process.env['KOSAX_TUI_LOCALE'] ?? 'ko') as 'ko' | 'en';
 
   const [cursor, setCursor] = useState(0);
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -125,10 +125,10 @@ export function ConfigOverlay({
   useInput(handleInput);
 
   return (
-    <Box flexDirection="column" paddingX={1} paddingY={1} borderStyle="round" borderColor={theme.kosmosCore}>
+    <Box flexDirection="column" paddingX={1} paddingY={1} borderStyle="round" borderColor={theme.kosaxCore}>
       {/* Title */}
       <Box marginBottom={1}>
-        <Text bold color={theme.kosmosCore}>
+        <Text bold color={theme.kosaxCore}>
           {'✻ '}
         </Text>
         <Text bold color={theme.wordmark}>
@@ -148,7 +148,7 @@ export function ConfigOverlay({
             <Box width={30} flexShrink={0}>
               <Text
                 bold={isSelected}
-                color={isSelected ? theme.kosmosCore : theme.text}
+                color={isSelected ? theme.kosaxCore : theme.text}
               >
                 {isSelected ? '› ' : '  '}
                 {entry.isSecret ? '🔒 ' : ''}

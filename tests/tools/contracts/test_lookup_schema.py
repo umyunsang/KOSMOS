@@ -15,7 +15,7 @@ import json
 import pytest
 from pydantic import TypeAdapter, ValidationError
 
-from kosmos.tools.models import (
+from kosax.tools.models import (
     LookupCollection,
     LookupError,  # noqa: A004
     LookupOutput,  # type: ignore[attr-defined]

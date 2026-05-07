@@ -7,7 +7,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/mock_traffic_fine_pay_v1.json",
+  "$id": "https://kosax.example/api/schemas/mock_traffic_fine_pay_v1.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "Typed params for the traffic fine payment adapter.\n\nMinistry-specific vocabulary lives HERE, not on the main SubmitInput envelope.\nAdapters validate params against this model at invocation time.\n\nSC-002: ``payment_method``, ``fine_reference`` are domain fields and MUST\nNOT appear on ``SubmitInput`` / ``SubmitOutput``.",

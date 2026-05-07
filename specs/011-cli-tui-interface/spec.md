@@ -7,7 +7,7 @@
 
 ## Overview & Context
 
-This epic delivers the citizen-facing conversational interface for KOSMOS. The TUI is the primary way citizens interact with the platform: they type natural-language questions and receive answers backed by live government data, rendered in a terminal with streaming output, tool progress indicators, and permission consent prompts.
+This epic delivers the citizen-facing conversational interface for KOSAX. The TUI is the primary way citizens interact with the platform: they type natural-language questions and receive answers backed by live government data, rendered in a terminal with streaming output, tool progress indicators, and permission consent prompts.
 
 ### Two-phase approach
 
@@ -37,13 +37,13 @@ For Phase A (rapid prototype), the TUI imports `QueryEngine` directly as a Pytho
 
 ### User Story 1 — REPL Conversation Loop (Priority: P0)
 
-A citizen launches KOSMOS, sees a welcome banner with usage guidance, types a question, and receives a streamed answer. They can ask follow-up questions in the same session, with the engine maintaining conversation context across turns.
+A citizen launches KOSAX, sees a welcome banner with usage guidance, types a question, and receives a streamed answer. They can ask follow-up questions in the same session, with the engine maintaining conversation context across turns.
 
 **Why P0**: Without the REPL loop, nothing else functions. This is the skeleton that every other story builds on.
 
 **Acceptance Scenarios**:
 
-1. **Given** a citizen launches `kosmos` (or `python -m kosmos.cli`), **When** the process starts, **Then** they see a welcome banner including the KOSMOS version, a brief description, and an input prompt within 2 seconds.
+1. **Given** a citizen launches `kosax` (or `python -m kosax.cli`), **When** the process starts, **Then** they see a welcome banner including the KOSAX version, a brief description, and an input prompt within 2 seconds.
 2. **Given** a citizen at the input prompt, **When** they type a question and press Enter, **Then** the assistant response streams to the terminal character-by-character (not blocked until completion).
 3. **Given** a citizen has completed one turn, **When** they type a follow-up question referencing earlier context, **Then** the engine produces a contextually relevant answer demonstrating conversation history is maintained.
 4. **Given** a citizen types an empty string or whitespace only, **When** they press Enter, **Then** the prompt redisplays without sending a message to the engine.
@@ -69,7 +69,7 @@ As the LLM generates its response, text appears incrementally in the terminal. T
 
 When the engine dispatches tool calls to government APIs, the citizen sees what is happening: which APIs are being queried, whether they succeeded or failed, and a summary of the results.
 
-**Why P1**: Without progress indicators, the terminal appears frozen during API calls. Citizens will think KOSMOS crashed.
+**Why P1**: Without progress indicators, the terminal appears frozen during API calls. Citizens will think KOSAX crashed.
 
 **Acceptance Scenarios**:
 
@@ -119,7 +119,7 @@ A citizen can start a new session, see a session identifier for support referenc
 
 **Acceptance Scenarios**:
 
-1. **Given** a citizen starts KOSMOS, **When** the session initializes, **Then** a unique session ID is generated and displayed in the welcome banner (e.g., `Session: abc123`).
+1. **Given** a citizen starts KOSAX, **When** the session initializes, **Then** a unique session ID is generated and displayed in the welcome banner (e.g., `Session: abc123`).
 2. **Given** a citizen types `/new` or an equivalent command, **When** the command is processed, **Then** the current session state is discarded, a new `QueryEngine` instance is created, and a new session ID is displayed.
 3. **Given** a citizen types `/exit`, `exit`, or `quit`, **When** the command is processed, **Then** the process exits with code 0 after printing a farewell message.
 4. **Given** a citizen types `/help`, **When** the command is processed, **Then** a list of available slash commands and usage guidance is displayed.
@@ -162,17 +162,17 @@ Korean text renders correctly in the terminal: proper character widths, no align
 No IPC needed. The CLI module imports `QueryEngine` directly:
 
 ```
-kosmos/
+kosax/
   cli/
     __init__.py
     app.py           # typer application, entry point
     repl.py          # REPL loop: prompt -> engine.run() -> render events
     renderer.py      # rich-based event rendering (streaming, spinners, errors)
     models.py        # CLI-specific models (SlashCommand, SessionState)
-    config.py        # KOSMOS_CLI_* env vars via pydantic-settings
+    config.py        # KOSAX_CLI_* env vars via pydantic-settings
 ```
 
-Entry point: `python -m kosmos.cli` or `kosmos` (via pyproject.toml `[project.scripts]`).
+Entry point: `python -m kosax.cli` or `kosax` (via pyproject.toml `[project.scripts]`).
 
 **REPL loop pseudocode**:
 
@@ -280,7 +280,7 @@ tui/
     lib/
       cjk-width.ts         # CJK character width calculation
       format.ts            # Number formatting, Korean text utilities
-    config.ts              # KOSMOS_* env var loading
+    config.ts              # KOSAX_* env var loading
 ```
 
 ### State shape (Phase B)
@@ -361,16 +361,16 @@ All three are pure Python, widely used, and add no native compilation requiremen
 
 | Module | Import path | What the TUI uses |
 |---|---|---|
-| Query Engine | `kosmos.engine.engine.QueryEngine` | `.run(user_message) -> AsyncIterator[QueryEvent]` |
-| Events | `kosmos.engine.events.QueryEvent`, `StopReason` | Event type discrimination |
-| Tool models | `kosmos.tools.models.ToolResult`, `GovAPITool` | Tool result rendering |
-| LLM models | `kosmos.llm.models.TokenUsage` | Usage display |
-| Config | `kosmos.engine.config.QueryEngineConfig` | Engine configuration |
-| Context builder | `kosmos.context.builder.ContextBuilder` | System prompt assembly |
-| Tool registry | `kosmos.tools.registry.ToolRegistry` | Tool lookup for display names |
-| Tool executor | `kosmos.tools.executor.ToolExecutor` | Passed to QueryEngine |
-| Permission models | `kosmos.permissions.models.SessionContext` | Session setup |
-| LLM client | `kosmos.llm.client.LLMClient` | Passed to QueryEngine |
+| Query Engine | `kosax.engine.engine.QueryEngine` | `.run(user_message) -> AsyncIterator[QueryEvent]` |
+| Events | `kosax.engine.events.QueryEvent`, `StopReason` | Event type discrimination |
+| Tool models | `kosax.tools.models.ToolResult`, `GovAPITool` | Tool result rendering |
+| LLM models | `kosax.llm.models.TokenUsage` | Usage display |
+| Config | `kosax.engine.config.QueryEngineConfig` | Engine configuration |
+| Context builder | `kosax.context.builder.ContextBuilder` | System prompt assembly |
+| Tool registry | `kosax.tools.registry.ToolRegistry` | Tool lookup for display names |
+| Tool executor | `kosax.tools.executor.ToolExecutor` | Passed to QueryEngine |
+| Permission models | `kosax.permissions.models.SessionContext` | Session setup |
+| LLM client | `kosax.llm.client.LLMClient` | Passed to QueryEngine |
 
 ---
 

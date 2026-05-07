@@ -30,7 +30,7 @@
 - [x] Edge cases are identified
   - 10 edge cases covering collisions, missing adapters, family mismatch, lifetime exhaustion, CBS storm, RSS guid reset, closed enum, Spec 022 preservation, institutional contribution, NIST downgrade.
 - [x] Scope is clearly bounded
-  - Out of Scope (Permanent) enumerates 4 hard exclusions (KOSMOS-operated CA/HSM/VC issuer, inbound webhooks, reverse-engineered OPAQUE mocks, NIST AAL as primary axis). Deferred Items table lists 9 items with Target Epic/Phase and tracking status.
+  - Out of Scope (Permanent) enumerates 4 hard exclusions (KOSAX-operated CA/HSM/VC issuer, inbound webhooks, reverse-engineered OPAQUE mocks, NIST AAL as primary axis). Deferred Items table lists 9 items with Target Epic/Phase and tracking status.
 - [x] Dependencies and assumptions identified
   - Assumptions section enumerates 7 inherited constraints (Spec 022 canonical, Pydantic v2 validator pattern, 18 labels in plan, Spec 024 audit inheritance, Discussion #1051 canonical, Epic #287 co-develop, Spec 027 deferred).
 

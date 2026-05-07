@@ -7,7 +7,7 @@
 // `@skill` mention, a keyword match against the skill catalog, an auto-
 // triggered heuristic ("claude_api_question"), or a user-supplied hint from
 // the REPL. Upstream CC ranks and merges these signals when composing the
-// skill_discovery context block; KOSMOS keeps them as a typed enum so
+// skill_discovery context block; KOSAX keeps them as a typed enum so
 // attachments.ts type-checks cleanly.
 
 /**

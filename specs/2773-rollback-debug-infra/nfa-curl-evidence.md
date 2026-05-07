@@ -7,7 +7,7 @@ Purpose: prove the live NFA EmergencyInformationService request contract before 
 ```bash
 curl -sS -A "Mozilla/5.0" -G --max-time 20 \
   "https://apis.data.go.kr/1661000/EmergencyInformationService/getEmgencyActivityInfo" \
-  --data-urlencode "serviceKey=${KOSMOS_DATA_GO_KR_API_KEY}" \
+  --data-urlencode "serviceKey=${KOSAX_DATA_GO_KR_API_KEY}" \
   --data-urlencode "rsacGutFsttOgidNm=천안동남소방서" \
   --data-urlencode "gutYm=202112" \
   --data-urlencode "pageNo=1" \

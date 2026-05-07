@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from rich.console import Console
 
-from kosmos.cli.permissions import ConsentPromptHandler
+from kosax.cli.permissions import ConsentPromptHandler
 
 
 def _make_console() -> Console:
@@ -19,35 +19,35 @@ class TestConsentPromptHandler:
     def test_prompt_true_when_confirmed(self) -> None:
         console = _make_console()
         handler = ConsentPromptHandler(console)
-        with patch("kosmos.cli.permissions.Confirm.ask", return_value=True):
+        with patch("kosax.cli.permissions.Confirm.ask", return_value=True):
             result = handler.prompt("테스트 도구", "테스트 기관", "테스트 설명")
         assert result is True
 
     def test_prompt_false_when_denied(self) -> None:
         console = _make_console()
         handler = ConsentPromptHandler(console)
-        with patch("kosmos.cli.permissions.Confirm.ask", return_value=False):
+        with patch("kosax.cli.permissions.Confirm.ask", return_value=False):
             result = handler.prompt("테스트 도구", "테스트 기관", "테스트 설명")
         assert result is False
 
     def test_prompt_false_on_eof(self) -> None:
         console = _make_console()
         handler = ConsentPromptHandler(console)
-        with patch("kosmos.cli.permissions.Confirm.ask", side_effect=EOFError):
+        with patch("kosax.cli.permissions.Confirm.ask", side_effect=EOFError):
             result = handler.prompt("테스트 도구", "테스트 기관", "테스트 설명")
         assert result is False
 
     def test_prompt_false_on_keyboard_interrupt(self) -> None:
         console = _make_console()
         handler = ConsentPromptHandler(console)
-        with patch("kosmos.cli.permissions.Confirm.ask", side_effect=KeyboardInterrupt):
+        with patch("kosax.cli.permissions.Confirm.ask", side_effect=KeyboardInterrupt):
             result = handler.prompt("테스트 도구", "테스트 기관", "테스트 설명")
         assert result is False
 
     def test_prompt_shows_tool_info(self) -> None:
         console = _make_console()
         handler = ConsentPromptHandler(console)
-        with patch("kosmos.cli.permissions.Confirm.ask", return_value=False):
+        with patch("kosax.cli.permissions.Confirm.ask", return_value=False):
             handler.prompt("도로 검색", "국토부", "도로 정보 조회")
         output = console.file.getvalue()  # type: ignore[union-attr]
         assert "도로 검색" in output

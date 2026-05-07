@@ -7,7 +7,7 @@
 
 ## Original B1 hypothesis (per Epic #1978 issue body)
 
-> "TUI 입력 미반응 (별개 버그): PTY 재현 결과 — TUI 부팅 OK + 텍스트 타이핑 OK, **Enter 후 25초 응답 0 byte**, IPC frame 송신 자체가 안 일어남. PromptInput.onSubmit 가드 swallow 위치 미확정 (KOSMOS_TUI_LOG_LEVEL=DEBUG stderr 분리 캡처 필요)."
+> "TUI 입력 미반응 (별개 버그): PTY 재현 결과 — TUI 부팅 OK + 텍스트 타이핑 OK, **Enter 후 25초 응답 0 byte**, IPC frame 송신 자체가 안 일어남. PromptInput.onSubmit 가드 swallow 위치 미확정 (KOSAX_TUI_LOG_LEVEL=DEBUG stderr 분리 캡처 필요)."
 
 ## What was actually observed in the worktree (2026-04-27 ~03:50 KST)
 
@@ -28,9 +28,9 @@ This is a **worktree environment regression**, not the original Enter-suppressio
 // entirely).
 ```
 
-These auto-stubs exist on disk in the main `KOSMOS/` checkout but are never committed because they are matched by `.gitignore`. A fresh worktree under `git worktree add` therefore lacks them, and `import env from './commands/env/index.js'` (`tui/src/commands.ts:169`) throws `Cannot find module`.
+These auto-stubs exist on disk in the main `KOSAX/` checkout but are never committed because they are matched by `.gitignore`. A fresh worktree under `git worktree add` therefore lacks them, and `import env from './commands/env/index.js'` (`tui/src/commands.ts:169`) throws `Cannot find module`.
 
-The same `.gitignore` rule hides **45 P0-stub files** total under `tui/src/`, `src/kosmos/`, and `scripts/`. Categories (sample):
+The same `.gitignore` rule hides **45 P0-stub files** total under `tui/src/`, `src/kosax/`, and `scripts/`. Categories (sample):
 
 - `tui/src/commands/{assistant,login,env}/*` (CC reconstruction gap fillers)
 - `tui/src/services/api/{claude,client}.ts` (Anthropic SDK shells — to be collapsed in Epic #1978 Phase B)
@@ -38,7 +38,7 @@ The same `.gitignore` rule hides **45 P0-stub files** total under `tui/src/`, `s
 - `tui/src/remote/*` (CC remote-session shells)
 - `tui/src/services/policyLimits/*`, `services/contextCollapse/index.ts`, etc.
 
-These were copied from `KOSMOS/` into `KOSMOS-wiring/` mid-trace (411 files including Python `__pycache__` artefacts). The `Cannot find module` error went away.
+These were copied from `KOSAX/` into `KOSAX-wiring/` mid-trace (411 files including Python `__pycache__` artefacts). The `Cannot find module` error went away.
 
 **Recommendation (in scope of this Epic)**: tighten `.gitignore` line 17 to anchor `env/` so only top-level Python venvs match (e.g., `/env/` or `^env/$`). Commit P0 auto-stubs explicitly under their `// [P0 auto-stub ...]` header so `git worktree add` produces a runnable copy. Defer to a follow-up commit on this Epic's branch — pre-Phase 7 is the right time to land it (low risk, narrow surface).
 
@@ -48,7 +48,7 @@ After Layer 1 was patched, `python scripts/pty-scenario.py greeting` still fails
 
 - Exit 1 within 1015 ms
 - stdout captures only ANSI escape sequences and `[31merror[0m[2m:[0m script "tui" exited with code 1`
-- The actual TUI banner (`KOSMOS v…`) is never printed
+- The actual TUI banner (`KOSAX v…`) is never printed
 
 Direct invocation outside the PTY harness shows the underlying error from `tui/src/cli/print.ts:783`:
 

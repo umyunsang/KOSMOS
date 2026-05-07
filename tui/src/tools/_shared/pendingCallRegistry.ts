@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic ζ #2297 Phase 0b · T007
+// KOSAX-original — Epic ζ #2297 Phase 0b · T007
 //
 // PendingCallRegistry — session-scoped registry that correlates outbound
 // tool_call frames (dispatched by dispatchPrimitive.ts) to their matching
@@ -45,7 +45,7 @@ export interface PendingCall {
  */
 export class PendingCallRegistry {
   private _pending = new Map<string, PendingCall>()
-  // KOSMOS hotfix #2519 — race-safe buffering for ToolResultFrame frames
+  // KOSAX hotfix #2519 — race-safe buffering for ToolResultFrame frames
   // that arrive BEFORE the matching dispatchPrimitive call has registered
   // (the backend's _dispatch_primitive runs as a parallel asyncio.Task and
   // can complete in <1s for cached / mock adapters, often beating the

@@ -15,7 +15,7 @@ description: "Task list for Epic B (#2638) — Tool System Residue Cleanup"
 
 - **[P]**: 다른 파일을 건드리며 의존성 0 → 병렬 dispatch 가능
 - **[Story]**: US1 / US2 / US3 (Setup / Foundational / Polish 는 미부여)
-- 모든 파일 경로는 worktree (`/Users/um-yunsang/KOSMOS-w-2638`) 기준 상대 경로
+- 모든 파일 경로는 worktree (`/Users/um-yunsang/KOSAX-w-2638`) 기준 상대 경로
 
 ## Path Conventions (본 Epic)
 
@@ -30,7 +30,7 @@ description: "Task list for Epic B (#2638) — Tool System Residue Cleanup"
 
 **Purpose**: worktree state 검증 + audit measurement 재현 가능성 확보
 
-- [X] T001 worktree state + audit measurement 재현 검증 — `cd /Users/um-yunsang/KOSMOS-w-2638 && pwd && git branch --show-current` 가 `feat/2638-s2-tool-system-residue` 출력 확인 + `find tui/src/tools/AgentTool -type f | wc -l` 가 18 출력 확인 + research § R-3 의 9 BYTE-IDENTICAL + 9 DIFFERS 분류가 현재 코드 상태와 일치 (재 SHA-256 비교) — 결과 로그를 `specs/2638-tool-system-residue/research.md` 의 R-3 섹션에 변동 시 patch 적용. 변동 없으면 task 통과.
+- [X] T001 worktree state + audit measurement 재현 검증 — `cd /Users/um-yunsang/KOSAX-w-2638 && pwd && git branch --show-current` 가 `feat/2638-s2-tool-system-residue` 출력 확인 + `find tui/src/tools/AgentTool -type f | wc -l` 가 18 출력 확인 + research § R-3 의 9 BYTE-IDENTICAL + 9 DIFFERS 분류가 현재 코드 상태와 일치 (재 SHA-256 비교) — 결과 로그를 `specs/2638-tool-system-residue/research.md` 의 R-3 섹션에 변동 시 patch 적용. 변동 없으면 task 통과.
 
 ---
 
@@ -48,7 +48,7 @@ description: "Task list for Epic B (#2638) — Tool System Residue Cleanup"
 
 ## Phase 3: User Story 1 — R4 AgentTool 9 differ 정밀 분류 + 박제 (Priority: P1) 🎯 MVP
 
-**Goal**: `tui/src/tools/AgentTool/` 의 9 differ 파일 각각에 대해 (a) `diff -u CC KOSMOS` 실측, (b) PRESERVE-IDENTICAL-WITH-SHIM / MIGRATE-FOR-SWAP / 회귀 의심 4-bucket 분류, (c) swap-1/swap-2/swap-5 카테고리 + 근거 Spec·FR·CC 라인 박제, (d) 회귀 의심 0건 또는 결정 박제. 산출물 = `agent-tool-classification.md` 의 differ 9 행 + 회귀 의심 처리 섹션.
+**Goal**: `tui/src/tools/AgentTool/` 의 9 differ 파일 각각에 대해 (a) `diff -u CC KOSAX` 실측, (b) PRESERVE-IDENTICAL-WITH-SHIM / MIGRATE-FOR-SWAP / 회귀 의심 4-bucket 분류, (c) swap-1/swap-2/swap-5 카테고리 + 근거 Spec·FR·CC 라인 박제, (d) 회귀 의심 0건 또는 결정 박제. 산출물 = `agent-tool-classification.md` 의 differ 9 행 + 회귀 의심 처리 섹션.
 
 **Independent Test**: `wc -l specs/2638-tool-system-residue/agent-tool-classification.md` ≥ 30 라인 + `grep -c "^| " agent-tool-classification.md` 가 최소 19 행 (헤더 1 + BYTE-IDENTICAL 9 + DIFFERS 9) emit + 9 differ 행 각각에 4 필드 (분류 / swap 카테고리 / 근거 / 결정) 모두 채워짐. 회귀 의심 0건이면 "회귀 의심 0건 — 9 differ 모두 swap-1/swap-2/swap-5 정합" 명시 박제.
 
@@ -56,7 +56,7 @@ description: "Task list for Epic B (#2638) — Tool System Residue Cleanup"
 
 - [X] T003 [US1] PRESERVE-IDENTICAL-WITH-SHIM 5 file 분류 행 박제 in `specs/2638-tool-system-residue/agent-tool-classification.md` — 5 파일 (`AgentTool.tsx`, `agentToolUtils.ts`, `forkSubagent.ts`, `runAgent.ts`, `UI.tsx`) 각각 (i) `diff -u .references/claude-code-sourcemap/restored-src/src/tools/AgentTool/<파일> tui/src/tools/AgentTool/<파일>` 실행, (ii) 변경 내용 카테고리 확인 (swap-1 SDK alias 또는 swap-5 telemetry stub spillover), (iii) research § R-3 preview 분류 검증 — 일치 시 행 박제, 불일치 시 회귀 의심 처리 (T005 로 이관). 박제 행 형식: `| N | <파일경로> | <SHA-256 8자리> | <라인수> | PRESERVE-IDENTICAL-WITH-SHIM | swap-1 또는 swap-5 | <근거 인용: Spec NNNN / FR-XXX / CC 라인> | <결정 사유 1-2 문장> |`.
 
-- [X] T004 [US1] MIGRATE-FOR-SWAP 4 file 분류 행 박제 in `specs/2638-tool-system-residue/agent-tool-classification.md` — 4 파일 (`built-in/exploreAgent.ts`, `built-in/planAgent.ts`, `builtInAgents.ts`, `prompt.ts`) 각각 (i) `diff -u CC KOSMOS` 실행, (ii) swap-2 정당성 검증 (Tool surface 결정 / Korean prompt / Task primitive backing FR-017 / citizen agent surface), (iii) research § R-3 preview 분류 검증 — 일치 시 행 박제, 불일치 시 회귀 의심 처리 (T005). 박제 행 형식 동일 (T003), `swap-2` 카테고리. 특히 `prompt.ts` 4-line diff 의 KOSMOS-only 추가 주석 + system prompt 추가는 FR-017 인용 필수.
+- [X] T004 [US1] MIGRATE-FOR-SWAP 4 file 분류 행 박제 in `specs/2638-tool-system-residue/agent-tool-classification.md` — 4 파일 (`built-in/exploreAgent.ts`, `built-in/planAgent.ts`, `builtInAgents.ts`, `prompt.ts`) 각각 (i) `diff -u CC KOSAX` 실행, (ii) swap-2 정당성 검증 (Tool surface 결정 / Korean prompt / Task primitive backing FR-017 / citizen agent surface), (iii) research § R-3 preview 분류 검증 — 일치 시 행 박제, 불일치 시 회귀 의심 처리 (T005). 박제 행 형식 동일 (T003), `swap-2` 카테고리. 특히 `prompt.ts` 4-line diff 의 KOSAX-only 추가 주석 + system prompt 추가는 FR-017 인용 필수.
 
 - [X] T005 [US1] 회귀 의심 verification + 결정 박제 in `specs/2638-tool-system-residue/agent-tool-classification.md` — T003/T004 후 회귀 의심으로 분류된 행이 있다면, 각각 (i) Option A (즉시 CC 회귀) 또는 Option B (swap-2 정당화 헤더 추가 후 PRESERVE/MIGRATE 재분류) 결정, (ii) Option B 선택 시 해당 파일에 박제 주석 추가 (선택). 회귀 의심 0건이면 markdown 의 "## 회귀 의심 처리 결과" 섹션에 "회귀 의심 0건 — preview 분류 (research § R-3) 가 implement 단계에서 모두 검증됨. 9 differ 모두 swap-1/swap-2/swap-5 정합." 박제. 회귀 의심 1+ 건이면 spec Deferred Items 표의 "AgentTool 9 differ 회귀 의심" 행에 후속 처리 issue 번호 박제 (또는 NEEDS TRACKING 유지).
 
@@ -72,7 +72,7 @@ description: "Task list for Epic B (#2638) — Tool System Residue Cleanup"
 
 ### Implementation for User Story 2
 
-- [X] T006 [US2] `tui/src/tools.ts` dev tool import 블록 위에 SWAP-2-RETAINED-IMPORT-BLOCK 박제 헤더 추가 — `tui/src/tools.ts` 의 dev tool import 영역 (대략 line 19-27 = `BashTool, FileEditTool, FileReadTool, FileWriteTool, GlobTool, NotebookEditTool, WebFetchTool, TaskStopTool, BriefTool` + line 64-69 = `TaskOutputTool, WebSearchTool, TodoWriteTool, ExitPlanModeV2Tool, TestingPermissionTool, GrepTool` + line 84-96 = `AskUserQuestionTool, LSPTool, ListMcpResourcesTool, ReadMcpResourceTool, ToolSearchTool, EnterPlanModeTool, EnterWorktreeTool, ExitWorktreeTool, ConfigTool, TaskCreateTool, TaskGetTool, TaskUpdateTool, TaskListTool`) 직상에 다중 라인 주석 헤더 추가. 헤더 형식: `// SWAP-2-RETAINED-IMPORT-BLOCK (FR-013):` 로 시작 + (a) "14 dev tool 이 KOSMOS getAllBaseTools() 에 미등록이지만 import 보존 — permissions/sandbox/attachments 인프라가 tool name constants 참조 (FR-013)", (b) "outside-caller count 요약 (BashTool 196, FileReadTool 91, ToolSearchTool 31, ...)", (c) "CC `.references/claude-code-sourcemap/restored-src/src/tools.ts` 의 동일 import 와 byte-identical 보존 (CORE THESIS)", (d) 본 Epic / Spec 인용 (`Spec 2638 / Initiative #2636`). 변경은 주석 추가만 — 코드 동작 0 영향. **주의**: 기존 docstring (line 192-217) 은 그대로 유지, 신규 헤더는 import 블록 직상에 별도 박제.
+- [X] T006 [US2] `tui/src/tools.ts` dev tool import 블록 위에 SWAP-2-RETAINED-IMPORT-BLOCK 박제 헤더 추가 — `tui/src/tools.ts` 의 dev tool import 영역 (대략 line 19-27 = `BashTool, FileEditTool, FileReadTool, FileWriteTool, GlobTool, NotebookEditTool, WebFetchTool, TaskStopTool, BriefTool` + line 64-69 = `TaskOutputTool, WebSearchTool, TodoWriteTool, ExitPlanModeV2Tool, TestingPermissionTool, GrepTool` + line 84-96 = `AskUserQuestionTool, LSPTool, ListMcpResourcesTool, ReadMcpResourceTool, ToolSearchTool, EnterPlanModeTool, EnterWorktreeTool, ExitWorktreeTool, ConfigTool, TaskCreateTool, TaskGetTool, TaskUpdateTool, TaskListTool`) 직상에 다중 라인 주석 헤더 추가. 헤더 형식: `// SWAP-2-RETAINED-IMPORT-BLOCK (FR-013):` 로 시작 + (a) "14 dev tool 이 KOSAX getAllBaseTools() 에 미등록이지만 import 보존 — permissions/sandbox/attachments 인프라가 tool name constants 참조 (FR-013)", (b) "outside-caller count 요약 (BashTool 196, FileReadTool 91, ToolSearchTool 31, ...)", (c) "CC `.references/claude-code-sourcemap/restored-src/src/tools.ts` 의 동일 import 와 byte-identical 보존 (CORE THESIS)", (d) 본 Epic / Spec 인용 (`Spec 2638 / Initiative #2636`). 변경은 주석 추가만 — 코드 동작 0 영향. **주의**: 기존 docstring (line 192-217) 은 그대로 유지, 신규 헤더는 import 블록 직상에 별도 박제.
 
 **Checkpoint**: US2 완료 — tools.ts dev tool import 블록 위에 박제 헤더. SC-005 (US2 부분 — 30초 이내 답 발견) / SC-007 (코드 0 변경, 주석만) 만족.
 

@@ -4,7 +4,7 @@
 import type { Harness } from '../../../scripts/bun-pty-capture';
 
 export default async function (h: Harness): Promise<void> {
-  await h.waitForPane(/KOSMOS\s*v?0\./, 30);
+  await h.waitForPane(/KOSAX\s*v?0\./, 30);
   h.snapshot('boot');
   // Type characters and check the prompt buffer reflects them.
   h.sendText('abc');

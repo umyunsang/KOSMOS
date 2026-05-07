@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS Spec 1637 P6 / T033 — surface frame dumper.
+// KOSAX Spec 1637 P6 / T033 — surface frame dumper.
 //
 // Renders each TUI surface through ink-testing-library's `render()`,
 // captures the last frame as text, and writes the result into
@@ -110,7 +110,7 @@ const SURFACES: readonly Surface[] = [
     slug: 'pdf-inline-render',
     description: 'PDF inline-render path — Tier C fallback (no graphics, no opener)',
     element: withTheme(
-      <PdfInlineViewer pdfPath="/tmp/kosmos-export-2026-04-26.pdf" />,
+      <PdfInlineViewer pdfPath="/tmp/kosax-export-2026-04-26.pdf" />,
     ),
   },
   {

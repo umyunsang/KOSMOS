@@ -2,7 +2,7 @@ import { randomUUID, type UUID } from 'crypto'
 import { APIUserAbortError } from 'src/sdk-compat.js'
 import { autoCompactIfNeeded } from '../services/compact/autoCompact.js'
 import { microcompactMessages } from '../services/compact/microCompact.js'
-import { getOrCreateKosmosBridge, getKosmosBridgeSessionId } from '../ipc/bridgeSingleton.js'
+import { getOrCreateKosaxBridge, getKosaxBridgeSessionId } from '../ipc/bridgeSingleton.js'
 import type { ChatRequestFrame, IPCFrame } from '../ipc/frames.generated.js'
 import { getToolDefinitionsForFrame } from './toolSerialization.js'
 import { createAssistantMessage, createSystemMessage, createUserMessage, SYNTHETIC_MODEL } from '../utils/messages.js'
@@ -126,10 +126,10 @@ function isErrorEnvelope(envelope: { kind?: string; [k: string]: unknown }): boo
 
 
 /**
- * KOSMOS-1633 P3 wire-up — replaces the Anthropic-SDK queryModelWithStreaming.
+ * KOSAX-1633 P3 wire-up — replaces the Anthropic-SDK queryModelWithStreaming.
  *
  * Bridges CC's `query()` agentic loop to the Spec 1978 ADR-0001 backend
- * (kosmos.ipc.stdio._handle_chat_request) over the existing Spec 032 IPC
+ * (kosax.ipc.stdio._handle_chat_request) over the existing Spec 032 IPC
  * envelope. CC's call shape is preserved: yields `AssistantMessage` on
  * completion (CC's query.ts collapses streaming events into a single
  * assistant message anyway). System prompt, tools, and signal are wired
@@ -164,8 +164,8 @@ async function* queryModelWithStreaming(params: {
   const innerMessageId = randomUUID()
   const turnStartedAt = performance.now()
   const __t = (s: string) => {
-    if (process.env.KOSMOS_QUERY_TRACE === '1') {
-      try { require('fs').writeSync(2, `[KOSMOS-QUERY] ${s}\n`) } catch {}
+    if (process.env.KOSAX_QUERY_TRACE === '1') {
+      try { require('fs').writeSync(2, `[KOSAX-QUERY] ${s}\n`) } catch {}
     }
   }
   __t(`callModel:enter messages=${messages.length}`)
@@ -193,9 +193,9 @@ async function* queryModelWithStreaming(params: {
   // serialised onto the wire BEFORE the bridge.send. If the
   // `[CHAT_MESSAGES_BUILT]` line shows a stale tail, H1 (frontend race)
   // is confirmed — the React store snapshot was taken before the new
-  // user message landed. Off by default; gated by KOSMOS_QUERY_TRACE=1
+  // user message landed. Off by default; gated by KOSAX_QUERY_TRACE=1
   // to share the existing flag (no new env var introduced).
-  if (process.env.KOSMOS_QUERY_TRACE === '1') {
+  if (process.env.KOSAX_QUERY_TRACE === '1') {
     try {
       const tail = chatMessages[chatMessages.length - 1]
       const tailRole = tail?.role ?? '(empty)'
@@ -211,7 +211,7 @@ async function* queryModelWithStreaming(params: {
     }
   }
 
-  // KOSMOS hotfix #2519 (post-vhs verification, 2026-04-30 — dev-mode answer):
+  // KOSAX hotfix #2519 (post-vhs verification, 2026-04-30 — dev-mode answer):
   //
   // The TUI's CC-original `getSystemPrompt()` (tui/src/constants/prompts.ts:428)
   // builds an English developer-facing prompt — the "Doing tasks" section
@@ -220,27 +220,27 @@ async function* queryModelWithStreaming(params: {
   // hundreds of lines of dev-only directives (tone, scratchpad, hooks,
   // git workflow, etc.). Forwarding that text via ChatRequestFrame.system
   // is what made K-EXAONE answer "안녕! 저는 K-EXAONE 모델입니다 …
-  // 소프트웨어 엔지니어링 작업을 지원하며" to a citizen on KOSMOS — it
-  // was honestly following the dev-prompt KOSMOS handed it.
+  // 소프트웨어 엔지니어링 작업을 지원하며" to a citizen on KOSAX — it
+  // was honestly following the dev-prompt KOSAX handed it.
   //
   // Earlier (commit 6ab1e4d, "option A simple") only the explicit textsmoke
-  // leaks were rewritten to KOSMOS-canonical strings (model-family table,
+  // leaks were rewritten to KOSAX-canonical strings (model-family table,
   // claude.ai availability, Fast-mode descriptor); the bulk of the dev-mode
   // body remained intact, so the citizen still saw a developer assistant.
   //
   // Until a follow-up Spec replaces the entire client-side prompt builder
-  // with a citizen-facing KOSMOS prompt (option A "full"), the pragmatic
+  // with a citizen-facing KOSAX prompt (option A "full"), the pragmatic
   // fix is: send no `system` field, and let the backend's PromptLoader
   // resolve `prompts/system_v1.md` (the canonical Korean citizen system
-  // prompt) via its existing fallback (src/kosmos/ipc/stdio.py:1213-1216
+  // prompt) via its existing fallback (src/kosax/ipc/stdio.py:1213-1216
   // — `if not base_system: loaded = await _ensure_system_prompt()`).
   //
   // The TS-side `systemPrompt` value remains computed for any local
   // consumers (e.g. CC compaction surfaces) but is no longer transmitted.
   const _systemTextDiscarded = extractText(systemPrompt)
   void _systemTextDiscarded
-  const bridge = getOrCreateKosmosBridge()
-  const sessionId = getKosmosBridgeSessionId()
+  const bridge = getOrCreateKosaxBridge()
+  const sessionId = getKosaxBridgeSessionId()
 
   // Publish the active tool inventory to the LLM on every turn (FR-001).
   // Backend authoritative-execution rule (FR-005): backend rejects any
@@ -268,7 +268,7 @@ async function* queryModelWithStreaming(params: {
   const sent = bridge.send(frame as unknown as IPCFrame)
   __t(`bridge.send returned ${sent}`)
   if (!sent) {
-    throw new Error('KOSMOS bridge send failed (backend exited)')
+    throw new Error('KOSAX bridge send failed (backend exited)')
   }
 
   // Stream-event projection — yield CC-shape Anthropic SSE events per
@@ -381,7 +381,7 @@ async function* queryModelWithStreaming(params: {
 
       // K-EXAONE chain-of-thought channel — backend forwards
       // delta.reasoning_content here. Mirror Anthropic's thinking_delta
-      // (kosmos/llm/_cc_reference/claude.ts:2148-2161). handleMessageFromStream
+      // (kosax/llm/_cc_reference/claude.ts:2148-2161). handleMessageFromStream
       // (utils/messages.ts:3080) routes thinking_delta through onUpdateLength
       // so AssistantThinkingMessage paints the reasoning inline. We also
       // accumulate the full thinking text so the terminal AssistantMessage
@@ -452,7 +452,7 @@ async function* queryModelWithStreaming(params: {
         // backend behaviour is correct (verified by [XTRACE] capture
         // 2026-05-04 — turns 0-3 clear ~50-char preambles, turn 4 emits the
         // 1041-char final answer). The bug surfaces here, in the assembly:
-        // KOSMOS' multi-turn agentic loop accumulates ALL tool_use blocks
+        // KOSAX' multi-turn agentic loop accumulates ALL tool_use blocks
         // from turns 0..N-1 and the SOLE text block from turn N into one
         // AssistantMessage (backend never sends `done=true` between turns,
         // and deps.ts' generator only yields a final message on `done`).
@@ -465,7 +465,7 @@ async function* queryModelWithStreaming(params: {
         // restored-src order coincidentally matches because CC turns each
         // contain at most one tool_use OR text block, never both — there
         // the relative order between text and tool_use never matters in
-        // practice. KOSMOS' multi-turn-into-one-message assembly makes the
+        // practice. KOSAX' multi-turn-into-one-message assembly makes the
         // ordering load-bearing.
         for (const tu of pendingContentBlocks) {
           blocks.push(tu)
@@ -563,7 +563,7 @@ async function* queryModelWithStreaming(params: {
         )
       }
 
-      // KOSMOS hotfix #2519 (CC-original migration, 2026-04-30) — forward
+      // KOSAX hotfix #2519 (CC-original migration, 2026-04-30) — forward
       // the tool_result frame to the dispatch registry so the matching
       // dispatchPrimitive register-and-await Promise resolves. Without this
       // the SDK's Tool.call() (LookupPrimitive.call → dispatchPrimitive)
@@ -639,12 +639,12 @@ async function* queryModelWithStreaming(params: {
         kind: 'permission_request',
       } as import('../ipc/frames.generated.js').PermissionRequestFrame)
     } else if (fa.kind === 'error') {
-      const reason = fa.message ?? 'KOSMOS backend error'
+      const reason = fa.message ?? 'KOSAX backend error'
       // CC mirror: yield the (error) AssistantMessage first so
       // handleMessageFromStream clears the streamingText preview, then
       // close the open block + message so the spinner reaches its terminal
       // state.
-      yield createAssistantMessage({ content: `[KOSMOS backend error] ${reason}` })
+      yield createAssistantMessage({ content: `[KOSAX backend error] ${reason}` })
       if (messageStartEmitted) {
         yield {
           type: 'stream_event' as const,

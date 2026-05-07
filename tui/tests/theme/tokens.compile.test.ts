@@ -1,7 +1,7 @@
-// Source: KOSMOS Epic H #1302 (035-onboarding-brand-port), task T006
+// Source: KOSAX Epic H #1302 (035-onboarding-brand-port), task T006
 // Contract: specs/035-onboarding-brand-port/contracts/brand-token-surface.md § 1–§ 4, § 7
 // Purpose: lock the ThemeToken type surface at compile time.  Any drift from
-// the spec (accidental reintroduction of a BAN identifier, missing KOSMOS
+// the spec (accidental reintroduction of a BAN identifier, missing KOSAX
 // token, preserve-set cardinality change) fails this test.
 //
 // Strategy: parse `tui/src/theme/tokens.ts` as text (avoids runtime token
@@ -26,8 +26,8 @@ const DELETE_IDENTIFIERS = [
 ] as const
 
 const ADD_IDENTIFIERS = [
-  "kosmosCore",
-  "kosmosCoreShimmer",
+  "kosaxCore",
+  "kosaxCoreShimmer",
   "orbitalRing",
   "orbitalRingShimmer",
   "wordmark",
@@ -161,9 +161,9 @@ describe("brand-token-surface contract (Epic H)", () => {
     expect(keys.length).toBe(72)
   })
 
-  test("header comment announces KOSMOS brand rename (ADR-006 A-9)", () => {
+  test("header comment announces KOSAX brand rename (ADR-006 A-9)", () => {
     expect(TOKENS_BODY).toContain(
-      "// KOSMOS 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)",
+      "// KOSAX 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)",
     )
   })
 

@@ -9,7 +9,7 @@ import { toError } from '../utils/errors.js';
 import { logError } from '../utils/log.js';
 import { getSettingSourceName, type SettingSource } from '../utils/settings/constants.js';
 import { updateSettingsForSource } from '../utils/settings/settings.js';
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — utils/teleport/ deleted; stub.
 type EnvironmentKind = 'anthropic_cloud' | 'byoc' | 'bridge'
 type EnvironmentResource = { kind: EnvironmentKind; environment_id: string; name: string; created_at: string; state: 'active' }
 type EnvironmentSelectionInfo = { availableEnvironments: EnvironmentResource[]; selectedEnvironment: EnvironmentResource | null; selectedEnvironmentSource: unknown | null }

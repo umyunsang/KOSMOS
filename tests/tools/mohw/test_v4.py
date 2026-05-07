@@ -16,7 +16,7 @@ import pytest
 import respx
 from pydantic import ValidationError
 
-from kosmos.tools.mohw.welfare_eligibility_search import (
+from kosax.tools.mohw.welfare_eligibility_search import (
     _MOHW_DESCRIPTION,
     MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL,
     MohwWelfareEligibilitySearchInput,
@@ -360,7 +360,7 @@ class TestHandleMocked:
     @respx.mock
     async def test_handle_injects_calltP_and_srch_key_code(self, monkeypatch) -> None:
         """handle() sends callTp=L + srchKeyCode=003 in HTTP request."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", _FAKE_API_KEY)
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", _FAKE_API_KEY)
 
         captured_params: dict[str, str] = {}
 
@@ -390,7 +390,7 @@ class TestHandleMocked:
     @respx.mock
     async def test_handle_returns_parsed_items(self, monkeypatch) -> None:
         """handle() returns correctly parsed items from mocked XML response."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", _FAKE_API_KEY)
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", _FAKE_API_KEY)
         respx.get(url__regex=r".*B554287.*").respond(200, content=_MINIMAL_XML)
 
         inp = MohwWelfareEligibilitySearchInput.model_validate({"life_array": "007"})
@@ -422,8 +422,8 @@ class TestMohwV4LifeArray007Live:
     Skipped in CI by default. Run with:
         uv run pytest -m live tests/tools/mohw/test_v4.py
 
-    Requires KOSMOS_DATA_GO_KR_API_KEY to be set.
-    Evidence: /tmp/kosmos-evidence/koroad-mohw-evidence.md (totalCount=21 for lifeArray=007).
+    Requires KOSAX_DATA_GO_KR_API_KEY to be set.
+    Evidence: /tmp/kosax-evidence/koroad-mohw-evidence.md (totalCount=21 for lifeArray=007).
     """
 
     @pytest.mark.asyncio
@@ -518,7 +518,7 @@ class TestMohwV4Description:
         so the envelope-ready ``{"kind": "collection", ...}`` dict can
         flow into envelope.normalize() — see module docstring for context.
         """
-        from kosmos.tools.mohw.welfare_eligibility_search import _MohwPlaceholderOutput
+        from kosax.tools.mohw.welfare_eligibility_search import _MohwPlaceholderOutput
 
         assert MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL.output_schema is _MohwPlaceholderOutput
         # Documentation contract preserved

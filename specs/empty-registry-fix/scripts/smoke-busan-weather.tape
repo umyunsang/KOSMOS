@@ -2,7 +2,7 @@
 # Layer 4 vhs visual smoke for the empty_registry fix.
 #
 # Captures 3 LLM-reviewable PNG keyframes that prove the rendered UI flow:
-#   1. boot — KOSMOS branding settles
+#   1. boot — KOSAX branding settles
 #   2. input — citizen prompt accepted, REPL echoes
 #   3. action — lookup tool_result render shows KMA candidates (post-fix)
 #                or "검색 결과가 없습니다" (pre-fix; would mark regression)

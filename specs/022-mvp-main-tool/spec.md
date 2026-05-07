@@ -51,7 +51,7 @@ Adapter discovery is not a hard keyword match. The model asks `lookup(mode="sear
 **Acceptance Scenarios**:
 
 1. **Given** the registry contains the four seed adapters plus any pre-existing tools, **When** `lookup(mode="search", query="교통사고 위험지역")` runs, **Then** `koroad_accident_hazard_search` appears in the top-5 results with BM25 score > 0.
-2. **Given** `KOSMOS_LOOKUP_TOPK=3` is set, **When** `lookup(mode="search", top_k=10)` is called, **Then** the effective `top_k` is clamped to the env-configured default (3) or the explicit per-call `top_k` (whichever applies per §5.2 of the design doc), and the clamp bounds `[1, 20]` are enforced.
+2. **Given** `KOSAX_LOOKUP_TOPK=3` is set, **When** `lookup(mode="search", top_k=10)` is called, **Then** the effective `top_k` is clamped to the env-configured default (3) or the explicit per-call `top_k` (whichever applies per §5.2 of the design doc), and the clamp bounds `[1, 20]` are enforced.
 3. **Given** the 30-query eval set, **When** CI runs the eval harness, **Then** the report writes machine-readable output to a known path and the job fails if recall@5 falls below 60% or warns if it falls into [60%, 80%).
 4. **Given** registry size < 5, **When** `lookup(mode="search")` runs with default top_k, **Then** the effective top_k adapts via `min(default, len(registry))` so empty-candidate responses never occur on under-populated registries.
 
@@ -98,7 +98,7 @@ The `GovAPITool` registration contract is frozen for this epic: every adapter de
 - **Invalid `tool_id` on fetch**: `lookup(mode="fetch", tool_id="nonexistent")` returns `LookupError(reason="unknown_tool")` with no side effects.
 - **Param validation failure**: Fetch-mode `params` that fail the adapter's Pydantic `input_schema` return `LookupError(reason="invalid_params")` with the validation detail in `meta.errors`.
 - **KMA grid off-domain**: Coordinates outside the Korean LCC grid domain return `LookupError(reason="out_of_domain")`.
-- **NMC freshness SLO (post-gate)**: Documented now, enforced when the Layer 3 gate is lifted — `hvidate` older than `KOSMOS_NMC_FRESHNESS_MINUTES` minutes returns `LookupError(reason="stale_data")`.
+- **NMC freshness SLO (post-gate)**: Documented now, enforced when the Layer 3 gate is lifted — `hvidate` older than `KOSAX_NMC_FRESHNESS_MINUTES` minutes returns `LookupError(reason="stale_data")`.
 - **Discriminator mismatch**: An adapter handler returning a response whose `kind` field does not match a member of the frozen `LookupRecord | LookupCollection | LookupTimeseries | LookupError` union MUST be rejected at the envelope-normalization boundary with a typed error rather than surfaced to the model.
 
 ## Requirements *(mandatory)*
@@ -118,7 +118,7 @@ The `GovAPITool` registration contract is frozen for this epic: every adapter de
 #### Retrieval gate
 
 - **FR-008**: The search mode MUST use BM25 ranking (via `rank_bm25`) over each adapter's bilingual `search_hint` string, tokenized by `kiwipiepy>=0.17` (Korean morpheme tokenizer).
-- **FR-009**: `top_k` MUST default to `min(KOSMOS_LOOKUP_TOPK, len(registry))`, with `KOSMOS_LOOKUP_TOPK` defaulting to 5 and clamped to `[1, 20]`.
+- **FR-009**: `top_k` MUST default to `min(KOSAX_LOOKUP_TOPK, len(registry))`, with `KOSAX_LOOKUP_TOPK` defaulting to 5 and clamped to `[1, 20]`.
 - **FR-010**: The 30-query evaluation set MUST reside at `eval/retrieval_queries.yaml` with a documented schema (query text, expected `tool_id`, optional notes).
 - **FR-011**: CI MUST run the eval harness and fail the job when `recall@5 < 60%`, emit a warning annotation when `60% ≤ recall@5 < 80%`, and pass silently when `recall@5 ≥ 80%`.
 - **FR-012**: The eval harness MUST emit a machine-readable report (per-query rank, aggregate recall@k) to a known path for the PR comment action.
@@ -156,9 +156,9 @@ The `GovAPITool` registration contract is frozen for this epic: every adapter de
 
 #### Environment & configuration
 
-- **FR-032**: All external keys MUST be read from `KOSMOS_`-prefixed env vars: `KOSMOS_KAKAO_REST_KEY`, `KOSMOS_JUSO_CONFM_KEY`, `KOSMOS_SGIS_KEY`, `KOSMOS_SGIS_SECRET`, `KOSMOS_DATA_GO_KR_API_KEY`.
-- **FR-033**: `KOSMOS_LOOKUP_TOPK` MUST default to 5 and be clamped to `[1, 20]`.
-- **FR-034**: `KOSMOS_NMC_FRESHNESS_MINUTES` MUST default to 30 and be clamped to `[1, 1440]` (documented but only enforced once the Layer 3 gate is lifted — see deferred item).
+- **FR-032**: All external keys MUST be read from `KOSAX_`-prefixed env vars: `KOSAX_KAKAO_REST_KEY`, `KOSAX_JUSO_CONFM_KEY`, `KOSAX_SGIS_KEY`, `KOSAX_SGIS_SECRET`, `KOSAX_DATA_GO_KR_API_KEY`.
+- **FR-033**: `KOSAX_LOOKUP_TOPK` MUST default to 5 and be clamped to `[1, 20]`.
+- **FR-034**: `KOSAX_NMC_FRESHNESS_MINUTES` MUST default to 30 and be clamped to `[1, 1440]` (documented but only enforced once the Layer 3 gate is lifted — see deferred item).
 
 #### Behavioral guarantees
 
@@ -198,10 +198,10 @@ The `GovAPITool` registration contract is frozen for this epic: every adapter de
 - Adapter `search_hint` strings are authored bilingually (Korean + English keywords in one field) — this is already required by the tool-adapter checklist in `docs/tool-adapters.md`.
 - The session/identity model that Layer 3 will later consume is out of scope for this epic; the gate only reads `requires_auth` / `is_personal_data` from the adapter declaration and short-circuits.
 - The BM25 retrieval library (`rank_bm25`) and Korean tokenizer (`kiwipiepy>=0.17`) are acceptable new dependencies and will be added in this spec's PR per the dependency-change rule in `AGENTS.md`.
-- The `data.go.kr` shared key (`KOSMOS_DATA_GO_KR_API_KEY`) remains valid across KOROAD, KMA, and HIRA — this matches the KOROAD Portal reference memory.
+- The `data.go.kr` shared key (`KOSAX_DATA_GO_KR_API_KEY`) remains valid across KOROAD, KMA, and HIRA — this matches the KOROAD Portal reference memory.
 - Recorded fixtures exist or can be captured once (marked `@pytest.mark.live`) for each adapter's happy and error paths.
 - The FriendliAI K-EXAONE provider is Tier 1 (60 RPM) as of 2026-04-15 — sufficient for eval-harness smoke tests, though the eval harness is not expected to call the live LLM in CI.
-- The Kakao REST key naming follows the spec `KOSMOS_KAKAO_REST_KEY` (not a prior shorter variant); any existing older naming is migrated in this epic.
+- The Kakao REST key naming follows the spec `KOSAX_KAKAO_REST_KEY` (not a prior shorter variant); any existing older naming is migrated in this epic.
 - `resolve_location` ambiguity handling returns a ranked bundle rather than erroring — consumers decide how to disambiguate.
 
 ## Scope Boundaries & Deferred Items *(mandatory)*

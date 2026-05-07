@@ -1,12 +1,12 @@
 # Quickstart — Phase 1 Hardening Live Validation
 
 **Feature**: 019-phase1-hardening
-**Audience**: KOSMOS maintainer validating Phase 1 release-readiness locally.
+**Audience**: KOSAX maintainer validating Phase 1 release-readiness locally.
 
 ## Prerequisites
 
 - `uv` installed and synced (`uv sync`).
-- Environment variables set: `KOSMOS_FRIENDLI_API_KEY`, `KOSMOS_DATA_GO_KR_API_KEY`, `KOSMOS_KAKAO_REST_API_KEY`, `KOSMOS_KMA_API_KEY` (never commit `.env`).
+- Environment variables set: `KOSAX_FRIENDLI_API_KEY`, `KOSAX_DATA_GO_KR_API_KEY`, `KOSAX_KAKAO_REST_API_KEY`, `KOSAX_KMA_API_KEY` (never commit `.env`).
 - FriendliAI account on Tier 1 (100 RPM / 100 TPM). No higher tier required.
 - No CI involvement — the live suite runs locally only.
 
@@ -40,7 +40,7 @@ Check the captured tool-use events: the first `koroad_accident_search` invocatio
 
 ## How to observe retry behavior
 
-Retry activity is logged via stdlib `logging` at `INFO` level in `src/kosmos/llm/client.py`. Grep for the categorized rate-limit log line during a live run to see:
+Retry activity is logged via stdlib `logging` at `INFO` level in `src/kosax/llm/client.py`. Grep for the categorized rate-limit log line during a live run to see:
 
 - Whether `Retry-After` was present and honored, or the fallback backoff was used.
 - How many attempts elapsed before success.

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosmos.local/schemas/1635/slash-commands.schema.json",
-  "title": "KOSMOS UI L2 Slash Command Catalog",
+  "$id": "https://kosax.local/schemas/1635/slash-commands.schema.json",
+  "title": "KOSAX UI L2 Slash Command Catalog",
   "description": "Canonical schema for tui/src/commands/catalog.ts. Single source of truth for autocomplete dropdown (FR-014) and /help 4-group output (FR-029). Spec 1635-ui-l2-citizen-port.",
   "type": "array",
   "items": {

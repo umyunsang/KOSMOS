@@ -15,7 +15,7 @@ spawn script -q $log_path bash -c "cd tui && bun run tui"
 
 # 1. Wait for prompt
 expect {
-  -re ".*KOSMOS.*" { puts "STAGE-1: KOSMOS branding observed" }
+  -re ".*KOSAX.*" { puts "STAGE-1: KOSAX branding observed" }
   timeout { puts "FAIL: branding timeout"; exit 1 }
 }
 

@@ -3,7 +3,7 @@
 # (citation-missing tier-1 + plugin handle + turn-order + pacing).
 #
 # 4-keyframe rule (AGENTS.md § TUI verification, 2026-04-29 promotion):
-#  1. boot   — KOSMOS branding + tool_registry: 14 entries verified
+#  1. boot   — KOSAX branding + tool_registry: 14 entries verified
 #  2. input  — citizen prompt accepted in REPL
 #  3. tool   — first ● lookup(...) row
 #  4. answer — Korean answer streaming visible (강수/기온/구름 etc.)

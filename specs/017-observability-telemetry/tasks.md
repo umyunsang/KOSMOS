@@ -23,13 +23,13 @@ status: draft
 
 ## Phase 1: Foundation — EventLogger + EventType Extension
 
-**Purpose**: Create the structured event emission infrastructure that all later phases depend on. Extends the existing `src/kosmos/observability/` files — does **not** replace them.
+**Purpose**: Create the structured event emission infrastructure that all later phases depend on. Extends the existing `src/kosax/observability/` files — does **not** replace them.
 
-- [ ] T001 Extend `EventType` Literal in `src/kosmos/observability/events.py` — add `"permission_decision"` and `"llm_call"` to the union; update module docstring
-- [ ] T002 Create `ObservabilityEventLogger` class in `src/kosmos/observability/event_logger.py` (new file) with `emit(event: ObservabilityEvent) -> None`, level-map keyed on `(event_type, success)`, PII key whitelist enforcement, and fail-safe try/except
-- [ ] T003 Add `ObservabilityEventLogger` to re-export list in `src/kosmos/observability/__init__.py`
+- [ ] T001 Extend `EventType` Literal in `src/kosax/observability/events.py` — add `"permission_decision"` and `"llm_call"` to the union; update module docstring
+- [ ] T002 Create `ObservabilityEventLogger` class in `src/kosax/observability/event_logger.py` (new file) with `emit(event: ObservabilityEvent) -> None`, level-map keyed on `(event_type, success)`, PII key whitelist enforcement, and fail-safe try/except
+- [ ] T003 Add `ObservabilityEventLogger` to re-export list in `src/kosax/observability/__init__.py`
 
-**Checkpoint**: `from kosmos.observability import ObservabilityEventLogger` succeeds. `emit()` emits structured JSON at the correct log level for each event type.
+**Checkpoint**: `from kosax.observability import ObservabilityEventLogger` succeeds. `emit()` emits structured JSON at the correct log level for each event type.
 
 ---
 
@@ -45,10 +45,10 @@ status: draft
 
 ### Implementation for User Story 3
 
-- [ ] T005 [US3] Add `metrics: MetricsCollector | None = None` parameter to `UsageTracker.__init__` in `src/kosmos/llm/usage.py`; in `debit()` increment `llm.input_tokens` and `llm.output_tokens` after budget logic, wrapped in try/except
-- [ ] T006 [US3] Add `metrics: MetricsCollector | None = None` and `event_logger: ObservabilityEventLogger | None = None` parameters to `LLMClient.__init__` in `src/kosmos/llm/client.py`; pass `metrics` through to `UsageTracker` at construction
-- [ ] T007 [US3] In `LLMClient.complete()` in `src/kosmos/llm/client.py` — bracket `_do_request` with monotonic timer; call `metrics.observe("llm.call_duration_ms", ms)` and `metrics.increment("llm.call_count")` on success; `metrics.increment("llm.error_count")` on failure; emit `ObservabilityEvent(event_type="llm_call")` via `event_logger`; all wrapped in try/except
-- [ ] T008 [US3] In `LLMClient.stream()` in `src/kosmos/llm/client.py` — start timer before `async with`; record `llm.call_duration_ms` and `llm.call_count` at `event.type == "done"`; increment `llm.error_count` on `StreamInterruptedError`; emit `llm_call` event; all wrapped in try/except
+- [ ] T005 [US3] Add `metrics: MetricsCollector | None = None` parameter to `UsageTracker.__init__` in `src/kosax/llm/usage.py`; in `debit()` increment `llm.input_tokens` and `llm.output_tokens` after budget logic, wrapped in try/except
+- [ ] T006 [US3] Add `metrics: MetricsCollector | None = None` and `event_logger: ObservabilityEventLogger | None = None` parameters to `LLMClient.__init__` in `src/kosax/llm/client.py`; pass `metrics` through to `UsageTracker` at construction
+- [ ] T007 [US3] In `LLMClient.complete()` in `src/kosax/llm/client.py` — bracket `_do_request` with monotonic timer; call `metrics.observe("llm.call_duration_ms", ms)` and `metrics.increment("llm.call_count")` on success; `metrics.increment("llm.error_count")` on failure; emit `ObservabilityEvent(event_type="llm_call")` via `event_logger`; all wrapped in try/except
+- [ ] T008 [US3] In `LLMClient.stream()` in `src/kosax/llm/client.py` — start timer before `async with`; record `llm.call_duration_ms` and `llm.call_count` at `event.type == "done"`; increment `llm.error_count` on `StreamInterruptedError`; emit `llm_call` event; all wrapped in try/except
 
 **Checkpoint**: `test_complete_increments_token_counters` and `test_stream_increments_token_counters` pass. Histogram has non-zero p50/p95/p99 after 10 observations. AC-A3, AC-A4, AC-A11 (US3) validated.
 
@@ -66,11 +66,11 @@ status: draft
 
 ### Implementation for User Story 2
 
-- [ ] T010 [US2] Add `metrics: MetricsCollector | None = None` and `event_logger: ObservabilityEventLogger | None = None` parameters to `PermissionPipeline.__init__` in `src/kosmos/permissions/pipeline.py`
-- [ ] T011 [US2] In `PermissionPipeline._run_pre_execution_steps()` in `src/kosmos/permissions/pipeline.py` — after each `step_result`, increment `permission.decision_count{step, decision}`; on step exception branch emit `decision=deny`; all wrapped in try/except (AC-A1)
-- [ ] T012 [US2] In `PermissionPipeline._run_pre_execution_steps()` and `_execute_step6()` in `src/kosmos/permissions/pipeline.py` — after each decision metric, emit `ObservabilityEvent(event_type="permission_decision")` via `event_logger` with `metadata={"step": int, "decision": str, "reason": str}` (PII-clean); wrapped in try/except (AC-A5, AC-A7 partial)
-- [ ] T013 [US2] Expose trip indicator from `src/kosmos/permissions/steps/refusal_circuit_breaker.py` — extend `record_denial()` return value or add a query function so `PermissionPipeline` can detect circuit trips; increment `permission.refusal_circuit_trips` on trip (AC-A3 refusal circuit)
-- [ ] T014 [US2] In `PermissionPipeline.run()` in `src/kosmos/permissions/pipeline.py` — wrap body in `try/finally` after monotonic timer start; record `permission.pipeline_duration_ms` histogram on all exit paths (allow, deny, not-found, bypass); wrapped in try/except (AC-A2)
+- [ ] T010 [US2] Add `metrics: MetricsCollector | None = None` and `event_logger: ObservabilityEventLogger | None = None` parameters to `PermissionPipeline.__init__` in `src/kosax/permissions/pipeline.py`
+- [ ] T011 [US2] In `PermissionPipeline._run_pre_execution_steps()` in `src/kosax/permissions/pipeline.py` — after each `step_result`, increment `permission.decision_count{step, decision}`; on step exception branch emit `decision=deny`; all wrapped in try/except (AC-A1)
+- [ ] T012 [US2] In `PermissionPipeline._run_pre_execution_steps()` and `_execute_step6()` in `src/kosax/permissions/pipeline.py` — after each decision metric, emit `ObservabilityEvent(event_type="permission_decision")` via `event_logger` with `metadata={"step": int, "decision": str, "reason": str}` (PII-clean); wrapped in try/except (AC-A5, AC-A7 partial)
+- [ ] T013 [US2] Expose trip indicator from `src/kosax/permissions/steps/refusal_circuit_breaker.py` — extend `record_denial()` return value or add a query function so `PermissionPipeline` can detect circuit trips; increment `permission.refusal_circuit_trips` on trip (AC-A3 refusal circuit)
+- [ ] T014 [US2] In `PermissionPipeline.run()` in `src/kosax/permissions/pipeline.py` — wrap body in `try/finally` after monotonic timer start; record `permission.pipeline_duration_ms` histogram on all exit paths (allow, deny, not-found, bypass); wrapped in try/except (AC-A2)
 
 **Checkpoint**: `test_decision_count_incremented_on_deny_step3` passes. `test_pipeline_duration_recorded_on_deny` confirms duration is recorded even on early-exit deny. AC-A1, AC-A2, AC-A3 (refusal circuit), AC-A9 validated.
 
@@ -89,8 +89,8 @@ status: draft
 
 ### Implementation for Tool + Recovery Event Wiring
 
-- [ ] T017 [US2] Add `event_logger: ObservabilityEventLogger | None = None` parameter to `ToolExecutor.__init__` in `src/kosmos/tools/executor.py`; after dispatch completes (both success and failure), emit `ObservabilityEvent(event_type="tool_call")` with `tool_id`, `duration_ms`, `success`, `metadata={"error_type": ...}`; wrapped in try/except (AC-A6)
-- [ ] T018 [US2] Add `event_logger: ObservabilityEventLogger | None = None` parameter to `RecoveryExecutor.__init__` in `src/kosmos/recovery/executor.py`; emit `ObservabilityEvent(event_type="retry")` after retry batch with `metadata={"attempt": N, "error_class": str}`; emit `event_type="circuit_break"` on `if not breaker.allow_request()` branch with `metadata={"circuit_state": str(breaker.state)}`; both wrapped in try/except (AC-A7)
+- [ ] T017 [US2] Add `event_logger: ObservabilityEventLogger | None = None` parameter to `ToolExecutor.__init__` in `src/kosax/tools/executor.py`; after dispatch completes (both success and failure), emit `ObservabilityEvent(event_type="tool_call")` with `tool_id`, `duration_ms`, `success`, `metadata={"error_type": ...}`; wrapped in try/except (AC-A6)
+- [ ] T018 [US2] Add `event_logger: ObservabilityEventLogger | None = None` parameter to `RecoveryExecutor.__init__` in `src/kosax/recovery/executor.py`; emit `ObservabilityEvent(event_type="retry")` after retry batch with `metadata={"attempt": N, "error_class": str}`; emit `event_type="circuit_break"` on `if not breaker.allow_request()` branch with `metadata={"circuit_state": str(breaker.state)}`; both wrapped in try/except (AC-A7)
 
 **Checkpoint**: Mock-based tests pass. `emit()` called exactly once per dispatch and once per circuit trip. AC-A6, AC-A7 validated.
 
@@ -108,10 +108,10 @@ status: draft
 
 ### Implementation for User Story 1
 
-- [ ] T020 [US1] Register `"metrics"` `SlashCommand` entry in `COMMANDS` dict in `src/kosmos/cli/models.py` with description `"Show session metrics snapshot (counters, histograms, gauges)"`
-- [ ] T021 [US1] Add `metrics: MetricsCollector | None = None` parameter to `REPLLoop.__init__` in `src/kosmos/cli/repl.py`; store as `self._metrics`
-- [ ] T022 [US1] Add `elif name == "metrics": self._cmd_metrics()` dispatch branch in `REPLLoop._dispatch_command()` in `src/kosmos/cli/repl.py`
-- [ ] T023 [US1] Implement `REPLLoop._cmd_metrics()` in `src/kosmos/cli/repl.py` using `rich.table.Table` — render COUNTERS section, HISTOGRAMS section (columns: name, p50, p95, p99, count; values formatted as `{v:.0f} ms`), GAUGES section; omit empty sections; show "No metrics collected in this session." when snapshot has no data (AC-A8)
+- [ ] T020 [US1] Register `"metrics"` `SlashCommand` entry in `COMMANDS` dict in `src/kosax/cli/models.py` with description `"Show session metrics snapshot (counters, histograms, gauges)"`
+- [ ] T021 [US1] Add `metrics: MetricsCollector | None = None` parameter to `REPLLoop.__init__` in `src/kosax/cli/repl.py`; store as `self._metrics`
+- [ ] T022 [US1] Add `elif name == "metrics": self._cmd_metrics()` dispatch branch in `REPLLoop._dispatch_command()` in `src/kosax/cli/repl.py`
+- [ ] T023 [US1] Implement `REPLLoop._cmd_metrics()` in `src/kosax/cli/repl.py` using `rich.table.Table` — render COUNTERS section, HISTOGRAMS section (columns: name, p50, p95, p99, count; values formatted as `{v:.0f} ms`), GAUGES section; omit empty sections; show "No metrics collected in this session." when snapshot has no data (AC-A8)
 
 **Checkpoint**: `/metrics` renders formatted table in REPL. Empty session shows no-data message without error. AC-A8, US-1 acceptance scenarios 1–3 validated.
 
@@ -121,11 +121,11 @@ status: draft
 
 **Purpose**: Create a single shared `MetricsCollector` + `ObservabilityEventLogger` at startup; inject into all subsystems; pass `metrics` to `REPLLoop`. This is the only phase that touches `app.py`.
 
-- [ ] T024 Inspect `src/kosmos/engine/` to determine how `PermissionPipeline` is constructed (inside `QueryEngine` or externally) — document the injection point before coding
-- [ ] T025 In `src/kosmos/cli/app.py` `_run_repl()`, create `MetricsCollector()` and `ObservabilityEventLogger()` instances; pass `metrics` and `event_logger` into `RecoveryExecutor`, `ToolExecutor`, `LLMClient`, and `PermissionPipeline` (or `QueryEngine` if pipeline is internal); pass `metrics` to `REPLLoop`
-- [ ] T026 Update `src/kosmos/context/builder.py` or `QueryEngine` constructor (wherever `PermissionPipeline` is assembled) to accept optional `metrics` and `event_logger` parameters so the shared instances flow through
+- [ ] T024 Inspect `src/kosax/engine/` to determine how `PermissionPipeline` is constructed (inside `QueryEngine` or externally) — document the injection point before coding
+- [ ] T025 In `src/kosax/cli/app.py` `_run_repl()`, create `MetricsCollector()` and `ObservabilityEventLogger()` instances; pass `metrics` and `event_logger` into `RecoveryExecutor`, `ToolExecutor`, `LLMClient`, and `PermissionPipeline` (or `QueryEngine` if pipeline is internal); pass `metrics` to `REPLLoop`
+- [ ] T026 Update `src/kosax/context/builder.py` or `QueryEngine` constructor (wherever `PermissionPipeline` is assembled) to accept optional `metrics` and `event_logger` parameters so the shared instances flow through
 
-**Checkpoint**: Running `uv run python -m kosmos` starts without error. Typing `/metrics` after one query shows non-zero counters for `tool.call_count`, `llm.input_tokens`, and `permission.decision_count`.
+**Checkpoint**: Running `uv run python -m kosax` starts without error. Typing `/metrics` after one query shows non-zero counters for `tool.call_count`, `llm.input_tokens`, and `permission.decision_count`.
 
 ---
 
@@ -134,7 +134,7 @@ status: draft
 **Purpose**: Full AC-A12 test coverage, lint clean, and integration smoke test. No new source files — only new test files and CI verification.
 
 - [ ] T027 [P] Create `tests/observability/test_event_logger.py` with: `test_emit_level_by_event_type_and_success` (parameterized over all `(event_type, success)` pairs), `test_emit_pii_key_dropped` (non-whitelisted key dropped, WARNING logged, no exception), `test_emit_fail_safe` (patched logger raises, `emit()` does not propagate), `test_emit_json_serializable` (output is valid JSON via `json.loads`) — AC-A12(c)
-- [ ] T028 [P] Create `tests/e2e/test_observability_wiring.py` — boot full stack with `MetricsCollector` + `ObservabilityEventLogger` (no live API, use existing mock adapters); dispatch one tool call through `PermissionPipeline` → `ToolExecutor` → mock adapter; assert `tool.call_count`, `permission.decision_count`, `llm.input_tokens` all non-zero; assert `kosmos.events` logger received at least one valid JSON line (plan.md § 7.5)
+- [ ] T028 [P] Create `tests/e2e/test_observability_wiring.py` — boot full stack with `MetricsCollector` + `ObservabilityEventLogger` (no live API, use existing mock adapters); dispatch one tool call through `PermissionPipeline` → `ToolExecutor` → mock adapter; assert `tool.call_count`, `permission.decision_count`, `llm.input_tokens` all non-zero; assert `kosax.events` logger received at least one valid JSON line (plan.md § 7.5)
 - [ ] T029 Run `uv run pytest tests/` and confirm all tests pass (no regressions in existing permissions, recovery, llm, cli suites)
 - [ ] T030 Run `uv run ruff check src/ tests/` and fix all lint issues
 - [ ] T031 Run `uv run ruff format --check src/ tests/` and fix all format issues
@@ -151,7 +151,7 @@ status: draft
 - **Phase 2 (LLM, US3)**: Depends on T001–T003 (Phase 1 complete); `ObservabilityEventLogger` must exist before `LLMClient` can use it
 - **Phase 3 (Permission Pipeline, US2)**: Depends on T001–T003 (Phase 1 complete); independent of Phase 2
 - **Phase 4 (Tool + Recovery Events, US2 continued)**: Depends on T001–T003 (Phase 1 complete); independent of Phases 2 and 3
-- **Phase 5 (REPL command, US1)**: Depends on T001–T003 (Phase 1 complete); independent of Phases 2–4; `MetricsCollector` is already in `src/kosmos/observability/metrics.py`
+- **Phase 5 (REPL command, US1)**: Depends on T001–T003 (Phase 1 complete); independent of Phases 2–4; `MetricsCollector` is already in `src/kosax/observability/metrics.py`
 - **Phase 6 (Startup wiring)**: Depends on Phases 2–5 all complete (all subsystems must have the new constructor params)
 - **Phase 7 (Testing and Validation)**: T027 (EventLogger tests) depends on Phase 1 only and can run in parallel with Phases 2–5. T028 (E2E) depends on Phase 6. T029–T031 depend on all source changes complete.
 
@@ -177,10 +177,10 @@ status: draft
 
 ```bash
 # After Phase 1 complete, all four user story phases in parallel:
-Agent A (Sonnet): "Phase 2 — LLM instrumentation (T004–T008) in src/kosmos/llm/"
-Agent B (Sonnet): "Phase 3 — PermissionPipeline instrumentation (T009–T014) in src/kosmos/permissions/"
+Agent A (Sonnet): "Phase 2 — LLM instrumentation (T004–T008) in src/kosax/llm/"
+Agent B (Sonnet): "Phase 3 — PermissionPipeline instrumentation (T009–T014) in src/kosax/permissions/"
 Agent C (Sonnet): "Phase 4 — ToolExecutor + RecoveryExecutor events (T015–T018)"
-Agent D (Sonnet): "Phase 5 — /metrics REPL command (T019–T023) in src/kosmos/cli/"
+Agent D (Sonnet): "Phase 5 — /metrics REPL command (T019–T023) in src/kosax/cli/"
 ```
 
 ## Parallel Example: Phase 7 Test Files
@@ -203,7 +203,7 @@ Task: "Create tests/cli/test_metrics_command.py (T019)"
 2. Complete Phase 2: LLM instrumentation (T004–T008)
 3. Complete Phase 5: `/metrics` command (T019–T023)
 4. Complete Phase 6 partial: wire `LLMClient` + `REPLLoop` in `app.py`
-5. **STOP and VALIDATE**: Run KOSMOS, issue one query, type `/metrics` — see `llm.input_tokens` and `llm.call_duration_ms`
+5. **STOP and VALIDATE**: Run KOSAX, issue one query, type `/metrics` — see `llm.input_tokens` and `llm.call_duration_ms`
 6. Add Phase 3 (permission metrics) + Phase 4 (event emission) for full AC-A12 coverage
 
 ### Parallel Agent Team Strategy

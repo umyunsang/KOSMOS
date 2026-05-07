@@ -7,7 +7,7 @@
 
 ## Overview
 
-This spec governs the port of Claude Code 2.1.88's Ink + React terminal UI onto the KOSMOS Python backend. The migration thesis (per `project_tui_architecture.md` memory and Epic #287): keep Claude Code's Ink + React + `useSyncExternalStore` rendering spine, its IPC/streaming chunk protocol, its virtualized list, its permission-gauntlet UX, its theme + session commands — **replace only the backend boundary**. Claude Code's Anthropic API client (`services/api/`) becomes KOSMOS's Python backend over stdio JSONL; Claude Code's `tools/*` developer-domain implementations become thin Ink renderers over KOSMOS's 5-primitive surface (Spec 031 / #1052).
+This spec governs the port of Claude Code 2.1.88's Ink + React terminal UI onto the KOSAX Python backend. The migration thesis (per `project_tui_architecture.md` memory and Epic #287): keep Claude Code's Ink + React + `useSyncExternalStore` rendering spine, its IPC/streaming chunk protocol, its virtualized list, its permission-gauntlet UX, its theme + session commands — **replace only the backend boundary**. Claude Code's Anthropic API client (`services/api/`) becomes KOSAX's Python backend over stdio JSONL; Claude Code's `tools/*` developer-domain implementations become thin Ink renderers over KOSAX's 5-primitive surface (Spec 031 / #1052).
 
 **Primary migration source**: `.references/claude-code-sourcemap/restored-src/src/` — 1,884 `.ts`/`.tsx` files reconstructed from Claude Code 2.1.88's published source map (research-use only). Every file lifted from this source MUST carry a header comment:
 
@@ -19,7 +19,7 @@ This spec governs the port of Claude Code 2.1.88's Ink + React terminal UI onto 
 
 **Co-develops lockstep with**: Spec 031 / #1052 (five-primitive harness). Contract sync cadence: every 2 merged PRs on either side, run a joint smoke.
 
-**Depends on**: #507 (Spec 022 rendering contract), #1052 (Spec 031 five-primitive), #13 (agent swarm coordinator), #14 (specialist role labels), #468 (KOSMOS_TUI_* env registry), #501 (observability span emission).
+**Depends on**: #507 (Spec 022 rendering contract), #1052 (Spec 031 five-primitive), #13 (agent swarm coordinator), #14 (specialist role labels), #468 (KOSAX_TUI_* env registry), #501 (observability span emission).
 
 ---
 
@@ -27,7 +27,7 @@ This spec governs the port of Claude Code 2.1.88's Ink + React terminal UI onto 
 
 ### User Story 1 — IPC Bridge + Streaming Chunk Renderer Swap (Priority: P1)
 
-A citizen launches the KOSMOS TUI via `bun run tui`. The TypeScript process spawns the KOSMOS Python backend as a child process (`uv run kosmos-backend --ipc stdio`) and communicates via newline-delimited JSON (JSONL) over stdin/stdout. Streaming assistant text renders chunk-by-chunk in real time.
+A citizen launches the KOSAX TUI via `bun run tui`. The TypeScript process spawns the KOSAX Python backend as a child process (`uv run kosax-backend --ipc stdio`) and communicates via newline-delimited JSON (JSONL) over stdin/stdout. Streaming assistant text renders chunk-by-chunk in real time.
 
 **Why P1**: The entire TUI is inert until the IPC bridge is live. This is the foundational sub-epic A deliverable.
 
@@ -35,7 +35,7 @@ A citizen launches the KOSMOS TUI via `bun run tui`. The TypeScript process spaw
 
 **Acceptance Scenarios**:
 
-1. **Given** `bun run tui` is invoked, **When** the TypeScript process starts, **Then** it spawns `uv run kosmos-backend --ipc stdio` via `Bun.spawn` (stdin/stdout/stderr only — no extra fds per oven-sh/bun#4670) within 2 seconds.
+1. **Given** `bun run tui` is invoked, **When** the TypeScript process starts, **Then** it spawns `uv run kosax-backend --ipc stdio` via `Bun.spawn` (stdin/stdout/stderr only — no extra fds per oven-sh/bun#4670) within 2 seconds.
 2. **Given** the backend emits `assistant_chunk` JSONL frames, **When** the TUI receives them in order, **Then** each chunk is appended to the streaming message component within 50 ms of receipt.
 3. **Given** a 10-minute soak test at 100+ IPC events/sec using a fixture stream, **When** the test completes, **Then** zero frames are dropped and the process exits cleanly.
 4. **Given** the backend process exits with a non-zero code or emits to stderr, **When** the exit is detected, **Then** the TUI surfaces a crash notice (with redacted env secrets per #468 guard patterns) within 5 s.
@@ -55,7 +55,7 @@ A citizen types slash commands (`/save`, `/sessions`, `/resume`, `/new`) and use
 
 1. **Given** a user types `/sessions` at the prompt, **When** Enter is pressed, **Then** the TUI sends a `session_event` IPC request and renders the session list returned by the backend.
 2. **Given** a user types `/save`, **When** Enter is pressed, **Then** the current session is persisted via the backend IPC and a confirmation message is rendered.
-3. **Given** `KOSMOS_TUI_THEME` is set to `dark` | `light` | `default`, **When** the TUI starts, **Then** the theme token set matching the env var is applied to all Box/Text components.
+3. **Given** `KOSAX_TUI_THEME` is set to `dark` | `light` | `default`, **When** the TUI starts, **Then** the theme token set matching the env var is applied to all Box/Text components.
 4. **Given** an unknown slash command is entered, **When** Enter is pressed, **Then** the dispatcher renders a help snippet listing valid commands; it does not crash.
 5. **Given** the command registry is loaded, **When** inspected programmatically, **Then** its shape is structurally identical to the `commands/` registry shape in `.references/claude-code-sourcemap/restored-src/src/commands/` so upstream diffs apply cleanly.
 
@@ -164,7 +164,7 @@ The TUI handles long conversations and high event rates without visual degradati
 
 - What happens when the backend emits a malformed JSONL frame (not valid JSON)? → The TUI logs a parse error and renders `<UnrecognizedPayload />` for that frame; it does not crash.
 - What happens when the `kind` field is absent from a `tool_result` frame? → Treated as unknown `kind`; falls through to `<UnrecognizedPayload />`.
-- What happens when a `subscribe` stream never sends a terminal event? → The TUI times out after `KOSMOS_TUI_SUBSCRIBE_TIMEOUT_S` seconds (default: 120) and renders `<StreamClosed reason="timeout" />`.
+- What happens when a `subscribe` stream never sends a terminal event? → The TUI times out after `KOSAX_TUI_SUBSCRIBE_TIMEOUT_S` seconds (default: 120) and renders `<StreamClosed reason="timeout" />`.
 - What happens when the verify renderer receives an unknown tier value (not in the 18-value enum)? → Displays the raw tier string with a warning chip; NIST AAL hint shown if available.
 - What happens when CJK character width calculation is wrong (ink#688, ink#759 edge cases)? → The TUI logs a width-calc warning; text may wrap at a non-ideal point but must never panic.
 - What happens on Windows? → Best-effort only; Linux + macOS are primary targets per Epic #287 scope.
@@ -177,17 +177,17 @@ The TUI handles long conversations and high event rates without visual degradati
 
 #### IPC Bridge (FR-001 – FR-010)
 
-- **FR-001**: The TUI MUST spawn the Python backend as `uv run kosmos-backend --ipc stdio` via `Bun.spawn`, using only stdin/stdout/stderr (no extra fds — oven-sh/bun#4670 limitation).
+- **FR-001**: The TUI MUST spawn the Python backend as `uv run kosax-backend --ipc stdio` via `Bun.spawn`, using only stdin/stdout/stderr (no extra fds — oven-sh/bun#4670 limitation).
 - **FR-002**: The IPC protocol MUST be newline-delimited JSON (JSONL). Each frame MUST have a `kind` discriminator field. The full frame type union is:
   `user_input` | `assistant_chunk` | `tool_call` | `tool_result` | `coordinator_phase` | `worker_status` | `permission_request` | `permission_response` | `session_event` | `error`
 - **FR-003**: TypeScript IPC frame types MUST be generated from the Python Pydantic v2 models — no hand-duplicated schemas. A code-gen step in `tui/scripts/gen-ipc-types.ts` MUST run before any type is hand-written.
-- **FR-004**: The TUI MUST detect backend process crash (non-zero exit or stderr flush) within ≤ 5 s and surface a crash notice in the terminal. Crash notices MUST redact all `KOSMOS_`-prefixed environment variable values (per #468 guard patterns).
+- **FR-004**: The TUI MUST detect backend process crash (non-zero exit or stderr flush) within ≤ 5 s and surface a crash notice in the terminal. Crash notices MUST redact all `KOSAX_`-prefixed environment variable values (per #468 guard patterns).
 - **FR-005**: IPC frames MUST be delivered to the renderer in FIFO order per session. The TUI MUST NOT reorder frames.
 - **FR-006**: `assistant_chunk` frames MUST be appended to the streaming message component within ≤ 50 ms of receipt.
 - **FR-007**: The IPC bridge MUST sustain ≥ 100 events/sec for ≥ 10 minutes with zero dropped frames (soak test evidence required for SC-2).
 - **FR-008**: `tool_result` frames MUST be dispatched to the correct renderer via a discriminated `kind` field — no string sniffing of payload body content.
 - **FR-009**: On clean `session_event: "exit"` IPC frame or `Ctrl-C`, the TUI MUST send `SIGTERM` to the backend process and wait ≤ 3 s before `SIGKILL`.
-- **FR-010**: The IPC bridge MUST log every frame receive/send at `DEBUG` level using the `KOSMOS_TUI_LOG_LEVEL` env var; default is `WARN`.
+- **FR-010**: The IPC bridge MUST log every frame receive/send at `DEBUG` level using the `KOSAX_TUI_LOG_LEVEL` env var; default is `WARN`.
 
 #### Source Attribution (FR-011 – FR-013)
 
@@ -231,9 +231,9 @@ The TUI handles long conversations and high event rates without visual degradati
 - **FR-036**: The command dispatcher MUST be lifted from `restored-src/src/commands/` with its internal registry shape preserved so upstream diffs apply cleanly.
 - **FR-037**: User-visible command text MUST be localized to Korean + English; internal command identifiers MUST remain in English.
 - **FR-038**: `/save`, `/sessions`, `/resume`, `/new` MUST be supported as first-class session commands, backed by backend IPC `session_event` frames.
-- **FR-039**: The theme engine MUST support three built-in themes: `default`, `dark`, `light`. Theme MUST be selected via `KOSMOS_TUI_THEME` env var and documented in `docs/configuration.md`.
+- **FR-039**: The theme engine MUST support three built-in themes: `default`, `dark`, `light`. Theme MUST be selected via `KOSAX_TUI_THEME` env var and documented in `docs/configuration.md`.
 - **FR-040**: Theme tokens MUST be a named set (`ThemeToken`) consumed by all Box/Text components — no inline hex colors.
-- **FR-041**: `KOSMOS_TUI_THEME` MUST be registered in the #468 env var registry.
+- **FR-041**: `KOSAX_TUI_THEME` MUST be registered in the #468 env var registry.
 - **FR-042**: An unknown slash command MUST render a help snippet listing valid commands; the dispatcher MUST NOT crash.
 
 #### Multi-Agent Surface (FR-043 – FR-047)
@@ -254,7 +254,7 @@ The TUI handles long conversations and high event rates without visual degradati
 
 #### Observability (FR-053 – FR-054)
 
-- **FR-053**: The TUI MUST emit `gen_ai.tool_loop.iteration` spans with `kosmos.session.id` correctly attributed, routed through the #501 OTEL collector.
+- **FR-053**: The TUI MUST emit `gen_ai.tool_loop.iteration` spans with `kosax.session.id` correctly attributed, routed through the #501 OTEL collector.
 - **FR-054**: Span emission MUST NOT be synchronous on the render thread; it MUST be fire-and-forget via an async queue.
 
 #### Accessibility (FR-055 – FR-056)
@@ -299,8 +299,8 @@ Copied verbatim from Epic #287:
 - `Bun.spawn` is the IPC mechanism; extra fds beyond stdin/stdout/stderr are NOT used (oven-sh/bun#4670 constraint). The entire protocol fits on stdin/stdout/stderr.
 - Ink v7.0.0 requires Node 22 + React 19.2. The `tui/package.json` pins these exactly.
 - CJK character width is handled by `string-width`; known edge cases (ink#688, ink#759) are documented in `tui/docs/cjk-width-known-issues.md`.
-- The Phase 1 Python CLI (`src/kosmos/cli/`) is retained unchanged as a fallback + CI smoke target. This Epic delivers an additional front-end.
-- `.references/claude-code-sourcemap/restored-src/` is read-only; KOSMOS-local adaptations live only in `tui/`.
+- The Phase 1 Python CLI (`src/kosax/cli/`) is retained unchanged as a fallback + CI smoke target. This Epic delivers an additional front-end.
+- `.references/claude-code-sourcemap/restored-src/` is read-only; KOSAX-local adaptations live only in `tui/`.
 - TypeScript strict mode is enabled in `tui/tsconfig.json`.
 - No new Python runtime dependencies are introduced by this spec (AGENTS.md hard rule).
 - `bun build --compile` is used for single-binary distribution; cross-OS builds are best-effort.
@@ -311,7 +311,7 @@ Copied verbatim from Epic #287:
 
 ### Out of Scope (Permanent)
 
-- **Web UI / mobile UI**: KOSMOS is a terminal-based platform; a web front-end would require a fundamentally different rendering stack.
+- **Web UI / mobile UI**: KOSAX is a terminal-based platform; a web front-end would require a fundamentally different rendering stack.
 - **Replacing the Phase 1 Python CLI**: The CLI remains for CI smoke and low-capability terminals. This Epic ships an additional front-end.
 - **Rendering of per-adapter raw provider codes** (e.g., KMA TMP/PCP/REH): The TUI consumes only semantic names the tool facade specifies.
 - **Any renderer for the deleted 8-verb Mock Facade** (closed #994): Superseded by the 5-primitive surface of #1052; `check_eligibility`, `reserve_slot`, `subscribe_alert`, `pay`, `issue_certificate`, `submit_application` as standalone top-level tools are retired.
@@ -322,7 +322,7 @@ Copied verbatim from Epic #287:
 | Sub-Epic | Key Deliverables |
 |----------|-----------------|
 | A — IPC Bridge | `Bun.spawn` JSONL bridge, JSONL frame types from Pydantic code-gen, crash detection ≤5s, soak test ≥100 ev/s / 10 min |
-| B — Dispatcher + Theme + Session | Command dispatcher lifted from `commands/`, Korean+English localization, `/save` `/sessions` `/resume` `/new`, 3 built-in themes, `KOSMOS_TUI_THEME` env var |
+| B — Dispatcher + Theme + Session | Command dispatcher lifted from `commands/`, Korean+English localization, `/save` `/sessions` `/resume` `/new`, 3 built-in themes, `KOSAX_TUI_THEME` env var |
 | C — Five-Primitive Renderers | All 14 renderer components (FR-017–FR-033), `<UnrecognizedPayload />`, fixture-driven `ink-testing-library` tests per arm |
 | C — Coordinator Surface | Phase indicator, per-worker status rows, permission-gauntlet modal lifted from `restored-src/src/coordinator/` |
 | D — IME + ADR | ADR choosing (a) fork or (b) readline hybrid; Hangul composition verified macOS + Linux |
@@ -337,9 +337,9 @@ Copied verbatim from Epic #287:
 | Mobile UI | Out of scope for terminal platform | Phase 3+ | #1283 |
 | Voice input and voice output | Claude Code `voice/` module exists but skipped for MVP; requires speech pipeline | Phase 3+ | #1284 |
 | Plugin / skill system (`plugins/`, `skills/` from Claude Code) | Complex extension lifecycle; not required for MVP primitives | Phase 3+ | #1285 |
-| Buddy mode (`buddy/` from Claude Code) | Not mapped to any KOSMOS role; no equivalent backend | Phase 3+ | #1286 |
+| Buddy mode (`buddy/` from Claude Code) | Not mapped to any KOSAX role; no equivalent backend | Phase 3+ | #1286 |
 | KAIROS assistant mode (`assistant/` from Claude Code) | No equivalent backend; design TBD | Phase 3+ | #1287 |
-| Remote sessions (`remote/` from Claude Code) | KOSMOS runs local; remote orchestration is a separate initiative | Future Initiative | #1288 |
+| Remote sessions (`remote/` from Claude Code) | KOSAX runs local; remote orchestration is a separate initiative | Future Initiative | #1288 |
 | Vim mode (`vim/` from Claude Code) | Low priority for citizen users | Phase 3+ | #1289 |
 | Custom theme DSL beyond 3 built-in themes | Not required for MVP; design TBD | Phase 3+ | #1290 |
 | Multi-window / tiled layouts | Complex layout engine; not required for MVP | Phase 3+ | #1291 |
@@ -363,7 +363,7 @@ Copied verbatim from Epic #287:
 
 ## References
 
-- **Epic #287**: `gh issue view 287 --repo umyunsang/KOSMOS` — primary scope source; SC-1..SC-9 copied verbatim
+- **Epic #287**: `gh issue view 287 --repo umyunsang/KOSAX` — primary scope source; SC-1..SC-9 copied verbatim
 - **Spec 031 / #1052**: Five-Primitive Harness Redesign — `specs/031-five-primitive-harness/spec.md` — defines `submit` / `subscribe` / `verify` envelopes the TUI must render
 - **Spec 022 / #507**: MVP Main Tool — `specs/022-mvp-main-tool/spec.md` — defines `lookup` return variants and `resolve_location` bundle slots
 - **Spec 027 / #13**: Agent Swarm Core — `specs/027-agent-swarm-core/spec.md` — coordinator phase + worker status IPC contract
@@ -371,7 +371,7 @@ Copied verbatim from Epic #287:
 - **`.references/gemini-cli/`**: Gemini CLI (Apache-2.0) — `overflowToBackbuffer` virtualization pattern
 - **Spec 011**: `specs/011-cli-tui-interface/spec.md` — Korean IME Risk R1 historical context
 - **Constitution v1.3.0 Principle VI**: Deferred Work Accountability — mandates Deferred Items table with tracking issues
-- **`docs/vision.md § Layer 6`**: KOSMOS Layer 6 human interface boundary; permission-delegation flow
+- **`docs/vision.md § Layer 6`**: KOSAX Layer 6 human interface boundary; permission-delegation flow
 - **`AGENTS.md § Hard rules`**: TypeScript allowed only for the TUI layer; no Go/Rust; no new runtime dependencies without a spec-driven PR
 - **Ink v7 changelog**: https://github.com/vadimdemedes/ink/releases — Node 22 + React 19.2 requirement
 - **Bun spawn docs**: https://bun.sh/docs/api/spawn — extra-fd limitation (oven-sh/bun#4670)

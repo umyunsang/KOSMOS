@@ -8,7 +8,7 @@
 
 ## 1. AdapterRealDomainPolicy — 신규 Pydantic v2 모델 (코드 entity)
 
-**위치**: `src/kosmos/tools/models.py` (기존 파일에 추가)
+**위치**: `src/kosax/tools/models.py` (기존 파일에 추가)
 
 ```python
 from datetime import datetime
@@ -17,15 +17,15 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class AdapterRealDomainPolicy(BaseModel):
-    """KOSMOS 어댑터의 단일 권한 표현 — 기관 published 정책의 cite.
+    """KOSAX 어댑터의 단일 권한 표현 — 기관 published 정책의 cite.
 
-    KOSMOS는 권한을 invent 하지 않는다 (.specify/memory/constitution.md § II).
+    KOSAX는 권한을 invent 하지 않는다 (.specify/memory/constitution.md § II).
     본 모델은 어댑터가 (a) 기관의 published 정책 URL 을 인용하고,
     (b) 시민에게 노출할 gate 카테고리를 선언하며,
     (c) 정책 인용의 마지막 검증 시점을 박제하는 단일 진실원이다.
 
     References:
-    - AGENTS.md § CORE THESIS — KOSMOS = AX-infrastructure callable-channel client
+    - AGENTS.md § CORE THESIS — KOSAX = AX-infrastructure callable-channel client
     - .specify/memory/constitution.md § II Fail-Closed Security (NON-NEGOTIABLE)
     - .specify/memory/constitution.md § III Pydantic v2 Strict Typing
     - specs/1979-plugin-dx-tui-integration/domain-harness-design.md § 3.2
@@ -57,7 +57,7 @@ class AdapterRealDomainPolicy(BaseModel):
 
 ### Invariants
 
-- **frozen=True**: 인스턴스 불변 — 향후 KOSMOS-invented 가변 enum 패턴 reintroduction 차단.
+- **frozen=True**: 인스턴스 불변 — 향후 KOSAX-invented 가변 enum 패턴 reintroduction 차단.
 - **extra="forbid"**: 모르는 필드 추가 시 ValidationError — Constitution II 우회 차단.
 - **Literal 5 카테고리**: read-only / login / action / sign / submit 5 카테고리 외 거절. 5 카테고리는 시민 use case 분류 (cc-parity-audit + delegation-flow-design § 12 의존).
 - **min_length=1 (str fields)**: empty url/text 거절.
@@ -74,7 +74,7 @@ class AdapterRealDomainPolicy(BaseModel):
 
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `path` | string | ✅ | `src/kosmos/permissions/...` 상대경로 |
+| `path` | string | ✅ | `src/kosax/permissions/...` 상대경로 |
 | `importers` | array<string> | ✅ | 이 파일을 import 하는 곳 (grep 결과) |
 | `disposition` | enum {`delete`, `keep_with_rationale`} | ✅ | 기본 `delete` (Constitution II 강제) |
 | `migration_target` | string \| null | optional | importer cleanup 절차 (예: "caller block 통째 삭제") |
@@ -92,7 +92,7 @@ class AdapterRealDomainPolicy(BaseModel):
 
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `path` | string | ✅ | `src/kosmos/permissions/<name>.py` |
+| `path` | string | ✅ | `src/kosax/permissions/<name>.py` |
 | `role` | string | ✅ | 1 줄 — receipt set 내 역할 |
 | `references` | array<string> | ✅ | Spec id (예: ["Spec 035", "Spec 1636"]) |
 
@@ -110,9 +110,9 @@ class AdapterRealDomainPolicy(BaseModel):
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
 | `adapter_id` | string | ✅ | 예: `koroad.accident_hazard_search` |
-| `adapter_path` | string | ✅ | `src/kosmos/tools/koroad/...` |
+| `adapter_path` | string | ✅ | `src/kosax/tools/koroad/...` |
 | `agency` | string | ✅ | 예: `도로교통공단 (KOROAD)` |
-| `removed_fields` | array<string> | ✅ | 제거된 KOSMOS-invented 필드 list |
+| `removed_fields` | array<string> | ✅ | 제거된 KOSAX-invented 필드 list |
 | `policy.real_classification_url` | string | ✅ | 신규 인용 URL (또는 placeholder + TODO) |
 | `policy.real_classification_text` | string | ✅ | 한국어 인용 |
 | `policy.citizen_facing_gate` | enum (5) | ✅ | |
@@ -155,7 +155,7 @@ class AdapterRealDomainPolicy(BaseModel):
 
 | Entity | 위치 | 비고 |
 |---|---|---|
-| AdapterRealDomainPolicy | `src/kosmos/tools/models.py` (코드) + 단위 테스트 `tests/tools/test_adapter_real_domain_policy.py` | Pydantic v2 strict |
+| AdapterRealDomainPolicy | `src/kosax/tools/models.py` (코드) + 단위 테스트 `tests/tools/test_adapter_real_domain_policy.py` | Pydantic v2 strict |
 | ResidueFile × ~20 | `adapter-migration-log.md § Residue Deletions` | markdown 표 |
 | KeepFile × 8 | `adapter-migration-log.md § Spec 035 Receipt Set` | markdown 표 |
 | AdapterMigration × 18 | `adapter-migration-log.md § Adapter Migrations` | markdown 표 |

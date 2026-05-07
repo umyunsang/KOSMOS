@@ -9,7 +9,7 @@
 
 import chalk from 'chalk'
 import type { QuerySource } from '../../constants/querySource.js'
-// KOSMOS: services/api/claude.js deleted by Spec 1633 P1+P2. queryHaiku not available — FriendliAI backend handles all LLM calls.
+// KOSAX: services/api/claude.js deleted by Spec 1633 P1+P2. queryHaiku not available — FriendliAI backend handles all LLM calls.
 import { memoizeWithLRU } from '../memoize.js'
 import { jsonStringify } from '../slowOperations.js'
 
@@ -184,11 +184,11 @@ async function getCommandPrefixImpl(
     }
   }
 
-  // KOSMOS: queryHaiku (Anthropic Haiku API) removed by Spec 1633 P1+P2.
+  // KOSAX: queryHaiku (Anthropic Haiku API) removed by Spec 1633 P1+P2.
   // FriendliAI backend handles all LLM calls; Haiku-based prefix extraction
   // is not available. Return null so callers fall back to default permission check.
   if (process.env.NODE_ENV !== 'test') {
-    const message = `[${toolName}Tool] LLM-based prefix extraction not available in KOSMOS (Spec 1633).`
+    const message = `[${toolName}Tool] LLM-based prefix extraction not available in KOSAX (Spec 1633).`
     if (isNonInteractiveSession) {
       process.stderr.write(jsonStringify({ level: 'warn', message }) + '\n')
     } else {

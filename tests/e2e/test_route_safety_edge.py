@@ -21,11 +21,11 @@ from unittest.mock import AsyncMock, patch
 import httpx
 import pytest
 
-from kosmos.context.builder import ContextBuilder
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.engine import QueryEngine
-from kosmos.engine.events import StopReason
-from kosmos.llm.models import StreamEvent, TokenUsage
+from kosax.context.builder import ContextBuilder
+from kosax.engine.config import QueryEngineConfig
+from kosax.engine.engine import QueryEngine
+from kosax.engine.events import StopReason
+from kosax.llm.models import StreamEvent, TokenUsage
 from tests.e2e.conftest import (
     TRIGGER_QUERY,
     _build_httpx_mock,

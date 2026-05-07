@@ -62,9 +62,9 @@ OUTPUT="$(dirname "$0")/../smoke-stdio.jsonl"
 FIXTURE_CATALOG="$(dirname "$0")/fixtures/catalog.json"
 
 # Build a temp file:// catalog URL pointing at the fixture
-export KOSMOS_PLUGIN_CATALOG_URL="file://$FIXTURE_CATALOG"
-export KOSMOS_PLUGIN_SLSA_SKIP=true
-export KOSMOS_ENV=development
+export KOSAX_PLUGIN_CATALOG_URL="file://$FIXTURE_CATALOG"
+export KOSAX_PLUGIN_SLSA_SKIP=true
+export KOSAX_ENV=development
 
 # Start backend in stdio mode, pipe input, capture output
 {
@@ -85,7 +85,7 @@ export KOSMOS_ENV=development
   # Frame 4: chat_request with empty tools[] (let backend export new registry)
   echo '{"kind":"chat_request","version":"1.0","session_id":"s1","correlation_id":"c4","ts":"2026-04-28T00:00:35Z","role":"tui","tools":[],"messages":[{"role":"user","content":"강남역 다음 열차 언제?"}]}'
 
-} | uv run python -m kosmos.cli --ipc stdio > "$OUTPUT"
+} | uv run python -m kosax.cli --ipc stdio > "$OUTPUT"
 
 # Validate
 jq -c 'select(.kind == "plugin_op" and .op == "complete")' "$OUTPUT"
@@ -162,7 +162,7 @@ expect "다음 열차"
 
 # Test list browser
 send "/plugins\r"
-expect "KOSMOS 플러그인"
+expect "KOSAX 플러그인"
 expect "seoul-subway"
 
 # Test remove

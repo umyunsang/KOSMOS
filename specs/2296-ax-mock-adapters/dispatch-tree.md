@@ -2,7 +2,7 @@
 
 **Generated**: 2026-04-29 (post `/speckit-taskstoissues`)
 **Epic**: #2296 — AX-infrastructure mock adapters & adapter-manifest IPC sync
-**Worktree**: `/Users/um-yunsang/KOSMOS-w-2296` on branch `2296-ax-mock-adapters`
+**Worktree**: `/Users/um-yunsang/KOSAX-w-2296` on branch `2296-ax-mock-adapters`
 **Lead Opus uses this at `/speckit-implement` time** to spawn parallel sonnet teammates per AGENTS.md § Agent Teams.
 
 ---
@@ -49,9 +49,9 @@ Phase 4A ships 7 tasks and ≈ 12 file changes — slightly over the AGENTS.md �
 For each Sonnet teammate, the Lead spawns with a prompt of this shape:
 
 ```text
-You are sonnet-<phase-tag> for KOSMOS Epic ε #2296 (AX-infrastructure mock adapters).
+You are sonnet-<phase-tag> for KOSAX Epic ε #2296 (AX-infrastructure mock adapters).
 
-Worktree: /Users/um-yunsang/KOSMOS-w-2296
+Worktree: /Users/um-yunsang/KOSAX-w-2296
 Branch: 2296-ax-mock-adapters
 Spec: specs/2296-ax-mock-adapters/spec.md
 Plan: specs/2296-ax-mock-adapters/plan.md
@@ -125,7 +125,7 @@ Phase 3 + 4A + 4B + 4C all gated by Phase 2 completion. Phase 5 gated by all fou
 
 ## Pre-implementation checklist (Lead before spawning teammates)
 
-- [ ] Worktree clean: `cd /Users/um-yunsang/KOSMOS-w-2296 && git status --short` returns empty
+- [ ] Worktree clean: `cd /Users/um-yunsang/KOSAX-w-2296 && git status --short` returns empty
 - [ ] Branch correct: `git branch --show-current` returns `2296-ax-mock-adapters`
 - [ ] Dependency baseline: `git diff main -- pyproject.toml tui/package.json` returns empty
 - [ ] All 49 sub-issues confirmed: `gh api graphql ... subIssues.totalCount` returns 49

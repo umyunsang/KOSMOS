@@ -2,7 +2,7 @@
 """Run report I/O helper for spec 030 Scenario 1 E2E.
 
 Provides ``dump_run_report`` — writes a RunReport to disk as JSON under
-KOSMOS_E2E_DUMP_DIR when set, returns None otherwise.
+KOSAX_E2E_DUMP_DIR when set, returns None otherwise.
 
 Exit code semantics (contracts/scenario-runner-cli.md §2):
   - Non-writable dump_dir raises RuntimeError (exit code 3 semantics).

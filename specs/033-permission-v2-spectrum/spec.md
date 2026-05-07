@@ -4,7 +4,7 @@
 **Created**: 2026-04-20
 **Status**: Draft
 **Epic**: #1297 (Permission v2 — Claude Code 5-mode + PIPA 동의 원장)
-**Input**: Epic B scope — migrate Claude Code 2.1.88 PermissionMode spectrum (`default` / `plan` / `acceptEdits` / `bypassPermissions` / `dontAsk`) into KOSMOS's citizen-API harness, layer a persistent per-adapter rule store on top (tri-state `allow | ask | deny`), and attach a PIPA-compliant consent decision ledger so every data-access session carries a verifiable legal basis. Preserves Spec 024/025 fail-closed AAL invariants and Constitution §II bypass-immune checks.
+**Input**: Epic B scope — migrate Claude Code 2.1.88 PermissionMode spectrum (`default` / `plan` / `acceptEdits` / `bypassPermissions` / `dontAsk`) into KOSAX's citizen-API harness, layer a persistent per-adapter rule store on top (tri-state `allow | ask | deny`), and attach a PIPA-compliant consent decision ledger so every data-access session carries a verifiable legal basis. Preserves Spec 024/025 fail-closed AAL invariants and Constitution §II bypass-immune checks.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -36,7 +36,7 @@
 
 1. **Given** 5건의 동의 결정이 ledger에 기록된 상태, **When** 외부 프로세스가 3번째 레코드의 `consentTimestamp` 필드 1바이트 변조, **Then** 검증 CLI가 "chain broken at record index 3" 에러를 반환하고 종료 코드 ≠ 0이다.
 2. **Given** 어댑터 X에 `allow` 규칙이 persistent rule store에 저장된 상태, **When** 사용자가 "X 어댑터 동의 철회" 명령 실행, **Then** rule store의 `allow` 규칙이 즉시 `deny`로 치환되고 ledger에 `action=withdraw, scope=previous_receipt_id` 레코드가 append되며, 다음 호출 시 프롬프트 없이 차단되고 오류 메시지에 "2026-04-20 사용자 철회" 사유가 포함된다.
-3. **Given** ledger 디렉터리가 존재하지만 HMAC 키 파일(`~/.kosmos/keys/ledger.key`)이 부재, **When** 새 동의 결정 기록 시도, **Then** 하네스는 **결정 실행을 거부**하고 사용자에게 키 초기화를 요구하며, 어떤 도구 호출도 실행하지 않는다 (fail-closed).
+3. **Given** ledger 디렉터리가 존재하지만 HMAC 키 파일(`~/.kosax/keys/ledger.key`)이 부재, **When** 새 동의 결정 기록 시도, **Then** 하네스는 **결정 실행을 거부**하고 사용자에게 키 초기화를 요구하며, 어떤 도구 호출도 실행하지 않는다 (fail-closed).
 
 ---
 
@@ -58,7 +58,7 @@
 
 ### User Story 4 — 부처별 tri-state 규칙을 영속화해 반복 호출을 단순화 (Priority: P2)
 
-사용자가 평소 자주 쓰는 어댑터 5종(예: `kma_forecast_fetch`, `hira_hospital_search` 등)에 대해 개별로 `allow | ask | deny` 상태를 저장하고 세션을 재시작해도 유지되길 원한다. `~/.kosmos/permissions.json`에 JSON 스키마 형태로 저장되며, 파일은 사용자 편집 가능 + 하네스 부팅 시 무결성 검증 후 메모리 레지스트리에 로드된다. 어댑터 단위뿐 아니라 `{adapter_id, ministry, purpose_category}` 튜플 단위 규칙도 저장할 수 있다.
+사용자가 평소 자주 쓰는 어댑터 5종(예: `kma_forecast_fetch`, `hira_hospital_search` 등)에 대해 개별로 `allow | ask | deny` 상태를 저장하고 세션을 재시작해도 유지되길 원한다. `~/.kosax/permissions.json`에 JSON 스키마 형태로 저장되며, 파일은 사용자 편집 가능 + 하네스 부팅 시 무결성 검증 후 메모리 레지스트리에 로드된다. 어댑터 단위뿐 아니라 `{adapter_id, ministry, purpose_category}` 튜플 단위 규칙도 저장할 수 있다.
 
 **Why this priority**: DX 개선. 없어도 P1 스토리로 시스템은 작동하지만 매 세션마다 재동의를 요구받아 UX가 무너짐. Continue.dev `~/.continue/permissions.yaml` tri-state 설계를 채용.
 
@@ -76,7 +76,7 @@
 
 사용자가 Shift+Tab 키체인으로 모드 스펙트럼을 순환(`default → acceptEdits → plan → [bypassPermissions | dontAsk] → default`)한다. `bypassPermissions`와 `dontAsk`는 로컬 발동이 아닌 **명시적 슬래시 명령**(`/permissions bypass`, `/permissions dontAsk`)으로만 진입 가능하며, 진입 시 사용자 확인 + ledger에 `action=enter_high_risk_mode` 레코드 기록, 종료 시 `action=exit_high_risk_mode`가 기록된다. TUI 상태바에 현재 모드가 상시 표시되고 고위험 모드는 별도 색상으로 강조된다.
 
-**Why this priority**: Claude Code / Cursor / Continue.dev에 공통된 Shift+Tab 순환 idiom을 KOSMOS TUI에 이식하되, 고위험 모드 진입 의지를 명시화하여 감사성 확보. P1이 없어도 작동하지만 전환 UX가 무너지면 사용자가 모드를 이해 못함.
+**Why this priority**: Claude Code / Cursor / Continue.dev에 공통된 Shift+Tab 순환 idiom을 KOSAX TUI에 이식하되, 고위험 모드 진입 의지를 명시화하여 감사성 확보. P1이 없어도 작동하지만 전환 UX가 무너지면 사용자가 모드를 이해 못함.
 
 **Independent Test**: TUI에서 Shift+Tab 4회 → 표시 문자열이 `default → acceptEdits → plan → default`로 순환(고위험 모드 포함 안 됨) 확인 + `/permissions bypass` 명령 실행 시 확인 프롬프트 + 상태바 색상 변경 + ledger 기록 확인만으로 검증 가능.
 
@@ -90,9 +90,9 @@
 
 ### Edge Cases
 
-- **Ledger 디렉터리 부재 or 쓰기 실패** (`~/.kosmos/consent_ledger.jsonl`): 하네스는 일체의 민감 호출을 거부하고 부팅 단계에서 경고 후 동의 프롬프트 발동을 중단한다 (fail-closed; US1+US2 교차 요구).
-- **HMAC 키(`~/.kosmos/keys/ledger.key`) 부재 or 권한 불일치(0400 아님)**: US2 시나리오 3에 따라 ledger append 거부, 도구 호출 차단.
-- **Rule store 파일(`~/.kosmos/permissions.json`) JSON 파싱 실패**: US4 시나리오 2처럼 rule store 비활성화 + 모든 모드를 `default`로 폴백 + 경고.
+- **Ledger 디렉터리 부재 or 쓰기 실패** (`~/.kosax/consent_ledger.jsonl`): 하네스는 일체의 민감 호출을 거부하고 부팅 단계에서 경고 후 동의 프롬프트 발동을 중단한다 (fail-closed; US1+US2 교차 요구).
+- **HMAC 키(`~/.kosax/keys/ledger.key`) 부재 or 권한 불일치(0400 아님)**: US2 시나리오 3에 따라 ledger append 거부, 도구 호출 차단.
+- **Rule store 파일(`~/.kosax/permissions.json`) JSON 파싱 실패**: US4 시나리오 2처럼 rule store 비활성화 + 모든 모드를 `default`로 폴백 + 경고.
 - **사용자가 동의했지만 PIPA 4-tuple(목적·항목·보유기간·거부권) 중 하나라도 누락된 프롬프트에서 동의**: 프롬프트 빌더가 4-tuple 누락 시 즉시 UI 에러로 뜨고 호출 차단(PIPA §15(2) 위반 방지).
 - **재동의 요구 조건 충족**: 어댑터의 목적·항목이 이전 동의 이후 변경되거나 동의 유효기간(기본 N개월, 어댑터별 override 가능) 초과 시 persistent rule store의 `allow`가 있어도 재프롬프트. ledger에 `action=reconsent_triggered, reason=<purpose_change|expiry>` 기록.
 - **AAL 다운그레이드 시도**: 어댑터 `auth_level=AAL2`인데 세션이 AAL1 자격만 보유할 때, 모드·규칙과 무관하게 즉시 차단(Spec 025 V6 backstop).
@@ -121,7 +121,7 @@
 
 #### Group C — Persistent Rule Store (US4)
 
-- **FR-C01**: 사용자 홈 디렉터리(`~/.kosmos/permissions.json`)에 tri-state(`allow | ask | deny`) 규칙을 JSON 스키마 형식으로 저장한다. 규칙 키는 최소 `{adapter_id}` 단위, 확장 키로 `{adapter_id, ministry, purpose_category}` 튜플을 지원한다.
+- **FR-C01**: 사용자 홈 디렉터리(`~/.kosax/permissions.json`)에 tri-state(`allow | ask | deny`) 규칙을 JSON 스키마 형식으로 저장한다. 규칙 키는 최소 `{adapter_id}` 단위, 확장 키로 `{adapter_id, ministry, purpose_category}` 튜플을 지원한다.
 - **FR-C02**: 규칙 파일은 부팅 시 스키마 검증을 거친 후 메모리 레지스트리에 로드되며, 검증 실패 시 전체 rule store를 비활성화하고 모든 모드를 `default`로 폴백한다.
 - **FR-C03**: 규칙 변경은 원자적으로 수행되어야 한다(임시파일 쓰기 + rename). 부분 쓰기로 인한 깨진 상태가 발생해선 안 된다.
 - **FR-C04**: 규칙 변경(create / update / delete)은 항상 consent ledger에 `action=rule_change` 레코드로 기록된다.
@@ -129,11 +129,11 @@
 
 #### Group D — PIPA Consent Ledger (US1, US2)
 
-- **FR-D01**: 하네스는 `~/.kosmos/consent_ledger.jsonl`에 append-only JSONL 형식으로 모든 동의 결정 이벤트를 기록한다.
-- **FR-D02**: 각 레코드는 Kantara Consent Receipt v1.1.0 필드(`consentReceiptID`, `piiControllers[]`, `services[]/purposes[]`, `consentTimestamp`, `jurisdiction`) + ISO/IEC 29184:2020 notice-binding 증거(`notice_hash`, `action_signifying_consent`) + KOSMOS 확장(`adapter_id`, `mode_at_decision`, `scope ∈ {session | persistent | single_irreversible_action | withdrawn}`)을 포함한다.
+- **FR-D01**: 하네스는 `~/.kosax/consent_ledger.jsonl`에 append-only JSONL 형식으로 모든 동의 결정 이벤트를 기록한다.
+- **FR-D02**: 각 레코드는 Kantara Consent Receipt v1.1.0 필드(`consentReceiptID`, `piiControllers[]`, `services[]/purposes[]`, `consentTimestamp`, `jurisdiction`) + ISO/IEC 29184:2020 notice-binding 증거(`notice_hash`, `action_signifying_consent`) + KOSAX 확장(`adapter_id`, `mode_at_decision`, `scope ∈ {session | persistent | single_irreversible_action | withdrawn}`)을 포함한다.
 - **FR-D03**: 모든 프롬프트 UI는 PIPA §15(2)의 4-tuple(처리 목적·수집 항목·보유 기간·동의 거부 시 결과)을 표시해야 하며, 4-tuple 중 하나라도 누락된 프롬프트는 표시되지 않고 즉시 호출 차단된다.
-- **FR-D04**: 각 레코드는 SHA-256 hash chain(`prev_hash || canonical_json(record)`) + HMAC-SHA-256(`~/.kosmos/keys/ledger.key`, 모드 0400)으로 봉인된다.
-- **FR-D05**: 검증 CLI(`kosmos permissions verify`)는 체인 무결성을 검사하고, 체인 파손 시 종료 코드 ≠ 0과 파손 지점 index를 보고한다.
+- **FR-D04**: 각 레코드는 SHA-256 hash chain(`prev_hash || canonical_json(record)`) + HMAC-SHA-256(`~/.kosax/keys/ledger.key`, 모드 0400)으로 봉인된다.
+- **FR-D05**: 검증 CLI(`kosax permissions verify`)는 체인 무결성을 검사하고, 체인 파손 시 종료 코드 ≠ 0과 파손 지점 index를 보고한다.
 - **FR-D06**: 사용자는 언제든 특정 어댑터·어떤 목적의 동의를 철회할 수 있어야 하며, 철회는 `action=withdraw` 레코드로 append되고 rule store의 해당 규칙을 `deny`로 전환한다.
 - **FR-D07**: PIPA §22(1)에 따라 개별 목적(`purpose_category`)마다 동의를 구분해 기록한다. 번들 동의는 허용하지 않는다.
 - **FR-D08**: PIPA §18(2) 목적 외 이용 금지: ledger에서 동의된 목적과 다른 목적으로 같은 어댑터가 호출되면 재프롬프트가 발동되며, 기존 `allow` 규칙을 우회하지 않는다.
@@ -142,20 +142,20 @@
 
 #### Group E — LLM Synthesis Boundary (Constitution §V, MEMORY project_pipa_role)
 
-- **FR-E01**: LLM에 전달되는 원시 개인정보는 컨텍스트 어셈블러 단계에서 가명화·요약되어야 하며, 가명화 실패 시 LLM 호출은 차단되고 ledger에 `action=synthesis_blocked_missing_pseudonym` 레코드 기록된다. KOSMOS는 PIPA §26 수탁자(기본값)로서 처리자 지침을 따르되, LLM 합성 단계만 controller-level 판단으로 carve-out된다.
+- **FR-E01**: LLM에 전달되는 원시 개인정보는 컨텍스트 어셈블러 단계에서 가명화·요약되어야 하며, 가명화 실패 시 LLM 호출은 차단되고 ledger에 `action=synthesis_blocked_missing_pseudonym` 레코드 기록된다. KOSAX는 PIPA §26 수탁자(기본값)로서 처리자 지침을 따르되, LLM 합성 단계만 controller-level 판단으로 carve-out된다.
 - **FR-E02**: AI 기본법 §27 고영향 AI 요건에 따라 모든 세션은 (a) 사용자에게 고영향 AI 사용 사실을 알리는 세션 시작 배너 + (b) 사람 개입 요청 경로(`/escalate`) + (c) 결정 설명 가능성(최근 도구 호출 이력 + 동의 근거)을 제공해야 한다.
 
 #### Group F — Integration & Audit (전체 스토리 공통)
 
 - **FR-F01**: 모든 도구 호출의 `ToolCallAuditRecord`(Spec 024)는 `consent_receipt_id` 필드를 통해 consent ledger의 해당 결정 레코드와 링크되어야 한다.
 - **FR-F02**: Permission v2 엔진은 Spec 025 V6 `auth_type` ↔ `auth_level` 불변식을 **우회하지 않으며**, 모드·규칙·동의 결정이 AAL backstop보다 먼저 평가되더라도 최종 결정은 AAL 불변식을 위반할 수 없다.
-- **FR-F03**: OpenTelemetry span 속성으로 `kosmos.permission.mode`, `kosmos.permission.decision`, `kosmos.consent.receipt_id`를 모든 도구 호출 span에 첨부한다(Spec 021 호환).
+- **FR-F03**: OpenTelemetry span 속성으로 `kosax.permission.mode`, `kosax.permission.decision`, `kosax.consent.receipt_id`를 모든 도구 호출 span에 첨부한다(Spec 021 호환).
 
 ### Key Entities
 
 - **PermissionMode**: 5종 외부 모드 + 2종 내부 모드(제외). 각 모드는 title/shortTitle/symbol/color/external 필드를 갖는다.
 - **PermissionRule**: `{adapter_id, ministry?, purpose_category?, decision: allow|ask|deny, created_at, updated_at, source: user|admin|system}` — rule store 엔트리.
-- **ConsentDecision**: 단일 ledger 레코드. Kantara CR + ISO 29184 + KOSMOS 확장 필드 결합.
+- **ConsentDecision**: 단일 ledger 레코드. Kantara CR + ISO 29184 + KOSAX 확장 필드 결합.
 - **ConsentLedger**: 전체 hash-chain + HMAC 봉인된 append-only 파일. 무결성 검증 단위.
 - **ToolPermissionContext**: `{mode, rule_hits, active_consent_receipts, is_bypass_available, is_dontask_available, high_risk_mode_expires_at}` — 도구 호출마다 주입.
 - **AdapterPermissionMetadata**: 어댑터 선언 시 `{is_personal_data, is_irreversible, auth_level, pipa_class, purpose_categories, consent_validity_period}` 필드 제공(Spec 024 GovAPITool 확장).
@@ -179,18 +179,18 @@
 - Epic 027(Agent Swarm)이 제공하는 mailbox 기반 IPC가 `RequireHumanOversight` 오류 전파 경로로 사용 가능하다(Spec 031 어댑터 메타데이터와 호환).
 - Spec 024 `ToolCallAuditRecord` + Spec 025 V6 AAL backstop 이 이미 안정화되어 있으며, Permission v2 엔진은 두 spec의 불변식 위에 층(layer)으로 쌓인다.
 - TUI(Spec 287)는 Shift+Tab 입력 캡처와 슬래시 명령 라우팅을 이미 제공한다(추가 입력 인프라 필요 없음).
-- 사용자 홈 디렉터리(`~/.kosmos/`)에 대한 쓰기 권한은 하네스 프로세스가 보유한다(OS 수준 전제).
-- `data.go.kr` API 포털은 공인인증(AAL2/AAL3) 레벨을 직접 검증해주지 않으므로, KOSMOS는 세션 수립 시 수집한 AAL 클레임을 신뢰한다(AAL claim provenance는 이 Epic 범위 밖).
+- 사용자 홈 디렉터리(`~/.kosax/`)에 대한 쓰기 권한은 하네스 프로세스가 보유한다(OS 수준 전제).
+- `data.go.kr` API 포털은 공인인증(AAL2/AAL3) 레벨을 직접 검증해주지 않으므로, KOSAX는 세션 수립 시 수집한 AAL 클레임을 신뢰한다(AAL claim provenance는 이 Epic 범위 밖).
 - AI 기본법 §31 생성형 표시 요건은 Epic B 범위에서 세션 시작 배너 + 응답 말미 고지 수준까지만 다룬다(워터마킹은 별도 Epic).
-- Kantara Consent Receipt v1.1.0 JSON 스키마는 KOSMOS ledger 레코드의 참조 스키마로 사용 가능하다(라이선스·사용권 검증 완료 전제, plan.md Phase 0에서 재확인).
+- Kantara Consent Receipt v1.1.0 JSON 스키마는 KOSAX ledger 레코드의 참조 스키마로 사용 가능하다(라이선스·사용권 검증 완료 전제, plan.md Phase 0에서 재확인).
 - Claude Code 2.1.88 `PermissionMode.ts`의 `auto`/`bubble` 내부 모드는 본 Epic에서 구현하지 않으며 추후 별도 Epic으로 검토한다.
 
 ## Scope Boundaries & Deferred Items *(mandatory)*
 
 ### Out of Scope (Permanent)
 
-- **모바일 네이티브 권한 UI**: KOSMOS는 터미널 기반 플랫폼으로, 모바일 OS 권한 모델 연동은 영구 범위 외.
-- **Claude Code 내부 모드(`auto`, `bubble`)**: TRANSCRIPT_CLASSIFIER 피처 게이트 기반 내부 모드는 KOSMOS의 시민용 사용 사례와 무관. 영구 범위 외.
+- **모바일 네이티브 권한 UI**: KOSAX는 터미널 기반 플랫폼으로, 모바일 OS 권한 모델 연동은 영구 범위 외.
+- **Claude Code 내부 모드(`auto`, `bubble`)**: TRANSCRIPT_CLASSIFIER 피처 게이트 기반 내부 모드는 KOSAX의 시민용 사용 사례와 무관. 영구 범위 외.
 - **생체정보 기반 AAL3 획득 경로**: AAL 클레임 수집은 세션 수립 레이어 책임이며 본 Epic은 AAL을 "신뢰되는 입력"으로만 취급. 영구 범위 외.
 - **AI 행동계획 §31 생성 콘텐츠 워터마킹**: 텍스트·이미지 워터마킹은 별도 연구 Epic에서 다룸. 영구 범위 외.
 

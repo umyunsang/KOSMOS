@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1633 P2 · stub-noop replacement for CC GrowthBook.
+// KOSAX-original — Epic #1633 P2 · stub-noop replacement for CC GrowthBook.
 //
 // The original Anthropic GrowthBook feature-flag client has been removed.
-// KOSMOS does not ship with feature flags in P1+P2 scope; every gate
+// KOSAX does not ship with feature flags in P1+P2 scope; every gate
 // resolves to its "disabled" branch (false / null / default).
 //
-// If a future Epic reintroduces feature flags, the KOSMOS equivalent will
-// be a single provider configured via KOSMOS_ env vars — not the Anthropic
+// If a future Epic reintroduces feature flags, the KOSAX equivalent will
+// be a single provider configured via KOSAX_ env vars — not the Anthropic
 // GrowthBook SDK.
 
 // ---------------------------------------------------------------------------

@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
 @pytest.mark.asyncio
 async def test_happy_path_gongdong_injeungseo() -> None:
     """Calling verify() with a registered family returns a valid AuthContext."""
-    import kosmos.tools.mock  # noqa: F401 — registers all 6 adapters
-    from kosmos.primitives.verify import GongdongInjeungseoContext, verify
+    import kosax.tools.mock  # noqa: F401 — registers all 6 adapters
+    from kosax.primitives.verify import GongdongInjeungseoContext, verify
 
     result = await verify("gongdong_injeungseo", {})
 
@@ -46,8 +46,8 @@ async def test_happy_path_gongdong_injeungseo() -> None:
 @pytest.mark.asyncio
 async def test_unregistered_family_returns_mismatch_error() -> None:
     """verify() with an unknown family must return VerifyMismatchError, not raise."""
-    import kosmos.tools.mock  # noqa: F401
-    from kosmos.primitives.verify import VerifyMismatchError, verify
+    import kosax.tools.mock  # noqa: F401
+    from kosax.primitives.verify import VerifyMismatchError, verify
 
     result = await verify("nonexistent_cert_family", {})
 

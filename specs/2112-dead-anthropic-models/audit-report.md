@@ -2,7 +2,7 @@
 === T031 Citizen smoke results (2026-04-28 via expect) ===
 Log: 178 lines captured at smoke.txt
 
-C9.1 Korean reply paint: PASS — '안녕하세요! KOSMOS 프로젝트의...' surfaced
+C9.1 Korean reply paint: PASS — '안녕하세요! KOSAX 프로젝트의...' surfaced
 C9.2 Lookup primitive call: AMBIGUOUS — LLM answered '강남역 어디?' directly
   without invoking lookup. K-EXAONE chose direct response over tool call;
   this is LLM-autonomous routing per memory 'feedback_no_hardcoding' and

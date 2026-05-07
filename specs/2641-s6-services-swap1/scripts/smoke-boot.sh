@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Spec 2641 · T009 — Layer 5 boot smoke scenario.
 #
-# Verifies KOSMOS TUI boots successfully with the S6 services swap-1
+# Verifies KOSAX TUI boots successfully with the S6 services swap-1
 # changes (api/client.ts deduplication + teamMemorySync 박제 +
 # settingsSync 박제) and reaches the interactive prompt without runtime
 # errors from the dead-call gates (silent-skip variant in settingsSync
@@ -14,9 +14,9 @@
 set -u
 
 # ── Stage 1: boot ──────────────────────────────────────────────────────
-# The KOSMOS branding and tool_registry boot message must appear within
+# The KOSAX branding and tool_registry boot message must appear within
 # 30s. If they don't, something in services/ broke the boot path.
-wait_for_pane "KOSMOS" 30 || { snapshot_pane "boot-timeout"; exit 1; }
+wait_for_pane "KOSAX" 30 || { snapshot_pane "boot-timeout"; exit 1; }
 snapshot_pane "boot-branding"
 
 wait_for_pane "tool_registry" 15 || true

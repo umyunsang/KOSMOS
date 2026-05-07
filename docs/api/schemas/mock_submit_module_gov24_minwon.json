@@ -110,7 +110,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/mock_submit_module_gov24_minwon.json",
+  "$id": "https://kosax.example/api/schemas/mock_submit_module_gov24_minwon.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "Typed params for the Government24 civil petition filing adapter.\n\nDomain vocabulary lives HERE, not on the main SubmitInput envelope (SC-002).\nReal-world counterpart: 정부24 민원신청 API (행정안전부).",

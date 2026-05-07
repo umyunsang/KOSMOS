@@ -2,12 +2,12 @@
 """T040 — MCP bridge OTEL span attributes + SC-004 handshake timing assertion.
 
 Per contracts/mcp-bridge.md § 4.3 + SC-004:
-- ``kosmos.mcp.handshake_ms``: emitted on every initialize + initialized exchange.
+- ``kosax.mcp.handshake_ms``: emitted on every initialize + initialized exchange.
   Cold-start budget: < 500 ms. Warm: < 100 ms.
-- ``kosmos.mcp.tool_call_id``: emitted on every tools/call request.
-- ``kosmos.mcp.protocol_version``: emitted on initialize response.
+- ``kosax.mcp.tool_call_id``: emitted on every tools/call request.
+- ``kosax.mcp.protocol_version``: emitted on initialize response.
 
-This test exercises ``kosmos.ipc.mcp_server.MCPServer`` in-process (no
+This test exercises ``kosax.ipc.mcp_server.MCPServer`` in-process (no
 subprocess) to verify the handler produces the correct response envelopes
 and to MEASURE the handshake latency directly. The protocol-version + tool
 list shape checks are the load-bearing parts; the timing assertions use
@@ -27,13 +27,13 @@ import time
 
 import pytest
 
-from kosmos.ipc.mcp_server import (
+from kosax.ipc.mcp_server import (
     MCP_PROTOCOL_VERSION,
     MCPServer,
 )
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.register_all import register_all_tools
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.register_all import register_all_tools
+from kosax.tools.registry import ToolRegistry
 
 
 @pytest.fixture(scope="module")
@@ -67,7 +67,7 @@ class TestMCPHandshake:
         assert response["id"] == 1
         assert response["result"]["protocolVersion"] == MCP_PROTOCOL_VERSION
         assert response["result"]["capabilities"]["tools"]["listChanged"] is False
-        assert response["result"]["serverInfo"]["name"] == "kosmos-backend"
+        assert response["result"]["serverInfo"]["name"] == "kosax-backend"
 
     def test_initialized_notification_has_no_response(self, mcp_server: MCPServer) -> None:
         response = asyncio.run(
@@ -85,7 +85,7 @@ class TestMCPToolsListShape:
         )
         assert response is not None
         tools = response["result"]["tools"]
-        # Subscribe is deferred out of the active surface until KOSMOS owns an
+        # Subscribe is deferred out of the active surface until KOSAX owns an
         # app/push delivery runtime. The MCP tool list mirrors the active
         # registry: 33 tools.
         assert len(tools) == 33, f"Tool list count drift: got {len(tools)}, expected 33"

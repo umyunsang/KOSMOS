@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosmos.dev/schemas/spec-287/worker-status.schema.json",
+  "$id": "https://kosax.dev/schemas/spec-287/worker-status.schema.json",
   "title": "WorkerStatusFrame",
   "description": "backend → TUI: per-worker status row update from Spec 027 swarm + Spec #14 role labels. Direction: backend → TUI.",
   "type": "object",

@@ -1,13 +1,13 @@
-# `kosmos-plugin-template` staging
+# `kosax-plugin-template` staging
 
 > **In-tree staging area** — `examples/plugin-template-staging/` 의 컨텐츠는
-> 외부 repo `kosmos-plugin-store/kosmos-plugin-template` 와 byte-equal 한
+> 외부 repo `kosax-plugin-store/kosax-plugin-template` 와 byte-equal 한
 > source-of-truth 입니다 (T016).
 
 이 staging 은 다음 명령의 emit 결과와 byte-equal:
 
 ```sh
-uv run python -m kosmos.plugins.cli_init my_plugin \
+uv run python -m kosax.plugins.cli_init my_plugin \
   --tier live --layer 1 --no-pii \
   --out examples/plugin-template-staging
 ```

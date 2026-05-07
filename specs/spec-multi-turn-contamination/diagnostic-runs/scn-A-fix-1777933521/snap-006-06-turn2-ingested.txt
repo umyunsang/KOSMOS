@@ -1,5 +1,5 @@
  K가장 가까운 내과 (병원/의원)                                  false delta="" thinking="To"
-[KOSMOS-QUERY] recv #29 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" fulfill"
+[KOSAX-QUERY] recv #29 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" fulfill"
 
   1. 선한목자병원 (824m)
 
@@ -48,7 +48,7 @@
        3. {"ykiho":"JDQ4MTg4MSM1MSMkMSMkMCMkODkkMzgxMzUxIzExIyQxIyQzIyQwMyQzNjE0ODEjNTEjJDEjJDIjJDgz","yadmNm":"차의과학대학교 강남차병원","ad
 
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-❯ 재난 알림 구독해줘[KOSMOS-QUERY] callModel:enter messages=8
+❯ 재난 알림 구독해줘[KOSAX-QUERY] callModel:enter messages=8
 ❯ 재난 알림 구독해줘
       S    R         g chat_request corr=3eaf1aa6-fbd3-499b-aca5-6d54eaf8aaaf chatMessages=5
 ✳ Brewing…

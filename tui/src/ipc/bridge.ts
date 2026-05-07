@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — no upstream analog (Claude Code uses HTTP SSE, not stdio JSONL).
+// KOSAX-original — no upstream analog (Claude Code uses HTTP SSE, not stdio JSONL).
 //
 // IPC Bridge: spawns the Python backend and exposes a typed async interface.
 //
@@ -7,7 +7,7 @@
 //   - Uses Bun.spawn() with { stdin: "pipe", stdout: "pipe", stderr: "pipe" }
 //     because Bun#4670 blocks extra fds; all IPC must fit on stdin/stdout/stderr.
 //   - stdout frames are pushed into a FIFO async queue (no reordering).
-//   - DEBUG-level frame logging controlled by KOSMOS_TUI_LOG_LEVEL (FR-010).
+//   - DEBUG-level frame logging controlled by KOSAX_TUI_LOG_LEVEL (FR-010).
 //   - crashDetector is wired via crash-detector.ts; this module only exposes
 //     the send/close/frames API surface.
 //
@@ -54,8 +54,10 @@ export type FrameHook = (
 
 export interface BridgeOptions {
   /**
-   * Command to spawn.  Defaults to ['uv', 'run', 'kosmos', '--ipc', 'stdio'].
-   * Override via KOSMOS_BACKEND_CMD env var (space-split) or this option.
+   * Command to spawn. Defaults to ['uv', 'run', 'kosax', '--ipc', 'stdio'].
+   * Override via KOSAX_BACKEND_CMD_JSON, KOSAX_BACKEND_CMD, or this option.
+   * KOSAX_BACKEND_CMD_JSON is preferred for package wrappers because it
+   * preserves install paths that contain spaces.
    */
   cmd?: string[]
   /**
@@ -115,7 +117,7 @@ export interface BridgeOptions {
   /**
    * Additional env vars to merge onto the backend subprocess environment
    * (on top of the inherited process env). Used primarily by tests to select
-   * the `echo` handler via `{ KOSMOS_IPC_HANDLER: 'echo' }` without needing
+   * the `echo` handler via `{ KOSAX_IPC_HANDLER: 'echo' }` without needing
    * a FriendliAI session on the CI runner.
    */
   env?: Record<string, string>
@@ -181,7 +183,7 @@ export interface IPCBridge {
 }
 
 // ---------------------------------------------------------------------------
-// Log helper (FR-010: KOSMOS_TUI_LOG_LEVEL)
+// Log helper (FR-010: KOSAX_TUI_LOG_LEVEL)
 // ---------------------------------------------------------------------------
 
 type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
@@ -191,7 +193,7 @@ const _levelOrder: Record<LogLevel, number> = {
 }
 
 function _getLogLevel(): LogLevel {
-  const raw = (process.env['KOSMOS_TUI_LOG_LEVEL'] ?? 'WARN').toUpperCase()
+  const raw = (process.env['KOSAX_TUI_LOG_LEVEL'] ?? 'WARN').toUpperCase()
   if (raw in _levelOrder) return raw as LogLevel
   return 'WARN'
 }
@@ -204,7 +206,7 @@ function _log(level: LogLevel, ...args: unknown[]): void {
     // drop-and-log) and breaks PTY scenarios (Spec 1978 T002 regression
     // guard — see docs/spec-1978/B1-root-cause-trace.md). Do NOT switch to
     // console.log here even temporarily.
-    process.stderr.write(`[KOSMOS IPC ${level}] ${args.map(String).join(' ')}\n`)
+    process.stderr.write(`[KOSAX IPC ${level}] ${args.map(String).join(' ')}\n`)
   }
 }
 
@@ -275,6 +277,34 @@ function _uuidv7(): string {
   return `${tsHex.slice(0, 8)}-${tsHex.slice(8, 12)}-${ver}${randHex.slice(0, 3)}-${varByte}${randHex.slice(3, 5)}-${remaining.slice(0, 12)}`
 }
 
+function resolveBackendCommand(optsCmd?: string[]): string[] {
+  if (optsCmd) return optsCmd
+
+  const envCmdJson = process.env['KOSAX_BACKEND_CMD_JSON']
+  if (envCmdJson) {
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(envCmdJson)
+    } catch (error) {
+      throw new Error(
+        `Invalid KOSAX_BACKEND_CMD_JSON: expected a JSON string array (${error})`,
+      )
+    }
+    if (
+      Array.isArray(parsed) &&
+      parsed.length > 0 &&
+      parsed.every((part): part is string => typeof part === 'string' && part.length > 0)
+    ) {
+      return parsed
+    }
+    throw new Error('Invalid KOSAX_BACKEND_CMD_JSON: expected a non-empty JSON string array')
+  }
+
+  const envCmd = process.env['KOSAX_BACKEND_CMD']
+  const defaultCmd = ['uv', 'run', 'kosax', '--ipc', 'stdio']
+  return envCmd ? envCmd.split(' ') : defaultCmd
+}
+
 // ---------------------------------------------------------------------------
 // createBridge
 // ---------------------------------------------------------------------------
@@ -293,10 +323,7 @@ function _uuidv7(): string {
  *    and emits ResumeRequestFrame as first frame after reconnect.
  */
 export function createBridge(opts: BridgeOptions = {}): IPCBridge {
-  // Resolve command
-  const envCmd = process.env['KOSMOS_BACKEND_CMD']
-  const defaultCmd = ['uv', 'run', 'kosmos', '--ipc', 'stdio']
-  const cmd: string[] = opts.cmd ?? (envCmd ? envCmd.split(' ') : defaultCmd)
+  const cmd = resolveBackendCommand(opts.cmd)
 
   // Reconnect config
   const maxReconnectAttempts = opts.maxReconnectAttempts ?? 5

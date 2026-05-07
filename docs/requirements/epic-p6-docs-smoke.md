@@ -2,7 +2,7 @@
 
 ## Objective
 
-(a) KOSMOS에 등록된 모든 tool adapter의 명세서를 `docs/api/` 에 Markdown +
+(a) KOSAX에 등록된 모든 tool adapter의 명세서를 `docs/api/` 에 Markdown +
 JSON Schema + OpenAPI 참조 형태로 작성. (b) 통합 bun test 회귀 없음 확인
 + `bun run tui` 사용자 시각 검증 + 단일 PR 발행.
 
@@ -64,18 +64,18 @@ JSON Schema + OpenAPI 참조 형태로 작성. (b) 통합 bun test 회귀 없음
 
 #### `bun test` 회귀 수정
 - Baseline target: 576 pass (P0 달성 상태)
-- 깨진 테스트 수정 또는 삭제 (기존 KOSMOS-only 테스트 · CC 포팅 테스트 구분)
+- 깨진 테스트 수정 또는 삭제 (기존 KOSAX-only 테스트 · CC 포팅 테스트 구분)
 - 통합 snapshot 갱신
 
 #### 통합 bun run tui
 - 온보딩 5-step 수동 clickthrough
-- Active primitive LLM 호출 시나리오 (lookup · submit mock · verify mock). Subscribe is deferred until KOSMOS has an app/push-notification runtime.
+- Active primitive LLM 호출 시나리오 (lookup · submit mock · verify mock). Subscribe is deferred until KOSAX has an app/push-notification runtime.
 - `/agents` · `/plugins` · `/consent list` · `/help` 검증
 - Error envelope 3종 수동 유발 테스트
 - PDF inline render 검증 (Kitty/iTerm2 환경)
 
 #### PR 발행
-- Conventional Commits: `feat: KOSMOS migration (Initiative #X)`
+- Conventional Commits: `feat: KOSAX migration (Initiative #X)`
 - Body: `Closes #<Initiative>` + 주요 변경 요약 + 시각 확인 체크리스트
 - 연결된 sub-issue(Epic)들은 merge 후 close
 
@@ -83,7 +83,7 @@ JSON Schema + OpenAPI 참조 형태로 작성. (b) 통합 bun test 회귀 없음
 
 - `docs/vision.md § L1-A/B/C` 마이그레이션 결과 반영
 - `CLAUDE.md § Active Technologies` 업데이트
-- `CHANGELOG.md` KOSMOS v0.1-alpha 항목
+- `CHANGELOG.md` KOSAX v0.1-alpha 항목
 
 ### Out of scope
 
@@ -95,4 +95,4 @@ JSON Schema + OpenAPI 참조 형태로 작성. (b) 통합 bun test 회귀 없음
 
 ### Related decisions
 
-`docs/requirements/kosmos-migration-tree.md § L1-B B7` + `§ P6`
+`docs/requirements/kosax-migration-tree.md § L1-B B7` + `§ P6`

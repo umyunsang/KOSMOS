@@ -63,7 +63,7 @@ def _build_parser() -> argparse.ArgumentParser:
         metavar="FILE",
         help=(
             "Path to a JSON file containing a dict[prompt_id, sha256_hex] mapping "
-            "(emitted by: python -m kosmos.context.prompt_loader --emit-hashes)."
+            "(emitted by: python -m kosax.context.prompt_loader --emit-hashes)."
         ),
     )
     parser.add_argument(

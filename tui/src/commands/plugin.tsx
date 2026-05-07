@@ -8,7 +8,7 @@
 //   The pattern: call() returns a React component; the component handles all
 //   interaction internally (consent, progress, completion); component
 //   unmounts via onDone after terminal state. CC's marketplace surface
-//   is replaced by KOSMOS's PluginInstallFlow (see ../components/plugins/).
+//   is replaced by KOSAX's PluginInstallFlow (see ../components/plugins/).
 //
 // Spec 1979 — citizen plugin lifecycle slash command.
 //
@@ -249,7 +249,7 @@ type _PluginCommand = Command & {
 const pluginCommand: _PluginCommand = {
   type: 'local-jsx',
   name: 'plugin',
-  description: 'KOSMOS 플러그인 설치 / 목록 / 제거 / PIPA 해시 (Install / list / uninstall KOSMOS plugins)',
+  description: 'KOSAX 플러그인 설치 / 목록 / 제거 / PIPA 해시 (Install / list / uninstall KOSAX plugins)',
   argumentHint: '<install|list|uninstall|pipa-text> [name]',
   immediate: true,
   load: async () => ({ call }),

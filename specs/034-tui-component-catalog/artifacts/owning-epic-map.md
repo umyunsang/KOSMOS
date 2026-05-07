@@ -24,7 +24,7 @@
 When a logical-owning Epic is CLOSED:
 
 - **Fully delivered** by the closed Epic's ship (e.g., `PermissionGauntletModal.tsx` delivered by #1441):
-  - `Verdict = PORT`, `Owning Epic = <id> #<issue> (closed)`, `Rationale = "implementation complete; delivered by #<PR>"`, `Task sub-issue = —`, `KOSMOS target = tui/src/components/coordinator/PermissionGauntletModal.tsx`.
+  - `Verdict = PORT`, `Owning Epic = <id> #<issue> (closed)`, `Rationale = "implementation complete; delivered by #<PR>"`, `Task sub-issue = —`, `KOSAX target = tui/src/components/coordinator/PermissionGauntletModal.tsx`.
 - **TUI-side rewrite still needed** after the closed Epic's ship:
   - `Verdict = REWRITE`, `Owning Epic = <id> #<issue> (closed)`, `Task sub-issue = re-parented to Epic M #1310` at T031 (FR-026 exception; invariant I16).
 
@@ -40,7 +40,7 @@ When a logical-owning Epic is CLOSED:
 | `permissions`, `TrustDialog`, `ManagedSettingsSecurityDialog`, `sandbox`, `Passes` | B #1297 (closed) | permission spectrum shipped 2026-04-19 PR #1441; see §2 closed-Epic rule |
 | `agents`, `teams`, `grove` | M #1310 / DISCARD | agents = multi-agent swarm HUD (M); teams/grove = enterprise seat mgmt → DISCARD domain mismatch |
 | `mcp` | M #1310 / mixed | MCP client surfaces may PORT if harness-level; server-config dialogs mostly DISCARD (dev-only) |
-| `skills` | DISCARD (domain mismatch) | skill authoring is for CC users; KOSMOS adapters live server-side in Python |
+| `skills` | DISCARD (domain mismatch) | skill authoring is for CC users; KOSAX adapters live server-side in Python |
 | `tasks` | M #1310 | TaskList rendering is harness-level; binds to Sub-Issues API v2 awareness |
 | `wizard` | H #1302 | onboarding-adjacent wizard flows |
 | `DesktopUpsell` | DISCARD (D-1.b) | Anthropic Desktop upsell, not a citizen concern |

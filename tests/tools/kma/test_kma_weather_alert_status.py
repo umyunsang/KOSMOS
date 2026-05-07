@@ -11,8 +11,8 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from kosmos.tools.errors import ConfigurationError, ToolExecutionError
-from kosmos.tools.kma.kma_weather_alert_status import (
+from kosax.tools.errors import ConfigurationError, ToolExecutionError
+from kosax.tools.kma.kma_weather_alert_status import (
     KMA_WEATHER_ALERT_STATUS_TOOL,
     KmaWeatherAlertStatusInput,
     KmaWeatherAlertStatusOutput,
@@ -259,7 +259,7 @@ class TestCall:
     @pytest.mark.asyncio
     async def test_success_flow(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Happy-path: mock httpx client returns success fixture; output has 2 warnings."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key")
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key")
 
         fixture_data = _load("kma_alert_success.json")
 
@@ -293,17 +293,17 @@ class TestCall:
     @pytest.mark.asyncio
     async def test_missing_api_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Missing env var must raise ConfigurationError before any HTTP call."""
-        monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
+        monkeypatch.delenv("KOSAX_DATA_GO_KR_API_KEY", raising=False)
 
         inp = KmaWeatherAlertStatusInput(stn_id="108")
         with pytest.raises(ConfigurationError) as exc_info:
             await _call(inp)
-        assert "KOSMOS_DATA_GO_KR_API_KEY" in str(exc_info.value)
+        assert "KOSAX_DATA_GO_KR_API_KEY" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_xml_guard(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """XML content-type response must raise ToolExecutionError."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key")
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key")
 
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 200
@@ -355,8 +355,8 @@ class TestToolDefinition:
 class TestRegister:
     def test_register_adds_to_registry_and_executor(self) -> None:
         """register() adds the tool to both registry and executor."""
-        from kosmos.tools.executor import ToolExecutor
-        from kosmos.tools.registry import ToolRegistry
+        from kosax.tools.executor import ToolExecutor
+        from kosax.tools.registry import ToolRegistry
 
         registry = ToolRegistry()
         executor = ToolExecutor(registry)

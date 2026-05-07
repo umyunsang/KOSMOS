@@ -1,7 +1,7 @@
-export const KOSMOS_CLI_COMMAND = 'kosmos'
-export const KOSMOS_CONTINUE_COMMAND = `${KOSMOS_CLI_COMMAND} --continue`
-export const KOSMOS_PRINT_RESUME_USAGE = `${KOSMOS_CLI_COMMAND} -p --resume <session-id>`
+export const KOSAX_CLI_COMMAND = 'kosax'
+export const KOSAX_CONTINUE_COMMAND = `${KOSAX_CLI_COMMAND} --continue`
+export const KOSAX_PRINT_RESUME_USAGE = `${KOSAX_CLI_COMMAND} -p --resume <session-id>`
 
-export function formatKosmosResumeCommand(resumeArg: string): string {
-  return `${KOSMOS_CLI_COMMAND} --resume ${resumeArg}`
+export function formatKosaxResumeCommand(resumeArg: string): string {
+  return `${KOSAX_CLI_COMMAND} --resume ${resumeArg}`
 }

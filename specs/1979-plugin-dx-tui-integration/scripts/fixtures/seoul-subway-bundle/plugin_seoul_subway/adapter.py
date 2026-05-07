@@ -12,7 +12,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from kosmos.tools.models import GovAPITool
+from kosax.tools.models import GovAPITool
 
 
 class LookupInput(BaseModel):

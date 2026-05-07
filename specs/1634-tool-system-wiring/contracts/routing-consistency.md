@@ -28,7 +28,7 @@ Every `GovAPITool.ministry` MUST be a member of the `Ministry` Literal alias.
 
 ### Invariant 3 — adapter_mode declared in mock subtree
 
-Every adapter under `src/kosmos/tools/mock/*` MUST set `adapter_mode="mock"` explicitly (not rely on the `"live"` default).
+Every adapter under `src/kosax/tools/mock/*` MUST set `adapter_mode="mock"` explicitly (not rely on the `"live"` default).
 
 **Failure message** (CI test only — runtime cannot inspect file paths cheaply): `"<tool_id>: invariant 3 (mock subtree adapter_mode declared) — adapter at <file_path> uses default adapter_mode='live'; mock adapters MUST declare 'mock' explicitly"`
 
@@ -52,7 +52,7 @@ No two registered adapters MAY share a `tool_id`.
 
 ### Invariant 6 — Spec 025 v6 (auth_type, auth_level) preserved
 
-Already enforced by Pydantic at `GovAPITool` construction time via the existing v6 validator (`src/kosmos/tools/models.py:313-327`). `build_routing_index()` does NOT re-check; if it received the adapter as a valid `GovAPITool` instance, this invariant has already passed.
+Already enforced by Pydantic at `GovAPITool` construction time via the existing v6 validator (`src/kosax/tools/models.py:313-327`). `build_routing_index()` does NOT re-check; if it received the adapter as a valid `GovAPITool` instance, this invariant has already passed.
 
 **Failure message** (raised at adapter construction, before `build_routing_index` is called): `"V6 violation (FR-039): tool '<id>' has auth_type=<repr> with auth_level=<repr>; auth_type=<repr> permits auth_level in <set>"`
 
@@ -74,7 +74,7 @@ The runtime tool registration entry points (Python `register_all.py` + TUI tool 
 
 **Failure message**: `"CC dev tool re-imported — found '<name>' in <path:line>; deletion required per FR-012"`
 
-**Implementation**: grep across `src/kosmos/tools/register_all.py` and `tui/src/tools/index.ts` (or whichever module composes the registered list).
+**Implementation**: grep across `src/kosax/tools/register_all.py` and `tui/src/tools/index.ts` (or whichever module composes the registered list).
 
 ### Check 9 — Auxiliary tool ministry/primitive consistency
 
@@ -110,12 +110,12 @@ tests/tools/test_routing_consistency.py::test_check_10_plugin_namespace PASSED
 
 ## 5. Boot integration
 
-`kosmos.tools.register_all` calls `build_routing_index()` after registering all adapters. On `RoutingValidationError`, the process exits with code 78 (`EX_CONFIG`) per AGENTS.md fail-closed convention; the TUI surfaces this as "tool subsystem misconfigured — check logs."
+`kosax.tools.register_all` calls `build_routing_index()` after registering all adapters. On `RoutingValidationError`, the process exits with code 78 (`EX_CONFIG`) per AGENTS.md fail-closed convention; the TUI surfaces this as "tool subsystem misconfigured — check logs."
 
 Pseudocode:
 ```python
-# src/kosmos/tools/register_all.py (end of file)
-from kosmos.tools.routing_index import build_routing_index, RoutingValidationError
+# src/kosax/tools/register_all.py (end of file)
+from kosax.tools.routing_index import build_routing_index, RoutingValidationError
 
 def register_all() -> RoutingIndex:
     adapters = _build_all_adapters()
@@ -128,4 +128,4 @@ def register_all() -> RoutingIndex:
 
 ## 6. Exemptions
 
-None. Every `GovAPITool` instance, whether live or mock, is subject to all six invariants. Mock adapters under `src/kosmos/tools/mock/*` are additionally subject to CI check 3 (explicit `adapter_mode="mock"` declaration).
+None. Every `GovAPITool` instance, whether live or mock, is subject to all six invariants. Mock adapters under `src/kosax/tools/mock/*` are additionally subject to CI check 3 (explicit `adapter_mode="mock"` declaration).

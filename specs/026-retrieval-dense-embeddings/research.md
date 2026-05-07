@@ -22,7 +22,7 @@ This document resolves every `NEEDS CLARIFICATION` marker from `spec.md`, maps e
 
 ### CL-2 — Default backend at merge
 
-**Question (spec §Clarifications #2)**: Ship as `KOSMOS_RETRIEVAL_BACKEND=bm25` default with `hybrid` opt-in, or flip default to `hybrid` immediately?
+**Question (spec §Clarifications #2)**: Ship as `KOSAX_RETRIEVAL_BACKEND=bm25` default with `hybrid` opt-in, or flip default to `hybrid` immediately?
 
 **Decision**: Ship as `bm25` default; `hybrid` is opt-in for one release cycle.
 
@@ -70,7 +70,7 @@ This document resolves every `NEEDS CLARIFICATION` marker from `spec.md`, maps e
 | Prefix requirement | `"query: "` / `"passage: "` | Same | None | None |
 | Seq length | 512 | 512 | 512 | 8192 |
 
-E5-small is the **default** because it maximises MIRACL-ko score (55.4 vs MiniLM with no Korean benchmark) within the NFR-MemoryBudget "< 2 GB smallest candidate" envelope and keeps p99 < 50 ms on reference CPU with headroom for RRF fusion overhead. E5-large is a first-class **opt-in** via `KOSMOS_RETRIEVAL_MODEL_ID=intfloat/multilingual-e5-large` for users who accept the 10 s eager-cold-start and 2.2 GB memory cost in exchange for +7 MRR@10.
+E5-small is the **default** because it maximises MIRACL-ko score (55.4 vs MiniLM with no Korean benchmark) within the NFR-MemoryBudget "< 2 GB smallest candidate" envelope and keeps p99 < 50 ms on reference CPU with headroom for RRF fusion overhead. E5-large is a first-class **opt-in** via `KOSAX_RETRIEVAL_MODEL_ID=intfloat/multilingual-e5-large` for users who accept the 10 s eager-cold-start and 2.2 GB memory cost in exchange for +7 MRR@10.
 
 MiniLM-L12-v2 remains a licence-safe **fallback** if E5's MIT licence becomes a future concern (not currently expected).
 
@@ -97,7 +97,7 @@ BGE-M3 is not shortlisted because its 8192 sequence length is not useful for `se
 - **Single hyperparameter (k)** is cleaner than RSF's α + normalisation choice; RSF's reported ~6 % uplift vs RRF (Weaviate 2024) comes with a normalisation-method dependency that a dependency-injected encoder cannot cleanly expose.
 
 **Alternatives considered**:
-- RSF — deferred to an ablation in follow-on work; can be added behind `KOSMOS_RETRIEVAL_FUSION=rsf` later without schema change.
+- RSF — deferred to an ablation in follow-on work; can be added behind `KOSAX_RETRIEVAL_FUSION=rsf` later without schema change.
 - Weighted linear — exposes α as a hyperparameter without a principled default; rejected as primary.
 
 **References**:
@@ -128,7 +128,7 @@ BGE-M3 is not shortlisted because its 8192 sequence length is not useful for `se
 
 ## 4. Cold-start strategy
 
-**Decision**: Default `cold_start=lazy`. First `lookup(mode="search")` call triggers encoder load + corpus embed; subsequent calls are warm. Eager mode available via `KOSMOS_RETRIEVAL_COLD_START=eager` for environments that prefer flat steady-state latency.
+**Decision**: Default `cold_start=lazy`. First `lookup(mode="search")` call triggers encoder load + corpus embed; subsequent calls are warm. Eager mode available via `KOSAX_RETRIEVAL_COLD_START=eager` for environments that prefer flat steady-state latency.
 
 **Rationale**:
 - Matches the zero-boot-latency posture of `backend=bm25` (default) — operators running the `bm25` default or deploying behind a load balancer with a warm-up probe see no regression.
@@ -176,14 +176,14 @@ model_id=<requested model id or null>
 
 | Proposed name | Values | Default | Purpose |
 |---|---|---|---|
-| `KOSMOS_RETRIEVAL_BACKEND` | `bm25` / `dense` / `hybrid` | `bm25` | Select retrieval implementation at registry construction (FR-001). |
-| `KOSMOS_RETRIEVAL_MODEL_ID` | HF model id | `intfloat/multilingual-e5-small` | Override default dense encoder. |
-| `KOSMOS_RETRIEVAL_FUSION` | `rrf` | `rrf` | Enum for future RSF/weighted-linear expansion. |
-| `KOSMOS_RETRIEVAL_COLD_START` | `lazy` / `eager` | `lazy` | Warm-up strategy (FR-011). |
+| `KOSAX_RETRIEVAL_BACKEND` | `bm25` / `dense` / `hybrid` | `bm25` | Select retrieval implementation at registry construction (FR-001). |
+| `KOSAX_RETRIEVAL_MODEL_ID` | HF model id | `intfloat/multilingual-e5-small` | Override default dense encoder. |
+| `KOSAX_RETRIEVAL_FUSION` | `rrf` | `rrf` | Enum for future RSF/weighted-linear expansion. |
+| `KOSAX_RETRIEVAL_COLD_START` | `lazy` / `eager` | `lazy` | Warm-up strategy (FR-011). |
 
-Additional: `KOSMOS_RETRIEVAL_FUSION_K` (int, default 60) becomes active only when RRF remains the sole fusion algorithm.
+Additional: `KOSAX_RETRIEVAL_FUSION_K` (int, default 60) becomes active only when RRF remains the sole fusion algorithm.
 
-**Rationale**: Keeps naming consistent with existing `KOSMOS_LOOKUP_TOPK` style; each var has a safe default that preserves today's behaviour.
+**Rationale**: Keeps naming consistent with existing `KOSAX_LOOKUP_TOPK` style; each var has a safe default that preserves today's behaviour.
 
 ---
 
@@ -233,7 +233,7 @@ Free-text scan — phrases searched: "separate epic", "future epic", "Phase 2+",
 **Rationale for `sentence-transformers` over raw `transformers`**:
 - Single `.encode()` call handles pooling, normalisation, and (when configured) the `"query: "` / `"passage: "` prefix for E5-family models.
 - One dependency name instead of three; `torch` CPU wheel is selected via `pip install` markers.
-- Apache-2.0 licence, matches KOSMOS licensing.
+- Apache-2.0 licence, matches KOSAX licensing.
 - Widely used in retrieval literature; mature enough that its encode-loop stability is not a research risk.
 
 **`torch` CPU-wheel pinning**: `pyproject.toml` will declare `torch>=2.0,<3.0` with an explicit `--extra-index-url https://download.pytorch.org/whl/cpu` hint in `docs/design/retrieval.md` to prevent accidental GPU wheel pulls on CUDA-capable CI runners.
@@ -244,7 +244,7 @@ Free-text scan — phrases searched: "separate epic", "future epic", "Phase 2+",
 
 **References**:
 - `sentence-transformers` README (Apache-2.0 confirmation).
-- KOSMOS AGENTS.md "No new dependency outside a spec-driven PR" — this IS the spec-driven PR.
+- KOSAX AGENTS.md "No new dependency outside a spec-driven PR" — this IS the spec-driven PR.
 
 ---
 

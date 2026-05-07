@@ -110,7 +110,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/mock_submit_module_hometax_taxreturn.json",
+  "$id": "https://kosax.example/api/schemas/mock_submit_module_hometax_taxreturn.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "Typed params for the hometax tax return filing adapter.\n\nDomain vocabulary lives HERE, not on the main SubmitInput envelope (SC-002).",

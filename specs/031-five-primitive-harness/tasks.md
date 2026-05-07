@@ -21,11 +21,11 @@ description: "Task list — Spec 031 Five-Primitive Harness Redesign (Epic #1052
 ## Path Conventions
 
 Single Python package layout per `plan.md § Project Structure`:
-- `src/kosmos/primitives/` — NEW main-surface package (exports the 5 primitives)
-- `src/kosmos/tools/registry.py` — EXISTING, extended with `AdapterPrimitive` + dual-axis fields
-- `src/kosmos/tools/<ministry>/` — EXISTING Spec 022 adapters (preserved)
-- `src/kosmos/tools/mock/<ministry>/` — NEW mock adapter tree
-- `src/kosmos/security/v12_dual_axis.py` — NEW v1.2 backstop
+- `src/kosax/primitives/` — NEW main-surface package (exports the 5 primitives)
+- `src/kosax/tools/registry.py` — EXISTING, extended with `AdapterPrimitive` + dual-axis fields
+- `src/kosax/tools/<ministry>/` — EXISTING Spec 022 adapters (preserved)
+- `src/kosax/tools/mock/<ministry>/` — NEW mock adapter tree
+- `src/kosax/security/v12_dual_axis.py` — NEW v1.2 backstop
 - `tests/` — unit + integration + lint
 - `docs/mock/`, `docs/scenarios/` — NEW doc trees (6 mirror-able + 3 OPAQUE)
 - `docs/security/tool-template-security-spec-v1.md` — EXISTING, v1.2 bump in US6
@@ -36,10 +36,10 @@ Single Python package layout per `plan.md § Project Structure`:
 
 **Purpose**: Create the net-new directory scaffolding + lint guardrails so all later phases have a stable surface to write into.
 
-- [ ] T001 Create `src/kosmos/primitives/__init__.py` scaffold exporting placeholder symbols `lookup`, `resolve_location`, `submit`, `subscribe`, `verify` (actual bodies land in later phases)
-- [ ] T002 [P] Create `src/kosmos/tools/mock/__init__.py` + six empty `src/kosmos/tools/mock/{data_go_kr,omnione,barocert,mydata,npki_crypto,cbs}/__init__.py` sub-packages (mock adapter tree roots — `__init__.py` only; adapter bodies deferred per Deferred Items)
+- [ ] T001 Create `src/kosax/primitives/__init__.py` scaffold exporting placeholder symbols `lookup`, `resolve_location`, `submit`, `subscribe`, `verify` (actual bodies land in later phases)
+- [ ] T002 [P] Create `src/kosax/tools/mock/__init__.py` + six empty `src/kosax/tools/mock/{data_go_kr,omnione,barocert,mydata,npki_crypto,cbs}/__init__.py` sub-packages (mock adapter tree roots — `__init__.py` only; adapter bodies deferred per Deferred Items)
 - [ ] T003 [P] Create `docs/mock/{data_go_kr,omnione,barocert,mydata,npki_crypto,cbs}/` six empty directories (content build-out deferred per spec §Deferred Items)
-- [ ] T004 [P] Create `docs/scenarios/` root with three stub files `gov24_submission.md`, `kec_xml_signature.md`, `npki_portal_session.md` — each containing only the H1 title + a `## KOSMOS ↔ real system handoff point` heading (content authoring deferred)
+- [ ] T004 [P] Create `docs/scenarios/` root with three stub files `gov24_submission.md`, `kec_xml_signature.md`, `npki_portal_session.md` — each containing only the H1 title + a `## KOSAX ↔ real system handoff point` heading (content authoring deferred)
 - [ ] T005 [P] Copy `specs/031-five-primitive-harness/contracts/` JSON Schemas into the feature dir (already written in Phase 1 of `/speckit-plan`) — verify `ls specs/031-five-primitive-harness/contracts/` returns 7 files (`README.md` + 6 `*.schema.json`)
 - [ ] T006 [P] Add `specs/031-five-primitive-harness/contracts/README.md` cross-link to `specs/022-mvp-main-tool/contracts/` so `lookup` / `resolve_location` JSON Schemas are not duplicated (FR-016/FR-017 byte-identical preservation)
 
@@ -51,13 +51,13 @@ Single Python package layout per `plan.md § Project Structure`:
 
 **⚠️ CRITICAL**: Every US in Phase 3+ depends on these.
 
-- [X] T007 Extend `src/kosmos/tools/registry.py` with `AdapterPrimitive` StrEnum (`lookup`, `resolve_location`, `submit`, `subscribe`, `verify`) matching `data-model.md § 4`
-- [X] T008 Extend `src/kosmos/tools/registry.py` with module-level type aliases `PublishedTier` (18-label `Literal[...]` enum) + `NistAalHint` (`Literal["AAL1","AAL2","AAL3"]`) matching `data-model.md § 2` and `research.md § 3.1`
-- [X] T009 Extend `src/kosmos/tools/registry.py::AdapterRegistration` with `primitive: AdapterPrimitive`, `source_mode: AdapterSourceMode`, `published_tier_minimum: PublishedTier | None = None`, `nist_aal_hint: NistAalHint | None = None`; preserve Spec 024 / 025 V1–V6 invariants verbatim
-- [X] T010 Extend `src/kosmos/tools/registry.py::ToolRegistry.register()` backstop to reject `tool_id` collisions with a structured `AdapterIdCollisionError` (FR-020) — first-wins
-- [X] T011 Create `src/kosmos/primitives/_errors.py` with Pydantic models `AdapterNotFoundError`, `AdapterInvocationError`, and `SubscriptionBackpressureDrop` matching `data-model.md § 7`
-- [X] T012 [P] Create `src/kosmos/security/v12_dual_axis.py` post-init backstop that enforces FR-030 (both `published_tier_minimum` and `nist_aal_hint` required on/after v1.2 GA) — gated by a module-level constant `V12_GA_ACTIVE: bool = False` so pre-v1.2 compatibility window (FR-028) remains open
-- [X] T013 [P] Re-export Spec 022's existing `lookup` + `resolve_location` from `src/kosmos/primitives/__init__.py` without modifying their source modules (FR-016/FR-017 byte-identical preservation)
+- [X] T007 Extend `src/kosax/tools/registry.py` with `AdapterPrimitive` StrEnum (`lookup`, `resolve_location`, `submit`, `subscribe`, `verify`) matching `data-model.md § 4`
+- [X] T008 Extend `src/kosax/tools/registry.py` with module-level type aliases `PublishedTier` (18-label `Literal[...]` enum) + `NistAalHint` (`Literal["AAL1","AAL2","AAL3"]`) matching `data-model.md § 2` and `research.md § 3.1`
+- [X] T009 Extend `src/kosax/tools/registry.py::AdapterRegistration` with `primitive: AdapterPrimitive`, `source_mode: AdapterSourceMode`, `published_tier_minimum: PublishedTier | None = None`, `nist_aal_hint: NistAalHint | None = None`; preserve Spec 024 / 025 V1–V6 invariants verbatim
+- [X] T010 Extend `src/kosax/tools/registry.py::ToolRegistry.register()` backstop to reject `tool_id` collisions with a structured `AdapterIdCollisionError` (FR-020) — first-wins
+- [X] T011 Create `src/kosax/primitives/_errors.py` with Pydantic models `AdapterNotFoundError`, `AdapterInvocationError`, and `SubscriptionBackpressureDrop` matching `data-model.md § 7`
+- [X] T012 [P] Create `src/kosax/security/v12_dual_axis.py` post-init backstop that enforces FR-030 (both `published_tier_minimum` and `nist_aal_hint` required on/after v1.2 GA) — gated by a module-level constant `V12_GA_ACTIVE: bool = False` so pre-v1.2 compatibility window (FR-028) remains open
+- [X] T013 [P] Re-export Spec 022's existing `lookup` + `resolve_location` from `src/kosax/primitives/__init__.py` without modifying their source modules (FR-016/FR-017 byte-identical preservation)
 - [X] T014 [P] Unit test `tests/unit/registry/test_adapter_primitive_field.py` — asserts `AdapterRegistration` accepts new `primitive` + dual-axis fields and rejects unknown primitive strings
 - [X] T015 [P] Unit test `tests/unit/registry/test_tool_id_collision.py` — asserts FR-020: second registration with an existing `tool_id` raises `AdapterIdCollisionError`
 
@@ -69,27 +69,27 @@ Single Python package layout per `plan.md § Project Structure`:
 
 **Goal**: Ship the `submit` primitive with a purely domain-agnostic envelope `{tool_id, params}` → `{transaction_id, status, adapter_receipt}`. Two mock adapters from different ministries route through the same envelope, proving the 5-verb absorption.
 
-**Independent Test**: Build `src/kosmos/tools/mock/data_go_kr/fines_pay.py` + `src/kosmos/tools/mock/mydata/welfare_application.py`. Invoke each via `kosmos.submit(tool_id=..., params=...)` and verify the main envelope never carries a domain-specific field. `SC-002` ripgrep lint (10 banned strings) comes back clean.
+**Independent Test**: Build `src/kosax/tools/mock/data_go_kr/fines_pay.py` + `src/kosax/tools/mock/mydata/welfare_application.py`. Invoke each via `kosax.submit(tool_id=..., params=...)` and verify the main envelope never carries a domain-specific field. `SC-002` ripgrep lint (10 banned strings) comes back clean.
 
 ### Tests for User Story 1
 
 > Write these first; they MUST fail before implementation lands (FR-001..005 + SC-001, SC-002).
 
 - [X] T016 [P] [US1] Contract test `tests/unit/primitives/submit/test_contract_shape.py` — loads `contracts/submit.input.schema.json` + `submit.output.schema.json`, validates against fixture payloads, and asserts no domain fields appear in either schema
-- [X] T017 [P] [US1] Lint test `tests/lint/test_submit_banned_words.py` — ripgreps `src/kosmos/primitives/submit.py` against the 10 banned strings from SC-002 (`check_eligibility`, `reserve_slot`, `subscribe_alert`, `pay`, `issue_certificate`, `submit_application`, `declared_income_krw`, `certificate_type`, `family_register`, `resident_register`). Zero matches required.
+- [X] T017 [P] [US1] Lint test `tests/lint/test_submit_banned_words.py` — ripgreps `src/kosax/primitives/submit.py` against the 10 banned strings from SC-002 (`check_eligibility`, `reserve_slot`, `subscribe_alert`, `pay`, `issue_certificate`, `submit_application`, `declared_income_krw`, `certificate_type`, `family_register`, `resident_register`). Zero matches required.
 - [X] T018 [P] [US1] Unit test `tests/unit/primitives/submit/test_dispatch.py` — asserts envelope purity + `AdapterNotFoundError` path for unregistered `tool_id`
 - [X] T019 [P] [US1] Unit test `tests/unit/primitives/submit/test_transaction_id_determinism.py` — FR-004: same `(tool_id, params)` produces same `transaction_id`
 - [X] T020 [P] [US1] Integration test `tests/integration/test_submit_published_tier_gate.py` — registers a mock `submit` adapter with `published_tier_minimum="ganpyeon_injeung_kakao_aal2"`, invokes with a mismatched `AuthContext`, and asserts structured rejection (SC-005)
 
 ### Implementation for User Story 1
 
-- [X] T021 [US1] Create `src/kosmos/primitives/submit.py` with `SubmitInput`, `SubmitStatus` StrEnum, `SubmitOutput` Pydantic models matching `data-model.md § 1`
-- [X] T022 [US1] Implement `submit(tool_id, params) -> SubmitOutput | AdapterNotFoundError | AdapterInvocationError` dispatcher in `src/kosmos/primitives/submit.py` — resolves registry entry, validates `params` against adapter's typed model, awaits `invoke()`, emits Spec 024 `ToolCallAuditRecord` (delegated to existing audit sink) + Spec 021 OTEL span `gen_ai.tool_loop.iteration`
-- [X] T023 [US1] Implement deterministic `transaction_id` derivation — SHA-256 over `canonical_json(tool_id, params, adapter_nonce)` + `urn:kosmos:submit:` prefix
-- [X] T024 [US1] Update `src/kosmos/primitives/__init__.py` to export real `submit` symbol (replacing Phase 1 placeholder)
-- [X] T025 [P] [US1] Create first mock adapter `src/kosmos/tools/mock/data_go_kr/fines_pay.py` — `FinesPayParams` Pydantic model + `async def invoke()` + `AdapterRegistration` with `tool_id="mock_traffic_fine_pay_v1"`, matching the worked example in `quickstart.md § 3`
-- [X] T026 [P] [US1] Create second mock adapter `src/kosmos/tools/mock/mydata/welfare_application.py` (different ministry, shared envelope) — `tool_id="mock_welfare_application_submit_v1"` — to prove Acceptance Scenario 2
-- [X] T027 [US1] Register both mock adapters in `src/kosmos/tools/mock/__init__.py` on import so they are discoverable at registry boot
+- [X] T021 [US1] Create `src/kosax/primitives/submit.py` with `SubmitInput`, `SubmitStatus` StrEnum, `SubmitOutput` Pydantic models matching `data-model.md § 1`
+- [X] T022 [US1] Implement `submit(tool_id, params) -> SubmitOutput | AdapterNotFoundError | AdapterInvocationError` dispatcher in `src/kosax/primitives/submit.py` — resolves registry entry, validates `params` against adapter's typed model, awaits `invoke()`, emits Spec 024 `ToolCallAuditRecord` (delegated to existing audit sink) + Spec 021 OTEL span `gen_ai.tool_loop.iteration`
+- [X] T023 [US1] Implement deterministic `transaction_id` derivation — SHA-256 over `canonical_json(tool_id, params, adapter_nonce)` + `urn:kosax:submit:` prefix
+- [X] T024 [US1] Update `src/kosax/primitives/__init__.py` to export real `submit` symbol (replacing Phase 1 placeholder)
+- [X] T025 [P] [US1] Create first mock adapter `src/kosax/tools/mock/data_go_kr/fines_pay.py` — `FinesPayParams` Pydantic model + `async def invoke()` + `AdapterRegistration` with `tool_id="mock_traffic_fine_pay_v1"`, matching the worked example in `quickstart.md § 3`
+- [X] T026 [P] [US1] Create second mock adapter `src/kosax/tools/mock/mydata/welfare_application.py` (different ministry, shared envelope) — `tool_id="mock_welfare_application_submit_v1"` — to prove Acceptance Scenario 2
+- [X] T027 [US1] Register both mock adapters in `src/kosax/tools/mock/__init__.py` on import so they are discoverable at registry boot
 
 **Checkpoint**: `submit` is fully functional and testable. The 5→1 verb collapse is provable via SC-002 ripgrep.
 
@@ -109,7 +109,7 @@ Single Python package layout per `plan.md § Project Structure`:
 
 ### Implementation for User Story 4
 
-- [X] T031 [US4] Verify `src/kosmos/primitives/__init__.py` re-export (T013) does not introduce any attribute / signature change on `lookup` or `resolve_location`
+- [X] T031 [US4] Verify `src/kosax/primitives/__init__.py` re-export (T013) does not introduce any attribute / signature change on `lookup` or `resolve_location`
 - [X] T032 [US4] Back-fill `AdapterPrimitive` + `published_tier_minimum=None, nist_aal_hint=None` on the 4 existing Spec 022 registrations (`koroad_accident_hazard_search`, `kma_forecast_fetch`, `hira_hospital_search`, `nmc_emergency_search`) during pre-v1.2 compatibility window (FR-028) — `None` is the legal default pre-v1.2
 - [X] T033 [US4] Update the 4 Spec 022 adapter registrations to set `primitive=AdapterPrimitive.lookup` or `AdapterPrimitive.resolve_location` as appropriate; no other field changes
 
@@ -119,7 +119,7 @@ Single Python package layout per `plan.md § Project Structure`:
 
 ## Phase 5: User Story 2 — `verify` publishes Korean tiers primary, NIST AAL advisory (Priority: P1)
 
-**Goal**: Ship `verify` with a 6-family discriminated union + 18 `published_tier` labels + advisory `nist_aal_hint`. Delegation-only — no CA / HSM / VC issuer in KOSMOS.
+**Goal**: Ship `verify` with a 6-family discriminated union + 18 `published_tier` labels + advisory `nist_aal_hint`. Delegation-only — no CA / HSM / VC issuer in KOSAX.
 
 **Independent Test**: For each of the 6 families, construct a mock `verify` call and confirm the returned `AuthContext` carries the correct `published_tier` + `nist_aal_hint`. A downstream `submit` adapter branches on `published_tier` (not `nist_aal_hint`) to gate access (SC-005).
 
@@ -128,16 +128,16 @@ Single Python package layout per `plan.md § Project Structure`:
 - [X] T034 [P] [US2] Contract test `tests/unit/primitives/verify/test_contract_shape.py` — loads `contracts/verify.input.schema.json` + `verify.output.schema.json`, validates 6 family variants + `VerifyMismatchError` against fixtures
 - [X] T035 [P] [US2] Unit test `tests/unit/primitives/verify/test_discriminator.py` — 6-family coercion-free dispatch; `family_hint` mismatch returns `VerifyMismatchError`, never coerces (FR-010)
 - [X] T036 [P] [US2] Unit test `tests/unit/primitives/verify/test_published_tier_narrowing.py` — each family variant rejects a `published_tier` outside its subset per `data-model.md § 2.1`
-- [X] T037 [P] [US2] Unit test `tests/unit/primitives/verify/test_no_signing_keys.py` — grep-style assertion over `src/kosmos/primitives/verify.py` for `sign`, `BEGIN PRIVATE KEY`, `issue_credential`; zero matches (FR-009 harness-not-reimplementation)
+- [X] T037 [P] [US2] Unit test `tests/unit/primitives/verify/test_no_signing_keys.py` — grep-style assertion over `src/kosax/primitives/verify.py` for `sign`, `BEGIN PRIVATE KEY`, `issue_credential`; zero matches (FR-009 harness-not-reimplementation)
 - [X] T038 [P] [US2] Lint test `tests/lint/test_no_ca_material.py` — greps `src/` + `docs/` for forbidden extensions (`.pem` private halves, `.p12`, `.pfx`) outside `docs/mock/npki_crypto/fixtures/*` (SC-006)
 
 ### Implementation for User Story 2
 
-- [X] T039 [US2] Create `src/kosmos/primitives/verify.py` with `VerifyInput`, `_AuthContextBase`, 6 family context classes (`GongdongInjeungseoContext`, `GeumyungInjeungseoContext`, `GanpyeonInjeungContext`, `DigitalOnepassContext`, `MobileIdContext`, `MyDataContext`), `AuthContext` Annotated union, `VerifyMismatchError`, `VerifyOutput` — all matching `data-model.md § 2`
+- [X] T039 [US2] Create `src/kosax/primitives/verify.py` with `VerifyInput`, `_AuthContextBase`, 6 family context classes (`GongdongInjeungseoContext`, `GeumyungInjeungseoContext`, `GanpyeonInjeungContext`, `DigitalOnepassContext`, `MobileIdContext`, `MyDataContext`), `AuthContext` Annotated union, `VerifyMismatchError`, `VerifyOutput` — all matching `data-model.md § 2`
 - [X] T040 [US2] Implement `@model_validator(mode="after")` on each family variant enforcing per-family `published_tier` narrowing per the table in `data-model.md § 2.1`
 - [X] T041 [US2] Implement `verify(family_hint, session_context) -> AuthContext | VerifyMismatchError` dispatcher — delegates to the registered adapter for the `family_hint`; returns `VerifyMismatchError` if the session context evidence disagrees with `family_hint` (FR-010, no coercion)
-- [X] T042 [US2] Update `src/kosmos/primitives/__init__.py` to export real `verify` symbol (replacing placeholder)
-- [X] T043 [US2] Register 6 mock verify adapters — one per family — under `src/kosmos/tools/mock/verify_<family>.py` (each fixture-backed, no real external calls); these back the acceptance scenarios and SC-005
+- [X] T042 [US2] Update `src/kosax/primitives/__init__.py` to export real `verify` symbol (replacing placeholder)
+- [X] T043 [US2] Register 6 mock verify adapters — one per family — under `src/kosax/tools/mock/verify_<family>.py` (each fixture-backed, no real external calls); these back the acceptance scenarios and SC-005
 
 **Checkpoint**: `verify` is fully functional. Dual-axis schema in effect. SC-005 + SC-006 demonstrable.
 
@@ -161,16 +161,16 @@ Single Python package layout per `plan.md § Project Structure`:
 
 ### Implementation for User Story 3
 
-- [X] T051 [US3] Create `src/kosmos/primitives/subscribe.py` with `SubscribeInput`, `SubscriptionHandle`, `CbsBroadcastEvent`, `RestPullTickEvent`, `RssItemEvent`, `SubscriptionBackpressureDrop`, `SubscriptionEvent` union matching `data-model.md § 3`
+- [X] T051 [US3] Create `src/kosax/primitives/subscribe.py` with `SubscribeInput`, `SubscriptionHandle`, `CbsBroadcastEvent`, `RestPullTickEvent`, `RssItemEvent`, `SubscriptionBackpressureDrop`, `SubscriptionEvent` union matching `data-model.md § 3`
 - [X] T052 [US3] Implement the modality muxer — dispatches to one of 3 internal drivers based on `AdapterRegistration.source_mode` + adapter-declared modality flag; yields `SubscriptionEvent` through a shared `asyncio.Queue` with `maxsize=64` for back-pressure
 - [X] T053 [US3] Implement CBS broadcast driver — consumes mock `3GPP TS 23.041` fixture producing events with `cbs_message_id ∈ {4370..4385}` + SHA-256 `payload_hash`
 - [X] T054 [US3] Implement REST-pull driver — `httpx.AsyncClient` with adapter-declared `polling_interval`; harness enforces minimum 10s interval; emits `RestPullTickEvent` per tick
 - [X] T055 [US3] Implement RSS 2.0 driver — tracks `guid` set per-handle; de-dupes; reset `guid` treated as new item; emits `RssItemEvent`
 - [X] T056 [US3] Implement `lifetime_seconds` enforcement — `asyncio.wait_for` on the iterator wrapper; on expiry, releases network resources and emits a final `SubscriptionBackpressureDrop` only if unflushed events remain (FR-014)
-- [X] T057 [US3] Update `src/kosmos/primitives/__init__.py` to export real `subscribe` symbol
-- [X] T058 [P] [US3] Create mock adapter `src/kosmos/tools/mock/cbs/disaster_feed.py` — `tool_id="mock_cbs_disaster_v1"`
-- [X] T059 [P] [US3] Create mock adapter `src/kosmos/tools/mock/data_go_kr/rest_pull_tick.py` — `tool_id="mock_rest_pull_tick_v1"`
-- [X] T060 [P] [US3] Create mock adapter `src/kosmos/tools/mock/data_go_kr/rss_notices.py` — `tool_id="mock_rss_public_notices_v1"`
+- [X] T057 [US3] Update `src/kosax/primitives/__init__.py` to export real `subscribe` symbol
+- [X] T058 [P] [US3] Create mock adapter `src/kosax/tools/mock/cbs/disaster_feed.py` — `tool_id="mock_cbs_disaster_v1"`
+- [X] T059 [P] [US3] Create mock adapter `src/kosax/tools/mock/data_go_kr/rest_pull_tick.py` — `tool_id="mock_rest_pull_tick_v1"`
+- [X] T060 [P] [US3] Create mock adapter `src/kosax/tools/mock/data_go_kr/rss_notices.py` — `tool_id="mock_rss_public_notices_v1"`
 
 **Checkpoint**: `subscribe` is functional. 3-modality unification proven. No webhook field anywhere.
 
@@ -180,12 +180,12 @@ Single Python package layout per `plan.md § Project Structure`:
 
 **Goal**: Enforce that `docs/mock/` contains exactly 6 system directories and `docs/scenarios/` contains exactly 3 OPAQUE journey files (SC-004). Guard against silent drift.
 
-**Independent Test**: `ls docs/mock/` returns 6 entries; `ls docs/scenarios/*.md` returns 3 entries; no adapter under `src/kosmos/tools/mock/` implements an OPAQUE system (FR-026).
+**Independent Test**: `ls docs/mock/` returns 6 entries; `ls docs/scenarios/*.md` returns 3 entries; no adapter under `src/kosax/tools/mock/` implements an OPAQUE system (FR-026).
 
 ### Tests for User Story 5
 
-- [X] T061 [P] [US5] Docs-lint test `tests/test_mock_scenario_split.py` — asserts (a) `docs/mock/` subdirectory count == 6, (b) exact names are `{data_go_kr, omnione, barocert, mydata, npki_crypto, cbs}`, (c) `docs/scenarios/*.md` count == 3, (d) each scenario file contains the handoff heading `## KOSMOS ↔ real system handoff point` (FR-024, SC-004)
-- [X] T062 [P] [US5] Docs-lint test `tests/test_no_opaque_mock_adapter.py` — walks `src/kosmos/tools/mock/` and asserts no adapter module imports or references `gov24`, `kec`, or `npki_portal_session` — `docs/scenarios/` content MUST NOT have a code sibling (FR-026)
+- [X] T061 [P] [US5] Docs-lint test `tests/test_mock_scenario_split.py` — asserts (a) `docs/mock/` subdirectory count == 6, (b) exact names are `{data_go_kr, omnione, barocert, mydata, npki_crypto, cbs}`, (c) `docs/scenarios/*.md` count == 3, (d) each scenario file contains the handoff heading `## KOSAX ↔ real system handoff point` (FR-024, SC-004)
+- [X] T062 [P] [US5] Docs-lint test `tests/test_no_opaque_mock_adapter.py` — walks `src/kosax/tools/mock/` and asserts no adapter module imports or references `gov24`, `kec`, or `npki_portal_session` — `docs/scenarios/` content MUST NOT have a code sibling (FR-026)
 
 ### Implementation for User Story 5
 
@@ -221,8 +221,8 @@ Single Python package layout per `plan.md § Project Structure`:
 - [X] T076 [US6] Bump `docs/security/tool-template-security-spec-v1.md` metadata header to `Version: 1.2` + `Status: Draft` + `Supersedes: v1.1`
 - [X] T077 [US6] Replace the `TOOL_MIN_AAL` table in the doc with the `(published_tier_minimum, nist_aal_hint)` dual-axis table — covering the 4 Spec 022 adapters + the new mock adapter landings from US1/US2/US3
 - [X] T078 [US6] Write the v1.1→v1.2 migration note section in the doc — explicit list of which invariants re-stated (V1–V6 verbatim) vs superseded (`TOOL_MIN_AAL` → dual-axis)
-- [X] T079 [US6] Flip `src/kosmos/security/v12_dual_axis.py::V12_GA_ACTIVE` from `False` to `True` — activates FR-030 enforcement
-- [X] T080 [US6] Delete the legacy 8-verb entries from `src/kosmos/security/audit.py::TOOL_MIN_AAL` (confirmed present per research.md §6); migrate the 4 Spec 022 adapters + 2 Phase-2 entries to dual-axis
+- [X] T079 [US6] Flip `src/kosax/security/v12_dual_axis.py::V12_GA_ACTIVE` from `False` to `True` — activates FR-030 enforcement
+- [X] T080 [US6] Delete the legacy 8-verb entries from `src/kosax/security/audit.py::TOOL_MIN_AAL` (confirmed present per research.md §6); migrate the 4 Spec 022 adapters + 2 Phase-2 entries to dual-axis
 
 **Checkpoint**: Security spec is v1.2; dual-axis enforced at registration time; legacy 8-verb AAL-only artifacts removed.
 
@@ -233,7 +233,7 @@ Single Python package layout per `plan.md § Project Structure`:
 **Purpose**: Enforce SC-001 / SC-008 / SC-009 / SC-010, run the full quickstart smoke-test, update the agent-context file, and leave the feature ship-ready.
 
 - [X] T081 [P] Unit test `tests/unit/primitives/test_registry_count.py` — asserts exactly 5 primitives are registered on the main surface (SC-001)
-- [X] T082 [P] Lint test `tests/lint/test_no_legacy_verbs.py` — regex-scans `src/kosmos/primitives/` + `src/kosmos/tools/` + adapter registrations for any of the 6 banned legacy top-level verb names (`check_eligibility`, `reserve_slot`, `subscribe_alert`, `pay`, `issue_certificate`, `submit_application`). Zero top-level registrations may match (SC-010)
+- [X] T082 [P] Lint test `tests/lint/test_no_legacy_verbs.py` — regex-scans `src/kosax/primitives/` + `src/kosax/tools/` + adapter registrations for any of the 6 banned legacy top-level verb names (`check_eligibility`, `reserve_slot`, `subscribe_alert`, `pay`, `issue_certificate`, `submit_application`). Zero top-level registrations may match (SC-010)
 - [X] T083 [P] Dependency-diff test `tests/lint/test_no_new_runtime_deps.py` — uses `git diff main -- pyproject.toml` subprocess; asserts zero new entries under `[project].dependencies` (SC-008)
 - [X] T084 [P] Onboarding checklist — add `docs/onboarding/five-primitive-harness.md` pointing at `specs/031-five-primitive-harness/quickstart.md` + the `docs/vision.md § Claude Code` analog table (SC-009)
 - [X] T085 [P] OTEL span parity test `tests/integration/test_otel_span_emission.py` — asserts `submit`, `subscribe`, `verify` emit `gen_ai.tool_loop.iteration` spans with the same attribute shape as Spec 022's `lookup` / `resolve_location` (FR-031)

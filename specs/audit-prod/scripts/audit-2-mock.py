@@ -33,12 +33,12 @@ from typing import Any
 # Quiet logging to keep matrix readable.
 logging.basicConfig(level=logging.ERROR)
 
-from kosmos.tools.executor import ToolExecutor  # noqa: E402
-from kosmos.tools.register_all import register_all_tools  # noqa: E402
-from kosmos.tools.registry import ToolRegistry  # noqa: E402
-from kosmos.tools.verify_canonical_map import get_canonical_map  # noqa: E402
+from kosax.tools.executor import ToolExecutor  # noqa: E402
+from kosax.tools.register_all import register_all_tools  # noqa: E402
+from kosax.tools.registry import ToolRegistry  # noqa: E402
+from kosax.tools.verify_canonical_map import get_canonical_map  # noqa: E402
 
-# 25 mock tool_ids enumerated from src/kosmos/tools/mock/ — see audit head matter.
+# 25 mock tool_ids enumerated from src/kosax/tools/mock/ — see audit head matter.
 LOOKUP_MOCKS = [
     "mock_lookup_module_gov24_certificate",
     "mock_lookup_module_hometax_simplified",
@@ -139,9 +139,9 @@ def probe_envelope(tool_id: str) -> tuple[bool, str]:
 
     try:
         if primitive == "verify":
-            from kosmos.primitives.verify import _VERIFY_ADAPTERS
+            from kosax.primitives.verify import _VERIFY_ADAPTERS
 
-            from kosmos.tools.verify_canonical_map import resolve_family
+            from kosax.tools.verify_canonical_map import resolve_family
 
             family = resolve_family(tool_id)
             if family is None:
@@ -160,7 +160,7 @@ def probe_envelope(tool_id: str) -> tuple[bool, str]:
             return True, f"family={d.get('family')}"
 
         if primitive == "submit":
-            from kosmos.primitives.submit import _ADAPTER_REGISTRY
+            from kosax.primitives.submit import _ADAPTER_REGISTRY
 
             payload = _ADAPTER_REGISTRY.get(tool_id)
             if payload is None:
@@ -173,7 +173,7 @@ def probe_envelope(tool_id: str) -> tuple[bool, str]:
             return True, f"primitive={registration.primitive}"
 
         if primitive == "subscribe":
-            from kosmos.primitives.subscribe import _SUBSCRIBE_ADAPTERS
+            from kosax.primitives.subscribe import _SUBSCRIBE_ADAPTERS
 
             entry = _SUBSCRIBE_ADAPTERS.get(tool_id)
             if entry is None:
@@ -210,9 +210,9 @@ _TRANSPARENCY_KEYS = (
 def probe_transparency(tool_id: str) -> tuple[bool, str]:
     """Verify the six transparency fields are present on adapter output."""
     if tool_id in VERIFY_MOCKS:
-        from kosmos.primitives.verify import _VERIFY_ADAPTERS
+        from kosax.primitives.verify import _VERIFY_ADAPTERS
 
-        from kosmos.tools.verify_canonical_map import resolve_family
+        from kosax.tools.verify_canonical_map import resolve_family
 
         family = resolve_family(tool_id)
         if family is None:
@@ -233,9 +233,9 @@ def probe_transparency(tool_id: str) -> tuple[bool, str]:
         import importlib
 
         mod_path = (
-            "kosmos.tools.mock.lookup_module_gov24_certificate"
+            "kosax.tools.mock.lookup_module_gov24_certificate"
             if tool_id == "mock_lookup_module_gov24_certificate"
-            else "kosmos.tools.mock.lookup_module_hometax_simplified"
+            else "kosax.tools.mock.lookup_module_hometax_simplified"
         )
         mod = importlib.import_module(mod_path)
         # The stamp constants are private module-level attrs.
@@ -251,11 +251,11 @@ def probe_transparency(tool_id: str) -> tuple[bool, str]:
         import importlib
 
         mod_path_map = {
-            "mock_submit_module_gov24_minwon": "kosmos.tools.mock.submit_module_gov24_minwon",
-            "mock_submit_module_hometax_taxreturn": "kosmos.tools.mock.submit_module_hometax_taxreturn",
-            "mock_submit_module_public_mydata_action": "kosmos.tools.mock.submit_module_public_mydata_action",
-            "mock_traffic_fine_pay_v1": "kosmos.tools.mock.data_go_kr.fines_pay",
-            "mock_welfare_application_submit_v1": "kosmos.tools.mock.mydata.welfare_application",
+            "mock_submit_module_gov24_minwon": "kosax.tools.mock.submit_module_gov24_minwon",
+            "mock_submit_module_hometax_taxreturn": "kosax.tools.mock.submit_module_hometax_taxreturn",
+            "mock_submit_module_public_mydata_action": "kosax.tools.mock.submit_module_public_mydata_action",
+            "mock_traffic_fine_pay_v1": "kosax.tools.mock.data_go_kr.fines_pay",
+            "mock_welfare_application_submit_v1": "kosax.tools.mock.mydata.welfare_application",
         }
         mod = importlib.import_module(mod_path_map[tool_id])
         # Check stamp_mock_response import OR _REFERENCE_IMPL constant presence.
@@ -268,9 +268,9 @@ def probe_transparency(tool_id: str) -> tuple[bool, str]:
         import importlib
 
         mod_path_map = {
-            "mock_cbs_disaster_v1": "kosmos.tools.mock.cbs.disaster_feed",
-            "mock_rss_public_notices_v1": "kosmos.tools.mock.data_go_kr.rss_notices",
-            "mock_rest_pull_tick_v1": "kosmos.tools.mock.data_go_kr.rest_pull_tick",
+            "mock_cbs_disaster_v1": "kosax.tools.mock.cbs.disaster_feed",
+            "mock_rss_public_notices_v1": "kosax.tools.mock.data_go_kr.rss_notices",
+            "mock_rest_pull_tick_v1": "kosax.tools.mock.data_go_kr.rest_pull_tick",
         }
         mod = importlib.import_module(mod_path_map[tool_id])
         has_metadata = hasattr(mod, "get_transparency_metadata") or hasattr(mod, "_REFERENCE_IMPL")

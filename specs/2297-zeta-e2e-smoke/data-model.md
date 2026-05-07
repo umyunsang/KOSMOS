@@ -7,7 +7,7 @@ This document enumerates the entities, fields, validation rules, and state trans
 
 ## 1. Backend — `_VerifyInputForLLM` (extended)
 
-**File**: `src/kosmos/tools/mvp_surface.py:243`
+**File**: `src/kosax/tools/mvp_surface.py:243`
 
 **Schema (after FR-008a/8b extension)**:
 
@@ -55,7 +55,7 @@ class _VerifyInputForLLM(BaseModel):
         # Citizen shape — translate
         tool_id = data.get("tool_id")
         if tool_id:
-            from kosmos.tools.verify_canonical_map import resolve_family
+            from kosax.tools.verify_canonical_map import resolve_family
             family = resolve_family(str(tool_id))
             if family is None:
                 raise ValueError(f"unknown verify tool_id: {tool_id!r}")
@@ -77,7 +77,7 @@ class _VerifyInputForLLM(BaseModel):
 
 ## 2. Backend — `verify_canonical_map` module
 
-**File**: `src/kosmos/tools/verify_canonical_map.py` (new)
+**File**: `src/kosax/tools/verify_canonical_map.py` (new)
 
 **Public API**:
 
@@ -94,7 +94,7 @@ def get_canonical_map() -> Mapping[str, str]:
 ```
 
 **Internal state**: module-level `_MAP: Mapping[str, str] | None = None` populated by an `@lru_cache(maxsize=1)` loader that:
-1. Resolves `prompts/system_v1.md` path via existing `KOSMOS_PROMPTS_DIR` env var (falls back to `<repo_root>/prompts`).
+1. Resolves `prompts/system_v1.md` path via existing `KOSAX_PROMPTS_DIR` env var (falls back to `<repo_root>/prompts`).
 2. Reads the file, finds the `<verify_families>` ... `</verify_families>` block via regex.
 3. Parses each table row (regex `^\| .+ \| `mock_verify_*` ...`).
 4. Builds a frozen dict; raises `RuntimeError` if <10 entries found (FR-008b assertion).
@@ -154,7 +154,7 @@ export interface DispatchPrimitiveOpts {
   context: ToolUseContext                // from CC SDK Tool.call signature
   registry: PendingCallRegistry          // session-scoped, injected
   bridge: IPCBridge                      // from bridgeSingleton
-  timeoutMs?: number                     // default 30_000 (FR-006); KOSMOS_TUI_PRIMITIVE_TIMEOUT_MS override
+  timeoutMs?: number                     // default 30_000 (FR-006); KOSAX_TUI_PRIMITIVE_TIMEOUT_MS override
 }
 
 export async function dispatchPrimitive<O>(
@@ -170,7 +170,7 @@ export async function dispatchPrimitive<O>(
 5. Return a `Promise<ToolResult<O>>` that the registry resolves on `tool_result` arrival.
 6. On success: parse `frame.envelope` per the primitive's expected schema, return `{ data: { ok: true, result: envelope } }`.
 7. On error envelope (`envelope.error` set): return `{ data: { ok: false, error: envelope.error } }`.
-8. On timeout: emit OTEL span attribute `kosmos.tui.primitive.timeout=true`, return `{ data: { ok: false, error: '응답 시간이 초과되었습니다' } }`.
+8. On timeout: emit OTEL span attribute `kosax.tui.primitive.timeout=true`, return `{ data: { ok: false, error: '응답 시간이 초과되었습니다' } }`.
 
 **Validation rules**:
 - The `ToolResultFrame` envelope is opaque to the dispatcher (just a passthrough); each primitive's `call()` body interprets the result type.
@@ -189,7 +189,7 @@ else if (frame.kind === 'tool_result') {
   const resolved = pendingCallRegistry.resolve(trFrame.call_id, trFrame)
   if (!resolved) {
     process.stderr.write(
-      `[KOSMOS LLMClient WARN] tool_result with no pending call_id=${trFrame.call_id}\n`,
+      `[KOSAX LLMClient WARN] tool_result with no pending call_id=${trFrame.call_id}\n`,
     )
   }
   // Do not yield a SDK event — the SDK loop continues to await message_stop
@@ -261,7 +261,7 @@ else if (frame.kind === 'tool_result') {
 **Structure**:
 
 ```markdown
-# KOSMOS Adapter ↔ International AX-Gateway Mapping
+# KOSAX Adapter ↔ International AX-Gateway Mapping
 
 [Bilingual title]
 
@@ -270,7 +270,7 @@ else if (frame.kind === 'tool_result') {
 
 ## Mapping table
 
-| KOSMOS adapter family | Singapore APEX | Estonia X-Road | EU EUDI Wallet | Japan マイナポータル API |
+| KOSAX adapter family | Singapore APEX | Estonia X-Road | EU EUDI Wallet | Japan マイナポータル API |
 |---|---|---|---|---|
 | modid (mobile_id_module)         | Singpass NDI                | eID (mID)              | EUDI PID            | マイナンバーカード認証 |
 | kec (corporate certificate)      | CorpPass                    | Riigiportaal eID corp  | LEI / EUDI corporate| 法人共通認証基盤        |

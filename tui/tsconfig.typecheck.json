@@ -1,5 +1,5 @@
 {
-  "//": "Narrow typecheck scope — only files that KOSMOS owns and adapted from CC. The full CC 2.1.88 port has ~2,300 type errors against KOSMOS's strict settings; cleanup is tracked in Epic #1633 (P1 dead code elimination).",
+  "//": "Narrow typecheck scope — only files that KOSAX owns and adapted from CC. The full CC 2.1.88 port has ~2,300 type errors against KOSAX's strict settings; cleanup is tracked in Epic #1633 (P1 dead code elimination).",
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "strict": false,

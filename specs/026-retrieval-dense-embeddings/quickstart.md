@@ -1,6 +1,6 @@
 # Quickstart — Retrieval Backend Evolution (Spec 026)
 
-**Audience**: KOSMOS operators and developers who want to exercise the three
+**Audience**: KOSAX operators and developers who want to exercise the three
 retrieval backends (BM25 default, Dense opt-in, Hybrid opt-in) without
 changing any caller-visible contract.
 
@@ -17,11 +17,11 @@ This is the safe path. No new env vars, no model download, no dep install.
 # Nothing to set. BM25 is the default.
 uv run python - <<'PY'
 import asyncio
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.models import LookupSearchInput
-from kosmos.tools.lookup import lookup
-from kosmos.tools.register_all import register_all_tools
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.models import LookupSearchInput
+from kosax.tools.lookup import lookup
+from kosax.tools.register_all import register_all_tools
+from kosax.tools.registry import ToolRegistry
 
 reg = ToolRegistry()
 executor = ToolExecutor(reg)
@@ -47,18 +47,18 @@ The Dense backend loads `intfloat/multilingual-e5-small` (MIT, 100M params,
 384-dim, MIRACL-ko MRR@10=55.4) on first `search()` call (lazy cold-start).
 
 ```bash
-export KOSMOS_RETRIEVAL_BACKEND=dense
-# KOSMOS_RETRIEVAL_MODEL_ID is optional; default is the e5-small above.
+export KOSAX_RETRIEVAL_BACKEND=dense
+# KOSAX_RETRIEVAL_MODEL_ID is optional; default is the e5-small above.
 # Example override (NOT recommended unless you know why):
-# export KOSMOS_RETRIEVAL_MODEL_ID="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+# export KOSAX_RETRIEVAL_MODEL_ID="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
 uv run python - <<'PY'
 import asyncio
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.lookup import lookup
-from kosmos.tools.models import LookupSearchInput
-from kosmos.tools.register_all import register_all_tools
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.lookup import lookup
+from kosax.tools.models import LookupSearchInput
+from kosax.tools.register_all import register_all_tools
+from kosax.tools.registry import ToolRegistry
 
 reg = ToolRegistry()
 executor = ToolExecutor(reg)
@@ -92,19 +92,19 @@ The Hybrid backend composes BM25 + Dense under Reciprocal Rank Fusion
 (Cormack, Clarke, Buettcher SIGIR 2009) with `k=60` by default.
 
 ```bash
-export KOSMOS_RETRIEVAL_BACKEND=hybrid
+export KOSAX_RETRIEVAL_BACKEND=hybrid
 # Optional RRF knob; default is 60. Values < 1 reject at startup.
-# export KOSMOS_RETRIEVAL_FUSION_K=60
+# export KOSAX_RETRIEVAL_FUSION_K=60
 # Optional fusion algorithm; default is rrf. Only rrf is shipped in spec 026.
-# export KOSMOS_RETRIEVAL_FUSION=rrf
+# export KOSAX_RETRIEVAL_FUSION=rrf
 
 uv run python - <<'PY'
 import asyncio
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.lookup import lookup
-from kosmos.tools.models import LookupSearchInput
-from kosmos.tools.register_all import register_all_tools
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.lookup import lookup
+from kosax.tools.models import LookupSearchInput
+from kosax.tools.register_all import register_all_tools
+from kosax.tools.registry import ToolRegistry
 
 reg = ToolRegistry()
 executor = ToolExecutor(reg)
@@ -136,20 +136,20 @@ invocation gate downstream.
 
 ```bash
 # Baseline (BM25)
-unset KOSMOS_RETRIEVAL_BACKEND
-uv run python -m kosmos.eval.retrieval \
+unset KOSAX_RETRIEVAL_BACKEND
+uv run python -m kosax.eval.retrieval \
   --queries eval/retrieval_queries.yaml \
   --report reports/retrieval_bm25.json
 
 # Hybrid
-KOSMOS_RETRIEVAL_BACKEND=hybrid \
-uv run python -m kosmos.eval.retrieval \
+KOSAX_RETRIEVAL_BACKEND=hybrid \
+uv run python -m kosax.eval.retrieval \
   --queries eval/retrieval_queries.yaml \
   --report reports/retrieval_hybrid.json
 
 # Adversarial subset (ships in this PR per CL-1 decision)
-KOSMOS_RETRIEVAL_BACKEND=hybrid \
-uv run python -m kosmos.eval.retrieval \
+KOSAX_RETRIEVAL_BACKEND=hybrid \
+uv run python -m kosax.eval.retrieval \
   --queries eval/retrieval_queries_adversarial.yaml \
   --report reports/retrieval_adversarial.json
 ```
@@ -163,11 +163,11 @@ The harness output schema is preserved (see
 
 | Variable | Values | Default | Owner | Purpose |
 |----------|--------|---------|-------|---------|
-| `KOSMOS_RETRIEVAL_BACKEND` | `bm25` \| `dense` \| `hybrid` | `bm25` | #468 | Select ranking backend. Unknown values fail-closed at registry construction (FR-001). |
-| `KOSMOS_RETRIEVAL_MODEL_ID` | HF model slug (Apache-2.0-compatible only) | `intfloat/multilingual-e5-small` | #468 | Dense model identifier. Licence is vetted during spec review (shortlist in `research.md` §Models); operators overriding to a non-vetted slug take responsibility for compatibility. No runtime licence enforcement is performed at load time. |
-| `KOSMOS_RETRIEVAL_FUSION` | `rrf` | `rrf` | #468 | Fusion algorithm for hybrid mode. RSF is deferred (`NEEDS TRACKING`). |
-| `KOSMOS_RETRIEVAL_FUSION_K` | integer ≥ 1 | `60` | #468 | RRF dampening constant. `k=60` per Cormack SIGIR 2009. |
-| `KOSMOS_LOOKUP_TOPK` | 1..20 | `5` | #022 | Adaptive top-k clamp (FROZEN — preserved by FR-005). |
+| `KOSAX_RETRIEVAL_BACKEND` | `bm25` \| `dense` \| `hybrid` | `bm25` | #468 | Select ranking backend. Unknown values fail-closed at registry construction (FR-001). |
+| `KOSAX_RETRIEVAL_MODEL_ID` | HF model slug (Apache-2.0-compatible only) | `intfloat/multilingual-e5-small` | #468 | Dense model identifier. Licence is vetted during spec review (shortlist in `research.md` §Models); operators overriding to a non-vetted slug take responsibility for compatibility. No runtime licence enforcement is performed at load time. |
+| `KOSAX_RETRIEVAL_FUSION` | `rrf` | `rrf` | #468 | Fusion algorithm for hybrid mode. RSF is deferred (`NEEDS TRACKING`). |
+| `KOSAX_RETRIEVAL_FUSION_K` | integer ≥ 1 | `60` | #468 | RRF dampening constant. `k=60` per Cormack SIGIR 2009. |
+| `KOSAX_LOOKUP_TOPK` | 1..20 | `5` | #022 | Adaptive top-k clamp (FROZEN — preserved by FR-005). |
 
 **All four new variables must land in #468's registry before this spec
 merges** — spec 026 proposes them; #468 ratifies them.

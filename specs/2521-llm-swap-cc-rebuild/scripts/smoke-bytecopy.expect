@@ -21,7 +21,7 @@ set REPO_ROOT [exec git -C [file dirname [file normalize [info script]]] rev-par
 
 # Direct spawn (no bash -c wrapper) preserves the controlling PTY to the
 # child so the TUI's isInteractive()/isatty() detection treats the session
-# as a real terminal. Wrapping with bash -c caused KOSMOS to fall into
+# as a real terminal. Wrapping with bash -c caused KOSAX to fall into
 # headless print-mode and exit immediately.
 cd "$REPO_ROOT/tui"
 spawn bun run tui

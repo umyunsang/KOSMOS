@@ -32,7 +32,7 @@
 
 ## Spec-Kit Alignment
 
-- [x] Cites `docs/vision.md` via the KOSMOS mission framing in user stories.
+- [x] Cites `docs/vision.md` via the KOSAX mission framing in user stories.
 - [x] Cites `.specify/memory/constitution.md` via AGENTS.md conflict-resolution commitment (brand-system.md § 2 wins over individual specs).
 - [x] Cites every required upstream source — ADR-006 A-9, brand-system.md § 1 + § 2, accessibility-gate § 7, component-catalog Epic H rows, CC LogoV2 + Onboarding sources.
 - [x] Palette-selection constraint FR-022 (Epic M § 7) acknowledged BEFORE any hex value is proposed.

@@ -556,7 +556,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/mock_verify_digital_onepass.json",
+  "$id": "https://kosax.example/api/schemas/mock_verify_digital_onepass.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "Main-surface input for the verify primitive (FR-006).",

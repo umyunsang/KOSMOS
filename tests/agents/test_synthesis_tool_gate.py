@@ -13,8 +13,8 @@ from uuid import uuid4
 
 import pytest
 
-from kosmos.agents.coordinator import Coordinator
-from kosmos.agents.mailbox.messages import AgentMessage
+from kosax.agents.coordinator import Coordinator
+from kosax.agents.mailbox.messages import AgentMessage
 from tests.agents.conftest import StubLLMClient, build_test_registry
 
 # ---------------------------------------------------------------------------

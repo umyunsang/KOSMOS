@@ -8,7 +8,7 @@ models round-trip to the committed snapshot verbatim.  Any drift —
 field reorder, default change, description edit — fails the build.
 
 Snapshot authorship (T012):
-    uv run python -c "from kosmos.tools.models import ...; json.dumps(
+    uv run python -c "from kosax.tools.models import ...; json.dumps(
         model_json_schema(), indent=2, sort_keys=True, ensure_ascii=False
     )"
 """
@@ -20,7 +20,7 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.tools.models import AdapterCandidate, LookupSearchInput, LookupSearchResult
+from kosax.tools.models import AdapterCandidate, LookupSearchInput, LookupSearchResult
 
 _SNAPSHOT_DIR = Path(__file__).parent / "__snapshots__"
 

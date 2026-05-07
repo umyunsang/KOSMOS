@@ -57,4 +57,4 @@ None (P0 is the bottom of the DAG).
 
 ## Related decisions
 
-`docs/requirements/kosmos-migration-tree.md § P0`
+`docs/requirements/kosax-migration-tree.md § P0`

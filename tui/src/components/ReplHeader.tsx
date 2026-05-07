@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS ReplHeader — CC-fidelity launch surface for an empty conversation.
+// KOSAX ReplHeader — CC-fidelity launch surface for an empty conversation.
 //
 // Visual source of truth:
 //   .references/claude-code-sourcemap/restored-src/src/components/LogoV2/WelcomeV2.tsx

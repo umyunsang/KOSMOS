@@ -24,11 +24,11 @@ import type {
 // ---------------------------------------------------------------------------
 
 export type BindingSpanAttributes = Readonly<{
-  'kosmos.tui.binding': TierOneAction
-  'kosmos.tui.binding.context': KeybindingContext
-  'kosmos.tui.binding.chord': string
-  'kosmos.tui.binding.reserved': boolean
-  'kosmos.tui.binding.blocked.reason'?: string
+  'kosax.tui.binding': TierOneAction
+  'kosax.tui.binding.context': KeybindingContext
+  'kosax.tui.binding.chord': string
+  'kosax.tui.binding.reserved': boolean
+  'kosax.tui.binding.blocked.reason'?: string
 }>
 
 export interface SpanEmitter {
@@ -111,11 +111,11 @@ export function resolve(
   // IME gate: mutates_buffer actions are blocked while composing (FR-005).
   if (ime.isComposing && entry.mutates_buffer) {
     const attrs: BindingSpanAttributes = {
-      'kosmos.tui.binding': action,
-      'kosmos.tui.binding.context': context,
-      'kosmos.tui.binding.chord': String(ev.chord),
-      'kosmos.tui.binding.reserved': entry.reserved,
-      'kosmos.tui.binding.blocked.reason': 'ime-composing',
+      'kosax.tui.binding': action,
+      'kosax.tui.binding.context': context,
+      'kosax.tui.binding.chord': String(ev.chord),
+      'kosax.tui.binding.reserved': entry.reserved,
+      'kosax.tui.binding.blocked.reason': 'ime-composing',
     }
     const emitter = spans ?? { emitBinding: ringPush }
     emitter.emitBinding(attrs)
@@ -124,10 +124,10 @@ export function resolve(
 
   // Emit OTel span.
   const attrs: BindingSpanAttributes = {
-    'kosmos.tui.binding': action,
-    'kosmos.tui.binding.context': context,
-    'kosmos.tui.binding.chord': String(ev.chord),
-    'kosmos.tui.binding.reserved': entry.reserved,
+    'kosax.tui.binding': action,
+    'kosax.tui.binding.context': context,
+    'kosax.tui.binding.chord': String(ev.chord),
+    'kosax.tui.binding.reserved': entry.reserved,
   }
   const emitter = spans ?? { emitBinding: ringPush }
   emitter.emitBinding(attrs)

@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for bilingual (Korean + English) search in the KOSMOS Tool System.
+"""Unit tests for bilingual (Korean + English) search in the KOSAX Tool System.
 
 All tests use mock tools from conftest fixtures — no live API calls are made.
 """
 
 from __future__ import annotations
 
-from kosmos.tools.models import GovAPITool, SearchToolsInput, SearchToolsOutput
-from kosmos.tools.search import create_search_meta_tool, search_tools
+from kosax.tools.models import GovAPITool, SearchToolsInput, SearchToolsOutput
+from kosax.tools.search import create_search_meta_tool, search_tools
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -1,5 +1,5 @@
 {
-  "name": "KOSMOS Dev",
+  "name": "KOSAX Dev",
   "image": "mcr.microsoft.com/devcontainers/python:3.12",
   "features": {
     "ghcr.io/astral-sh/uv-devcontainer-feature/uv:1": {}
@@ -13,7 +13,7 @@
         "ms-python.vscode-pylance"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/workspaces/KOSMOS/.venv/bin/python"
+        "python.defaultInterpreterPath": "/workspaces/KOSAX/.venv/bin/python"
       }
     }
   },

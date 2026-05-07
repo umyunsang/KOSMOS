@@ -2,7 +2,7 @@
 
 > 새 어댑터를 작성할 때 `permission_layer` 를 1/2/3 중 어느 값으로 설정할지 결정하는 가이드. Spec 033 Permission v2 spectrum 이 enforce 하는 시민 동의 강도를 어댑터 작성 시점에 정확히 매핑합니다.
 >
-> 참고: [Spec 033 Permission v2 Spectrum](../../specs/033-permission-v2-spectrum/spec.md), [Migration tree § UI-C](../requirements/kosmos-migration-tree.md), [docs/plugins/security-review.md](security-review.md) (Layer 3 + PIPA), [Spec 024 V4 irreversible-AAL invariant](../../specs/024-tool-security-v1/spec.md).
+> 참고: [Spec 033 Permission v2 Spectrum](../../specs/033-permission-v2-spectrum/spec.md), [Migration tree § UI-C](../requirements/kosax-migration-tree.md), [docs/plugins/security-review.md](security-review.md) (Layer 3 + PIPA), [Spec 024 V4 irreversible-AAL invariant](../../specs/024-tool-security-v1/spec.md).
 
 ---
 
@@ -57,7 +57,7 @@ adapter:
 > | `personal_sensitive` | `sensitive` |
 > | `personal_unique_id` | `identifier` |
 >
-> Default scaffold (`kosmos plugin init`) 는 양쪽 모두 `non_personal` 을 emit 하므로 처음 시작할 때는 신경 쓸 필요 없습니다. PII 처리로 전환할 때만 두 곳을 함께 갱신하세요.
+> Default scaffold (`kosax plugin init`) 는 양쪽 모두 `non_personal` 을 emit 하므로 처음 시작할 때는 신경 쓸 필요 없습니다. PII 처리로 전환할 때만 두 곳을 함께 갱신하세요.
 
 ---
 
@@ -228,6 +228,6 @@ Plugin 작성자는 매니페스트의 `permission_layer` 값만 설정하면 TU
 
 - [Spec 033 Permission v2 Spectrum](../../specs/033-permission-v2-spectrum/spec.md) — Layer 1/2/3 enforcement gauntlet
 - [Spec 024 V4 invariant](../../specs/024-tool-security-v1/spec.md) — `is_irreversible ⇒ auth_level ≥ AAL2`
-- [Migration tree § UI-C](../requirements/kosmos-migration-tree.md) — UI 색상 + icon 표준
+- [Migration tree § UI-C](../requirements/kosax-migration-tree.md) — UI 색상 + icon 표준
 - [docs/plugins/security-review.md § L3 Gate Procedure](security-review.md) — Layer 3 release 절차
 - [50-item Q5 그룹](review-checklist.md#q5--permission-tier-3) — Q5-LAYER-DECLARED / Q5-LAYER-MATCHES-PII / Q5-LAYER-DOC

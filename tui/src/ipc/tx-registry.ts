@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Spec 032 WS3 T044
+// KOSAX-original — Spec 032 WS3 T044
 //
 // Client-side transaction registry for TUI-side idempotency (FR-026, FR-032).
 //

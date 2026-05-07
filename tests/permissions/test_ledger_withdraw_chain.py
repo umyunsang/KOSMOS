@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.permissions.ledger import append
+from kosax.permissions.ledger import append
 
 _ZERO_DIGEST = "0" * 64
 _WITHDRAWAL_TS = datetime(2026, 5, 4, 9, 0, 0, tzinfo=UTC)

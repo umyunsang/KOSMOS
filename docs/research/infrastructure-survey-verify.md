@@ -1,8 +1,8 @@
 # Infrastructure Survey: `verify` primitive
 
-> **Scope**. KOSMOS `verify` primitive (AuthContext 생성)의 실제 카운터파트인 한국 국가 인증 인프라 외부 계약 역공학. 특히 현재 KOSMOS가 사용 중인 `Literal["AAL1","AAL2","AAL3"]` 라벨(v1.3 Tool Template Security Spec, 본 저장소 `src/kosmos/tools/models.py` 및 Discussion #1051)이 실제 provider·규제기관이 공표하는 공식 보안등급을 **정확히 미러하는지** 검증.
+> **Scope**. KOSAX `verify` primitive (AuthContext 생성)의 실제 카운터파트인 한국 국가 인증 인프라 외부 계약 역공학. 특히 현재 KOSAX가 사용 중인 `Literal["AAL1","AAL2","AAL3"]` 라벨(v1.3 Tool Template Security Spec, 본 저장소 `src/kosax/tools/models.py` 및 Discussion #1051)이 실제 provider·규제기관이 공표하는 공식 보안등급을 **정확히 미러하는지** 검증.
 >
-> **Audience**. 기관 협업 전환 시 `client`만 교체하면 harness 무변경이 되도록 mock adapter를 설계하는 KOSMOS 팀원.
+> **Audience**. 기관 협업 전환 시 `client`만 교체하면 harness 무변경이 되도록 mock adapter를 설계하는 KOSAX 팀원.
 >
 > **Non-goals**. 내부 구현(DB 스키마, HSM 배치 등) 분석 금지. 외부에서 관찰 가능한 표면만.
 >
@@ -12,7 +12,7 @@
 
 ## Executive summary
 
-1. **KOSMOS의 AAL1/AAL2/AAL3 라벨은 실제 한국 공표 등급을 미러하지 않는다 — FAIL (mirror 원칙 위반).** NIST SP 800-63-3 AAL 체계는 한국 어느 규제기관(KISA·방통위·금융위·행안부·과기정통부)도 공식 채택·공표한 적이 없다. 검색한 모든 공개 법령·고시·가이드는 AAL 번호 대신 **provider·용도별 원어 등급 레이블**(예: "공인전자서명(구)", "간편인증", "본인확인기관 적합·조건부·부적합", "FIDO UAF 인증", "전자서명인증사업자 인정", "마이데이터 표준 API Scope", "블록체인 기반 DID 모바일신분증", eIDAS-스타일 "Low/Substantial/High" 미채택)을 사용한다. KOSMOS가 현재 붙이고 있는 AAL2/AAL3 값은 **내부적으로 번역한 추정치**이지 mirror가 아니다. [Principle VI Constitution v1.3.0 Out of Scope Declaration](../../.specify/memory/constitution.md)에 명시된 "외부 계약 표면을 바이트 수준까지 미러" 원칙과 직접 충돌한다.
+1. **KOSAX의 AAL1/AAL2/AAL3 라벨은 실제 한국 공표 등급을 미러하지 않는다 — FAIL (mirror 원칙 위반).** NIST SP 800-63-3 AAL 체계는 한국 어느 규제기관(KISA·방통위·금융위·행안부·과기정통부)도 공식 채택·공표한 적이 없다. 검색한 모든 공개 법령·고시·가이드는 AAL 번호 대신 **provider·용도별 원어 등급 레이블**(예: "공인전자서명(구)", "간편인증", "본인확인기관 적합·조건부·부적합", "FIDO UAF 인증", "전자서명인증사업자 인정", "마이데이터 표준 API Scope", "블록체인 기반 DID 모바일신분증", eIDAS-스타일 "Low/Substantial/High" 미채택)을 사용한다. KOSAX가 현재 붙이고 있는 AAL2/AAL3 값은 **내부적으로 번역한 추정치**이지 mirror가 아니다. [Principle VI Constitution v1.3.0 Out of Scope Declaration](../../.specify/memory/constitution.md)에 명시된 "외부 계약 표면을 바이트 수준까지 미러" 원칙과 직접 충돌한다.
 
 2. **권고 정정안**. `auth_level: Literal["AAL1","AAL2","AAL3"]` 필드를 제거하거나, `published_tier: Literal[...]`로 리네이밍하여 provider 원어 레이블을 직접 담도록 바꾼다. NIST AAL로의 "번역"이 필요하면 별도의 파생 필드(예: `nist_aal_hint: Optional[Literal["AAL1","AAL2","AAL3"]]`)에 `# derived, advisory-only, not mirrored` 주석과 함께 둔다. 8-verb mock facade(Epic #994)는 이 리네이밍이 끝난 후에야 `verify` 계약을 확정해야 한다.
 
@@ -27,7 +27,7 @@
 | 5. 모바일 신분증 | W3C VCDM 1.0 + 한국형 DID(K-DIDF/did:omn) + ISO/IEC 18013-5(mDL 일부) | "모바일 신분증" / "블록체인 DID 기반" | 3/5 | VP 포맷·검증 프로토콜은 정부 SDK 다운로드 전에는 외부 관찰 불가 |
 | 6. 마이데이터 | OAuth 2.0 (RFC 6749 준용) + 표준 API Scope 목록 | "마이데이터" 각 영역(금융/공공/의료)별 | 4/5 | 공개 문서 충실, but 의료 마이데이터는 FHIR R4 SMART-on-FHIR 채택 여부 미공표 |
 
-4. **Cross-cutting pattern**. 한국 인증 infrastructure는 (a) **용도별 수직 사일로**(금융 ≠ 공공 ≠ 의료 ≠ 통신)와 (b) **provider가 법령 준수 사실을 공표(인정·평가·지정)** 하는 구조라 NIST처럼 "authenticator 수준 통합 등급"이 존재하지 않는다. 미러링이 목적이면 KOSMOS는 provider가 공표한 레이블 그대로 저장해야 하며, 이후 orchestration layer에서 정책 의사결정이 필요할 때만 NIST AAL에 **hint-level mapping**을 attach해야 한다.
+4. **Cross-cutting pattern**. 한국 인증 infrastructure는 (a) **용도별 수직 사일로**(금융 ≠ 공공 ≠ 의료 ≠ 통신)와 (b) **provider가 법령 준수 사실을 공표(인정·평가·지정)** 하는 구조라 NIST처럼 "authenticator 수준 통합 등급"이 존재하지 않는다. 미러링이 목적이면 KOSAX는 provider가 공표한 레이블 그대로 저장해야 하며, 이후 orchestration layer에서 정책 의사결정이 필요할 때만 NIST AAL에 **hint-level mapping**을 attach해야 한다.
 
 ---
 
@@ -191,7 +191,7 @@ S           : validate assertion signature, extract 식별자
   Kakao → BaroCert → RP : receiptID + signed result (SHA-256 + 서버 공개키 검증)
   ```
 - **공표 tier**: "카카오뱅크 인증서", "카카오톡 지갑 인증". 전자서명법 인정 사업자. AAL 없음.
-- **Mirrorability**: 3/5 — BaroCert API가 공개 SDK라 shape은 미러 가능, 그러나 RP가 직접 카카오 API를 부르는 대신 BaroCert 중계를 강제하는 점은 KOSMOS mock에서 추가 중계층을 모델링해야 한다.
+- **Mirrorability**: 3/5 — BaroCert API가 공개 SDK라 shape은 미러 가능, 그러나 RP가 직접 카카오 API를 부르는 대신 BaroCert 중계를 강제하는 점은 KOSAX mock에서 추가 중계층을 모델링해야 한다.
 
 #### 3C — 네이버 인증 / 토스 인증
 
@@ -241,7 +241,7 @@ S           : validate assertion signature, extract 식별자
   ```
 - **Termination**: **2025-12-30 서비스 종료, 2026-01-30 개인정보 전량 삭제** ([IFEZ 공지](https://www.ifez.go.kr/main/pst/view.do?pst_id=noti01&pst_sn=668873&search=), [도로교통공단 공지](https://www.koroad.or.kr/main/board/1/304186/board_view.do), [질병관리청 공지](https://is.kdca.go.kr/isc/popupmain/onepassnotices.html)).
 - **공표 tier**: 없음 (단일 통합 브랜드). FIDO UAF v1.0 획득만 공표.
-- **Mirrorability**: **N/A — 서비스 종료.** KOSMOS는 이를 미러할 이유가 없다.
+- **Mirrorability**: **N/A — 서비스 종료.** KOSAX는 이를 미러할 이유가 없다.
 
 #### 4B — 정부 통합인증 Any-ID (후속)
 
@@ -250,7 +250,7 @@ S           : validate assertion signature, extract 식별자
 - **Legal basis**: 전자정부법 시행령 대통령령 제34518호 (2024-05-21 개정). [행안부 Any-ID 소개](https://www.mois.go.kr/frt/sub/a06/b04/easyCertification/screen.do).
 - **Coverage (2026-04 현재)**: 94개 공공기관. [나무위키 정부 통합인증](https://namu.wiki/w/%EC%A0%95%EB%B6%80%20%ED%86%B5%ED%95%A9%EC%9D%B8%EC%A6%9D).
 - **공표 tier**: 없음. "간편인증" 배너 레이블만.
-- **Mirrorability**: 2/5 — 연계 기관은 이미 94개지만 외부 연동 기술문서가 공개되지 않음. KOSMOS는 "Any-ID redirect happens, then delegated method determines assurance"로 mock 구조만 둘 수 있음.
+- **Mirrorability**: 2/5 — 연계 기관은 이미 94개지만 외부 연동 기술문서가 공개되지 않음. KOSAX는 "Any-ID redirect happens, then delegated method determines assurance"로 mock 구조만 둘 수 있음.
 
 #### Sources (Family 4)
 - [행안부 정부 통합인증(Any-ID) 안내](https://www.mois.go.kr/frt/sub/a06/b04/easyCertification/screen.do)
@@ -434,11 +434,11 @@ NIST SP 800-63B §4.2–§4.4에서 AAL은 인증 **세션 수준 보증(authent
 
 **AAL1/AAL2/AAL3이라는 레이블은 위 어떤 provider 공표에도 나타나지 않는다.**
 
-### 4. KOSMOS 현재 할당 vs 공표 등급 대조
+### 4. KOSAX 현재 할당 vs 공표 등급 대조
 
 Discussion #1051 제시안 (원문):
 
-| Family | KOSMOS AAL | 공표 실제 레이블 | Mirror? |
+| Family | KOSAX AAL | 공표 실제 레이블 | Mirror? |
 |---|---|---|---|
 | 공동인증서 | AAL3 | "(구) 공인전자서명" / "공동인증서" | **FAIL** — 번역 라벨 |
 | 금융인증서 | AAL3 | "금융인증서" | **FAIL** — 번역 라벨 |
@@ -449,19 +449,19 @@ Discussion #1051 제시안 (원문):
 
 ### 5. Mismatch 분석
 
-A. **Category mismatch**. 마이데이터는 "인증 수단"이 아니라 **"데이터 전송 권한(인가)"** 체계다. OAuth 2.0 scope catalog이지 authenticator taxonomy가 아니다. KOSMOS가 여기에 `auth_level: AAL2`를 붙이는 것은 NIST가 정의한 AAL의 semantic(authenticator strength)과 전혀 다른 축에 label을 찍는 것이다.
+A. **Category mismatch**. 마이데이터는 "인증 수단"이 아니라 **"데이터 전송 권한(인가)"** 체계다. OAuth 2.0 scope catalog이지 authenticator taxonomy가 아니다. KOSAX가 여기에 `auth_level: AAL2`를 붙이는 것은 NIST가 정의한 AAL의 semantic(authenticator strength)과 전혀 다른 축에 label을 찍는 것이다.
 
-B. **Translation, not mirror**. "공동인증서 = AAL3"은 NIST가 요구하는 FIPS 140 Level 2 이상 하드웨어 보증·verifier impersonation resistance를 한국 CA가 공식적으로 주장·인증받은 적이 **없다**. 공동인증서는 PKCS#12 소프트키로도 발급 가능하며(파일 저장), 이는 NIST 기준상 AAL2 software-crypto 수준에 가깝다. 즉 KOSMOS의 "AAL3" 라벨은 **번역자(KOSMOS 팀)의 해석치**일 뿐 공표된 사실과 매핑이 없다.
+B. **Translation, not mirror**. "공동인증서 = AAL3"은 NIST가 요구하는 FIPS 140 Level 2 이상 하드웨어 보증·verifier impersonation resistance를 한국 CA가 공식적으로 주장·인증받은 적이 **없다**. 공동인증서는 PKCS#12 소프트키로도 발급 가능하며(파일 저장), 이는 NIST 기준상 AAL2 software-crypto 수준에 가깝다. 즉 KOSAX의 "AAL3" 라벨은 **번역자(KOSAX 팀)의 해석치**일 뿐 공표된 사실과 매핑이 없다.
 
 C. **Ambiguity collapse**. "간편인증 = AAL2"는 실제로는 PASS(SMS + SIM 기반)와 카카오(앱 기반 PIN/생체)를 동일 등급으로 취급하는데, NIST 기준으로 SMS는 SP 800-63B §5.1.3.3에서 **"RESTRICTED"** 분류이며 AAL2에서도 권장되지 않는 수단이다. PASS를 AAL2로 라벨링하는 것은 NIST 자체 가이드라인과도 충돌한다.
 
-D. **Mirror principle violation**. Constitution v1.3.0 Principle VI("외부 계약 표면을 바이트 수준까지 미러")에 따르면, mock adapter가 실제 provider로 교체될 때 harness가 손대지 않아야 한다. 실제 provider는 "금융인증서"라는 문자열을 공표하는데 KOSMOS가 "AAL3"으로 저장해 두면 교체 시점에 매핑 테이블이 필요해진다 — 이는 mirror가 아니라 **translation layer**이다.
+D. **Mirror principle violation**. Constitution v1.3.0 Principle VI("외부 계약 표면을 바이트 수준까지 미러")에 따르면, mock adapter가 실제 provider로 교체될 때 harness가 손대지 않아야 한다. 실제 provider는 "금융인증서"라는 문자열을 공표하는데 KOSAX가 "AAL3"으로 저장해 두면 교체 시점에 매핑 테이블이 필요해진다 — 이는 mirror가 아니라 **translation layer**이다.
 
 ### 6. 권고 수정안 (mirror-conformant)
 
 #### 6-1. 필드 리네이밍
 
-`src/kosmos/tools/models.py` 및 `docs/security/tool-template-security-spec-v1.md`에서:
+`src/kosax/tools/models.py` 및 `docs/security/tool-template-security-spec-v1.md`에서:
 
 ```python
 # Before (v1.1, translation — FAIL)
@@ -505,7 +505,7 @@ Orchestration layer가 정책 결정에 NIST AAL-like 수치가 필요하면 adv
 nist_aal_hint: Optional[Literal["AAL1", "AAL2", "AAL3"]] = Field(
     default=None,
     description=(
-        "KOSMOS 내부 해석치. Provider가 공표한 값이 아니다. "
+        "KOSAX 내부 해석치. Provider가 공표한 값이 아니다. "
         "NIST SP 800-63B 기준 best-effort 추정이며, 정책 결정의 유일한 근거로 쓰지 말 것. "
         "공식 carve-out이 수립되기 전까지는 `published_tier`를 우선한다."
     ),
@@ -531,7 +531,7 @@ docs/security/tool-template-security-spec-v1.md에서 Principle VI(Out of Scope 
 
 ### 7. 최종 판정
 
-**FAIL (mirror 원칙 위반).** KOSMOS 현재 `auth_level: Literal["AAL1","AAL2","AAL3"]`는 실제 한국 공표 등급을 미러하지 않는 **번역 레이블**이며, Constitution v1.3.0 Principle VI에 정의된 mirror 원칙과 직접 충돌한다. 위 §6 권고대로 `published_tier` + 선택적 `nist_aal_hint`로 분리해야 한다.
+**FAIL (mirror 원칙 위반).** KOSAX 현재 `auth_level: Literal["AAL1","AAL2","AAL3"]`는 실제 한국 공표 등급을 미러하지 않는 **번역 레이블**이며, Constitution v1.3.0 Principle VI에 정의된 mirror 원칙과 직접 충돌한다. 위 §6 권고대로 `published_tier` + 선택적 `nist_aal_hint`로 분리해야 한다.
 
 ---
 
@@ -539,15 +539,15 @@ docs/security/tool-template-security-spec-v1.md에서 Principle VI(Out of Scope 
 
 1. **No unified assurance framework.** 한국은 NIST SP 800-63 · eIDAS 같은 **수평 통합 보증 레벨 체계**를 채택하지 않았다. 대신 (a) 전자서명법(서명 주체 인정), (b) 전자금융감독규정(금융 거래 안전성), (c) 정보통신망법(본인확인기관 지정), (d) 개인정보보호법(처리 요건)의 **수직 사일로**가 독립 운영된다. 이는 정치적·역사적 산물이며 단기에 변할 징후 없음.
 
-2. **Protocol heterogeneity**. OAuth 2.0 (마이데이터·PASS·카카오 OIDC), SAML 2.0 (디지털원패스), PKCS#7/PKCS#12 (공동/금융인증서), W3C VC + K-DIDF (모바일 신분증), ISO 18013-5 (mDL 일부)가 공존. 단일 Python 라이브러리로 전부 커버 불가 — KOSMOS mock은 family별 서브모듈 구조가 불가피.
+2. **Protocol heterogeneity**. OAuth 2.0 (마이데이터·PASS·카카오 OIDC), SAML 2.0 (디지털원패스), PKCS#7/PKCS#12 (공동/금융인증서), W3C VC + K-DIDF (모바일 신분증), ISO 18013-5 (mDL 일부)가 공존. 단일 Python 라이브러리로 전부 커버 불가 — KOSAX mock은 family별 서브모듈 구조가 불가피.
 
-3. **Intermediary pattern**. 간편인증 대부분(카카오/네이버/토스)이 BaroCert·KICA·드림시큐리티 등 **aggregator**를 거친다. 마이데이터 금융도 KFTC **중계기관** 경유. KOSMOS mock은 (RP → aggregator → provider) 3-tier 토폴로지를 family 3·6에서는 기본으로 모델링해야 한다.
+3. **Intermediary pattern**. 간편인증 대부분(카카오/네이버/토스)이 BaroCert·KICA·드림시큐리티 등 **aggregator**를 거친다. 마이데이터 금융도 KFTC **중계기관** 경유. KOSAX mock은 (RP → aggregator → provider) 3-tier 토폴로지를 family 3·6에서는 기본으로 모델링해야 한다.
 
 4. **Reauthentication timing 미공표**. NIST AAL2/AAL3가 규정한 12h 세션 재인증 · 15/30분 비활성 컷오프는 대응 레이블이 한국에 없다. 각 service가 자율 판정. Mock은 "unspecified, RP 재량"으로 두는 게 맞다.
 
-5. **Legal basis — 미러 여부에 독립**. 공표된 법적 지위(전자서명법상 효력·도로교통법상 실물 동등)는 mock이 흉내낼 수 있는 축이 아니다. KOSMOS는 `legal_basis` 필드에 "전자서명법", "도로교통법 제80조" 등 원문 인용만 저장하고 실제 법적 효력은 disclaim해야 한다(이미 `docs/tool-adapters.md` 패턴과 정합).
+5. **Legal basis — 미러 여부에 독립**. 공표된 법적 지위(전자서명법상 효력·도로교통법상 실물 동등)는 mock이 흉내낼 수 있는 축이 아니다. KOSAX는 `legal_basis` 필드에 "전자서명법", "도로교통법 제80조" 등 원문 인용만 저장하고 실제 법적 효력은 disclaim해야 한다(이미 `docs/tool-adapters.md` 패턴과 정합).
 
-6. **Mobile-first**. 모든 family에서 데스크톱 브라우저 플로우는 모바일 앱 콜백에 의존한다(공동인증서 PC 로그인조차 모바일 앱 승인을 요구하는 은행이 증가). KOSMOS mock은 "out-of-band device notification"을 first-class로 다뤄야 한다.
+6. **Mobile-first**. 모든 family에서 데스크톱 브라우저 플로우는 모바일 앱 콜백에 의존한다(공동인증서 PC 로그인조차 모바일 앱 승인을 요구하는 은행이 증가). KOSAX mock은 "out-of-band device notification"을 first-class로 다뤄야 한다.
 
 ---
 
@@ -667,8 +667,8 @@ docs/security/tool-template-security-spec-v1.md에서 Principle VI(Out of Scope 
 - [OmniOne Enterprise Brochure 2024 (KR)](https://www.omnione.net/layout/files/service/2/file_1/OmniOne%20Enterprise_Brochure%20_%EA%B5%AD%EB%AC%B8%20(2024).pdf)
 - [opendid.org — 디지털 운전면허증 글로벌 표준화 기고](https://opendid.org/bbs/view.php?idx=12003&code=press&cat_code=2)
 
-### KOSMOS 내부 참조 (정합성)
-- `/Users/um-yunsang/KOSMOS/.specify/memory/constitution.md` — Principle VI Out of Scope Declaration
-- `/Users/um-yunsang/KOSMOS/docs/security/tool-template-security-spec-v1.md` — 현재 auth_level 매트릭스(수정 대상)
-- `/Users/um-yunsang/KOSMOS/src/kosmos/tools/models.py` — `GovAPITool.auth_level` 필드(수정 대상)
-- `/Users/um-yunsang/KOSMOS/specs/031-mock-facade-8verb/` — 본 리서치가 차단하는 `verify` 계약 정의 spec
+### KOSAX 내부 참조 (정합성)
+- `/Users/um-yunsang/KOSAX/.specify/memory/constitution.md` — Principle VI Out of Scope Declaration
+- `/Users/um-yunsang/KOSAX/docs/security/tool-template-security-spec-v1.md` — 현재 auth_level 매트릭스(수정 대상)
+- `/Users/um-yunsang/KOSAX/src/kosax/tools/models.py` — `GovAPITool.auth_level` 필드(수정 대상)
+- `/Users/um-yunsang/KOSAX/specs/031-mock-facade-8verb/` — 본 리서치가 차단하는 `verify` 계약 정의 spec

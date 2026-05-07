@@ -1,4 +1,4 @@
-// KOSMOS-original session command: /new
+// KOSAX-original session command: /new
 // Emits session_event IPC frame with event="new".
 // The session store's SESSION_EVENT "new" arm clears state (data-model.md § 3.2).
 

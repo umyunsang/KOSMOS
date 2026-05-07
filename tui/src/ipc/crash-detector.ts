@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — no upstream analog (Claude Code uses HTTP; no child-process crash surface).
+// KOSAX-original — no upstream analog (Claude Code uses HTTP; no child-process crash surface).
 //
 // Crash detector: watches the spawned Python backend for non-zero exits and
 // fatal stderr, then emits a synthetic crash notice (FR-004, US1 scenario 4).
 //
 // Redaction rule (FR-004, #468 guard pattern):
-//   Any KOSMOS_* env var whose name ends in _KEY, _SECRET, _TOKEN, or _PASSWORD
+//   Any KOSAX_* env var whose name ends in _KEY, _SECRET, _TOKEN, or _PASSWORD
 //   has its value replaced with "[REDACTED]" in the stderr tail before it is
 //   exposed to any UI layer or log.
 //
@@ -24,11 +24,11 @@ import type { CrashNotice } from './bridge'
 // Redaction (reuses #468 secrets-guard pattern)
 // ---------------------------------------------------------------------------
 
-/** Regex matching KOSMOS_* env var keys that look like secrets. */
-const SECRET_KEY_RE = /^KOSMOS_[A-Z0-9_]+(?:_KEY|_SECRET|_TOKEN|_PASSWORD)$/
+/** Regex matching KOSAX_* env var keys that look like secrets. */
+const SECRET_KEY_RE = /^KOSAX_[A-Z0-9_]+(?:_KEY|_SECRET|_TOKEN|_PASSWORD)$/
 
 /**
- * Return a copy of *text* with the values of any KOSMOS_*_KEY/SECRET/TOKEN/PASSWORD
+ * Return a copy of *text* with the values of any KOSAX_*_KEY/SECRET/TOKEN/PASSWORD
  * env vars replaced by "[REDACTED]".
  *
  * Strategy: iterate the current process.env, find keys matching the pattern,
@@ -36,7 +36,7 @@ const SECRET_KEY_RE = /^KOSMOS_[A-Z0-9_]+(?:_KEY|_SECRET|_TOKEN|_PASSWORD)$/
  * This is intentionally conservative — it only redacts values that are
  * actually set in the environment, not all possible secrets.
  */
-export function redactKosmosSecrets(text: string): string {
+export function redactKosaxSecrets(text: string): string {
   let result = text
   for (const [key, value] of Object.entries(process.env)) {
     if (!value) continue
@@ -113,7 +113,7 @@ export interface CrashDetectorOptions {
  * 1. Drains stderr into a rolling 20-line buffer.
  * 2. Resolves `proc.exited`; if exit code is non-zero (or the process was
  *    killed) builds a CrashNotice with the stderr tail.
- * 3. Redacts KOSMOS_*_KEY/SECRET/TOKEN/PASSWORD values from the tail.
+ * 3. Redacts KOSAX_*_KEY/SECRET/TOKEN/PASSWORD values from the tail.
  * 4. Calls `onCrash` with the notice.
  * 5. (US1 T026) Watches for stdin EOF / EPIPE by attempting a zero-byte write
  *    after process exit; also listens on stdout done → calls `onDrop` so the
@@ -135,12 +135,12 @@ export function startCrashDetector(
   // anyway so a future fd-based caller degrades silently instead of throwing.
   const stderrStream = proc.stderr
   if (stderrStream instanceof ReadableStream) {
-    // KOSMOS Epic #2077 diagnostics — when KOSMOS_BACKEND_STDERR_FILE is
+    // KOSAX Epic #2077 diagnostics — when KOSAX_BACKEND_STDERR_FILE is
     // set, tee every backend stderr chunk to that path. Used to diagnose
     // why interactive mode hangs while print mode succeeds: the ring
     // buffer above only retains the last 20 lines, but K-EXAONE
     // long-reasoning traces + chat_request handler logs need full history.
-    const teePath = process.env.KOSMOS_BACKEND_STDERR_FILE
+    const teePath = process.env.KOSAX_BACKEND_STDERR_FILE
     let teeWriter: { write(data: Uint8Array): unknown; end(): unknown } | null = null
     if (teePath) {
       try {
@@ -182,7 +182,7 @@ export function startCrashDetector(
   ;(async () => {
     const exitCode = await proc.exited
     const raw = stderrBuf.tail()
-    const redacted = redactKosmosSecrets(raw)
+    const redacted = redactKosaxSecrets(raw)
 
     // Exit 0 is a clean shutdown → drop (bridge reconnects silently).
     if (exitCode === 0) {

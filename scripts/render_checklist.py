@@ -18,7 +18,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-from kosmos.plugins.checks.framework import ChecklistRow, load_checklist_rows
+from kosax.plugins.checks.framework import ChecklistRow, load_checklist_rows
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 YAML_PATH = REPO_ROOT / "tests" / "fixtures" / "plugin_validation" / "checklist_manifest.yaml"

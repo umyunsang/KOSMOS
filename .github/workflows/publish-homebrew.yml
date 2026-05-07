@@ -1,0 +1,89 @@
+name: Publish Homebrew
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish to the Homebrew tap, without leading v"
+        required: true
+        type: string
+
+concurrency:
+  group: publish-homebrew-${{ inputs.version }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  update-tap:
+    name: Update Homebrew Tap
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: homebrew
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22.14.0"
+
+      - name: Resolve version
+        id: version
+        run: |
+          version="${{ inputs.version }}"
+          if ! printf '%s' "${version}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "::error::Invalid version: ${version}"
+            exit 1
+          fi
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
+      - name: Download npm tarball
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          url="https://registry.npmjs.org/kosax/-/kosax-${version}.tgz"
+          curl -fsSL "${url}" -o "kosax-${version}.tgz"
+          sha256="$(sha256sum "kosax-${version}.tgz" | cut -d ' ' -f1)"
+          echo "KOSAX_TARBALL_SHA256=${sha256}" >> "${GITHUB_ENV}"
+
+      - name: Render formula
+        run: |
+          node scripts/render-homebrew-formula.mjs \
+            "${{ steps.version.outputs.version }}" \
+            "${KOSAX_TARBALL_SHA256}" \
+            Formula/kosax.rb
+
+      - name: Fetch Homebrew tap token from Infisical
+        uses: Infisical/secrets-action@77ab1f4ccd183a543cb5b42435fbd181189f4995
+        with:
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_CLIENT_ID }}
+          project-slug: kosax-3f-zs
+          env-slug: prod
+          secret-path: "/release"
+          export-type: env
+
+      - name: Checkout tap
+        uses: actions/checkout@v6
+        with:
+          repository: umyunsang/homebrew-kosax
+          path: tap
+          token: ${{ env.KOSAX_HOMEBREW_TAP_TOKEN }}
+
+      - name: Commit formula
+        run: |
+          mkdir -p tap/Formula
+          cp Formula/kosax.rb tap/Formula/kosax.rb
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/kosax.rb
+          if git diff --cached --quiet; then
+            echo "Formula unchanged"
+            exit 0
+          fi
+          git commit -m "kosax ${{ steps.version.outputs.version }}"
+          git push

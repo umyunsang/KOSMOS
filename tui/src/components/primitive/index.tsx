@@ -1,5 +1,5 @@
 /**
- * KOSMOS-original — PrimitiveDispatcher + barrel export.
+ * KOSAX-original — PrimitiveDispatcher + barrel export.
  *
  * PrimitiveDispatcher receives a tool_result envelope payload and dispatches
  * to the appropriate renderer.  It is a pure component: no IPC awareness,

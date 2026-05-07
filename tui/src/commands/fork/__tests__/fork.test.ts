@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS — /fork command surface tests.
+// KOSAX — /fork command surface tests.
 //
 // Verifies that:
 //   1. /fork is a first-class command in the COMMANDS registry (not just an
@@ -62,7 +62,7 @@ describe('/fork command surface', () => {
 
   it('also surfaces the /branch alias and /resume / /continue siblings', () => {
     // The four session-lifecycle commands promised by
-    // docs/requirements/kosmos-migration-tree.md § L1-A · A5.
+    // docs/requirements/kosax-migration-tree.md § L1-A · A5.
     const names = UI_L2_SLASH_COMMANDS.map((e) => e.name)
     expect(names).toContain('/fork')
     expect(names).toContain('/branch')

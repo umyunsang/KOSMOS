@@ -2,7 +2,7 @@
 // Epic γ #2294 · T019 — ToolRegistry boot probe.
 //
 // Standalone script invoked via `bun run probe:tool-registry`.
-// Runs verifyBootRegistry() against the active KOSMOS primitives and prints the
+// Runs verifyBootRegistry() against the active KOSAX primitives and prints the
 // success line; exits 0 on pass / 1 on fail.
 //
 // Usage (from /tui):

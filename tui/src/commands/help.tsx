@@ -1,4 +1,4 @@
-// KOSMOS-original help renderer for slash commands.
+// KOSAX-original help renderer for slash commands.
 // Renders the known-commands list via Ink <Box> + <Text>.
 // Unknown command path passes an errorBanner prop for the error notice.
 
@@ -26,7 +26,7 @@ export interface HelpViewProps {
 // ---------------------------------------------------------------------------
 
 /**
- * HelpView — renders the KOSMOS slash-command help listing.
+ * HelpView — renders the KOSAX slash-command help listing.
  *
  * Reads labels from the i18n bundle.  New command keys
  * (helpTitle, helpUsage) are defined in keys.ts + en.ts + ko.ts.
@@ -51,7 +51,7 @@ export function HelpView({ commands, errorBanner }: HelpViewProps) {
 
       {/* Title */}
       <Box marginBottom={1}>
-        <Text bold color={theme.kosmosCore}>
+        <Text bold color={theme.kosaxCore}>
           {i18n.helpTitle}
         </Text>
       </Box>

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from kosmos.ipc.tx_cache import (
+from kosax.ipc.tx_cache import (
     ToolCallResponse,
     TransactionLRU,
     TxEntry,

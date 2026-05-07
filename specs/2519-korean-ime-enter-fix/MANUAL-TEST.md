@@ -10,13 +10,13 @@ keystroke flow that the fix actually targets.
 ## Setup
 
 ```bash
-cd ~/KOSMOS/tui
+cd ~/KOSAX/tui
 git checkout fix/2519-korean-ime-enter-swallow
 bun install
 bun run tui
 ```
 
-Confirm KOSMOS branding, UFO mascot, and `tool_registry: 14 entries verified
+Confirm KOSAX branding, UFO mascot, and `tool_registry: 14 entries verified
 (4 primitives)` in the boot banner.
 
 ## Required scenarios (all must pass before merge)

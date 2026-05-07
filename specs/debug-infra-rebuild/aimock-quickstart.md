@@ -1,8 +1,8 @@
-# aimock Quickstart — KOSMOS Operator Guide
+# aimock Quickstart — KOSAX Operator Guide
 
 > **Spec**: `specs/debug-infra-rebuild/RFC.md § P0`
 > **Status**: Phase 2 deliverable — OPT-IN only.
-> Default KOSMOS path (real FriendliAI) is unchanged.
+> Default KOSAX path (real FriendliAI) is unchanged.
 
 ---
 
@@ -10,7 +10,7 @@
 
 [aimock](https://aimock.copilotkit.dev/) (formerly llmock) is a deterministic fake-LLM HTTP server by CopilotKit. It serves OpenAI-compatible `/v1/chat/completions` responses from fixture JSON files, with configurable streaming physics (`ttft` / `tps` / `jitter`).
 
-KOSMOS uses it to replace the live FriendliAI K-EXAONE endpoint in:
+KOSAX uses it to replace the live FriendliAI K-EXAONE endpoint in:
 - CI smoke tests (bounded 5-10 s per scenario instead of 30-90 s)
 - Local regression runs when FriendliAI is unavailable or rate-limited
 - Reproducing specific LLM response shapes (e.g., multi-tool call regression)
@@ -38,22 +38,22 @@ docker compose -f docker-compose.aimock.yml ps
 docker compose -f docker-compose.aimock.yml logs -f
 ```
 
-aimock listens on **`http://localhost:4010`** (override with `KOSMOS_AIMOCK_PORT` env var).
+aimock listens on **`http://localhost:4010`** (override with `KOSAX_AIMOCK_PORT` env var).
 
 ---
 
-## Point KOSMOS at aimock
+## Point KOSAX at aimock
 
 Set two environment variables **before** launching the TUI or running pytest:
 
 ```bash
-export KOSMOS_FRIENDLI_BASE_URL=http://localhost:4010/v1
-export KOSMOS_FRIENDLI_TOKEN=aimock-test
+export KOSAX_FRIENDLI_BASE_URL=http://localhost:4010/v1
+export KOSAX_FRIENDLI_TOKEN=aimock-test
 ```
 
-`KOSMOS_FRIENDLI_TOKEN` can be any non-empty string — aimock does not validate auth.
+`KOSAX_FRIENDLI_TOKEN` can be any non-empty string — aimock does not validate auth.
 
-Both variables map to `LLMClientConfig` in `src/kosmos/llm/config.py` and are
+Both variables map to `LLMClientConfig` in `src/kosax/llm/config.py` and are
 picked up automatically by the existing pydantic-settings load path.
 
 ---
@@ -63,8 +63,8 @@ picked up automatically by the existing pydantic-settings load path.
 ### Option A — TUI interactive
 
 ```bash
-export KOSMOS_FRIENDLI_BASE_URL=http://localhost:4010/v1
-export KOSMOS_FRIENDLI_TOKEN=aimock-test
+export KOSAX_FRIENDLI_BASE_URL=http://localhost:4010/v1
+export KOSAX_FRIENDLI_TOKEN=aimock-test
 bun run tui
 # In the TUI, type: 부산 날씨
 # Expected: aimock returns a single tool_call to lookup(kma_forecast_fetch)
@@ -74,8 +74,8 @@ bun run tui
 ### Option B — tmux capture (non-interactive, recordable)
 
 ```bash
-export KOSMOS_FRIENDLI_BASE_URL=http://localhost:4010/v1
-export KOSMOS_FRIENDLI_TOKEN=aimock-test
+export KOSAX_FRIENDLI_BASE_URL=http://localhost:4010/v1
+export KOSAX_FRIENDLI_TOKEN=aimock-test
 bash scripts/tui-tmux-capture.sh /tmp/aimock-smoke \
      specs/debug-infra-rebuild/scenarios/busan-weather.sh
 # Check: grep "kma_forecast_fetch" /tmp/aimock-smoke/snap-tool-dispatched.txt
@@ -84,8 +84,8 @@ bash scripts/tui-tmux-capture.sh /tmp/aimock-smoke \
 ### Option C — pytest (unit / integration, no TUI)
 
 ```bash
-export KOSMOS_FRIENDLI_BASE_URL=http://localhost:4010/v1
-export KOSMOS_FRIENDLI_TOKEN=aimock-test
+export KOSAX_FRIENDLI_BASE_URL=http://localhost:4010/v1
+export KOSAX_FRIENDLI_TOKEN=aimock-test
 uv run pytest tests/llm tests/ipc -x -q
 # Suite must still pass 510+ tests.
 # aimock is a transport-level drop-in; no test code changes needed.
@@ -149,12 +149,12 @@ All fixtures live in `tests/fixtures/llm/`. The server config is `tests/fixtures
 
 ## Hard constraints (do not violate)
 
-1. **aimock is OPT-IN**. KOSMOS runs against real FriendliAI by default. Never set
-   `KOSMOS_FRIENDLI_BASE_URL=http://localhost:4010` in `.env` committed to the repo.
+1. **aimock is OPT-IN**. KOSAX runs against real FriendliAI by default. Never set
+   `KOSAX_FRIENDLI_BASE_URL=http://localhost:4010` in `.env` committed to the repo.
 2. **Do not add aimock to CI workflows** yet. That is the next Epic's job.
 3. **Real-FriendliAI tests** remain gated behind `@pytest.mark.live` — aimock does not
    replace them, it supplements them.
-4. **`KOSMOS_FRIENDLI_TOKEN` must remain non-empty** even for aimock — the pydantic
+4. **`KOSAX_FRIENDLI_TOKEN` must remain non-empty** even for aimock — the pydantic
    validator in `LLMClientConfig` rejects blank tokens before the request reaches aimock.
 
 ---
@@ -165,12 +165,12 @@ If Docker is unavailable (Docker Desktop not installed, image pull failure, CI
 constraints), use the hand-rolled Bun fallback server instead:
 
 ```bash
-# Start aimock-bun on port 4010 (same port, transparent to KOSMOS code)
+# Start aimock-bun on port 4010 (same port, transparent to KOSAX code)
 bun scripts/aimock-bun.ts --port 4010
 
 # Optional: different port
 bun scripts/aimock-bun.ts --port 4011
-# Then: export KOSMOS_FRIENDLI_BASE_URL=http://localhost:4011/v1
+# Then: export KOSAX_FRIENDLI_BASE_URL=http://localhost:4011/v1
 ```
 
 **aimock-bun tradeoffs vs official image**:
@@ -208,7 +208,7 @@ the exact wording.
 
 ### KI-3: Agentic loop is infinite with tool_call-only fixtures
 
-A fixture that always returns `toolCalls` causes the KOSMOS agentic loop to
+A fixture that always returns `toolCalls` causes the KOSAX agentic loop to
 cycle: tool_result → LLM call → fixture matches → tool_call → ... indefinitely.
 The smoke scenario still PASSES because the milestones (`● lookup` + `⎿ result`)
 are captured before the loop runs away. The session is terminated by `/quit`.
@@ -226,7 +226,7 @@ captured.
 | `ConnectionRefusedError: [Errno 61]` | aimock not running | `bun scripts/aimock-bun.ts --port 4010` (or Docker path if available) |
 | Fixture not matched — TUI waits, no `● lookup` | `userMessageContains` phrase too narrow | Broaden match or add a catch-all fixture; see KI-2 above |
 | All responses are `{"error":"no fixture matched"}` | User message doesn't match any `userMessageContains` | Add a fixture or adjust the match phrase |
-| `KOSMOS_FRIENDLI_TOKEN must not be empty` | Token env var not set | `export KOSMOS_FRIENDLI_TOKEN=aimock-test` |
+| `KOSAX_FRIENDLI_TOKEN must not be empty` | Token env var not set | `export KOSAX_FRIENDLI_TOKEN=aimock-test` |
 | Container exits immediately | Image pull failed | `docker pull ghcr.io/copilotkit/aimock:latest`; or use aimock-bun fallback |
-| Port 4010 already in use | Another service on that port | `KOSMOS_AIMOCK_PORT=4011 docker compose -f docker-compose.aimock.yml up -d` or `bun scripts/aimock-bun.ts --port 4011`; set `KOSMOS_FRIENDLI_BASE_URL=http://localhost:4011/v1` |
+| Port 4010 already in use | Another service on that port | `KOSAX_AIMOCK_PORT=4011 docker compose -f docker-compose.aimock.yml up -d` or `bun scripts/aimock-bun.ts --port 4011`; set `KOSAX_FRIENDLI_BASE_URL=http://localhost:4011/v1` |
 | Agentic loop never exits | Fixture always returns toolCalls | Add a text-response fixture for the follow-up turn, or terminate with `/quit` / Ctrl-C |

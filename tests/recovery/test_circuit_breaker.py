@@ -7,7 +7,7 @@ import time
 
 import pytest
 
-from kosmos.recovery.circuit_breaker import (
+from kosax.recovery.circuit_breaker import (
     CircuitBreaker,
     CircuitBreakerConfig,
     CircuitBreakerRegistry,

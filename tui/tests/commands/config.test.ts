@@ -5,13 +5,13 @@ import { describe, it, expect } from 'bun:test';
 import {
   executeConfig,
   applyConfigChanges,
-  KOSMOS_CONFIG_CATALOG,
+  KOSAX_CONFIG_CATALOG,
 } from '../../src/commands/config.js';
 
 describe('executeConfig (FR-030)', () => {
   it('emits entries matching catalog count', () => {
     const result = executeConfig();
-    expect(result.entries).toHaveLength(KOSMOS_CONFIG_CATALOG.length);
+    expect(result.entries).toHaveLength(KOSAX_CONFIG_CATALOG.length);
   });
 
   it('each entry has key, value, isSecret fields', () => {
@@ -36,38 +36,38 @@ describe('executeConfig (FR-030)', () => {
   });
 
   it('openSecretEditorFor reflects the passed key', () => {
-    const result = executeConfig('KOSMOS_DATA_GO_KR_API_KEY');
-    expect(result.openSecretEditorFor).toBe('KOSMOS_DATA_GO_KR_API_KEY');
+    const result = executeConfig('KOSAX_DATA_GO_KR_API_KEY');
+    expect(result.openSecretEditorFor).toBe('KOSAX_DATA_GO_KR_API_KEY');
   });
 });
 
 describe('applyConfigChanges — FR-030 safety guard', () => {
   it('applies non-secret env var changes', () => {
-    const originalValue = process.env['KOSMOS_TUI_LOCALE'];
+    const originalValue = process.env['KOSAX_TUI_LOCALE'];
     applyConfigChanges([
       {
-        key: 'KOSMOS_TUI_LOCALE',
+        key: 'KOSAX_TUI_LOCALE',
         label_ko: '언어',
         label_en: 'Language',
         value: 'en',
         isSecret: false,
       },
     ]);
-    expect(process.env['KOSMOS_TUI_LOCALE']).toBe('en');
+    expect(process.env['KOSAX_TUI_LOCALE']).toBe('en');
     // Restore
     if (originalValue === undefined) {
-      delete process.env['KOSMOS_TUI_LOCALE'];
+      delete process.env['KOSAX_TUI_LOCALE'];
     } else {
-      process.env['KOSMOS_TUI_LOCALE'] = originalValue;
+      process.env['KOSAX_TUI_LOCALE'] = originalValue;
     }
   });
 
   it('NEVER applies secret entries (safety guard)', () => {
-    const originalValue = process.env['KOSMOS_FRIENDLI_TOKEN'];
+    const originalValue = process.env['KOSAX_FRIENDLI_TOKEN'];
     const maliciousValue = 'LEAKED_KEY_12345';
     applyConfigChanges([
       {
-        key: 'KOSMOS_FRIENDLI_TOKEN',
+        key: 'KOSAX_FRIENDLI_TOKEN',
         label_ko: 'API 키',
         label_en: 'API key',
         value: maliciousValue,
@@ -75,21 +75,21 @@ describe('applyConfigChanges — FR-030 safety guard', () => {
       },
     ]);
     // Value must NOT have been written
-    expect(process.env['KOSMOS_FRIENDLI_TOKEN']).not.toBe(maliciousValue);
+    expect(process.env['KOSAX_FRIENDLI_TOKEN']).not.toBe(maliciousValue);
     // Restore
     if (originalValue === undefined) {
-      delete process.env['KOSMOS_FRIENDLI_TOKEN'];
+      delete process.env['KOSAX_FRIENDLI_TOKEN'];
     } else {
-      process.env['KOSMOS_FRIENDLI_TOKEN'] = originalValue;
+      process.env['KOSAX_FRIENDLI_TOKEN'] = originalValue;
     }
   });
 
   it('skips entries with empty value', () => {
-    const original = process.env['KOSMOS_TUI_THEME'];
-    process.env['KOSMOS_TUI_THEME'] = 'dark';
+    const original = process.env['KOSAX_TUI_THEME'];
+    process.env['KOSAX_TUI_THEME'] = 'dark';
     applyConfigChanges([
       {
-        key: 'KOSMOS_TUI_THEME',
+        key: 'KOSAX_TUI_THEME',
         label_ko: '테마',
         label_en: 'Theme',
         value: '',
@@ -97,12 +97,12 @@ describe('applyConfigChanges — FR-030 safety guard', () => {
       },
     ]);
     // Empty value should not overwrite existing
-    expect(process.env['KOSMOS_TUI_THEME']).toBe('dark');
+    expect(process.env['KOSAX_TUI_THEME']).toBe('dark');
     // Restore
     if (original === undefined) {
-      delete process.env['KOSMOS_TUI_THEME'];
+      delete process.env['KOSAX_TUI_THEME'];
     } else {
-      process.env['KOSMOS_TUI_THEME'] = original;
+      process.env['KOSAX_TUI_THEME'] = original;
     }
   });
 });

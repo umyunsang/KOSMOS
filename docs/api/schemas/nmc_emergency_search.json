@@ -7,10 +7,10 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/nmc_emergency_search.json",
+  "$id": "https://kosax.example/api/schemas/nmc_emergency_search.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Input schema for nmc_emergency_search.\n\nPydantic v2 strict model (extra='forbid', frozen=True).\n``mode`` is explicit because the official NMC V4 guide exposes separate\noperations for coordinate lookup and regional list lookup. KOSMOS models\nthose operations directly; it does not silently retry one operation with\nthe other when an upstream response is empty.",
+  "description": "Input schema for nmc_emergency_search.\n\nPydantic v2 strict model (extra='forbid', frozen=True).\n``mode`` is explicit because the official NMC V4 guide exposes separate\noperations for coordinate lookup and regional list lookup. KOSAX models\nthose operations directly; it does not silently retry one operation with\nthe other when an upstream response is empty.",
   "properties": {
     "lat": {
       "anyOf": [

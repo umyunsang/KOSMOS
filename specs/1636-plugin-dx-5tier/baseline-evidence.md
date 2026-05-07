@@ -13,7 +13,7 @@ contributors at merge time.
 
 ## 현재 baseline (Pre-merge)
 
-`umyunsang/KOSMOS` repo 의 `main` 브랜치 기여자 (2026-04-26 기준):
+`umyunsang/KOSAX` repo 의 `main` 브랜치 기여자 (2026-04-26 기준):
 
 ```
 $ git log --format='%an' main | sort -u
@@ -23,13 +23,13 @@ umyunsang
 ```
 
 - **Human external contributors**: **0** (Copilot은 PR 리뷰 봇, dependabot은 의존성 업데이트 봇 — 둘 다 자동화 도구이며 plugin 작성과 무관).
-- **Plugin-store external repos** (`kosmos-plugin-store/<name>`) commit 작성자:
-  - `kosmos-plugin-template`: umyunsang only
-  - `kosmos-plugin-seoul-subway`: umyunsang only
-  - `kosmos-plugin-post-office`: umyunsang only
-  - `kosmos-plugin-nts-homtax`: umyunsang only
-  - `kosmos-plugin-nhis-check`: umyunsang only
-  - `kosmos-plugin-store/index`: umyunsang only
+- **Plugin-store external repos** (`kosax-plugin-store/<name>`) commit 작성자:
+  - `kosax-plugin-template`: umyunsang only
+  - `kosax-plugin-seoul-subway`: umyunsang only
+  - `kosax-plugin-post-office`: umyunsang only
+  - `kosax-plugin-nts-homtax`: umyunsang only
+  - `kosax-plugin-nhis-check`: umyunsang only
+  - `kosax-plugin-store/index`: umyunsang only
 
 **Baseline: 0** external contributors at the moment Spec 1636 P5 ships.
 
@@ -42,16 +42,16 @@ SINCE="${MERGE_DATE} +0 days"
 UNTIL="${MERGE_DATE} +90 days"
 
 # Plugin-store repos
-for repo in $(gh repo list kosmos-plugin-store --json name --limit 200 --jq '.[].name'); do
+for repo in $(gh repo list kosax-plugin-store --json name --limit 200 --jq '.[].name'); do
   echo "=== $repo ==="
-  gh api repos/kosmos-plugin-store/$repo/commits \
+  gh api repos/kosax-plugin-store/$repo/commits \
     --paginate \
     --jq '.[] | select(.author.login != null) | .author.login' \
     | sort -u
 done
 
-# KOSMOS repo
-gh api repos/umyunsang/KOSMOS/commits \
+# KOSAX repo
+gh api repos/umyunsang/KOSAX/commits \
   --paginate \
   --jq '.[].author.login' \
   | sort -u
@@ -60,9 +60,9 @@ gh api repos/umyunsang/KOSMOS/commits \
 ## SC-008 PASS 기준
 
 - 3개월 내 (2026-04-XX → 2026-07-XX) 위 측정에서 **umyunsang 외 1인 이상의 GitHub 사용자** 가 다음 중 하나를 수행:
-  - `kosmos-plugin-store/<name>` 신규 repo 생성 (`gh repo create --template kosmos-plugin-store/kosmos-plugin-template`).
+  - `kosax-plugin-store/<name>` 신규 repo 생성 (`gh repo create --template kosax-plugin-store/kosax-plugin-template`).
   - 기존 plugin repo 에 PR merge.
-  - `umyunsang/KOSMOS` 의 `docs/plugins/`, `src/kosmos/plugins/`, `tests/fixtures/plugin_validation/` 영역에 PR merge.
+  - `umyunsang/KOSAX` 의 `docs/plugins/`, `src/kosax/plugins/`, `tests/fixtures/plugin_validation/` 영역에 PR merge.
 
 ## 추적 방법
 

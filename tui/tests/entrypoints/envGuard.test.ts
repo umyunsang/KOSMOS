@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — FriendliAI boot warning guard tests.
+// KOSAX-original — FriendliAI boot warning guard tests.
 
 import { describe, expect, it, mock } from 'bun:test'
 import {
@@ -12,11 +12,11 @@ import {
 describe('envGuard', () => {
   it('requires the TUI login session marker', () => {
     expect(hasFriendliCredential({})).toBe(false)
-    expect(hasFriendliCredential({ KOSMOS_FRIENDLI_TOKEN: 'primary' })).toBe(false)
+    expect(hasFriendliCredential({ KOSAX_FRIENDLI_TOKEN: 'primary' })).toBe(false)
     expect(
       hasFriendliCredential({
-        KOSMOS_FRIENDLI_TOKEN: 'primary',
-        KOSMOS_FRIENDLI_SESSION_ACTIVE: '1',
+        KOSAX_FRIENDLI_TOKEN: 'primary',
+        KOSAX_FRIENDLI_SESSION_ACTIVE: '1',
       }),
     ).toBe(true)
   })

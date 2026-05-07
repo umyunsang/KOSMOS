@@ -2,7 +2,7 @@
 // audit-4-bun-pty — Permission Gauntlet via Bun-native PTY (bypasses tmux escape-time)
 //
 // Run from repo root:
-//   KOSMOS_BACKEND_LOG_FILE=/tmp/audit-4-bun.log \
+//   KOSAX_BACKEND_LOG_FILE=/tmp/audit-4-bun.log \
 //     bun scripts/bun-pty-capture.ts \
 //       specs/audit-prod/audit-4-bun-pty \
 //       specs/audit-prod/scripts/audit-4-bun-pty.ts

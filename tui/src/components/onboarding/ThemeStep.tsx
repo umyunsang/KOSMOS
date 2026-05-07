@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Spec 1635 P4 UI L2 — Onboarding step 2: Theme (FR-001 step 2, FR-035, T041).
 //
-// Renders the UFO mascot in idle pose with the approved KOSMOS purple palette
+// Renders the UFO mascot in idle pose with the approved KOSAX purple palette
 // (body #a78bfa / background #4c1d95). Theme options: dark (default) / light /
 // system. ↑↓ to select, Enter to confirm and advance.
 //
@@ -165,9 +165,9 @@ export function ThemeStep({
   const theme = useTheme()
   const { isComposing } = useKoreanIME()
   const i18n = getUiL2I18n(
-    locale ?? ((process.env['KOSMOS_TUI_LOCALE'] as 'ko' | 'en') || 'ko'),
+    locale ?? ((process.env['KOSAX_TUI_LOCALE'] as 'ko' | 'en') || 'ko'),
   )
-  const isEn = (locale ?? process.env['KOSMOS_TUI_LOCALE']) === 'en'
+  const isEn = (locale ?? process.env['KOSAX_TUI_LOCALE']) === 'en'
 
   const [selectedIdx, setSelectedIdx] = useState(0)
 
@@ -219,7 +219,7 @@ export function ThemeStep({
           />
         </Box>
         <Box flexDirection="column" justifyContent="center">
-          <Text bold>KOSMOS</Text>
+          <Text bold>KOSAX</Text>
           <Text color={theme.subtle}>K-EXAONE · FriendliAI</Text>
           <Box marginTop={1}>
             <Text color={UFO_PALETTE.body}>✻</Text>
@@ -245,7 +245,7 @@ export function ThemeStep({
           const desc = isEn ? opt.descEn : opt.descKo
           return (
             <Box key={opt.value} flexDirection="row">
-              <Text color={selected ? theme.kosmosCore : theme.subtle}>
+              <Text color={selected ? theme.kosaxCore : theme.subtle}>
                 {selected ? '[선택] ▸ ' : '        '}
               </Text>
               <Text bold={selected}>{label.padEnd(8)}</Text>
@@ -256,10 +256,10 @@ export function ThemeStep({
       </Box>
 
       <Box marginTop={1}>
-        <Text color={theme.kosmosCore}>
+        <Text color={theme.kosaxCore}>
           ↑↓ {isEn ? 'select' : '선택'}{'  ·  '}
         </Text>
-        <Text color={theme.kosmosCore}>{i18n.onboardingNext}</Text>
+        <Text color={theme.kosaxCore}>{i18n.onboardingNext}</Text>
         <Text color={theme.subtle}>{'  ·  /theme '}{isEn ? 'to change later' : '로 나중 변경'}</Text>
       </Box>
     </Box>

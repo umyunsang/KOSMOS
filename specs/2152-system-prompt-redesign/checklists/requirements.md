@@ -1,4 +1,4 @@
-# Specification Quality Checklist: KOSMOS System Prompt Redesign
+# Specification Quality Checklist: KOSAX System Prompt Redesign
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-04-28

@@ -7,7 +7,7 @@ Purpose: prove the real upstream request contracts before changing adapter code.
 ```bash
 curl -sS -G --max-time 20 \
   "https://dapi.kakao.com/v2/local/search/keyword.json" \
-  -H "Authorization: KakaoAK ${KOSMOS_KAKAO_API_KEY}" \
+  -H "Authorization: KakaoAK ${KOSAX_KAKAO_API_KEY}" \
   --data-urlencode "query=강남역" \
   --data-urlencode "size=1"
 ```
@@ -31,7 +31,7 @@ Observed:
 ```bash
 curl -sS -G --max-time 20 \
   "https://dapi.kakao.com/v2/local/geo/coord2regioncode.json" \
-  -H "Authorization: KakaoAK ${KOSMOS_KAKAO_API_KEY}" \
+  -H "Authorization: KakaoAK ${KOSAX_KAKAO_API_KEY}" \
   --data-urlencode "x=127.02800140627488" \
   --data-urlencode "y=37.49808633653005" \
   --data-urlencode "input_coord=WGS84"
@@ -73,7 +73,7 @@ The same request with browser-like or `python-httpx/0.28.1` User-Agent succeeds.
 ```bash
 curl -sS -A "Mozilla/5.0" -G --max-time 20 \
   "https://apis.data.go.kr/B552061/frequentzoneLg/getRestFrequentzoneLg" \
-  --data-urlencode "serviceKey=${KOSMOS_DATA_GO_KR_API_KEY}" \
+  --data-urlencode "serviceKey=${KOSAX_DATA_GO_KR_API_KEY}" \
   --data-urlencode "searchYearCd=2025119" \
   --data-urlencode "siDo=11" \
   --data-urlencode "guGun=680" \

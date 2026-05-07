@@ -8,7 +8,7 @@
 
 - [x] No implementation details (languages, frameworks, APIs) — TypeScript specifics only in functional requirements (necessary for byte-copy fidelity scope), CC reference paths cited as canonical baseline
 - [x] Focused on user value and business needs — US1/US2 are headless --print SDK + 시민 한국어 입력 user-facing surfaces
-- [x] Written for non-technical stakeholders — Background section ties Epic to KOSMOS CORE THESIS in plain language
+- [x] Written for non-technical stakeholders — Background section ties Epic to KOSAX CORE THESIS in plain language
 - [x] All mandatory sections completed (Background, Audit 출처, Pre-execution table, User Scenarios, Requirements, Success Criteria, Assumptions, Scope Boundaries)
 
 ## Requirement Completeness

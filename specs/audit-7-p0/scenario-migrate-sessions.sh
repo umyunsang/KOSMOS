@@ -5,7 +5,7 @@ set -euo pipefail
 
 # Wait for boot banner.
 wait_for_pane "tool_registry: [0-9]+ entries verified" 60
-wait_for_pane "KOSMOS" 5
+wait_for_pane "KOSAX" 5
 snapshot_pane snap-001-banner
 
 # /migrate-sessions --dry-run (P0-3 wiring proof).

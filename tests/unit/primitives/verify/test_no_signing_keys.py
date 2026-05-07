@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """T037 — Grep-style assertion: verify.py must contain zero signing / CA / VC-issuer code.
 
-FR-009 (harness-not-reimplementation): KOSMOS is a delegation-only harness.
+FR-009 (harness-not-reimplementation): KOSAX is a delegation-only harness.
 The verify primitive MUST NOT contain any of the following:
   - The string "sign" (signing operations)
   - The string "BEGIN PRIVATE KEY" (embedded PEM private key)
@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 
 _SRC_ROOT = Path(__file__).parents[4] / "src"
-_VERIFY_MODULE = _SRC_ROOT / "kosmos" / "primitives" / "verify.py"
+_VERIFY_MODULE = _SRC_ROOT / "kosax" / "primitives" / "verify.py"
 
 # Forbidden patterns (FR-009).  Case-sensitive; any single match = fail.
 _FORBIDDEN: list[tuple[str, str]] = [
@@ -42,7 +42,7 @@ def test_no_forbidden_pattern(verify_source: str, pattern: str, label: str) -> N
     assert not matches, (
         f"FR-009 violation: verify.py contains forbidden pattern for "
         f"{label!r} (pattern={pattern!r}). "
-        f"KOSMOS is a harness — no CA/HSM/signing code is allowed here."
+        f"KOSAX is a harness — no CA/HSM/signing code is allowed here."
     )
 
 

@@ -16,7 +16,7 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from kosmos.agents.plan import (
+from kosax.agents.plan import (
     CoordinatorPlan,
     ExecutionMode,
     PlanStatus,

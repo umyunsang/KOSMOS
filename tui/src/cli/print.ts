@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS Epic #2637 — byte-copy from CC 2.1.88 (cli/print.ts, R-3, FR-003).
+// KOSAX Epic #2637 — byte-copy from CC 2.1.88 (cli/print.ts, R-3, FR-003).
 // SWAP/anti-anthropic-1p(2637): process.env.USER_TYPE === 'ant' + feature(...)
-// guards are CC source (preserved as-is — auto-dead in KOSMOS environment).
-// remoteManagedSettings import resolved via KOSMOS cascade stub (R-3-cascade).
+// guards are CC source (preserved as-is — auto-dead in KOSAX environment).
+// remoteManagedSettings import resolved via KOSAX cascade stub (R-3-cascade).
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import { feature } from 'bun:bundle'
 import { readFile, stat } from 'fs/promises'
@@ -138,15 +138,15 @@ import { cwd } from 'process'
 import { getCwd } from 'src/utils/cwd.js'
 import omit from 'lodash-es/omit.js'
 import reject from 'lodash-es/reject.js'
-// SWAP: KOSMOS-2637/print policyLimits stub — Spec 1633 P1+P2 removed the
+// SWAP: KOSAX-2637/print policyLimits stub — Spec 1633 P1+P2 removed the
 // policyLimits service; CC's `isPolicyAllowed` gate is replaced by Spec 033
 // permission gauntlet. Inline stub keeps print.ts byte-shape with CC while
 // the only call site (line ~4996, teleport print mode) is itself dead in
-// KOSMOS (--teleport routes to claude.ai 1P-business surface, never ported).
+// KOSAX (--teleport routes to claude.ai 1P-business surface, never ported).
 const isPolicyAllowed = (_feature: string): boolean => true
 import type { ReplBridgeHandle } from 'src/bridge/replBridge.js'
 import { getRemoteSessionUrl } from 'src/constants/product.js'
-import { KOSMOS_PRINT_RESUME_USAGE } from 'src/constants/cli.js'
+import { KOSAX_PRINT_RESUME_USAGE } from 'src/constants/cli.js'
 import { buildBridgeConnectUrl } from 'src/bridge/bridgeStatusUtil.js'
 import { extractInboundMessageFields } from 'src/bridge/inboundMessages.js'
 import { resolveAndPrepend } from 'src/bridge/inboundAttachments.js'
@@ -5000,7 +5000,7 @@ async function loadInitialMessages(
   if (options.teleport) {
     logEvent('tengu_teleport_print_disabled', {})
     emitLoadError(
-      'Error: --teleport is not supported in KOSMOS. Claude.ai remote sessions were removed by Spec 1633 P1+P2.',
+      'Error: --teleport is not supported in KOSAX. Claude.ai remote sessions were removed by Spec 1633 P1+P2.',
       options.outputFormat,
     )
     gracefulShutdownSync(1)
@@ -5019,7 +5019,7 @@ async function loadInitialMessages(
       )
       if (!parsedSessionId) {
         let errorMessage =
-          `Error: --resume requires a valid session ID when used with --print. Usage: ${KOSMOS_PRINT_RESUME_USAGE}`
+          `Error: --resume requires a valid session ID when used with --print. Usage: ${KOSAX_PRINT_RESUME_USAGE}`
         if (typeof options.resume === 'string') {
           errorMessage += `. Session IDs must be in UUID format (e.g., 550e8400-e29b-41d4-a716-446655440000). Provided value "${options.resume}" is not a valid UUID`
         }

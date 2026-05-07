@@ -2,7 +2,7 @@
 """E2E test infrastructure for spec 030 Scenario 1 Route Safety (Re-baseline).
 
 Provides:
-- Env fixture: monkeypatches KOSMOS_DATA_GO_KR_API_KEY + KOSMOS_KAKAO_REST_KEY
+- Env fixture: monkeypatches KOSAX_DATA_GO_KR_API_KEY + KOSAX_KAKAO_REST_KEY
   with dummy values so the startup guard is neutralized without bypass (FR-011/012).
 - ToolRegistry + ToolExecutor with both facade tools (resolve_location, lookup)
   and both seed adapters (koroad_accident_hazard_search, kma_forecast_fetch)
@@ -37,16 +37,16 @@ from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from opentelemetry.trace import StatusCode
 
-from kosmos.context.builder import ContextBuilder
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.engine import QueryEngine
-from kosmos.engine.events import QueryEvent, StopReason
-from kosmos.llm.client import LLMClient
-from kosmos.llm.models import ChatMessage, StreamEvent, TokenUsage
-from kosmos.llm.usage import UsageTracker
-from kosmos.recovery.executor import RecoveryExecutor
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.registry import ToolRegistry
+from kosax.context.builder import ContextBuilder
+from kosax.engine.config import QueryEngineConfig
+from kosax.engine.engine import QueryEngine
+from kosax.engine.events import QueryEvent, StopReason
+from kosax.llm.client import LLMClient
+from kosax.llm.models import ChatMessage, StreamEvent, TokenUsage
+from kosax.llm.usage import UsageTracker
+from kosax.recovery.executor import RecoveryExecutor
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.registry import ToolRegistry
 from tests.e2e.models import (
     CapturedSpan,
     ObservabilitySnapshot,
@@ -281,7 +281,7 @@ class OTelSpanCaptureFixture:
     def setup(self) -> None:
         if self._sdk_disabled:
             return
-        import kosmos.tools.executor as _executor_mod
+        import kosax.tools.executor as _executor_mod
 
         self._exporter = InMemorySpanExporter()
         self._provider = TracerProvider()
@@ -289,12 +289,12 @@ class OTelSpanCaptureFixture:
         # Monkeypatch the module-level _tracer instead of resetting the global
         # provider singleton — consistent with the repo's established pattern.
         self._orig_tracer = _executor_mod._tracer
-        _executor_mod._tracer = self._provider.get_tracer("kosmos.tools.executor")
+        _executor_mod._tracer = self._provider.get_tracer("kosax.tools.executor")
 
     def teardown(self) -> None:
         if self._sdk_disabled or self._provider is None:
             return
-        import kosmos.tools.executor as _executor_mod
+        import kosax.tools.executor as _executor_mod
 
         # Restore the original tracer before shutting down the test provider.
         _executor_mod._tracer = self._orig_tracer
@@ -317,16 +317,16 @@ class OTelSpanCaptureFixture:
             if not tool_name_val:
                 continue  # Skip non-tool spans
 
-            outcome_raw = attrs.get("kosmos.tool.outcome")
+            outcome_raw = attrs.get("kosax.tool.outcome")
             if outcome_raw not in ("ok", "error"):
-                # FR-017: kosmos.tool.outcome must be "ok" or "error".
+                # FR-017: kosax.tool.outcome must be "ok" or "error".
                 # Missing or invalid value is a contract violation — raise so
                 # downstream span tests fail diagnostically rather than being
                 # hidden by a dropped or defaulted span.
                 raise AssertionError(
                     f"snapshot: span {span.name!r} missing/invalid "
-                    f"kosmos.tool.outcome={outcome_raw!r}; expected 'ok' or 'error' — "
-                    "executor must set kosmos.tool.outcome before span ends (FR-017)"
+                    f"kosax.tool.outcome={outcome_raw!r}; expected 'ok' or 'error' — "
+                    "executor must set kosax.tool.outcome before span ends (FR-017)"
                 )
 
             status_code_str: str
@@ -352,7 +352,7 @@ class OTelSpanCaptureFixture:
                 tool_name=tool_name_val,
                 tool_call_id=str(attrs.get("gen_ai.tool.call.id", "")) or None,
                 outcome=outcome_raw,  # type: ignore[arg-type]
-                adapter_id=str(attrs.get("kosmos.tool.adapter", "")) or None,
+                adapter_id=str(attrs.get("kosax.tool.adapter", "")) or None,
                 error_type=error_type_val,
                 status_code=status_code_str,  # type: ignore[arg-type]
                 attribute_keys=frozenset(attrs.keys()),
@@ -930,9 +930,9 @@ def e2e_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
 
     Uses dummy values — no real keys are committed or exposed (FR-011).
     """
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-dummy-data-go-kr")
-    monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", "test-dummy-kakao")
-    monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-dummy-friendli")
+    monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-dummy-data-go-kr")
+    monkeypatch.setenv("KOSAX_KAKAO_API_KEY", "test-dummy-kakao")
+    monkeypatch.setenv("KOSAX_FRIENDLI_TOKEN", "test-dummy-friendli")
 
 
 # ---------------------------------------------------------------------------
@@ -958,24 +958,24 @@ def _build_registry_and_executor() -> tuple[ToolRegistry, ToolExecutor]:
 
     from pydantic import BaseModel
 
-    from kosmos.tools.kma.forecast_fetch import (
+    from kosax.tools.kma.forecast_fetch import (
         KMA_FORECAST_FETCH_TOOL,
         KmaForecastFetchInput,
     )
-    from kosmos.tools.kma.forecast_fetch import (
+    from kosax.tools.kma.forecast_fetch import (
         _fetch as kma_forecast_fetch_fn,
     )
-    from kosmos.tools.koroad.accident_hazard_search import register as reg_koroad_hazard
-    from kosmos.tools.lookup import lookup as _lookup_fn
-    from kosmos.tools.models import LookupFetchInput, LookupSearchInput, ResolveLocationInput
-    from kosmos.tools.resolve_location import resolve_location as _resolve_location_fn
+    from kosax.tools.koroad.accident_hazard_search import register as reg_koroad_hazard
+    from kosax.tools.lookup import lookup as _lookup_fn
+    from kosax.tools.models import LookupFetchInput, LookupSearchInput, ResolveLocationInput
+    from kosax.tools.resolve_location import resolve_location as _resolve_location_fn
 
     registry = ToolRegistry()
     recovery = RecoveryExecutor()
     executor = ToolExecutor(registry, recovery_executor=recovery)
 
     # Register MVP LLM-visible surface (resolve_location + lookup)
-    from kosmos.tools.mvp_surface import register_mvp_surface
+    from kosax.tools.mvp_surface import register_mvp_surface
 
     register_mvp_surface(registry)
 
@@ -1089,7 +1089,7 @@ def _build_report(
     sdk_disabled reflects only OTEL_SDK_DISABLED (set by OTelSpanCaptureFixture).
     I7 enforcement (fetched_adapter_ids == adapter span count) is gated in
     RunReport._check_invariants: when span_adapter_count==0 (executor not yet
-    emitting kosmos.tool.adapter), I7 is not triggered.  A warning is emitted
+    emitting kosax.tool.adapter), I7 is not triggered.  A warning is emitted
     here so the instrumentation gap is visible in logs.
     """
     if not obs_snapshot.sdk_disabled:
@@ -1097,7 +1097,7 @@ def _build_report(
         if span_adapter_count != len(fetched_adapters):
             logger.warning(
                 "_build_report: span adapter count (%d) != fetched adapters (%d); "
-                "%d total tool spans — kosmos.tool.adapter not yet emitted by executor",
+                "%d total tool spans — kosax.tool.adapter not yet emitted by executor",
                 span_adapter_count,
                 len(fetched_adapters),
                 len(obs_snapshot.spans),

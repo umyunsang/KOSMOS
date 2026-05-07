@@ -11,7 +11,7 @@
  * using IPC auth) use the Override getters directly.
  */
 
-// constants/oauth removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI, not Anthropic OAuth.
+// constants/oauth removed in P1+P2 (Spec 1633); KOSAX uses FriendliAI, not Anthropic OAuth.
 const getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })
 import { getClaudeAIOAuthTokens } from '../utils/auth.js'
 

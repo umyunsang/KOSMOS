@@ -15,7 +15,7 @@
 #   send_keys_pane <key...>
 #
 # Original scenario:
-#   Boot TUI → wait for KOSMOS branding → send "/plugin install seoul-subway"
+#   Boot TUI → wait for KOSAX branding → send "/plugin install seoul-subway"
 #   → wait 12 s → Ctrl-C exit.
 #
 # Migration notes:
@@ -34,7 +34,7 @@
 
 # ── 1. Boot ──────────────────────────────────────────────────────────────────
 wait_for_pane "tool_registry: [0-9]+ entries verified" 60
-wait_for_pane "KOSMOS" 15
+wait_for_pane "KOSAX" 15
 snapshot_pane boot
 
 # ── 2. Send /plugin install command ─────────────────────────────────────────

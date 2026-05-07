@@ -1,7 +1,7 @@
 # Quickstart — Permission v2 (Epic #1297)
 
 **Feature**: 033-permission-v2-spectrum
-**Audience**: KOSMOS citizen users + onboarding engineers + auditors
+**Audience**: KOSAX citizen users + onboarding engineers + auditors
 **Date**: 2026-04-20
 
 > 5 citizen scenarios mapping directly to US1–US5. Each scenario is reproducible end-to-end with stdlib-only tooling. No new runtime dependencies.
@@ -11,19 +11,19 @@
 ## Prerequisites
 
 ```bash
-# KOSMOS already installed via uv (see repo root README)
-uv run python -c "from kosmos.permissions import modes; print(modes.__version__)"
+# KOSAX already installed via uv (see repo root README)
+uv run python -c "from kosax.permissions import modes; print(modes.__version__)"
 # → 1.0.0
 
 # Directories created on first boot (do NOT pre-create)
-ls -la ~/.kosmos/
+ls -la ~/.kosax/
 # drwx------  alice  staff   permissions.json          (mode 0600)
 # drwx------  alice  staff   consent_ledger.jsonl      (mode 0600)
 # drwx------  alice  staff   keys/
 # -r--------  alice  staff   keys/ledger.key           (mode 0400)
 ```
 
-If any file is missing, KOSMOS creates it on first call with the correct mode. **Do NOT pre-create with wrong modes** — loader will refuse (Invariant C3).
+If any file is missing, KOSAX creates it on first call with the correct mode. **Do NOT pre-create with wrong modes** — loader will refuse (Invariant C3).
 
 ---
 
@@ -32,7 +32,7 @@ If any file is missing, KOSMOS creates it on first call with the correct mode. *
 **Citizen goal**: find nearest hospital without understanding permission internals.
 
 ```bash
-uv run kosmos chat
+uv run kosax chat
 # TUI opens at default mode (gray status bar).
 ```
 
@@ -52,7 +52,7 @@ Expected behavior:
 4. Second call (`hira_hospital_search` with different params) in same session: **no prompt** (session-scope `allow` rule).
 5. Verify ledger:
    ```bash
-   uv run kosmos permissions verify
+   uv run kosax permissions verify
    # ✓ Ledger verification PASSED
    #   Records: 1
    ```
@@ -65,14 +65,14 @@ Expected behavior:
 
 ```bash
 # Start with clean state
-rm -rf ~/.kosmos/consent_ledger.jsonl
+rm -rf ~/.kosax/consent_ledger.jsonl
 
 # Run Scenario 1 five times (different searches)
 # ... 5 records in ledger
 
 # Simulate external tamper
 python3 -c "
-with open('$HOME/.kosmos/consent_ledger.jsonl', 'r+b') as f:
+with open('$HOME/.kosax/consent_ledger.jsonl', 'r+b') as f:
     f.seek(100)  # flip a byte inside record 1
     byte = f.read(1)
     f.seek(100)
@@ -80,7 +80,7 @@ with open('$HOME/.kosmos/consent_ledger.jsonl', 'r+b') as f:
 "
 
 # Verify
-uv run kosmos permissions verify
+uv run kosax permissions verify
 # ✗ Ledger verification FAILED — CHAIN_RECORD_HASH_MISMATCH
 #   First broken index: 0
 #   Reason: record_hash recomputation does not match stored record_hash at record 0.
@@ -94,7 +94,7 @@ uv run kosmos permissions verify
 **Citizen goal**: citizen enables bypass for speed but irreversible calls still prompt.
 
 ```bash
-uv run kosmos chat
+uv run kosax chat
 ```
 
 In TUI:
@@ -119,7 +119,7 @@ Expected behavior (assuming `gov24_complaint_submit` adapter has `is_irreversibl
 5. Verify ledger: 2 records, both with `mode="bypassPermissions"`, `granted=true`, distinct `action_digest`.
 
 ```bash
-uv run kosmos permissions verify --json | jq '.total_records'
+uv run kosax permissions verify --json | jq '.total_records'
 # 2
 ```
 
@@ -130,7 +130,7 @@ uv run kosmos permissions verify --json | jq '.total_records'
 **Citizen goal**: persistent allow/deny/ask decisions survive restart.
 
 ```bash
-uv run kosmos chat
+uv run kosax chat
 # Set 3 rules via slash commands
 # /permissions allow hira_hospital_search
 # /permissions deny gov24_complaint_submit
@@ -140,7 +140,7 @@ uv run kosmos chat
 Exit TUI (`Ctrl+D`).
 
 ```bash
-cat ~/.kosmos/permissions.json | python3 -m json.tool
+cat ~/.kosax/permissions.json | python3 -m json.tool
 # {
 #   "schema_version": "1.0.0",
 #   "generated_at": "2026-04-20T...",
@@ -154,7 +154,7 @@ cat ~/.kosmos/permissions.json | python3 -m json.tool
 
 Restart TUI:
 ```bash
-uv run kosmos chat
+uv run kosax chat
 ```
 
 - Call `hira_hospital_search` → silent allow (rule loaded).
@@ -166,7 +166,7 @@ uv run kosmos chat
 ## Scenario 5 — US5 (P2): Shift+Tab + slash command cycle
 
 ```bash
-uv run kosmos chat
+uv run kosax chat
 ```
 
 1. Start at `default` (gray).
@@ -184,36 +184,36 @@ uv run kosmos chat
 ### "HMAC key file mode mismatch" (exit code 6)
 
 ```bash
-ls -la ~/.kosmos/keys/ledger.key
+ls -la ~/.kosax/keys/ledger.key
 # -rw-------  alice  staff   ...  (mode 0600)  ← WRONG
 ```
 
 Fix:
 ```bash
-chmod 0400 ~/.kosmos/keys/ledger.key
+chmod 0400 ~/.kosax/keys/ledger.key
 ```
 
-If the file is missing, restart KOSMOS — it regenerates on first call.
+If the file is missing, restart KOSAX — it regenerates on first call.
 
 ### "permissions.json schema violation"
 
 External editor broke the schema. Restore from backup or delete to reset (all rules lost):
 
 ```bash
-rm ~/.kosmos/permissions.json
-# KOSMOS recreates on next call. Rules must be re-added.
+rm ~/.kosax/permissions.json
+# KOSAX recreates on next call. Rules must be re-added.
 ```
 
 ### Lost HMAC key
 
 ```bash
-uv run kosmos permissions verify --hash-only --acknowledge-key-loss
+uv run kosax permissions verify --hash-only --acknowledge-key-loss
 # Hash chain remains verifiable. HMAC verification permanently waived for affected records.
 ```
 
 Rotate going forward:
 ```bash
-uv run kosmos permissions rotate-key
+uv run kosax permissions rotate-key
 # New key id: k0002. Old records remain HMAC-unverifiable.
 ```
 
@@ -229,16 +229,16 @@ If Permission v2 behavior is undesirable:
 
 ```bash
 # Option A: delete rule store (loses all rules)
-rm ~/.kosmos/permissions.json
+rm ~/.kosax/permissions.json
 
 # Option B: set all rules to 'ask' (keep history)
-uv run kosmos permissions reset-to-ask
+uv run kosax permissions reset-to-ask
 ```
 
 **Consent ledger is NEVER rolled back.** PIPA §8 (2+ year retention). To archive:
 
 ```bash
-mv ~/.kosmos/consent_ledger.jsonl ~/.kosmos/consent_ledger.archive.$(date +%Y%m%d).jsonl
+mv ~/.kosax/consent_ledger.jsonl ~/.kosax/consent_ledger.archive.$(date +%Y%m%d).jsonl
 # A fresh ledger starts from genesis on next consent event.
 ```
 

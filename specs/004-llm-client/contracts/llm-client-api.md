@@ -1,6 +1,6 @@
 # Contract: LLM Client API
 
-**Module**: `kosmos.llm`
+**Module**: `kosax.llm`
 **Date**: 2026-04-12
 
 ## Public Interface
@@ -15,7 +15,7 @@ class LLMClient:
         """Initialize with config. Loads from env vars if config is None.
 
         Raises:
-            ConfigurationError: If KOSMOS_FRIENDLI_TOKEN is missing.
+            ConfigurationError: If KOSAX_FRIENDLI_TOKEN is missing.
         """
 
     async def complete(
@@ -95,32 +95,32 @@ class UsageTracker:
 ## Error Hierarchy
 
 ```python
-class KosmosLLMError(Exception):
+class KosaxLLMError(Exception):
     """Base exception for all LLM client errors."""
 
-class ConfigurationError(KosmosLLMError):
-    """Missing or invalid configuration (e.g., missing KOSMOS_FRIENDLI_TOKEN)."""
+class ConfigurationError(KosaxLLMError):
+    """Missing or invalid configuration (e.g., missing KOSAX_FRIENDLI_TOKEN)."""
 
-class BudgetExceededError(KosmosLLMError):
+class BudgetExceededError(KosaxLLMError):
     """Session token budget exhausted."""
 
-class AuthenticationError(KosmosLLMError):
+class AuthenticationError(KosaxLLMError):
     """API authentication failed (401/403)."""
 
-class LLMConnectionError(KosmosLLMError):
+class LLMConnectionError(KosaxLLMError):
     """Endpoint unreachable after retry exhaustion."""
 
-class LLMResponseError(KosmosLLMError):
+class LLMResponseError(KosaxLLMError):
     """Non-retryable API error (400, 404, 500)."""
 
-class StreamInterruptedError(KosmosLLMError):
+class StreamInterruptedError(KosaxLLMError):
     """Streaming response interrupted mid-delivery."""
 ```
 
 ## Module Layout
 
 ```
-src/kosmos/llm/
+src/kosax/llm/
 ├── __init__.py          # Public exports: LLMClient, models, errors
 ├── client.py            # LLMClient implementation
 ├── models.py            # Pydantic v2 models (ChatMessage, StreamEvent, etc.)

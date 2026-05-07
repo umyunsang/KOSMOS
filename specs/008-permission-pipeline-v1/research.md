@@ -7,7 +7,7 @@
 
 ## RES-001: `ToolResult.error_type` Literal gap
 
-**Question**: FR-021 requires returning `ToolResult(error_type="permission_denied")`, but the existing Literal in `src/kosmos/tools/models.py` is:
+**Question**: FR-021 requires returning `ToolResult(error_type="permission_denied")`, but the existing Literal in `src/kosax/tools/models.py` is:
 ```python
 Literal["validation", "rate_limit", "not_found", "execution", "schema_mismatch"]
 ```
@@ -15,7 +15,7 @@ Pydantic v2 will raise `ValidationError` if an unlisted Literal value is passed.
 
 **Resolution**: The Literal must be extended to include `"permission_denied"` as part of Phase 4. This is an additive, non-breaking change. No existing test asserts on the exhaustive Literal set.
 
-**Action in plan**: Phase 4 explicitly modifies `src/kosmos/tools/models.py`. This is the only touch to Layer 2 code.
+**Action in plan**: Phase 4 explicitly modifies `src/kosax/tools/models.py`. This is the only touch to Layer 2 code.
 
 ---
 

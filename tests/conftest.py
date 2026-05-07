@@ -14,7 +14,7 @@ import re
 
 import pytest
 
-from kosmos._dotenv import load_repo_dotenv
+from kosax._dotenv import load_repo_dotenv
 
 load_repo_dotenv()
 

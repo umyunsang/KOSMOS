@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.primitives._errors import AdapterNotFoundError
-from kosmos.primitives.submit import SubmitOutput, SubmitStatus, submit
+from kosax.primitives._errors import AdapterNotFoundError
+from kosax.primitives.submit import SubmitOutput, SubmitStatus, submit
 
 # ---------------------------------------------------------------------------
 # Minimal stub adapter for dispatch tests
@@ -29,7 +29,7 @@ class _SuccessParams:
 
 async def _invoke_success(params: object) -> SubmitOutput:
     return SubmitOutput(
-        transaction_id="urn:kosmos:submit:aabbcc",
+        transaction_id="urn:kosax:submit:aabbcc",
         status=SubmitStatus.succeeded,
         adapter_receipt={"receipt_number": "TEST-001"},
     )
@@ -95,7 +95,7 @@ async def test_invalid_tool_id_shape_returns_structured_error() -> None:
 def test_submit_output_has_only_envelope_fields() -> None:
     """SubmitOutput must only expose transaction_id, status, adapter_receipt."""
     SubmitOutput(
-        transaction_id="urn:kosmos:submit:test001",
+        transaction_id="urn:kosax:submit:test001",
         status=SubmitStatus.succeeded,
         adapter_receipt={"ref": "2026"},
     )
@@ -110,7 +110,7 @@ def test_submit_output_has_only_envelope_fields() -> None:
 def test_submit_output_no_domain_data_leaks_through_adapter_receipt() -> None:
     """adapter_receipt is opaque dict — domain data lives there, not on envelope."""
     out = SubmitOutput(
-        transaction_id="urn:kosmos:submit:test002",
+        transaction_id="urn:kosax:submit:test002",
         status=SubmitStatus.succeeded,
         adapter_receipt={"접수번호": "2026-04-19-0001", "ministry": "data_go_kr"},
     )
@@ -141,7 +141,7 @@ def test_submit_input_rejects_invalid_tool_id() -> None:
     """SubmitInput must reject tool_ids that don't match ^[a-z][a-z0-9_]*$."""
     from pydantic import ValidationError
 
-    from kosmos.primitives.submit import SubmitInput
+    from kosax.primitives.submit import SubmitInput
 
     with pytest.raises(ValidationError):
         SubmitInput(tool_id="Invalid-ID", params={})
@@ -152,7 +152,7 @@ def test_submit_input_rejects_invalid_tool_id() -> None:
 
 def test_submit_input_accepts_valid_tool_id() -> None:
     """SubmitInput must accept valid snake_case tool_ids."""
-    from kosmos.primitives.submit import SubmitInput
+    from kosax.primitives.submit import SubmitInput
 
     s = SubmitInput(tool_id="mock_traffic_fine_pay_v1", params={"x": 1})
     assert s.tool_id == "mock_traffic_fine_pay_v1"
@@ -163,7 +163,7 @@ def test_submit_input_is_frozen() -> None:
     """SubmitInput must be immutable (frozen=True)."""
     from pydantic import ValidationError
 
-    from kosmos.primitives.submit import SubmitInput
+    from kosax.primitives.submit import SubmitInput
 
     s = SubmitInput(tool_id="valid_id_v1", params={})
     with pytest.raises((ValidationError, TypeError)):

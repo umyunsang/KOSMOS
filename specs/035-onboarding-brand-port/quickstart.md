@@ -2,7 +2,7 @@
 
 **Feature**: Epic H #1302
 **Phase**: 1
-**Audience**: KOSMOS developer (Lead or Sonnet Teammate) verifying the Epic H PR locally.
+**Audience**: KOSAX developer (Lead or Sonnet Teammate) verifying the Epic H PR locally.
 
 This walk-through proves every FR and SC from `spec.md` behaves as contracted. Execute in order; each step MUST pass before the next.
 
@@ -13,7 +13,7 @@ This walk-through proves every FR and SC from `spec.md` behaves as contracted. E
 - Bun `v1.2.x` (existing Spec 287 stack).
 - Python `3.12+` with `uv` (existing Spec 022 / 027 stack).
 - Terminal supporting 24-bit colour (Terminal.app, iTerm2, Alacritty; Windows Terminal OK).
-- Clean memdir state: `rm -rf ~/.kosmos/memdir/user/consent ~/.kosmos/memdir/user/ministry-scope` (or use a throwaway `$HOME`).
+- Clean memdir state: `rm -rf ~/.kosax/memdir/user/consent ~/.kosax/memdir/user/ministry-scope` (or use a throwaway `$HOME`).
 
 ---
 
@@ -34,7 +34,7 @@ uv sync
 bun run tui/src/main.tsx --help
 ```
 
-**Expectation**: `tui/src/theme/tokens.ts` compiles with the new `ThemeToken` surface. Any consumer still referencing one of the 7 DELETE identifiers fails compilation — if that happens, grep for the failing identifier and replace with its KOSMOS equivalent.
+**Expectation**: `tui/src/theme/tokens.ts` compiles with the new `ThemeToken` surface. Any consumer still referencing one of the 7 DELETE identifiers fails compilation — if that happens, grep for the failing identifier and replace with its KOSAX equivalent.
 
 ---
 
@@ -46,7 +46,7 @@ bun test tui/tests/theme/tokens.compile.test.ts
 
 **Expectation**: PASS. Asserts:
 - Zero occurrences of `claude*`, `clawd_*`, `briefLabelClaude` in `ThemeToken`.
-- Ten specific identifiers (`kosmosCore`, `kosmosCoreShimmer`, `orbitalRing`, `orbitalRingShimmer`, `wordmark`, `subtitle`, `agentSatelliteKoroad`, `agentSatelliteKma`, `agentSatelliteHira`, `agentSatelliteNmc`) present.
+- Ten specific identifiers (`kosaxCore`, `kosaxCoreShimmer`, `orbitalRing`, `orbitalRingShimmer`, `wordmark`, `subtitle`, `agentSatelliteKoroad`, `agentSatelliteKma`, `agentSatelliteHira`, `agentSatelliteNmc`) present.
 - Preserve-set cardinality exactly 62.
 
 ---
@@ -84,9 +84,9 @@ bun test tui/tests/LogoV2/
 - `LogoV2.snap.test.tsx` — 80-column full layout, 60-column condensed, 45-column fallback; each with reduced-motion on/off.
 - `AnimatedAsterisk.snap.test.tsx` — shimmer frame snapshot + reduced-motion static.
 - `WelcomeV2.snap.test.tsx` — Korean welcome screen dark-theme render.
-- `CondensedLogo.snap.test.tsx` — KOSMOS header with mock model / effort / coordinatorMode.
+- `CondensedLogo.snap.test.tsx` — KOSAX header with mock model / effort / coordinatorMode.
 - `Feed.snap.test.tsx` + `FeedColumn.snap.test.tsx` + `feedConfigs.test.tsx`.
-- `KosmosCoreIcon.snap.test.tsx` — shimmering vs. static.
+- `KosaxCoreIcon.snap.test.tsx` — shimmering vs. static.
 
 ---
 
@@ -112,8 +112,8 @@ bun run tui/src/main.tsx
 ```
 
 **Expectation**:
-- Frame 1: splash renders with `#0a0e27` navy background, wordmark "KOSMOS" in `wordmark` colour, subtitle "KOREAN PUBLIC SERVICE MULTI-AGENT OS" in `subtitle` colour, `kosmosCore` asterisk centred inside the `orbitalRing` gradient arc, 4 ministry satellite nodes below.
-- Frame 2 (after Enter): PIPA consent step renders with consent version `v1`, AAL `AAL1`, Korean plain-language summary of KOSMOS's § 26 수탁자 role.
+- Frame 1: splash renders with `#0a0e27` navy background, wordmark "KOSAX" in `wordmark` colour, subtitle "KOREAN PUBLIC SERVICE MULTI-AGENT OS" in `subtitle` colour, `kosaxCore` asterisk centred inside the `orbitalRing` gradient arc, 4 ministry satellite nodes below.
+- Frame 2 (after Enter): PIPA consent step renders with consent version `v1`, AAL `AAL1`, Korean plain-language summary of KOSAX's § 26 수탁자 role.
 - Frame 3 (after Enter): ministry scope step renders with 4 rows (KOROAD, KMA, HIRA, NMC) each showing Korean name + English code + accent colour + toggle.
 - Frame 4 (after Enter with all toggles on): main TUI enters.
 - Elapsed time ≤ 90 s (SC-002) for manual keypresses.
@@ -134,7 +134,7 @@ bun run tui/src/main.tsx
 ## 10 · Launch the TUI — reduced motion
 
 ```bash
-KOSMOS_REDUCED_MOTION=1 bun run tui/src/main.tsx
+KOSAX_REDUCED_MOTION=1 bun run tui/src/main.tsx
 ```
 
 **Expectation**: splash renders with static asterisk + static orbital-ring gradient (no shimmer animation). Every REWRITE component honours the flag per FR-024.
@@ -159,7 +159,7 @@ COLUMNS=70 bun run tui/src/main.tsx
 COLUMNS=45 bun run tui/src/main.tsx
 ```
 
-**Expectation**: splash renders as single text line `KOSMOS — 한국 공공서비스 대화창` without error.
+**Expectation**: splash renders as single text line `KOSAX — 한국 공공서비스 대화창` without error.
 
 ---
 
@@ -173,7 +173,7 @@ At the PIPA consent step, press Escape.
 
 **Expectation**:
 - Session exits with code 0.
-- No record written in `~/.kosmos/memdir/user/consent/` or `ministry-scope/`.
+- No record written in `~/.kosax/memdir/user/consent/` or `ministry-scope/`.
 
 ---
 
@@ -198,7 +198,7 @@ Complete onboarding selecting KOROAD + KMA only. Decline HIRA + NMC. After reach
 With macOS VoiceOver enabled (Cmd+F5 in Terminal.app), launch the TUI and navigate onboarding by Enter alone.
 
 **Expectation**:
-- Every step announces its title ("KOSMOS 은하계 스플래시", "PIPA 개인정보 동의", "부처 API 범위 동의") as plain text.
+- Every step announces its title ("KOSAX 은하계 스플래시", "PIPA 개인정보 동의", "부처 API 범위 동의") as plain text.
 - Every ministry row at the scope step announces its Korean name + English code + toggle state.
 - Reduced-motion narration is sufficient to complete the flow without colour or animation cues.
 
@@ -215,6 +215,6 @@ Before opening the Epic H PR, verify:
 - [X] `docs/design/brand-system.md § 3 / § 4 / § 5 / § 6 / § 7 / § 9` contain no "TBD" / "placeholder" / "Epic H (pending)" — all six sections populated (only § 8 Voice & tone remains placeholder, owned jointly by Epic H + Epic K per section's own scope rule).
 - [X] `docs/design/contrast-measurements.md` exists and every row shows PASS.
 - [X] `docs/tui/accessibility-gate.md § 7` handoff note acknowledges Epic H's measured ratios — see new § 7.1 subsection.
-- [X] Every LogoV2 REWRITE file has a matching `.snap.test.tsx` file (AnimatedAsterisk, CondensedLogo, Feed, FeedColumn via Feed.test.tsx, feedConfigs via Feed.test.tsx, LogoV2, WelcomeV2, KosmosCoreIcon).
+- [X] Every LogoV2 REWRITE file has a matching `.snap.test.tsx` file (AnimatedAsterisk, CondensedLogo, Feed, FeedColumn via Feed.test.tsx, feedConfigs via Feed.test.tsx, LogoV2, WelcomeV2, KosaxCoreIcon).
 
 When all boxes tick, the PR is ready for Code Reviewer sign-off and merge.

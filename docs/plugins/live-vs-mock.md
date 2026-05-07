@@ -10,7 +10,7 @@
 
 ```
 업스트림 시스템에 OpenAPI / 공개 endpoint 가 있는가?
-├─ 예 → Authentication 흐름이 KOSMOS partnership 으로 발급 가능한가?
+├─ 예 → Authentication 흐름이 KOSAX partnership 으로 발급 가능한가?
 │       ├─ 예 → ✅ Live tier
 │       └─ 아니오 (NPKI/sessionId 등) → ⚠️ Mock tier (fallback)
 └─ 아니오 → 사이트 화면 / 비공식 자료에서 응답 shape 추정 가능한가?
@@ -62,7 +62,7 @@ from .schema import LookupInput, LookupOutput
 ENDPOINT = "https://api.example.go.kr/v1/lookup"
 
 async def adapter(payload: LookupInput) -> dict:
-    api_key = os.environ["KOSMOS_<MINISTRY>_API_KEY"]   # 하드코딩 금지
+    api_key = os.environ["KOSAX_<MINISTRY>_API_KEY"]   # 하드코딩 금지
     async with httpx.AsyncClient(timeout=10.0, follow_redirects=False) as client:
         response = await client.get(ENDPOINT, params={..., "serviceKey": api_key})
         response.raise_for_status()
@@ -126,7 +126,7 @@ async def adapter(payload: LookupInput) -> dict:
     return raw
 ```
 
-`tier=mock` scaffold (`kosmos plugin init <name> --tier mock`) 가 위 패턴을 자동 emit.
+`tier=mock` scaffold (`kosax plugin init <name> --tier mock`) 가 위 패턴을 자동 emit.
 
 ### 테스트
 
@@ -159,11 +159,11 @@ async def test_replays_fixture():
 
 | 분류 | 위치 | Plugin 가능? |
 |---|---|---|
-| Live tier | `kosmos-plugin-store/kosmos-plugin-<name>` | ✓ |
-| Mock tier (mirror 가능) | `kosmos-plugin-store/kosmos-plugin-<name>` + `docs/mock/` 출처 cite | ✓ |
+| Live tier | `kosax-plugin-store/kosax-plugin-<name>` | ✓ |
+| Mock tier (mirror 가능) | `kosax-plugin-store/kosax-plugin-<name>` + `docs/mock/` 출처 cite | ✓ |
 | OPAQUE (시나리오만) | `docs/scenarios/<name>.md` | ✗ — scenario 문서만 |
 
-KOSMOS host 는 OPAQUE 항목을 plugin 으로 받지 않습니다. 이는 PII 처리 invariant chain (Spec 024 V2-V4) 을 우회 가능한 attack surface 가 됩니다.
+KOSAX host 는 OPAQUE 항목을 plugin 으로 받지 않습니다. 이는 PII 처리 invariant chain (Spec 024 V2-V4) 을 우회 가능한 attack surface 가 됩니다.
 
 ---
 

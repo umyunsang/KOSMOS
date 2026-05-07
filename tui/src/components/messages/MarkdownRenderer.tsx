@@ -6,8 +6,8 @@
 // everything else.  Uses the same LRU token cache pattern from CC to avoid
 // re-parsing immutable history messages.
 //
-// KOSMOS adaptation: strips CC's React compiler runtime artifact (_c); uses
-// KOSMOS ink.js imports; MarkdownTable is the 1:1 port from MarkdownTable.tsx.
+// KOSAX adaptation: strips CC's React compiler runtime artifact (_c); uses
+// KOSAX ink.js imports; MarkdownTable is the 1:1 port from MarkdownTable.tsx.
 
 import React, { Suspense, useMemo } from 'react';
 import { marked, type Token, type Tokens } from 'marked';

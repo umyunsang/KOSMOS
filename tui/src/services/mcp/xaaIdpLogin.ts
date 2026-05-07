@@ -24,7 +24,7 @@ import { isEnvTruthy } from '../../utils/envUtils.js'
 import { toError } from '../../utils/errors.js'
 import { logMCPDebug } from '../../utils/log.js'
 import { getPlatform } from '../../utils/platform.js'
-// KOSMOS: secureStorage deleted by Spec 1633 P1. KOSMOS uses .env-backed secrets, not OS keychain.
+// KOSAX: secureStorage deleted by Spec 1633 P1. KOSAX uses .env-backed secrets, not OS keychain.
 const getSecureStorage = (): {
   read: () => null
   update: (_data: unknown) => { success: true; warning?: string }

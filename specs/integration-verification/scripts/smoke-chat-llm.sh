@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 실제 K-EXAONE chat — Korean trivial query.
 set -euo pipefail
-wait_for_pane "KOSMOS v0\\.[0-9]" 30
+wait_for_pane "KOSAX v0\\.[0-9]" 30
 snapshot_pane "boot-ready"
 send_text_pane "안녕하세요"
 sleep 1

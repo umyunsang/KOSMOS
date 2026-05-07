@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
-from kosmos.agents.mailbox.messages import (
+from kosax.agents.mailbox.messages import (
     AgentMessage,
     CancelPayload,
     ErrorPayload,
@@ -21,7 +21,7 @@ from kosmos.agents.mailbox.messages import (
     ResultPayload,
     TaskPayload,
 )
-from kosmos.tools.models import LookupMeta, LookupRecord
+from kosax.tools.models import LookupMeta, LookupRecord
 
 _SCHEMA_PATH = (
     Path(__file__).parent.parent.parent

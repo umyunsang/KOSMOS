@@ -4,11 +4,11 @@
 //
 // `claude ssh <host>` spawns a child CLI over an SSH tunnel. Upstream CC
 // gates the whole SSH path behind `feature('SSH_REMOTE')` which is false
-// in KOSMOS, so this file declares the types that REPL/useSSHSession need
+// in KOSAX, so this file declares the types that REPL/useSSHSession need
 // without running the actual SSH transport. Agent-reported v1 was missing
 // createManager/proc/proxy/getStderrTail — added here for type safety.
 
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — utils/teleport/ deleted; stub.
 type RemoteMessageContent = string | Array<{ type: string; [key: string]: unknown }>
 import type { SSHSessionManager } from './SSHSessionManager.js'
 
@@ -67,7 +67,7 @@ export interface CreateSSHSessionOptions {
 }
 
 /**
- * Create an SSH session handle. In KOSMOS this is a no-op factory that
+ * Create an SSH session handle. In KOSAX this is a no-op factory that
  * returns a disconnected handle — actual transport wiring is deferred to
  * Epic #1633 (SSH_REMOTE dead code decision).
  */

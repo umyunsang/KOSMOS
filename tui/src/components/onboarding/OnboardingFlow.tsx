@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // Spec 1635 P4 UI L2 — 5-step onboarding flow driver (FR-001/002, T045).
 //
-// Ports cc:components/Onboarding.tsx step-driver pattern to the KOSMOS 5-step
+// Ports cc:components/Onboarding.tsx step-driver pattern to the KOSAX 5-step
 // citizen onboarding sequence:
 //   preflight → theme → pipa-consent → ministry-scope → terminal-setup
 //
-// State is persisted to ~/.kosmos/memdir/user/onboarding/state.json via the
+// State is persisted to ~/.kosax/memdir/user/onboarding/state.json via the
 // existing uiL2Memdir helpers (loadOnboardingState / saveOnboardingState) so
 // that a SIGINT mid-onboarding resumes from the last completed step on next
 // launch (FR-002 + spec.md edge case).
@@ -65,7 +65,7 @@ export type OnboardingFlowProps = {
   isolatedStep?: OnboardingStepNameT
   /** Session ID forwarded to consent / scope records. */
   sessionId?: string
-  /** Locale override (defaults to KOSMOS_TUI_LOCALE env var). */
+  /** Locale override (defaults to KOSAX_TUI_LOCALE env var). */
   locale?: 'ko' | 'en'
   // Test injection points
   onLoadState?: () => Promise<OnboardingStateT>
@@ -95,7 +95,7 @@ export function OnboardingFlow({
   const { exit } = useApp()
   const theme = useTheme()
   const resolvedLocale: 'ko' | 'en' =
-    locale ?? ((process.env['KOSMOS_TUI_LOCALE'] as 'ko' | 'en') || 'ko')
+    locale ?? ((process.env['KOSAX_TUI_LOCALE'] as 'ko' | 'en') || 'ko')
   const resolvedSessionId = sessionId ?? crypto.randomUUID()
 
   // State is loaded once at mount; subsequent saves go through onSaveState or
@@ -111,7 +111,7 @@ export function OnboardingFlow({
     })
   }, [onLoadState])
 
-  // Auto-complete escape hatch — opt-in via KOSMOS_ONBOARDING_AUTO_COMPLETE=1.
+  // Auto-complete escape hatch — opt-in via KOSAX_ONBOARDING_AUTO_COMPLETE=1.
   // Persists a fully-marked OnboardingState (current_step_index=5, all steps
   // completed_at populated) and immediately invokes onComplete(), bypassing
   // any keystroke-driven step advance. Use cases:
@@ -126,7 +126,7 @@ export function OnboardingFlow({
   // partially completed state.
   useEffect(() => {
     if (state === null) return
-    if (process.env['KOSMOS_ONBOARDING_AUTO_COMPLETE'] !== '1') return
+    if (process.env['KOSAX_ONBOARDING_AUTO_COMPLETE'] !== '1') return
     if (isOnboardingComplete(state)) return
     const now = new Date().toISOString()
     const completedSteps = state.steps.map((s) => ({
@@ -281,7 +281,7 @@ export function OnboardingFlow({
   if (loading || state === null) {
     return (
       <Box paddingX={1}>
-        <Text color={theme.kosmosCore}>
+        <Text color={theme.kosaxCore}>
           {resolvedLocale === 'en' ? 'Loading onboarding…' : '온보딩 로딩 중…'}
         </Text>
       </Box>

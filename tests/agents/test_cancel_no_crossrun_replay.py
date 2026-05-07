@@ -23,13 +23,13 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from kosmos.agents.coordinator import Coordinator
-from kosmos.agents.mailbox.messages import (
+from kosax.agents.coordinator import Coordinator
+from kosax.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     ResultPayload,
 )
-from kosmos.tools.models import LookupMeta, LookupRecord
+from kosax.tools.models import LookupMeta, LookupRecord
 from tests.agents.conftest import StubLLMClient, build_test_registry
 
 # ---------------------------------------------------------------------------

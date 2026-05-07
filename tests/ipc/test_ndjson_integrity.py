@@ -6,7 +6,7 @@ Stress-proves the fail-closed invariant by feeding ``parse_ndjson_line`` a
 JSON + schema violations).  The invariant (``FR-035`` / SC-007) is:
 
     * Zero session aborts — no raised exceptions bubble out of
-      :func:`kosmos.ipc.envelope.parse_ndjson_line`.
+      :func:`kosax.ipc.envelope.parse_ndjson_line`.
     * Only the 50 malformed frames are dropped (``parse_ndjson_line → None``);
       the other 950 valid frames parse successfully.
     * Every drop is logged as ``ipc.parse.json_error`` or
@@ -28,8 +28,8 @@ from typing import Final
 
 import pytest
 
-from kosmos.ipc.envelope import emit_ndjson, parse_ndjson_line
-from kosmos.ipc.frame_schema import IPCFrame
+from kosax.ipc.envelope import emit_ndjson, parse_ndjson_line
+from kosax.ipc.frame_schema import IPCFrame
 from tests.ipc.test_envelope_roundtrip import ALL_FRAMES
 
 # ---------------------------------------------------------------------------
@@ -141,7 +141,7 @@ def test_ndjson_stream_fail_closed_5pct_malformed(
 
     * Exactly ``VALID_COUNT`` (950) frames return a non-None ``IPCFrame``.
     * Exactly ``MALFORMED_COUNT`` (50) lines return ``None`` without raising.
-    * Every drop emits a structured log record on ``kosmos.ipc.envelope`` with
+    * Every drop emits a structured log record on ``kosax.ipc.envelope`` with
       message ``ipc.parse.json_error`` or ``ipc.parse.schema_error``.
     * Zero unhandled exceptions escape ``parse_ndjson_line``.
     * Valid frames that *follow* a malformed line parse successfully — the
@@ -152,7 +152,7 @@ def test_ndjson_stream_fail_closed_5pct_malformed(
     parsed_ok: list[IPCFrame] = []
     dropped_indices: list[int] = []
 
-    with caplog.at_level(logging.ERROR, logger="kosmos.ipc.envelope"):
+    with caplog.at_level(logging.ERROR, logger="kosax.ipc.envelope"):
         for index, line in enumerate(lines):
             try:
                 result = parse_ndjson_line(line)
@@ -185,7 +185,7 @@ def test_ndjson_stream_fail_closed_5pct_malformed(
     parse_error_records = [
         r
         for r in caplog.records
-        if r.name == "kosmos.ipc.envelope"
+        if r.name == "kosax.ipc.envelope"
         and r.message in {"ipc.parse.json_error", "ipc.parse.schema_error"}
     ]
     assert len(parse_error_records) == MALFORMED_COUNT, (

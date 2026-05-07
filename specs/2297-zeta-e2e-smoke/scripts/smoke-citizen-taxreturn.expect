@@ -17,15 +17,15 @@ set log_path [file normalize "[file dirname [info script]]/../smoke-citizen-taxr
 log_file -noappend $log_path
 
 # I-P1.2 — spawn TUI via bun.
-spawn bash -c "cd [file normalize [file join $env(HOME) KOSMOS-w-2297 tui]] && KOSMOS_SMOKE_CHECKPOINTS=true bun run tui"
+spawn bash -c "cd [file normalize [file join $env(HOME) KOSAX-w-2297 tui]] && KOSAX_SMOKE_CHECKPOINTS=true bun run tui"
 
-# I-P1.3 — await KOSMOS branding render.
+# I-P1.3 — await KOSAX branding render.
 expect {
-    "KOSMOS" {
+    "KOSAX" {
         # Branding confirmed.
     }
     timeout {
-        puts stderr "\[SMOKE ERROR\] Timed out waiting for KOSMOS branding"
+        puts stderr "\[SMOKE ERROR\] Timed out waiting for KOSAX branding"
         exit 1
     }
     eof {
@@ -53,7 +53,7 @@ expect {
 }
 
 # I-P2 — await synthetic checkpoint marker (emitted by dispatchPrimitive.ts
-# when KOSMOS_SMOKE_CHECKPOINTS=true and submit tool_result arrives).
+# when KOSAX_SMOKE_CHECKPOINTS=true and submit tool_result arrives).
 expect {
     "CHECKPOINTreceipt token observed" {
         # Checkpoint confirmed exactly once.

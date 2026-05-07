@@ -18,7 +18,7 @@ Set Width 1400
 Set Height 900
 Set Theme "TokyoNight"
 
-Type "cd ~/KOSMOS/tui && bun run tui"
+Type "cd ~/KOSAX/tui && bun run tui"
 Enter
 Sleep 5s
 

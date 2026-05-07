@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — ResolveLocationPrimitive prompt strings.
+// KOSAX-original — ResolveLocationPrimitive prompt strings.
 
 export const RESOLVE_LOCATION_TOOL_NAME = 'resolve_location'
 

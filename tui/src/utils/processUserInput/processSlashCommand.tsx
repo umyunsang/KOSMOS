@@ -40,7 +40,7 @@ import { isRestrictedToPluginOnly, isSourceAdminTrusted } from '../settings/plug
 import { parseSlashCommand } from '../slashCommandParsing.js';
 import { sleep } from '../sleep.js';
 import { recordSkillUsage } from '../suggestions/skillUsageTracking.js';
-// utils/telemetry removed — KOSMOS telemetry handled by Spec 021 OTEL pipeline.
+// utils/telemetry removed — KOSAX telemetry handled by Spec 021 OTEL pipeline.
 const logOTelEvent = (_event: string, _attrs?: Record<string, unknown>): void => { /* no-op */ }
 const redactIfDisabled = (val: string): string => val
 const buildPluginCommandTelemetryFields = (_info: unknown): Record<string, unknown> => ({})

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for kosmos.llm.prompt_assembler (Epic #2152 R2 + R4).
+"""Tests for kosax.llm.prompt_assembler (Epic #2152 R2 + R4).
 
 Contract: ``specs/2152-system-prompt-redesign/contracts/prompt-assembler.md``
 invariants I-A1..I-A7.
@@ -14,8 +14,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from kosmos.context.prompt_loader import PromptLoader
-from kosmos.llm.prompt_assembler import (
+from kosax.context.prompt_loader import PromptLoader
+from kosax.llm.prompt_assembler import (
     DYNAMIC_BOUNDARY_MARKER,
     PromptAssembler,
     PromptAssemblyContext,

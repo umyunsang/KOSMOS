@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1633 T011 env credential helper.
+// KOSAX-original — Epic #1633 T011 env credential helper.
 //
-// KOSMOS now boots without a FriendliAI credential so /login can collect a
+// KOSAX now boots without a FriendliAI credential so /login can collect a
 // process-scoped API key. The model/tool loop still fails closed before first
 // backend use when no key is present.
 //
@@ -11,11 +11,11 @@
 import { hasFriendliCredential as hasFriendliCredentialInEnv } from '../utils/friendliAuth.js'
 
 export const ENV_GUARD_MESSAGE =
-  'FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.'
+  'FriendliAI API key not configured yet. Start KOSAX and run /login before sending a request.'
 
 /**
  * Check whether the current process has an active FriendliAI login session.
- * A shell-level KOSMOS_FRIENDLI_TOKEN alone is not treated as logged in; /login
+ * A shell-level KOSAX_FRIENDLI_TOKEN alone is not treated as logged in; /login
  * must activate the session so packaged builds cannot bypass the login step.
  */
 export function hasFriendliCredential(

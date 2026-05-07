@@ -2,11 +2,11 @@
 
 **Branch**: `1632-baseline-runnable` | **Date**: 2026-04-24 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/1632-baseline-runnable/spec.md`
-**Epic**: [#1632](https://github.com/umyunsang/KOSMOS/issues/1632)
+**Epic**: [#1632](https://github.com/umyunsang/KOSAX/issues/1632)
 
 ## Summary
 
-KOSMOS 마이그레이션 DAG 의 최하단(P0) — 포팅된 CC 2.1.88 소스 (`tui/src/`)
+KOSAX 마이그레이션 DAG 의 최하단(P0) — 포팅된 CC 2.1.88 소스 (`tui/src/`)
 가 `bun install` · `bun run src/main.tsx` · `bun test` 세 커맨드에서 compile/
 runtime 오류 없이 동작하도록 복구한다. 실제 기능(Anthropic API, OAuth, MCP,
 analytics, KAIROS/COORDINATOR 등)은 전부 stub/no-op 으로 고정해 후속 P1 dead

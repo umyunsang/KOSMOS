@@ -1,89 +1,89 @@
 // SPDX-License-Identifier: Apache-2.0
 // Task T027: Crash detection test — kill stub backend mid-stream, assert crash
-// is detected within 5 s and no KOSMOS_* env var values appear in the redacted
+// is detected within 5 s and no KOSAX_* env var values appear in the redacted
 // stderr tail (US1 scenario 4; FR-004, SC-5).
 
 import { describe, expect, test, beforeEach } from 'bun:test'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { redactKosmosSecrets } from '../../src/ipc/crash-detector'
+import { redactKosaxSecrets } from '../../src/ipc/crash-detector'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-const BACKEND_CMD = ['uv', 'run', '--directory', join(__dirname, '../../../'), 'python', '-m', 'kosmos.cli', '--ipc', 'stdio']
+const BACKEND_CMD = ['uv', 'run', '--directory', join(__dirname, '../../../'), 'python', '-m', 'kosax.cli', '--ipc', 'stdio']
 
 // ---------------------------------------------------------------------------
-// Unit tests for redactKosmosSecrets
+// Unit tests for redactKosaxSecrets
 // ---------------------------------------------------------------------------
 
-describe('crash-detector: redactKosmosSecrets', () => {
-  test('redacts KOSMOS_*_KEY values', () => {
-    const original = process.env['KOSMOS_TEST_REDACT_KEY']
-    process.env['KOSMOS_TEST_REDACT_KEY'] = 'super-secret-key-value'
+describe('crash-detector: redactKosaxSecrets', () => {
+  test('redacts KOSAX_*_KEY values', () => {
+    const original = process.env['KOSAX_TEST_REDACT_KEY']
+    process.env['KOSAX_TEST_REDACT_KEY'] = 'super-secret-key-value'
     try {
-      const result = redactKosmosSecrets('the key is super-secret-key-value here')
+      const result = redactKosaxSecrets('the key is super-secret-key-value here')
       expect(result).not.toContain('super-secret-key-value')
       expect(result).toContain('[REDACTED]')
     } finally {
       if (original === undefined) {
-        delete process.env['KOSMOS_TEST_REDACT_KEY']
+        delete process.env['KOSAX_TEST_REDACT_KEY']
       } else {
-        process.env['KOSMOS_TEST_REDACT_KEY'] = original
+        process.env['KOSAX_TEST_REDACT_KEY'] = original
       }
     }
   })
 
-  test('redacts KOSMOS_*_TOKEN values', () => {
-    const original = process.env['KOSMOS_TEST_REDACT_TOKEN']
-    process.env['KOSMOS_TEST_REDACT_TOKEN'] = 'tok-abc123-secret'
+  test('redacts KOSAX_*_TOKEN values', () => {
+    const original = process.env['KOSAX_TEST_REDACT_TOKEN']
+    process.env['KOSAX_TEST_REDACT_TOKEN'] = 'tok-abc123-secret'
     try {
-      const result = redactKosmosSecrets('token: tok-abc123-secret\nother stuff')
+      const result = redactKosaxSecrets('token: tok-abc123-secret\nother stuff')
       expect(result).not.toContain('tok-abc123-secret')
       expect(result).toContain('[REDACTED]')
     } finally {
       if (original === undefined) {
-        delete process.env['KOSMOS_TEST_REDACT_TOKEN']
+        delete process.env['KOSAX_TEST_REDACT_TOKEN']
       } else {
-        process.env['KOSMOS_TEST_REDACT_TOKEN'] = original
+        process.env['KOSAX_TEST_REDACT_TOKEN'] = original
       }
     }
   })
 
-  test('does NOT redact KOSMOS_TUI_THEME (not a secret key pattern)', () => {
-    const original = process.env['KOSMOS_TUI_THEME']
-    process.env['KOSMOS_TUI_THEME'] = 'dark'
+  test('does NOT redact KOSAX_TUI_THEME (not a secret key pattern)', () => {
+    const original = process.env['KOSAX_TUI_THEME']
+    process.env['KOSAX_TUI_THEME'] = 'dark'
     try {
-      const result = redactKosmosSecrets('theme is dark')
+      const result = redactKosaxSecrets('theme is dark')
       // 'dark' is a common word — we only redact keys ending in _KEY/_SECRET/_TOKEN/_PASSWORD
       // The actual env value 'dark' should not be replaced unless the key matches the pattern
       expect(result).toBe('theme is dark')
     } finally {
       if (original === undefined) {
-        delete process.env['KOSMOS_TUI_THEME']
+        delete process.env['KOSAX_TUI_THEME']
       } else {
-        process.env['KOSMOS_TUI_THEME'] = original
+        process.env['KOSAX_TUI_THEME'] = original
       }
     }
   })
 
-  test('does NOT redact KOSMOS_*_SECRET where value is absent/empty', () => {
+  test('does NOT redact KOSAX_*_SECRET where value is absent/empty', () => {
     // Empty values are skipped
-    const original = process.env['KOSMOS_EMPTY_SECRET']
-    process.env['KOSMOS_EMPTY_SECRET'] = ''
+    const original = process.env['KOSAX_EMPTY_SECRET']
+    process.env['KOSAX_EMPTY_SECRET'] = ''
     try {
-      const result = redactKosmosSecrets('nothing should change here')
+      const result = redactKosaxSecrets('nothing should change here')
       expect(result).toBe('nothing should change here')
     } finally {
       if (original === undefined) {
-        delete process.env['KOSMOS_EMPTY_SECRET']
+        delete process.env['KOSAX_EMPTY_SECRET']
       } else {
-        process.env['KOSMOS_EMPTY_SECRET'] = original
+        process.env['KOSAX_EMPTY_SECRET'] = original
       }
     }
   })
 
   test('plain text without secrets passes through unchanged', () => {
-    const result = redactKosmosSecrets('no secrets in this string')
+    const result = redactKosaxSecrets('no secrets in this string')
     expect(result).toBe('no secrets in this string')
   })
 })
@@ -121,14 +121,14 @@ describe('crash-detector: process crash detection', () => {
     // The crash detector should have fired.
     expect(crashNotices.length).toBeGreaterThan(0)
 
-    // Verify redacted tail does not contain any KOSMOS_*_KEY/TOKEN/SECRET/PASSWORD values
+    // Verify redacted tail does not contain any KOSAX_*_KEY/TOKEN/SECRET/PASSWORD values
     const notice = crashNotices[0]!
     // Inject a test secret and verify it would be redacted from real output
-    // (we can only test the redactKosmosSecrets function here; the actual
+    // (we can only test the redactKosaxSecrets function here; the actual
     // stderr from SIGKILL will be empty or minimal)
     for (const [key, value] of Object.entries(process.env)) {
       if (!value) continue
-      if (!/^KOSMOS_[A-Z0-9_]+(?:_KEY|_SECRET|_TOKEN|_PASSWORD)$/.test(key)) continue
+      if (!/^KOSAX_[A-Z0-9_]+(?:_KEY|_SECRET|_TOKEN|_PASSWORD)$/.test(key)) continue
       expect(notice.redactedStderrTail).not.toContain(value)
     }
 

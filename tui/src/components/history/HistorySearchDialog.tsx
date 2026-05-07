@@ -10,7 +10,7 @@
 //
 // Filters are AND-composed (FR-033): a session must pass ALL active filters.
 //
-// Structural shape mirrors CC HistorySearchDialog with KOSMOS-specific
+// Structural shape mirrors CC HistorySearchDialog with KOSAX-specific
 // 3-filter form replacing the single needle input.
 
 import React, { useCallback, useMemo, useState } from 'react';
@@ -225,7 +225,7 @@ export function HistorySearchDialog({
 
       {/* Filter input */}
       <Box marginTop={1}>
-        <Text color={theme.kosmosCore}>{`> ${needle}`}</Text>
+        <Text color={theme.kosaxCore}>{`> ${needle}`}</Text>
         <Text color={theme.subtle}>{'█'}</Text>
       </Box>
 
@@ -246,7 +246,7 @@ export function HistorySearchDialog({
           visible.map((entry, idx) => (
             <Box key={entry.session_id}>
               <Text
-                color={idx === cursorInWindow ? theme.kosmosCore : theme.text}
+                color={idx === cursorInWindow ? theme.kosaxCore : theme.text}
                 bold={idx === cursorInWindow}
               >
                 {idx === cursorInWindow ? '› ' : '  '}

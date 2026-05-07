@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #2637 cascade · stub-noop replacement.
+// KOSAX-original — Epic #2637 cascade · stub-noop replacement.
 // SWAP/anti-anthropic-1p(2637): ClaudeCodeDiagLogger (Anthropic 1P diagnostic
-// telemetry sink) is permanently disabled in KOSMOS. instrumentation.ts byte-copy
-// (R-5) references this export; KOSMOS uses stdlib logging (AGENTS.md hard rule).
+// telemetry sink) is permanently disabled in KOSAX. instrumentation.ts byte-copy
+// (R-5) references this export; KOSAX uses stdlib logging (AGENTS.md hard rule).
 
 import { DiagLogger } from '@opentelemetry/api'
 

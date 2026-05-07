@@ -54,13 +54,13 @@ class QueryState:
     """Number of user-initiated turns completed in this session."""
 
     usage: UsageTracker
-    """Token budget tracker (reused from kosmos.llm.usage)."""
+    """Token budget tracker (reused from kosax.llm.usage)."""
 
     resolved_tasks: list[str] = []
     """Completed civil-affairs sub-goals tracked for session continuity."""
 ```
 
-**Relationships**: Owned by `QueryEngine`. Passed by reference to `QueryContext` each turn. References `ChatMessage` (from `kosmos.llm.models`) and `UsageTracker` (from `kosmos.llm.usage`).
+**Relationships**: Owned by `QueryEngine`. Passed by reference to `QueryContext` each turn. References `ChatMessage` (from `kosax.llm.models`) and `UsageTracker` (from `kosax.llm.usage`).
 **State transitions**: `messages` grows monotonically (append-only). `turn_count` increments by 1 per `QueryEngine.run()` call.
 
 ---
@@ -159,11 +159,11 @@ class QueryEvent(BaseModel):
 
     # --- tool_result fields ---
     tool_result: ToolResult | None = None
-    """Structured result from tool execution (reused from kosmos.tools.models)."""
+    """Structured result from tool execution (reused from kosax.tools.models)."""
 
     # --- usage_update fields ---
     usage: TokenUsage | None = None
-    """Token usage snapshot after an LLM call (reused from kosmos.llm.models)."""
+    """Token usage snapshot after an LLM call (reused from kosax.llm.models)."""
 
     # --- stop fields ---
     stop_reason: StopReason | None = None
@@ -173,7 +173,7 @@ class QueryEvent(BaseModel):
     """Human-readable explanation for the stop event."""
 ```
 
-**Relationships**: References `ToolResult` (from `kosmos.tools.models`), `TokenUsage` (from `kosmos.llm.models`), `StopReason`.
+**Relationships**: References `ToolResult` (from `kosax.tools.models`), `TokenUsage` (from `kosax.llm.models`), `StopReason`.
 **Validation**: A model validator enforces that type-specific fields are populated correctly (e.g., `stop_reason` only when `type="stop"`).
 
 ---
@@ -235,13 +235,13 @@ class SessionBudget(BaseModel):
 ```
 QueryEngine (per-session orchestrator)
   ├── owns QueryState (mutable, session lifecycle)
-  │     ├── messages: list[ChatMessage]  (from kosmos.llm.models)
-  │     ├── usage: UsageTracker          (from kosmos.llm.usage)
+  │     ├── messages: list[ChatMessage]  (from kosax.llm.models)
+  │     ├── usage: UsageTracker          (from kosax.llm.usage)
   │     └── resolved_tasks: list[str]
   ├── owns QueryEngineConfig (immutable)
-  ├── references LLMClient              (from kosmos.llm.client)
-  ├── references ToolExecutor            (from kosmos.tools.executor)
-  └── references ToolRegistry            (from kosmos.tools.registry)
+  ├── references LLMClient              (from kosax.llm.client)
+  ├── references ToolExecutor            (from kosax.tools.executor)
+  └── references ToolRegistry            (from kosax.tools.registry)
         │
         ▼
   query() async generator (per-turn)
@@ -249,7 +249,7 @@ QueryEngine (per-session orchestrator)
   ├── yields QueryEvent (discriminated union)
   │     ├── text_delta  → content: str
   │     ├── tool_use    → tool_name, tool_call_id, arguments
-  │     ├── tool_result → ToolResult (from kosmos.tools.models)
+  │     ├── tool_result → ToolResult (from kosax.tools.models)
   │     ├── usage_update → TokenUsage + SessionBudget
   │     └── stop        → StopReason + stop_message
   └── uses PreprocessingPipeline (before each LLM call)

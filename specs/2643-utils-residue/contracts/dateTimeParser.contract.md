@@ -45,7 +45,7 @@ Returns whether trimmed `input` matches `/^\d{4}-\d{2}-\d{2}(T|$)/`.
 
 ## Swap-1 deviation log
 
-| Line (CC) | CC | KOSMOS | Reason |
+| Line (CC) | CC | KOSAX | Reason |
 |---|---|---|---|
 | Line 0 (new) | (no header) | `// SWAP/llm-swap(2643): queryHaiku target = K-EXAONE via FriendliAI (Spec 2521 byte-copy bridge).` | swap-1 attribution per AGENTS.md SWAP convention |
 
@@ -114,7 +114,7 @@ test('looksLikeISO8601: positive + negative cases', () => {
 
 **Before** (lines 10-19):
 ```ts
-// KOSMOS Spec 1633 / Epic #2293 — utils/mcp/dateTimeParser deleted (Anthropic
+// KOSAX Spec 1633 / Epic #2293 — utils/mcp/dateTimeParser deleted (Anthropic
 // queryHaiku natural-language parser); inline ISO8601-only stubs preserve the
 // {success, value, error} contract that validateElicitationInputAsync expects.
 const ISO8601_REGEX = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?)?$/
@@ -123,7 +123,7 @@ type DateParseResult = { success: true; value: string } | { success: false; erro
 const parseNaturalLanguageDateTime = async (value: string, _formatHint?: string): Promise<DateParseResult> =>
   looksLikeISO8601(value)
     ? { success: true, value }
-    : { success: false, error: 'KOSMOS: natural-language datetime parsing not available; please use ISO 8601 format (e.g. 2026-04-29T12:00:00Z)' }
+    : { success: false, error: 'KOSAX: natural-language datetime parsing not available; please use ISO 8601 format (e.g. 2026-04-29T12:00:00Z)' }
 ```
 
 **After**:
@@ -131,4 +131,4 @@ const parseNaturalLanguageDateTime = async (value: string, _formatHint?: string)
 import { looksLikeISO8601, parseNaturalLanguageDateTime } from './dateTimeParser.js'
 ```
 
-**Callsite** (line 323-328) `parseNaturalLanguageDateTime(stringValue, schema.format, signal)` — already CC-shape compatible (3-arg form). KOSMOS-side currently uses `_formatHint` param name (CC: `format`), so the callsite signature works without further edit.
+**Callsite** (line 323-328) `parseNaturalLanguageDateTime(stringValue, schema.format, signal)` — already CC-shape compatible (3-arg form). KOSAX-side currently uses `_formatHint` param name (CC: `format`), so the callsite signature works without further edit.

@@ -77,7 +77,7 @@ export const UI_L2_SLASH_COMMANDS: readonly SlashCommandCatalogEntryT[] = [
     arg_signature: null,
     hidden: false,
   },
-  // Session lifecycle commands — kosmos-migration-tree.md § L1-A · A5
+  // Session lifecycle commands — kosax-migration-tree.md § L1-A · A5
   // promises four distinct citizen-facing modes: --continue / --resume /
   // --fork / new. Surfaced in the autocomplete dropdown (FR-014) so the
   // citizen can discover them without reading docs. Decision:
@@ -149,8 +149,8 @@ export const UI_L2_SLASH_COMMANDS: readonly SlashCommandCatalogEntryT[] = [
   {
     name: '/migrate-sessions',
     group: 'storage',
-    description_ko: 'CC 워크스페이스 JSONL 세션을 KOSMOS memdir로 마이그레이션합니다',
-    description_en: 'Migrate CC-workspace JSONL sessions to the KOSMOS memdir sessions directory',
+    description_ko: 'CC 워크스페이스 JSONL 세션을 KOSAX memdir로 마이그레이션합니다',
+    description_en: 'Migrate CC-workspace JSONL sessions to the KOSAX memdir sessions directory',
     arg_signature: '[--dry-run] [--filter-cwd <regex>] [--prune]',
     hidden: false,
   },

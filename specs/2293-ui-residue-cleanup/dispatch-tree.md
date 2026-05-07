@@ -91,4 +91,4 @@ Sonnet 너는 Sonnet teammate. Lead Opus β 가 Epic β #2293 에서 caller clea
 
 Initiative #2290 의 다른 Epic 들 (Epic γ #2294 / Epic δ #2295 / Epic ε #2296 / Epic ζ #2297 / Epic η #2298) 은 본 Epic β session 에서 다루지 않음.
 
-핸드오프 v4 의 Epic δ #2295 는 별도 Lead Opus session 에서 worktree `/Users/um-yunsang/KOSMOS-w-2295/` 에서 진행 — 이번 Epic β merge 후 사용자가 별도 session 시작.
+핸드오프 v4 의 Epic δ #2295 는 별도 Lead Opus session 에서 worktree `/Users/um-yunsang/KOSAX-w-2295/` 에서 진행 — 이번 Epic β merge 후 사용자가 별도 session 시작.

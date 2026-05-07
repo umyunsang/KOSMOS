@@ -3,8 +3,8 @@
 # audit-prod § Audit 7 — Session lifecycle + Export PDF + History
 #
 # Scope:
-#   - Session JSONL canonical-path write (~/.kosmos/memdir/user/sessions/)
-#   - /resume picker (KOSMOS + CC-legacy dual-path enumeration, dedup, sort)
+#   - Session JSONL canonical-path write (~/.kosax/memdir/user/sessions/)
+#   - /resume picker (KOSAX + CC-legacy dual-path enumeration, dedup, sort)
 #   - /fork (creates fork session JSONL with parent_session_id preserved)
 #   - /continue (legacy CC alias)
 #   - /migrate-sessions --dry-run (CC leak enumeration, no destructive write)
@@ -26,7 +26,7 @@ set -uo pipefail
 # ---------------------------------------------------------------------------
 # Stage 0 — Boot + branding
 # ---------------------------------------------------------------------------
-wait_for_pane "KOSMOS|kosmos" 60 || true
+wait_for_pane "KOSAX|kosax" 60 || true
 snapshot_pane 0-boot
 
 # ---------------------------------------------------------------------------
@@ -67,12 +67,12 @@ sleep 1
 # ---------------------------------------------------------------------------
 send_text_pane '/export'
 send_enter_pane
-wait_for_pane "export|PDF|pdf|kosmos-export|Downloads|영수증|generate" 30 || true
+wait_for_pane "export|PDF|pdf|kosax-export|Downloads|영수증|generate" 30 || true
 snapshot_pane 4-export-dialog
 sleep 2
 # Confirm with Enter (writes the PDF) — best-effort
 send_keys_pane Enter
-wait_for_pane "wrote|written|saved|complete|kosmos-export.*\.pdf|성공|완료|error|fail" 90 || true
+wait_for_pane "wrote|written|saved|complete|kosax-export.*\.pdf|성공|완료|error|fail" 90 || true
 snapshot_pane 4b-export-after-enter
 sleep 1
 # Dismiss (Esc) — the wrong-flag fix (isLocalJSXCommand:false) means Esc

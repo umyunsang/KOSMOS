@@ -2,7 +2,7 @@
 // Spec 1635 P4 UI L2 — Onboarding step 1: Preflight (FR-001 step 1, T040).
 //
 // Runs environment checks synchronously at mount (Bun version, terminal graphics
-// protocol presence, required KOSMOS_* env vars) and renders ✓/✗ per item.
+// protocol presence, required KOSAX_* env vars) and renders ✓/✗ per item.
 // The citizen can advance to step 2 regardless of soft-fail items; a hard-fail
 // (Bun version below 1.2) shows a warning but does not block advancing.
 //
@@ -77,8 +77,8 @@ function checkGraphicsProtocol(): PreflightCheckResult {
 function checkRequiredEnvVars(): PreflightCheckResult[] {
   const optional: { keys: string[]; label: string; mockNote: string }[] = [
     {
-      keys: ['KOSMOS_DATA_GO_KR_API_KEY', 'KOSMOS_DATA_GO_KR_KEY'],
-      label: 'KOSMOS_DATA_GO_KR_API_KEY',
+      keys: ['KOSAX_DATA_GO_KR_API_KEY', 'KOSAX_DATA_GO_KR_KEY'],
+      label: 'KOSAX_DATA_GO_KR_API_KEY',
       mockNote: 'absent — Mock mode (no live data.go.kr calls)',
     },
   ]
@@ -134,7 +134,7 @@ function StepProgressDots({
 export type PreflightStepProps = {
   onAdvance: () => void
   onExit: () => void
-  /** Locale used for UI strings; defaults to KOSMOS_TUI_LOCALE env var. */
+  /** Locale used for UI strings; defaults to KOSAX_TUI_LOCALE env var. */
   locale?: 'ko' | 'en'
 }
 
@@ -150,7 +150,7 @@ export function PreflightStep({
   const theme = useTheme()
   const { isComposing } = useKoreanIME()
   const i18n = getUiL2I18n(
-    locale ?? ((process.env['KOSMOS_TUI_LOCALE'] as 'ko' | 'en') || 'ko'),
+    locale ?? ((process.env['KOSAX_TUI_LOCALE'] as 'ko' | 'en') || 'ko'),
   )
 
   const checks = useMemo(() => runPreflightChecks(), [])
@@ -214,7 +214,7 @@ export function PreflightStep({
       )}
 
       <Box marginTop={1}>
-        <Text color={theme.kosmosCore}>
+        <Text color={theme.kosaxCore}>
           {i18n.onboardingNext}{'  ·  '}
           <Text color={theme.subtle}>{i18n.onboardingBack}</Text>
         </Text>

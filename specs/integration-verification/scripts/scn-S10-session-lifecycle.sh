@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # S10: session lifecycle — lookup → exit → verify memdir JSONL → re-launch (resume covered separately)
 set -euo pipefail
-wait_for_pane "KOSMOS|❯" 30
+wait_for_pane "KOSAX|❯" 30
 snapshot_pane 00-boot
 
 send_text_pane "내일 서울 종로구 날씨"; sleep 1; send_enter_pane; sleep 90

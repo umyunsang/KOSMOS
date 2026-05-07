@@ -3,7 +3,7 @@
 Date: 2026-05-04
 
 This proposal covers development setup beyond basic bootstrap. It is for Codex-led
-construction and quality management of KOSMOS. It does not propose changing the KOSMOS
+construction and quality management of KOSAX. It does not propose changing the KOSAX
 runtime provider: production/runtime LLM behavior remains FriendliAI Serverless plus
 K-EXAONE unless a future ADR and spec-driven PR explicitly change that boundary.
 
@@ -30,7 +30,7 @@ Primary references reviewed:
 
 ## Constraints
 
-KOSMOS-specific constraints that shape the setup:
+KOSAX-specific constraints that shape the setup:
 
 - Runtime model and provider stay fixed to K-EXAONE on FriendliAI.
 - Do not add dependencies outside a spec-driven PR.
@@ -43,7 +43,7 @@ KOSMOS-specific constraints that shape the setup:
 
 ## Core Insight
 
-The next useful setup is not another framework. KOSMOS already has enough building blocks:
+The next useful setup is not another framework. KOSAX already has enough building blocks:
 Spec Kit, prompt manifests, pytest, fixture-backed tools, OpenTelemetry, Langfuse, and strict
 TUI smoke methodology. The gap is a single LLM quality gate that joins these pieces into a
 repeatable release decision.
@@ -141,7 +141,7 @@ uv run pytest tests/eval -m "not live"
 ```
 
 This matches OpenAI's current eval guidance: evaluate instruction following, functional
-correctness, tool selection, tool argument precision, and edge cases separately. For KOSMOS,
+correctness, tool selection, tool argument precision, and edge cases separately. For KOSAX,
 the first gate is target coverage and citizen-demand fidelity. Tool-call correctness and
 policy-citation correctness become deterministic gates after each target scenario is mapped to
 an implemented live, mock, or handoff channel.
@@ -177,7 +177,7 @@ token_count_output: 0
 notes: ""
 ```
 
-KOSMOS already has `src/kosmos/observability/`, `docs/observability.md`, and Langfuse in the
+KOSAX already has `src/kosax/observability/`, `docs/observability.md`, and Langfuse in the
 dev extra. The implementation should extend existing OTEL and Langfuse paths instead of adding
 a new observability framework.
 
@@ -196,9 +196,9 @@ The important join keys are:
 Any PR touching these surfaces should include an eval scorecard:
 
 - `prompts/**`
-- `src/kosmos/llm/**`
-- `src/kosmos/tools/**`
-- `src/kosmos/permissions/**`
+- `src/kosax/llm/**`
+- `src/kosax/tools/**`
+- `src/kosax/permissions/**`
 - `tui/src/**` when the displayed agent loop changes
 
 Minimum scorecard:
@@ -225,18 +225,18 @@ Do not use LLM-as-judge as the first gate. Use it only after deterministic check
 for answer usefulness, tone, completeness, or ambiguity handling. Human review remains the
 highest-confidence path for sensitive public-service flows.
 
-### Phase 4: KOSMOS-Specific Codex Skills
+### Phase 4: KOSAX-Specific Codex Skills
 
 The Claude-era Spec Kit skills are usable in Codex through `.agents/skills/`. The next step is
-to add KOSMOS-specific skills after the quality gate exists.
+to add KOSAX-specific skills after the quality gate exists.
 
 Recommended skills:
 
-- `kosmos-tool-adapter`: author one `GovAPITool` adapter with fixture, policy citation, tests,
+- `kosax-tool-adapter`: author one `GovAPITool` adapter with fixture, policy citation, tests,
   and registry entry.
-- `kosmos-tui-verify`: execute the repository's PTY, vhs, PNG, text, ascii, and frame snapshot
+- `kosax-tui-verify`: execute the repository's PTY, vhs, PNG, text, ascii, and frame snapshot
   methodology for TUI PRs.
-- `kosmos-pr-scorecard`: collect test, eval, trace, and TUI evidence into a PR-ready summary.
+- `kosax-pr-scorecard`: collect test, eval, trace, and TUI evidence into a PR-ready summary.
 
 Each skill should ship with its own small eval pack. Do not add a process skill that cannot be
 tested, scored, or improved.
@@ -283,7 +283,7 @@ Do not adopt now:
 
 ## Security Mapping
 
-OWASP LLM risks map directly to KOSMOS gates:
+OWASP LLM risks map directly to KOSAX gates:
 
 - Prompt injection: treat external pages, issue bodies, and tool outputs as untrusted input.
 - Insecure output handling: validate model-selected tool arguments with Pydantic and adapter
@@ -296,7 +296,7 @@ OWASP LLM risks map directly to KOSMOS gates:
 - Overreliance: require deterministic eval evidence and human review for sensitive flows.
 
 NIST AI RMF and its Generative AI profile support the same direction: manage AI risk through
-documented design, evaluation, monitoring, and explicit trustworthiness criteria. For KOSMOS,
+documented design, evaluation, monitoring, and explicit trustworthiness criteria. For KOSAX,
 that means every agency adapter and prompt change should carry evidence of correctness,
 privacy, permission handling, and traceability.
 
@@ -312,7 +312,7 @@ privacy, permission handling, and traceability.
 8. Extend existing observability events with `scenario_id`, `channel_id`, and
    `prompt_manifest_hash`.
 9. Add a local quality-gate command that runs evals without live external channels.
-10. Create follow-up tasks for the three KOSMOS-specific Codex skills after the gate is green.
+10. Create follow-up tasks for the three KOSAX-specific Codex skills after the gate is green.
 
 ## Success Criteria
 

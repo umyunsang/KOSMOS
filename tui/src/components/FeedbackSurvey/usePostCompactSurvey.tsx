@@ -7,7 +7,7 @@ import { shouldUseSessionMemoryCompaction } from '../../services/compact/session
 import type { Message } from '../../types/message.js';
 import { isEnvTruthy } from '../../utils/envUtils.js';
 import { isCompactBoundaryMessage } from '../../utils/messages.js';
-// utils/telemetry/events removed — KOSMOS telemetry handled by Spec 021 OTEL pipeline.
+// utils/telemetry/events removed — KOSAX telemetry handled by Spec 021 OTEL pipeline.
 const logOTelEvent = (_event: string, _attrs?: Record<string, unknown>): void => { /* no-op */ }
 import { useSurveyState } from './useSurveyState.js';
 import type { FeedbackSurveyResponse } from './utils.js';

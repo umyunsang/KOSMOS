@@ -18,7 +18,7 @@ A citizen asks a natural-language question through the CLI. The system sends the
 
 **Acceptance Scenarios**:
 
-1. **Given** a valid KOSMOS_FRIENDLI_TOKEN is configured, **When** the system sends a prompt to K-EXAONE, **Then** a streamed response is received with content and token usage counts (input tokens, output tokens).
+1. **Given** a valid KOSAX_FRIENDLI_TOKEN is configured, **When** the system sends a prompt to K-EXAONE, **Then** a streamed response is received with content and token usage counts (input tokens, output tokens).
 2. **Given** a valid configuration, **When** a prompt is sent, **Then** the response streams incrementally (chunk by chunk) rather than arriving as a single block.
 
 ---
@@ -71,7 +71,7 @@ The LLM client supports assembling messages with tool definitions and tool resul
 
 ### Edge Cases
 
-- What happens when KOSMOS_FRIENDLI_TOKEN is not set or empty? System raises a configuration error at startup.
+- What happens when KOSAX_FRIENDLI_TOKEN is not set or empty? System raises a configuration error at startup.
 - What happens when the endpoint is completely unreachable (network down)? Client raises a connection error after retry exhaustion.
 - What happens when the response stream is interrupted mid-chunk? Client raises a stream error; the caller can retry the full call.
 - What happens when the model returns an empty response? Client returns an empty content string with zero output tokens; caller decides how to handle.
@@ -87,7 +87,7 @@ The LLM client supports assembling messages with tool definitions and tool resul
 - **FR-004**: System MUST enforce a configurable per-session token budget. Calls that would exceed the budget MUST be rejected before sending.
 - **FR-005**: System MUST retry transient errors (HTTP 429, 503) with exponential backoff (base 1s, multiplier 2x, jitter, cap 60s, max 3 retries).
 - **FR-006**: System MUST NOT retry permanent errors (HTTP 400, 401, 403, 404).
-- **FR-007**: System MUST read the API endpoint URL and authentication token from environment variables (KOSMOS_FRIENDLI_TOKEN).
+- **FR-007**: System MUST read the API endpoint URL and authentication token from environment variables (KOSAX_FRIENDLI_TOKEN).
 - **FR-008**: System MUST support sending tool definitions and receiving tool_calls in the OpenAI function-calling format.
 - **FR-009**: System MUST support configurable model parameters: model name, temperature, max_tokens, top_p, stop sequences.
 - **FR-010**: System MUST provide an async interface (async/await) for all LLM operations.

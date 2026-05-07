@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 import pytest_asyncio  # noqa: F401 — ensures pytest-asyncio plugin is present
 
-from kosmos.tools.mock.lookup_module_gov24_certificate import (
+from kosax.tools.mock.lookup_module_gov24_certificate import (
     MOCK_LOOKUP_MODULE_GOV24_CERTIFICATE_TOOL,
     Gov24CertificateInput,
     handle,
@@ -54,7 +54,7 @@ def _make_delegation_context(scope: str) -> object:
     """Build a minimal DelegationContext for scope-validation testing."""
     from datetime import UTC, datetime, timedelta
 
-    from kosmos.primitives.delegation import DelegationContext, DelegationToken
+    from kosax.primitives.delegation import DelegationContext, DelegationToken
 
     token = DelegationToken(
         vp_jwt="eyJhbGciOiJub25lIiwidHlwIjoidnArand0In0.eyJzdWIiOiJtb2NrIn0.mock-signature-not-cryptographic",
@@ -166,8 +166,8 @@ async def test_handle_business_registration_domain_payload() -> None:
 
 def test_bm25_discovery_korean_keyword_jumindeung() -> None:
     """BM25 search for '주민등록등본' surfaces mock_lookup_module_gov24_certificate."""
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from kosax.tools.executor import ToolExecutor
+    from kosax.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -182,8 +182,8 @@ def test_bm25_discovery_korean_keyword_jumindeung() -> None:
 
 def test_bm25_discovery_korean_keyword_gov24() -> None:
     """BM25 search for '정부24 증명서' surfaces mock_lookup_module_gov24_certificate."""
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from kosax.tools.executor import ToolExecutor
+    from kosax.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -198,8 +198,8 @@ def test_bm25_discovery_korean_keyword_gov24() -> None:
 
 def test_bm25_discovery_english_keyword() -> None:
     """BM25 search for 'resident certificate' surfaces mock_lookup_module_gov24_certificate."""
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from kosax.tools.executor import ToolExecutor
+    from kosax.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -286,8 +286,8 @@ async def test_handle_without_delegation_context_proceeds() -> None:
 
 def test_registration_adds_tool_to_registry() -> None:
     """register() adds mock_lookup_module_gov24_certificate to the ToolRegistry."""
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from kosax.tools.executor import ToolExecutor
+    from kosax.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -298,8 +298,8 @@ def test_registration_adds_tool_to_registry() -> None:
 
 def test_registration_adds_adapter_to_executor() -> None:
     """register() binds the adapter function in the ToolExecutor."""
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from kosax.tools.executor import ToolExecutor
+    from kosax.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -326,9 +326,9 @@ def test_tool_definition_policy_gate_is_read_only() -> None:
 
 def test_registration_duplicate_raises_error() -> None:
     """Registering the same tool twice raises AdapterIdCollisionError (FR-020)."""
-    from kosmos.tools.errors import AdapterIdCollisionError
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from kosax.tools.errors import AdapterIdCollisionError
+    from kosax.tools.executor import ToolExecutor
+    from kosax.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)

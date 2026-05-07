@@ -283,9 +283,9 @@ const snapshots: Snapshot[] = [
     note: 'FR-031 — /plugins browser ⏺/○ + Space/i/r/a',
     component: React.createElement(PluginBrowser, {
       plugins: [
-        { id: 'kosmos-koroad', name: 'KOROAD 교통 정보', active: true, version: '0.1.0' },
-        { id: 'kosmos-hira', name: 'HIRA 의료기관', active: true, version: '0.1.0' },
-        { id: 'kosmos-gov24', name: '정부24 민원', active: false, version: '0.0.5' },
+        { id: 'kosax-koroad', name: 'KOROAD 교통 정보', active: true, version: '0.1.0' },
+        { id: 'kosax-hira', name: 'HIRA 의료기관', active: true, version: '0.1.0' },
+        { id: 'kosax-gov24', name: '정부24 민원', active: false, version: '0.0.5' },
       ],
       onToggle: () => {},
       onDetail: () => {},

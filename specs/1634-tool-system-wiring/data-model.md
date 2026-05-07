@@ -5,14 +5,14 @@
 ## Convention
 
 - All Pydantic models are `frozen=True, extra="forbid"` per Spec 024 + Spec 031 precedent.
-- All field deltas below are *additive or rename* against the existing `src/kosmos/tools/models.py` and `src/kosmos/tools/registry.py`. No field is dropped.
+- All field deltas below are *additive or rename* against the existing `src/kosax/tools/models.py` and `src/kosax/tools/registry.py`. No field is dropped.
 - The Spec 025 v6 `(auth_type, auth_level)` invariant validator stays unchanged. New fields layer on top.
 
 ---
 
 ## 1. `GovAPITool` deltas
 
-`src/kosmos/tools/models.py` — class `GovAPITool`.
+`src/kosax/tools/models.py` — class `GovAPITool`.
 
 ### 1.1 Renamed field — `provider` → `ministry`
 
@@ -23,12 +23,12 @@
 | Default | none (required) | none (required) |
 | Docstring | "Ministry or agency that owns the API." | "Ministry or agency that owns the API. Closed enum; new institutions added by enum extension. `OTHER` is a transitional escape hatch and emits a CI warning." |
 
-**Migration**: 15 currently-registered adapters in `src/kosmos/tools/{koroad,kma,hira,nmc,nfa,mohw,resolve_location,lookup}*` and 6 mock adapters in `src/kosmos/tools/mock/*` switch from `provider="..."` to `ministry=Ministry.<X>`. Mechanical edit; no behavioral change beyond enforced typing.
+**Migration**: 15 currently-registered adapters in `src/kosax/tools/{koroad,kma,hira,nmc,nfa,mohw,resolve_location,lookup}*` and 6 mock adapters in `src/kosax/tools/mock/*` switch from `provider="..."` to `ministry=Ministry.<X>`. Mechanical edit; no behavioral change beyond enforced typing.
 
 ### 1.2 New type alias — `Ministry`
 
 ```python
-# src/kosmos/tools/models.py (top of file, near other Literal aliases)
+# src/kosax/tools/models.py (top of file, near other Literal aliases)
 from typing import Literal
 
 Ministry = Literal[
@@ -58,7 +58,7 @@ Ministry = Literal[
 | Default | `"live"` (fail-explicit; deviation documented in plan.md § Complexity Tracking + research.md § 5.1) |
 | Docstring | "Runtime source. `live` = adapter calls the real public API. `mock` = adapter returns recorded fixture or shape-compatible synthetic. Distinct from `AdapterRegistration.source_mode` which classifies mirror fidelity." |
 
-**Validation**: pydantic v2 enforces literal membership. CI consistency test invariant 3 verifies `adapter_mode` is declared (i.e., not implicitly defaulted) on every adapter under `src/kosmos/tools/mock/*` (mock declarations must be explicit; live declarations may rely on the default).
+**Validation**: pydantic v2 enforces literal membership. CI consistency test invariant 3 verifies `adapter_mode` is declared (i.e., not implicitly defaulted) on every adapter under `src/kosax/tools/mock/*` (mock declarations must be explicit; live declarations may rely on the default).
 
 ### 1.4 Existing field — `primitive` (no schema change; population change only)
 
@@ -85,17 +85,17 @@ Ministry = Literal[
 
 After P3, no registered adapter has `primitive=None`. The `| None` union remains in the type for the mock-adapter pre-v1.2 compatibility window from Spec 031, but the CI consistency test fails the build if any registered adapter still has `None`.
 
-**Composite removal (FR-027)**: `road_risk_score` (currently under `src/kosmos/tools/composite/`) is **deleted** in this epic. Its three inner adapter calls are left intact as standalone `lookup` adapters — the LLM composes risk-assessment results at the conversation level. Post-P3 live-adapter count is therefore **14**, not 15.
+**Composite removal (FR-027)**: `road_risk_score` (currently under `src/kosax/tools/composite/`) is **deleted** in this epic. Its three inner adapter calls are left intact as standalone `lookup` adapters — the LLM composes risk-assessment results at the conversation level. Post-P3 live-adapter count is therefore **14**, not 15.
 
 ### 1.5 Removed-by-rename — `provider`
 
-Once renamed to `ministry`, the original `provider` field no longer exists. Any external consumer of `GovAPITool.provider` is updated at the same commit. There are no external consumers outside `src/kosmos/` and `tui/src/` (verified via repo-wide grep).
+Once renamed to `ministry`, the original `provider` field no longer exists. Any external consumer of `GovAPITool.provider` is updated at the same commit. There are no external consumers outside `src/kosax/` and `tui/src/` (verified via repo-wide grep).
 
 ---
 
 ## 2. `AdapterRegistration` — no schema change
 
-`src/kosmos/tools/registry.py:93-161` — unchanged. The `source_mode: AdapterSourceMode` enum (`OPENAPI` / `OOS` / `HARNESS_ONLY`) stays as mirror-fidelity classification per research.md § 1.3 / Spec 031 design intent.
+`src/kosax/tools/registry.py:93-161` — unchanged. The `source_mode: AdapterSourceMode` enum (`OPENAPI` / `OOS` / `HARNESS_ONLY`) stays as mirror-fidelity classification per research.md § 1.3 / Spec 031 design intent.
 
 The Spec 031 v1.2 dual-axis `published_tier_minimum` / `nist_aal_hint` fields stay optional during pre-v1.2; P3 does not flip the v1.2 GA flag.
 
@@ -104,7 +104,7 @@ The Spec 031 v1.2 dual-axis `published_tier_minimum` / `nist_aal_hint` fields st
 ## 3. New helper — `compute_permission_tier`
 
 ```python
-# src/kosmos/tools/permissions.py (NEW file)
+# src/kosax/tools/permissions.py (NEW file)
 """Permission-tier derivation from existing GovAPITool fields.
 
 Single source of truth consumed by:
@@ -115,7 +115,7 @@ Single source of truth consumed by:
 
 from typing import Literal
 
-from kosmos.tools.models import AALLevel  # Literal["public","AAL1","AAL2","AAL3"]
+from kosax.tools.models import AALLevel  # Literal["public","AAL1","AAL2","AAL3"]
 
 
 def compute_permission_tier(
@@ -158,10 +158,10 @@ def compute_permission_tier(
 ## 4. New module — `routing_index`
 
 ```python
-# src/kosmos/tools/routing_index.py (NEW file)
+# src/kosax/tools/routing_index.py (NEW file)
 """Boot-time validation + primitive→adapter routing map.
 
-Called from kosmos.tools.register_all at process start. Fails closed on:
+Called from kosax.tools.register_all at process start. Fails closed on:
 - Any registered adapter with primitive=None
 - Any registered adapter with ministry not in the closed enum
 - Any registered adapter missing adapter_mode declaration in mock subtree
@@ -178,8 +178,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from kosmos.tools.models import GovAPITool
-from kosmos.tools.permissions import compute_permission_tier
+from kosax.tools.models import GovAPITool
+from kosax.tools.permissions import compute_permission_tier
 
 
 class RoutingIndex(BaseModel):
@@ -259,10 +259,10 @@ Each primitive uses its own Spec 031 envelope type (there is no unified `Primiti
 
 | Primitive | Python type(s) | Canonical source | Current file |
 |---|---|---|---|
-| `lookup` | Spec 022 lookup input / output models | `specs/022-mvp-main-tool/data-model.md` | `src/kosmos/tools/lookup.py` |
-| `submit` | `SubmitEnvelope` (input) + adapter-defined receipt (output) | `specs/031-five-primitive-harness/data-model.md § 1` | `src/kosmos/primitives/submit.py` |
-| `subscribe` | `SubscriptionEvent` discriminated union (events) + adapter-defined `SubscriptionHandle` (creation output) | `specs/031-five-primitive-harness/data-model.md § 3` | `src/kosmos/primitives/subscribe.py` |
-| `verify` | `VerifyInput` + `VerifyOutput` (already defined) | `specs/031-five-primitive-harness/data-model.md § 2` | `src/kosmos/primitives/verify.py:44,250` |
+| `lookup` | Spec 022 lookup input / output models | `specs/022-mvp-main-tool/data-model.md` | `src/kosax/tools/lookup.py` |
+| `submit` | `SubmitEnvelope` (input) + adapter-defined receipt (output) | `specs/031-five-primitive-harness/data-model.md § 1` | `src/kosax/primitives/submit.py` |
+| `subscribe` | `SubscriptionEvent` discriminated union (events) + adapter-defined `SubscriptionHandle` (creation output) | `specs/031-five-primitive-harness/data-model.md § 3` | `src/kosax/primitives/subscribe.py` |
+| `verify` | `VerifyInput` + `VerifyOutput` (already defined) | `specs/031-five-primitive-harness/data-model.md § 2` | `src/kosax/primitives/verify.py:44,250` |
 
 The TUI side at `tui/src/tools/primitive/*.ts` constructs the matching JSON-shaped payload for each primitive per `contracts/primitive-envelope.md § 2-5`. P3 does not introduce a shared base class or envelope module.
 
@@ -291,13 +291,13 @@ stdio MCP layer:
                        └─→ tui/src/ipc/bridge.ts (Spec 287/032 stdio JSONL transport)─┘
                                                           │
                                                           ▼
-                       src/kosmos/ipc/stdio.py (Spec 032 transport, unchanged)
+                       src/kosax/ipc/stdio.py (Spec 032 transport, unchanged)
                                                           │
                                                           ▼
-                       src/kosmos/ipc/mcp_server.py (NEW; protocol-only stub)
+                       src/kosax/ipc/mcp_server.py (NEW; protocol-only stub)
                                                           │
                                                           ▼
-                       src/kosmos/tools/registry.py + routing_index.py + primitives/*
+                       src/kosax/tools/registry.py + routing_index.py + primitives/*
 ```
 
 ---

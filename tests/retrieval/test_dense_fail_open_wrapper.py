@@ -2,7 +2,7 @@
 """_DenseFailOpenWrapper lazy-path fail-open tests (spec 026, Codex round 5).
 
 Guards the regression that motivated Codex P1 on #837:
-when ``KOSMOS_RETRIEVAL_BACKEND=dense`` and cold-start is ``lazy`` (default),
+when ``KOSAX_RETRIEVAL_BACKEND=dense`` and cold-start is ``lazy`` (default),
 a model-load failure at the first ``.score()`` call must degrade to the
 BM25 companion — not silently return ``[]`` forever.
 
@@ -29,11 +29,11 @@ import logging
 
 import pytest
 
-from kosmos.tools.bm25_index import BM25Index
-from kosmos.tools.retrieval.backend import _DenseFailOpenWrapper
-from kosmos.tools.retrieval.bm25_backend import BM25Backend
-from kosmos.tools.retrieval.degrade import DegradationRecord
-from kosmos.tools.retrieval.dense_backend import DenseBackend
+from kosax.tools.bm25_index import BM25Index
+from kosax.tools.retrieval.backend import _DenseFailOpenWrapper
+from kosax.tools.retrieval.bm25_backend import BM25Backend
+from kosax.tools.retrieval.degrade import DegradationRecord
+from kosax.tools.retrieval.dense_backend import DenseBackend
 
 _FAKE_SHA256 = "a" * 64
 _CORPUS = {
@@ -57,17 +57,17 @@ def _patch_dense_load_to_fail(monkeypatch: pytest.MonkeyPatch) -> None:
         raising=False,
     )
     monkeypatch.setattr(
-        "kosmos.tools.retrieval.dense_backend.SentenceTransformer",
+        "kosax.tools.retrieval.dense_backend.SentenceTransformer",
         _failing_transformer,
         raising=False,
     )
     # Defensive: prevent disk / hash work on the failure path.
     monkeypatch.setattr(
-        "kosmos.tools.retrieval.dense_backend.DenseBackend._find_weight_file",
+        "kosax.tools.retrieval.dense_backend.DenseBackend._find_weight_file",
         staticmethod(lambda model_id: "/fake/path/model.safetensors"),  # noqa: ARG005
     )
     monkeypatch.setattr(
-        "kosmos.tools.retrieval.dense_backend.DenseBackend._sha256_file",
+        "kosax.tools.retrieval.dense_backend.DenseBackend._sha256_file",
         staticmethod(lambda path: _FAKE_SHA256),  # noqa: ARG005
     )
 
@@ -95,7 +95,7 @@ def test_lazy_load_failure_serves_bm25_and_emits_single_warn(
     wrapper, _ = _make_wrapper()
     wrapper.rebuild(_CORPUS)  # buffers dense corpus + builds BM25 companion
 
-    with caplog.at_level(logging.WARNING, logger="kosmos"):
+    with caplog.at_level(logging.WARNING, logger="kosax"):
         # First score: dense lazy load fails → wrapper swaps in BM25.
         result = wrapper.score("교통사고 위험지점")
 
@@ -131,7 +131,7 @@ def test_second_score_after_degradation_emits_no_additional_warn(
     wrapper, _ = _make_wrapper()
     wrapper.rebuild(_CORPUS)
 
-    with caplog.at_level(logging.WARNING, logger="kosmos"):
+    with caplog.at_level(logging.WARNING, logger="kosax"):
         wrapper.score("교통사고 위험지점")  # degrades
         wrapper.score("날씨 기온")  # must NOT re-warn
         wrapper.score("응급실 병상")  # must NOT re-warn
@@ -182,7 +182,7 @@ def test_degraded_wrapper_does_not_reinvoke_dense(
 
 def test_wrapper_satisfies_retriever_protocol() -> None:
     """_DenseFailOpenWrapper must satisfy the runtime_checkable Retriever protocol."""
-    from kosmos.tools.retrieval.backend import Retriever
+    from kosax.tools.retrieval.backend import Retriever
 
     dense = DenseBackend(model_id="intfloat/multilingual-e5-small", cold_start="lazy")
     bm25 = BM25Backend(BM25Index({}))

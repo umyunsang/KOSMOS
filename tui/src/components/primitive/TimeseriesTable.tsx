@@ -1,5 +1,5 @@
 /**
- * KOSMOS-original — TimeseriesTable renderer.
+ * KOSAX-original — TimeseriesTable renderer.
  *
  * Renders a table of time-value rows for a lookup timeseries result.
  * Displays a sticky header row and a capped list of data rows.

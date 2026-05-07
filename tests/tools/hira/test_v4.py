@@ -18,7 +18,7 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 
-from kosmos.tools.hira.hospital_search import (
+from kosax.tools.hira.hospital_search import (
     _HIRA_DESCRIPTION,
     HIRA_HOSPITAL_SEARCH_TOOL,
     HiraHospitalSearchInput,
@@ -63,7 +63,7 @@ class TestHiraV4JsonResponseSchema:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """JSON response returns kind='collection' envelope."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-v4")
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-v4")
         fixture = _load_fixture("hospital_search_happy.json")
         mock_client = _make_mock_client(fixture)
 
@@ -81,7 +81,7 @@ class TestHiraV4JsonResponseSchema:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Each item in JSON response contains yadmNm, addr, ykiho, clCd, clCdNm."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-v4")
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-v4")
         fixture = _load_fixture("hospital_search_happy.json")
         mock_client = _make_mock_client(fixture)
 
@@ -100,7 +100,7 @@ class TestHiraV4JsonResponseSchema:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """distance field in JSON response (high-precision decimal string) is float-parseable."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-v4")
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-v4")
         fixture = _load_fixture("hospital_search_happy.json")
         mock_client = _make_mock_client(fixture)
 
@@ -118,7 +118,7 @@ class TestHiraV4JsonResponseSchema:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """handle() passes '_type'='json' (not 'type'='json') to the HTTP client."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-v4")
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key-v4")
         fixture = _load_fixture("hospital_search_happy.json")
         mock_client = _make_mock_client(fixture)
 
@@ -146,7 +146,7 @@ class TestHiraV4GangnamLive:
     """Live query: Gangnam-gu (xPos=127.047, yPos=37.517, radius=2000) → ≥ 3 hospitals.
 
     Skipped in CI by default. Run with: uv run pytest -m live tests/tools/hira/test_v4.py
-    Requires KOSMOS_DATA_GO_KR_API_KEY to be set.
+    Requires KOSAX_DATA_GO_KR_API_KEY to be set.
     """
 
     async def test_gangnam_live_returns_at_least_three_hospitals(self) -> None:

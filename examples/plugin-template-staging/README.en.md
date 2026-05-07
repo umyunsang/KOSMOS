@@ -1,11 +1,11 @@
-# kosmos-plugin-my_plugin
+# kosax-plugin-my_plugin
 
-KOSMOS plugin — `my_plugin` adapter.
+KOSAX plugin — `my_plugin` adapter.
 
 ## Install
 
 ```bash
-kosmos plugin install my_plugin
+kosax plugin install my_plugin
 ```
 
 ## Develop

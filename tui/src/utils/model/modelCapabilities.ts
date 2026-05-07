@@ -2,14 +2,14 @@ import { readFileSync } from 'fs'
 import memoize from 'lodash-es/memoize.js'
 import { join } from 'path'
 import { z } from 'zod/v4'
-// KOSMOS: legacy oauth/client surface deleted by Spec 1633; KOSMOS uses FriendliAI.
+// KOSAX: legacy oauth/client surface deleted by Spec 1633; KOSAX uses FriendliAI.
 import { logForDebugging } from '../debug.js'
 import { getClaudeConfigHomeDir } from '../envUtils.js'
 import { safeParseJSON } from '../json.js'
 import { lazySchema } from '../lazySchema.js'
 import { isEssentialTrafficOnly } from '../privacyLevel.js'
 import { jsonStringify } from '../slowOperations.js'
-import { getAPIProvider, isFirstPartyKosmosBaseUrl } from './providers.js'
+import { getAPIProvider, isFirstPartyKosaxBaseUrl } from './providers.js'
 
 // .strip() — don't persist internal-only fields (mycro_deployments etc.) to disk
 const ModelCapabilitySchema = lazySchema(() =>
@@ -40,10 +40,10 @@ function getCachePath(): string {
 }
 
 function isModelCapabilitiesEligible(): boolean {
-  // KOSMOS: legacy capability-cache eligibility gate is dead under single-fixed
+  // KOSAX: legacy capability-cache eligibility gate is dead under single-fixed
   // FriendliAI provider; refresh path always returns false.
   if (getAPIProvider() !== 'firstParty') return false
-  if (!isFirstPartyKosmosBaseUrl()) return false
+  if (!isFirstPartyKosaxBaseUrl()) return false
   return false
 }
 
@@ -76,6 +76,6 @@ export async function refreshModelCapabilities(): Promise<void> {
   if (!isModelCapabilitiesEligible()) return
   if (isEssentialTrafficOnly()) return
 
-  // KOSMOS: capability refresh is a no-op (FriendliAI backend manages the model list).
-  logForDebugging('[modelCapabilities] refresh skipped — KOSMOS uses FriendliAI single-fixed model')
+  // KOSAX: capability refresh is a no-op (FriendliAI backend manages the model list).
+  logForDebugging('[modelCapabilities] refresh skipped — KOSAX uses FriendliAI single-fixed model')
 }

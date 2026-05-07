@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS UFO AnimatedClawd — hover-bob idle + click-triggered scan/beam
+// KOSAX UFO AnimatedClawd — hover-bob idle + click-triggered scan/beam
 //
 // CC AnimatedClawd.tsx의 Frame 시퀀스 재활용:
 //   · JUMP_WAVE → BEAM_PULSE (클릭시 빔 깜빡이며 펄스)
@@ -67,7 +67,7 @@ const incrementFrame = (i: number) => i + 1
 const UFO_HEIGHT = 3
 
 /**
- * KOSMOS UFO mascot with idle hover-bob animation + click-triggered
+ * KOSAX UFO mascot with idle hover-bob animation + click-triggered
  * scan/beam sequences. Container height is fixed at UFO_HEIGHT so the
  * surrounding layout never shifts. Respects `prefersReducedMotion` from
  * user settings — if set, all animation is disabled and a static UFO
@@ -93,10 +93,10 @@ function useClawdAnimation(): {
   bounceOffset: number
   onClick: () => void
 } {
-  // Read KOSMOS_REDUCED_MOTION env once at mount. Real settings wiring can
+  // Read KOSAX_REDUCED_MOTION env once at mount. Real settings wiring can
   // replace this after the main settings loader lands.
   const [reducedMotion] = useState(
-    () => process.env.KOSMOS_REDUCED_MOTION === '1',
+    () => process.env.KOSAX_REDUCED_MOTION === '1',
   )
 
   // Click animation state (-1 = not active, else frame index)

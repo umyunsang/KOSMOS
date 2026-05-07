@@ -9,7 +9,7 @@ Asserts:
 
 from __future__ import annotations
 
-from kosmos.tools.ssis.codes import (
+from kosax.tools.ssis.codes import (
     CallType,
     IntrsThemaCode,
     LifeArrayCode,

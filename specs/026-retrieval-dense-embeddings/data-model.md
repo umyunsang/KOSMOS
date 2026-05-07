@@ -8,7 +8,7 @@ This document enumerates every entity introduced by Feature 026, its fields, val
 
 ## 1. `Retriever` Protocol (new — structural type)
 
-**Location**: `src/kosmos/tools/retrieval/backend.py`
+**Location**: `src/kosax/tools/retrieval/backend.py`
 
 ```python
 from typing import Protocol, runtime_checkable
@@ -18,7 +18,7 @@ class Retriever(Protocol):
     """Structural contract that every retrieval backend satisfies.
 
     Mirrors the current ``BM25Index`` surface byte-for-byte so that
-    ``ToolRegistry`` and ``kosmos.tools.search`` depend only on this
+    ``ToolRegistry`` and ``kosax.tools.search`` depend only on this
     protocol, not on a concrete class.
     """
 
@@ -44,18 +44,18 @@ class Retriever(Protocol):
 **Relationships**:
 - Implemented by: `BM25Backend`, `DenseBackend`, `HybridBackend`.
 - Depended on by: `ToolRegistry` (via `retrieval` attribute; replaces today's `bm25_index` attribute, old name retained as alias for one release cycle per FR-009).
-- Consumed by: `kosmos.tools.search.search_tools()`.
+- Consumed by: `kosax.tools.search.search_tools()`.
 
 ---
 
 ## 2. `BM25Backend` (new — wraps existing `BM25Index`)
 
-**Location**: `src/kosmos/tools/retrieval/bm25_backend.py`
+**Location**: `src/kosax/tools/retrieval/bm25_backend.py`
 
 **Fields**:
 | Field | Type | Default | Constraint |
 |---|---|---|---|
-| `_index` | `BM25Index` | — | Composed verbatim from `kosmos.tools.bm25_index`; behaviour unchanged. |
+| `_index` | `BM25Index` | — | Composed verbatim from `kosax.tools.bm25_index`; behaviour unchanged. |
 
 **Methods**: Delegates `rebuild` and `score` to `self._index`.
 
@@ -63,13 +63,13 @@ class Retriever(Protocol):
 - Byte-identical scoring to pre-#585 code for any (query, corpus) pair.
 - `test_bm25_backend.py` asserts per-query score-vector equality against a captured golden output on the committed 30-query set.
 
-**Relationships**: Satisfies `Retriever`. Used standalone when `KOSMOS_RETRIEVAL_BACKEND=bm25` (default). Composed by `HybridBackend`.
+**Relationships**: Satisfies `Retriever`. Used standalone when `KOSAX_RETRIEVAL_BACKEND=bm25` (default). Composed by `HybridBackend`.
 
 ---
 
 ## 3. `DenseBackend` (new)
 
-**Location**: `src/kosmos/tools/retrieval/dense_backend.py`
+**Location**: `src/kosax/tools/retrieval/dense_backend.py`
 
 **Fields (runtime-only; not a Pydantic model — holds non-serialisable torch tensors)**:
 | Field | Type | Purpose |
@@ -106,14 +106,14 @@ class Retriever(Protocol):
 
 ## 4. `HybridBackend` (new)
 
-**Location**: `src/kosmos/tools/retrieval/hybrid.py`
+**Location**: `src/kosax/tools/retrieval/hybrid.py`
 
 **Fields**:
 | Field | Type | Default | Constraint |
 |---|---|---|---|
 | `_bm25` | `BM25Backend` | required | Composed retriever (always the lexical retriever). |
 | `_dense` | `DenseBackend` | required | Composed retriever (the semantic retriever). |
-| `_rrf_k` | `int` | 60 | Constant from Cormack SIGIR 2009; overridable via `KOSMOS_RETRIEVAL_FUSION_K`. |
+| `_rrf_k` | `int` | 60 | Constant from Cormack SIGIR 2009; overridable via `KOSAX_RETRIEVAL_FUSION_K`. |
 
 **Scoring contract** — Reciprocal Rank Fusion (RRF):
 1. Call `_bm25.score(q)` and `_dense.score(q)` in parallel (`asyncio.gather` or sync — sync acceptable at current scale).
@@ -126,13 +126,13 @@ class Retriever(Protocol):
 - Fused score is deterministic given deterministic inputs from BM25 and Dense.
 - Final tie-break (score DESC, tool_id ASC) is applied downstream in `search_tools`.
 
-**Relationships**: Satisfies `Retriever`. Consumed by factory when `KOSMOS_RETRIEVAL_BACKEND=hybrid`.
+**Relationships**: Satisfies `Retriever`. Consumed by factory when `KOSAX_RETRIEVAL_BACKEND=hybrid`.
 
 ---
 
 ## 5. `RetrievalManifest` (new — Pydantic v2 model)
 
-**Location**: `src/kosmos/tools/retrieval/manifest.py`
+**Location**: `src/kosax/tools/retrieval/manifest.py`
 
 ```python
 from pydantic import BaseModel, Field, ConfigDict
@@ -184,7 +184,7 @@ class RetrievalManifest(BaseModel):
 
 ## 6. `AdversarialQuerySet` (new — YAML-serialised, Pydantic-validated)
 
-**Location**: file `eval/retrieval_queries_adversarial.yaml`; loader in `src/kosmos/eval/retrieval.py`.
+**Location**: file `eval/retrieval_queries_adversarial.yaml`; loader in `src/kosax/eval/retrieval.py`.
 
 **On-disk schema** (per entry):
 ```yaml
@@ -218,7 +218,7 @@ class AdversarialQuerySet(BaseModel):
 
 ## 7. `DegradationRecord` (new — in-memory only)
 
-**Location**: `src/kosmos/tools/retrieval/degrade.py`
+**Location**: `src/kosax/tools/retrieval/degrade.py`
 
 **Purpose**: Tracks whether a WARN has been emitted for a given registry instance, so FR-002 "exactly one WARN line per degraded registry" holds.
 
@@ -274,7 +274,7 @@ class AdapterCandidate(BaseModel):
 
 ### `GovAPITool` (frozen — Spec 024/025 V1–V6 invariants)
 
-Not reprinted; reference `src/kosmos/tools/models.py`. V6 `auth_type`/`auth_level` consistency invariant stands.
+Not reprinted; reference `src/kosax/tools/models.py`. V6 `auth_type`/`auth_level` consistency invariant stands.
 
 ---
 
@@ -294,7 +294,7 @@ ToolRegistry
               ├── DenseBackend (composed)
               └── RRF(k=60) fusion
 
-kosmos.tools.search.search_tools(query, registry)
+kosax.tools.search.search_tools(query, registry)
   └── uses registry.retrieval.score(query) → final sort + tie-break
 
 lookup.py (FROZEN)
@@ -316,4 +316,4 @@ DegradationRecord (per-registry latch)
 - 4 frozen entities (`LookupSearchInput`, `LookupSearchResult`, `AdapterCandidate`, `GovAPITool`) — untouched.
 - Zero `Any` types; Constitution Principle III preserved.
 - Zero changes to auth-bearing defaults; Constitution Principle II preserved.
-- Every new surface is internal to `src/kosmos/tools/retrieval/` or `src/kosmos/eval/`; the public tool contract is unchanged.
+- Every new surface is internal to `src/kosax/tools/retrieval/` or `src/kosax/eval/`; the public tool contract is unchanged.

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # S9: UI L2 전체 — /onboarding 재실행 + /agents + plugin browser + /config + /history + /export
 set -euo pipefail
-wait_for_pane "KOSMOS|❯" 30
+wait_for_pane "KOSAX|❯" 30
 snapshot_pane 00-boot
 
 send_text_pane "/onboarding"; sleep 1; send_enter_pane; sleep 5

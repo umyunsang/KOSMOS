@@ -93,9 +93,9 @@ export function PipaConsentStep({
   const theme = useTheme()
   const { isComposing } = useKoreanIME()
   const i18n = getUiL2I18n(
-    locale ?? ((process.env['KOSMOS_TUI_LOCALE'] as 'ko' | 'en') || 'ko'),
+    locale ?? ((process.env['KOSAX_TUI_LOCALE'] as 'ko' | 'en') || 'ko'),
   )
-  const isEn = (locale ?? process.env['KOSMOS_TUI_LOCALE']) === 'en'
+  const isEn = (locale ?? process.env['KOSAX_TUI_LOCALE']) === 'en'
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -200,11 +200,11 @@ export function PipaConsentStep({
 
       <Box marginTop={1}>
         {submitting ? (
-          <Text color={theme.kosmosCore}>
+          <Text color={theme.kosaxCore}>
             {isEn ? 'Saving consent record…' : '동의 기록 저장 중…'}
           </Text>
         ) : (
-          <Text color={theme.kosmosCore}>
+          <Text color={theme.kosaxCore}>
             [Y/Enter] {isEn ? 'Agree and continue' : '동의하고 계속'}
             {'  ·  '}
             [N/Esc] {isEn ? 'Decline and exit' : '동의하지 않고 종료'}
@@ -302,7 +302,7 @@ export function PIPAConsentStep({
 
       <Box marginTop={1} flexDirection="column">
         <Text color={theme.text}>
-          KOSMOS는 아래 부처 공개 API를 호출해 답변을 돕는 수탁자입니다.
+          KOSAX는 아래 부처 공개 API를 호출해 답변을 돕는 수탁자입니다.
         </Text>
         <Text color={theme.text}>
           요청 내용과 응답 메타데이터는 세션 중에만 메모리에서 처리됩니다.
@@ -325,9 +325,9 @@ export function PIPAConsentStep({
 
       <Box marginTop={1}>
         {submitting ? (
-          <Text color={theme.kosmosCore}>동의 기록 저장 중…</Text>
+          <Text color={theme.kosaxCore}>동의 기록 저장 중…</Text>
         ) : (
-          <Text color={theme.kosmosCore}>
+          <Text color={theme.kosaxCore}>
             Enter: 동의하고 계속{'  ·  '}Esc: 동의하지 않고 종료
           </Text>
         )}

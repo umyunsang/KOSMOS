@@ -6,7 +6,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
 import { homedir } from 'os'
 
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — vendor analytics modules deleted;
+// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — vendor analytics modules deleted;
 // use the canonical analytics/index.ts surface (no-op stubs).
 import {
   initializeAnalyticsSink,

@@ -161,7 +161,7 @@ LookupOutput = (LookupSearchResult | LookupRecord | LookupCollection |
 
 ## 5. `GovAPITool` (registry record — extends existing model)
 
-The existing `src/kosmos/tools/models.py:GovAPITool` already matches Constitution §II defaults. No breaking change; additions:
+The existing `src/kosax/tools/models.py:GovAPITool` already matches Constitution §II defaults. No breaking change; additions:
 
 - `category: list[str]` is already present — the domain facet filter in `LookupSearchInput.domain` filters on this
 - `rate_limit_per_minute: int` already present
@@ -189,7 +189,7 @@ The YAML at `eval/retrieval_queries.yaml` is loaded and validated into `EvalRetr
 
 ## 7. `Layer3AuthGate` (envelope-layer short-circuit)
 
-Not a data model per se — a function signature contract implemented in `src/kosmos/tools/envelope.py`:
+Not a data model per se — a function signature contract implemented in `src/kosax/tools/envelope.py`:
 
 ```python
 async def maybe_auth_short_circuit(

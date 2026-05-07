@@ -89,13 +89,13 @@ def base_ref() -> str:
     """Resolve the base ref for the diff.
 
     Priority:
-        1. ``KOSMOS_SC008_BASE_REF`` env var override (CI injection).
+        1. ``KOSAX_SC008_BASE_REF`` env var override (CI injection).
         2. ``origin/main`` if fetched.
         3. ``main`` local branch.
     """
     import os
 
-    override = os.environ.get("KOSMOS_SC008_BASE_REF")
+    override = os.environ.get("KOSAX_SC008_BASE_REF")
     if override:
         return override
 

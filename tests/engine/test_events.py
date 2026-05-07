@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for kosmos.engine.events — StopReason and QueryEvent."""
+"""Unit tests for kosax.engine.events — StopReason and QueryEvent."""
 
 from __future__ import annotations
 
 import pytest
 from pydantic import ValidationError
 
-from kosmos.engine.events import QueryEvent, StopReason
-from kosmos.llm.models import TokenUsage
-from kosmos.tools.models import ToolResult
+from kosax.engine.events import QueryEvent, StopReason
+from kosax.llm.models import TokenUsage
+from kosax.tools.models import ToolResult
 
 # ---------------------------------------------------------------------------
 # Helpers

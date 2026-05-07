@@ -28,8 +28,8 @@ def test_any_id_sso_returns_identity_assertion_not_delegation() -> None:
     instead of a stamped dict, so the verify(family_hint='any_id_sso') dispatcher path
     works. The wrapped envelope is IdentityAssertion (no delegation grant).
     """
-    from kosmos.primitives.verify import AnyIdSsoContext
-    from kosmos.tools.mock.verify_module_any_id_sso import invoke
+    from kosax.primitives.verify import AnyIdSsoContext
+    from kosax.tools.mock.verify_module_any_id_sso import invoke
 
     result = invoke({"session_id": "test-sess-sso"})
 
@@ -46,7 +46,7 @@ def test_any_id_sso_returns_identity_assertion_not_delegation() -> None:
 
 def test_any_id_sso_has_no_scope_field() -> None:
     """IdentityAssertion does not carry a 'scope' field (no delegation)."""
-    from kosmos.tools.mock.verify_module_any_id_sso import invoke
+    from kosax.tools.mock.verify_module_any_id_sso import invoke
 
     result = invoke({"session_id": "test-sess-sso-2"})
     assert not hasattr(result.identity_assertion, "scope"), (
@@ -56,7 +56,7 @@ def test_any_id_sso_has_no_scope_field() -> None:
 
 def test_any_id_sso_assertion_jwt_jws_shape() -> None:
     """assertion_jwt must be a dot-separated JWS with 3 parts."""
-    from kosmos.tools.mock.verify_module_any_id_sso import invoke
+    from kosax.tools.mock.verify_module_any_id_sso import invoke
 
     result = invoke({"session_id": "test-sess-jws"})
     parts = result.identity_assertion.assertion_jwt.split(".")
@@ -72,7 +72,7 @@ def test_any_id_sso_assertion_jwt_jws_shape() -> None:
 
 def test_any_id_sso_returns_transparency_fields() -> None:
     """invoke() carries all six transparency fields non-empty on the typed context."""
-    from kosmos.tools.mock.verify_module_any_id_sso import invoke
+    from kosax.tools.mock.verify_module_any_id_sso import invoke
 
     result = invoke({"session_id": "test-sess-transparency"})
 
@@ -92,7 +92,7 @@ def test_any_id_sso_returns_transparency_fields() -> None:
 
 def test_any_id_sso_international_reference() -> None:
     """transparency_international_reference must be 'UK GOV.UK One Login'."""
-    from kosmos.tools.mock.verify_module_any_id_sso import invoke
+    from kosax.tools.mock.verify_module_any_id_sso import invoke
 
     result = invoke({"session_id": "s1"})
     assert result.transparency_international_reference == "UK GOV.UK One Login"
@@ -110,7 +110,7 @@ def test_downstream_submit_rejects_identity_assertion(tmp_path) -> None:
     The fail-closed contract is enforced at submit invocation time: the adapter
     expects a DelegationContext, not an IdentityAssertion.
     """
-    from kosmos.tools.mock.verify_module_any_id_sso import invoke as any_id_sso_invoke
+    from kosax.tools.mock.verify_module_any_id_sso import invoke as any_id_sso_invoke
 
     # Simulate: caller invokes any_id_sso and then tries to use the result
     # directly as a "delegation" in a submit call.
@@ -122,7 +122,7 @@ def test_downstream_submit_rejects_identity_assertion(tmp_path) -> None:
     # this MUST fail (no `token` field on IdentityAssertion).
     from pydantic import ValidationError
 
-    from kosmos.primitives.delegation import DelegationContext
+    from kosax.primitives.delegation import DelegationContext
 
     assertion_dump = sso_result.identity_assertion.model_dump(by_alias=True)
     with pytest.raises((ValidationError, KeyError, TypeError)):
@@ -136,7 +136,7 @@ def test_downstream_submit_rejects_identity_assertion(tmp_path) -> None:
 
 def test_any_id_sso_is_registered() -> None:
     """Importing the module registers 'any_id_sso' in _VERIFY_ADAPTERS."""
-    import kosmos.tools.mock.verify_module_any_id_sso  # noqa: F401
-    from kosmos.primitives.verify import _VERIFY_ADAPTERS
+    import kosax.tools.mock.verify_module_any_id_sso  # noqa: F401
+    from kosax.primitives.verify import _VERIFY_ADAPTERS
 
     assert "any_id_sso" in _VERIFY_ADAPTERS

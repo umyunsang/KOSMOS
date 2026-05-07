@@ -1,7 +1,7 @@
 # Citizen scenario frame — 도로안전/03-permission-gauntlet
 # 도로 안전 — Layer 1 통과 (공개 데이터)
 # Captured 2026-04-26T16:08:04.468Z via ink-testing-library render()
-# KOSMOS v0.1-alpha · K-EXAONE-236B-A23B + FriendliAI Serverless
+# KOSAX v0.1-alpha · K-EXAONE-236B-A23B + FriendliAI Serverless
 
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │  ⏺ 단계 3/5 · 권한 게이트 — Layer 1 (api_key · 공개 데이터)                                      │

@@ -8,9 +8,9 @@
 
 ## DX → AX migration framing *(mission context)*
 
-KOSMOS의 stdio IPC는 단순 개발자 편의 채널이 아니라 시민 세션이 끊기지 않는 **행정 상담 회선**이다. 전화 민원실은 "다시 거세요"가 허용되지만 세션 하네스는 부처 호출이 이미 발사된 상태에서 재접속 시 결과를 돌려받아야 한다.
+KOSAX의 stdio IPC는 단순 개발자 편의 채널이 아니라 시민 세션이 끊기지 않는 **행정 상담 회선**이다. 전화 민원실은 "다시 거세요"가 허용되지만 세션 하네스는 부처 호출이 이미 발사된 상태에서 재접속 시 결과를 돌려받아야 한다.
 
-| 축 | 기존 DX baseline (오늘의 시민·공무원 워크플로) | AX target (KOSMOS 하네스) |
+| 축 | 기존 DX baseline (오늘의 시민·공무원 워크플로) | AX target (KOSAX 하네스) |
 |---|---|---|
 | 세션 드롭 복구 | 정부24·HIRA·KOROAD 세션 만료 시 재로그인 + 처음부터 재조회 (시민이 이미 낸 질의 기억 불가) | TUI가 `last_seen_correlation_id` 전달 + 백엔드가 미확인 프레임을 순서대로 재전송 |
 | 부처 429 가시화 | 부처 API 한도 소진 시 HTTP 503/429만 노출, 시민은 쿼터 상태 불가시 | 백엔드 `BackpressureSignal` 프레임이 TUI HUD에 "FriendliAI 속도 조절 중 · KMA 일일 쿼터 70%" 식 가시화 |
@@ -22,9 +22,9 @@ KOSMOS의 stdio IPC는 단순 개발자 편의 채널이 아니라 시민 세션
 
 ### User Story 1 — 세션 드롭 복구 (Priority: P1)
 
-시민이 HIRA에 "서울 강남구 응급실 실시간 가용 병상" 질의를 LLM에 전달한 직후 TUI가 crash하거나 백엔드가 재시작된다. 시민은 터미널을 다시 열고 기존 세션에 재접속한다. KOSMOS는 시민이 놓친 모든 중간 응답(LLM 스트리밍 토큰 + tool-call trailer + 최종 답변)을 순서 유지한 채 재전송하고, 이미 확인한 프레임은 중복 전달하지 않는다.
+시민이 HIRA에 "서울 강남구 응급실 실시간 가용 병상" 질의를 LLM에 전달한 직후 TUI가 crash하거나 백엔드가 재시작된다. 시민은 터미널을 다시 열고 기존 세션에 재접속한다. KOSAX는 시민이 놓친 모든 중간 응답(LLM 스트리밍 토큰 + tool-call trailer + 최종 답변)을 순서 유지한 채 재전송하고, 이미 확인한 프레임은 중복 전달하지 않는다.
 
-**Why this priority**: P1. 공공 민원 상담 품질의 가장 큰 체감 지표는 "내가 한 말을 기억하는가". 드롭 복구가 되지 않으면 시민은 KOSMOS 하네스를 "다시 거세요"라는 구닥다리 민원실로 인식하며, 부처 API 호출이 진행 중일 때 세션이 끊기면 호출 결과가 영구 소실되어 사고로 이어진다(예: KOROAD 사고기록 조회 재발주 → data.go.kr 쿼터 중복 소모).
+**Why this priority**: P1. 공공 민원 상담 품질의 가장 큰 체감 지표는 "내가 한 말을 기억하는가". 드롭 복구가 되지 않으면 시민은 KOSAX 하네스를 "다시 거세요"라는 구닥다리 민원실로 인식하며, 부처 API 호출이 진행 중일 때 세션이 끊기면 호출 결과가 영구 소실되어 사고로 이어진다(예: KOROAD 사고기록 조회 재발주 → data.go.kr 쿼터 중복 소모).
 
 **Independent Test**: `kill -9 <backend-pid>` 중간 주입 시나리오로 검증 가능. TUI가 재접속 핸드셰이크로 `last_seen_correlation_id`를 보내면 백엔드가 그 이후의 모든 버퍼된 프레임을 순서대로 재전송하고 세션이 재개된 후 시민이 정상적으로 후속 질의를 이어갈 수 있어야 한다.
 
@@ -40,7 +40,7 @@ KOSMOS의 stdio IPC는 단순 개발자 편의 채널이 아니라 시민 세션
 
 시민이 연속 질의를 발사하고 있는데 FriendliAI LLM 스트리밍이 429 상태에 진입하거나 KMA 기상특보 호출이 일일 쿼터에 근접한다. 시민은 "왜 느려졌는지"를 터미널 로그를 뒤지지 않고도 TUI 상단 상태바에서 즉시 알 수 있어야 한다.
 
-**Why this priority**: P1. Spec 019 (LLM 429 retry) · Spec 023 (NMC freshness) · 향후 Spec 031 CBS 구독 모두 out-of-band signal이 "언제 속도가 느려지는지"를 시민에게 알려야 한다. 가시화가 없으면 시민은 KOSMOS를 버그로 인식하고 이탈한다. 이는 PIPA §35 열람권 해석의 간접적 파생(시민이 자기 요청의 처리 상태를 열람할 권리)이며, 행정 AX 전환의 최소 요건이다.
+**Why this priority**: P1. Spec 019 (LLM 429 retry) · Spec 023 (NMC freshness) · 향후 Spec 031 CBS 구독 모두 out-of-band signal이 "언제 속도가 느려지는지"를 시민에게 알려야 한다. 가시화가 없으면 시민은 KOSAX를 버그로 인식하고 이탈한다. 이는 PIPA §35 열람권 해석의 간접적 파생(시민이 자기 요청의 처리 상태를 열람할 권리)이며, 행정 AX 전환의 최소 요건이다.
 
 **Independent Test**: 백엔드가 인위적으로 `BackpressureSignal(kind=llm_rate_limit, severity=warn, retry_after_ms=2000)` 프레임을 발사했을 때 TUI HUD가 1 animation frame 이내에 "LLM 속도 조절 중 · 2 s 후 재개"를 표시하고, 시민이 신규 입력을 시도하면 TUI가 backpressure 상태를 존중해 입력을 큐잉하거나 부드럽게 거절한다.
 
@@ -54,7 +54,7 @@ KOSMOS의 stdio IPC는 단순 개발자 편의 채널이 아니라 시민 세션
 
 ### User Story 3 — 민원 중복 제출 차단 (Priority: P1)
 
-시민이 `lookup(mode=fetch, tool_id=gov24.apply_submit, params=...)` 호출을 발사한 직후 네트워크 flap으로 응답이 늦어지자 같은 명령을 다시 누른다. KOSMOS는 두 번째 요청을 transaction_id 기반으로 감지하고 첫 번째 호출의 결과를 그대로 반환한다. 민원은 한 번만 접수된다.
+시민이 `lookup(mode=fetch, tool_id=gov24.apply_submit, params=...)` 호출을 발사한 직후 네트워크 flap으로 응답이 늦어지자 같은 명령을 다시 누른다. KOSAX는 두 번째 요청을 transaction_id 기반으로 감지하고 첫 번째 호출의 결과를 그대로 반환한다. 민원은 한 번만 접수된다.
 
 **Why this priority**: P1. 정부24 민원 제출, HIRA 진료기록 열람 신청, MOHW 출산지원금 재신청 등 "한 번만" 실행되어야 하는 irreversible-write 도구(Spec 024 `is_irreversible=true`)에서 중복 실행은 시민 금전·서류 피해를 유발한다. PIPA §26 수탁자 책임 + Spec 025 V6 AAL 매트릭스 하에서 중복 차단은 법정 안전장치다.
 
@@ -78,7 +78,7 @@ KOSMOS의 stdio IPC는 단순 개발자 편의 채널이 아니라 시민 세션
 
 **Acceptance Scenarios**:
 
-1. **Given** 한 세션의 tool 체인, **When** OTEL Collector에서 span 수집, **Then** 모든 span에 `kosmos.ipc.correlation_id`·`kosmos.ipc.transaction_id` 속성 존재.
+1. **Given** 한 세션의 tool 체인, **When** OTEL Collector에서 span 수집, **Then** 모든 span에 `kosax.ipc.correlation_id`·`kosax.ipc.transaction_id` 속성 존재.
 2. **Given** `correlation_id=C-42`의 세션, **When** `ToolCallAuditRecord` 조회, **Then** 해당 id를 포함한 레코드 집합이 OTEL trace_id 집합과 일관 매핑.
 
 ---
@@ -117,7 +117,7 @@ KOSMOS의 stdio IPC는 단순 개발자 편의 채널이 아니라 시민 세션
 - **FR-012**: 백엔드는 LLM 429, 부처 API 429, 내부 쿼터 포화 시 `backpressure` frame을 발사한다. 페이로드는 컨트랙트 § 1.2/1.3 표준 `{signal, source, queue_depth, hwm, retry_after_ms, hud_copy_ko, hud_copy_en}` (signal ∈ {pause, resume, throttle}, source ∈ {tui_reader, backend_writer, upstream_429}; `retry_after_ms` clamp [1000, 900000]).
 - **FR-013**: TUI는 `backpressure` 프레임 수신 시 1 animation frame 이내 상태바 표시 + 입력을 지역 큐잉한다 (명시적 거절 아닌 부드러운 지연).
 - **FR-014**: TUI 자체 ingest saturation 감지 시 `backpressure(signal="pause", source="tui_reader")` 프레임을 백엔드로 발사하고, drain 후 `backpressure(signal="resume", source="tui_reader")` 으로 재개 신호를 보낸다. 모든 `pause`는 teardown 이전까지 반드시 1회의 `resume`와 페어링된다 (컨트랙트 § 1.4 pause/resume pairing invariant).
-- **FR-015**: `backpressure` 프레임은 OTEL span 속성 `kosmos.ipc.backpressure.signal`·`.source`·`.queue_depth` 로 승격 기록된다. HUD 문구는 `hud_copy_ko`/`hud_copy_en` 모두 `min_length=1` 강제 — 이중 로케일 규율은 하드 인바리언트.
+- **FR-015**: `backpressure` 프레임은 OTEL span 속성 `kosax.ipc.backpressure.signal`·`.source`·`.queue_depth` 로 승격 기록된다. HUD 문구는 `hud_copy_ko`/`hud_copy_en` 모두 `min_length=1` 강제 — 이중 로케일 규율은 하드 인바리언트.
 - **FR-016**: 시스템은 backpressure 상태의 누적 시간(session-level)을 session state에 기록하여 사후 KPI 분석(시민 대기 총량) 을 가능하게 한다.
 - **FR-017**: backpressure는 `disaster_alert`(CBS 재난문자) 등 `severity=critical` frame을 block 하지 않는다 (critical lane 분리).
 
@@ -141,7 +141,7 @@ KOSMOS의 stdio IPC는 단순 개발자 편의 채널이 아니라 시민 세션
 - **FR-030**: tx dedup은 세션 스코프 — cache 키는 `(session_id, transaction_id)` 이며 세션 경계를 넘어 공유되지 않는다.
 - **FR-031**: 실패한 tool 호출(예: 부처 API 500)은 tx 캐시에 저장하지 않는다 (재시도가 다른 결과를 가져올 수 있으므로); 단, `is_irreversible` 도구가 500 반환 시에는 idempotency-key 기반 upstream 재확인 없이는 재시도를 봉쇄한다.
 - **FR-032**: `transaction_id` 가 envelope에 없으면(=전통적 streaming frame) dedup 경로를 skip한다 — tx 의미론은 irreversible 작업에만 강제된다.
-- **FR-033**: tx 캐시는 OTEL span 속성으로 hit/miss/stored 3가지 상태를 기록 (`kosmos.ipc.tx.cache_state`).
+- **FR-033**: tx 캐시는 OTEL span 속성으로 hit/miss/stored 3가지 상태를 기록 (`kosax.ipc.tx.cache_state`).
 
 **Cross-cutting (FR-034..FR-040)**
 
@@ -190,7 +190,7 @@ KOSMOS의 stdio IPC는 단순 개발자 편의 채널이 아니라 시민 세션
 
 ### Out of Scope (Permanent)
 
-- **네트워크 소켓 기반 IPC**: KOSMOS는 TUI↔backend를 동일 호스트에서 stdio로 연결한다 (AGENTS.md stack). 원격 TUI / HTTP 전송은 KOSMOS 아키텍처 전제가 아님.
+- **네트워크 소켓 기반 IPC**: KOSAX는 TUI↔backend를 동일 호스트에서 stdio로 연결한다 (AGENTS.md stack). 원격 TUI / HTTP 전송은 KOSAX 아키텍처 전제가 아님.
 - **Cross-session tx 공유**: `transaction_id` 는 세션 스코프이며 세션 경계를 넘는 dedup은 audit 원장(Spec 024)의 책임이다.
 - **프레임 비동기 확인(ack) 의 배치 압축**: 매 frame별 ack를 1-to-1 유지 — 단순성·진단성 우선.
 - **디스크 영속 ring buffer**: 프로세스 재시작 시 복원 대상 아님 (FR-023, 감사 로그로만 이력 유지).

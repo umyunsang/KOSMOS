@@ -20,7 +20,7 @@
 - Real private key material — the mock generates ephemeral test keys at startup using Python's `cryptography` library
 - NPKI portal session, CA web portal interaction, or OTP-based certificate renewal — these are OPAQUE; see `docs/scenarios/npki_portal_session.md`
 - YESSIGN / KOSCOM / NHN CA certificate chain validation — mock certificates are self-signed test artifacts
-- VID (Virtual ID) derivation — the VID computation formula is not publicly documented; KOSMOS treats it as OPAQUE
+- VID (Virtual ID) derivation — the VID computation formula is not publicly documented; KOSAX treats it as OPAQUE
 - NPKI browser plugin protocol (ActiveX / NPAPI / native messaging) — out of scope for the harness layer
 
 ## Fixture recording approach

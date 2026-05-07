@@ -15,11 +15,11 @@ import pytest
 
 # The 5 existing (retrofitted) verify mock modules.
 _EXISTING_VERIFY_MOCKS = [
-    "kosmos.tools.mock.verify_mobile_id",
-    "kosmos.tools.mock.verify_gongdong_injeungseo",
-    "kosmos.tools.mock.verify_geumyung_injeungseo",
-    "kosmos.tools.mock.verify_ganpyeon_injeung",
-    "kosmos.tools.mock.verify_mydata",
+    "kosax.tools.mock.verify_mobile_id",
+    "kosax.tools.mock.verify_gongdong_injeungseo",
+    "kosax.tools.mock.verify_geumyung_injeungseo",
+    "kosax.tools.mock.verify_ganpyeon_injeung",
+    "kosax.tools.mock.verify_mydata",
 ]
 
 _SIX_TRANSPARENCY_FIELDS = [

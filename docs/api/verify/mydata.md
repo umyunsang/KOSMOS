@@ -16,18 +16,18 @@ Verifies a citizen's 마이데이터 (MyData) OAuth 2.0 + mTLS session with a li
 | Classification | Mock · Permission tier 2 |
 | Source | 마이데이터 표준 API 규격서 v240930 (금융위원회 / KFTC MyData, OOS shape-mirror) |
 | Primitive | `verify` |
-| Module | `src/kosmos/tools/mock/verify_mydata.py` |
+| Module | `src/kosax/tools/mock/verify_mydata.py` |
 
 ## Envelope
 
-**Input model**: `VerifyInput` defined at `src/kosmos/primitives/verify.py:44–51`.
+**Input model**: `VerifyInput` defined at `src/kosax/primitives/verify.py:44–51`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `family_hint` | `Literal["mydata"]` | yes | Must be `"mydata"`; dispatcher rejects any other value (FR-010). |
 | `session_context` | `dict[str, object]` | no | Opaque external evidence. Pass `{"_fixture_override": {"provider_id": "MY_OP_999"}}` in tests to exercise alternate provider IDs. |
 
-**Output model**: `MyDataContext` defined at `src/kosmos/primitives/verify.py:202–215`.
+**Output model**: `MyDataContext` defined at `src/kosax/primitives/verify.py:202–215`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -51,7 +51,7 @@ Verifies a citizen's 마이데이터 (MyData) OAuth 2.0 + mTLS session with a li
 
 ## Permission tier rationale
 
-This adapter carries `auth_level="AAL2"` and `is_irreversible=False`. Per `src/kosmos/tools/permissions.py` `compute_permission_tier()` (Spec 033 FR-011), AAL2 maps to **permission tier 2** (orange ⓶ in UI-C). 마이데이터 provides access to aggregated personal credit and financial data across multiple institutions, classified as `pipa_class="personal_sensitive"` — the strictest PIPA sensitivity class present in any of the six verify adapters. The `dpa_reference` includes both PIPA §26 (수탁자 처리) and 신용정보법 §33의2, reflecting dual statutory obligations. The permission gauntlet must surface the orange ⓶ consent modal and record a consent receipt in the audit ledger before the first call. Because the data is sensitive, citizens should be informed via the consent prompt that MyData access aggregates records from multiple financial institutions.
+This adapter carries `auth_level="AAL2"` and `is_irreversible=False`. Per `src/kosax/tools/permissions.py` `compute_permission_tier()` (Spec 033 FR-011), AAL2 maps to **permission tier 2** (orange ⓶ in UI-C). 마이데이터 provides access to aggregated personal credit and financial data across multiple institutions, classified as `pipa_class="personal_sensitive"` — the strictest PIPA sensitivity class present in any of the six verify adapters. The `dpa_reference` includes both PIPA §26 (수탁자 처리) and 신용정보법 §33의2, reflecting dual statutory obligations. The permission gauntlet must surface the orange ⓶ consent modal and record a consent receipt in the audit ledger before the first call. Because the data is sensitive, citizens should be informed via the consent prompt that MyData access aggregates records from multiple financial institutions.
 
 ## Worked example
 
@@ -88,7 +88,7 @@ This adapter carries `auth_level="AAL2"` and `is_irreversible=False`. Per `src/k
 
 ```text
 시민: 마이데이터 인증해줘.
-KOSMOS: 마이데이터 (사업자: TEST_PROVIDER_001, AAL2) 인증이 확인되었습니다. 인증 시각: 2026-04-19 09:00 UTC, 세션 참조: mock-mydata-ref-001.
+KOSAX: 마이데이터 (사업자: TEST_PROVIDER_001, AAL2) 인증이 확인되었습니다. 인증 시각: 2026-04-19 09:00 UTC, 세션 참조: mock-mydata-ref-001.
 ```
 
 ## Constraints

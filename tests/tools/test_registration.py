@@ -3,9 +3,9 @@
 
 import pytest
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.register_all import register_all_tools
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.register_all import register_all_tools
+from kosax.tools.registry import ToolRegistry
 
 
 class TestToolRegistration:
@@ -113,7 +113,7 @@ class TestToolRegistration:
 
     def test_idempotent_fails_on_duplicate(self) -> None:
         """Calling register_all_tools twice raises DuplicateToolError."""
-        from kosmos.tools.errors import DuplicateToolError
+        from kosax.tools.errors import DuplicateToolError
 
         registry = ToolRegistry()
         executor = ToolExecutor(registry)

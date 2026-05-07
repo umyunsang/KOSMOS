@@ -3,7 +3,7 @@
 # Each query is a citizen-realistic phrasing tied to one tool category.
 set -euo pipefail
 
-wait_for_pane "KOSMOS|❯" 25
+wait_for_pane "KOSAX|❯" 25
 snapshot_pane 00-boot
 
 run_query() {

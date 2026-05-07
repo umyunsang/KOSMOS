@@ -16,18 +16,18 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from kosmos.context.builder import ContextBuilder
-from kosmos.context.models import SystemPromptConfig
-from kosmos.context.system_prompt import SystemPromptAssembler
-from kosmos.engine.engine import QueryEngine
-from kosmos.engine.events import QueryEvent, StopReason
-from kosmos.engine.models import QueryContext
-from kosmos.llm.client import LLMClient
-from kosmos.llm.models import ChatMessage, StreamEvent, TokenUsage
-from kosmos.llm.usage import UsageTracker
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.models import GovAPITool
-from kosmos.tools.registry import ToolRegistry
+from kosax.context.builder import ContextBuilder
+from kosax.context.models import SystemPromptConfig
+from kosax.context.system_prompt import SystemPromptAssembler
+from kosax.engine.engine import QueryEngine
+from kosax.engine.events import QueryEvent, StopReason
+from kosax.engine.models import QueryContext
+from kosax.llm.client import LLMClient
+from kosax.llm.models import ChatMessage, StreamEvent, TokenUsage
+from kosax.llm.usage import UsageTracker
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.models import GovAPITool
+from kosax.tools.registry import ToolRegistry
 
 # Force QueryContext to resolve the LLMClient forward reference so that
 # mock subclasses pass the isinstance check inside QueryContext validation.
@@ -39,7 +39,7 @@ QueryContext.model_rebuild()
 # ---------------------------------------------------------------------------
 
 _SIMPLE_TEXT_RESPONSE: list[StreamEvent] = [
-    StreamEvent(type="content_delta", content="Hello from KOSMOS."),
+    StreamEvent(type="content_delta", content="Hello from KOSAX."),
     StreamEvent(type="usage", usage=TokenUsage(input_tokens=10, output_tokens=5)),
     StreamEvent(type="done"),
 ]

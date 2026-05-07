@@ -1,6 +1,6 @@
 # Contract — `.github/workflows/ci.yml` (Infisical Migration)
 
-**Purpose**: Specify how `Infisical/secrets-action@v1` is integrated into `ci.yml` so that (a) no long-lived GitHub Encrypted Secret is required, (b) every `KOSMOS_*` env var needed by CI tests is injected via OIDC-fetched Infisical secrets, (c) the `KOSMOS_DATA_GO_KR_KEY` typo is fixed.
+**Purpose**: Specify how `Infisical/secrets-action@v1` is integrated into `ci.yml` so that (a) no long-lived GitHub Encrypted Secret is required, (b) every `KOSAX_*` env var needed by CI tests is injected via OIDC-fetched Infisical secrets, (c) the `KOSAX_DATA_GO_KR_KEY` typo is fixed.
 
 **Related FR**: FR-030..FR-036 · **SC**: SC-001, SC-002, SC-004
 
@@ -26,8 +26,8 @@ Configured in Infisical dashboard → Machine Identities → OIDC Auth. Document
 Issuer URL:        https://token.actions.githubusercontent.com
 Audience:          https://github.com/umyunsang
 Claim pins:
-  repository       = umyunsang/KOSMOS
-  workflow_ref     = umyunsang/KOSMOS/.github/workflows/ci.yml@*
+  repository       = umyunsang/KOSAX
+  workflow_ref     = umyunsang/KOSAX/.github/workflows/ci.yml@*
   actor_type       = User
   ref              = * (unpinned — PR CI requires arbitrary branches)
 ```
@@ -47,7 +47,7 @@ This is a **variable**, not a secret. Storing as a secret is harmless but semant
 
 ## Required workflow block
 
-In every CI job that needs KOSMOS secrets, insert the following step **before** any step that imports application code or runs tests:
+In every CI job that needs KOSAX secrets, insert the following step **before** any step that imports application code or runs tests:
 
 ```yaml
 - name: Fetch secrets from Infisical
@@ -55,7 +55,7 @@ In every CI job that needs KOSMOS secrets, insert the following step **before** 
   with:
     method: oidc
     identity-id: ${{ vars.INFISICAL_CLIENT_ID }}
-    project-slug: kosmos-3f-zs
+    project-slug: kosax-3f-zs
     env-slug: dev    # or 'prod' for release jobs
     secret-path: '/'
     export-type: env  # inject into job env
@@ -64,7 +64,7 @@ In every CI job that needs KOSMOS secrets, insert the following step **before** 
 Inputs (authoritative schema — `Infisical/secrets-action@v1` `action.yaml`):
 - `method: oidc` — use OIDC federation (no bootstrap secret).
 - `identity-id` — the Infisical machine-identity ID, from repo variable.
-- `project-slug` — **required**: human-readable Infisical project slug (`kosmos-3f-zs` for this repo). The action does not accept a `project-id` / UUID input.
+- `project-slug` — **required**: human-readable Infisical project slug (`kosax-3f-zs` for this repo). The action does not accept a `project-id` / UUID input.
 - `env-slug` — **required**: which Infisical environment to pull from. CI test runs use `dev` (the default env created by Infisical Cloud for every new project).
 - `secret-path` — path within the env tree; `/` pulls everything at project root.
 - `export-type: env` — injects fetched secrets as environment variables for subsequent steps in the same job.
@@ -75,21 +75,21 @@ After the Infisical step runs, the following env vars MUST be available to subse
 
 | Var | Required for |
 |-----|--------------|
-| `KOSMOS_FRIENDLI_TOKEN` | LLM live suite (SC-004) |
-| `KOSMOS_KAKAO_API_KEY` | Kakao Local tool tests |
-| `KOSMOS_DATA_GO_KR_API_KEY` | data.go.kr tool tests — **NOTE** this is the correct name; prior typo `KOSMOS_DATA_GO_KR_KEY` (FR-050) MUST be eliminated |
-| `KOSMOS_JUSO_CONFM_KEY` | JUSO geocoding live tests |
-| `KOSMOS_SGIS_KEY` / `KOSMOS_SGIS_SECRET` | SGIS live tests |
+| `KOSAX_FRIENDLI_TOKEN` | LLM live suite (SC-004) |
+| `KOSAX_KAKAO_API_KEY` | Kakao Local tool tests |
+| `KOSAX_DATA_GO_KR_API_KEY` | data.go.kr tool tests — **NOTE** this is the correct name; prior typo `KOSAX_DATA_GO_KR_KEY` (FR-050) MUST be eliminated |
+| `KOSAX_JUSO_CONFM_KEY` | JUSO geocoding live tests |
+| `KOSAX_SGIS_KEY` / `KOSAX_SGIS_SECRET` | SGIS live tests |
 | `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` | Langfuse smoke (#501, conditional) |
-| `KOSMOS_OTEL_ENDPOINT` | OTLP dry-run (#501, conditional) |
+| `KOSAX_OTEL_ENDPOINT` | OTLP dry-run (#501, conditional) |
 
 Jobs that need only a subset (e.g., unit tests with no live API) MAY skip the Infisical step and set empty placeholders via `env:` block at step level. Prefer not to: contract consistency matters more than 0.5 s of CI time.
 
 ## Typo-fix checklist (FR-050)
 
 In `.github/workflows/ci.yml`:
-1. Locate any occurrence of `KOSMOS_DATA_GO_KR_KEY` (line 53 at time of spec).
-2. Replace with `KOSMOS_DATA_GO_KR_API_KEY`.
+1. Locate any occurrence of `KOSAX_DATA_GO_KR_KEY` (line 53 at time of spec).
+2. Replace with `KOSAX_DATA_GO_KR_API_KEY`.
 3. Remove the fallback hardcoded `test-placeholder` value once the Infisical step injects the real (test-env) value.
 
 ## Pre-test gates
@@ -115,7 +115,7 @@ Non-zero exit from either gate fails the job (FR-025, SC-005).
 ## Rotation workflow (SC-002)
 
 Operator rotates FriendliAI token:
-1. Edit secret in Infisical dashboard (`KOSMOS` project → `test` env → `KOSMOS_FRIENDLI_TOKEN`).
+1. Edit secret in Infisical dashboard (`KOSAX` project → `test` env → `KOSAX_FRIENDLI_TOKEN`).
 2. Re-run last CI workflow (`gh run rerun <ID>`) or push a trivial commit.
 3. Expected: next CI run green with new token. **Zero code changes.**
 
@@ -151,7 +151,7 @@ jobs:
         with:
           method: oidc
           identity-id: ${{ vars.INFISICAL_CLIENT_ID }}
-          project-slug: kosmos-3f-zs
+          project-slug: kosax-3f-zs
           env-slug: dev
           secret-path: '/'
           export-type: env

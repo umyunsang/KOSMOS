@@ -1,7 +1,7 @@
 # Data Model: Permission Pipeline v1
 
 **Spec**: `specs/008-permission-pipeline-v1/spec.md`
-**Module**: `src/kosmos/permissions/models.py`
+**Module**: `src/kosax/permissions/models.py`
 
 ---
 
@@ -14,7 +14,7 @@ Maps from `GovAPITool.auth_type` (`Literal["public", "api_key", "oauth"]`) to th
 | Value | String | Meaning in v1 |
 |---|---|---|
 | `public` | `"public"` | No auth required; allow unconditionally at step 1 |
-| `api_key` | `"api_key"` | `KOSMOS_DATA_GO_KR_API_KEY` must be set and non-empty |
+| `api_key` | `"api_key"` | `KOSAX_DATA_GO_KR_API_KEY` must be set and non-empty |
 | `authenticated` | `"authenticated"` | Citizen identity verification required; denied in v1 |
 | `restricted` | `"restricted"` | Special approval gate; denied in v1 |
 
@@ -91,7 +91,7 @@ Returned by every step function (active or stub).
 
 ### `AuditLogEntry` (Pydantic v2, frozen)
 
-Written to `logging.getLogger("kosmos.permissions.audit")` after every invocation.
+Written to `logging.getLogger("kosax.permissions.audit")` after every invocation.
 
 | Field | Type | Default | Description |
 |---|---|---|---|
@@ -115,7 +115,7 @@ Written to `logging.getLogger("kosmos.permissions.audit")` after every invocatio
 
 ### Integration with `ToolResult` (existing model, no new type)
 
-`PermissionPipeline.run()` returns the existing `kosmos.tools.models.ToolResult`. No new result type.
+`PermissionPipeline.run()` returns the existing `kosax.tools.models.ToolResult`. No new result type.
 
 Denied calls:
 ```python
@@ -127,7 +127,7 @@ ToolResult(
 )
 ```
 
-**Required change**: `ToolResult.error_type` Literal must be extended to include `"permission_denied"` in `src/kosmos/tools/models.py` during Phase 4.
+**Required change**: `ToolResult.error_type` Literal must be extended to include `"permission_denied"` in `src/kosax/tools/models.py` during Phase 4.
 
 ---
 

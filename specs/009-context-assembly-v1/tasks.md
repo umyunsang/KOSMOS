@@ -8,13 +8,13 @@
 
 ## Phase 1: Setup (Package Structure)
 
-**Purpose**: Create the `src/kosmos/context/` sub-package and `tests/context/` directory.
+**Purpose**: Create the `src/kosax/context/` sub-package and `tests/context/` directory.
 No source code yet — just the file system skeleton that all later tasks populate.
 
-- [ ] T001 Create `src/kosmos/context/__init__.py` with empty public export list
+- [ ] T001 Create `src/kosax/context/__init__.py` with empty public export list
 - [ ] T002 Create `tests/context/__init__.py` to make test directory a package
 
-**Checkpoint**: `src/kosmos/context/` and `tests/context/` exist as importable packages.
+**Checkpoint**: `src/kosax/context/` and `tests/context/` exist as importable packages.
 
 ---
 
@@ -24,8 +24,8 @@ No source code yet — just the file system skeleton that all later tasks popula
 phase depends on these types being present and correct. No user story work begins until
 this phase is complete.
 
-- [ ] T003 Implement `SystemPromptConfig`, `ContextLayer`, `ContextBudget`, `AssembledContext` frozen models with all field validators and `ContextBudget.from_estimate()` class method in `src/kosmos/context/models.py`
-- [ ] T004 Add `active_situational_tools: set[str] = field(default_factory=set)` to `QueryState` dataclass in `src/kosmos/engine/models.py`
+- [ ] T003 Implement `SystemPromptConfig`, `ContextLayer`, `ContextBudget`, `AssembledContext` frozen models with all field validators and `ContextBudget.from_estimate()` class method in `src/kosax/context/models.py`
+- [ ] T004 Add `active_situational_tools: set[str] = field(default_factory=set)` to `QueryState` dataclass in `src/kosax/engine/models.py`
 - [ ] T005 Write unit tests covering frozen constraints, non-empty validators, `ContextBudget` threshold logic, and `ContextLayer` role/layer_name invariant in `tests/context/test_models.py`
 
 **Completion gate**: `uv run pytest tests/context/test_models.py` passes; `AssembledContext` can be constructed with only `system_layer` populated; `QueryState` construction without `active_situational_tools` argument continues to work.
@@ -42,10 +42,10 @@ this phase is complete.
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Implement `SystemPromptAssembler` with the four mandatory sections (platform identity, language policy, tool-use policy, personal-data reminder) in `src/kosmos/context/system_prompt.py`
-- [ ] T007 [US1] Implement `ContextBuilder.__init__()` accepting `config: SystemPromptConfig | None = None`, caching the assembled system message on first call, in `src/kosmos/context/builder.py`
-- [ ] T008 [US1] Implement `ContextBuilder.build_system_message()` delegating to `SystemPromptAssembler`, returning cached `ChatMessage` on subsequent calls, in `src/kosmos/context/builder.py`
-- [ ] T009 [US1] Update `src/kosmos/context/__init__.py` to export `ContextBuilder`, `SystemPromptConfig`, `ContextLayer`, `ContextBudget`, `AssembledContext`
+- [ ] T006 [US1] Implement `SystemPromptAssembler` with the four mandatory sections (platform identity, language policy, tool-use policy, personal-data reminder) in `src/kosax/context/system_prompt.py`
+- [ ] T007 [US1] Implement `ContextBuilder.__init__()` accepting `config: SystemPromptConfig | None = None`, caching the assembled system message on first call, in `src/kosax/context/builder.py`
+- [ ] T008 [US1] Implement `ContextBuilder.build_system_message()` delegating to `SystemPromptAssembler`, returning cached `ChatMessage` on subsequent calls, in `src/kosax/context/builder.py`
+- [ ] T009 [US1] Update `src/kosax/context/__init__.py` to export `ContextBuilder`, `SystemPromptConfig`, `ContextLayer`, `ContextBudget`, `AssembledContext`
 - [ ] T010 [P] [US1] Write determinism test (1,000 consecutive calls, same config) and section-presence assertions in `tests/context/test_system_prompt.py`
 - [ ] T011 [P] [US1] Write `build_system_message()` unit tests: correct role, all sections present, identical across instances with same config, in `tests/context/test_builder.py`
 
@@ -66,7 +66,7 @@ sorted by `id`.
 
 ### Implementation for User Story 3
 
-- [ ] T012 [US3] Implement `ContextBuilder.build_assembled_context()` stub: calls `build_system_message()`, builds `tool_definitions` via `registry.export_core_tools_openai()` + active situational tools sorted by `id`, returns minimal `AssembledContext` (no attachment, no budget yet), in `src/kosmos/context/builder.py`
+- [ ] T012 [US3] Implement `ContextBuilder.build_assembled_context()` stub: calls `build_system_message()`, builds `tool_definitions` via `registry.export_core_tools_openai()` + active situational tools sorted by `id`, returns minimal `AssembledContext` (no attachment, no budget yet), in `src/kosax/context/builder.py`
 - [ ] T013 [P] [US3] Write tool ordering tests: 3 core + 2 situational verify `[core_a, core_b, core_c, sit_a, sit_b]` regardless of registration order; empty situational edge case; all-situational-tools WARNING log assertion, in `tests/context/test_builder.py`
 
 **Completion gate**: SC-002 passes. Cache-partitioning acceptance scenarios for US3 pass.
@@ -85,8 +85,8 @@ pending tool.
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] Implement `AttachmentCollector` with private section methods for resolved tasks, in-flight tool state, API health, and auth expiry warning in `src/kosmos/context/attachments.py`
-- [ ] T015 [US2] Implement `ContextBuilder.build_turn_attachment()` delegating to `AttachmentCollector`, returning `None` for empty sessions, in `src/kosmos/context/builder.py`
+- [ ] T014 [US2] Implement `AttachmentCollector` with private section methods for resolved tasks, in-flight tool state, API health, and auth expiry warning in `src/kosax/context/attachments.py`
+- [ ] T015 [US2] Implement `ContextBuilder.build_turn_attachment()` delegating to `AttachmentCollector`, returning `None` for empty sessions, in `src/kosax/context/builder.py`
 - [ ] T016 [P] [US2] Write attachment unit tests covering US2 scenarios: empty session returns None; two resolved tasks listed; degraded API warning; auth expiry warning (< 60 seconds), in `tests/context/test_attachments.py`
 
 **Completion gate**: US2 acceptance scenarios 1–4 pass. Empty-session `None` return verified.
@@ -104,7 +104,7 @@ present. `turn_count=11` — reminder block absent.
 
 ### Implementation for User Story 5
 
-- [ ] T017 [US5] Add reminder section logic to `AttachmentCollector`: inject reminder listing `resolved_tasks` and pending in-flight state when cadence condition is met in `src/kosmos/context/attachments.py`
+- [ ] T017 [US5] Add reminder section logic to `AttachmentCollector`: inject reminder listing `resolved_tasks` and pending in-flight state when cadence condition is met in `src/kosax/context/attachments.py`
 - [ ] T018 [P] [US5] Write reminder cadence tests: turn=10 cadence=5 includes reminder; turn=11 cadence=5 no reminder; cadence=1 fires every turn; turn=0 never fires, in `tests/context/test_attachments.py`
 
 **Completion gate**: US5 acceptance scenarios 1–2 pass. Cadence=1 edge case passes.
@@ -122,9 +122,9 @@ and the `QueryEngine` yields `StopReason.api_budget_exceeded` when over limit.
 
 ### Implementation for User Story 4
 
-- [ ] T019 [US4] Implement `BudgetEstimator` with `estimate_layer_tokens()` and `estimate_tool_defs_tokens()` functions producing `ContextBudget` via `ContextBudget.from_estimate()` in `src/kosmos/context/budget.py`
-- [ ] T020 [US4] Wire `BudgetEstimator` into `ContextBuilder.build_assembled_context()`: sum tokens across all layers and tool definitions, produce complete `AssembledContext.budget`, in `src/kosmos/context/builder.py`
-- [ ] T021 [US4] Add `build_assembled_context()` budget-near-limit WARNING log in `src/kosmos/context/builder.py`
+- [ ] T019 [US4] Implement `BudgetEstimator` with `estimate_layer_tokens()` and `estimate_tool_defs_tokens()` functions producing `ContextBudget` via `ContextBudget.from_estimate()` in `src/kosax/context/budget.py`
+- [ ] T020 [US4] Wire `BudgetEstimator` into `ContextBuilder.build_assembled_context()`: sum tokens across all layers and tool definitions, produce complete `AssembledContext.budget`, in `src/kosax/context/builder.py`
+- [ ] T021 [US4] Add `build_assembled_context()` budget-near-limit WARNING log in `src/kosax/context/builder.py`
 - [ ] T022 [P] [US4] Write budget unit tests covering US4 scenarios: over-limit fires, near-limit logs WARNING, within-limit both False, threshold boundary conditions, in `tests/context/test_budget.py`
 
 **Completion gate**: SC-003 passes. All three US4 acceptance scenarios pass.
@@ -143,8 +143,8 @@ assert `state.messages[0].content` matches `ContextBuilder.build_system_message(
 
 ### Implementation for User Story 6
 
-- [ ] T023 [US6] Replace `system_prompt: str | None` parameter with `context_builder: ContextBuilder | None` in `QueryEngine.__init__()`, remove `_DEFAULT_SYSTEM_PROMPT` constant, initialize `QueryState.messages` with `[context_builder.build_system_message()]`, in `src/kosmos/engine/engine.py`
-- [ ] T024 [US6] Insert `context_builder.build_turn_attachment(state, api_health=None)` call in `QueryEngine.run()` before appending the user message; prepend attachment `ChatMessage` if non-None; yield `api_budget_exceeded` when `is_over_limit` is True, in `src/kosmos/engine/engine.py`
+- [ ] T023 [US6] Replace `system_prompt: str | None` parameter with `context_builder: ContextBuilder | None` in `QueryEngine.__init__()`, remove `_DEFAULT_SYSTEM_PROMPT` constant, initialize `QueryState.messages` with `[context_builder.build_system_message()]`, in `src/kosax/engine/engine.py`
+- [ ] T024 [US6] Insert `context_builder.build_turn_attachment(state, api_health=None)` call in `QueryEngine.run()` before appending the user message; prepend attachment `ChatMessage` if non-None; yield `api_budget_exceeded` when `is_over_limit` is True, in `src/kosax/engine/engine.py`
 - [ ] T025 [P] [US6] Write integration test: engine without `system_prompt` produces history[0] matching `build_system_message()` output; budget exceeded scenario yields stop event, in `tests/context/test_engine_integration.py`
 - [ ] T026 [P] [US6] Run full engine regression suite to verify no existing tests break: `uv run pytest tests/engine/` must be 100% green
 
@@ -209,19 +209,19 @@ can also start in parallel once the `builder.py` stub from Phase 3 exists.
 
 ```
 Teammate A — US1 (Phase 3):
-  src/kosmos/context/system_prompt.py  (T006)
-  src/kosmos/context/builder.py        (T007, T008)
+  src/kosax/context/system_prompt.py  (T006)
+  src/kosax/context/builder.py        (T007, T008)
   tests/context/test_system_prompt.py  (T010)
   tests/context/test_builder.py        (T011)
 
 Teammate B — US2 (Phase 5):
-  src/kosmos/context/attachments.py    (T014)
-  src/kosmos/context/builder.py        (T015) ← after Teammate A's builder.py is merged
+  src/kosax/context/attachments.py    (T014)
+  src/kosax/context/builder.py        (T015) ← after Teammate A's builder.py is merged
   tests/context/test_attachments.py    (T016)
 
 Teammate C — US4 (Phase 7):
-  src/kosmos/context/budget.py         (T019)
-  src/kosmos/context/builder.py        (T020, T021) ← after Teammate A's builder.py is merged
+  src/kosax/context/budget.py         (T019)
+  src/kosax/context/builder.py        (T020, T021) ← after Teammate A's builder.py is merged
   tests/context/test_budget.py         (T022)
 ```
 

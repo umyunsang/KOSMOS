@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # S4: 운전자 — koroad lookup x2 + nfa_119 + verify(modid) + submit(traffic_fine_pay) + permission ⓶
 set -euo pipefail
-wait_for_pane "KOSMOS|❯" 30
+wait_for_pane "KOSAX|❯" 30
 snapshot_pane 00-boot
 
 send_text_pane "강남구 사고 위험지역"; sleep 1; send_enter_pane; sleep 90

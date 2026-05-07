@@ -350,8 +350,8 @@ describe('T019 — pendingPermissionSlot lifecycle (contracts/pending-permission
   // Case 5: timeout resolves to 'timeout' after configured ms
   it("timeout resolves to 'timeout' after configured ms", async () => {
     // Use a 1-second timeout via env var
-    const originalEnv = process.env['KOSMOS_PERMISSION_TIMEOUT_SEC']
-    process.env['KOSMOS_PERMISSION_TIMEOUT_SEC'] = '1'
+    const originalEnv = process.env['KOSAX_PERMISSION_TIMEOUT_SEC']
+    process.env['KOSAX_PERMISSION_TIMEOUT_SEC'] = '1'
 
     // Reset so getPermissionTimeoutMs() re-reads env on next call.
     // The module caches nothing — it reads on each getPermissionTimeoutMs() call.
@@ -369,9 +369,9 @@ describe('T019 — pendingPermissionSlot lifecycle (contracts/pending-permission
     } finally {
       // Restore env regardless of test outcome
       if (originalEnv === undefined) {
-        delete process.env['KOSMOS_PERMISSION_TIMEOUT_SEC']
+        delete process.env['KOSAX_PERMISSION_TIMEOUT_SEC']
       } else {
-        process.env['KOSMOS_PERMISSION_TIMEOUT_SEC'] = originalEnv
+        process.env['KOSAX_PERMISSION_TIMEOUT_SEC'] = originalEnv
       }
       _resetPermissionSlotForTest()
     }
@@ -381,7 +381,7 @@ describe('T019 — pendingPermissionSlot lifecycle (contracts/pending-permission
   it("duplicate request_id resolves immediately to 'denied'", async () => {
     const req = makeRequest({ request_id: 'req-case6' })
 
-    // Spy on console.warn to verify the kosmos.permission.duplicate warning
+    // Spy on console.warn to verify the kosax.permission.duplicate warning
     const warnSpy = spyOn(console, 'warn').mockImplementation(() => {})
 
     try {
@@ -399,7 +399,7 @@ describe('T019 — pendingPermissionSlot lifecycle (contracts/pending-permission
       const duplicateWarned = warnCalls.some(
         (args) =>
           typeof args[0] === 'string' &&
-          args[0].includes('kosmos.permission.duplicate'),
+          args[0].includes('kosax.permission.duplicate'),
       )
       expect(duplicateWarned).toBe(true)
     } finally {

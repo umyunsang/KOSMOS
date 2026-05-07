@@ -8,7 +8,7 @@
 # masking the data wire we are validating.
 
 set -euo pipefail
-wait_for_pane "KOSMOS|❯" 30
+wait_for_pane "KOSAX|❯" 30
 snapshot_pane 00-boot
 
 # --- Subscription #1: 재난문자 (CBS broadcast) ---

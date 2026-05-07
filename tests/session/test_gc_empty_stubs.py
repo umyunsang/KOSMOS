@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for kosmos.session.store — gc_empty_stubs (T007).
+"""Tests for kosax.session.store — gc_empty_stubs (T007).
 
 Covers:
 - Correct detection of metadata-only stub files.
@@ -21,8 +21,8 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.session.models import SessionEntry, SessionMetadata
-from kosmos.session.store import (
+from kosax.session.models import SessionEntry, SessionMetadata
+from kosax.session.store import (
     _is_empty_stub,
     gc_empty_stubs,
 )

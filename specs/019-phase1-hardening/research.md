@@ -27,7 +27,7 @@ Resolve any `NEEDS CLARIFICATION` markers in plan.md Technical Context (none —
 - **Secondary reference**: stamina (`hynek/stamina`) — production-grade async retry with enforced jitter and capped backoff.
 - **Alternatives considered**:
   - *aiobreaker circuit breaker*: useful for cross-session failure isolation but overkill for a single-session per-minute bucket; adds state that outlives a session. Rejected for this epic.
-  - *LangGraph RetryPolicy per-node*: node-level retry assumes a graph runtime KOSMOS does not yet use at Layer 1. Rejected.
+  - *LangGraph RetryPolicy per-node*: node-level retry assumes a graph runtime KOSAX does not yet use at Layer 1. Rejected.
   - *Unbounded retry until success*: violates FR-008 (categorized terminal failure required).
 
 ### D2 — Streaming 429 detection parity (FR-007)
@@ -60,8 +60,8 @@ Resolve any `NEEDS CLARIFICATION` markers in plan.md Technical Context (none —
 
 ### D5 — System-prompt ordering rule appended at context-assembly time (FR-001, FR-002, FR-004)
 
-- **Decision**: Append a concise ordering-rule block at the **end** of the system prompt emitted by `src/kosmos/context/builder.py` (or the session bootstrap that owns it). The rule states: when the citizen's query names a location, invoke the geocoding tool first and then use its output to fill location-coded tool inputs; never fill administrative codes from memory.
-- **Rationale**: Appending at the end preserves the existing prompt-cache prefix (Anthropic docs + "Don't Break the Cache" arXiv 2601.06007) — important because KOSMOS relies on prompt caching for cost. The Claude Code sourcemap context-assembly pattern separates stable system preamble from turn-specific additions; this decision matches that shape. The rule is phrased as a protocol ("always call geocoding before a location-coded authoritative tool"), not a hint, because LLM-visible guidance is more reliable when unambiguous.
+- **Decision**: Append a concise ordering-rule block at the **end** of the system prompt emitted by `src/kosax/context/builder.py` (or the session bootstrap that owns it). The rule states: when the citizen's query names a location, invoke the geocoding tool first and then use its output to fill location-coded tool inputs; never fill administrative codes from memory.
+- **Rationale**: Appending at the end preserves the existing prompt-cache prefix (Anthropic docs + "Don't Break the Cache" arXiv 2601.06007) — important because KOSAX relies on prompt caching for cost. The Claude Code sourcemap context-assembly pattern separates stable system preamble from turn-specific additions; this decision matches that shape. The rule is phrased as a protocol ("always call geocoding before a location-coded authoritative tool"), not a hint, because LLM-visible guidance is more reliable when unambiguous.
 - **Primary reference**: Claude Code sourcemap (`ChinaSiro/claude-code-sourcemap`) — context assembly.
 - **Secondary reference**: Anthropic documentation — prompt caching; "Don't Break the Cache" (arXiv 2601.06007).
 - **Alternatives considered**:

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosmos.dev/schemas/spec-287/permission-request.schema.json",
+  "$id": "https://kosax.dev/schemas/spec-287/permission-request.schema.json",
   "title": "PermissionRequestFrame",
   "description": "backend → TUI: a worker raises a permission request. Direction: backend → TUI. The TUI MUST render the permission-gauntlet modal (lifted from Claude Code) and block input until a permission_response is emitted (FR-045, FR-046).",
   "type": "object",

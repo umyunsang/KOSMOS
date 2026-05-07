@@ -17,12 +17,12 @@ import pytest_asyncio  # noqa: F401 — ensures asyncio mode is active
 
 # Import mock adapters so they self-register; order-independent.
 # NOTE: verify_digital_onepass DELETED — FR-004 (서비스 종료 2025-12-30, Epic ε #2296 T021).
-import kosmos.tools.mock.verify_ganpyeon_injeung  # noqa: F401
-import kosmos.tools.mock.verify_geumyung_injeungseo  # noqa: F401
-import kosmos.tools.mock.verify_gongdong_injeungseo  # noqa: F401
-import kosmos.tools.mock.verify_mobile_id  # noqa: F401
-import kosmos.tools.mock.verify_mydata  # noqa: F401
-from kosmos.primitives.verify import (
+import kosax.tools.mock.verify_ganpyeon_injeung  # noqa: F401
+import kosax.tools.mock.verify_geumyung_injeungseo  # noqa: F401
+import kosax.tools.mock.verify_gongdong_injeungseo  # noqa: F401
+import kosax.tools.mock.verify_mobile_id  # noqa: F401
+import kosax.tools.mock.verify_mydata  # noqa: F401
+from kosax.primitives.verify import (
     GanpyeonInjeungContext,
     GeumyungInjeungseoContext,
     GongdongInjeungseoContext,
@@ -105,7 +105,7 @@ async def test_cross_family_adapter_blocked() -> None:
     The verify dispatcher must detect the mismatch and return VerifyMismatchError
     instead of silently passing a context whose .family disagrees with family_hint.
     """
-    from kosmos.primitives.verify import (
+    from kosax.primitives.verify import (
         _VERIFY_ADAPTERS,
         register_verify_adapter,
     )
@@ -147,7 +147,7 @@ async def test_cross_family_adapter_blocked() -> None:
 
 async def test_adapter_returning_mismatch_is_propagated() -> None:
     """If an adapter explicitly returns VerifyMismatchError it is passed through."""
-    from kosmos.primitives.verify import (
+    from kosax.primitives.verify import (
         _VERIFY_ADAPTERS,
         register_verify_adapter,
     )

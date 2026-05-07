@@ -25,18 +25,18 @@ jobs:
     # job should finish in ~30 s. Protect against a runaway on a bad runner.
     timeout-minutes: 5
 
-    # kosmos.config.guard.verify_startup() exits 78 (EX_CONFIG) when the three
-    # required KOSMOS_* tokens are missing. The bridge integration test spawns
-    # the real backend via `uv run kosmos --ipc stdio` — but the stdio echo
+    # kosax.config.guard.verify_startup() exits 78 (EX_CONFIG) when the three
+    # required KOSAX_* tokens are missing. The bridge integration test spawns
+    # the real backend via `uv run kosax --ipc stdio` — but the stdio echo
     # loop never performs an LLM call or data.go.kr request, so dummy
     # placeholders are sufficient to pass the guard without leaking secrets
     # into the workflow. Live-API tests are gated by `@pytest.mark.live` and
     # do not run here.
     env:
-      KOSMOS_ENV: ci
-      KOSMOS_KAKAO_API_KEY: ci-dummy-kakao-key
-      KOSMOS_FRIENDLI_TOKEN: ci-dummy-friendli-token
-      KOSMOS_DATA_GO_KR_API_KEY: ci-dummy-data-go-kr-key
+      KOSAX_ENV: ci
+      KOSAX_KAKAO_API_KEY: ci-dummy-kakao-key
+      KOSAX_FRIENDLI_TOKEN: ci-dummy-friendli-token
+      KOSAX_DATA_GO_KR_API_KEY: ci-dummy-data-go-kr-key
 
     steps:
       - name: Checkout
@@ -61,7 +61,7 @@ jobs:
 
       - name: Set up Python (for bridge/crash-detector integration tests)
         # tui/tests/ipc/bridge.test.ts + crash.test.ts spawn the real
-        # `uv run kosmos --ipc stdio` echo backend — not a mock — to verify
+        # `uv run kosax --ipc stdio` echo backend — not a mock — to verify
         # the stdio JSONL contract end-to-end. Skipping Python here would
         # force those tests into a mocked half-world and mask backend drift.
         uses: actions/setup-python@v6
@@ -75,8 +75,8 @@ jobs:
           enable-cache: true
 
       - name: Install Python dependencies (`uv sync`)
-        # Installs the `kosmos` console script used by createBridge's default
-        # cmd (`uv run kosmos --ipc stdio`). Frozen against uv.lock so CI
+        # Installs the `kosax` console script used by createBridge's default
+        # cmd (`uv run kosax --ipc stdio`). Frozen against uv.lock so CI
         # only ever runs against pinned versions.
         run: uv sync --frozen
 
@@ -121,7 +121,7 @@ jobs:
         working-directory: tui
         # Use `bun run test` so the package.json script (narrowed to dirs
         # that survive the Epic #1632 CC port) is respected. `bun test`
-        # without args would sweep every *.test.ts, including KOSMOS-native
+        # without args would sweep every *.test.ts, including KOSAX-native
         # tests (LogoV2, onboarding, commands, components, keybindings)
         # that reference files renamed/deleted by the CC 2.1.88 port. Epic
         # #1633 will decide whether to forward-port or delete those tests.
@@ -184,5 +184,5 @@ jobs:
         working-directory: tui
         env:
           # Slightly longer boot window on shared CI runners.
-          KOSMOS_TUI_SMOKE_BOOT_MS: "5000"
+          KOSAX_TUI_SMOKE_BOOT_MS: "5000"
         run: bun run tui:smoke

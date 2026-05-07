@@ -14,7 +14,7 @@ expect {
   timeout { puts "\n\[FAIL A1\] no backend boot"; exit 1 }
 }
 expect {
-  -re "KOSMOS" { puts "\n\[A2\] branding" }
+  -re "KOSAX" { puts "\n\[A2\] branding" }
   timeout { puts "\n\[FAIL A2\] no branding"; exit 1 }
 }
 

@@ -11,7 +11,7 @@
 //
 // Options:
 //   --fixture <path>    JSONL fixture file to replay (default: tests/fixtures/soak/default.jsonl)
-//   --rate <n>          Events per second (default: KOSMOS_TUI_SOAK_EVENTS_PER_SEC or 100)
+//   --rate <n>          Events per second (default: KOSAX_TUI_SOAK_EVENTS_PER_SEC or 100)
 //   --duration <n>      Duration in seconds (default: 60; use 600 for the full 10-min soak)
 //   --loops <n>         Number of times to loop the fixture (overrides --duration if set)
 //
@@ -49,7 +49,7 @@ const FIXTURE_PATH =
   join(__dirname, '../tests/fixtures/soak/default.jsonl')
 
 const RATE = parseInt(
-  values.rate ?? process.env['KOSMOS_TUI_SOAK_EVENTS_PER_SEC'] ?? '100',
+  values.rate ?? process.env['KOSAX_TUI_SOAK_EVENTS_PER_SEC'] ?? '100',
   10,
 )
 
@@ -101,7 +101,7 @@ const latencies: number[] = []
 // This tests codec throughput without requiring a live backend.
 
 // We create a bridge pointed at the real backend to test the full path.
-// For CI / offline mode, set KOSMOS_BACKEND_CMD=cat to get a trivial echo.
+// For CI / offline mode, set KOSAX_BACKEND_CMD=cat to get a trivial echo.
 const bridge = createBridge({
   onCrash: () => {
     crashes++

@@ -3,7 +3,7 @@
 **Mirror axis**: byte
 **Source reference**: 3GPP TS 23.041 v17.0.0 — "Technical realization of Cell Broadcast Service (CBS)" (https://www.3gpp.org/ftp/Specs/archive/23_series/23.041/)
 **License**: 3GPP (public specification, freely available)
-**Scope**: Reproduces the Cell Broadcast Service (CBS) message structure and delivery notification format for Korean emergency alerts (재난문자) in the Message Identifier range 4370–4385, as defined by 3GPP TS 23.041 and implemented by the Korean National Disaster Management Research Institute (NDMI) over the KPAS protocol; limited to the network-side delivery notification shape consumed by KOSMOS — does not reproduce the radio access network layer.
+**Scope**: Reproduces the Cell Broadcast Service (CBS) message structure and delivery notification format for Korean emergency alerts (재난문자) in the Message Identifier range 4370–4385, as defined by 3GPP TS 23.041 and implemented by the Korean National Disaster Management Research Institute (NDMI) over the KPAS protocol; limited to the network-side delivery notification shape consumed by KOSAX — does not reproduce the radio access network layer.
 
 ## What this mock reproduces
 

@@ -1,5 +1,5 @@
 <!--
-Thanks for contributing to KOSMOS. Please fill out every section below.
+Thanks for contributing to KOSAX. Please fill out every section below.
 Pull requests with empty sections may be closed without review.
 -->
 

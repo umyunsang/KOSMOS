@@ -9,7 +9,7 @@ No more, no fewer.
 
 from __future__ import annotations
 
-import kosmos.primitives as primitives_module
+import kosax.primitives as primitives_module
 
 _EXPECTED_PRIMITIVES: frozenset[str] = frozenset({"lookup", "resolve_location", "submit", "verify"})
 

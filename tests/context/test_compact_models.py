@@ -13,7 +13,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kosmos.context.compact_models import CompactionConfig, CompactionResult
+from kosax.context.compact_models import CompactionConfig, CompactionResult
 
 
 class TestCompactionConfigDefaults:

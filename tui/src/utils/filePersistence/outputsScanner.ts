@@ -10,7 +10,7 @@
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { logForDebugging } from '../debug.js'
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+// KOSAX-1633 P1+P2 / KOSAX-1978 T011 — utils/teleport/ deleted; stub.
 type EnvironmentKind = 'anthropic_cloud' | 'byoc' | 'bridge'
 import type { TurnStartTime } from './types.js'
 

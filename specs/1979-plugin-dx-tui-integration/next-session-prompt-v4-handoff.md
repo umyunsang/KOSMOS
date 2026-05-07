@@ -20,7 +20,7 @@
 
 ### 위치
 
-- **Worktree**: `/Users/um-yunsang/KOSMOS-w-2293/`
+- **Worktree**: `/Users/um-yunsang/KOSAX-w-2293/`
 - **Branch**: `2293-ui-residue-cleanup` (local only, **NOT pushed to remote**)
 - **Commits on top of main**:
   1. `2f9663d` — Sonnet 1차 진척 (verified 안전, ~30%)
@@ -41,9 +41,9 @@
 
 ### Sonnet 1차 (`2f9663d`) — 검증된 안전 진척 30%
 
-- 6 KOSMOS-only Tool 디렉토리 (Monitor / ReviewArtifact / SuggestBackgroundPR / Tungsten / VerifyPlanExecution / Workflow) 의 9 file deletion
+- 6 KOSAX-only Tool 디렉토리 (Monitor / ReviewArtifact / SuggestBackgroundPR / Tungsten / VerifyPlanExecution / Workflow) 의 9 file deletion
 - 5 callsite cleanup (cli/print, commands/insights, components/Feedback, utils/mcp/dateTimeParser, utils/sessionTitle)
-- `services/api/claude.ts` modify (Spec 2077 KOSMOS-needed pure utility exports preserved; verifyApiKey/queryHaiku/queryWithModel functions removed)
+- `services/api/claude.ts` modify (Spec 2077 KOSAX-needed pure utility exports preserved; verifyApiKey/queryHaiku/queryWithModel functions removed)
 
 ### Sonnet 2차 finisher (`10d9754`) — 광범위 변경, scope review 필요
 
@@ -95,7 +95,7 @@
 
 ### 위치
 
-- **Worktree**: `/Users/um-yunsang/KOSMOS-w-2295/`
+- **Worktree**: `/Users/um-yunsang/KOSAX-w-2295/`
 - **Branch**: `2295-backend-permissions-cleanup` (local only, **NOT pushed**)
 - **Commits**:
   1. `97b85d1` — Sonnet 1차 (~70% 진척 안전)
@@ -107,7 +107,7 @@
 
 ### Sonnet 1차 (`97b85d1`) — 검증된 안전 진척
 
-- `src/kosmos/tools/models.py`: `AdapterRealDomainPolicy` Pydantic v2 모델 추가 (frozen=True, extra="forbid", 4 fields)
+- `src/kosax/tools/models.py`: `AdapterRealDomainPolicy` Pydantic v2 모델 추가 (frozen=True, extra="forbid", 4 fields)
 - 19 어댑터 metadata 마이그레이션:
   - KOROAD ×2 (accident_hazard_search, koroad_accident_search)
   - KMA ×6 (forecast_fetch, kma_current_observation, kma_pre_warning, kma_short_term_forecast, kma_ultra_short_term_forecast, kma_weather_alert_status)
@@ -128,22 +128,22 @@
 
 ### 신규 발견 (spec.md FR-008 grep gate 정밀화 필요)
 
-`auth_level` / `is_irreversible` / `requires_auth` / `dpa_reference` 토큰이 KOSMOS-needed 인프라에서 광범위 합법 사용 중:
-- `src/kosmos/tools/permissions.py` — Spec 025 v6 invariant (auth_type ↔ auth_level 매트릭스)
-- `src/kosmos/security/audit.py` — Tool security audit (Spec 024)
-- `src/kosmos/plugins/cli_init.py` — Plugin init template (auth_level="AAL1" default)
-- `src/kosmos/plugins/checks/q3_security.py` — Plugin Q3-V3/V4/V6 invariant 검사
-- `src/kosmos/plugins/tests/test_namespace_invariant.py` — Plugin test fixtures
+`auth_level` / `is_irreversible` / `requires_auth` / `dpa_reference` 토큰이 KOSAX-needed 인프라에서 광범위 합법 사용 중:
+- `src/kosax/tools/permissions.py` — Spec 025 v6 invariant (auth_type ↔ auth_level 매트릭스)
+- `src/kosax/security/audit.py` — Tool security audit (Spec 024)
+- `src/kosax/plugins/cli_init.py` — Plugin init template (auth_level="AAL1" default)
+- `src/kosax/plugins/checks/q3_security.py` — Plugin Q3-V3/V4/V6 invariant 검사
+- `src/kosax/plugins/tests/test_namespace_invariant.py` — Plugin test fixtures
 
-`SessionContext` (auth_level: int field) 도 KOSMOS-needed:
-- `src/kosmos/recovery/auth_refresh.py` — credential resolution
-- `src/kosmos/cli/{app,repl}.py` — REPL session bootstrap
+`SessionContext` (auth_level: int field) 도 KOSAX-needed:
+- `src/kosax/recovery/auth_refresh.py` — credential resolution
+- `src/kosax/cli/{app,repl}.py` — REPL session bootstrap
 
-→ **spec.md FR-008 의 grep gate 가 너무 광범위; spec 보정 필요 (어댑터 metadata 의 KOSMOS-invented `auth_level` 만 잡도록 정밀화)**.
+→ **spec.md FR-008 의 grep gate 가 너무 광범위; spec 보정 필요 (어댑터 metadata 의 KOSAX-invented `auth_level` 만 잡도록 정밀화)**.
 
 ### 미완 사항
 
-- **잔재 17 source file 그대로** (`src/kosmos/permissions/` 의 aal_backstop / adapter_metadata / bypass / cli / killswitch / models / modes / pipeline / pipeline_v2 / prompt / rules / session_boot / synthesis_guard + steps/ 디렉토리)
+- **잔재 17 source file 그대로** (`src/kosax/permissions/` 의 aal_backstop / adapter_metadata / bypass / cli / killswitch / models / modes / pipeline / pipeline_v2 / prompt / rules / session_boot / synthesis_guard + steps/ 디렉토리)
 - `__init__.py` 재작성 (Spec 035 receipt set + credentials/SessionContext 만 export 하도록) 안 됨
 - `tests/tools/test_adapter_real_domain_policy.py` 5 단위 테스트 추가 안 됨
 - pytest verify / commit / push / PR 0
@@ -151,7 +151,7 @@
 
 ### 다음 세션 권장 처리
 
-1. spec.md 보정 — FR-008 grep gate 를 어댑터 metadata 영역 (`src/kosmos/tools/`) 으로 좁히고 KOSMOS-needed 영역 (`src/kosmos/security/audit.py`, `src/kosmos/plugins/checks/q3_security.py` 등) 을 명시 제외.
+1. spec.md 보정 — FR-008 grep gate 를 어댑터 metadata 영역 (`src/kosax/tools/`) 으로 좁히고 KOSAX-needed 영역 (`src/kosax/security/audit.py`, `src/kosax/plugins/checks/q3_security.py` 등) 을 명시 제외.
 2. SessionContext 보존 결정 (models.py 통째 삭제 X, SessionContext 만 keep).
 3. 잔재 16 source file + steps/ deletion (importer 추적 후, models.py + credentials.py 보존).
 4. `__init__.py` 재작성: credentials + models.SessionContext + Spec 035 receipt set 만 export.
@@ -165,9 +165,9 @@
 
 ```bash
 $ git worktree list
-/Users/um-yunsang/KOSMOS         bc523b7 [main]
-/Users/um-yunsang/KOSMOS-w-2293  10d9754 [2293-ui-residue-cleanup]
-/Users/um-yunsang/KOSMOS-w-2295  553bb62 [2295-backend-permissions-cleanup]
+/Users/um-yunsang/KOSAX         bc523b7 [main]
+/Users/um-yunsang/KOSAX-w-2293  10d9754 [2293-ui-residue-cleanup]
+/Users/um-yunsang/KOSAX-w-2295  553bb62 [2295-backend-permissions-cleanup]
 ```
 
 두 branch 모두 **remote 에 push 되지 않음** (옵션 1 보존). PR 도 없음.
@@ -213,7 +213,7 @@ Initiative
 
 ### 도메인 교훈
 
-- `auth_level` 광범위 합법 사용 발견은 Initiative #2290 전체 thesis 검토 입력. KOSMOS thesis 의 "기관 정책 cite only" 와 Spec 024/025 의 "auth_level 매트릭스 invariant" 가 양립할 수 있는 형태로 spec 보정 필요.
+- `auth_level` 광범위 합법 사용 발견은 Initiative #2290 전체 thesis 검토 입력. KOSAX thesis 의 "기관 정책 cite only" 와 Spec 024/025 의 "auth_level 매트릭스 invariant" 가 양립할 수 있는 형태로 spec 보정 필요.
 - Epic γ #2294 (5-primitive align with CC Tool.ts) 진입 전 Epic β + δ 정리 권장.
 
 ### Epic β + δ 재진입 시 dispatch tree (권장)
@@ -231,7 +231,7 @@ Lead solo: T009+T012+T015+T018 (grep gates) + T016+T017 (typecheck/test) + T019+
 
 **Epic δ 재진입**:
 ```
-Lead solo: spec.md FR-008 보정 (auth_level grep gate 를 src/kosmos/tools/ adapter metadata 영역으로만 좁힘)
+Lead solo: spec.md FR-008 보정 (auth_level grep gate 를 src/kosax/tools/ adapter metadata 영역으로만 좁힘)
             ↓
 sonnet-D: T005-T006 (잔재 16 file deletion + steps/ — 단 models.py KEEP, credentials.py KEEP)
 sonnet-E: T007 (__init__.py 재작성)

@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Spec 032 T053 (TUI side of Scenario B).
+// KOSAX-original — Spec 032 T053 (TUI side of Scenario B).
 //
-// Quickstart § 2.2 companion for `src/kosmos/ipc/demo/session_backend.py`.
+// Quickstart § 2.2 companion for `src/kosax/ipc/demo/session_backend.py`.
 //
 // Drives a single session through the FR-018..025 reconnect handshake:
 //
 //   1. Spawn the Python backend harness as a child process with piped stdio
-//      (`uv run python -m kosmos.ipc.demo.session_backend`).
+//      (`uv run python -m kosax.ipc.demo.session_backend`).
 //   2. Apply the first `--after-frames` (default 20) `assistant_chunk` frames
 //      from the backend's stdout, tracking `last_seen_frame_seq`.
 //   3. Simulate a stdio drop: read the remaining pre-emitted frames off the
@@ -186,7 +186,7 @@ async function main(argv: readonly string[]): Promise<number> {
       'run',
       'python',
       '-m',
-      'kosmos.ipc.demo.session_backend',
+      'kosax.ipc.demo.session_backend',
       '--session-id',
       args.session,
       '--total-frames',

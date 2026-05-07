@@ -1,17 +1,17 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/kosmos-banner-dark.svg"/>
-  <source media="(prefers-color-scheme: light)" srcset="assets/kosmos-banner-light.svg"/>
-  <img alt="KOSMOS" src="assets/kosmos-banner-light.svg" width="600"/>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/kosax-banner-dark.svg"/>
+  <source media="(prefers-color-scheme: light)" srcset="assets/kosax-banner-light.svg"/>
+  <img alt="KOSAX" src="assets/kosax-banner-light.svg" width="600"/>
 </picture>
 
-# KOSMOS
+# KOSAX
 
-**KO**rean public **S**erivce **M**ulti-agent **O**rchestration **S**ystem
+**K**orean **O**pen **S**ervice **A**gentic e**X**ecution
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-2.1-purple.svg)](CODE_OF_CONDUCT.md)
-[![GitHub Discussions](https://img.shields.io/badge/discussions-join-blueviolet)](https://github.com/umyunsang/KOSMOS/discussions)
+[![GitHub Discussions](https://img.shields.io/badge/discussions-join-blueviolet)](https://github.com/umyunsang/KOSAX/discussions)
 
 A conversational multi-agent harness that orchestrates data.go.kr's 5,000+ public APIs around LG AI Research's K-EXAONE through an agentic tool loop.
 
@@ -27,31 +27,31 @@ Five end-to-end flows the platform must handle for the vision to be considered m
 
 ```text
 시민:   "내일 부산에서 서울 가는데, 안전한 경로 추천해줘"
-KOSMOS: KOROAD accident data + KMA weather alerts + road-risk index
+KOSAX: KOROAD accident data + KMA weather alerts + road-risk index
         → "Gyeongbu Expressway Daejeon-Cheonan section: high risk,
            fog advisory. Suggest Jungbu-Naeryuk detour."
 
 시민:   "아이가 열이 나는데 근처 야간 응급실 어디야?"
-KOSMOS: 119 emergency API + HIRA hospital info
+KOSAX: 119 emergency API + HIRA hospital info
         → Available ERs ranked by location + current wait time
 
 시민:   "이사 준비 중인데, 전입신고랑 자동차 주소변경이랑
         건강보험 주소변경 다 해야 하는데"
-KOSMOS: Coordinator dispatches Civil-affairs / Transport / Welfare workers
+KOSAX: Coordinator dispatches Civil-affairs / Transport / Welfare workers
         → "전입신고 선행 → 자동차·건강보험 병렬"
 ```
 
-Citizens never learn which ministry runs which API. **KOSMOS does the routing.**
+Citizens never learn which ministry runs which API. **KOSAX does the routing.**
 
 ## Architecture
 
-KOSMOS transfers six architectural layers from Claude Code into the public-service domain:
+KOSAX transfers six architectural layers from Claude Code into the public-service domain:
 
-<img src="docs/diagrams/kosmos_6_layer_architecture.svg" alt="KOSMOS 6-Layer Architecture" width="100%">
+<img src="docs/diagrams/kosax_6_layer_architecture.svg" alt="KOSAX 6-Layer Architecture" width="100%">
 
 The lineage of each layer:
 
-| Layer | Claude Code Origin | KOSMOS Adaptation |
+| Layer | Claude Code Origin | KOSAX Adaptation |
 |---|---|---|
 | **Query Engine** | `while(true)` tool loop + 5-stage preprocessing | Civil-affairs state machine with ministry routing |
 | **Tool System** | `buildTool()` factory + Partition-Sort cache strategy | `buildGovAPI()` adapters for data.go.kr endpoints |
@@ -64,9 +64,9 @@ For deep dives into the Query Engine loop, the Permission Pipeline gauntlet, and
 
 ## L1 Pillars (approved 2026-04-24)
 
-Canonical requirements tree: [`docs/requirements/kosmos-migration-tree.md`](docs/requirements/kosmos-migration-tree.md). Every subsequent spec and PR cites this tree as its source of truth.
+Canonical requirements tree: [`docs/requirements/kosax-migration-tree.md`](docs/requirements/kosax-migration-tree.md). Every subsequent spec and PR cites this tree as its source of truth.
 
-- **L1-A · LLM Harness Layer** — Single fixed provider: **FriendliAI Serverless + K-EXAONE** (model ID `LGAI-EXAONE/K-EXAONE-236B-A23B` — 236B MoE with 23B active params; native 256K context; `enable_thinking=True` is the model-card default, KOSMOS toggles via `KOSMOS_K_EXAONE_THINKING` env, default `true` — reasoning active by default, set to `false` to disable). CC agentic-loop preserved 1:1. Native K-EXAONE function calling (Hermes-parser compatible). Context from `prompts/system_v1.md` + compaction + prompt cache. Sessions in `~/.kosmos/memdir/user/sessions/` (JSONL). Error recovery: ordinary network retry only. Observability: 4-tier OTEL (GenAI / Tool / Permission / local Langfuse) with zero external egress.
+- **L1-A · LLM Harness Layer** — Single fixed provider: **FriendliAI Serverless + K-EXAONE** (model ID `LGAI-EXAONE/K-EXAONE-236B-A23B` — 236B MoE with 23B active params; native 256K context; `enable_thinking=True` is the model-card default, KOSAX toggles via `KOSAX_K_EXAONE_THINKING` env, default `true` — reasoning active by default, set to `false` to disable). CC agentic-loop preserved 1:1. Native K-EXAONE function calling (Hermes-parser compatible). Context from `prompts/system_v1.md` + compaction + prompt cache. Sessions in `~/.kosax/memdir/user/sessions/` (JSONL). Error recovery: ordinary network retry only. Observability: 4-tier OTEL (GenAI / Tool / Permission / local Langfuse) with zero external egress.
 - **L1-B · Public-Service Tool System** — `Tool.ts` interface rewritten, registered on both TS and Python sides. Hybrid coverage (built-in live APIs + built-in mocks + plugin infra). Discovery via BM25 + dense `lookup`. Composite tools removed — LLM chains primitives. Full 5-tier plugin DX (template / guide / examples / submission / registry), Korean-primary, PIPA-trustee responsibility explicit.
 - **L1-C · Main-Verb Abstraction** — Four reserved primitives (`lookup` · `submit` · `verify` · `subscribe`) with a shared `PrimitiveInput/Output` envelope. Self-classifying adapters routed by central `build_routing_index()`. System prompt exposes primitive signatures only; BM25 surfaces everything else dynamically. Plugin extensions namespaced as `plugin.<id>.<verb>`.
 
@@ -84,9 +84,9 @@ Migration from the CC port (Epic P0) to a shippable citizen harness is sequenced
 
 | Phase | Epic | Scope |
 |---|---|---|
-| **P0** Baseline Runnable | [#1632](https://github.com/umyunsang/KOSMOS/issues/1632) (merged 2026-04-24) | CC 2.1.88 port compile/runtime recovery |
-| **P1** Dead code elimination | [#1633](https://github.com/umyunsang/KOSMOS/issues/1633) | ant-only branches · `feature()` flags · CC version migrations · CC telemetry |
-| **P2** Anthropic → FriendliAI | [#1633](https://github.com/umyunsang/KOSMOS/issues/1633) (combined with P1) | API · auth · OAuth → FriendliAI constants |
+| **P0** Baseline Runnable | [#1632](https://github.com/umyunsang/KOSAX/issues/1632) (merged 2026-04-24) | CC 2.1.88 port compile/runtime recovery |
+| **P1** Dead code elimination | [#1633](https://github.com/umyunsang/KOSAX/issues/1633) | ant-only branches · `feature()` flags · CC version migrations · CC telemetry |
+| **P2** Anthropic → FriendliAI | [#1633](https://github.com/umyunsang/KOSAX/issues/1633) (combined with P1) | API · auth · OAuth → FriendliAI constants |
 | **P3** Tool-system wiring | #1634 (pending) | `Tool.ts` + Python stdio MCP · 4 primitives |
 | **P4** UI L2 implementation | #1635 (pending) | Components for REPL / Permission Gauntlet / Ministry Agent / Onboarding / aux |
 | **P5** Plugin DX | #1636 (pending) | template · CLI · docs · examples · registry |
@@ -96,9 +96,49 @@ Migration from the CC port (Epic P0) to a shippable citizen harness is sequenced
 
 Live integration against `data.go.kr` validated end-to-end for Scenario 1 (route safety) with 33/33 tests passing. Epic #1632 (P0) merged on 2026-04-24, restoring compile + runtime for the ported CC 2.1.88 harness. Epic #1633 (P1 + P2) spec in progress.
 
+## Installation
+
+The first public release surfaces are npm and Homebrew. The npm package is the
+canonical artifact: it installs the Bun TUI wrapper and carries the Python
+backend source used by the local stdio bridge. PyPI/backend distribution is not
+part of this release.
+
+From a source checkout:
+
+```bash
+uv sync --frozen --all-extras --dev
+cd tui && bun install --frozen-lockfile
+bun run tui --version
+```
+
+After the npm release:
+
+```bash
+npm install -g kosax
+kosax --version
+kosax
+```
+
+After the Homebrew tap release:
+
+```bash
+brew tap oven-sh/bun
+brew tap umyunsang/kosax
+brew install kosax
+kosax --version
+```
+
+Public CLI users only provide a FriendliAI API key through `/login`. KOSAX does
+not ask users for data.go.kr, Kakao, Juso, or SGIS keys; those provider
+credentials are operator-managed and must never be embedded in release
+artifacts.
+
+See [`docs/packaging.md`](docs/packaging.md) for the packaging policy and
+release workflow.
+
 ## Policy Alignment
 
-KOSMOS's mission directly mirrors **Korea AI Action Plan 2026-2028** (국가인공지능전략위원회, 2026.2.25), Strategic Area 7 (공공AX), Task 58, Principle 9:
+KOSAX's mission directly mirrors **Korea AI Action Plan 2026-2028** (국가인공지능전략위원회, 2026.2.25), Strategic Area 7 (공공AX), Task 58, Principle 9:
 
 > "Open API와 OpenMCP를 제공해 민간에서도 공공서비스를 손쉽게 결합해서 국민들에게 제공할 수 있어야 한다."
 > *(Open API and OpenMCP must be provided so that the private sector can easily combine public services and deliver them to citizens.)*
@@ -114,7 +154,7 @@ Contributions are very welcome — issues, design discussions, tool adapters, an
 - [SECURITY.md](SECURITY.md) — private vulnerability reporting
 - [CHANGELOG.md](CHANGELOG.md) — release history
 
-For questions or design proposals, open a [Discussion](https://github.com/umyunsang/KOSMOS/discussions) before writing code on large ideas.
+For questions or design proposals, open a [Discussion](https://github.com/umyunsang/KOSAX/discussions) before writing code on large ideas.
 
 ## License
 

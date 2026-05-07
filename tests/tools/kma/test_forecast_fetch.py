@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for kosmos.tools.kma.forecast_fetch (T046/T047)."""
+"""Tests for kosax.tools.kma.forecast_fetch (T046/T047)."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from kosmos.tools.kma.forecast_fetch import (
+from kosax.tools.kma.forecast_fetch import (
     KMA_FORECAST_FETCH_TOOL,
     KmaForecastFetchInput,
     _fetch,
@@ -19,7 +19,7 @@ from kosmos.tools.kma.forecast_fetch import (
     _parse_forecast_items,
     register,
 )
-from kosmos.tools.models import LookupError, LookupTimeseries  # noqa: A004
+from kosax.tools.models import LookupError, LookupTimeseries  # noqa: A004
 
 _FIXTURE_DIR = Path(__file__).parent.parent.parent.parent / "tests" / "fixtures" / "kma"
 
@@ -158,7 +158,7 @@ class TestParseForecastItems:
 class TestFetch:
     @pytest.mark.asyncio
     async def test_happy_path_returns_timeseries(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key")
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key")
         fixture = _load_fixture("forecast_fetch_happy.json")
         mock_client = _make_mock_client(fixture)
 
@@ -187,7 +187,7 @@ class TestFetch:
     async def test_out_of_domain_coords_returns_error(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key")
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "test-key")
         inp = KmaForecastFetchInput(
             lat=5.0,  # outside KMA domain (< 22°)
             lon=127.0,
@@ -202,14 +202,14 @@ class TestFetch:
 
     @pytest.mark.asyncio
     async def test_missing_api_key_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
+        monkeypatch.delenv("KOSAX_DATA_GO_KR_API_KEY", raising=False)
         inp = KmaForecastFetchInput(
             lat=37.5665,
             lon=127.0495,
             base_date="20260416",
             base_time="0800",
         )
-        from kosmos.tools.errors import ConfigurationError
+        from kosax.tools.errors import ConfigurationError
 
         with pytest.raises(ConfigurationError):
             await _fetch(inp)
@@ -218,7 +218,7 @@ class TestFetch:
     async def test_upstream_error_result_code_returns_lookup_error(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "bad-key")
+        monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", "bad-key")
         error_payload = {
             "response": {
                 "header": {"resultCode": "10", "resultMsg": "APPLICATION_ERROR"},
@@ -267,7 +267,7 @@ class TestToolDefinition:
 
 class TestRegister:
     def test_register_adds_to_registry(self) -> None:
-        from kosmos.tools.registry import ToolRegistry
+        from kosax.tools.registry import ToolRegistry
 
         registry = ToolRegistry()
         register(registry)

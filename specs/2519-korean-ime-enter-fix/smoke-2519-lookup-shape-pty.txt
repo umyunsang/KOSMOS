@@ -1,9 +1,9 @@
-spawn bash -c cd /Users/um-yunsang/KOSMOS/tui && bun run tui
+spawn bash -c cd /Users/um-yunsang/KOSAX/tui && bun run tui
 [0m[2m[35m$[0m [2m[1mbun run src/entrypoints/cli.tsx[0m
 tool_registry: 14 entries verified (4 primitives) in 0ms
-[?2004h[?1004h[?25l]0;✳ Claude Code[?2026h[38;2;167;139;250m [3C▛███▜[6C[39m[1mKOSMOS[1C[22m[38;2;153;153;153mv0.1.0-alpha+1978[39m
+[?2004h[?1004h[?25l]0;✳ Claude Code[?2026h[38;2;167;139;250m [3C▛███▜[6C[39m[1mKOSAX[1C[22m[38;2;153;153;153mv0.1.0-alpha+1978[39m
 [38;2;167;139;250m▗▟█████████▙▖[2C[38;2;153;153;153mK-EXAONE[1Cwith[1Chigh[1Ceffort[1C·[1CAPI[1CUsage[1CBilling[39m
-[38;2;167;139;250m [2C▘[1C▘[1C▘[1C▘[5C[38;2;153;153;153m~/KOSMOS/tui[39m
+[38;2;167;139;250m [2C▘[1C▘[1C▘[1C▘[5C[38;2;153;153;153m~/KOSAX/tui[39m
 
 [38;2;136;136;136m────────────────────────────────────────────────────────────────────────────────[39m
 ❯ [7m [27m
@@ -37,14 +37,14 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 [38;2;78;186;101m●[1C[39m[1mlookup[22m(search:[1C부산[1C사하구[1C동아대학교[1C위치[1C주소[1C지도)
 [38;2;153;153;153m [1C⎿[1C [39m[1m(어댑터[1C미상)[1C[22m—[1C1건
 [5C[38;2;153;153;153m [1C{"dispatched_via":"backend-server-side","primitive":"lookup","tool_u[39m
-[5C[38;2;153;153;153mse_id":"call_RB1DJQigKjY1rl8ivW7HxnNJ","note":"KOSMOS[1Cbackend[1Cran[1Cthe[39m
+[5C[38;2;153;153;153mse_id":"call_RB1DJQigKjY1rl8ivW7HxnNJ","note":"KOSAX[1Cbackend[1Cran[1Cthe[39m
 [5C[38;2;153;153;153magentic[1Cloop[1Cinternally[1Cand[1Cemitted[1Cthe[1Cauthoritative[1Ctool_result[39m
 [5C[38;2;153;153;153mframe[1Cfor[1Cdisplay.[1CThis[1CSDK-level[1Cac[39m
 
 [38;2;78;186;101m●[1C[39m[1mlookup[22m(search:[1C대학[1C위치[1C정보[1C주소[1C지도)
 [38;2;153;153;153m [1C⎿[1C [39m[1m(어댑터[1C미상)[1C[22m—[1C1건
 [5C[38;2;153;153;153m [1C{"dispatched_via":"backend-server-side","primitive":"lookup","tool_u[39m
-[5C[38;2;153;153;153mse_id":"call_2MlxO4NGdSxGNSnHkATXKUJM","note":"KOSMOS[1Cbackend[1Cran[1Cthe[39m
+[5C[38;2;153;153;153mse_id":"call_2MlxO4NGdSxGNSnHkATXKUJM","note":"KOSAX[1Cbackend[1Cran[1Cthe[39m
 [5C[38;2;153;153;153magentic[1Cloop[1Cinternally[1Cand[1Cemitted[1Cthe[1Cauthoritative[1Ctool_result[39m
 [5C[38;2;153;153;153mframe[1Cfor[1Cdisplay.[1CThis[1CSDK-level[1Cac[39m
 

@@ -9,7 +9,7 @@
 
 ### User Story 1 — Reproducible platform image for release (Priority: P1)
 
-A release engineer (currently the maintainer) needs to ship a KOSMOS build to a citizen-facing environment. They push a git tag, the CI pipeline builds a multi-stage image from `docker/Dockerfile`, publishes a machine-readable release manifest that pins the commit, lockfile hash, image digest, prompt hashes, LLM model id, and gateway proxy version, and the same image runs identically on the engineer's laptop and the deployment target.
+A release engineer (currently the maintainer) needs to ship a KOSAX build to a citizen-facing environment. They push a git tag, the CI pipeline builds a multi-stage image from `docker/Dockerfile`, publishes a machine-readable release manifest that pins the commit, lockfile hash, image digest, prompt hashes, LLM model id, and gateway proxy version, and the same image runs identically on the engineer's laptop and the deployment target.
 
 **Why this priority**: Without a reproducible image and a release manifest, every claim about "what was deployed" is folklore. This user story is the minimum viable unit that makes a release auditable, and every later story (shadow-eval, prompt registry) depends on being able to point at a specific manifest row.
 
@@ -27,7 +27,7 @@ A release engineer (currently the maintainer) needs to ship a KOSMOS build to a 
 
 A prompt author (maintainer acting in that role) needs to update the LLM-facing system prompt, session guidance, or compaction template without touching Python source. They edit a markdown file under `prompts/`, regenerate `prompts/manifest.yaml`, and at startup the platform loads exactly those strings through a Prompt Registry. Every LLM call emits a span attribute that identifies which prompt version was used, so every log line is traceable back to a specific prompt file in the repo.
 
-**Why this priority**: The current inline prompts in `src/kosmos/context/system_prompt.py` and `src/kosmos/context/session_compact.py` make it impossible to diff or attribute prompt changes. Externalising them is a prerequisite for the shadow-eval lane (Story 3) and for the observability contract with Epic #501.
+**Why this priority**: The current inline prompts in `src/kosax/context/system_prompt.py` and `src/kosax/context/session_compact.py` make it impossible to diff or attribute prompt changes. Externalising them is a prerequisite for the shadow-eval lane (Story 3) and for the observability contract with Epic #501.
 
 **Independent Test**: A unit test loads all three prompts via the Prompt Registry, computes SHA-256 over each file, and asserts the hashes in `manifest.yaml` match. Tampering a single byte in any prompt file makes the test fail at load time (fail-closed). A second test verifies that current `SystemPromptAssembler` and `session_compact` output is byte-identical before and after the refactor when the content of `system_v1.md` / `session_guidance_v1.md` / `compact_v1.md` reproduces today's inline text.
 
@@ -35,8 +35,8 @@ A prompt author (maintainer acting in that role) needs to update the LLM-facing 
 
 1. **Given** the platform starts up, **When** the Prompt Registry boots, **Then** it reads `prompts/manifest.yaml`, opens each listed prompt file, computes SHA-256 over the file bytes, and refuses to start if any computed hash disagrees with the manifest entry.
 2. **Given** a tester opens `prompts/system_v1.md` and inserts one extra character, **When** the platform starts, **Then** it fails to start with a clear error identifying the mismatching `prompt_id` and leaves no LLM call spans.
-3. **Given** the platform makes any LLM call from the Context Assembly layer, **When** the span is emitted, **Then** it carries the attribute `kosmos.prompt.hash` whose value is the SHA-256 hex digest of the system prompt bytes actually sent to the model.
-4. **Given** the operator sets `KOSMOS_PROMPT_REGISTRY_LANGFUSE=true` and provides Langfuse host + keys, **When** the Prompt Registry boots, **Then** it may additionally resolve prompts through Langfuse Prompt Management; **Given** the flag is unset or `false`, **When** the Prompt Registry boots, **Then** it reads exclusively from repository files with no network call.
+3. **Given** the platform makes any LLM call from the Context Assembly layer, **When** the span is emitted, **Then** it carries the attribute `kosax.prompt.hash` whose value is the SHA-256 hex digest of the system prompt bytes actually sent to the model.
+4. **Given** the operator sets `KOSAX_PROMPT_REGISTRY_LANGFUSE=true` and provides Langfuse host + keys, **When** the Prompt Registry boots, **Then** it may additionally resolve prompts through Langfuse Prompt Management; **Given** the flag is unset or `false`, **When** the Prompt Registry boots, **Then** it reads exclusively from repository files with no network call.
 
 ---
 
@@ -58,7 +58,7 @@ A prompt author opens a pull request that modifies any file under `prompts/**`. 
 
 ### User Story 4 — Reproducible development environment on first clone (Priority: P2)
 
-A new contributor clones KOSMOS, opens it in VS Code with the Dev Containers extension, and the environment comes up with Python 3.12, `uv`, all dependencies synced, and the LiteLLM proxy + OTEL collector ports forwarded — no laptop-specific setup. Running `uv run pytest` succeeds on the first attempt.
+A new contributor clones KOSAX, opens it in VS Code with the Dev Containers extension, and the environment comes up with Python 3.12, `uv`, all dependencies synced, and the LiteLLM proxy + OTEL collector ports forwarded — no laptop-specific setup. Running `uv run pytest` succeeds on the first attempt.
 
 **Why this priority**: Valuable for contributor onboarding and for guaranteeing that CI / local / devcontainer all execute against the same dependency tree, but not blocking for release (Story 1) or auditability (Story 2).
 
@@ -77,7 +77,7 @@ A new contributor clones KOSMOS, opens it in VS Code with the Dev Containers ext
 - A prompt file exists on disk but is missing from `manifest.yaml` — the Prompt Registry MUST refuse to start with a clear error naming the orphan file (fail-closed on drift).
 - `manifest.yaml` lists a `prompt_id` whose file is missing — MUST refuse to start naming the missing file.
 - Two prompt entries share the same `prompt_id` — MUST refuse to start with a duplicate-id error.
-- `KOSMOS_PROMPT_REGISTRY_LANGFUSE=true` is set but Langfuse host/keys are missing or unreachable — MUST fall back to repository files when the flag is unset; when the flag is set but Langfuse is unreachable, MUST fail-closed at startup, never silently serve stale or wrong prompts.
+- `KOSAX_PROMPT_REGISTRY_LANGFUSE=true` is set but Langfuse host/keys are missing or unreachable — MUST fall back to repository files when the flag is unset; when the flag is set but Langfuse is unreachable, MUST fail-closed at startup, never silently serve stale or wrong prompts.
 - Docker build produces an image > 2 GB — CI MUST fail with a clear size-budget violation rather than publishing the oversize image.
 - Release tag pushed on a commit whose `uv.lock` has drifted from `pyproject.toml` — manifest job MUST fail before the manifest file is committed.
 - Shadow-eval battery run hangs or exceeds its time budget — the workflow MUST time out and mark the shadow-eval as failed, but MUST NOT block unrelated CI jobs on the same PR.
@@ -111,9 +111,9 @@ A new contributor clones KOSMOS, opens it in VS Code with the Dev Containers ext
 - **FR-C04**: The Prompt Registry MUST return prompt strings as immutable values to callers; callers MUST NOT be able to mutate the loaded prompt text at runtime.
 - **FR-C05**: `SystemPromptAssembler.assemble()` MUST obtain its system-identity, language-policy, tool-use-policy, personal-data-reminder, and session-guidance section text from the Prompt Registry, not from inline Python string literals.
 - **FR-C06**: `session_compact` MUST obtain its summary header and section scaffolding from the Prompt Registry, not from inline Python string literals.
-- **FR-C07**: The platform MUST emit the span attribute `kosmos.prompt.hash` on every LLM call made from the Context Assembly layer, whose value is the SHA-256 hex digest of the system prompt bytes actually sent to the model in that call.
-- **FR-C08**: When the environment variable `KOSMOS_PROMPT_REGISTRY_LANGFUSE` is unset or equal to `false`, the Prompt Registry MUST resolve prompts exclusively from repository files and MUST NOT initiate any outbound network call.
-- **FR-C09**: When `KOSMOS_PROMPT_REGISTRY_LANGFUSE=true`, the Prompt Registry MAY additionally resolve prompts through Langfuse Prompt Management using the supplied host and keys; if Langfuse is unreachable or returns an unknown `prompt_id`, the registry MUST fail-closed at startup rather than falling back to a possibly-stale repository copy without the operator's knowledge.
+- **FR-C07**: The platform MUST emit the span attribute `kosax.prompt.hash` on every LLM call made from the Context Assembly layer, whose value is the SHA-256 hex digest of the system prompt bytes actually sent to the model in that call.
+- **FR-C08**: When the environment variable `KOSAX_PROMPT_REGISTRY_LANGFUSE` is unset or equal to `false`, the Prompt Registry MUST resolve prompts exclusively from repository files and MUST NOT initiate any outbound network call.
+- **FR-C09**: When `KOSAX_PROMPT_REGISTRY_LANGFUSE=true`, the Prompt Registry MAY additionally resolve prompts through Langfuse Prompt Management using the supplied host and keys; if Langfuse is unreachable or returns an unknown `prompt_id`, the registry MUST fail-closed at startup rather than falling back to a possibly-stale repository copy without the operator's knowledge.
 - **FR-C10**: The Prompt Registry MUST log an `INFO` record per resolved prompt listing `prompt_id`, `version`, and computed `sha256` at startup, using the stdlib `logging` module (no `print()`).
 
 ### Functional Requirements — Section D: Shadow-eval workflow
@@ -145,7 +145,7 @@ A new contributor clones KOSMOS, opens it in VS Code with the Dev Containers ext
 
 - **FR-X01**: After the refactor, `SystemPromptAssembler.assemble()` MUST return a string that is byte-identical to the current (pre-refactor) output when `system_v1.md` and `session_guidance_v1.md` contain the current inline text. Golden-file tests MUST cover this invariant.
 - **FR-X02**: After the refactor, `session_compact` MUST preserve its current rule-based summary structure (user intents, tool calls, tool results, assistant decisions sections) unchanged; only the header and fixed section labels come from `compact_v1.md`.
-- **FR-X03**: The session-guidance prompt (`session_guidance_v1.md`) MUST update the concrete worked example to reference the frozen MVP facade (`resolve_location`) rather than the legacy `address_to_region` currently embedded at `src/kosmos/context/system_prompt.py:124-128`. This is an intentional content change delivered as part of v1 and is therefore NOT covered by the byte-identical invariant in FR-X01; a separate fixture captures the v1 expected text.
+- **FR-X03**: The session-guidance prompt (`session_guidance_v1.md`) MUST update the concrete worked example to reference the frozen MVP facade (`resolve_location`) rather than the legacy `address_to_region` currently embedded at `src/kosax/context/system_prompt.py:124-128`. This is an intentional content change delivered as part of v1 and is therefore NOT covered by the byte-identical invariant in FR-X01; a separate fixture captures the v1 expected text.
 
 ### Non-Functional Requirements
 
@@ -154,7 +154,7 @@ A new contributor clones KOSMOS, opens it in VS Code with the Dev Containers ext
 - **NFR-03 (Secrets hygiene)**: No secret value, API key, JWT, or credential MUST ever be baked into a published image layer or committed to `docs/release-manifests/`. All secret-bearing values enter at runtime through environment variables.
 - **NFR-04 (CI isolation)**: CI jobs MUST NOT reach `*.data.go.kr` or any external public API. Tests marked `@pytest.mark.live` MUST remain deselected in CI (existing rule in `pyproject.toml`).
 - **NFR-05 (Source-text language)**: All source-file text (Python, YAML, Dockerfile, docs) MUST be in English; Korean text is allowed only inside prompt body content (`prompts/*.md`) and inside Korean domain fixture data (existing exception).
-- **NFR-06 (Logging)**: Any new Python module (Prompt Registry, shadow-eval helpers) MUST use the stdlib `logging` module only; no `print()` calls outside `src/kosmos/cli/**`.
+- **NFR-06 (Logging)**: Any new Python module (Prompt Registry, shadow-eval helpers) MUST use the stdlib `logging` module only; no `print()` calls outside `src/kosax/cli/**`.
 - **NFR-07 (Pydantic v2)**: Any new Python model for manifest parsing or prompt metadata MUST use Pydantic v2 with `frozen=True`; no `typing.Any`.
 
 ### Key Entities
@@ -166,7 +166,7 @@ A new contributor clones KOSMOS, opens it in VS Code with the Dev Containers ext
 - **PromptLoader**: Runtime component that reads the manifest, verifies SHA-256 integrity, and serves immutable prompt strings to the Context Assembly layer.
 - **Release manifest (`docs/release-manifests/<sha>.yaml`)**: One file per release commit, carrying `commit_sha`, `uv_lock_hash`, `docker_digest`, `prompt_hashes`, `friendli_model_id`, `litellm_proxy_version`.
 - **Shadow-eval battery (`tests/shadow_eval/`)**: Fixed set of fixture-backed scenarios that exercise the platform twice per PR — once with `main` prompts, once with PR-head prompts — and compare results.
-- **Span attribute `kosmos.prompt.hash`**: Observability contract produced by this Epic and consumed by Epic #501.
+- **Span attribute `kosax.prompt.hash`**: Observability contract produced by this Epic and consumed by Epic #501.
 
 ## Success Criteria *(mandatory)*
 
@@ -178,7 +178,7 @@ A new contributor clones KOSMOS, opens it in VS Code with the Dev Containers ext
 - **SC-004**: `SystemPromptAssembler.assemble()` and `session_compact()` produce byte-identical output before and after the refactor when called with the same config, assuming the v1 prompt files reproduce current inline text (except for the documented session-guidance facade correction in FR-X03, which is captured by a separate v1 fixture). Verification: golden-file equivalence tests in `tests/context/`.
 - **SC-005**: The shadow-eval workflow runs on pull requests that modify `prompts/**` and emits both `deployment.environment=main` and `deployment.environment=shadow` span batches. Verification: a dry-run PR that nudges a prompt file triggers the workflow; the uploaded JSON artifact shows two span sets with the required `deployment.environment` values and identical battery input ids.
 - **SC-006**: A release tag push generates `docs/release-manifests/<sha>.yaml` containing all six required fields (`commit_sha`, `uv_lock_hash`, `docker_digest`, `prompt_hashes`, `friendli_model_id`, `litellm_proxy_version`). Verification: a dry-run tag push triggers the workflow; the generated YAML validates against the schema produced in `/speckit.plan` Phase 1.
-- **SC-007**: The span attribute `kosmos.prompt.hash` is emitted on every LLM call originating from the Context Assembly layer. Verification: an OTEL span-inspection test under `tests/observability/` that runs a minimal Context Assembly → LLMClient path with a mock transport and asserts the attribute presence and correctness on every recorded span.
+- **SC-007**: The span attribute `kosax.prompt.hash` is emitted on every LLM call originating from the Context Assembly layer. Verification: an OTEL span-inspection test under `tests/observability/` that runs a minimal Context Assembly → LLMClient path with a mock transport and asserts the attribute presence and correctness on every recorded span.
 
 ## Assumptions
 
@@ -196,9 +196,9 @@ A new contributor clones KOSMOS, opens it in VS Code with the Dev Containers ext
 
 ### Out of Scope (Permanent)
 
-- Multi-registry publishing (e.g., Docker Hub + GHCR + ECR) — KOSMOS targets a single registry for the foreseeable future.
-- Mobile or native desktop packaging — KOSMOS is a terminal platform; there is no desktop app artifact to sign.
-- SLSA Level 3+ provenance generation — this Epic provides commit-sha / lock-hash / digest pinning sufficient for student-portfolio auditability; full SLSA provenance is not a KOSMOS goal.
+- Multi-registry publishing (e.g., Docker Hub + GHCR + ECR) — KOSAX targets a single registry for the foreseeable future.
+- Mobile or native desktop packaging — KOSAX is a terminal platform; there is no desktop app artifact to sign.
+- SLSA Level 3+ provenance generation — this Epic provides commit-sha / lock-hash / digest pinning sufficient for student-portfolio auditability; full SLSA provenance is not a KOSAX goal.
 
 ### Deferred to Future Work
 
@@ -216,24 +216,24 @@ A new contributor clones KOSMOS, opens it in VS Code with the Dev Containers ext
 ### Upstream (this Epic depends on)
 
 - **Epic #507 (CLOSED)**: The MVP facade (`lookup` + `resolve_location`) is frozen; `prompts/session_guidance_v1.md` references it directly in the worked example (FR-X03).
-- **Epic #021 (merged)**: OpenTelemetry GenAI v1.40 semantic conventions are in place; `kosmos.prompt.hash` extends the existing span schema without reshaping it.
-- **Current `pyproject.toml`**: The Python 3.12+ / uv / pydantic v2 stack is already established — no new top-level runtime dependencies are added by this Epic (Langfuse client integration is gated behind the optional flag `KOSMOS_PROMPT_REGISTRY_LANGFUSE` and, if required, enters as an optional extras dependency in the `dev` or a new `langfuse` extra, never as a default runtime dep).
+- **Epic #021 (merged)**: OpenTelemetry GenAI v1.40 semantic conventions are in place; `kosax.prompt.hash` extends the existing span schema without reshaping it.
+- **Current `pyproject.toml`**: The Python 3.12+ / uv / pydantic v2 stack is already established — no new top-level runtime dependencies are added by this Epic (Langfuse client integration is gated behind the optional flag `KOSAX_PROMPT_REGISTRY_LANGFUSE` and, if required, enters as an optional extras dependency in the `dev` or a new `langfuse` extra, never as a default runtime dep).
 
 ### Downstream (this Epic produces)
 
-- **Epic #501 (OPEN)**: This Epic emits the span attribute `kosmos.prompt.hash` that #501 consumes. The attribute key and its semantic (SHA-256 hex of the system prompt bytes actually sent to the model) are the normative contract; #501 MUST NOT require a different key or a different hashing algorithm.
+- **Epic #501 (OPEN)**: This Epic emits the span attribute `kosax.prompt.hash` that #501 consumes. The attribute key and its semantic (SHA-256 hex of the system prompt bytes actually sent to the model) are the normative contract; #501 MUST NOT require a different key or a different hashing algorithm.
 - **Epic #468 (OPEN)**: The env registry does not yet exist. This Epic **proposes** the following candidate env keys for #468 to formalise in its canonical registry:
-  - `KOSMOS_PROMPT_REGISTRY_LANGFUSE` — boolean, default `false`.
-  - `KOSMOS_LANGFUSE_HOST` — URL, required when the flag is `true`.
-  - `KOSMOS_LANGFUSE_PUBLIC_KEY` — string, required when the flag is `true`.
-  - `KOSMOS_LANGFUSE_SECRET_KEY` — secret, required when the flag is `true`.
+  - `KOSAX_PROMPT_REGISTRY_LANGFUSE` — boolean, default `false`.
+  - `KOSAX_LANGFUSE_HOST` — URL, required when the flag is `true`.
+  - `KOSAX_LANGFUSE_PUBLIC_KEY` — string, required when the flag is `true`.
+  - `KOSAX_LANGFUSE_SECRET_KEY` — secret, required when the flag is `true`.
   - `GHCR_TOKEN` — token, supplied by GitHub Actions OIDC at CI time, never at runtime.
   Until #468 merges, these keys are considered tentative and MAY be renamed by #468 without breaking the observable behaviour described above.
 - **Epic #465 (OPEN)**: The release manifest carries a `litellm_proxy_version` field. Until #465 provides the canonical LiteLLM Proxy image digest, this field carries the placeholder string `"unknown"`. Once #465 merges, the `build-manifest` job will populate it from a documented source; the manifest schema remains stable.
 
 ### Cross-worktree boundary
 
-- This Epic's spec, plan, tasks, and implementation MUST stay inside the worktree at `/Users/um-yunsang/KOSMOS-467`. It MUST NOT edit files tracked by the parallel worktrees `KOSMOS-468`, `KOSMOS-585`, or `KOSMOS-466`.
+- This Epic's spec, plan, tasks, and implementation MUST stay inside the worktree at `/Users/um-yunsang/KOSAX-467`. It MUST NOT edit files tracked by the parallel worktrees `KOSAX-468`, `KOSAX-585`, or `KOSAX-466`.
 
 ## Open Clarifications
 

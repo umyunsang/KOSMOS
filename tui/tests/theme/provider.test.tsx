@@ -1,5 +1,5 @@
 // T042 — ThemeProvider tests
-// Asserts that KOSMOS_TUI_THEME env var controls which token set is exposed.
+// Asserts that KOSAX_TUI_THEME env var controls which token set is exposed.
 // Uses ink-testing-library to render <ThemeProvider /> + a consumer component
 // that calls useTheme() and renders theme.success and theme.error as Text.
 
@@ -41,14 +41,14 @@ let savedThemeEnv: string | undefined
 
 function setThemeEnv(value: string | undefined) {
   if (value === undefined) {
-    delete process.env['KOSMOS_TUI_THEME']
+    delete process.env['KOSAX_TUI_THEME']
   } else {
-    process.env['KOSMOS_TUI_THEME'] = value
+    process.env['KOSAX_TUI_THEME'] = value
   }
 }
 
 beforeEach(() => {
-  savedThemeEnv = process.env['KOSMOS_TUI_THEME']
+  savedThemeEnv = process.env['KOSAX_TUI_THEME']
 })
 
 afterEach(() => {
@@ -59,8 +59,8 @@ afterEach(() => {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('ThemeProvider — KOSMOS_TUI_THEME=default', () => {
-  it('exposes defaultTheme tokens when KOSMOS_TUI_THEME=default', () => {
+describe('ThemeProvider — KOSAX_TUI_THEME=default', () => {
+  it('exposes defaultTheme tokens when KOSAX_TUI_THEME=default', () => {
     setThemeEnv('default')
     const { lastFrame } = render(
       <ThemeProvider>
@@ -73,8 +73,8 @@ describe('ThemeProvider — KOSMOS_TUI_THEME=default', () => {
   })
 })
 
-describe('ThemeProvider — KOSMOS_TUI_THEME=dark', () => {
-  it('exposes darkTheme tokens when KOSMOS_TUI_THEME=dark', () => {
+describe('ThemeProvider — KOSAX_TUI_THEME=dark', () => {
+  it('exposes darkTheme tokens when KOSAX_TUI_THEME=dark', () => {
     setThemeEnv('dark')
     const { lastFrame } = render(
       <ThemeProvider>
@@ -87,8 +87,8 @@ describe('ThemeProvider — KOSMOS_TUI_THEME=dark', () => {
   })
 })
 
-describe('ThemeProvider — KOSMOS_TUI_THEME=light', () => {
-  it('exposes lightTheme tokens when KOSMOS_TUI_THEME=light', () => {
+describe('ThemeProvider — KOSAX_TUI_THEME=light', () => {
+  it('exposes lightTheme tokens when KOSAX_TUI_THEME=light', () => {
     setThemeEnv('light')
     const { lastFrame } = render(
       <ThemeProvider>
@@ -101,7 +101,7 @@ describe('ThemeProvider — KOSMOS_TUI_THEME=light', () => {
   })
 })
 
-describe('ThemeProvider — unset KOSMOS_TUI_THEME', () => {
+describe('ThemeProvider — unset KOSAX_TUI_THEME', () => {
   it('falls back to defaultTheme when env var is unset', () => {
     setThemeEnv(undefined)
     const { lastFrame } = render(
@@ -114,7 +114,7 @@ describe('ThemeProvider — unset KOSMOS_TUI_THEME', () => {
   })
 })
 
-describe('ThemeProvider — unknown KOSMOS_TUI_THEME value', () => {
+describe('ThemeProvider — unknown KOSAX_TUI_THEME value', () => {
   it('falls back to defaultTheme on unknown value', () => {
     setThemeEnv('neon-cyberpunk')
     const { lastFrame } = render(

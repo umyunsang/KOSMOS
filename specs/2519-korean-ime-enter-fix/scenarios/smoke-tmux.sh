@@ -38,7 +38,7 @@
 
 # ── 1. Boot ─────────────────────────────────────────────────────────────────
 wait_for_pane "tool_registry: [0-9]+ entries verified" 60
-wait_for_pane "KOSMOS" 15
+wait_for_pane "KOSAX" 15
 snapshot_pane boot
 
 # ── 2. Turn 1 — Korean IME identity question ─────────────────────────────────
@@ -55,7 +55,7 @@ snapshot_pane turn1-submitted
 # turn 2, otherwise turn 2 gets queued and the ● lookup predicate fires much
 # later than the 60s deadline.
 # Patterns: K-EXAONE public-service intro keywords OR a model self-description.
-wait_for_pane "공공|서비스|모델|K-EXAONE|국민|assistant|EXAONE|저는|KOSMOS" 120
+wait_for_pane "공공|서비스|모델|K-EXAONE|국민|assistant|EXAONE|저는|KOSAX" 120
 snapshot_pane turn1-response
 
 # Wait for the spinner/thinking indicator to clear (response complete).

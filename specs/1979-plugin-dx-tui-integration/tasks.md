@@ -15,11 +15,11 @@ description: "Task list for Epic #1979 — Plugin DX TUI integration"
 
 - **[P]**: Different files, no dependency on incomplete tasks → can run in parallel
 - **[Story]**: US1 / US2 / US3 / US4 mapping to spec.md user stories (Setup / Foundational / Polish phases have no Story label)
-- All paths are absolute under `/Users/um-yunsang/KOSMOS/`
+- All paths are absolute under `/Users/um-yunsang/KOSAX/`
 
 ## Path Conventions
 
-- **Backend**: `src/kosmos/` (Python 3.12+) + `tests/` at repository root
+- **Backend**: `src/kosax/` (Python 3.12+) + `tests/` at repository root
 - **TUI**: `tui/src/` (TypeScript 5.6+ on Bun v1.2.x)
 - **Spec artifacts**: `specs/1979-plugin-dx-tui-integration/` + `specs/1979-plugin-dx-tui-integration/scripts/`
 
@@ -42,10 +42,10 @@ description: "Task list for Epic #1979 — Plugin DX TUI integration"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [X] T003 Add `frame.kind == "plugin_op"` arm to `src/kosmos/ipc/stdio.py` if-elif dispatch chain at line ~1675 (after `session_event`). Wrap handler call in try/except → ErrorFrame fanout matching the existing `chat_request` / `tool_result` / `permission_response` arms. Reference: contracts/dispatcher-routing.md § Dispatch logic.
-- [X] T004 [P] Create `src/kosmos/ipc/plugin_op_dispatcher.py` (NEW) with `handle_plugin_op_request(frame, *, registry, executor, write_frame, consent_bridge, session_id)` entry point + `handle_install` / `handle_uninstall` / `handle_list` private routers. Reference: data-model.md § E1 + contracts/dispatcher-routing.md.
-- [X] T005 [P] Extend `src/kosmos/tools/registry.py:ToolRegistry` with `_inactive: set[str]` field + `set_active(tool_id, active: bool)` + `is_active(tool_id) -> bool` methods + `deregister(tool_id)` method. Filter `_inactive` from `core_tools` / `all_tools` / `to_openai_tool` / BM25 corpus rebuild. Reference: data-model.md § E4.
-- [X] T006 [P] Create `src/kosmos/plugins/consent_bridge.py` (NEW) with `IPCConsentBridge` class — sync `__call__(entry, version, manifest) -> bool` matching `installer.ConsentPrompt` signature; emits `PermissionRequestFrame` + awaits `_pending_perms[request_id]` future via `asyncio.wait_for(timeout=60.0)`; returns `False` on TimeoutError (fail-closed). Reference: data-model.md § E2 + contracts/consent-bridge.md.
+- [X] T003 Add `frame.kind == "plugin_op"` arm to `src/kosax/ipc/stdio.py` if-elif dispatch chain at line ~1675 (after `session_event`). Wrap handler call in try/except → ErrorFrame fanout matching the existing `chat_request` / `tool_result` / `permission_response` arms. Reference: contracts/dispatcher-routing.md § Dispatch logic.
+- [X] T004 [P] Create `src/kosax/ipc/plugin_op_dispatcher.py` (NEW) with `handle_plugin_op_request(frame, *, registry, executor, write_frame, consent_bridge, session_id)` entry point + `handle_install` / `handle_uninstall` / `handle_list` private routers. Reference: data-model.md § E1 + contracts/dispatcher-routing.md.
+- [X] T005 [P] Extend `src/kosax/tools/registry.py:ToolRegistry` with `_inactive: set[str]` field + `set_active(tool_id, active: bool)` + `is_active(tool_id) -> bool` methods + `deregister(tool_id)` method. Filter `_inactive` from `core_tools` / `all_tools` / `to_openai_tool` / BM25 corpus rebuild. Reference: data-model.md § E4.
+- [X] T006 [P] Create `src/kosax/plugins/consent_bridge.py` (NEW) with `IPCConsentBridge` class — sync `__call__(entry, version, manifest) -> bool` matching `installer.ConsentPrompt` signature; emits `PermissionRequestFrame` + awaits `_pending_perms[request_id]` future via `asyncio.wait_for(timeout=60.0)`; returns `False` on TimeoutError (fail-closed). Reference: data-model.md § E2 + contracts/consent-bridge.md.
 
 **Checkpoint**: Backend dispatcher arm exists, dispatcher module skeleton compiles, registry has lifecycle methods, consent bridge ready for injection. User story phases can now proceed.
 
@@ -55,17 +55,17 @@ description: "Task list for Epic #1979 — Plugin DX TUI integration"
 
 **Goal**: Close the install loop so a citizen typing `/plugin install seoul-subway` (against fixture catalog) sees the 7-phase progress overlay + consent modal + receipt within 30 s. Backend + IPC + consent bridge all functional.
 
-**Independent Test**: Run scenario from quickstart.md § 1단계–3단계 against `file://` fixture catalog; assert `plugin_op_complete:result="success"` + receipt JSON appended under `~/.kosmos/memdir/user/consent/` + install dir created under `~/.kosmos/memdir/user/plugins/<plugin_id>/`. Captured under L1 unit + L3 expect/script.
+**Independent Test**: Run scenario from quickstart.md § 1단계–3단계 against `file://` fixture catalog; assert `plugin_op_complete:result="success"` + receipt JSON appended under `~/.kosax/memdir/user/consent/` + install dir created under `~/.kosax/memdir/user/plugins/<plugin_id>/`. Captured under L1 unit + L3 expect/script.
 
 ### Implementation for User Story 1
 
-- [X] T007 [US1] Modify `src/kosmos/plugins/installer.py:install_plugin()` to accept optional `progress_emitter: Callable[[int, str, str], Awaitable[None]] | None = None` parameter. Call `await progress_emitter(phase_num, message_ko, message_en)` between each of the 7 phases using canonical text from `specs/1636-plugin-dx-5tier/contracts/plugin-install.cli.md § Phases`. Backwards compatible (None → no emit). Reference: contracts/dispatcher-routing.md § Outbound frame sequence.
-- [X] T008 [US1] Implement `handle_install` in `src/kosmos/ipc/plugin_op_dispatcher.py`: build progress_emitter closure that wraps each phase tick into a `PluginOpFrame(op="progress", progress_phase=N, progress_message_ko=..., progress_message_en=...)` + `write_frame(...)`. On `install_plugin` return, emit terminal `plugin_op_complete` with `result` + `exit_code` + `receipt_id`. Reference: contracts/dispatcher-routing.md § install sequence.
+- [X] T007 [US1] Modify `src/kosax/plugins/installer.py:install_plugin()` to accept optional `progress_emitter: Callable[[int, str, str], Awaitable[None]] | None = None` parameter. Call `await progress_emitter(phase_num, message_ko, message_en)` between each of the 7 phases using canonical text from `specs/1636-plugin-dx-5tier/contracts/plugin-install.cli.md § Phases`. Backwards compatible (None → no emit). Reference: contracts/dispatcher-routing.md § Outbound frame sequence.
+- [X] T008 [US1] Implement `handle_install` in `src/kosax/ipc/plugin_op_dispatcher.py`: build progress_emitter closure that wraps each phase tick into a `PluginOpFrame(op="progress", progress_phase=N, progress_message_ko=..., progress_message_en=...)` + `write_frame(...)`. On `install_plugin` return, emit terminal `plugin_op_complete` with `result` + `exit_code` + `receipt_id`. Reference: contracts/dispatcher-routing.md § install sequence.
 - [X] T009 [US1] Inject `IPCConsentBridge` into `installer.py:install_plugin()` `consent_prompt` parameter at the dispatcher boundary (T008). The default `_default_consent_prompt` (lines 219-229) stays as the test/in-process fallback; the IPC code path uses the bridge. Reference: contracts/consent-bridge.md § Signature compatibility.
-- [X] T010 [P] [US1] Create `src/kosmos/plugins/uninstall.py` (NEW) with `uninstall_plugin(plugin_id, *, registry, executor, progress_emitter=None) -> UninstallResult` 3-phase flow: deregister → rmtree → write `PluginConsentReceipt(action_type="plugin_uninstall")`. Idempotent on already-removed plugin. Reference: data-model.md § E3 + contracts/dispatcher-routing.md § Outbound (uninstall).
-- [X] T011 [US1] Implement `handle_uninstall` in `src/kosmos/ipc/plugin_op_dispatcher.py` mirroring T008 with the 3-phase progress emitter from T010. Reuse the same `_allocate_consent_position` flock for receipt position assignment. Reference: contracts/dispatcher-routing.md § uninstall sequence.
-- [X] T012 [US1] Implement `handle_list` in `src/kosmos/ipc/plugin_op_dispatcher.py`: enumerate `registry._tools` (filtered through `is_active`) + load each plugin's manifest snapshot from install root → emit `payload_start` + `payload_delta` + `payload_end` triplet carrying `PluginListEntry[]` JSON, then a single `plugin_op_complete` with `correlation_id` matching. Reference: contracts/dispatcher-routing.md § list payload.
-- [X] T013 [US1] Wire dispatcher boot in `src/kosmos/ipc/stdio.py`: pass `_ensure_tool_registry()` + `_ensure_tool_executor()` + `write_frame` + freshly-constructed `IPCConsentBridge(write_frame=write_frame, pending_perms=_pending_perms, session_id=frame.session_id)` into the T003 if-elif arm's `handle_plugin_op_request` call. Reference: contracts/dispatcher-routing.md § Dispatch logic.
+- [X] T010 [P] [US1] Create `src/kosax/plugins/uninstall.py` (NEW) with `uninstall_plugin(plugin_id, *, registry, executor, progress_emitter=None) -> UninstallResult` 3-phase flow: deregister → rmtree → write `PluginConsentReceipt(action_type="plugin_uninstall")`. Idempotent on already-removed plugin. Reference: data-model.md § E3 + contracts/dispatcher-routing.md § Outbound (uninstall).
+- [X] T011 [US1] Implement `handle_uninstall` in `src/kosax/ipc/plugin_op_dispatcher.py` mirroring T008 with the 3-phase progress emitter from T010. Reuse the same `_allocate_consent_position` flock for receipt position assignment. Reference: contracts/dispatcher-routing.md § uninstall sequence.
+- [X] T012 [US1] Implement `handle_list` in `src/kosax/ipc/plugin_op_dispatcher.py`: enumerate `registry._tools` (filtered through `is_active`) + load each plugin's manifest snapshot from install root → emit `payload_start` + `payload_delta` + `payload_end` triplet carrying `PluginListEntry[]` JSON, then a single `plugin_op_complete` with `correlation_id` matching. Reference: contracts/dispatcher-routing.md § list payload.
+- [X] T013 [US1] Wire dispatcher boot in `src/kosax/ipc/stdio.py`: pass `_ensure_tool_registry()` + `_ensure_tool_executor()` + `write_frame` + freshly-constructed `IPCConsentBridge(write_frame=write_frame, pending_perms=_pending_perms, session_id=frame.session_id)` into the T003 if-elif arm's `handle_plugin_op_request` call. Reference: contracts/dispatcher-routing.md § Dispatch logic.
 - [X] T014 [P] [US1] Author unit tests `tests/ipc/test_plugin_op_dispatch.py`: 5 cases — install_request_dispatches, uninstall_request_dispatches, list_request_emits_payload_only, unknown_request_op_returns_error_frame, consent_timeout_emits_complete_exit5. Reference: contracts/e2e-pty-scenario.md § L1.
 - [X] T015 [P] [US1] Author unit tests `tests/ipc/test_consent_bridge.py`: 6 cases — allow_once / allow_session / deny / timeout / pii_includes_acknowledgment_sha256 / layer_3_secondary_confirm. Reference: contracts/consent-bridge.md § Test seams + data-model.md § E2.
 
@@ -82,7 +82,7 @@ description: "Task list for Epic #1979 — Plugin DX TUI integration"
 ### Implementation for User Story 2
 
 - [X] T016 [US2] In `tui/src/ipc/bridgeSingleton.ts` (or equivalent), add a session-scoped `pluginsModifiedThisSession: boolean` flag. Set `true` on every `plugin_op_complete:result="success"` for `request_op ∈ {install, uninstall}`. Reset to `false` after consumed once on next ChatRequestFrame build. Reference: research.md § R-6 + contracts/dispatcher-routing.md § Tools[] propagation.
-- [X] T017 [US2] In TUI ChatRequestFrame builder (likely `tui/src/services/api/` or `tui/src/ipc/bridge.ts` outbound path), if `pluginsModifiedThisSession === true`, set `frame.tools = []` to defer to backend's `registry.export_core_tools_openai()` fallback at `src/kosmos/ipc/stdio.py:1192-1195`. Reset flag after emit. Reference: research.md § R-6.
+- [X] T017 [US2] In TUI ChatRequestFrame builder (likely `tui/src/services/api/` or `tui/src/ipc/bridge.ts` outbound path), if `pluginsModifiedThisSession === true`, set `frame.tools = []` to defer to backend's `registry.export_core_tools_openai()` fallback at `src/kosax/ipc/stdio.py:1192-1195`. Reset flag after emit. Reference: research.md § R-6.
 - [X] T018 [P] [US2] Author integration test `tests/e2e/test_plugin_install_to_invoke.py:test_install_and_invoke_fixture_plugin`: install fixture plugin via dispatcher → send chat_request matching plugin's search_hint_ko (with `frame.tools=[]`) → assert next outbound `tool_use` frame has `tool_id="plugin.<id>.<verb>"`. Reference: contracts/e2e-pty-scenario.md § L1 + spec.md US2 acceptance scenarios.
 - [X] T019 [P] [US2] Author integration test `tests/e2e/test_plugin_layer_routing.py`: install 3 fixture plugins with `permission_layer ∈ {1, 2, 3}` → invoke each → assert each `permission_request` carries the correct `layer` field; assert layer-3 plugin triggers Spec 033 layer-3 secondary confirm path. Reference: spec.md § FR-011, FR-014.
 - [X] T020 [P] [US2] Author integration test `tests/e2e/test_plugin_pii_acknowledgment.py`: install a fixture plugin with `processes_pii: true` + valid PIPA acknowledgment → invoke → assert `permission_request` carries `acknowledgment_sha256` + `trustee_org_name` from the manifest. Reference: spec.md § FR-012 + contracts/consent-bridge.md § PIPA §26.
@@ -93,15 +93,15 @@ description: "Task list for Epic #1979 — Plugin DX TUI integration"
 
 ## Phase 5: User Story 3 — Citizen browses installed plugins via TUI surface (Priority: P2)
 
-**Goal**: `/plugin install` and `/plugins` slash commands route to the KOSMOS citizen path (not CC marketplace residue). The `PluginBrowser` (Spec 1635 T065) renders installed plugins with tier badges + layer color glyphs + trustee org names. UI-E.3 keystrokes (Space/i/r/a) work; `a` displays the deferred-to-#1820 message.
+**Goal**: `/plugin install` and `/plugins` slash commands route to the KOSAX citizen path (not CC marketplace residue). The `PluginBrowser` (Spec 1635 T065) renders installed plugins with tier badges + layer color glyphs + trustee org names. UI-E.3 keystrokes (Space/i/r/a) work; `a` displays the deferred-to-#1820 message.
 
 **Independent Test**: Run `/plugins` against a fixture environment with 3 pre-installed plugins (mixed tier + layer); verify all 3 rows render correctly; press `r` on a row → confirmation modal → Y → row disappears + uninstall receipt appended; press `a` → Korean deferred message visible.
 
 ### Implementation for User Story 3
 
-- [X] T021 [US3] **CRITICAL wire-up**: In `tui/src/commands.ts`, change line 133 from `import plugin from './commands/plugin/index.js'` to `import plugin from './commands/plugin.js'`. This is the single line that activates the entire KOSMOS citizen plugin path; all subsequent US3 tasks depend on it. Reference: research.md § V1 verdict.
+- [X] T021 [US3] **CRITICAL wire-up**: In `tui/src/commands.ts`, change line 133 from `import plugin from './commands/plugin/index.js'` to `import plugin from './commands/plugin.js'`. This is the single line that activates the entire KOSAX citizen plugin path; all subsequent US3 tasks depend on it. Reference: research.md § V1 verdict.
 - [X] T022 [P] [US3] In `tui/src/commands/plugin.ts`, remove the H7 review-eval deferred suffix from acknowledgement strings at lines 111-112, 135-136, 164-166 (`"(backend dispatcher not yet wired — use ...)"`). Backend is now wired. Reference: spec.md § Background Gap 1.
-- [X] T023 [US3] In `tui/src/commands/plugins.ts`, replace the `KOSMOS_PLUGIN_REGISTRY` env-var stub (lines 32-51) with: emit `plugin_op_request:list` with fresh correlation_id → await matching `plugin_op_complete` + reassembled payload → parse `PluginListEntry[]` → return as `PluginEntry[]`. Reference: data-model.md § E5 + contracts/citizen-plugin-store.md § /plugins browser data flow.
+- [X] T023 [US3] In `tui/src/commands/plugins.ts`, replace the `KOSAX_PLUGIN_REGISTRY` env-var stub (lines 32-51) with: emit `plugin_op_request:list` with fresh correlation_id → await matching `plugin_op_complete` + reassembled payload → parse `PluginListEntry[]` → return as `PluginEntry[]`. Reference: data-model.md § E5 + contracts/citizen-plugin-store.md § /plugins browser data flow.
 - [X] T024 [P] [US3] Extend `PluginEntry` type in `tui/src/components/plugins/PluginBrowser.tsx:26-33` with 6 additive optional fields: `tier`, `layer`, `trustee_org_name`, `install_timestamp_iso`, `search_hint_ko`, `search_hint_en`. Backwards compatible with existing Spec 1635 T065 tests. Reference: contracts/citizen-plugin-store.md § PluginEntry shape.
 - [X] T025 [US3] Render the 6 new columns in `tui/src/components/plugins/PluginBrowser.tsx` layout (status glyph + name + version + tier badge + layer color glyph + description + active hint). Preserve ≥90% Spec 1635 T065 visual fidelity. Reference: contracts/citizen-plugin-store.md § Visual layout.
 - [X] T026 [P] [US3] Implement detail modal sub-component (or extend existing `onDetail` callback's render path) in `tui/src/components/plugins/PluginDetail.tsx` (NEW) — renders manifest summary including PIPA acknowledgment SHA-256 for `processes_pii=true` plugins. Reference: contracts/citizen-plugin-store.md § Detail view.
@@ -122,7 +122,7 @@ description: "Task list for Epic #1979 — Plugin DX TUI integration"
 
 ### Implementation for User Story 4
 
-- [X] T031 [P] [US4] Author fixture catalog + bundle under `specs/1979-plugin-dx-tui-integration/scripts/fixtures/`: `catalog.json` (CatalogIndex schema with 1 entry pointing at file:// URLs), `seoul-subway.tar.gz` (containing `manifest.yaml` + `adapter.py` + minimal Pydantic v2 input/output schemas), `seoul-subway.intoto.jsonl` (SLSA provenance compatible with `KOSMOS_PLUGIN_SLSA_SKIP=true` test path). Reference: contracts/e2e-pty-scenario.md § L2 + spec/1636 contracts/manifest.schema.json.
+- [X] T031 [P] [US4] Author fixture catalog + bundle under `specs/1979-plugin-dx-tui-integration/scripts/fixtures/`: `catalog.json` (CatalogIndex schema with 1 entry pointing at file:// URLs), `seoul-subway.tar.gz` (containing `manifest.yaml` + `adapter.py` + minimal Pydantic v2 input/output schemas), `seoul-subway.intoto.jsonl` (SLSA provenance compatible with `KOSAX_PLUGIN_SLSA_SKIP=true` test path). Reference: contracts/e2e-pty-scenario.md § L2 + spec/1636 contracts/manifest.schema.json.
 - [X] T032 [P] [US4] Author L2 stdio JSONL probe `specs/1979-plugin-dx-tui-integration/scripts/smoke-stdio.sh` (executable shell script) that pipes raw `plugin_op_request` frames into backend stdio mode + captures the JSONL response stream → outputs `specs/1979-plugin-dx-tui-integration/smoke-stdio.jsonl`. Includes 4 inbound frames: list-before / install / permission-response / list-after / chat_request. Reference: contracts/e2e-pty-scenario.md § L2.
 - [X] T033 [P] [US4] Author L3 expect script `specs/1979-plugin-dx-tui-integration/scripts/smoke-1979.expect` driving the TUI under PTY (via `script(1)`) → outputs `smoke-1979.txt`. Covers happy path + 3 negative paths in sibling scripts: `smoke-1979-deny.expect` (consent N → exit_code=5), `smoke-1979-bad-name.expect` (catalog miss → exit_code=1), `smoke-1979-revoke.expect` (install + revoke + re-invoke fail-closed). Reference: contracts/e2e-pty-scenario.md § L3.
 - [X] T034 [P] [US4] Author L4 vhs `.tape` script `specs/1979-plugin-dx-tui-integration/scripts/smoke-1979.tape` driving the citizen scenario for visual review. Output: `specs/1979-plugin-dx-tui-integration/smoke-1979.gif` (gitignored). Reference: contracts/e2e-pty-scenario.md § L4 + memory `feedback_vhs_tui_smoke`.
@@ -186,14 +186,14 @@ description: "Task list for Epic #1979 — Plugin DX TUI integration"
 ```bash
 # After T003 (stdio.py arm) lands:
 # Run T005 + T006 in parallel (different files):
-Task: "Extend ToolRegistry with _inactive set + set_active/is_active/deregister methods in src/kosmos/tools/registry.py"
-Task: "Create IPCConsentBridge class in src/kosmos/plugins/consent_bridge.py"
+Task: "Extend ToolRegistry with _inactive set + set_active/is_active/deregister methods in src/kosax/tools/registry.py"
+Task: "Create IPCConsentBridge class in src/kosax/plugins/consent_bridge.py"
 
 # After T007 (progress_emitter param) lands:
 # Run T008 + T010 + T011 in parallel (different functions in dispatcher + new uninstall module):
-Task: "Implement handle_install in src/kosmos/ipc/plugin_op_dispatcher.py"
-Task: "Create uninstall_plugin in src/kosmos/plugins/uninstall.py"
-Task: "Implement handle_uninstall in src/kosmos/ipc/plugin_op_dispatcher.py"
+Task: "Implement handle_install in src/kosax/ipc/plugin_op_dispatcher.py"
+Task: "Create uninstall_plugin in src/kosax/plugins/uninstall.py"
+Task: "Implement handle_uninstall in src/kosax/ipc/plugin_op_dispatcher.py"
 
 # After T013 (boot wiring) lands:
 # Run T014 + T015 in parallel (different test files):
@@ -210,12 +210,12 @@ Task: "Author tests/ipc/test_consent_bridge.py"
 1. Complete Phase 1: Setup (T001 + T002 PTY baseline).
 2. Complete Phase 2: Foundational (T003–T006).
 3. Complete Phase 3: User Story 1 (T007–T015).
-4. **STOP and VALIDATE**: `pytest tests/ipc/test_plugin_op_dispatch.py tests/ipc/test_consent_bridge.py` + manual `kosmos --ipc stdio` against fixture catalog.
+4. **STOP and VALIDATE**: `pytest tests/ipc/test_plugin_op_dispatch.py tests/ipc/test_consent_bridge.py` + manual `kosax --ipc stdio` against fixture catalog.
 5. Citizen install loop is shippable as a partial MVP; defer Stories 2/3/4 to subsequent commits.
 
 ### Incremental Delivery
 
-- **MVP1** (Phases 1+2+3): Citizen can install — but `/plugin` is still routed to CC marketplace residue (T021 not yet done). Programmatic install via `uvx kosmos plugin install` shell entry-point works.
+- **MVP1** (Phases 1+2+3): Citizen can install — but `/plugin` is still routed to CC marketplace residue (T021 not yet done). Programmatic install via `uvx kosax plugin install` shell entry-point works.
 - **MVP2** (+Phase 4): Citizen can install + invoke. Programmatic-only install path; TUI slash command still mis-routed.
 - **MVP3** (+Phase 5 with T021 swap): Full citizen experience — `/plugin install <name>` + `/plugins` browser + auto-invoke after install.
 - **MVP4** (+Phase 6+7): E2E verified, deferred items tracked, ready for PR + Codex review.

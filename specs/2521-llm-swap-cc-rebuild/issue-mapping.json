@@ -53,7 +53,7 @@
     "T050": 2570
   },
   "deferred": {
-    "Apply Step A byte-copy + Step B swap methodology to the remaining ~218 modified KOSMOS files": 2571,
+    "Apply Step A byte-copy + Step B swap methodology to the remaining ~218 modified KOSAX files": 2571,
     "`tui/src/services/api/claude.ts` function-by-function audit BEYOND the byte-copy + swap step": 2572,
     "`citations_delta` / `connector_text_delta` / `server_tool_use` / `signature_delta` channel handlers": 2573,
     "Parallel/serial tool dispatch partitioning (CC `runTools` `partitionToolCalls` with `concurrencySafe`)": 2574,

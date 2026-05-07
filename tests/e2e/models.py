@@ -21,7 +21,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from kosmos.llm.models import TokenUsage
+from kosax.llm.models import TokenUsage
 
 # ---------------------------------------------------------------------------
 # 2.1 ScenarioTurn
@@ -206,7 +206,7 @@ class RunReport(BaseModel):
         # I7: fetched_adapter_ids count matches spans with adapter_id.
         # Enforced only when OTel SDK is enabled AND at least one adapter span exists
         # (span_adapter_count > 0).  When the executor does not yet emit
-        # kosmos.tool.adapter, span_adapter_count is 0 and I7 is not triggered —
+        # kosax.tool.adapter, span_adapter_count is 0 and I7 is not triggered —
         # this avoids false failures while the instrumentation is being built out.
         span_adapter_count = sum(1 for s in self.observability.spans if s.adapter_id is not None)
         if (

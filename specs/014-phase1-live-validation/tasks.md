@@ -31,8 +31,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Fix environment variable naming in .env.example (KOSMOS_DATA_GO_KR_KEY → KOSMOS_DATA_GO_KR_API_KEY) and add base URL documentation comment
-- [ ] T005 [P] Wire PermissionPipeline into QueryEngine.__init__ and QueryContext creation in src/kosmos/engine/engine.py
+- [ ] T004 Fix environment variable naming in .env.example (KOSAX_DATA_GO_KR_KEY → KOSAX_DATA_GO_KR_API_KEY) and add base URL documentation comment
+- [ ] T005 [P] Wire PermissionPipeline into QueryEngine.__init__ and QueryContext creation in src/kosax/engine/engine.py
 
 **Checkpoint**: Foundation ready — live tests can now be written and executed
 
@@ -124,7 +124,7 @@
 **Purpose**: Final validation across all stories and documentation updates
 
 - [ ] T022 Run complete test suite (mock + live) via `uv run pytest -v --tb=long` and verify SC-06 (zero failures)
-- [ ] T023 Run type checking via `uv run mypy src/kosmos` and linting via `uv run ruff check src/ tests/` — fix any regressions
+- [ ] T023 Run type checking via `uv run mypy src/kosax` and linting via `uv run ruff check src/ tests/` — fix any regressions
 - [ ] T024 [P] Run quickstart.md validation — execute all commands from specs/014-phase1-live-validation/quickstart.md and verify accuracy
 - [ ] T025 Document manual CLI Scenario 1 session results (SC-02 manual component) in PR description
 
@@ -187,7 +187,7 @@ Task: "Create shared live fixtures in tests/live/conftest.py"
 
 # Phase 2 parallel tasks:
 Task: "Fix .env.example naming in .env.example"
-Task: "Wire PermissionPipeline in src/kosmos/engine/engine.py"
+Task: "Wire PermissionPipeline in src/kosax/engine/engine.py"
 ```
 
 ---

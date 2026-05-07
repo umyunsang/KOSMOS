@@ -11,7 +11,7 @@ calls lookup(mode='fetch') and asserts:
   2. retryable=False.
   3. Zero upstream HTTP calls were made (respx call_count == 0).
 
-No KOSMOS_NMC_* env vars are required because the gate fires before any network IO.
+No KOSAX_NMC_* env vars are required because the gate fires before any network IO.
 """
 
 from __future__ import annotations
@@ -19,11 +19,11 @@ from __future__ import annotations
 import pytest
 import respx
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.lookup import lookup
-from kosmos.tools.models import LookupError, LookupFetchInput  # noqa: A004
-from kosmos.tools.nmc.emergency_search import register
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.lookup import lookup
+from kosax.tools.models import LookupError, LookupFetchInput  # noqa: A004
+from kosax.tools.nmc.emergency_search import register
+from kosax.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Fixture: test-local registry + executor with NMC registered
@@ -51,7 +51,7 @@ def nmc_executor(nmc_registry: ToolRegistry) -> ToolExecutor:
 
     from pydantic import BaseModel
 
-    from kosmos.tools.nmc.emergency_search import NmcEmergencySearchInput, handle
+    from kosax.tools.nmc.emergency_search import NmcEmergencySearchInput, handle
 
     async def _adapter(inp: BaseModel) -> dict[str, Any]:
         assert isinstance(inp, NmcEmergencySearchInput)

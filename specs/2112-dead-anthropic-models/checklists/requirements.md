@@ -2,7 +2,7 @@
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-04-28
-**Feature**: [spec.md](../spec.md) · Epic [#2112](https://github.com/umyunsang/KOSMOS/issues/2112)
+**Feature**: [spec.md](../spec.md) · Epic [#2112](https://github.com/umyunsang/KOSAX/issues/2112)
 
 ## Content Quality
 
@@ -49,5 +49,5 @@
 
 - **Validation status**: PASS on first iteration. Zero NEEDS CLARIFICATION markers; all mandatory sections complete; SCs are audit-grade and measurable.
 - **Spec author**: Lead (Opus, claude-opus-4-7).
-- **Phase 0 research**: `/tmp/kosmos-p1-research/phase0-deep-research.md` cited as the binding research input. Will be copied into `specs/2112-dead-anthropic-models/research.md` during `/speckit-plan`.
+- **Phase 0 research**: `/tmp/kosax-p1-research/phase0-deep-research.md` cited as the binding research input. Will be copied into `specs/2112-dead-anthropic-models/research.md` during `/speckit-plan`.
 - **Next phase**: Proceed directly to `/speckit-plan` (no `/speckit-clarify` needed — zero NEEDS CLARIFICATION markers).

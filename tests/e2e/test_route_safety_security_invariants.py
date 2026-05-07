@@ -16,9 +16,9 @@ from datetime import UTC, datetime
 import pytest
 from pydantic import ValidationError
 
-from kosmos.tools.errors import RegistrationError
-from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.errors import RegistrationError
+from kosax.tools.models import AdapterRealDomainPolicy, GovAPITool
+from kosax.tools.registry import ToolRegistry
 from tests.engine.conftest import MockInput, MockOutput
 
 # ---------------------------------------------------------------------------
@@ -149,10 +149,10 @@ def test_mvp_adapters_pass_v1_to_v6() -> None:
     This is the MVP meta-tool pattern: (public, AAL1) + requires_auth=True
     is explicitly documented as compliant (not an exemption).
     """
-    from kosmos.recovery.executor import RecoveryExecutor
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.kma.forecast_fetch import KMA_FORECAST_FETCH_TOOL
-    from kosmos.tools.koroad.accident_hazard_search import register as reg_koroad
+    from kosax.recovery.executor import RecoveryExecutor
+    from kosax.tools.executor import ToolExecutor
+    from kosax.tools.kma.forecast_fetch import KMA_FORECAST_FETCH_TOOL
+    from kosax.tools.koroad.accident_hazard_search import register as reg_koroad
 
     registry = ToolRegistry()
     recovery = RecoveryExecutor()

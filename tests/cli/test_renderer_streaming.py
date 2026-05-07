@@ -8,10 +8,10 @@ import io
 import pytest
 from rich.console import Console
 
-from kosmos.cli.renderer import EventRenderer
-from kosmos.cli.themes import get_theme
-from kosmos.engine.events import QueryEvent, StopReason
-from kosmos.llm.models import TokenUsage
+from kosax.cli.renderer import EventRenderer
+from kosax.cli.themes import get_theme
+from kosax.engine.events import QueryEvent, StopReason
+from kosax.llm.models import TokenUsage
 
 
 def _make_console() -> Console:
@@ -121,8 +121,8 @@ class TestThemeIntegration:
         assert renderer._theme is dark
 
     def test_default_theme_loaded_when_not_specified(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.delenv("KOSMOS_THEME", raising=False)
-        monkeypatch.delenv("KOSMOS_CLI_THEME", raising=False)
+        monkeypatch.delenv("KOSAX_THEME", raising=False)
+        monkeypatch.delenv("KOSAX_CLI_THEME", raising=False)
         console = _make_console()
         renderer = EventRenderer(console, streaming_markdown=False)
         assert renderer._theme == get_theme("default")

@@ -174,10 +174,10 @@ class TestCIDockerBuildJob:
 #   lint, test, dead-code
 #
 # TEST-COMMENT: The coverage gate is expressed as part of the pytest invocation:
-#   uv run pytest -n auto --cov=src/kosmos --cov-report=xml -m "not live"
+#   uv run pytest -n auto --cov=src/kosax --cov-report=xml -m "not live"
 # There is no --cov-fail-under flag currently; the gate is enforced via the
 # upload-artifact step and external tooling.  This test therefore checks for
-# the presence of the `--cov=src/kosmos` flag as the coverage gate token,
+# the presence of the `--cov=src/kosax` flag as the coverage gate token,
 # which confirms the coverage collection step is preserved in the test job.
 # ---------------------------------------------------------------------------
 
@@ -187,7 +187,7 @@ class TestCIPreservesExistingJobs:
     _EXPECTED_JOB_NAMES = ["lint", "test", "dead-code"]
 
     # Coverage gate token — present in the `run:` step of the `test` job
-    _COVERAGE_TOKEN = "--cov=src/kosmos"  # noqa: S105 — CLI flag, not a credential
+    _COVERAGE_TOKEN = "--cov=src/kosax"  # noqa: S105 — CLI flag, not a credential
 
     def test_ci_preserves_existing_jobs_and_coverage_gate(self):
         """T023e (FR-F01): ci.yml must retain lint, test, dead-code jobs and the
@@ -204,7 +204,7 @@ class TestCIPreservesExistingJobs:
 
         # Assert coverage gate token is present in at least one run step
         # TEST-COMMENT: Walk all steps of all jobs, collect run strings, and
-        # check that --cov=src/kosmos appears in at least one.
+        # check that --cov=src/kosax appears in at least one.
         all_run_strings: list[str] = []
         for job in jobs.values():
             if not isinstance(job, dict):

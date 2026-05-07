@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic ζ #2297 Phase 0b · T008 (revised post-smoke 2026-04-30)
+// KOSAX-original — Epic ζ #2297 Phase 0b · T008 (revised post-smoke 2026-04-30)
 //
 // Unit tests for dispatchPrimitive.ts (server-side-ack architecture).
 //
@@ -57,7 +57,7 @@ function fakeBridge(): IPCBridge {
 // Tests — server-side-ack contract
 // ---------------------------------------------------------------------------
 
-// KOSMOS hotfix #2519 (CC-original migration, 2026-04-30): the
+// KOSAX hotfix #2519 (CC-original migration, 2026-04-30): the
 // server-side-ack stub architecture this file tests was superseded by
 // the register-and-await pattern (see dispatchPrimitive.ts header).
 // The new architecture awaits a real ToolResultFrame from the backend;

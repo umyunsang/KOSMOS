@@ -19,11 +19,11 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.lookup import lookup
-from kosmos.tools.models import AdapterCandidate, LookupSearchInput, LookupSearchResult
-from kosmos.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL, register
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.lookup import lookup
+from kosax.tools.models import AdapterCandidate, LookupSearchInput, LookupSearchResult
+from kosax.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL, register
+from kosax.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Fixtures: test-local registry with only NMC registered

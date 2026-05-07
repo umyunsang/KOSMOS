@@ -2,7 +2,7 @@
 
 **Mirror axis**: shape
 **Source reference**: KFTC 마이데이터 표준 API v2.0 (2024-09-30 기준) — https://www.mydatacenter.or.kr (금융보안원 마이데이터 지원센터)
-**License**: Public standard (KFTC / FSS regulatory publication); KOSMOS mock is an independent re-implementation
+**License**: Public standard (KFTC / FSS regulatory publication); KOSAX mock is an independent re-implementation
 **Scope**: Reproduces the request/response shape for the KFTC MyData standard API v2.0 (revision date 2024-09-30) used for financial data aggregation, covering the OAuth 2.0 consent flow shape and the account/transaction data retrieval shape; does not reproduce the mTLS handshake or the KFTC inter-operator routing layer.
 
 ## What this mock reproduces
@@ -34,4 +34,4 @@ To update fixtures when a new spec version is published:
 
 ## Upstream divergence policy
 
-KFTC publishes numbered revisions of the MyData API standard. The `spec_version` in `tests/fixtures/mydata/meta.json` is the canonical revision marker. KOSMOS CI does not automatically detect standard updates — the engineering team must monitor KFTC release notices at mydatacenter.or.kr. When the spec version changes, treat it as a `mock-drift` event and review all affected endpoint shapes.
+KFTC publishes numbered revisions of the MyData API standard. The `spec_version` in `tests/fixtures/mydata/meta.json` is the canonical revision marker. KOSAX CI does not automatically detect standard updates — the engineering team must monitor KFTC release notices at mydatacenter.or.kr. When the spec version changes, treat it as a `mock-drift` event and review all affected endpoint shapes.

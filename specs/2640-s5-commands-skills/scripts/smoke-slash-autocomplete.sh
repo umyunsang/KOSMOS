@@ -3,7 +3,7 @@
 # Spec 2640 / Epic D — slash-autocomplete dropdown smoke
 #
 # Verifies (after Epic #2640 cleanup) that:
-#   (a) `bun run tui` boots to the KOSMOS branding,
+#   (a) `bun run tui` boots to the KOSAX branding,
 #   (b) the slash-autocomplete dropdown does NOT surface deleted commands
 #       (/ant-trace, /teleport, /share, /summary, /env, /issue, /good-claude,
 #        /bughunter, /perf-issue, /reset-limits, /backfill-sessions,
@@ -18,16 +18,16 @@
 set -euo pipefail
 
 # Stage 1 — boot
-# Wait for KOSMOS branding regex (Codex P2 — replace fixed sleeps with readiness
+# Wait for KOSAX branding regex (Codex P2 — replace fixed sleeps with readiness
 # waits per `feedback_debug_infra_rebuild` memory and Spec debug-infra-rebuild).
-wait_for_pane "KOSMOS|tool_registry" 30
+wait_for_pane "KOSAX|tool_registry" 30
 snapshot_pane "boot-branding"
 
 # Stage 2 — slash trigger
 send_text_pane "/"
 # Wait for the dropdown to render at least one common command name (proves
 # `getCommands()` resolved + the autocomplete view has reconciled). `/onboarding`,
-# `/lang`, and `/agents` are KOSMOS-original commands that are always registered
+# `/lang`, and `/agents` are KOSAX-original commands that are always registered
 # and visible in the dropdown when no prefix filter is active.
 wait_for_pane "/(onboarding|lang|agents|update-config|init|add-dir)" 10
 snapshot_pane "slash-dropdown"

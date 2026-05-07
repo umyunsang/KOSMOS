@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Live observability pipeline verification tests for KOSMOS.
+"""Live observability pipeline verification tests for KOSAX.
 
 Covers Epic #380 (spec 018, User Story 2): validates that ``MetricsCollector``
 and ``ObservabilityEventLogger`` wire correctly through the tool executor and
@@ -7,8 +7,8 @@ and ``ObservabilityEventLogger`` wire correctly through the tool executor and
 
 Prerequisites
 -------------
-* ``KOSMOS_FRIENDLI_TOKEN`` — FriendliAI Serverless API token
-* ``KOSMOS_DATA_GO_KR_API_KEY`` — data.go.kr shared API key (KOROAD)
+* ``KOSAX_FRIENDLI_TOKEN`` — FriendliAI Serverless API token
+* ``KOSAX_DATA_GO_KR_API_KEY`` — data.go.kr shared API key (KOROAD)
 
 Both variables are validated by the session-scoped ``friendli_token`` and
 ``koroad_api_key`` fixtures in ``tests/live/conftest.py``, which call
@@ -24,7 +24,7 @@ The spec contract uses abstract wire names (``tool.call.started``,
 ``tool.call.completed``, ``llm.stream.started``, ``llm.stream.completed``).
 The real Python implementation differs:
 
-Event types (``src/kosmos/observability/events.py``):
+Event types (``src/kosax/observability/events.py``):
   - ``"tool_call"`` — ONE event per ``ToolExecutor.dispatch()`` call,
     emitted in the ``finally`` block after the call completes (AC-A6).
     There are NO separate start/end pair events.
@@ -32,8 +32,8 @@ Event types (``src/kosmos/observability/events.py``):
     ``LLMClient.stream()`` call, emitted by ``_metrics_record_call()``.
     Again no start/end pair.
 
-Metric names (``src/kosmos/tools/executor.py``,
-             ``src/kosmos/llm/client.py``):
+Metric names (``src/kosax/tools/executor.py``,
+             ``src/kosax/llm/client.py``):
   - ``tool.call_count``   — labelled ``{tool_id=<name>}``  (NOT ``tool.calls.total``)
   - ``tool.duration_ms``  — labelled ``{tool_id=<name>}``  (NOT ``tool.latency_ms``)
   - ``llm.call_count``    — labelled ``{model=<model>}``   (NOT ``llm.requests.total``)
@@ -53,12 +53,12 @@ from typing import Any
 
 import pytest
 
-from kosmos.llm.client import LLMClient
-from kosmos.llm.models import ChatMessage
-from kosmos.observability.event_logger import ObservabilityEventLogger
-from kosmos.observability.metrics import MetricsCollector
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.registry import ToolRegistry
+from kosax.llm.client import LLMClient
+from kosax.llm.models import ChatMessage
+from kosax.observability.event_logger import ObservabilityEventLogger
+from kosax.observability.metrics import MetricsCollector
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.registry import ToolRegistry
 
 pytestmark = [pytest.mark.live, pytest.mark.asyncio]
 
@@ -85,7 +85,7 @@ def _build_executor(
     event_logger: ObservabilityEventLogger | None = None,
 ) -> ToolExecutor:
     """Return a minimal ToolExecutor wired with only the KOROAD tool."""
-    from kosmos.tools.koroad.koroad_accident_search import register as reg_koroad
+    from kosax.tools.koroad.koroad_accident_search import register as reg_koroad
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry=registry, metrics=metrics, event_logger=event_logger)
@@ -111,7 +111,7 @@ class _InMemoryLogHandler(logging.Handler):
         return record.getMessage()
 
 
-def _attach_capture_handler(logger_name: str = "kosmos.events") -> _InMemoryLogHandler:
+def _attach_capture_handler(logger_name: str = "kosax.events") -> _InMemoryLogHandler:
     """Attach an in-memory handler to *logger_name* and return it.
 
     Captures the prior logger level on the handler so ``_detach_handler`` can
@@ -127,7 +127,7 @@ def _attach_capture_handler(logger_name: str = "kosmos.events") -> _InMemoryLogH
     return handler
 
 
-def _detach_handler(handler: _InMemoryLogHandler, logger_name: str = "kosmos.events") -> None:
+def _detach_handler(handler: _InMemoryLogHandler, logger_name: str = "kosax.events") -> None:
     """Remove *handler* and restore the logger's prior level."""
     target = logging.getLogger(logger_name)
     target.removeHandler(handler)
@@ -156,7 +156,7 @@ async def test_live_metrics_collector_under_live_tool_call(
     Both counters are incremented once per dispatch() call.  The duration
     histogram receives exactly one positive-value sample per successful call.
     """
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", koroad_api_key)
+    monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", koroad_api_key)
 
     collector = MetricsCollector()
     executor = _build_executor(metrics=collector)
@@ -208,7 +208,7 @@ async def test_live_metrics_collector_under_live_llm_stream(
       ``llm.tokens.prompt``        → ``llm.call_duration_ms`` labelled {model=<model>}
       ``llm.tokens.completion``    → (no token histogram exists; duration is the proxy)
 
-    The LLMClient implementation (src/kosmos/llm/client.py) does NOT record
+    The LLMClient implementation (src/kosax/llm/client.py) does NOT record
     per-token histograms — it records call count and call duration only.
     Both are asserted here as counter delta ≥ 1 and duration > 0.
     """
@@ -263,7 +263,7 @@ async def test_live_event_logger_emits_tool_events(
       ``tool.call.completed`` → 'tool_call' event in the finally block of dispatch()
                                  with success=True and duration_ms > 0
 
-    Captured via a custom logging.Handler attached to the 'kosmos.events' logger,
+    Captured via a custom logging.Handler attached to the 'kosax.events' logger,
     which is the backing logger for ObservabilityEventLogger.  The handler receives
     log records whose message is the JSON-serialised ObservabilityEvent.
 
@@ -273,7 +273,7 @@ async def test_live_event_logger_emits_tool_events(
       - duration_ms is a non-negative float
       - success field is populated (bool)
     """
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", koroad_api_key)
+    monkeypatch.setenv("KOSAX_DATA_GO_KR_API_KEY", koroad_api_key)
 
     event_logger = ObservabilityEventLogger()
     handler = _attach_capture_handler()
@@ -289,7 +289,7 @@ async def test_live_event_logger_emits_tool_events(
     tool_events = [r for r in handler.records if r.get("event_type") == "tool_call"]
 
     assert len(tool_events) >= 1, (
-        f"Expected ≥1 tool_call event in 'kosmos.events' log, "
+        f"Expected ≥1 tool_call event in 'kosax.events' log, "
         f"got {len(tool_events)}. ToolResult.success={result.success}, error={result.error!r}. "
         f"All captured records: {handler.records!r}"
     )
@@ -349,7 +349,7 @@ async def test_live_event_logger_emits_llm_events(
     llm_events = [r for r in handler.records if r.get("event_type") == "llm_call"]
 
     assert len(llm_events) >= 1, (
-        f"Expected ≥1 llm_call event in 'kosmos.events' log, "
+        f"Expected ≥1 llm_call event in 'kosax.events' log, "
         f"got {len(llm_events)}. All captured records: {handler.records!r}"
     )
 

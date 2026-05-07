@@ -1,4 +1,4 @@
-# Smoke checklist — KOSMOS v0.1-alpha pre-merge gate (T033)
+# Smoke checklist — KOSAX v0.1-alpha pre-merge gate (T033)
 
 **Branch**: `feat/1637-p6-docs-smoke`
 **Run date**: 2026-04-26
@@ -9,7 +9,7 @@
 ## Capture procedure (replicable)
 
 ```bash
-cd /Users/um-yunsang/KOSMOS/tui
+cd /Users/um-yunsang/KOSAX/tui
 bun run scripts/dump-tui-frames.tsx
 ```
 

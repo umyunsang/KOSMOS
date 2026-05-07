@@ -3,7 +3,7 @@
 **Spec**: [spec.md](./spec.md) · **Plan**: [plan.md](./plan.md)
 **Generated**: 2026-04-25
 
-This is the citizen golden path: a fresh OS user opens KOSMOS for the first time, completes onboarding, runs a multi-ministry query, sees a Layer 2 permission prompt, and exports the conversation as PDF. Every step references the FRs it exercises, so this doc doubles as a manual smoke-test checklist for `/speckit-implement`.
+This is the citizen golden path: a fresh OS user opens KOSAX for the first time, completes onboarding, runs a multi-ministry query, sees a Layer 2 permission prompt, and exports the conversation as PDF. Every step references the FRs it exercises, so this doc doubles as a manual smoke-test checklist for `/speckit-implement`.
 
 > Run from repo root. Backend (Python) and TUI (Bun) run as one process via the existing `bun run tui` entry — no extra services to start.
 
@@ -11,7 +11,7 @@ This is the citizen golden path: a fresh OS user opens KOSMOS for the first time
 
 ```bash
 # clean slate (so onboarding fires)
-rm -rf ~/.kosmos/memdir/user/onboarding ~/.kosmos/memdir/user/preferences
+rm -rf ~/.kosax/memdir/user/onboarding ~/.kosax/memdir/user/preferences
 
 # Bun + dependencies
 cd tui && bun install            # installs pdf-to-img + pdf-lib once
@@ -20,17 +20,17 @@ cd tui && bun install            # installs pdf-to-img + pdf-lib once
 ## Step 1 — First launch fires the 5-step onboarding (FR-001..006)
 
 ```bash
-cd /path/to/KOSMOS
+cd /path/to/KOSAX
 bun run tui
 ```
 
 **Expected**:
 
-1. **Preflight** — Bun ≥ 1.2 ✓, terminal graphics protocol detected (Kitty / iTerm2 / none) ✓, `KOSMOS_*` env vars present ✓ (FR-001).
+1. **Preflight** — Bun ≥ 1.2 ✓, terminal graphics protocol detected (Kitty / iTerm2 / none) ✓, `KOSAX_*` env vars present ✓ (FR-001).
 2. **Theme** — UFO mascot idle pose renders in body `#a78bfa` over background `#4c1d95` (FR-035).
 3. **PIPA consent** — Screen displays the trustee notice; citizen presses `Y` (FR-006). A receipt is written via the Spec 033 IPC; the TUI shows `rcpt-<id>` in the toast (FR-018).
 4. **Ministry scope** — Citizen toggles a subset of ministries (KOROAD / KMA / HIRA / NMC / etc.).
-5. **Terminal setup** — Citizen toggles, e.g., `large_font = true` (FR-005). The change reflects in the next render frame (≤ 500 ms, SC-011) and `~/.kosmos/memdir/user/preferences/a11y.json` is written.
+5. **Terminal setup** — Citizen toggles, e.g., `large_font = true` (FR-005). The change reflects in the next render frame (≤ 500 ms, SC-011) and `~/.kosax/memdir/user/preferences/a11y.json` is written.
 
 REPL appears with the WelcomeV2 block (proposal-iv `EmptyState`) + the `?  /  ⇧⇥ mode` footer.
 
@@ -82,7 +82,7 @@ Citizen presses `Y`.
 
 - Toast appears: `발급됨 rcpt-7d3a8f...` (FR-018).
 - Tool call proceeds.
-- `kosmos.ui.surface=permission_gauntlet` OTEL span attribute is emitted (FR-037).
+- `kosax.ui.surface=permission_gauntlet` OTEL span attribute is emitted (FR-037).
 
 ## Step 5 — Inspect and revoke a receipt (FR-019..021)
 
@@ -169,7 +169,7 @@ Type `/`. Within 100 ms (SC-005) the dropdown shows all visible commands grouped
 **Expected**:
 
 - Progress overlay renders.
-- A PDF is written to `~/Downloads/kosmos-export-<timestamp>.pdf` (or platform default).
+- A PDF is written to `~/Downloads/kosax-export-<timestamp>.pdf` (or platform default).
 - Open the PDF. Verify it contains: conversation transcript, every tool call + result, every permission receipt with ID. Verify it does NOT contain any `traceId=` / `spanId=` / `pluginInternal:` markers (FR-032 / SC-012).
 
 ## Step 12 — History search (FR-033)

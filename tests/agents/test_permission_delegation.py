@@ -19,16 +19,16 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from kosmos.agents.consent import AlwaysGrantConsentGateway, ConsentGateway
-from kosmos.agents.context import AgentContext
-from kosmos.agents.coordinator import Coordinator
-from kosmos.agents.mailbox.messages import (
+from kosax.agents.consent import AlwaysGrantConsentGateway, ConsentGateway
+from kosax.agents.context import AgentContext
+from kosax.agents.coordinator import Coordinator
+from kosax.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     PermissionRequestPayload,
     PermissionResponsePayload,
 )
-from kosmos.agents.worker import Worker
+from kosax.agents.worker import Worker
 from tests.agents.conftest import StubLLMClient, build_test_registry
 
 # ---------------------------------------------------------------------------

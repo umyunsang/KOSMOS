@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1634 P3 · VerifyPrimitive.
+// KOSAX-original — Epic #1634 P3 · VerifyPrimitive.
 //
 // LLM-visible tool name: "verify"
-// Primitive wrapper over Spec 031 kosmos.primitives.verify.
+// Primitive wrapper over Spec 031 kosax.primitives.verify.
 // Delegates credential verification to an auth vendor — never mints credentials.
 //
 // Epic γ #2294 · T013/T014/T015: real validateInput + renderToolResultMessage.
@@ -32,16 +32,16 @@ import {
   renderVerboseInputJson,
   renderVerboseOutputJson,
 } from '../_shared/verboseRender.js'
-import { getOrCreateKosmosBridge } from '../../ipc/bridgeSingleton.js'
+import { getOrCreateKosaxBridge } from '../../ipc/bridgeSingleton.js'
 import { getOrCreatePendingCallRegistry } from '../../ipc/pendingCallSingleton.js'
 
 // ---------------------------------------------------------------------------
-// KOSMOS citation extension — augments context at runtime for permission UI.
+// KOSAX citation extension — augments context at runtime for permission UI.
 // Does NOT modify Tool.ts or ToolPermissionContext; uses a local cast to attach
 // the citation so FallbackPermissionRequest can surface verbatim agency text.
 // ---------------------------------------------------------------------------
 type ContextWithCitation = ToolUseContext & {
-  kosmosCitations?: AdapterCitation[]
+  kosaxCitations?: AdapterCitation[]
 }
 
 // ---------------------------------------------------------------------------
@@ -175,7 +175,7 @@ export const VerifyPrimitive = buildTool({
       const backendEntry = resolveAdapter(input.tool_id)
       if (backendEntry) {
         if (backendEntry.source_mode === 'internal') {
-          ;(context as ContextWithCitation).kosmosCitations = []
+          ;(context as ContextWithCitation).kosaxCitations = []
           return { result: true as const }
         }
         if (!backendEntry.policy_authority_url) {
@@ -189,7 +189,7 @@ export const VerifyPrimitive = buildTool({
           real_classification_url: backendEntry.policy_authority_url,
           policy_authority: backendEntry.name,
         }
-        ;(context as ContextWithCitation).kosmosCitations = [citation]
+        ;(context as ContextWithCitation).kosaxCitations = [citation]
         return { result: true as const }
       }
     }
@@ -208,7 +208,7 @@ export const VerifyPrimitive = buildTool({
           errorCode: PrimitiveErrorCode.CitationMissing,
         }
       }
-      ;(context as ContextWithCitation).kosmosCitations = [citation]
+      ;(context as ContextWithCitation).kosaxCitations = [citation]
       return { result: true as const }
     }
 
@@ -239,7 +239,7 @@ export const VerifyPrimitive = buildTool({
     if (options.verbose || options.isTranscriptMode) {
       return renderVerboseOutputJson(output)
     }
-    // KOSMOS hotfix #2519 — after dispatchPrimitive register-and-await
+    // KOSAX hotfix #2519 — after dispatchPrimitive register-and-await
     // rewrite, output.result is the actual verify primitive output
     // unwrapped from ToolResultEnvelope.result.
     if (output.ok === true) {
@@ -310,7 +310,7 @@ export const VerifyPrimitive = buildTool({
       const verifyLabel = isMock ? mockLabel(statusLabel) : statusLabel
       const verifyColor = isMock ? ('cyan' as never) : (statusColor as never)
 
-      // KOSMOS hotfix #2519 — wrap in <MessageResponse> for the CC ⎿ prefix.
+      // KOSAX hotfix #2519 — wrap in <MessageResponse> for the CC ⎿ prefix.
       return React.createElement(
         MessageResponse,
         null,
@@ -370,7 +370,7 @@ export const VerifyPrimitive = buildTool({
    * verify delegates to an external auth vendor (credentials, 공인인증서,
    * 간편인증). Always ask for citizen permission before proceeding.
    * Spec 024 invariant: adapters cite agency policy; the permission gauntlet
-   * surfaces that citation via context.kosmosCitations (set in validateInput).
+   * surfaces that citation via context.kosaxCitations (set in validateInput).
    */
   async checkPermissions(_input) {
     return {
@@ -391,7 +391,7 @@ export const VerifyPrimitive = buildTool({
       args: input as Record<string, unknown>,  // forwarded verbatim (I-D8)
       context,
       registry: getOrCreatePendingCallRegistry(),
-      bridge: getOrCreateKosmosBridge(),
+      bridge: getOrCreateKosaxBridge(),
     })
   },
 } satisfies ToolDef<InputSchema, Output>)

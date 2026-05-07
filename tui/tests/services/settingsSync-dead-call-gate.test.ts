@@ -2,7 +2,7 @@
 // Spec 2641 · T006 — settingsSync dead-call gate unit tests.
 //
 // Verifies the public entry-points return early (silent-skip variant)
-// when KOSMOS_ENABLE_DEAD_SETTINGS_SYNC is unset (the production state).
+// when KOSAX_ENABLE_DEAD_SETTINGS_SYNC is unset (the production state).
 // Unlike teamMemorySync (whose entry-points throw), settingsSync is still
 // reachable from cli/print.ts + commands/reload-plugins/ — so the gate
 // must NOT throw or the boot path breaks. The contract is "return false /
@@ -16,7 +16,7 @@ import {
   uploadUserSettingsInBackground,
 } from '../../src/services/settingsSync/index'
 
-const ENV_KEY = 'KOSMOS_ENABLE_DEAD_SETTINGS_SYNC'
+const ENV_KEY = 'KOSAX_ENABLE_DEAD_SETTINGS_SYNC'
 
 describe('settingsSync dead-call gate (Spec 2641)', () => {
   let originalEnv: string | undefined

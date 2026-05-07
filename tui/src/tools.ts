@@ -24,11 +24,11 @@ import { ExportPDFTool } from './tools/ExportPDFTool/ExportPDFTool.js'
 // BriefTool, WebFetchTool, WebSearchTool — 14+ dev/auxiliary tools) are
 // retained at compile-time but NOT registered in getAllBaseTools() (post-P3).
 //
-// Why: KOSMOS 13-tool citizen-facing surface (Spec 1634 P3 contracts/
+// Why: KOSAX 13-tool citizen-facing surface (Spec 1634 P3 contracts/
 // primitive-envelope.md § 1) excludes CC dev tools from LLM visibility.
 // However, permissions/sandbox/attachments infrastructure references the
 // tool name constants (FR-013 scope correction, #1757) — removing imports
-// would break those references and create KOSMOS-only divergence with CC
+// would break those references and create KOSAX-only divergence with CC
 // (CORE THESIS violation).
 //
 // Outside-caller counts (measured 2026-05-03, Spec 2638 specify): BashTool 196,
@@ -60,7 +60,7 @@ const REPLTool =
   process.env.USER_TYPE === 'ant'
     ? require('./tools/REPLTool/REPLTool.js').REPLTool
     : null
-// KOSMOS Spec 1633 / Epic #2293 — SuggestBackgroundPRTool deleted (claude-code dev workflow tool).
+// KOSAX Spec 1633 / Epic #2293 — SuggestBackgroundPRTool deleted (claude-code dev workflow tool).
 const SuggestBackgroundPRTool = null
 const SleepTool =
   feature('PROACTIVE') || feature('KAIROS')
@@ -76,7 +76,7 @@ const cronTools = feature('AGENT_TRIGGERS')
 const RemoteTriggerTool = feature('AGENT_TRIGGERS_REMOTE')
   ? require('./tools/RemoteTriggerTool/RemoteTriggerTool.js').RemoteTriggerTool
   : null
-// KOSMOS Spec 1633 / Epic #2293 — MonitorTool deleted (claude-code dev workflow tool).
+// KOSAX Spec 1633 / Epic #2293 — MonitorTool deleted (claude-code dev workflow tool).
 const MonitorTool = null
 const SendUserFileTool = feature('KAIROS')
   ? require('./tools/SendUserFileTool/SendUserFileTool.js').SendUserFileTool
@@ -96,7 +96,7 @@ import { TodoWriteTool } from './tools/TodoWriteTool/TodoWriteTool.js'
 import { ExitPlanModeV2Tool } from './tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
 import { TestingPermissionTool } from './tools/testing/TestingPermissionTool.js'
 import { GrepTool } from './tools/GrepTool/GrepTool.js'
-// KOSMOS Spec 1633 / Epic #2293 — TungstenTool deleted (claude-code internal tool).
+// KOSAX Spec 1633 / Epic #2293 — TungstenTool deleted (claude-code internal tool).
 const TungstenTool = null
 // Lazy require to break circular dependency: tools.ts -> TeamCreateTool/TeamDeleteTool -> ... -> tools.ts
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -128,7 +128,7 @@ import { isToolSearchEnabledOptimistic } from './utils/toolSearch.js'
 import { isTodoV2Enabled } from './utils/tasks.js'
 // Dead code elimination: conditional import for CLAUDE_CODE_VERIFY_PLAN
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
-// KOSMOS Spec 1633 / Epic #2293 — VerifyPlanExecutionTool deleted (claude-code dev workflow tool).
+// KOSAX Spec 1633 / Epic #2293 — VerifyPlanExecutionTool deleted (claude-code dev workflow tool).
 const VerifyPlanExecutionTool = null
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 import { SYNTHETIC_OUTPUT_TOOL_NAME } from './tools/SyntheticOutputTool/SyntheticOutputTool.js'
@@ -163,8 +163,8 @@ const SnipTool = feature('HISTORY_SNIP')
 const ListPeersTool = feature('UDS_INBOX')
   ? require('./tools/ListPeersTool/ListPeersTool.js').ListPeersTool
   : null
-// KOSMOS Spec 1633 / Epic #2293 — WorkflowTool deleted (claude-code multi-step
-// workflow tool; KOSMOS uses primitive chains via system prompt).
+// KOSAX Spec 1633 / Epic #2293 — WorkflowTool deleted (claude-code multi-step
+// workflow tool; KOSAX uses primitive chains via system prompt).
 const WorkflowTool = null
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 import type { ToolPermissionContext } from './Tool.js'
@@ -248,7 +248,7 @@ export function getToolsForDefaultPreset(): string[] {
 export function getAllBaseTools(): Tools {
   return [
     // Active reserved primitives — FR-001 / Spec 031.
-    // subscribe is intentionally not LLM-visible until KOSMOS has an app/push
+    // subscribe is intentionally not LLM-visible until KOSAX has an app/push
     // notification surface that matches the real national-service model.
     LookupPrimitive,
     ResolveLocationPrimitive,
@@ -303,7 +303,7 @@ export const getTools = (permissionContext: ToolPermissionContext): Tools => {
     // return REPL instead of the raw primitives. Matches the non-bare path
     // below which also hides REPL_ONLY_TOOLS when REPL is enabled.
     // SWAP-2-PRESERVE: byte-identical with CC tools.ts:277. The `&& REPLTool` guard
-    // makes this branch provably dead in KOSMOS (REPLTool=null per Spec 1633 / Epic #2293)
+    // makes this branch provably dead in KOSAX (REPLTool=null per Spec 1633 / Epic #2293)
     // even when isReplModeEnabled() is true via CLAUDE_REPL_MODE or USER_TYPE=ant.
     // Branch preserved for CC parity (CORE THESIS: byte-identical default).
     if (isReplModeEnabled() && REPLTool) {

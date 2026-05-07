@@ -16,15 +16,15 @@ This document discharges Phase 8 polish obligations T074–T077 in `tasks.md`:
 
 ## 1 · CC 2.1.88 fidelity scoring (T075, FR-034 / SC-009)
 
-Methodology — for each surface: (a) the KOSMOS component is graded against the matching CC restored-src construct on visual layout (frame, glyphs, color tokens), structural composition (component hierarchy, hooks, props), and behavioral parity (key bindings, state transitions). Scoring is per-axis (visual / structural / behavioral) on a 0–100 scale with the surface's overall score being the minimum across the three axes (worst-case is the binding constraint).
+Methodology — for each surface: (a) the KOSAX component is graded against the matching CC restored-src construct on visual layout (frame, glyphs, color tokens), structural composition (component hierarchy, hooks, props), and behavioral parity (key bindings, state transitions). Scoring is per-axis (visual / structural / behavioral) on a 0–100 scale with the surface's overall score being the minimum across the three axes (worst-case is the binding constraint).
 
-| # | Surface | KOSMOS file | CC reference | Visual | Structural | Behavioral | Overall |
+| # | Surface | KOSAX file | CC reference | Visual | Structural | Behavioral | Overall |
 |---|---|---|---|---:|---:|---:|---:|
 | 1 | REPL streaming | `tui/src/components/messages/StreamingChunk.tsx` | `cc:components/Messages.tsx` + `Message.tsx` + `VirtualMessageList.tsx` | 95 | 95 | 95 | **95** |
 | 2 | Ctrl-O expand | `tui/src/components/PromptInput/CtrlOToExpand.tsx` | `cc:components/CtrlOToExpand.tsx` | 100 | 100 | 95 | **95** |
-| 3 | PDF inline | `tui/src/components/messages/PdfInlineViewer.tsx` | KOSMOS-original (Kitty/iTerm2 detect + pdf-to-img) | 92 | 90 | 95 | **90** |
+| 3 | PDF inline | `tui/src/components/messages/PdfInlineViewer.tsx` | KOSAX-original (Kitty/iTerm2 detect + pdf-to-img) | 92 | 90 | 95 | **90** |
 | 4 | Markdown table | `tui/src/components/messages/MarkdownTable.tsx` | `cc:components/MarkdownTable.tsx` | 100 | 100 | 100 | **100** (1:1 re-export) |
-| 5 | Error envelope | `tui/src/components/messages/ErrorEnvelope.tsx` | `cc:components/FallbackToolUseErrorMessage.tsx` + KOSMOS extension | 92 | 90 | 95 | **90** |
+| 5 | Error envelope | `tui/src/components/messages/ErrorEnvelope.tsx` | `cc:components/FallbackToolUseErrorMessage.tsx` + KOSAX extension | 92 | 90 | 95 | **90** |
 | 6 | Quote block ⎿ | `tui/src/components/messages/ContextQuoteBlock.tsx` | CC `⎿` glyph in `Message.tsx` | 95 | 95 | 95 | **95** |
 | 7 | Slash autocomplete | `tui/src/components/PromptInput/SlashCommandSuggestions.tsx` | `cc:components/ContextSuggestions.tsx` (inspiration) | 92 | 90 | 95 | **90** |
 | 8 | Permission modal Layer 1/2/3 | `tui/src/components/permissions/PermissionGauntletModal.tsx` + `PermissionLayerHeader.tsx` | `cc:components/permissions/PermissionDialog.tsx` + `PermissionRequestTitle.tsx` + `PermissionExplanation.tsx` | 95 | 95 | 95 | **95** |
@@ -35,18 +35,18 @@ Methodology — for each surface: (a) the KOSMOS component is graded against the
 | 13 | HelpV2 4-group | `tui/src/components/help/HelpV2Grouped.tsx` | `cc:components/HelpV2/{HelpV2,Commands,General}.tsx` | 95 | 95 | 95 | **95** |
 | 14 | Config overlay + .env editor | `tui/src/components/config/{ConfigOverlay,EnvSecretIsolatedEditor}.tsx` | `cc:components/InvalidConfigDialog.tsx` (overlay primitive) | 92 | 90 | 95 | **90** |
 | 15 | Plugin browser | `tui/src/components/plugins/PluginBrowser.tsx` | `cc:components/CustomSelect/` (key-driven menu) | 95 | 95 | 95 | **95** |
-| 16 | Export PDF dialog | `tui/src/components/export/ExportPdfDialog.tsx` | `cc:components/ExportDialog.tsx` + KOSMOS pdf-lib assembly | 92 | 90 | 95 | **90** |
+| 16 | Export PDF dialog | `tui/src/components/export/ExportPdfDialog.tsx` | `cc:components/ExportDialog.tsx` + KOSAX pdf-lib assembly | 92 | 90 | 95 | **90** |
 | 17 | History 3-filter search | `tui/src/components/history/HistorySearchDialog.tsx` | `cc:components/HistorySearchDialog.tsx` | 95 | 95 | 95 | **95** |
 
 **Summary**: every surface scores ≥ 90 across visual, structural, and behavioral axes. SC-009 target (≥ 90% fidelity per surface) is **PASS**.
 
 Notes per surface scored at 90:
-- **PDF inline (S3)** — KOSMOS-original (no CC analog for inline PDF); the 90 score reflects parity with CC's general "Kitty graphics protocol" usage pattern in image rendering.
-- **ErrorEnvelope (S5)** — three differentiated styles is a KOSMOS extension; CC has only the single-style `FallbackToolUseErrorMessage`. Score reflects faithful extension rather than divergence.
-- **Slash autocomplete (S7)** — KOSMOS adds catalog SSOT consumption; visual + structural fidelity to CC's `ContextSuggestions` dropdown shape.
-- **Onboarding flow (S11)** — CC's Onboarding has API-key/OAuth/font steps; KOSMOS replaces those with PIPA/ministry-scope/a11y per the migration tree. Step-driver architecture is 1:1.
-- **Config overlay (S14)** — KOSMOS adds `.env` secret isolation (KOSMOS-original safeguard); CC's `InvalidConfigDialog` is a different use case. Score reflects layout parity.
-- **Export PDF (S16)** — assembly via `pdf-lib` is KOSMOS-original; score reflects dialog layout parity with CC's `ExportDialog`.
+- **PDF inline (S3)** — KOSAX-original (no CC analog for inline PDF); the 90 score reflects parity with CC's general "Kitty graphics protocol" usage pattern in image rendering.
+- **ErrorEnvelope (S5)** — three differentiated styles is a KOSAX extension; CC has only the single-style `FallbackToolUseErrorMessage`. Score reflects faithful extension rather than divergence.
+- **Slash autocomplete (S7)** — KOSAX adds catalog SSOT consumption; visual + structural fidelity to CC's `ContextSuggestions` dropdown shape.
+- **Onboarding flow (S11)** — CC's Onboarding has API-key/OAuth/font steps; KOSAX replaces those with PIPA/ministry-scope/a11y per the migration tree. Step-driver architecture is 1:1.
+- **Config overlay (S14)** — KOSAX adds `.env` secret isolation (KOSAX-original safeguard); CC's `InvalidConfigDialog` is a different use case. Score reflects layout parity.
+- **Export PDF (S16)** — assembly via `pdf-lib` is KOSAX-original; score reflects dialog layout parity with CC's `ExportDialog`.
 
 ---
 
@@ -70,7 +70,7 @@ bun test tests/components/export/ExportPdfDialog.test.ts
 
 ```bash
 # Run the TUI, execute /export in-session, then:
-grep -E 'traceId=|spanId=|pluginInternal:' ~/Downloads/kosmos-export_*.pdf
+grep -E 'traceId=|spanId=|pluginInternal:' ~/Downloads/kosax-export_*.pdf
 # Expected output: empty (zero matches).
 ```
 
@@ -127,7 +127,7 @@ Manual interactive walk-through requires `bun run tui` execution; the component-
 | 12. `/history` filters | FR-033 | `HistorySearchDialog` + `applyHistoryFilters` AND composition | 11 history tests |
 | 13. `/lang en` fallback | FR-004 | `commands/lang.ts` + `getCurrentLocale()` + `getUiL2I18n('en')` | 12 lang tests |
 
-**Aggregate**: 309 / 310 UI-L2-scoped tests pass. The 1 non-passing test is a `PdfInlineViewer` runtime polyfill warning unrelated to KOSMOS code (Bun runtime lacks `DOMMatrix`/`Path2D` for headless PDF render preview — production path uses Kitty/iTerm2 graphics protocol, not headless render).
+**Aggregate**: 309 / 310 UI-L2-scoped tests pass. The 1 non-passing test is a `PdfInlineViewer` runtime polyfill warning unrelated to KOSAX code (Bun runtime lacks `DOMMatrix`/`Path2D` for headless PDF render preview — production path uses Kitty/iTerm2 graphics protocol, not headless render).
 
 **T074 verdict**: every quickstart step has automated test evidence. Operator-driven manual walk-through is recommended after the integrated PR merges to capture screenshot evidence.
 
@@ -137,7 +137,7 @@ Manual interactive walk-through requires `bun run tui` execution; the component-
 
 | Phase 8 obligation | Status |
 |---|---|
-| T073 — Full bun:test suite | 309 / 310 UI-L2 pass (1 pre-existing infra warning, 0 KOSMOS regressions) |
+| T073 — Full bun:test suite | 309 / 310 UI-L2 pass (1 pre-existing infra warning, 0 KOSAX regressions) |
 | T074 — Quickstart 13-step walk-through evidence | PASS (component-level tests cover all 13 steps) |
 | T075 — CC 2.1.88 fidelity scoring | PASS (every surface ≥ 90, average ≈ 93) |
 | T076 — Zero new external network egress | PASS (static analysis confirms 0 new egress; runtime `lsof` command available) |

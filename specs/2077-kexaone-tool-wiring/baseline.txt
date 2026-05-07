@@ -28,7 +28,7 @@ Recorded at T001 pre-flight on branch `2077-kexaone-tool-wiring` at HEAD `523b52
 ## Verification context
 
 - Branch: `2077-kexaone-tool-wiring` (✓)
-- `.env` carries `KOSMOS_FRIENDLI_TOKEN` (✓ grep -c = 1)
+- `.env` carries `KOSAX_FRIENDLI_TOKEN` (✓ grep -c = 1)
 - Spec docs present: spec.md, plan.md, research.md, data-model.md, 5 contracts/, quickstart.md, tasks.md (✓ all 10)
 - Sub-issues linked to Epic #2077: 32 (verified via GraphQL `subIssues.totalCount` after `/speckit-taskstoissues`)
 

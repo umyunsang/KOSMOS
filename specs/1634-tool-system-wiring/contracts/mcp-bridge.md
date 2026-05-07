@@ -1,4 +1,4 @@
-# Contract: stdio MCP Bridge (TUI ↔ KOSMOS Python backend)
+# Contract: stdio MCP Bridge (TUI ↔ KOSAX Python backend)
 
 **Spec**: [../spec.md](../spec.md) | **Plan**: [../plan.md](../plan.md) | **Data Model**: [../data-model.md](../data-model.md)
 
@@ -27,15 +27,15 @@ tui/src/ipc/mcp.ts ── MCP client ──┐
                                     │
                                     │ (subprocess stdio)
                                     ▼
-       src/kosmos/ipc/stdio.py (Spec 032 transport — UNCHANGED)
+       src/kosax/ipc/stdio.py (Spec 032 transport — UNCHANGED)
                                     │
                                     │ JSONL frame
                                     ▼
-src/kosmos/ipc/mcp_server.py ── MCP server ──┐
+src/kosax/ipc/mcp_server.py ── MCP server ──┐
                                               │
                                               │ Python call: lookup(mode=…, query=…)
                                               ▼
-                       src/kosmos/tools/lookup.py + registry.py + routing_index.py
+                       src/kosax/tools/lookup.py + registry.py + routing_index.py
 ```
 
 ## 2. Handshake (MCP `initialize` exchange)
@@ -44,8 +44,8 @@ src/kosmos/ipc/mcp_server.py ── MCP server ──┐
 
 | Step | Direction | Method | Body |
 |---|---|---|---|
-| 1 | client → server | `initialize` | `{protocolVersion: "2025-06-18", capabilities: {tools: {}}, clientInfo: {name: "kosmos-tui", version: "<package.json>"}}` |
-| 2 | server → client | `initialize` response | `{protocolVersion: "2025-06-18", capabilities: {tools: {listChanged: false}}, serverInfo: {name: "kosmos-backend", version: "<__version__>"}}` |
+| 1 | client → server | `initialize` | `{protocolVersion: "2025-06-18", capabilities: {tools: {}}, clientInfo: {name: "kosax-tui", version: "<package.json>"}}` |
+| 2 | server → client | `initialize` response | `{protocolVersion: "2025-06-18", capabilities: {tools: {listChanged: false}}, serverInfo: {name: "kosax-backend", version: "<__version__>"}}` |
 | 3 | client → server | `notifications/initialized` | `{}` |
 | 4 | client → server | `tools/list` | `{}` |
 | 5 | server → client | `tools/list` response | `{tools: [<13 entries from contracts/primitive-envelope.md § 1>]}` |
@@ -59,17 +59,17 @@ src/kosmos/ipc/mcp_server.py ── MCP server ──┐
 
 Budget allocations:
 - Process spawn + Python interpreter cold start: ≤ 250 ms
-- `kosmos.tools.register_all` import + registry build: ≤ 150 ms
+- `kosax.tools.register_all` import + registry build: ≤ 150 ms
 - 5 frame round-trips at ≤ 20 ms each (Spec 032 stdio baseline): ≤ 100 ms
 
 ### 2.3 Failure modes
 
 | Failure | MCP response | TUI behavior |
 |---|---|---|
-| Backend process exit during handshake | (transport-level EOF detected by `bridge.ts`) | TUI shows "tool subsystem unavailable — restart KOSMOS" — never an empty tool list (FR-023) |
+| Backend process exit during handshake | (transport-level EOF detected by `bridge.ts`) | TUI shows "tool subsystem unavailable — restart KOSAX" — never an empty tool list (FR-023) |
 | Backend returns `error` to `initialize` | JSON-RPC error response with code | TUI shows the error text; never proceeds with empty tool list |
 | `tools/list` returns 0 tools | (treated as failure, not success) | TUI shows "tool subsystem returned no tools — diagnostic snapshot at <path>"; never proceeds |
-| Handshake exceeds cold budget by 2× | (no protocol error; perf alert) | TUI logs WARN to stderr but proceeds (citizen experience prioritized over budget); OTEL span carries `kosmos.mcp.handshake_ms` attribute for monitoring |
+| Handshake exceeds cold budget by 2× | (no protocol error; perf alert) | TUI logs WARN to stderr but proceeds (citizen experience prioritized over budget); OTEL span carries `kosax.mcp.handshake_ms` attribute for monitoring |
 
 ## 3. Tool call (`tools/call`) frames
 
@@ -146,7 +146,7 @@ Standard JSON-RPC 2.0 error envelope:
 
 - Frame envelope with `correlation_id` for request/response matching
 - Ring buffer for pending responses
-- Heartbeat (KOSMOS_IPC_HEARTBEAT_MS)
+- Heartbeat (KOSAX_IPC_HEARTBEAT_MS)
 - LRU transaction cache for resume after stdio disconnect
 - Fsync-on-write semantics for the mailbox-style replay log (Spec 027)
 
@@ -163,13 +163,13 @@ Standard JSON-RPC 2.0 error envelope:
 - Tool list serialization from `RoutingIndex.by_tool_id` + auxiliary tool registry
 - `tools/call` → primitive dispatch routing
 - Conversion of Pydantic `ValidationError` to MCP `error` envelope (§ 3.4)
-- OTEL span attributes: `kosmos.mcp.handshake_ms`, `kosmos.mcp.tool_call_id`, `kosmos.mcp.protocol_version`
+- OTEL span attributes: `kosax.mcp.handshake_ms`, `kosax.mcp.tool_call_id`, `kosax.mcp.protocol_version`
 
 ## 5. Schema versioning
 
-The `protocolVersion` exchanged in § 2.1 follows the upstream MCP version (`2025-06-18` at time of writing). KOSMOS does NOT introduce a custom MCP dialect. If MCP releases a new version, KOSMOS bumps both `mcp.ts` and `mcp_server.py` in lockstep behind a single ADR (`docs/adr/`).
+The `protocolVersion` exchanged in § 2.1 follows the upstream MCP version (`2025-06-18` at time of writing). KOSAX does NOT introduce a custom MCP dialect. If MCP releases a new version, KOSAX bumps both `mcp.ts` and `mcp_server.py` in lockstep behind a single ADR (`docs/adr/`).
 
 ## 6. Out-of-scope for this contract
 
-- The `tui/src/tools/MCPTool/` external-MCP passthrough (a separate concern — that one connects the LLM to *external* MCP servers; this contract is for the TUI ↔ KOSMOS internal bridge).
-- The `mcp/resources` and `mcp/prompts` MCP capabilities — KOSMOS exposes only `tools/*`. Resource/prompt capabilities are listed as `{}` in the `initialize` capabilities. Extending the server to advertise these capabilities is not planned; no commitment.
+- The `tui/src/tools/MCPTool/` external-MCP passthrough (a separate concern — that one connects the LLM to *external* MCP servers; this contract is for the TUI ↔ KOSAX internal bridge).
+- The `mcp/resources` and `mcp/prompts` MCP capabilities — KOSAX exposes only `tools/*`. Resource/prompt capabilities are listed as `{}` in the `initialize` capabilities. Extending the server to advertise these capabilities is not planned; no commitment.

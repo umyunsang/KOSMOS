@@ -8,11 +8,11 @@ This document resolves every `NEEDS CLARIFICATION` from the Technical Context (t
 
 Every design decision is traceable to either the frozen design doc or a reference repository. The table below satisfies the mandatory reference-mapping check.
 
-| Decision | Frozen §§ | Primary reference | Secondary reference | Adaptation for KOSMOS |
+| Decision | Frozen §§ | Primary reference | Secondary reference | Adaptation for KOSAX |
 |---|---|---|---|---|
 | Two-tool facade (`resolve_location` + `lookup`) | §3, §4, §5 | Anthropic Tool Search Tool (platform.claude.com docs) | Arcade BM25 replication (`blog.arcade.dev/anthropic-tool-search-claude-mcp-runtime`) | `search_hint` field holds Korean+English morphemes; BM25 tokenized with `kiwipiepy` instead of plain whitespace |
 | Discriminated-union outputs (`LookupRecord|Collection|Timeseries|Error`) | §5.4 | `.references/claude-reviews-claude/docs/chapters/02-tool-system.md` (tool factory, deferred tools) | Pydantic AI v2 schema-driven registry | Four shapes chosen to cover the seed matrix (point / list / time-series / error) without ad-hoc envelopes per adapter |
-| `mode="search"` BM25 gate over cold-path adapters | §5, §5.5 | AnyTool (arXiv:2402.04253) hierarchical router | Cursor Dynamic Context Discovery (46.9% prod A/B) | `top_k` is adaptive: `min(KOSMOS_LOOKUP_TOPK, len(registry))` to handle sparse MVP registry |
+| `mode="search"` BM25 gate over cold-path adapters | §5, §5.5 | AnyTool (arXiv:2402.04253) hierarchical router | Cursor Dynamic Context Discovery (46.9% prod A/B) | `top_k` is adaptive: `min(KOSAX_LOOKUP_TOPK, len(registry))` to handle sparse MVP registry |
 | `mode="fetch"` typed invocation with fail-closed gate | §5.6, §8.1 | OpenAI Agents SDK guardrail pipeline | Claude Code reconstructed permission model (`.references/claude-reviews-claude/chapters/`) | Layer 3 ships as *interface only* — the short-circuit returns `LookupError(reason="auth_required")` from a stub guard before the handler executes |
 | `resolve_location` 3-provider deterministic dispatch (Kakao → JUSO → SGIS) | §4 | Kakao Local API docs + juso.go.kr + sgis.kostat.go.kr | `docs/vision.md § Layer 2 — Tool System` | Dispatch order is deterministic (not parallel fan-out) to keep provenance traceable in the `source` field |
 | `ResolveWant` enum with `coords_and_admcd` default | §4 (Q5) | `docs/design/mvp-tools.md` frozen decision Q5 | — | `all` is opt-in only; adapter-specific conventions (KMA grid, KOROAD sido/gugun) derived inside adapters, not exposed as `want` values |
@@ -78,7 +78,7 @@ Two new runtime dependencies land in `pyproject.toml` via this spec PR (per `AGE
 
 ### 3.1 `rank_bm25`
 
-- **License**: Apache-2.0 (compatible with KOSMOS Apache-2.0)
+- **License**: Apache-2.0 (compatible with KOSAX Apache-2.0)
 - **Role**: BM25 scoring for `lookup(mode="search")`
 - **Alternatives considered**:
   - Whoosh / Lucene-py — heavier, bring their own tokenizer assumptions; rejected per §5.5 of design doc
@@ -135,7 +135,7 @@ Each adapter's upstream API was previously scoped in the frozen design. Phase 0 
 - **Upstream**: 국립중앙의료원 실시간 응급실 — `getEmrrmRltmSrmInfoInqire` (real-time bed counts)
 - **PII classification**: adapter declares `is_personal_data=True` because real-time bed-count + hospital-roster overlap with identifiable patient flow; citizen consent required for operational use per PIPA
 - **MVP behavior**: `requires_auth=True` short-circuits to `LookupError(reason="auth_required", retryable=False)` **before** any upstream call (SC-006 = 0 upstream calls)
-- **Post-MVP freshness SLO** (documented, not enforced in MVP): `hvidate` older than `KOSMOS_NMC_FRESHNESS_MINUTES` (default 30, clamp [1, 1440]) → `LookupError(reason="stale_data")`
+- **Post-MVP freshness SLO** (documented, not enforced in MVP): `hvidate` older than `KOSAX_NMC_FRESHNESS_MINUTES` (default 30, clamp [1, 1440]) → `LookupError(reason="stale_data")`
 - **PII field inventory** (captured for the follow-on NMC live-data epic):
   - `hpid` (응급실 ID — unique identifier)
   - `dutyName`, `dutyAddr`, `dutyTel1`, `dutyTel3` (hospital identity; non-personal but enables patient-flow profiling)

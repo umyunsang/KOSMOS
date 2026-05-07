@@ -43,8 +43,8 @@ jobs:
         # bytes produced from this commit — swapping GHCR push in later does not
         # change the schema contract.
         run: |
-          docker build -f docker/Dockerfile -t kosmos:release .
-          DOCKER_DIGEST=$(docker image inspect kosmos:release --format '{{.Id}}')
+          docker build -f docker/Dockerfile -t kosax:release .
+          DOCKER_DIGEST=$(docker image inspect kosax:release --format '{{.Id}}')
           echo "DOCKER_DIGEST=$DOCKER_DIGEST" >> "$GITHUB_ENV"
 
       - name: Resolve Friendli model id
@@ -60,7 +60,7 @@ jobs:
       - name: Emit prompt hashes
         run: |
           mkdir -p docs/release-manifests
-          uv run python -m kosmos.context.prompt_loader --emit-hashes > /tmp/prompt_hashes.json
+          uv run python -m kosax.context.prompt_loader --emit-hashes > /tmp/prompt_hashes.json
 
       - name: Verify required release inputs
         run: |

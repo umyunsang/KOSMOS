@@ -1,5 +1,5 @@
-// KOSMOS-original command type definitions.
-// These are NOT lifted from .references/ — they are purpose-built for KOSMOS.
+// KOSAX-original command type definitions.
+// These are NOT lifted from .references/ — they are purpose-built for KOSAX.
 
 import type { PluginOpFrame, SessionEventFrame } from '../ipc/frames.generated'
 

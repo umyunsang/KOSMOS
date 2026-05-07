@@ -1,6 +1,6 @@
 # Contract — IPCConsentBridge: `consent_prompt` IPC round-trip
 
-**Surface**: `src/kosmos/plugins/consent_bridge.py` (NEW) wrapping `src/kosmos/plugins/installer.py:_default_consent_prompt` seam (lines 219-229) at runtime.
+**Surface**: `src/kosax/plugins/consent_bridge.py` (NEW) wrapping `src/kosax/plugins/installer.py:_default_consent_prompt` seam (lines 219-229) at runtime.
 **Trigger**: `installer.py:install_plugin()` reaches phase 5 (📝 동의 확인) and calls `consent_prompt(entry, version, manifest)`.
 **Purpose**: Replace the current "deny by default" stub with an IPC round-trip that emits a `permission_request` frame and awaits the citizen's `permission_response`. Reuse existing Spec 1978 + Spec 033 permission infrastructure.
 
@@ -66,7 +66,7 @@ PermissionResponseFrame ← (TUI → backend)
 - On `asyncio.TimeoutError`:
   - Bridge returns `False` (denial — fail-closed per Constitution §II).
   - Bridge logs `WARNING` with `request_id` + plugin name.
-  - OTEL attribute `kosmos.permission.decision = "timeout"` on the `kosmos.plugin.install` span.
+  - OTEL attribute `kosax.permission.decision = "timeout"` on the `kosax.plugin.install` span.
   - The pending future is cancelled to clean up `_pending_perms`.
 - The TUI overlay receives no special timeout frame — it remains responsible for cancelling its own modal if the response window passes.
 
@@ -136,9 +136,9 @@ Exercises the full PTY-driven flow including consent.
 
 ## Citations
 
-- `src/kosmos/plugins/installer.py:191` (`ConsentPrompt` type alias)
-- `src/kosmos/plugins/installer.py:219-229` (`_default_consent_prompt` stub being replaced)
-- `src/kosmos/ipc/stdio.py:521` (`_pending_perms` dict — Spec 1978 D2 invariant)
-- `src/kosmos/ipc/stdio.py:814` (existing `asyncio.wait_for` permission timeout pattern)
+- `src/kosax/plugins/installer.py:191` (`ConsentPrompt` type alias)
+- `src/kosax/plugins/installer.py:219-229` (`_default_consent_prompt` stub being replaced)
+- `src/kosax/ipc/stdio.py:521` (`_pending_perms` dict — Spec 1978 D2 invariant)
+- `src/kosax/ipc/stdio.py:814` (existing `asyncio.wait_for` permission timeout pattern)
 - `specs/033-permission-v2-spectrum/` (PermissionRequestFrame / PermissionResponseFrame shapes)
 - `specs/1636-plugin-dx-5tier/contracts/pipa-acknowledgment.md` (canonical PIPA text + hash extraction)

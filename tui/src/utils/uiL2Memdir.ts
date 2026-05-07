@@ -2,8 +2,8 @@
 // Spec 1635 P4 UI L2 — atomic-rename memdir helpers for the two new
 // USER-tier paths owned by this epic (memdir-paths.md):
 //
-// - ~/.kosmos/memdir/user/onboarding/state.json   (FR-002)
-// - ~/.kosmos/memdir/user/preferences/a11y.json   (FR-005)
+// - ~/.kosax/memdir/user/onboarding/state.json   (FR-002)
+// - ~/.kosax/memdir/user/preferences/a11y.json   (FR-005)
 //
 // Reuses the existing Spec 027 memdir base path resolver; never edits paths
 // owned by Spec 027/035.
@@ -22,8 +22,8 @@ import {
   freshOnboardingState,
 } from '../schemas/ui-l2/onboarding.js';
 
-const USER_TIER_ROOT = process.env['KOSMOS_MEMDIR_USER'] ??
-  join(homedir(), '.kosmos', 'memdir', 'user');
+const USER_TIER_ROOT = process.env['KOSAX_MEMDIR_USER'] ??
+  join(homedir(), '.kosax', 'memdir', 'user');
 
 export const ONBOARDING_STATE_PATH = join(USER_TIER_ROOT, 'onboarding', 'state.json');
 export const A11Y_PREF_PATH = join(USER_TIER_ROOT, 'preferences', 'a11y.json');

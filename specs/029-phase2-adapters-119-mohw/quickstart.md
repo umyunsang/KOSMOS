@@ -7,9 +7,9 @@
 
 - `uv >= 0.5`
 - Python 3.12+ (provided by `uv python install 3.12`)
-- Git worktree at `/Users/um-yunsang/KOSMOS-15`, branch
+- Git worktree at `/Users/um-yunsang/KOSAX-15`, branch
   `feat/15-phase2-adapters-119-mohw`
-- `.env` populated with `KOSMOS_DATA_GO_KR_API_KEY` (already present from earlier
+- `.env` populated with `KOSAX_DATA_GO_KR_API_KEY` (already present from earlier
   specs; **do NOT** exercise live SSIS or NFA calls in CI per Constitution §IV)
 - Read `specs/029-phase2-adapters-119-mohw/data-model.md` first — it holds the
   normative Pydantic v2 schemas
@@ -19,7 +19,7 @@
 ## 1. Sync dependencies
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-15
+cd /Users/um-yunsang/KOSAX-15
 uv sync
 ```
 
@@ -34,21 +34,21 @@ dependency graph.
 Paths listed in `data-model.md §10`:
 
 ```bash
-mkdir -p src/kosmos/tools/nfa119 src/kosmos/tools/ssis
+mkdir -p src/kosax/tools/nfa119 src/kosax/tools/ssis
 mkdir -p tests/tools/nfa119 tests/tools/ssis
 mkdir -p tests/fixtures/nfa119 tests/fixtures/ssis
 mkdir -p docs/security/dpa
-touch src/kosmos/tools/nfa119/__init__.py \
-      src/kosmos/tools/ssis/__init__.py \
+touch src/kosax/tools/nfa119/__init__.py \
+      src/kosax/tools/ssis/__init__.py \
       tests/tools/nfa119/__init__.py \
       tests/tools/ssis/__init__.py
 ```
 
 Then author the four module files verbatim from `data-model.md`:
 
-- `src/kosmos/tools/ssis/codes.py` — §1
-- `src/kosmos/tools/nfa119/emergency_info_service.py` — §§2, 3, 4
-- `src/kosmos/tools/ssis/welfare_eligibility_search.py` — §§5, 6, 7
+- `src/kosax/tools/ssis/codes.py` — §1
+- `src/kosax/tools/nfa119/emergency_info_service.py` — §§2, 3, 4
+- `src/kosax/tools/ssis/welfare_eligibility_search.py` — §§5, 6, 7
 - `docs/security/dpa/dpa-ssis-welfare-v1.md` — §9
 
 ---
@@ -56,8 +56,8 @@ Then author the four module files verbatim from `data-model.md`:
 ## 3. Wire up `register_all.py` and `TOOL_MIN_AAL`
 
 ```bash
-# Add register() calls to src/kosmos/tools/register_all.py.
-# Modify src/kosmos/security/audit.py — apply the TOOL_MIN_AAL diff from
+# Add register() calls to src/kosax/tools/register_all.py.
+# Modify src/kosax/security/audit.py — apply the TOOL_MIN_AAL diff from
 # data-model.md §8 (two new rows: nfa_emergency_info_service AAL1,
 # mohw_welfare_eligibility_search AAL2).
 ```
@@ -66,9 +66,9 @@ Verify with:
 
 ```bash
 uv run python -c "
-from kosmos.tools.registry import ToolRegistry
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.register_all import register_all
+from kosax.tools.registry import ToolRegistry
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.register_all import register_all
 
 registry, executor = ToolRegistry(), ToolExecutor()
 register_all(registry, executor)
@@ -165,11 +165,11 @@ uv run pytest
 Conventional Commits, `feat/` branch, no `--force`, no `--no-verify`:
 
 ```bash
-git -C /Users/um-yunsang/KOSMOS-15 add \
-    src/kosmos/tools/nfa119 \
-    src/kosmos/tools/ssis \
-    src/kosmos/security/audit.py \
-    src/kosmos/tools/register_all.py \
+git -C /Users/um-yunsang/KOSAX-15 add \
+    src/kosax/tools/nfa119 \
+    src/kosax/tools/ssis \
+    src/kosax/security/audit.py \
+    src/kosax/tools/register_all.py \
     tests/tools/nfa119 \
     tests/tools/ssis \
     tests/fixtures/nfa119 \
@@ -178,7 +178,7 @@ git -C /Users/um-yunsang/KOSMOS-15 add \
     docs/tools/ssis.md \
     docs/security/dpa/dpa-ssis-welfare-v1.md \
     specs/029-phase2-adapters-119-mohw
-git -C /Users/um-yunsang/KOSMOS-15 commit -m "feat(029): nfa_emergency_info_service + mohw_welfare_eligibility_search (interface-only)"
+git -C /Users/um-yunsang/KOSAX-15 commit -m "feat(029): nfa_emergency_info_service + mohw_welfare_eligibility_search (interface-only)"
 ```
 
 Never `git add .` — always by path (AGENTS.md).

@@ -6,7 +6,7 @@ Verifies:
   2. Generated key is exactly 32 bytes.
   3. Boot-time info log is emitted.
   4. Existing key with wrong mode raises HMACKeyFileModeError.
-  5. KOSMOS_PERMISSION_KEY_REGISTRY_PATH env var is picked up by KosmosSettings.
+  5. KOSAX_PERMISSION_KEY_REGISTRY_PATH env var is picked up by KosaxSettings.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.permissions.hmac_key import HMACKeyFileModeError, load_or_generate_key
+from kosax.permissions.hmac_key import HMACKeyFileModeError, load_or_generate_key
 
 # ---------------------------------------------------------------------------
 # Auto-generation
@@ -62,7 +62,7 @@ def test_boot_time_log_emitted(tmp_path: Path, caplog):
     """load_or_generate_key() emits an INFO log containing the key path."""
     key_path = tmp_path / "keys" / "ledger.key"
 
-    with caplog.at_level(logging.INFO, logger="kosmos.permissions.hmac_key"):
+    with caplog.at_level(logging.INFO, logger="kosax.permissions.hmac_key"):
         load_or_generate_key(key_path)
 
     # The initialised log line should mention the path.
@@ -83,7 +83,7 @@ def test_boot_time_log_on_load(tmp_path: Path, caplog):
     finally:
         os.close(fd)
 
-    with caplog.at_level(logging.INFO, logger="kosmos.permissions.hmac_key"):
+    with caplog.at_level(logging.INFO, logger="kosax.permissions.hmac_key"):
         key = load_or_generate_key(key_path)
 
     assert len(key) == 32
@@ -116,26 +116,26 @@ def test_wrong_mode_raises_hmac_key_file_mode_error(tmp_path: Path):
 
 
 # ---------------------------------------------------------------------------
-# KosmosSettings picks up KOSMOS_PERMISSION_KEY_REGISTRY_PATH
+# KosaxSettings picks up KOSAX_PERMISSION_KEY_REGISTRY_PATH
 # ---------------------------------------------------------------------------
 
 
 def test_settings_key_registry_path_env(tmp_path: Path, monkeypatch):
-    """KOSMOS_PERMISSION_KEY_REGISTRY_PATH overrides the default registry path."""
+    """KOSAX_PERMISSION_KEY_REGISTRY_PATH overrides the default registry path."""
     custom_path = tmp_path / "custom_registry.json"
-    monkeypatch.setenv("KOSMOS_PERMISSION_KEY_REGISTRY_PATH", str(custom_path))
+    monkeypatch.setenv("KOSAX_PERMISSION_KEY_REGISTRY_PATH", str(custom_path))
 
     # Re-instantiate to pick up the env var override.
-    from kosmos.settings import KosmosSettings
+    from kosax.settings import KosaxSettings
 
-    s = KosmosSettings()
+    s = KosaxSettings()
     assert s.permission_key_registry_path == custom_path
 
 
 def test_settings_key_registry_path_default():
-    """Default KOSMOS_PERMISSION_KEY_REGISTRY_PATH is ~/.kosmos/keys/registry.json."""
-    from kosmos.settings import KosmosSettings
+    """Default KOSAX_PERMISSION_KEY_REGISTRY_PATH is ~/.kosax/keys/registry.json."""
+    from kosax.settings import KosaxSettings
 
-    s = KosmosSettings()
-    expected = Path.home() / ".kosmos" / "keys" / "registry.json"
+    s = KosaxSettings()
+    expected = Path.home() / ".kosax" / "keys" / "registry.json"
     assert s.permission_key_registry_path == expected

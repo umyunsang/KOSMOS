@@ -72,7 +72,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/kma_ultra_short_term_forecast.json",
+  "$id": "https://kosax.example/api/schemas/kma_ultra_short_term_forecast.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Input parameters for the KMA ultra-short-term forecast (초단기예보) API.",
   "properties": {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Spec 2521 / 2026-05-01.
+// KOSAX-original — Spec 2521 / 2026-05-01.
 //
-// Verbose render helpers for the KOSMOS primitives. Mirrors the
+// Verbose render helpers for the KOSAX primitives. Mirrors the
 // CC pattern used by BashTool / WebFetchTool: when ``verbose`` is set
 // (Ctrl+O expand or transcript mode), surface the full request/response
 // JSON to the citizen rather than the condensed summary.
@@ -44,7 +44,7 @@ export function renderVerboseInputJson(input: unknown): string {
  * ``options.verbose`` (or transcript mode) is set.
  *
  * If the output (or its ``result``) carries an ``outbound_traces`` array
- * (populated by :mod:`kosmos.tools._outbound_trace` on the backend), the
+ * (populated by :mod:`kosax.tools._outbound_trace` on the backend), the
  * outbound HTTP request/response JSON is rendered as a sibling section
  * BELOW the envelope JSON so the citizen/operator can see exactly what
  * hit the agency API and what came back.

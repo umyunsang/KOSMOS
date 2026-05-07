@@ -3,13 +3,13 @@
 # (+ markdown table · multi-turn ⎿ · Ctrl+O transcript · Shift+Tab modes)
 #
 # Fresh-memdir scenario.  Three env vars MUST be set by the runner so all three
-# memdir code paths land in the audit jail (not the citizen's real ~/.kosmos):
+# memdir code paths land in the audit jail (not the citizen's real ~/.kosax):
 #   HOME=/tmp/audit-3-home                 — DEFAULT_MEMDIR_ROOT (memdir/io.ts:33)
 #                                            consent + ministry-scope writes
-#   KOSMOS_MEMDIR_USER=/tmp/audit-3-home/.kosmos/memdir/user
+#   KOSAX_MEMDIR_USER=/tmp/audit-3-home/.kosax/memdir/user
 #                                          — uiL2Memdir.ts:25 onboarding state
 #                                            + a11y preference
-#   KOSMOS_MEMDIR_ROOT=/tmp/audit-3-home/.kosmos/memdir
+#   KOSAX_MEMDIR_ROOT=/tmp/audit-3-home/.kosax/memdir
 #                                          — ExportPDFTool root
 #
 # Helpers exported by tui-tmux-capture.sh:
@@ -25,7 +25,7 @@ set -uo pipefail   # -e disabled — we want timeout snapshots without exit
 # ---------------------------------------------------------------------------
 # 0. Wait for boot + Onboarding gate
 # ---------------------------------------------------------------------------
-wait_for_pane "환경 점검|preflight|Bun|KOSMOS|kosmos" 60 || true
+wait_for_pane "환경 점검|preflight|Bun|KOSAX|kosax" 60 || true
 snapshot_pane "01-boot-onboarding-gate"
 
 # ---------------------------------------------------------------------------
@@ -61,7 +61,7 @@ snapshot_pane "05-step5-terminal-setup"
 # 5. Step 5 — terminal-setup (Enter to save defaults + finish onboarding)
 # ---------------------------------------------------------------------------
 send_enter_pane
-wait_for_pane "KOSMOS v0\.|✻|kosmos|>" 30 || true
+wait_for_pane "KOSAX v0\.|✻|kosax|>" 30 || true
 snapshot_pane "06-post-onboarding-repl"
 sleep 2
 

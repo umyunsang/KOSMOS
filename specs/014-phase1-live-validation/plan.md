@@ -49,7 +49,7 @@ specs/014-phase1-live-validation/
 
 ```text
 # Existing source code — NO new modules created
-src/kosmos/
+src/kosax/
 ├── cli/app.py                           # Fix: env var naming
 ├── engine/engine.py                     # Fix: wire PermissionPipeline into QueryContext
 ├── engine/models.py                     # Already has permission_pipeline field (unused)
@@ -77,7 +77,7 @@ tests/
 │   └── koroad/
 │       └── koroad_accident_search.json  # UPDATE: verify against live response
 
-.env.example                             # Fix: KOSMOS_DATA_GO_KR_KEY → KOSMOS_DATA_GO_KR_API_KEY
+.env.example                             # Fix: KOSAX_DATA_GO_KR_KEY → KOSAX_DATA_GO_KR_API_KEY
 ```
 
 **Structure Decision**: All live tests grouped under `tests/live/` to clearly separate from mock-based tests. No new source modules — only test files and defect fixes in existing source.
@@ -97,7 +97,7 @@ See [research.md](./research.md) for full details.
 1. **Live test directory**: `tests/live/` — separate package for clear isolation from mock tests.
 2. **Hard-fail policy**: Tests use direct `httpx` calls with no fallback skip; `ConnectionError` / `TimeoutError` = test failure.
 3. **PermissionPipeline wiring**: `QueryEngine.__init__` accepts optional `PermissionPipeline` and `SessionContext`; passes them to `QueryContext`. No behavior change when `None` (backward-compatible).
-4. **Env var fix**: `.env.example` corrected to `KOSMOS_DATA_GO_KR_API_KEY`. Base URL documented with note on serverless vs standard endpoint.
+4. **Env var fix**: `.env.example` corrected to `KOSAX_DATA_GO_KR_API_KEY`. Base URL documented with note on serverless vs standard endpoint.
 5. **Fixture sync strategy**: Live tests capture response structure; developer manually compares and updates fixtures after confirmed drift.
 
 ### Deferred Items Validation
@@ -145,7 +145,7 @@ Two inconsistencies discovered:
 
 | File | Current | Correct | Action |
 |------|---------|---------|--------|
-| `.env.example:18` | `KOSMOS_DATA_GO_KR_KEY=` | `KOSMOS_DATA_GO_KR_API_KEY=` | Rename variable |
+| `.env.example:18` | `KOSAX_DATA_GO_KR_KEY=` | `KOSAX_DATA_GO_KR_API_KEY=` | Rename variable |
 | `.env.example:41` | `Base URL: https://api.friendli.ai/serverless/v1` | Document both endpoints | Add comment noting `LLMClientConfig` default is `/v1`; `/serverless/v1` is the FriendliAI Serverless tier endpoint |
 
 #### D4: Live Test Assertions Strategy

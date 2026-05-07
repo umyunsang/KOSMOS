@@ -24,26 +24,26 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
-from kosmos.tools.models import AdapterRealDomainPolicy
+from kosax.tools.models import AdapterRealDomainPolicy
 
-# ``kosmos.primitives.__init__`` re-exports the primitive *functions* under the
+# ``kosax.primitives.__init__`` re-exports the primitive *functions* under the
 # same names as the submodules, which shadows them in the package namespace.
 # Resolve the modules via importlib to get the real module objects.
-submit_mod = importlib.import_module("kosmos.primitives.submit")
-verify_mod = importlib.import_module("kosmos.primitives.verify")
+submit_mod = importlib.import_module("kosax.primitives.submit")
+verify_mod = importlib.import_module("kosax.primitives.verify")
 
-from kosmos.primitives.submit import (  # noqa: E402
+from kosax.primitives.submit import (  # noqa: E402
     SubmitOutput,
     SubmitStatus,
     register_submit_adapter,
     submit,
 )
-from kosmos.primitives.verify import (  # noqa: E402
+from kosax.primitives.verify import (  # noqa: E402
     GanpyeonInjeungContext,
     register_verify_adapter,
     verify,
 )
-from kosmos.tools.registry import (  # noqa: E402
+from kosax.tools.registry import (  # noqa: E402
     AdapterPrimitive,
     AdapterRegistration,
     AdapterSourceMode,
@@ -87,7 +87,7 @@ async def test_submit_emits_gen_ai_tool_loop_iteration_span(
     monkeypatch.setattr(
         submit_mod.trace,
         "get_tracer",
-        lambda _name: provider.get_tracer("kosmos.primitives.submit"),
+        lambda _name: provider.get_tracer("kosax.primitives.submit"),
     )
 
     tool_id = "mock_otel_parity_submit_v1"
@@ -114,7 +114,7 @@ async def test_submit_emits_gen_ai_tool_loop_iteration_span(
 
     async def _invoke(_params: dict[str, object]) -> SubmitOutput:
         return SubmitOutput(
-            transaction_id="urn:kosmos:submit:test",
+            transaction_id="urn:kosax:submit:test",
             status=SubmitStatus.succeeded,
             adapter_receipt={"ok": True},
         )
@@ -123,7 +123,7 @@ async def test_submit_emits_gen_ai_tool_loop_iteration_span(
     # teardown — leaving the fixture adapter in the global registry pollutes
     # later tests' counts (Spec 2296 T035 surfaces this when running the full
     # suite). Mirrors the verify-test pattern below at line 188.
-    from kosmos.primitives.submit import _ADAPTER_REGISTRY as _submit_registry  # noqa: N811
+    from kosax.primitives.submit import _ADAPTER_REGISTRY as _submit_registry  # noqa: N811
 
     _previous_submit = _submit_registry.get(tool_id)
     register_submit_adapter(registration, _invoke)
@@ -167,7 +167,7 @@ async def test_verify_emits_gen_ai_tool_loop_iteration_span(
     monkeypatch.setattr(
         verify_mod,
         "_tracer",
-        provider.get_tracer("kosmos.primitives.verify"),
+        provider.get_tracer("kosax.primitives.verify"),
     )
 
     family = "ganpyeon_injeung"
@@ -187,7 +187,7 @@ async def test_verify_emits_gen_ai_tool_loop_iteration_span(
     # (test_adapter_returns_auth_context_shape calls the adapter
     # synchronously and gets a coroutine back). Pre-existing leak documented
     # in tests/ipc/test_stdio.py:107; closed here.
-    from kosmos.primitives.verify import _VERIFY_ADAPTERS
+    from kosax.primitives.verify import _VERIFY_ADAPTERS
 
     _previous_adapter = _VERIFY_ADAPTERS.get(family)
     register_verify_adapter(family, _adapter)

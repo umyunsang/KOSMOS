@@ -7,7 +7,7 @@
 //
 // Source reference: cc:components/ContextSuggestions.tsx (autocomplete
 // inspiration) + existing PromptInputFooterSuggestions dropdown primitive.
-// KOSMOS adaptation: consumes UI_L2_SLASH_COMMANDS / matchPrefix() from
+// KOSAX adaptation: consumes UI_L2_SLASH_COMMANDS / matchPrefix() from
 // catalog.ts; maps SlashCommandCatalogEntryT to SuggestionItem shape.
 
 import React from 'react';
@@ -34,7 +34,7 @@ const MAX_VISIBLE = 5;
 // ---------------------------------------------------------------------------
 
 function descriptionFor(entry: SlashCommandCatalogEntryT): string {
-  const locale = (process.env['KOSMOS_TUI_LOCALE'] ?? 'ko') as 'ko' | 'en';
+  const locale = (process.env['KOSAX_TUI_LOCALE'] ?? 'ko') as 'ko' | 'en';
   return locale === 'en' ? entry.description_en : entry.description_ko;
 }
 

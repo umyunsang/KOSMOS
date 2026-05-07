@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # S8: 정부24 + 홈택스 통합 — gov24_certificate/hometax_simplified lookup + 3 submit + verify(modid) + slash autocomplete
 set -euo pipefail
-wait_for_pane "KOSMOS|❯" 30
+wait_for_pane "KOSAX|❯" 30
 snapshot_pane 00-boot
 
 # Slash autocomplete probe (type "/" without enter)

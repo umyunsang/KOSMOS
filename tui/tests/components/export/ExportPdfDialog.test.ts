@@ -112,7 +112,7 @@ describe('sanitizeForExport — SC-012 OTEL leakage prevention (FR-032)', () => 
       'Empty string test: ',
       '한글만: 이 텍스트에는 금지된 패턴이 없습니다.',
       'Numbers only: 1234567890',
-      'URL-like: https://api.kosmos.kr/v1/lookup',
+      'URL-like: https://api.kosax.kr/v1/lookup',
       'Receipt-only: rcpt-testid001',
     ];
 
@@ -157,7 +157,7 @@ describe('executeExport — command result (FR-032)', () => {
 describe('_sanitizeForKoreanFont — Korean PDF Audit-7 P0-1', () => {
   it('preserves ASCII characters unchanged', async () => {
     const { _sanitizeForKoreanFont } = await import('../../../src/components/export/ExportPdfDialog.js');
-    const input = 'Hello, KOSMOS! 1234567890';
+    const input = 'Hello, KOSAX! 1234567890';
     expect(_sanitizeForKoreanFont(input)).toBe(input);
   });
 
@@ -167,7 +167,7 @@ describe('_sanitizeForKoreanFont — Korean PDF Audit-7 P0-1', () => {
     expect(_sanitizeForKoreanFont(input)).toBe(input);
   });
 
-  it('preserves common KOSMOS agency names without mangling', async () => {
+  it('preserves common KOSAX agency names without mangling', async () => {
     const { _sanitizeForKoreanFont } = await import('../../../src/components/export/ExportPdfDialog.js');
     const tests = [
       '도로교통공단 교통사고 다발지역',
@@ -234,7 +234,7 @@ describe('Audit-7 P0-1: Korean PDF end-to-end generation', () => {
     page.drawText('대화 내보내기 / Conversation Export', {
       x: 50, y: 800, size: 14, font, color: pdfLib.rgb(0, 0, 0),
     });
-    page.drawText('안녕하세요 KOSMOS — Audit-7 P0-1 fix', {
+    page.drawText('안녕하세요 KOSAX — Audit-7 P0-1 fix', {
       x: 50, y: 770, size: 11, font, color: pdfLib.rgb(0, 0, 0),
     });
 

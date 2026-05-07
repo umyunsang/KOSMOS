@@ -2,13 +2,13 @@
 
 **Status**: Accepted
 **Date**: 2026-04-19
-**Epic**: #287 (KOSMOS TUI — Ink + React + Bun)
+**Epic**: #287 (KOSAX TUI — Ink + React + Bun)
 
 ---
 
 ## Context
 
-KOSMOS's primary user demographic is Korean citizens interacting with Korean
+KOSAX's primary user demographic is Korean citizens interacting with Korean
 public-service APIs (AI Action Plan Principle 8). Korean input via IME
 (Hangul composition) is therefore a non-negotiable baseline, not an edge case.
 
@@ -36,7 +36,7 @@ Keep `ink@^7` for rendering. Replace Ink's `useInput` with a custom
 `tui/src/ipc/readline-bridge.ts` that uses Node's `readline.createInterface`
 (available in Bun via its Node-compatibility layer) to capture raw keystrokes
 before dispatching them to React state. Option (b) preserves the Ink 7 +
-React 19.2 pin but requires KOSMOS-original reimplementation of Ink's input
+React 19.2 pin but requires KOSAX-original reimplementation of Ink's input
 state machine (arrow keys, backspace, Ctrl-chords, paste detection).
 
 This ADR forces the choice between the two options and closes the debate so
@@ -62,7 +62,7 @@ to:
 "ink": "npm:@jrichman/ink@6.6.9"
 ```
 
-A strategy-selector environment variable `KOSMOS_TUI_IME_STRATEGY` is
+A strategy-selector environment variable `KOSAX_TUI_IME_STRATEGY` is
 introduced (values: `fork` [default] | `readline`) so that a future spec can
 swap strategies without a spec revision. At `fork`, the application uses the
 patched `useInput` from the fork. At `readline`, it activates a
@@ -72,7 +72,7 @@ patched `useInput` from the fork. At `readline`, it activates a
 
 - **T103**: Update `tui/package.json` pin to `npm:@jrichman/ink@6.6.9` and
   confirm React 18 peer-dep resolution.
-- **T104**: Implement the `KOSMOS_TUI_IME_STRATEGY` selector hook; wire the
+- **T104**: Implement the `KOSAX_TUI_IME_STRATEGY` selector hook; wire the
   default `fork` path through `useInput`; provide a stub error for the
   `readline` path (deferred full implementation).
 - **T102 precondition**: T102 adds a CI test asserting this ADR file
@@ -85,7 +85,7 @@ patched `useInput` from the fork. At `readline`, it activates a
 |----------|-------------------|--------------------------|
 | FR-014 | IME strategy must be captured in an ADR before any IME code is written | This ADR is that document |
 | FR-015 | Korean Hangul composition must not corrupt the input buffer | Option (a) delivers the patched `useInput` that satisfies this requirement |
-| FR-016 | IME strategy must be swappable via env var without code change | `KOSMOS_TUI_IME_STRATEGY` env var provides the swap mechanism |
+| FR-016 | IME strategy must be swappable via env var without code change | `KOSAX_TUI_IME_STRATEGY` env var provides the swap mechanism |
 | FR-057 | ADR gate — SC-1 must pass before IME implementation tasks execute | This file's existence is the gate condition checked by T102 |
 | SC-4 | Korean IME headless test must pass in CI | The fork's patched input path is the component that makes a headless composition test tractable |
 | R1 | Korean IME upstream defect (research.md risk register) | Option (a) resolves R1 by adopting the fork rather than waiting for upstream |
@@ -102,15 +102,15 @@ patched `useInput` from the fork. At `readline`, it activates a
 - The fork is approximately 20 lines of diff from upstream Ink 6.6.9 — the
   maintenance surface is small and auditable.
 - React 18 is a stable, well-understood target; no known regressions for the
-  KOSMOS TUI feature set.
-- The `KOSMOS_TUI_IME_STRATEGY` env var ensures Option (b) can be activated
+  KOSAX TUI feature set.
+- The `KOSAX_TUI_IME_STRATEGY` env var ensures Option (b) can be activated
   in a future spec without touching this ADR.
 
 **Negative / Trade-offs:**
 
 - **React 18 instead of React 19.2**: We lose React 19.2 Suspense improvements
   and StrictMode hardening. For a terminal REPL with no server components and
-  no concurrent-mode rendering, this is an acceptable downgrade. The KOSMOS TUI
+  no concurrent-mode rendering, this is an acceptable downgrade. The KOSAX TUI
   does not use Suspense boundaries; `useSyncExternalStore` (the primary React
   18+ store primitive used in Claude Code's rendering spine) is available in
   React 18.
@@ -137,10 +137,10 @@ sees them.
 1. **No production reference**: No open-source project has shipped a
    `readline`-backed Ink input layer for Korean. The cursor-position desync
    risk (R3 in `research.md`) is a known hazard with no prior art to consult.
-2. **High KOSMOS-original maintenance**: Ink's `useInput` state machine covers
+2. **High KOSAX-original maintenance**: Ink's `useInput` state machine covers
    arrow keys, backspace, Ctrl-chord sequences, mouse events, and paste
    detection. Reimplementing this in a bridge layer would produce a substantial
-   KOSMOS-original code surface that diverges from upstream with every Ink
+   KOSAX-original code surface that diverges from upstream with every Ink
    patch. The project's guiding principle (harness, not reimplementation) makes
    this unacceptable.
 3. **Bun Node-compat surface risk**: `readline.createInterface` is available
@@ -148,7 +148,7 @@ sees them.
    handling under Bun have not been validated for Korean IME sequences. The
    compatibility gap is an unknown risk.
 4. **Benefit does not justify cost**: The sole benefit is staying on Ink 7 +
-   React 19.2. KOSMOS v1 does not use any Ink 7-only APIs that would be lost
+   React 19.2. KOSAX v1 does not use any Ink 7-only APIs that would be lost
    on the fork. The upgrade cost is zero in functional terms.
 
 ### Wait for upstream Ink Korean IME fix (rejected)

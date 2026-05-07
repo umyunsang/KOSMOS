@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS UFO mascot — CC Clawd 교체 (2026-04-24 확정 · 보라 팔레트)
+// KOSAX UFO mascot — CC Clawd 교체 (2026-04-24 확정 · 보라 팔레트)
 //
 // 기법은 CC Clawd.tsx L34-182 그대로:
 //   · row 1 center + row 2 body를 backgroundColor로 채워 덩어리 실루엣 형성
@@ -129,7 +129,7 @@ export function Clawd({ pose = 'default' }: Props = {}): React.ReactNode {
 
 // Apple Terminal 변형은 별도 컴포넌트에서 다룰 수 있으나, CC Clawd.tsx L87-97
 // 기동 시점에 `env.terminal === 'Apple_Terminal'` 를 체크해 분기했던 부분은
-// 현재 KOSMOS의 `utils/env.ts` 가 최종 wire-in되기 전까지 주석으로만 남김.
+// 현재 KOSAX의 `utils/env.ts` 가 최종 wire-in되기 전까지 주석으로만 남김.
 // Apple Terminal dome cutout 패턴:
 //   default: ' ▗     ▖ '
 //   look-left: ' ▘     ▘ '

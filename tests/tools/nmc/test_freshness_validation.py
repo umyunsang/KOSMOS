@@ -31,10 +31,10 @@ import pytest
 import respx
 from pydantic import ValidationError
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.nmc.emergency_search import register
-from kosmos.tools.nmc.freshness import FreshnessResult, check_freshness
-from kosmos.tools.registry import ToolRegistry
+from kosax.tools.executor import ToolExecutor
+from kosax.tools.nmc.emergency_search import register
+from kosax.tools.nmc.freshness import FreshnessResult, check_freshness
+from kosax.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Shared constants
@@ -68,7 +68,7 @@ def _mock_dt(mock_dt_cls: object) -> None:
 class TestFreshPath:
     """T005: hvidate values that fall within the freshness threshold."""
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_fresh_10_minutes_old(self, mock_dt: object) -> None:
         """14:00 hvidate with now=14:10 and threshold=30 → is_fresh=True, age≈10 min."""
         _mock_dt(mock_dt)
@@ -80,7 +80,7 @@ class TestFreshPath:
         assert result.threshold_minutes == 30
         assert result.hvidate_raw == "2026-04-16 14:00:00"
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_fresh_exactly_at_boundary(self, mock_dt: object) -> None:
         """Exactly 30 min old with threshold=30 → is_fresh=True (age <= threshold is fresh)."""
         _mock_dt(mock_dt)
@@ -91,7 +91,7 @@ class TestFreshPath:
         assert abs(result.data_age_minutes - 30.0) < 0.1
         assert result.threshold_minutes == 30
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_fresh_fixture_file(self, mock_dt: object) -> None:
         """fresh_response.json first-item hvidate (14:00:00) → is_fresh=True with now=14:10."""
         _mock_dt(mock_dt)
@@ -113,7 +113,7 @@ class TestFreshPath:
 class TestStalePath:
     """T006: hvidate values that exceed the freshness threshold or are missing/invalid."""
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_stale_31_minutes_old(self, mock_dt: object) -> None:
         """14:10 - 13:39 = 31 min with threshold=30 → is_fresh=False."""
         _mock_dt(mock_dt)
@@ -123,7 +123,7 @@ class TestStalePath:
         assert abs(result.data_age_minutes - 31.0) < 0.1
         assert result.threshold_minutes == 30
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_stale_1440_minutes_old(self, mock_dt: object) -> None:
         """24 hours old (1440 min) with threshold=30 → is_fresh=False."""
         _mock_dt(mock_dt)
@@ -132,7 +132,7 @@ class TestStalePath:
         assert result.is_fresh is False
         assert abs(result.data_age_minutes - 1440.0) < 0.1
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_stale_none_hvidate(self, mock_dt: object) -> None:
         """None hvidate → fail-closed: is_fresh=False, data_age_minutes=inf."""
         _mock_dt(mock_dt)
@@ -143,7 +143,7 @@ class TestStalePath:
         assert result.threshold_minutes == 30
         assert result.hvidate_raw is None
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_stale_empty_string_hvidate(self, mock_dt: object) -> None:
         """Empty string hvidate → fail-closed: is_fresh=False, data_age_minutes=inf."""
         _mock_dt(mock_dt)
@@ -152,7 +152,7 @@ class TestStalePath:
         assert result.is_fresh is False
         assert result.data_age_minutes == float("inf")
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_stale_invalid_date_string(self, mock_dt: object) -> None:
         """Unparseable hvidate → fail-closed: is_fresh=False, data_age_minutes=inf."""
         _mock_dt(mock_dt)
@@ -162,7 +162,7 @@ class TestStalePath:
         assert result.data_age_minutes == float("inf")
         assert result.hvidate_raw == "invalid-date"
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_stale_fixture_file(self, mock_dt: object) -> None:
         """stale_response.json first-item hvidate (13:00:00) → is_fresh=False with now=14:10."""
         _mock_dt(mock_dt)
@@ -175,7 +175,7 @@ class TestStalePath:
             f"Expected stale for hvidate={hvidate!r}, got is_fresh=True"
         )
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_stale_future_timestamp(self, mock_dt: object) -> None:
         """hvidate 5 min in the future → fail-closed: is_fresh=False, age < 0."""
         _mock_dt(mock_dt)
@@ -193,7 +193,7 @@ class TestStalePath:
 class TestThresholdConfig:
     """T009: custom thresholds and pydantic validation bounds."""
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_custom_threshold_fresh(self, mock_dt: object) -> None:
         """59 min old with threshold=60 → is_fresh=True."""
         _mock_dt(mock_dt)
@@ -204,7 +204,7 @@ class TestThresholdConfig:
         assert abs(result.data_age_minutes - 59.0) < 0.1
         assert result.threshold_minutes == 60
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_custom_threshold_stale(self, mock_dt: object) -> None:
         """61 min old with threshold=60 → is_fresh=False."""
         _mock_dt(mock_dt)
@@ -215,14 +215,14 @@ class TestThresholdConfig:
         assert abs(result.data_age_minutes - 61.0) < 0.1
         assert result.threshold_minutes == 60
 
-    @patch("kosmos.tools.nmc.freshness.datetime")
+    @patch("kosax.tools.nmc.freshness.datetime")
     def test_default_threshold_from_settings(self, mock_dt: object) -> None:
         """threshold_minutes=None reads settings.nmc_freshness_minutes (default 30)."""
         _mock_dt(mock_dt)
         # freshness.py imports settings lazily inside the function via
-        # ``from kosmos.settings import settings``, so we patch the singleton
-        # on its home module (kosmos.settings.settings).
-        with patch("kosmos.settings.settings") as mock_settings:
+        # ``from kosax.settings import settings``, so we patch the singleton
+        # on its home module (kosax.settings.settings).
+        with patch("kosax.settings.settings") as mock_settings:
             mock_settings.nmc_freshness_minutes = 30
             # 10-min-old hvidate should be fresh with the mocked 30-min default
             result = check_freshness("2026-04-16 14:00:00", threshold_minutes=None)
@@ -231,18 +231,18 @@ class TestThresholdConfig:
         assert result.threshold_minutes == 30
 
     def test_pydantic_validation_rejects_zero(self) -> None:
-        """KosmosSettings(nmc_freshness_minutes=0) must raise ValidationError (ge=1)."""
-        from kosmos.settings import KosmosSettings
+        """KosaxSettings(nmc_freshness_minutes=0) must raise ValidationError (ge=1)."""
+        from kosax.settings import KosaxSettings
 
         with pytest.raises(ValidationError):
-            KosmosSettings(nmc_freshness_minutes=0)
+            KosaxSettings(nmc_freshness_minutes=0)
 
     def test_pydantic_validation_rejects_1441(self) -> None:
-        """KosmosSettings(nmc_freshness_minutes=1441) must raise ValidationError (le=1440)."""
-        from kosmos.settings import KosmosSettings
+        """KosaxSettings(nmc_freshness_minutes=1441) must raise ValidationError (le=1440)."""
+        from kosax.settings import KosaxSettings
 
         with pytest.raises(ValidationError):
-            KosmosSettings(nmc_freshness_minutes=1441)
+            KosaxSettings(nmc_freshness_minutes=1441)
 
 
 # ---------------------------------------------------------------------------
@@ -269,8 +269,8 @@ class TestFreshnessIntegration:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.tools.nmc.freshness.datetime")
-    @patch("kosmos.settings.settings")
+    @patch("kosax.tools.nmc.freshness.datetime")
+    @patch("kosax.settings.settings")
     async def test_fresh_response_returns_collection(
         self, mock_settings, mock_dt, nmc_reg_exec
     ) -> None:
@@ -283,7 +283,7 @@ class TestFreshnessIntegration:
         payload = json.loads(_FRESH_FIXTURE.read_text(encoding="utf-8"))
         respx.get(url__regex=r".*apis\.data\.go\.kr.*").respond(200, json=payload)
 
-        from kosmos.tools.models import LookupCollection
+        from kosax.tools.models import LookupCollection
 
         result = await executor.invoke(
             "nmc_emergency_search",
@@ -301,8 +301,8 @@ class TestFreshnessIntegration:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.tools.nmc.freshness.datetime")
-    @patch("kosmos.settings.settings")
+    @patch("kosax.tools.nmc.freshness.datetime")
+    @patch("kosax.settings.settings")
     async def test_stale_response_returns_error(self, mock_settings, mock_dt, nmc_reg_exec) -> None:
         """Stale fixture → executor returns LookupError with reason='stale_data'."""
         mock_settings.data_go_kr_api_key = "test-key"
@@ -313,7 +313,7 @@ class TestFreshnessIntegration:
         payload = json.loads(_STALE_FIXTURE.read_text(encoding="utf-8"))
         respx.get(url__regex=r".*apis\.data\.go\.kr.*").respond(200, json=payload)
 
-        from kosmos.tools.models import LookupError as LookupErrorModel
+        from kosax.tools.models import LookupError as LookupErrorModel
 
         result = await executor.invoke(
             "nmc_emergency_search",
@@ -332,8 +332,8 @@ class TestFreshnessIntegration:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.tools.nmc.freshness.datetime")
-    @patch("kosmos.settings.settings")
+    @patch("kosax.tools.nmc.freshness.datetime")
+    @patch("kosax.settings.settings")
     async def test_missing_hvidate_returns_not_applicable_collection(
         self, mock_settings, mock_dt, nmc_reg_exec
     ) -> None:
@@ -366,7 +366,7 @@ class TestFreshnessIntegration:
         }
         respx.get(url__regex=r".*apis\.data\.go\.kr.*").respond(200, json=no_hvidate_payload)
 
-        from kosmos.tools.models import LookupCollection
+        from kosax.tools.models import LookupCollection
 
         result = await executor.invoke(
             "nmc_emergency_search",
@@ -383,7 +383,7 @@ class TestFreshnessIntegration:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.settings.settings")
+    @patch("kosax.settings.settings")
     async def test_upstream_error_resultcode_returns_upstream_unavailable(
         self, mock_settings, nmc_reg_exec
     ) -> None:
@@ -400,7 +400,7 @@ class TestFreshnessIntegration:
         }
         respx.get(url__regex=r".*apis\.data\.go\.kr.*").respond(200, json=error_payload)
 
-        from kosmos.tools.models import LookupError as LookupErrorModel
+        from kosax.tools.models import LookupError as LookupErrorModel
 
         result = await executor.invoke(
             "nmc_emergency_search",
@@ -415,7 +415,7 @@ class TestFreshnessIntegration:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.settings.settings")
+    @patch("kosax.settings.settings")
     async def test_non_json_response_returns_upstream_unavailable(
         self, mock_settings, nmc_reg_exec
     ) -> None:
@@ -430,7 +430,7 @@ class TestFreshnessIntegration:
             headers={"content-type": "text/html"},
         )
 
-        from kosmos.tools.models import LookupError as LookupErrorModel
+        from kosax.tools.models import LookupError as LookupErrorModel
 
         result = await executor.invoke(
             "nmc_emergency_search",
@@ -445,7 +445,7 @@ class TestFreshnessIntegration:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.settings.settings")
+    @patch("kosax.settings.settings")
     async def test_empty_items_returns_empty_collection(self, mock_settings, nmc_reg_exec) -> None:
         """resultCode=00 with empty items → LookupCollection (not stale_data)."""
         mock_settings.data_go_kr_api_key = "test-key"
@@ -460,7 +460,7 @@ class TestFreshnessIntegration:
         }
         respx.get(url__regex=r".*apis\.data\.go\.kr.*").respond(200, json=empty_payload)
 
-        from kosmos.tools.models import LookupCollection
+        from kosax.tools.models import LookupCollection
 
         result = await executor.invoke(
             "nmc_emergency_search",
@@ -486,8 +486,8 @@ class TestThresholdIntegration:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.tools.nmc.freshness.datetime")
-    @patch("kosmos.settings.settings")
+    @patch("kosax.tools.nmc.freshness.datetime")
+    @patch("kosax.settings.settings")
     async def test_custom_settings_threshold_used(
         self, mock_settings, mock_dt, nmc_reg_exec
     ) -> None:
@@ -507,7 +507,7 @@ class TestThresholdIntegration:
         payload = json.loads(_STALE_FIXTURE.read_text(encoding="utf-8"))
         respx.get(url__regex=r".*apis\.data\.go\.kr.*").respond(200, json=payload)
 
-        from kosmos.tools.models import LookupCollection
+        from kosax.tools.models import LookupCollection
 
         result = await executor.invoke(
             "nmc_emergency_search",

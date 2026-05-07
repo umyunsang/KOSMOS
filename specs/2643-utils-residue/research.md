@@ -10,11 +10,11 @@ Per `docs/vision.md § Reference materials` + Constitution v1.1.1 § I, every de
 
 | Decision Surface | Layer (Constitution Table) | Primary Reference | Mapped Path | Rationale |
 |---|---|---|---|---|
-| `sessionTitle.ts` PORT (byte-copy) | Query Engine | `.references/claude-code-sourcemap/restored-src/src/utils/sessionTitle.ts` (CC 2.1.88, 129 LOC) | byte-copy with swap-1 line-2 import resolution | CC reconstructed source is the canonical Haiku-title implementation; KOSMOS preserves the JSDoc + prompt verbatim |
-| `sessionTitle.ts` swap-1 wire | Query Engine secondary | `tui/src/services/api/claude.ts:3270` `queryHaiku` (Spec 2521 byte-copy bridge) | replace `queryHaiku` import resolution only | KOSMOS already has a stable `queryHaiku` that re-routes to FriendliAI K-EXAONE via `getSmallFastModel()` (Spec 2112 K-EXAONE alias) |
+| `sessionTitle.ts` PORT (byte-copy) | Query Engine | `.references/claude-code-sourcemap/restored-src/src/utils/sessionTitle.ts` (CC 2.1.88, 129 LOC) | byte-copy with swap-1 line-2 import resolution | CC reconstructed source is the canonical Haiku-title implementation; KOSAX preserves the JSDoc + prompt verbatim |
+| `sessionTitle.ts` swap-1 wire | Query Engine secondary | `tui/src/services/api/claude.ts:3270` `queryHaiku` (Spec 2521 byte-copy bridge) | replace `queryHaiku` import resolution only | KOSAX already has a stable `queryHaiku` that re-routes to FriendliAI K-EXAONE via `getSmallFastModel()` (Spec 2112 K-EXAONE alias) |
 | `dateTimeParser.ts` PORT (byte-copy) | Query Engine | `.references/.../utils/mcp/dateTimeParser.ts` (CC 2.1.88, 121 LOC) | byte-copy with swap-1 line-1 import resolution | CC system prompt verbatim (English source per AGENTS.md hard rule); only swap-1 differs |
 | Korean fixture mock pattern | TUI testing | `bun:test` + manual `queryHaiku` stub | inject mock via `bun:test`'s `mock.module()` | Existing pattern in `tui/src/services/api/__tests__/` (no new test framework) |
-| `yoloClassifier.ts` Path B 분리 | Permission Pipeline | OpenAI Agents SDK guardrail pipeline + CC permission model (`utils/permissions/yoloClassifier.ts`) — note CC source for this file's interior is Anthropic-only and intentionally not re-introduced (Spec 1633 deletion stands); Path B follows Spec 2295 PR #2364 commit c6747dd | extract inline-stub from `permissions.ts:103-145` into sibling module; preserve CC import shape | Constitution § I "Adapt patterns to KOSMOS's domain — do not copy line-for-line" — KOSMOS preserves the auto-mode no-op behavior shipped in Spec 1633, restores CC import structure |
+| `yoloClassifier.ts` Path B 분리 | Permission Pipeline | OpenAI Agents SDK guardrail pipeline + CC permission model (`utils/permissions/yoloClassifier.ts`) — note CC source for this file's interior is Anthropic-only and intentionally not re-introduced (Spec 1633 deletion stands); Path B follows Spec 2295 PR #2364 commit c6747dd | extract inline-stub from `permissions.ts:103-145` into sibling module; preserve CC import shape | Constitution § I "Adapt patterns to KOSAX's domain — do not copy line-for-line" — KOSAX preserves the auto-mode no-op behavior shipped in Spec 1633, restores CC import structure |
 | ADR-009 authoring | (governance) | `docs/adr/ADR-001` ~ `ADR-008` template structure | follow Status / Context / Decision / Consequences / Future trigger 5-section pattern | Existing ADRs in repo establish the format authority |
 
 **Escalation log**: None. All 4 items resolve at primary reference layer; no secondary reference escalation needed.
@@ -24,13 +24,13 @@ Per `docs/vision.md § Reference materials` + Constitution v1.1.1 § I, every de
 **Decision**: Byte-copy CC `.references/claude-code-sourcemap/restored-src/src/utils/sessionTitle.ts` (129 LOC) into `tui/src/utils/sessionTitle.ts` with **exactly two** swap-1 deviations:
 
 1. Line 1 JSDoc block: append the SWAP attribution line `// SWAP/llm-swap(2643): queryHaiku target = K-EXAONE via FriendliAI (Spec 2521 byte-copy bridge).` immediately before the first `import` statement (preserves CC line numbering for diff hygiene).
-2. Line 18 (CC) `import { queryHaiku } from '../services/api/claude.js'` — already CC-correct; no change needed (KOSMOS preserves the same path via Spec 2521 byte-copy of `services/api/claude.ts`).
+2. Line 18 (CC) `import { queryHaiku } from '../services/api/claude.js'` — already CC-correct; no change needed (KOSAX preserves the same path via Spec 2521 byte-copy of `services/api/claude.ts`).
 
-**Rationale**: CC's `sessionTitle.ts` calls `queryHaiku` from `../services/api/claude.js`, which KOSMOS has byte-copied (Spec 2521 commit 9d559b9). The function signature in KOSMOS (`tui/src/services/api/claude.ts:3270`) is signature-identical: `(systemPrompt, userPrompt, outputFormat, signal, options) → Promise<AssistantMessage>`. The only KOSMOS-side detail is that `getSmallFastModel()` (line 3307) returns the K-EXAONE alias per Spec 2112 — opaque to `sessionTitle.ts`.
+**Rationale**: CC's `sessionTitle.ts` calls `queryHaiku` from `../services/api/claude.js`, which KOSAX has byte-copied (Spec 2521 commit 9d559b9). The function signature in KOSAX (`tui/src/services/api/claude.ts:3270`) is signature-identical: `(systemPrompt, userPrompt, outputFormat, signal, options) → Promise<AssistantMessage>`. The only KOSAX-side detail is that `getSmallFastModel()` (line 3307) returns the K-EXAONE alias per Spec 2112 — opaque to `sessionTitle.ts`.
 
 **Alternatives considered**:
 
-- **Reimplement from scratch using KOSMOS-native LLM path**: Rejected. Violates CORE THESIS "byte-identical default". Spec 2521 explicitly chose byte-copy for exactly this reason.
+- **Reimplement from scratch using KOSAX-native LLM path**: Rejected. Violates CORE THESIS "byte-identical default". Spec 2521 explicitly chose byte-copy for exactly this reason.
 - **Skip the SWAP comment**: Rejected. Audit replays (Spec 2292 / Initiative #2636) need to identify swap-1 deviations grep-able; comment marker is the agreed convention.
 
 **Verification**: `diff .references/.../sessionTitle.ts tui/src/utils/sessionTitle.ts` MUST yield ≤ 1 hunk (the SWAP comment line). All 4 acceptance scenarios in spec US1 testable via `bun test` with mocked `queryHaiku`.
@@ -78,7 +78,7 @@ mock.module('../../services/api/claude.js', () => ({
 
 **Path B precedent details** (re-read 2026-05-03 from `git log c6747dd`):
 
-- Original problem (Spec 2295): KOSMOS-invented permission fields (`pipa_class`, `auth_level`, etc.) needed removal but Spec 024/025/1636 had referencing dead fields.
+- Original problem (Spec 2295): KOSAX-invented permission fields (`pipa_class`, `auth_level`, etc.) needed removal but Spec 024/025/1636 had referencing dead fields.
 - Path A (rejected): pure deletion → invariant breakage.
 - Path B (selected): introduce `AdapterRealDomainPolicy` derivation table model (frozen, extra="forbid", 4 fields) + `computed_field` backward-compat shims on adapter metadata. Caller-side (`registry.py`, `routing_index.py`, etc.) updated to consume the new policy surface.
 
@@ -87,7 +87,7 @@ mock.module('../../services/api/claude.js', () => ({
 | Path B Element (Spec 2295) | Analog in this Epic |
 |---|---|
 | `AdapterRealDomainPolicy` Pydantic frozen model | `YoloClassifierResult` TypeScript type alias (matches CC shape) |
-| `computed_field` backward-compat shims | `classifyYoloAction` returning `{unavailable: true, shouldBlock: false}` no-op (callers see same shape, KOSMOS-side classifier is silent) |
+| `computed_field` backward-compat shims | `classifyYoloAction` returning `{unavailable: true, shouldBlock: false}` no-op (callers see same shape, KOSAX-side classifier is silent) |
 | Caller-side updates (`registry.py`, etc.) | `permissions.ts` import line replacement (CC import shape restored) |
 | Migration log (`adapter-migration-log.md`) | This Epic's `data-model.md` documents the type-shape contract |
 
@@ -98,7 +98,7 @@ mock.module('../../services/api/claude.js', () => ({
 
 **Alternatives considered**:
 
-- **Move stub into a test fixture module**: Rejected. Stub is production code (KOSMOS auto-mode = no-op is a runtime contract per Spec 1633), not a test artifact.
+- **Move stub into a test fixture module**: Rejected. Stub is production code (KOSAX auto-mode = no-op is a runtime contract per Spec 1633), not a test artifact.
 - **Use TypeScript `declare module` ambient stub**: Rejected. Adds tsconfig coupling; sibling `.ts` file is simpler.
 
 ## R-4 — ADR-009 Template Authority
@@ -120,9 +120,9 @@ mock.module('../../services/api/claude.js', () => ({
 - **Inline DROP justification in `decisions.md` only (no ADR file)**: Rejected. ADR is the canonical "decision lives forever" surface; `decisions.md` is the audit-decision summary table. The two layers serve different purposes (audit-time vs. architecture-time).
 - **Use Status: Accepted vs. Status: Deferred**: Selected `Status: Accepted` for the DROP itself (the decision "do not implement secureStorage now" is firmly accepted), with the trigger condition documented separately. Deferred status would suggest ambiguity that does not exist.
 
-## R-5 — KOSMOS `queryHaiku` Surface Verification
+## R-5 — KOSAX `queryHaiku` Surface Verification
 
-**Decision**: Confirm KOSMOS `tui/src/services/api/claude.ts:3270` `queryHaiku` is callable with the signature CC's `sessionTitle.ts` and `dateTimeParser.ts` expect.
+**Decision**: Confirm KOSAX `tui/src/services/api/claude.ts:3270` `queryHaiku` is callable with the signature CC's `sessionTitle.ts` and `dateTimeParser.ts` expect.
 
 **Verification** (2026-05-03 grep in worktree):
 
@@ -176,7 +176,7 @@ Results (manually inspected):
 | Korean fixture mock pattern selected (no new test deps) | ✓ |
 | Path B precedent re-validated and mapped 1:1 to US3 | ✓ |
 | ADR-009 template authority established | ✓ |
-| KOSMOS `queryHaiku` API surface verified compatible | ✓ |
+| KOSAX `queryHaiku` API surface verified compatible | ✓ |
 | Deferred items table compliant with Constitution VI | ✓ |
 | Zero new runtime dependencies confirmed | ✓ |
 | No NEEDS CLARIFICATION markers remaining | ✓ |

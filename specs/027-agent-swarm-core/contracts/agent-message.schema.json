@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosmos/specs/027-agent-swarm-core/contracts/agent-message.schema.json",
+  "$id": "https://kosax/specs/027-agent-swarm-core/contracts/agent-message.schema.json",
   "title": "AgentMessage",
-  "description": "Inter-agent message delivered via the KOSMOS Layer 4 mailbox. Closed discriminated union on msg_type / payload.kind. No `Any`, no `additionalProperties`.",
+  "description": "Inter-agent message delivered via the KOSAX Layer 4 mailbox. Closed discriminated union on msg_type / payload.kind. No `Any`, no `additionalProperties`.",
   "type": "object",
   "additionalProperties": false,
   "required": ["id", "sender", "recipient", "msg_type", "payload", "timestamp"],
@@ -70,7 +70,7 @@
       "properties": {
         "kind": { "const": "result" },
         "lookup_output": {
-          "description": "Pydantic v2 discriminated union from kosmos.tools.models — LookupRecord | LookupCollection | LookupTimeseries. kind in {record, collection, timeseries}.",
+          "description": "Pydantic v2 discriminated union from kosax.tools.models — LookupRecord | LookupCollection | LookupTimeseries. kind in {record, collection, timeseries}.",
           "type": "object",
           "required": ["kind"],
           "properties": {

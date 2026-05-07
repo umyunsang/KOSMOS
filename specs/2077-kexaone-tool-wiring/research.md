@@ -1,6 +1,6 @@
 # Phase 0 Research: K-EXAONE Tool Wiring (CC Reference Migration)
 
-> Epic [#2077](https://github.com/umyunsang/KOSMOS/issues/2077) · 2026-04-27
+> Epic [#2077](https://github.com/umyunsang/KOSAX/issues/2077) · 2026-04-27
 > Companion to [plan.md](./plan.md). Resolves every NEEDS-CLARIFICATION, validates deferred items, and maps every design decision to a concrete reference per Constitution Principle I.
 
 ## R-1 · Zod → JSON Schema conversion path (AGENTS.md no-new-runtime-dep)
@@ -32,7 +32,7 @@ Discriminated unions are the only non-trivial Zod construct used by the five pri
 
 ### References mapped
 
-- Migration pattern: `_cc_reference/api.ts:toolToAPISchema()` (line 119-266) — CC's hand-curated `BetaTool` schema generation. KOSMOS's `toolToFunctionSchema()` adapts this to Zod-driven generation rather than hand-curation.
+- Migration pattern: `_cc_reference/api.ts:toolToAPISchema()` (line 119-266) — CC's hand-curated `BetaTool` schema generation. KOSAX's `toolToFunctionSchema()` adapts this to Zod-driven generation rather than hand-curation.
 
 ## R-2 · Tool inventory composition (CC `tools.ts:assembleToolPool()` mapping)
 
@@ -45,7 +45,7 @@ Mirror CC's `assembleToolPool()` shape in two places:
 
 ### Rationale
 
-CC's `assembleToolPool()` is the reference implementation of "build the tool list once, exclude per-mode disabled tools, return the canonical pool." KOSMOS's two-sided architecture (TUI is the user-facing process, backend is the LLM execution process) requires the inventory to be computed where it's authoritative — the TUI knows about the user's ministry-scope opt-ins (Spec 035), the backend knows about adapter readiness. Today the backend is the only side that knows the canonical list (`ToolRegistry`), so the TUI must either call out to the backend (race condition risk) or keep its own catalog mirror (stale risk).
+CC's `assembleToolPool()` is the reference implementation of "build the tool list once, exclude per-mode disabled tools, return the canonical pool." KOSAX's two-sided architecture (TUI is the user-facing process, backend is the LLM execution process) requires the inventory to be computed where it's authoritative — the TUI knows about the user's ministry-scope opt-ins (Spec 035), the backend knows about adapter readiness. Today the backend is the only side that knows the canonical list (`ToolRegistry`), so the TUI must either call out to the backend (race condition risk) or keep its own catalog mirror (stale risk).
 
 The migration sidesteps this by:
 
@@ -132,7 +132,7 @@ The TUI's existing UI components (`AssistantToolUseMessage`, `GroupedToolUseCont
 
 - `_cc_reference/claude.ts:1995-2052` — CC's `content_block_start` tool_use case.
 - `_cc_reference/messages.ts:normalizeContentFromAPI()` — CC's content-block routing logic.
-- `tui/src/components/messages/AssistantToolUseMessage.tsx` — KOSMOS port (already in repo).
+- `tui/src/components/messages/AssistantToolUseMessage.tsx` — KOSAX port (already in repo).
 
 ## R-5 · Tool result content block as user-role message (CC `messages.ts:ensureToolResultPairing` mapping)
 
@@ -156,11 +156,11 @@ The legacy `createSystemMessage("✓ ${status}${summary}")` is **removed**.
 2. The `tool_use_id` field is the pairing key.
 3. Orphans (tool_use without tool_result, or tool_result without prior tool_use) are surfaced as visible errors in the transcript (FR-009).
 
-KOSMOS today violates this pairing because the result becomes a SystemMessage that's invisible to LLM-context serialization. Multi-turn loops break: the LLM never sees the tool's output and asks for it again on the next turn.
+KOSAX today violates this pairing because the result becomes a SystemMessage that's invisible to LLM-context serialization. Multi-turn loops break: the LLM never sees the tool's output and asks for it again on the next turn.
 
 ### Envelope serialization
 
-The CC pattern accepts either a `string` content (when the tool produces text) or an `array` of content blocks (when the tool produces images, citations, etc.). For KOSMOS's primitive envelopes (`PrimitiveOutput` ok/error union), the serialization is `JSON.stringify(envelope)` with no structural change — the LLM sees the envelope verbatim, identical to what the existing `_dispatch_primitive` path emits today via `LLMChatMessage(role="tool", content=payload)`.
+The CC pattern accepts either a `string` content (when the tool produces text) or an `array` of content blocks (when the tool produces images, citations, etc.). For KOSAX's primitive envelopes (`PrimitiveOutput` ok/error union), the serialization is `JSON.stringify(envelope)` with no structural change — the LLM sees the envelope verbatim, identical to what the existing `_dispatch_primitive` path emits today via `LLMChatMessage(role="tool", content=payload)`.
 
 ### References mapped
 
@@ -168,7 +168,7 @@ The CC pattern accepts either a `string` content (when the tool produces text) o
 - `_cc_reference/toolExecution.ts:runToolUse()` — CC's result envelope construction.
 - `_cc_reference/toolResultStorage.ts:processToolResultBlock()` — CC's token budgeting (out of scope for this epic, deferred).
 
-## R-6 · Permission gauntlet wiring (CC `permissions.ts` ↔ KOSMOS Spec 033)
+## R-6 · Permission gauntlet wiring (CC `permissions.ts` ↔ KOSAX Spec 033)
 
 ### Decision
 
@@ -194,7 +194,7 @@ Spec 033's bypass-immune steps (cross-citizen records, medical records without c
 
 ### Timeout semantics
 
-FR-017 requires a configurable timeout. `KOSMOS_PERMISSION_TIMEOUT_SEC` defaults to 300 (5 min) per Spec 033. On timeout, the Promise resolves to `decision: 'denied'` and the backend receives a structured denial result, indistinguishable from an explicit citizen denial — preserving fail-closed behavior.
+FR-017 requires a configurable timeout. `KOSAX_PERMISSION_TIMEOUT_SEC` defaults to 300 (5 min) per Spec 033. On timeout, the Promise resolves to `decision: 'denied'` and the backend receives a structured denial result, indistinguishable from an explicit citizen denial — preserving fail-closed behavior.
 
 ### Queueing
 
@@ -203,8 +203,8 @@ FR-018 requires that a second `permission_request` arriving while a prior modal 
 ### References mapped
 
 - `_cc_reference/permissions.ts` (1486 lines) — CC's permission gauntlet body.
-- Spec 033 § Permission v2 Spectrum — KOSMOS's adapter-layer permission system.
-- `tui/src/components/permissions/PermissionGauntletModal.tsx` — KOSMOS port (already in repo).
+- Spec 033 § Permission v2 Spectrum — KOSAX's adapter-layer permission system.
+- `tui/src/components/permissions/PermissionGauntletModal.tsx` — KOSAX port (already in repo).
 - `feedback_runtime_verification` — required PTY verification harness for the modal interaction.
 
 ## R-7 · Deferred-item validation (Constitution Principle VI gate)
@@ -217,11 +217,11 @@ FR-018 requires that a second `permission_request` arriving while a prior modal 
 |---|------|-------------------|
 | OOS-1 | Composite / macro tool combinations | Permanent OOS (Migration Tree § L1-B.B6). No tracking needed. |
 | OOS-2 | Hardcoded tool whitelists outside the registry | Permanent OOS (FR-003 invariant). No tracking needed. |
-| D-1 | Plugin-tier tool discovery in citizen sessions | → [#1979](https://github.com/umyunsang/KOSMOS/issues/1979) (state: OPEN, verified 2026-04-27) |
+| D-1 | Plugin-tier tool discovery in citizen sessions | → [#1979](https://github.com/umyunsang/KOSAX/issues/1979) (state: OPEN, verified 2026-04-27) |
 | D-2 | Adapter-level Spec 033 Layer 2/3 receipt issuance + ledger persistence | NEEDS TRACKING (resolved at `/speckit-taskstoissues`) |
 | D-3 | `lookup` mode split (search vs fetch BM25 routing) | NEEDS TRACKING |
 | D-4 | `subscribe` primitive long-lived stream | NEEDS TRACKING |
-| D-5 | Agent swarm coordinator/worker spawn over IPC | → [#1980](https://github.com/umyunsang/KOSMOS/issues/1980) (state: OPEN, verified 2026-04-27) |
+| D-5 | Agent swarm coordinator/worker spawn over IPC | → [#1980](https://github.com/umyunsang/KOSAX/issues/1980) (state: OPEN, verified 2026-04-27) |
 | D-6 | Onboarding/help/config/history-search UI rendering | NEEDS TRACKING |
 | D-7 | Inline-XML `<tool_call>` legacy parser removal | NEEDS TRACKING |
 
@@ -246,11 +246,11 @@ The handoff-prompt's line-cited diagnosis (Section 3) was independently re-verif
 | Claim | Verified? | Evidence |
 |---|---|---|
 | `tui/src/query/deps.ts:73-81` omits `tools` field | ✓ | Lines 73-81 read by Read tool; no `tools:` key in the spread object literal. |
-| `src/kosmos/ipc/stdio.py:1099-1101` unpacks `frame.tools` correctly | ✓ | Line 1099-1101 confirms `LLMToolDefinition.model_validate(t.model_dump())` loop. |
-| `src/kosmos/ipc/stdio.py:1117` passes `tools=llm_tools or None` | ✓ | Line 1117 read; `or None` collapses empty list to None. |
+| `src/kosax/ipc/stdio.py:1099-1101` unpacks `frame.tools` correctly | ✓ | Line 1099-1101 confirms `LLMToolDefinition.model_validate(t.model_dump())` loop. |
+| `src/kosax/ipc/stdio.py:1117` passes `tools=llm_tools or None` | ✓ | Line 1117 read; `or None` collapses empty list to None. |
 | `prompts/system_v1.md` carries no tool list | ✓ | 8 lines of citizen-facing copy only; no `## Tools` section. |
-| `src/kosmos/tools/registry.py:373` defines `export_core_tools_openai` | ✓ | grep located definition at line 373. |
-| `src/kosmos/ipc/stdio.py:627-679` carries hardcoded primitive whitelist | ✓ | grep located `_PERMISSION_GATED_PRIMITIVES` and per-fname dispatch. |
+| `src/kosax/tools/registry.py:373` defines `export_core_tools_openai` | ✓ | grep located definition at line 373. |
+| `src/kosax/ipc/stdio.py:627-679` carries hardcoded primitive whitelist | ✓ | grep located `_PERMISSION_GATED_PRIMITIVES` and per-fname dispatch. |
 | `tui/src/screens/REPL.tsx:5275-5277` mounts `PermissionGauntletModal` | ✓ | grep located the JSX mount + import. |
 | `fdfd3e9` paint chain commit is orthogonal to tool wiring | ✓ | `git show fdfd3e9 --stat` confirms changes are limited to deps.ts streaming projection + stdio.py thinking_delta forwarding — neither touches `frame.tools`, `frame.system`, or registry fallback. |
 

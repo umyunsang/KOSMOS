@@ -1,4 +1,4 @@
-# KOSMOS Brand System
+# KOSAX Brand System
 ## §1 Brand metaphor
 <PLACEHOLDER — Lead pastes artifacts/brand-system-section-1.md contents here>
 ## §2 Token naming doctrine

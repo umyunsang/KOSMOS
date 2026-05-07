@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1634 P4 · TranslateTool UI renderers.
+// KOSAX-original — Epic #1634 P4 · TranslateTool UI renderers.
 
 import React from 'react'
 import { Box, Text } from '../../ink.js'

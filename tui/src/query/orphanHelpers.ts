@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #2077 K-EXAONE tool wiring · T016 (FR-009 pairing).
+// KOSAX-original — Epic #2077 K-EXAONE tool wiring · T016 (FR-009 pairing).
 //
 // Extracted from tui/src/query/deps.ts so the FR-009 pairing-invariant unit
 // tests do not transitively pull autoCompact.ts → 'bun:bundle'. The Bun

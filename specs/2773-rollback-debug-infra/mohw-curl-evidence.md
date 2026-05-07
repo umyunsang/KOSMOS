@@ -13,7 +13,7 @@ https://apis.data.go.kr/B554287/NationalWelfareInformationsV001/NationalWelfarel
 ```bash
 curl -A "Mozilla/5.0" -G \
   "https://apis.data.go.kr/B554287/NationalWelfareInformationsV001/NationalWelfarelistV001" \
-  --data-urlencode "serviceKey=${KOSMOS_DATA_GO_KR_API_KEY}" \
+  --data-urlencode "serviceKey=${KOSAX_DATA_GO_KR_API_KEY}" \
   --data-urlencode "callTp=L" \
   --data-urlencode "srchKeyCode=003" \
   --data-urlencode "searchWrd=한부모" \
@@ -35,7 +35,7 @@ Observed:
 ```bash
 curl -A "Mozilla/5.0" -G \
   "https://apis.data.go.kr/B554287/NationalWelfareInformationsV001/NationalWelfarelistV001" \
-  --data-urlencode "serviceKey=${KOSMOS_DATA_GO_KR_API_KEY}" \
+  --data-urlencode "serviceKey=${KOSAX_DATA_GO_KR_API_KEY}" \
   --data-urlencode "callTp=L" \
   --data-urlencode "srchKeyCode=003" \
   --data-urlencode "trgterIndvdlArray=060" \
@@ -57,7 +57,7 @@ Observed:
 ```bash
 curl -A "Mozilla/5.0" -G \
   "https://apis.data.go.kr/B554287/NationalWelfareInformationsV001/NationalWelfarelistV001" \
-  --data-urlencode "serviceKey=${KOSMOS_DATA_GO_KR_API_KEY}" \
+  --data-urlencode "serviceKey=${KOSAX_DATA_GO_KR_API_KEY}" \
   --data-urlencode "callTp=L" \
   --data-urlencode "srchKeyCode=003" \
   --data-urlencode "searchWrd=아동양육비" \
