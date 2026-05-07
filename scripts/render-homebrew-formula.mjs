@@ -28,8 +28,8 @@ class Kosax < Formula
   license "Apache-2.0"
 
   depends_on "node" => :build
-  depends_on "uv"
   depends_on "oven-sh/bun/bun"
+  depends_on "uv"
 
   def install
     libexec.install Dir["*"]
