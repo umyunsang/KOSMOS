@@ -1,57 +1,4 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-────────────────────────────────────────────────────────────────────────────────
-
+>
 
 
 
@@ -104,6 +51,9 @@
 
 
 ────────────────────────────────────────────────────────────────────────────────
+>
+
+
 
 
 
@@ -354,16 +304,66 @@
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -376,7 +376,7 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                                                    statusline skipped · restart to fix
+  PR #2783                                                                          statusline skipped · restart to fix
                                                                                              Not logged in · Run /login
 
 
@@ -400,16 +400,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -422,7 +422,7 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                                                    statusline skipped · restart to fix
+  PR #2783                                                                          statusline skipped · restart to fix
                                                                                              Not logged in · Run /login
 
 
@@ -446,16 +446,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -468,7 +468,7 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                                                    statusline skipped · restart to fix
+  PR #2783                                                                          statusline skipped · restart to fix
                                                                                              Not logged in · Run /login
 
 
@@ -492,16 +492,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -538,16 +538,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -584,16 +584,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -630,16 +630,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -676,16 +676,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -709,7 +709,7 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                                                    statusline skipped · restart to fix
+  PR #2783                                                                          statusline skipped · restart to fix
                                                                                              Not logged in · Run /login
 
 
@@ -722,16 +722,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -755,7 +755,7 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                                                    statusline skipped · restart to fix
+  PR #2783                                                                          statusline skipped · restart to fix
                                                                                              Not logged in · Run /login
 
 
@@ -768,16 +768,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -801,7 +801,7 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                                                    statusline skipped · restart to fix
+  PR #2783                                                                          statusline skipped · restart to fix
                                                                                              Not logged in · Run /login
 
 
@@ -814,16 +814,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -836,7 +836,7 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                  FriendliAI login successful. API key is active for this session only.
+  PR #2783                                        FriendliAI login successful. API key is active for this session only.
 
 
 
@@ -860,16 +860,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -882,7 +882,7 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                  FriendliAI login successful. API key is active for this session only.
+  PR #2783                                        FriendliAI login successful. API key is active for this session only.
 
 
 
@@ -906,16 +906,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -928,7 +928,7 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                  FriendliAI login successful. API key is active for this session only.
+  PR #2783                                        FriendliAI login successful. API key is active for this session only.
 
 
 
@@ -952,16 +952,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -998,16 +998,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -1044,16 +1044,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -1066,7 +1066,7 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                        Logged out from FriendliAI. Run /login before the next request.
+  PR #2783                                              Logged out from FriendliAI. Run /login before the next request.
                                                                                              Not logged in · Run /login
 
 
@@ -1090,16 +1090,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -1112,7 +1112,7 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                        Logged out from FriendliAI. Run /login before the next request.
+  PR #2783                                              Logged out from FriendliAI. Run /login before the next request.
                                                                                              Not logged in · Run /login
 
 
@@ -1136,16 +1136,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -1158,7 +1158,7 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                        Logged out from FriendliAI. Run /login before the next request.
+  PR #2783                                              Logged out from FriendliAI. Run /login before the next request.
                                                                                              Not logged in · Run /login
 
 
@@ -1182,16 +1182,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -1228,16 +1228,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
@@ -1274,16 +1274,16 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && env KOSMOS_FRIENDLI_TOKEN= FRIENDLI_API_KEY= KOSMOS_ONBOARDING_AUTO_COMPLETE=1 KOSMO
-S_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
+> cd $(git rev-parse --show-toplevel)/tui && env KOSMOS_FRIENDLI_TOKEN= KOSMOS_FRIENDLI_SESSION_ACTIVE= KOSMOS_ONBOARDING
+_AUTO_COMPLETE=1 KOSMOS_BACKEND_CMD='sleep 60' NODE_ENV=test IS_DEMO=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 FriendliAI API key not configured yet. Start KOSMOS and run /login before sending a request.
 tool_registry: 15 entries verified (5 primitives) in 0ms
 ╭─── KOSMOS v0.1.0-alpha ───────────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                   │ Recent activity                                                   │
-│                   Welcome back!                   │ 2h ago  다대1동 소방서 최근 구급활동 통계 1건만 조회해줘          │
-│                                                   │ 7h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘 … │
-│                                                   │ 7h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 …  │
+│                   Welcome back!                   │ 4h ago   다대1동 소방서 최근 구급활동 통계 1건만 조회해줘         │
+│                                                   │ 10h ago  부산 사하구에서 운전 중 자주 사고 나는 도로 구간과 오늘… │
+│                                                   │ 10h ago  정부24에서 주민등록등본 민원을 신청해줘. 신청자 이름은 … │
 │                       ▛███▜                       │ /resume for more                                                  │
 │                   ▗▟█████████▙▖                   │ ───────────────────────────────────────────────────────────────── │
 │                      ▘ ▘ ▘ ▘                      │ What's new                                                        │
