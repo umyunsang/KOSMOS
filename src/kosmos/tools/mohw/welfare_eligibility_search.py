@@ -65,6 +65,7 @@ def _canonical_single_parent_child_support_search(search_wrd: str) -> str:
         return _SINGLE_PARENT_CHILD_SUPPORT_CANONICAL_SEARCH
     return search_wrd
 
+
 # ---------------------------------------------------------------------------
 # Input schema (T025) — snake_case pydantic; camelCase mapping happens in handle()
 # ---------------------------------------------------------------------------

@@ -30,9 +30,7 @@ def test_matrix_contains_core_primitives_and_negative_flows() -> None:
     assert "SUBSCRIBE-CBS-DISASTER-001" in ids
     assert "NEG-PERMISSION-DENY-SUBMIT-001" in ids
 
-    expected_tokens = " ".join(
-        " ".join(scenario.expected_chain) for scenario in scenarios
-    )
+    expected_tokens = " ".join(" ".join(scenario.expected_chain) for scenario in scenarios)
     for token in ("resolve_location", "verify", "submit", "subscribe"):
         assert token in expected_tokens
 

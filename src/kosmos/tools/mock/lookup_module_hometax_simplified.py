@@ -65,6 +65,7 @@ def _default_tax_year() -> int:
     """Return the previous attribution year for synthetic mock lookup defaults."""
     return max(2020, min(2030, datetime.now(_SEOUL_TZ).year - 1))
 
+
 # ---------------------------------------------------------------------------
 # Input schema
 # ---------------------------------------------------------------------------

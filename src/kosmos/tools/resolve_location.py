@@ -337,8 +337,7 @@ async def _kakao_keyword_coords(
         doc = result.documents[0]
         if not _keyword_doc_matches_query(query, doc):
             logger.info(
-                "kakao keyword coords rejected unrelated top result for query=%r "
-                "place_name=%r",
+                "kakao keyword coords rejected unrelated top result for query=%r place_name=%r",
                 query,
                 getattr(doc, "place_name", None),
             )
@@ -673,8 +672,7 @@ async def resolve_location(  # noqa: C901
                 doc = result.documents[0]
                 if not _keyword_doc_matches_query(query, doc):
                     logger.info(
-                        "poi resolution rejected unrelated top result for query=%r "
-                        "place_name=%r",
+                        "poi resolution rejected unrelated top result for query=%r place_name=%r",
                         query,
                         getattr(doc, "place_name", None),
                     )

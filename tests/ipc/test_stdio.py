@@ -607,8 +607,7 @@ class _EternalToolCallLLMClient(_BaseFakeLLMClient):
             tool_call_id=str(uuid.uuid4()),
             function_name="lookup",
             function_args_delta=(
-                '{"mode":"fetch","tool_id":"nmc_emergency_search",'
-                '"params":{"query":"응급실"}}'
+                '{"mode":"fetch","tool_id":"nmc_emergency_search","params":{"query":"응급실"}}'
             ),
         )
         yield StreamEvent(type="done")
@@ -907,8 +906,7 @@ class _PreambleThenToolCallLLMClient(_BaseFakeLLMClient):
                 tool_call_id=f"call-{uuid.uuid4().hex[:8]}",
                 function_name="lookup",
                 function_args_delta=(
-                    '{"mode":"fetch","tool_id":"hira_hospital_search",'
-                    '"params":{"query":"내과"}}'
+                    '{"mode":"fetch","tool_id":"hira_hospital_search","params":{"query":"내과"}}'
                 ),
             )
             yield StreamEvent(type="done")

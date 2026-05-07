@@ -298,9 +298,7 @@ def test_input_schema_applies_mock_pii_defaults() -> None:
 
 def test_input_schema_null_values_apply_mock_defaults() -> None:
     """Null year / resident prefix from LLM payloads use mock defaults."""
-    inp = HometaxSimplifiedInput.model_validate(
-        {"year": None, "resident_id_prefix": None}
-    )
+    inp = HometaxSimplifiedInput.model_validate({"year": None, "resident_id_prefix": None})
 
     assert inp.resident_id_prefix == "000000"
     assert 2020 <= inp.year <= 2030

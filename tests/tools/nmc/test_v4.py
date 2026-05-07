@@ -466,9 +466,7 @@ class TestNmcUrlEncodingRegression:
     @pytest.mark.asyncio
     @respx.mock
     @patch("kosmos.settings.settings")
-    async def test_region_mode_uses_official_q0_q1_list_operation(
-        self, mock_settings: Any
-    ) -> None:
+    async def test_region_mode_uses_official_q0_q1_list_operation(self, mock_settings: Any) -> None:
         """Region mode maps directly to NMC getEgytListInfoInqire Q0/Q1.
 
         This is the official operation verified by curl for the Hadan/Saha-gu

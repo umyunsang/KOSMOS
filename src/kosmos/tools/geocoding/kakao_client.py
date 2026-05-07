@@ -263,6 +263,7 @@ async def search_address(
         if own_client and client is not None:
             await client.aclose()
 
+
 # ---------------------------------------------------------------------------
 # Pydantic v2 models — keyword (POI) endpoint
 # ---------------------------------------------------------------------------

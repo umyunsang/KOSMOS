@@ -61,12 +61,8 @@ _tracer = trace.get_tracer(__name__)
 # Frames whose handlers can legitimately await follow-up frames from the same
 # stdin stream. Running them inline deadlocks the reader: chat_request waits for
 # permission_response while the reader is still awaiting chat_request.
-_BACKGROUND_FRAME_KINDS: frozenset[str] = frozenset(
-    {"chat_request", "user_input", "plugin_op"}
-)
-_SCOPE_ENTRY_RE = re.compile(
-    r"^(lookup|submit|verify|subscribe):[a-z0-9_]+\.[a-z0-9_-]+$"
-)
+_BACKGROUND_FRAME_KINDS: frozenset[str] = frozenset({"chat_request", "user_input", "plugin_op"})
+_SCOPE_ENTRY_RE = re.compile(r"^(lookup|submit|verify|subscribe):[a-z0-9_]+\.[a-z0-9_-]+$")
 _TOOL_ID_SCOPE_RE = re.compile(
     r"^(?P<verb>lookup|submit|verify|subscribe):(?P<tool_id>[a-z][a-z0-9_]*[a-z0-9])$"
 )
@@ -131,12 +127,8 @@ _MOCK_DISCLOSURE_KO: Final = (
     "이 결과는 실제 행정 영향이 없는 시연(모의) 결과입니다. "
     "접수번호는 시연용이며 실제 기관 포털에서 조회되지 않습니다."
 )
-_GOV24_MINWON_RECEIPT_RE: Final = re.compile(
-    r"gov24-\d{4}-\d{2}-\d{2}-MW-[A-Z0-9]+"
-)
-_HOMETAX_TAXRETURN_RECEIPT_RE: Final = re.compile(
-    r"hometax-\d{4}-\d{2}-\d{2}-RX-[A-Z0-9]+"
-)
+_GOV24_MINWON_RECEIPT_RE: Final = re.compile(r"gov24-\d{4}-\d{2}-\d{2}-MW-[A-Z0-9]+")
+_HOMETAX_TAXRETURN_RECEIPT_RE: Final = re.compile(r"hometax-\d{4}-\d{2}-\d{2}-RX-[A-Z0-9]+")
 _KOSMOS_SUBMIT_TX_RE: Final = re.compile(r"urn:kosmos:submit:[a-f0-9]+")
 _GOV24_MINWON_SESSION_RE: Final = re.compile(r"GOV24-[A-Z0-9-]+")
 _DELEGATION_CONTEXT_SPREAD_KEYS: Final[frozenset[str]] = frozenset(
@@ -757,9 +749,7 @@ def _build_verify_session_context(
         raw_nested_context = raw_params.get("session_context")
         if isinstance(raw_nested_context, dict):
             session_context.update({str(k): v for k, v in raw_nested_context.items()})
-        session_context.update(
-            {str(k): v for k, v in raw_params.items() if k != "session_context"}
-        )
+        session_context.update({str(k): v for k, v in raw_params.items() if k != "session_context"})
     raw_scope_list = session_context.get("scope_list")
     if isinstance(raw_scope_list, list):
         session_context["scope_list"] = _normalize_verify_scope_list(raw_scope_list)
@@ -833,9 +823,7 @@ def _inject_delegation_context(
     if delegation_context is None:
         return params
     merged = {
-        key: value
-        for key, value in params.items()
-        if key not in _DELEGATION_CONTEXT_SPREAD_KEYS
+        key: value for key, value in params.items() if key not in _DELEGATION_CONTEXT_SPREAD_KEYS
     }
     removed_keys = sorted(set(params) - set(merged))
     if removed_keys:
@@ -921,19 +909,16 @@ def _check_sensitive_lookup_auth_prerequisite(
     if not scopes:
         reason = "No verified delegation context is cached for this session."
     else:
-        reason = (
-            f"Latest delegation scope(s) {sorted(scopes)!r} do not include "
-            f"{required_scope!r}."
-        )
+        reason = f"Latest delegation scope(s) {sorted(scopes)!r} do not include {required_scope!r}."
     return (
         f"Sensitive lookup auth prerequisite missing: {tool_id} reads "
         "citizen-specific Hometax simplified tax data and MUST NOT run before "
         f"a verify turn grants {required_scope!r}. {reason} "
         "RECOVERY: in the next turn call "
         f"verify(tool_id={verify_tool_id!r}, params={{"
-        f"\"scope_list\": [{required_scope!r}], "
-        f"\"purpose_ko\": {purpose_ko!r}, "
-        f"\"purpose_en\": {purpose_en!r}"
+        f'"scope_list": [{required_scope!r}], '
+        f'"purpose_ko": {purpose_ko!r}, '
+        f'"purpose_en": {purpose_en!r}'
         "}}). Do NOT answer from cached or synthetic tax data until that verify "
         "tool_result succeeds; then retry the original lookup."
     )
@@ -985,9 +970,7 @@ def _sensitive_lookup_requirement_for_query(user_query: str) -> dict[str, str] |
 def _tool_call_arguments_dict(tool_call: object) -> dict[str, object]:
     """Extract function-call arguments from SDK or dict tool-call shapes."""
     raw_args = getattr(getattr(tool_call, "function", None), "arguments", None) or (
-        tool_call.get("function", {}).get("arguments")
-        if isinstance(tool_call, dict)
-        else None
+        tool_call.get("function", {}).get("arguments") if isinstance(tool_call, dict) else None
     )
     if isinstance(raw_args, str):
         try:
@@ -1174,9 +1157,7 @@ def _primitive_payload_is_success(payload: object, *, primitive: str) -> bool:
             return result.get("status") == "opened" or isinstance(
                 result.get("subscription_id"), str
             )
-        return payload.get("status") == "opened" or isinstance(
-            payload.get("subscription_id"), str
-        )
+        return payload.get("status") == "opened" or isinstance(payload.get("subscription_id"), str)
     return True
 
 
@@ -1344,7 +1325,7 @@ def _query_contains_any(user_query: str, keywords: tuple[str, ...]) -> bool:
     for keyword in keywords:
         needle = _compact_query(keyword)
         if needle in compact or keyword.lower() in lowered:
-                return True
+            return True
     return False
 
 
@@ -1812,9 +1793,9 @@ def _check_verify_terminated_without_verify(
             "login, consent, or identity flow, but this turn is about to answer "
             "without invoking verify. RECOVERY: in the next turn call "
             f"verify(tool_id={verify_tool_id!r}, params={{"
-            f"\"scope_list\": {list(scope_entries)!r}, "
-            f"\"purpose_ko\": {purpose_ko!r}, "
-            f"\"purpose_en\": {purpose_en!r}"
+            f'"scope_list": {list(scope_entries)!r}, '
+            f'"purpose_ko": {purpose_ko!r}, '
+            f'"purpose_en": {purpose_en!r}'
             "}}). Do NOT ask the citizen which purpose/scope to use; the system "
             "prompt mapping already defines it."
         ),
@@ -1837,9 +1818,7 @@ def _verify_scope_entries(args_obj: dict[str, object]) -> set[str]:
             "session_context",
             args_obj.get("session_context"),
         )
-        session_context = (
-            raw_session_context if isinstance(raw_session_context, dict) else {}
-        )
+        session_context = raw_session_context if isinstance(raw_session_context, dict) else {}
         raw_scope_list = session_context.get("scope_list")
     entries: list[object]
     if isinstance(raw_scope_list, list):
@@ -1851,8 +1830,7 @@ def _verify_scope_entries(args_obj: dict[str, object]) -> set[str]:
     return {
         normalized_entry
         for entry in entries
-        if isinstance(entry, str)
-        and entry.strip()
+        if isinstance(entry, str) and entry.strip()
         for normalized_entry in (_normalize_verify_scope_entry(entry.strip()),)
         if normalized_entry is not None
     }
@@ -1939,9 +1917,9 @@ def _check_verify_tool_choice_prerequisite(
                 f"{sorted(allowed_scopes)!r}, but the model emitted {fname}"
                 f"(tool_id={tool_id!r}). RECOVERY: call "
                 f"verify(tool_id={expected_tool!r}, params={{"
-                f"\"scope_list\": {expected_scope_list!r}, "
-                f"\"purpose_ko\": {purpose_ko!r}, "
-                f"\"purpose_en\": {purpose_en!r}"
+                f'"scope_list": {expected_scope_list!r}, '
+                f'"purpose_ko": {purpose_ko!r}, '
+                f'"purpose_en": {purpose_en!r}'
                 "}}). Do NOT call verify adapters through lookup or another primitive."
             ),
         }
@@ -1963,9 +1941,9 @@ def _check_verify_tool_choice_prerequisite(
             f"{sorted(allowed_scopes)!r}, but the model emitted tool_id={tool_id!r} "
             f"and scope_list={sorted(scopes)!r}. RECOVERY: call "
             f"verify(tool_id={expected_tool!r}, params={{"
-            f"\"scope_list\": {expected_scope_list!r}, "
-            f"\"purpose_ko\": {purpose_ko!r}, "
-            f"\"purpose_en\": {purpose_en!r}"
+            f'"scope_list": {expected_scope_list!r}, '
+            f'"purpose_ko": {purpose_ko!r}, '
+            f'"purpose_en": {purpose_en!r}'
             "}}). Do NOT substitute another identity family or invent scope names."
         ),
     }
@@ -2032,14 +2010,11 @@ def _normalize_query_bound_verify_scope_entries(
             dropped.append(stripped)
             changed = True
             continue
-        if (
-            normalized not in allowed_scopes
-            and (
-                normalized in _PRUNABLE_OVERBROAD_VERIFY_SCOPES
-                or _is_query_bound_non_delegating_scope(
-                    normalized,
-                    required_scopes=required_scopes,
-                )
+        if normalized not in allowed_scopes and (
+            normalized in _PRUNABLE_OVERBROAD_VERIFY_SCOPES
+            or _is_query_bound_non_delegating_scope(
+                normalized,
+                required_scopes=required_scopes,
             )
         ):
             dropped.append(normalized)
@@ -2051,9 +2026,7 @@ def _normalize_query_bound_verify_scope_entries(
         normalized_entries.append(normalized)
         seen_strings.add(normalized)
         changed = changed or normalized != stripped
-    normalized_scopes = {
-        entry for entry in normalized_entries if isinstance(entry, str)
-    }
+    normalized_scopes = {entry for entry in normalized_entries if isinstance(entry, str)}
     return normalized_entries, normalized_scopes, dropped, changed
 
 
@@ -2074,9 +2047,7 @@ def _normalize_verify_args_for_query(
         if not requirement["scope"].startswith("verify:"):
             return args_obj
         normalized = dict(args_obj)
-        normalized["tool_id"] = str(
-            normalized.get("tool_id") or requirement["verify_tool_id"]
-        )
+        normalized["tool_id"] = str(normalized.get("tool_id") or requirement["verify_tool_id"])
         raw_params = normalized.get("params")
         params = dict(raw_params) if isinstance(raw_params, dict) else {}
         params["scope_list"] = list(_requirement_scope_entries(requirement))
@@ -2108,8 +2079,7 @@ def _normalize_verify_args_for_query(
         return args_obj
     if dropped:
         logger.info(
-            "verify: normalized query-bound scope_list by dropping non-required "
-            "scope(s): %s",
+            "verify: normalized query-bound scope_list by dropping non-required scope(s): %s",
             ",".join(dropped),
         )
     return _with_verify_scope_list(args_obj, normalized_entries)
@@ -4667,9 +4637,7 @@ async def run(  # noqa: C901
                             ts=_utcnow(),
                             kind="error",
                             code="tool_timeout",
-                            message=(
-                                f"Tool result timeout after {_TOOL_RESULT_TIMEOUT_S:.0f}s"
-                            ),
+                            message=(f"Tool result timeout after {_TOOL_RESULT_TIMEOUT_S:.0f}s"),
                             details={"call_ids": [synth_call_id]},
                         )
                     )
@@ -4680,11 +4648,10 @@ async def run(  # noqa: C901
                     envelope_dump = envelope.model_dump()
                     if _contains_mock_marker(envelope_dump):
                         mock_disclosure_required = True
-                    if (
-                        envelope_dump.get("denied") is True
-                        and envelope_dump.get("error")
-                        in {"permission_denied", "permission_timeout"}
-                    ):
+                    if envelope_dump.get("denied") is True and envelope_dump.get("error") in {
+                        "permission_denied",
+                        "permission_timeout",
+                    }:
                         code = str(envelope_dump["error"])
                         if code == "permission_timeout":
                             denial_message = (
@@ -4778,8 +4745,7 @@ async def run(  # noqa: C901
                         )
                         return "return"
                 logger.warning(
-                    "_handle_chat_request: %s. Dispatched synthetic submit call "
-                    "immediately (%s).",
+                    "_handle_chat_request: %s. Dispatched synthetic submit call immediately (%s).",
                     reason,
                     submit_followup_gate["tool_id"],
                 )
@@ -5077,9 +5043,7 @@ async def run(  # noqa: C901
                     force_resolve_location_next_turn = True
                     continue
 
-                verify_gate = _check_verify_terminated_without_verify(
-                    llm_messages, latest_user_utt
-                )
+                verify_gate = _check_verify_terminated_without_verify(llm_messages, latest_user_utt)
                 if verify_gate is not None:
                     synth_call_id = str(uuid.uuid4())
                     verify_args = {
@@ -5145,15 +5109,13 @@ async def run(  # noqa: C901
                         await write_frame(
                             ErrorFrame(
                                 session_id=frame.session_id,
-                                correlation_id=frame.correlation_id
-                                or str(uuid.uuid4()),
+                                correlation_id=frame.correlation_id or str(uuid.uuid4()),
                                 role="backend",
                                 ts=_utcnow(),
                                 kind="error",
                                 code="tool_timeout",
                                 message=(
-                                    f"Tool result timeout after "
-                                    f"{_TOOL_RESULT_TIMEOUT_S:.0f}s"
+                                    f"Tool result timeout after {_TOOL_RESULT_TIMEOUT_S:.0f}s"
                                 ),
                                 details={"call_ids": [synth_call_id]},
                             )
@@ -5165,11 +5127,10 @@ async def run(  # noqa: C901
                         envelope_dump = envelope.model_dump()
                         if _contains_mock_marker(envelope_dump):
                             mock_disclosure_required = True
-                        if (
-                            envelope_dump.get("denied") is True
-                            and envelope_dump.get("error")
-                            in {"permission_denied", "permission_timeout"}
-                        ):
+                        if envelope_dump.get("denied") is True and envelope_dump.get("error") in {
+                            "permission_denied",
+                            "permission_timeout",
+                        }:
                             code = str(envelope_dump["error"])
                             if code == "permission_timeout":
                                 denial_message = (
@@ -5252,12 +5213,10 @@ async def run(  # noqa: C901
                     buffered_visible.clear()
                     continue
 
-                sensitive_lookup_followup_gate = (
-                    _check_sensitive_lookup_terminated_without_lookup(
-                        llm_messages,
-                        latest_user_utt,
-                        _session_auth_contexts.get(frame.session_id),
-                    )
+                sensitive_lookup_followup_gate = _check_sensitive_lookup_terminated_without_lookup(
+                    llm_messages,
+                    latest_user_utt,
+                    _session_auth_contexts.get(frame.session_id),
                 )
                 if sensitive_lookup_followup_gate is not None:
                     synth_call_id = str(uuid.uuid4())
@@ -5319,12 +5278,8 @@ async def run(  # noqa: C901
                     synth_call_id = str(uuid.uuid4())
                     subscribe_args = {
                         "tool_id": subscribe_followup_gate["tool_id"],
-                        "params": _stdlib_json.loads(
-                            subscribe_followup_gate["params_json"]
-                        ),
-                        "lifetime_seconds": int(
-                            subscribe_followup_gate["lifetime_seconds"]
-                        ),
+                        "params": _stdlib_json.loads(subscribe_followup_gate["params_json"]),
+                        "lifetime_seconds": int(subscribe_followup_gate["lifetime_seconds"]),
                     }
                     llm_messages.append(
                         LLMChatMessage(
@@ -6206,11 +6161,10 @@ async def run(  # noqa: C901
                             ensure_ascii=False,
                             default=str,
                         )
-                        if (
-                            envelope_dump.get("denied") is True
-                            and envelope_dump.get("error")
-                            in {"permission_denied", "permission_timeout"}
-                        ):
+                        if envelope_dump.get("denied") is True and envelope_dump.get("error") in {
+                            "permission_denied",
+                            "permission_timeout",
+                        }:
                             terminal_permission_code = str(envelope_dump["error"])
                     else:
                         payload = _json.dumps({"result": str(result)}, ensure_ascii=False)

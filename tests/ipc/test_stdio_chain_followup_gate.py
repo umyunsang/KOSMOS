@@ -131,9 +131,7 @@ def _msg_tool_result(name: str, payload: dict[str, Any]) -> LLMChatMessage:
 
 
 def _auth_with_scope(scope: str) -> SimpleNamespace:
-    return SimpleNamespace(
-        delegation_context=SimpleNamespace(token=SimpleNamespace(scope=scope))
-    )
+    return SimpleNamespace(delegation_context=SimpleNamespace(token=SimpleNamespace(scope=scope)))
 
 
 def _hometax_lookup_args() -> dict[str, object]:
@@ -1165,11 +1163,14 @@ def test_mobile_id_query_normalizes_generic_verify_tool_id() -> None:
     )
 
     assert normalized["tool_id"] == "mock_verify_mobile_id"
-    assert _check_verify_tool_choice_prerequisite(
-        "verify",
-        normalized,
-        "모바일 신분증으로 본인확인해줘",
-    ) is None
+    assert (
+        _check_verify_tool_choice_prerequisite(
+            "verify",
+            normalized,
+            "모바일 신분증으로 본인확인해줘",
+        )
+        is None
+    )
 
 
 def test_mobile_id_query_forces_initial_verify_tool_choice() -> None:
@@ -1193,10 +1194,13 @@ def test_mobile_id_query_does_not_force_verify_after_success() -> None:
         _msg_tool_result("verify", {"status": "verified"}),
     ]
 
-    assert _initial_verify_tool_choice_for_query(
-        msgs,
-        "모바일 신분증으로 본인확인해줘",
-    ) is None
+    assert (
+        _initial_verify_tool_choice_for_query(
+            msgs,
+            "모바일 신분증으로 본인확인해줘",
+        )
+        is None
+    )
 
 
 def test_mobile_id_verify_missing_scope_is_filled_from_query() -> None:
@@ -1215,19 +1219,25 @@ def test_mobile_id_verify_missing_scope_is_filled_from_query() -> None:
             "purpose_en": "Mobile ID identity verification",
         },
     }
-    assert _check_verify_tool_choice_prerequisite(
-        "verify",
-        normalized,
-        "모바일 신분증으로 본인확인해줘",
-    ) is None
+    assert (
+        _check_verify_tool_choice_prerequisite(
+            "verify",
+            normalized,
+            "모바일 신분증으로 본인확인해줘",
+        )
+        is None
+    )
 
 
 def test_submit_scope_query_does_not_force_initial_verify_tool_choice() -> None:
     """Submit workflows keep their existing chain-specific first-step routing."""
-    assert _initial_verify_tool_choice_for_query(
-        [],
-        "정부24에서 주민등록등본 발급 신청해줘",
-    ) is None
+    assert (
+        _initial_verify_tool_choice_for_query(
+            [],
+            "정부24에서 주민등록등본 발급 신청해줘",
+        )
+        is None
+    )
 
 
 def test_mobile_id_query_keeps_generic_verify_tool_id_on_wrong_scope() -> None:
@@ -1247,11 +1257,14 @@ def test_mobile_id_query_keeps_generic_verify_tool_id_on_wrong_scope() -> None:
     )
 
     assert normalized == original
-    assert _check_verify_tool_choice_prerequisite(
-        "verify",
-        normalized,
-        "모바일 신분증으로 본인확인해줘",
-    ) is not None
+    assert (
+        _check_verify_tool_choice_prerequisite(
+            "verify",
+            normalized,
+            "모바일 신분증으로 본인확인해줘",
+        )
+        is not None
+    )
 
 
 def test_mydata_action_query_requires_submit_scope_for_verify() -> None:
@@ -1401,9 +1414,7 @@ def test_welfare_application_drops_hometax_scope_before_verify_gate() -> None:
         "한부모가족 아동양육비 지원을 신규 신청해줘. 신청 가능한지 먼저 확인해줘.",
     )
 
-    assert normalized["params"]["scope_list"] == [
-        "submit:mydata.welfare_application"
-    ]
+    assert normalized["params"]["scope_list"] == ["submit:mydata.welfare_application"]
     assert (
         _check_verify_tool_choice_prerequisite(
             "verify",
