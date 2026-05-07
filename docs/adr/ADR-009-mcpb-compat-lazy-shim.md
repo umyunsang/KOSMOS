@@ -1,4 +1,4 @@
-# ADR-009: `mcpb-compat.ts` lazy-load shim (KOSMOS-original)
+# ADR-009: `mcpb-compat.ts` lazy-load shim (UMMAYA-original)
 
 **Status**: Accepted
 **Date**: 2026-05-03
@@ -14,7 +14,7 @@
 `@anthropic-ai/mcpb` (Anthropic's MCP-bundle manifest validator) ships a
 zod-v3 schema graph that eagerly creates ~300 `.bind(this)` schema
 instances at import time, costing roughly **700 KB of resident heap**.
-Most KOSMOS sessions never process a `.dxt` (MCP-bundle) file — citizen
+Most UMMAYA sessions never process a `.dxt` (MCP-bundle) file — citizen
 sessions invoke Korean public-API adapters via `lookup` / `submit` /
 `verify` primitives, not MCP bundles. Paying the import-
 time heap cost up-front for a feature touched by < 5 % of sessions is
@@ -24,7 +24,7 @@ Claude Code (CC 2.1.88, restored-src) has **no equivalent shim**.
 CC imports the package eagerly at the top of every consumer because the
 CC consumer set is dominated by developer workflows that frequently use
 DXT plugins, so the heap cost amortises across an active developer's
-typical session shape. KOSMOS's citizen workflow shape is different —
+typical session shape. UMMAYA's citizen workflow shape is different —
 the lazy import deferral is a measurable win.
 
 The decision posture is recorded here for two reasons:
@@ -33,7 +33,7 @@ The decision posture is recorded here for two reasons:
    either be byte-identical or carry a `// SWAP:` justification (per
    AGENTS.md § CORE THESIS). `tui/src/mcpb-compat.ts` is **not a swap**
    in the sense of swap-1 (LLM = K-EXAONE) or swap-2 (Tool = GovAPITool)
-   — it is a KOSMOS-original performance optimisation. AGENTS.md
+   — it is a UMMAYA-original performance optimisation. AGENTS.md
    § Hard rules state "Stack changes require an ADR under `docs/adr/`",
    and introducing a load-pattern shim where CC has none qualifies.
 2. **Future-portability**: if Anthropic publishes a `mcpb` v4 with eager
@@ -45,9 +45,9 @@ The decision posture is recorded here for two reasons:
 The S7 audit (`specs/cc-migration-audit/scope-S7-ipc-bridge.md § 2.5 +
 § 5 Finding 5`) called out the missing ADR explicitly:
 
-> `mcpb-compat.ts` — KOSMOS-original 혁신, ADR 등록 권고
+> `mcpb-compat.ts` — UMMAYA-original 혁신, ADR 등록 권고
 > Epic #2293 FR-010 의 mcpb v3 lazy-load shim 은 CC 대응 없음. swap 1/2
-> 가 아닌 성능 최적화(700KB heap 회피) → KOSMOS-original 혁신으로 분류.
+> 가 아닌 성능 최적화(700KB heap 회피) → UMMAYA-original 혁신으로 분류.
 > 유지 정당, 단 ADR 등록해 향후 CC 재포팅 시 결정 근거 보존 필요.
 
 ## Decision
@@ -84,9 +84,9 @@ This gate is part of Spec 2293 § FR-010 / SC-007.
 
 ### Why a shim instead of an upstream patch
 
-`@anthropic-ai/mcpb` is published by Anthropic; KOSMOS cannot patch the
+`@anthropic-ai/mcpb` is published by Anthropic; UMMAYA cannot patch the
 zod-v3 import behaviour without forking the package. A 26-line shim
-inside KOSMOS is the smallest possible carrier of the optimisation.
+inside UMMAYA is the smallest possible carrier of the optimisation.
 
 ### Why a single file, not inline at every call site
 
@@ -107,7 +107,7 @@ does not trigger the eager-load cost.
 Migrating mcpb to zod-v4 would touch upstream Anthropic code and
 contradict CORE THESIS byte-identical defaults. The shim leaves
 `@anthropic-ai/mcpb` untouched and absorbs the deferral entirely on the
-KOSMOS side.
+UMMAYA side.
 
 ### Measured impact (Spec 2293 § FR-010)
 
@@ -134,7 +134,7 @@ KOSMOS side.
 - One extra await per first-use of `loadMcpb()` (≤ 5 ms typical),
   measurable only on the very first DXT manifest validation per session.
 - Future agents need to read this ADR to understand why the shim exists.
-  Mitigated by the in-file `// KOSMOS-original — Epic #2293 FR-010`
+  Mitigated by the in-file `// UMMAYA-original — Epic #2293 FR-010`
   header on `mcpb-compat.ts` and the grep-gate test in Spec 2293.
 
 ### Neutral
@@ -158,7 +158,7 @@ by CORE THESIS byte-identical default (mcpb is the upstream contract).
 ### C. Vendor a minimal mcpb manifest type without runtime validation
 
 Rejected — runtime validation is required for plugin install safety
-(Spec 1636); reimplementing it inside KOSMOS would regress security.
+(Spec 1636); reimplementing it inside UMMAYA would regress security.
 
 ## References
 

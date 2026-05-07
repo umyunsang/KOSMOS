@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Spec 1979 T033 — L3 expect/script PTY smoke.
 #
-# Drives the KOSMOS TUI under PTY; captures the full session as a text log
+# Drives the UMMAYA TUI under PTY; captures the full session as a text log
 # via script(1) so Codex review tooling can grep for canonical phase markers
 # (per FR-021).
 #
@@ -18,9 +18,9 @@ set log_path "$spec_dir/smoke-1979.txt"
 # Wrap the TUI launch in script(1) so the PTY session is captured to log_path.
 spawn script -q $log_path bash -c "cd tui && bun run tui"
 
-# Wait for REPL prompt — match the KOSMOS branding line that appears on launch.
+# Wait for REPL prompt — match the UMMAYA branding line that appears on launch.
 expect {
-  -re ".*KOSMOS.*" { puts "✓ REPL prompt observed" }
+  -re ".*UMMAYA.*" { puts "✓ REPL prompt observed" }
   timeout { puts "✗ REPL prompt timeout"; exit 1 }
 }
 
@@ -54,7 +54,7 @@ expect {
 send -- "/plugins\r"
 
 expect {
-  -re ".*KOSMOS 플러그인.*" { puts "✓ plugin browser opened" }
+  -re ".*UMMAYA 플러그인.*" { puts "✓ plugin browser opened" }
   timeout { puts "✗ plugin browser timeout"; exit 1 }
 }
 

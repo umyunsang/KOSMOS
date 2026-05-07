@@ -25,7 +25,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from pydantic import ValidationError
 
-from kosmos.security.audit import MAX_CLOCK_SKEW_SECONDS, ToolCallAuditRecord
+from ummaya.security.audit import MAX_CLOCK_SKEW_SECONDS, ToolCallAuditRecord
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -706,11 +706,11 @@ def test_model_validate_under_5ms_p_avg():
     Source: data-model.md §3 — "model_validate target < 5 ms per record
     (validated in unit test, not enforced in schema)".
 
-    The test skips when KOSMOS_SKIP_PERF=1 to allow CI on constrained runners
+    The test skips when UMMAYA_SKIP_PERF=1 to allow CI on constrained runners
     to opt out without failing the suite.
     """
-    if os.environ.get("KOSMOS_SKIP_PERF") == "1":
-        pytest.skip("KOSMOS_SKIP_PERF=1 — skipping performance assertion")
+    if os.environ.get("UMMAYA_SKIP_PERF") == "1":
+        pytest.skip("UMMAYA_SKIP_PERF=1 — skipping performance assertion")
 
     canonical = {
         "record_version": "v1",

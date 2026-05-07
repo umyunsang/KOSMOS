@@ -11,8 +11,8 @@ Verifies:
 
 from __future__ import annotations
 
-from kosmos.observability.event_logger import _ALLOWED_METADATA_KEYS
-from kosmos.observability.otel_bridge import filter_metadata
+from ummaya.observability.event_logger import _ALLOWED_METADATA_KEYS
+from ummaya.observability.otel_bridge import filter_metadata
 
 # ---------------------------------------------------------------------------
 # Reference input from task spec

@@ -5,7 +5,7 @@ Tests that the ``attributes/pii_redact`` processor in
 ``infra/otel-collector/config.yaml`` correctly:
 
   (a) deletes ``patient.name`` and ``patient.phone`` before Langfuse ingestion
-  (b) hashes ``kosmos.location.query`` to its SHA-256 hex digest
+  (b) hashes ``ummaya.location.query`` to its SHA-256 hex digest
 
 This test is marked ``@pytest.mark.live`` and is **skipped by default** in CI
 (AGENTS.md hard rule: never call live external APIs from CI tests).
@@ -14,9 +14,9 @@ Prerequisites for local execution
 ----------------------------------
 - Full stack running: ``docker compose -f docker-compose.dev.yml up -d``
 - All services healthy (especially ``langfuse-web`` and ``otelcol``)
-- ``KOSMOS_LANGFUSE_OTLP_AUTH_HEADER`` set in the environment (or ``.env``)
+- ``UMMAYA_LANGFUSE_OTLP_AUTH_HEADER`` set in the environment (or ``.env``)
   containing the Base64-encoded ``pk-lf-xxx:sk-lf-xxx`` credential
-- ``KOSMOS_OTEL_COLLECTOR_PORT`` (default: ``4318``) matches the running collector
+- ``UMMAYA_OTEL_COLLECTOR_PORT`` (default: ``4318``) matches the running collector
 
 Run locally::
 
@@ -37,8 +37,8 @@ import pytest
 # Skip conditions (evaluated at collection time for clarity)
 # ---------------------------------------------------------------------------
 
-_AUTH_HEADER = os.environ.get("KOSMOS_LANGFUSE_OTLP_AUTH_HEADER", "")
-_COLLECTOR_PORT_RAW = os.environ.get("KOSMOS_OTEL_COLLECTOR_PORT", "4318")
+_AUTH_HEADER = os.environ.get("UMMAYA_LANGFUSE_OTLP_AUTH_HEADER", "")
+_COLLECTOR_PORT_RAW = os.environ.get("UMMAYA_OTEL_COLLECTOR_PORT", "4318")
 try:
     _COLLECTOR_PORT = int(_COLLECTOR_PORT_RAW)
 except ValueError:
@@ -74,12 +74,12 @@ def _require_live_stack() -> None:
     """Skip the entire module when the live stack is unavailable."""
     if _COLLECTOR_PORT is None:
         pytest.skip(
-            f"KOSMOS_OTEL_COLLECTOR_PORT={_COLLECTOR_PORT_RAW!r} is not a valid integer — "
+            f"UMMAYA_OTEL_COLLECTOR_PORT={_COLLECTOR_PORT_RAW!r} is not a valid integer — "
             "fix or unset it before running live PII redaction tests."
         )
     if not _AUTH_HEADER:
         pytest.skip(
-            "KOSMOS_LANGFUSE_OTLP_AUTH_HEADER is unset — "
+            "UMMAYA_LANGFUSE_OTLP_AUTH_HEADER is unset — "
             "run the Langfuse first-run bootstrap (docs/observability.md §5) "
             "and set the env var before executing live PII redaction tests."
         )
@@ -102,7 +102,7 @@ def _emit_test_span(trace_id_hex: str) -> None:
     The span carries:
       - patient.name = "TEST_OPERATOR"   (must be deleted by collector)
       - patient.phone = "010-0000-0000"  (must be deleted by collector)
-      - kosmos.location.query = "서울역"  (must be hashed by collector)
+      - ummaya.location.query = "서울역"  (must be hashed by collector)
     """
     from opentelemetry import trace  # noqa: PLC0415
     from opentelemetry.exporter.otlp.proto.http.trace_exporter import (  # noqa: PLC0415
@@ -120,7 +120,7 @@ def _emit_test_span(trace_id_hex: str) -> None:
         timeout=10,
     )
     provider = TracerProvider(
-        resource=Resource.create({"service.name": "kosmos-pii-redaction-test"})
+        resource=Resource.create({"service.name": "ummaya-pii-redaction-test"})
     )
     provider.add_span_processor(BatchSpanProcessor(exporter, max_export_batch_size=1))
 
@@ -134,7 +134,7 @@ def _emit_test_span(trace_id_hex: str) -> None:
     )
     link_ctx = trace.use_span(NonRecordingSpan(ctx))
 
-    tracer = provider.get_tracer("kosmos.test.pii_redaction")
+    tracer = provider.get_tracer("ummaya.test.pii_redaction")
     with (
         link_ctx,
         tracer.start_as_current_span(
@@ -144,8 +144,8 @@ def _emit_test_span(trace_id_hex: str) -> None:
     ):
         span.set_attribute("patient.name", "TEST_OPERATOR")
         span.set_attribute("patient.phone", "010-0000-0000")
-        span.set_attribute("kosmos.location.query", "서울역")
-        span.set_attribute("kosmos.test.marker", "spec028-pii-smoke")
+        span.set_attribute("ummaya.location.query", "서울역")
+        span.set_attribute("ummaya.test.marker", "spec028-pii-smoke")
 
     # Force flush to send before the provider is garbage-collected
     provider.force_flush(timeout_millis=10_000)
@@ -239,7 +239,7 @@ def test_patient_name_deleted_by_collector(_require_live_stack: None) -> None:
 
 @pytest.mark.live
 def test_location_query_hashed_by_collector(_require_live_stack: None) -> None:
-    """(b) kosmos.location.query is replaced with its SHA-256 hash (SC-003 part 2).
+    """(b) ummaya.location.query is replaced with its SHA-256 hash (SC-003 part 2).
 
     The collector's hash action replaces the raw '서울역' string with the
     64-char SHA-256 hex digest before forwarding to Langfuse.
@@ -257,24 +257,24 @@ def test_location_query_hashed_by_collector(_require_live_stack: None) -> None:
         "Check: docker compose -f docker-compose.dev.yml logs otelcol --tail=50"
     )
 
-    # Find kosmos.location.query in any observation
+    # Find ummaya.location.query in any observation
     location_query_values: list[str] = []
     for observation in trace.get("observations", []):
         attrs = observation.get("attributes", {}) or {}
-        if "kosmos.location.query" in attrs:
-            location_query_values.append(str(attrs["kosmos.location.query"]))
+        if "ummaya.location.query" in attrs:
+            location_query_values.append(str(attrs["ummaya.location.query"]))
 
     assert location_query_values, (
-        "kosmos.location.query attribute not found in Langfuse trace. "
+        "ummaya.location.query attribute not found in Langfuse trace. "
         "It should be present (as a hash), but not the raw value."
     )
 
     for value in location_query_values:
         assert value == _EXPECTED_HASH, (
-            f"kosmos.location.query must equal SHA-256('서울역') = {_EXPECTED_HASH!r}.\n"
+            f"ummaya.location.query must equal SHA-256('서울역') = {_EXPECTED_HASH!r}.\n"
             f"  Got: {value!r}\n"
             "  If this is the raw string, the collector's hash action did not fire."
         )
         assert value != "서울역", (
-            "kosmos.location.query must NOT be the raw '서울역' string after collector processing."
+            "ummaya.location.query must NOT be the raw '서울역' string after collector processing."
         )

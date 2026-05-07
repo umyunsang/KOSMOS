@@ -20,12 +20,12 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from pydantic import BaseModel, ConfigDict
 
-from kosmos.primitives.delegation import (
+from ummaya.primitives.delegation import (
     DelegationContext,
     DelegationToken,
     DelegationValidationOutcome,
 )
-from kosmos.primitives.submit import SubmitStatus
+from ummaya.primitives.submit import SubmitStatus
 
 # ---------------------------------------------------------------------------
 # Transparency fields list
@@ -98,8 +98,8 @@ class _AuthForTierGate(BaseModel):
 
 def test_gov24_registration_accepts_simple_auth_tier() -> None:
     """Gov24 minwon submit tier gate matches the canonical simple-auth verify mapping."""
-    from kosmos.primitives.submit import check_tier_gate
-    from kosmos.tools.mock.submit_module_gov24_minwon import REGISTRATION
+    from ummaya.primitives.submit import check_tier_gate
+    from ummaya.tools.mock.submit_module_gov24_minwon import REGISTRATION
 
     assert REGISTRATION.published_tier_minimum == "simple_auth_module_aal2"
     assert (
@@ -114,17 +114,17 @@ def test_gov24_registration_accepts_simple_auth_tier() -> None:
 @pytest.mark.asyncio
 async def test_gov24_happy_path_returns_succeeded() -> None:
     """Valid scope + session → SubmitStatus.succeeded with receipt_id starting 'gov24-'."""
-    from kosmos.tools.mock.submit_module_gov24_minwon import invoke
+    from ummaya.tools.mock.submit_module_gov24_minwon import invoke
 
     params = _make_params()
 
     with (
         mock.patch(
-            "kosmos.tools.mock.submit_module_gov24_minwon.validate_delegation",
+            "ummaya.tools.mock.submit_module_gov24_minwon.validate_delegation",
             return_value=DelegationValidationOutcome.OK,
         ),
         mock.patch(
-            "kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"
+            "ummaya.tools.mock.submit_module_gov24_minwon.append_delegation_used"
         ) as mock_append,
     ):
         result = await invoke(params)
@@ -144,16 +144,16 @@ async def test_gov24_happy_path_returns_succeeded() -> None:
 @pytest.mark.asyncio
 async def test_gov24_transparency_fields_present() -> None:
     """All six transparency fields are present in adapter_receipt."""
-    from kosmos.tools.mock.submit_module_gov24_minwon import invoke
+    from ummaya.tools.mock.submit_module_gov24_minwon import invoke
 
     params = _make_params()
 
     with (
         mock.patch(
-            "kosmos.tools.mock.submit_module_gov24_minwon.validate_delegation",
+            "ummaya.tools.mock.submit_module_gov24_minwon.validate_delegation",
             return_value=DelegationValidationOutcome.OK,
         ),
-        mock.patch("kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"),
+        mock.patch("ummaya.tools.mock.submit_module_gov24_minwon.append_delegation_used"),
     ):
         result = await invoke(params)
 
@@ -171,17 +171,17 @@ async def test_gov24_transparency_fields_present() -> None:
 @pytest.mark.asyncio
 async def test_gov24_scope_violation_returns_rejected() -> None:
     """Wrong scope token → rejected with scope_violation."""
-    from kosmos.tools.mock.submit_module_gov24_minwon import invoke
+    from ummaya.tools.mock.submit_module_gov24_minwon import invoke
 
     params = _make_params()
 
     with (
         mock.patch(
-            "kosmos.tools.mock.submit_module_gov24_minwon.validate_delegation",
+            "ummaya.tools.mock.submit_module_gov24_minwon.validate_delegation",
             return_value=DelegationValidationOutcome.SCOPE_VIOLATION,
         ),
         mock.patch(
-            "kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"
+            "ummaya.tools.mock.submit_module_gov24_minwon.append_delegation_used"
         ) as mock_append,
     ):
         result = await invoke(params)
@@ -200,17 +200,17 @@ async def test_gov24_scope_violation_returns_rejected() -> None:
 @pytest.mark.asyncio
 async def test_gov24_expired_token_returns_rejected() -> None:
     """Expired outcome → rejected with expired outcome."""
-    from kosmos.tools.mock.submit_module_gov24_minwon import invoke
+    from ummaya.tools.mock.submit_module_gov24_minwon import invoke
 
     params = _make_params()
 
     with (
         mock.patch(
-            "kosmos.tools.mock.submit_module_gov24_minwon.validate_delegation",
+            "ummaya.tools.mock.submit_module_gov24_minwon.validate_delegation",
             return_value=DelegationValidationOutcome.EXPIRED,
         ),
         mock.patch(
-            "kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"
+            "ummaya.tools.mock.submit_module_gov24_minwon.append_delegation_used"
         ) as mock_append,
     ):
         result = await invoke(params)
@@ -223,17 +223,17 @@ async def test_gov24_expired_token_returns_rejected() -> None:
 @pytest.mark.asyncio
 async def test_gov24_session_violation_returns_rejected() -> None:
     """Session violation outcome → rejected."""
-    from kosmos.tools.mock.submit_module_gov24_minwon import invoke
+    from ummaya.tools.mock.submit_module_gov24_minwon import invoke
 
     params = _make_params(session_id="sess-B")
 
     with (
         mock.patch(
-            "kosmos.tools.mock.submit_module_gov24_minwon.validate_delegation",
+            "ummaya.tools.mock.submit_module_gov24_minwon.validate_delegation",
             return_value=DelegationValidationOutcome.SESSION_VIOLATION,
         ),
         mock.patch(
-            "kosmos.tools.mock.submit_module_gov24_minwon.append_delegation_used"
+            "ummaya.tools.mock.submit_module_gov24_minwon.append_delegation_used"
         ) as mock_append,
     ):
         result = await invoke(params)

@@ -16,18 +16,18 @@ Verifies a citizen's 간편인증 (Simple/App-cert) session from a provider such
 | Classification | Mock · Permission tier 2 |
 | Source | Barocert SDK documentation (https://developers.barocert.com/, OOS shape-mirror) |
 | Primitive | `verify` |
-| Module | `src/kosmos/tools/mock/verify_ganpyeon_injeung.py` |
+| Module | `src/ummaya/tools/mock/verify_ganpyeon_injeung.py` |
 
 ## Envelope
 
-**Input model**: `VerifyInput` defined at `src/kosmos/primitives/verify.py:44–51`.
+**Input model**: `VerifyInput` defined at `src/ummaya/primitives/verify.py:44–51`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `family_hint` | `Literal["ganpyeon_injeung"]` | yes | Must be `"ganpyeon_injeung"`; dispatcher rejects any other value (FR-010). |
 | `session_context` | `dict[str, object]` | no | Opaque external evidence. Pass `{"_fixture_override": {"provider": "naver", "published_tier": "ganpyeon_injeung_naver_aal2"}}` in tests to exercise other provider variants. |
 
-**Output model**: `GanpyeonInjeungContext` defined at `src/kosmos/primitives/verify.py:154–167`.
+**Output model**: `GanpyeonInjeungContext` defined at `src/ummaya/primitives/verify.py:154–167`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -51,7 +51,7 @@ Verifies a citizen's 간편인증 (Simple/App-cert) session from a provider such
 
 ## Permission tier rationale
 
-This adapter carries `auth_level="AAL2"` and `is_irreversible=False`. Per `src/kosmos/tools/permissions.py` `compute_permission_tier()` (Spec 033 FR-011), AAL2 maps to **permission tier 2** (orange ⓶ in UI-C). Although 간편인증 providers are private-sector apps rather than government PKI, the authentication context is still bound to a personal identifier (`pipa_class="personal_standard"`, `is_personal_data=True`), and the underlying OAuth handshake satisfies NIST AAL2. The permission gauntlet must surface the orange ⓶ consent modal and record a consent receipt before execution. Session-auto (`A`) grant is permitted for repeated same-session calls.
+This adapter carries `auth_level="AAL2"` and `is_irreversible=False`. Per `src/ummaya/tools/permissions.py` `compute_permission_tier()` (Spec 033 FR-011), AAL2 maps to **permission tier 2** (orange ⓶ in UI-C). Although 간편인증 providers are private-sector apps rather than government PKI, the authentication context is still bound to a personal identifier (`pipa_class="personal_standard"`, `is_personal_data=True`), and the underlying OAuth handshake satisfies NIST AAL2. The permission gauntlet must surface the orange ⓶ consent modal and record a consent receipt before execution. Session-auto (`A`) grant is permitted for repeated same-session calls.
 
 ## Worked example
 
@@ -88,7 +88,7 @@ This adapter carries `auth_level="AAL2"` and `is_irreversible=False`. Per `src/k
 
 ```text
 시민: 카카오 간편인증으로 본인인증 해줘.
-KOSMOS: 카카오 간편인증 (AAL2) 인증이 확인되었습니다. 인증 시각: 2026-04-19 09:00 UTC, 세션 참조: mock-ganpyeon-ref-001.
+UMMAYA: 카카오 간편인증 (AAL2) 인증이 확인되었습니다. 인증 시각: 2026-04-19 09:00 UTC, 세션 참조: mock-ganpyeon-ref-001.
 ```
 
 ## Constraints

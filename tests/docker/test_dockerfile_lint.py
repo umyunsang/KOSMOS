@@ -82,7 +82,7 @@ def test_dockerfile_sets_non_root_user() -> None:
     """Asserts ``USER 1000`` is present, enforcing non-root execution at runtime.
 
     Running as UID 1000 prevents privilege-escalation attacks and is required
-    by the KOSMOS container hardening policy (spec 026-cicd-prompt-registry).
+    by the UMMAYA container hardening policy (spec 026-cicd-prompt-registry).
     """
     text = _read_dockerfile()
 

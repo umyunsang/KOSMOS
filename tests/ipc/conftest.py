@@ -6,7 +6,7 @@ Provides:
 - ``make_uuid7``: factory returning deterministic UUIDv7 strings.
 - ``ndjson_buffer``: capture buffer that accumulates NDJSON lines emitted
   during a test and exposes them as a list of dicts.
-- ``ipc_env_overrides``: monkeypatched env vars for KOSMOS_IPC_* knobs.
+- ``ipc_env_overrides``: monkeypatched env vars for UMMAYA_IPC_* knobs.
 """
 
 from __future__ import annotations
@@ -125,22 +125,22 @@ def ndjson_buffer() -> NDJSONBuffer:
 
 
 # ---------------------------------------------------------------------------
-# Environment overrides for KOSMOS_IPC_* knobs
+# Environment overrides for UMMAYA_IPC_* knobs
 # ---------------------------------------------------------------------------
 
 
 @pytest.fixture(autouse=False)
 def ipc_env_overrides(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, None]:
-    """Set small KOSMOS_IPC_* defaults suitable for fast unit tests.
+    """Set small UMMAYA_IPC_* defaults suitable for fast unit tests.
 
     Opt-in per test/module by requesting this fixture.
     Values are restored after each test.
     """
     overrides = {
-        "KOSMOS_IPC_RING_SIZE": "16",
-        "KOSMOS_IPC_TX_CACHE_CAPACITY": "8",
-        "KOSMOS_IPC_HEARTBEAT_INTERVAL_MS": "500",
-        "KOSMOS_IPC_HEARTBEAT_DEAD_MS": "1500",
+        "UMMAYA_IPC_RING_SIZE": "16",
+        "UMMAYA_IPC_TX_CACHE_CAPACITY": "8",
+        "UMMAYA_IPC_HEARTBEAT_INTERVAL_MS": "500",
+        "UMMAYA_IPC_HEARTBEAT_DEAD_MS": "1500",
     }
     for k, v in overrides.items():
         monkeypatch.setenv(k, v)
@@ -153,10 +153,10 @@ def ipc_env_overrides(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, 
 
 
 @pytest.fixture(autouse=True)
-def _kosmos_ipc_parity_drift_fixture_default_off(
+def _ummaya_ipc_parity_drift_fixture_default_off(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Force ``KOSMOS_IPC_PARITY_DRIFT_FIXTURE`` unset by default.
+    """Force ``UMMAYA_IPC_PARITY_DRIFT_FIXTURE`` unset by default.
 
     The parity-test in ``test_codec_envelope_parity.py`` flips this env
     var ON via ``monkeypatch.setenv`` only inside the dedicated
@@ -166,4 +166,4 @@ def _kosmos_ipc_parity_drift_fixture_default_off(
     This guard removes the var at every test entry; the negative test
     re-sets it intentionally with monkeypatch.
     """
-    monkeypatch.delenv("KOSMOS_IPC_PARITY_DRIFT_FIXTURE", raising=False)
+    monkeypatch.delenv("UMMAYA_IPC_PARITY_DRIFT_FIXTURE", raising=False)

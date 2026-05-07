@@ -20,14 +20,14 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from kosmos.ipc.adapter_manifest_emitter import (
+from ummaya.ipc.adapter_manifest_emitter import (
     _EXTRA_REGISTRY,
     _build_entries,
     _canonical_json,
     emit_manifest,
     register_manifest_entry,
 )
-from kosmos.ipc.frame_schema import AdapterManifestEntry, AdapterManifestSyncFrame
+from ummaya.ipc.frame_schema import AdapterManifestEntry, AdapterManifestSyncFrame
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -196,7 +196,7 @@ def test_emit_manifest_exits_78_when_no_entries() -> None:
     registry = _empty_registry()
 
     # Patch _build_entries to return empty list simulating total failure.
-    with patch("kosmos.ipc.adapter_manifest_emitter._build_entries", return_value=[]):
+    with patch("ummaya.ipc.adapter_manifest_emitter._build_entries", return_value=[]):
         with pytest.raises(SystemExit) as exc_info:
             emit_manifest(buf, registry, pid=1)
         assert exc_info.value.code == 78, (
@@ -220,16 +220,16 @@ def test_audit4_p0_9_mock_submits_have_policy_url(caplog: pytest.LogCaptureFixtu
     import logging
 
     # Eager-import the Mock tree so submit adapters self-register.
-    import kosmos.tools.mock  # noqa: F401
-    from kosmos.ipc.adapter_manifest_emitter import _build_entries
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.register_all import register_all_tools
-    from kosmos.tools.registry import ToolRegistry
+    import ummaya.tools.mock  # noqa: F401
+    from ummaya.ipc.adapter_manifest_emitter import _build_entries
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.register_all import register_all_tools
+    from ummaya.tools.registry import ToolRegistry
 
     reg = ToolRegistry()
     register_all_tools(reg, ToolExecutor(registry=reg))
 
-    with caplog.at_level(logging.WARNING, logger="kosmos.ipc.adapter_manifest_emitter"):
+    with caplog.at_level(logging.WARNING, logger="ummaya.ipc.adapter_manifest_emitter"):
         entries = _build_entries(reg, warn_on_missing=True)
 
     # Five Mock submit adapters MUST surface with policy_authority_url populated.

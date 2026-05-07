@@ -6,7 +6,7 @@ API error — no silent skips on unavailability.  Assertions are limited to
 response *structure*, not specific data values, because weather data changes
 constantly.
 
-Required environment variable: ``KOSMOS_DATA_GO_KR_API_KEY``.
+Required environment variable: ``UMMAYA_DATA_GO_KR_API_KEY``.
 """
 
 from __future__ import annotations
@@ -15,18 +15,18 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from kosmos.tools.kma.kma_current_observation import (
+from ummaya.tools.kma.kma_current_observation import (
     KmaCurrentObservationInput,
     KmaCurrentObservationOutput,
 )
-from kosmos.tools.kma.kma_current_observation import (
+from ummaya.tools.kma.kma_current_observation import (
     _call as _observation_call,
 )
-from kosmos.tools.kma.kma_weather_alert_status import (
+from ummaya.tools.kma.kma_weather_alert_status import (
     KmaWeatherAlertStatusInput,
     KmaWeatherAlertStatusOutput,
 )
-from kosmos.tools.kma.kma_weather_alert_status import (
+from ummaya.tools.kma.kma_weather_alert_status import (
     _call as _alert_call,
 )
 
@@ -47,7 +47,7 @@ async def test_live_kma_weather_alert_basic(
     ``warnings`` (list).  If any warnings are present, also checks that the
     first entry exposes the ``area_name`` and ``warn_var`` fields.
     """
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
 
     inp = KmaWeatherAlertStatusInput()
     result = await _alert_call(inp)
@@ -76,7 +76,7 @@ async def test_live_kma_weather_alert_parses_to_model(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that the raw _call() dict validates cleanly into KmaWeatherAlertStatusOutput."""
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
 
     inp = KmaWeatherAlertStatusInput()
     result = await _alert_call(inp)
@@ -121,7 +121,7 @@ async def test_live_kma_current_observation_basic(
     timestamp.  Verifies required keys and that ``t1h`` is float or None
     and ``rn1`` is float.
     """
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
 
     base_date, base_time = _observation_datetime()
     inp = KmaCurrentObservationInput(
@@ -148,7 +148,7 @@ async def test_live_kma_current_observation_parses_to_model(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that the raw _call() dict validates cleanly into KmaCurrentObservationOutput."""
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
 
     base_date, base_time = _observation_datetime()
     inp = KmaCurrentObservationInput(

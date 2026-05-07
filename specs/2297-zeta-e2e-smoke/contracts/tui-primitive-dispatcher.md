@@ -64,13 +64,13 @@ The registry instance is provided via the existing per-session injection point (
 
 ## I-D6 — Timeout (FR-006)
 
-**Given** `dispatchPrimitive(opts)` with `timeoutMs = 30_000` (default) or `KOSMOS_TUI_PRIMITIVE_TIMEOUT_MS` env override.
+**Given** `dispatchPrimitive(opts)` with `timeoutMs = 30_000` (default) or `UMMAYA_TUI_PRIMITIVE_TIMEOUT_MS` env override.
 
 **Then**:
 - A `setTimeout(reject, timeoutMs)` is registered alongside the pending call.
 - On timeout, the registry's `reject` is invoked with `Error('응답 시간이 초과되었습니다')`.
 - `dispatchPrimitive` catches the rejection and returns `{ data: { ok: false, error: '응답 시간이 초과되었습니다' } }`.
-- An OTEL span attribute `kosmos.tui.primitive.timeout = true` is set on the active span.
+- An OTEL span attribute `ummaya.tui.primitive.timeout = true` is set on the active span.
 
 ## I-D7 — Error envelope passthrough (FR-007)
 

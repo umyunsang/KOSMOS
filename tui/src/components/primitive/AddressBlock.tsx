@@ -1,5 +1,5 @@
 /**
- * KOSMOS-original — AddressBlock renderer.
+ * UMMAYA-original — AddressBlock renderer.
  *
  * Multi-line Korean address display from the address slot of a
  * resolve_location result.  Shows road address, parcel address,

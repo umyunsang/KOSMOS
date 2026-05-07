@@ -38,7 +38,7 @@ Brief: Apply Step A byte-copy + 3 Step B swap commits to `tui/src/services/api/c
 
 ### sonnet-procedure-b-tui (T015-T017, 3 tasks, 1 file)
 
-Brief: Add `CC reference: services/api/claude.ts:<line-range>` citations to every handler in `tui/src/ipc/llmClient.ts`. Add `// SKIPPED — KOSMOS-N/A: <reason>` comments for the 4 channels K-EXAONE doesn't emit. NO functional changes — only comment additions.
+Brief: Add `CC reference: services/api/claude.ts:<line-range>` citations to every handler in `tui/src/ipc/llmClient.ts`. Add `// SKIPPED — UMMAYA-N/A: <reason>` comments for the 4 channels K-EXAONE doesn't emit. NO functional changes — only comment additions.
 
 ### sonnet-procedure-b-py (T018-T023, 6 tasks — split if needed; for now Lead may collapse)
 

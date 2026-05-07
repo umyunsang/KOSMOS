@@ -36,9 +36,9 @@ SLICE_DIRS = ["components", "screens", "outputStyles", "moreright"]
 SLICE_TOP = ["dialogLaunchers.tsx", "interactiveHelpers.tsx", "replLauncher.tsx"]
 SUFFIXES = (".ts", ".tsx")
 
-# Files in the CC baseline that are intentionally NOT ported to KOSMOS
+# Files in the CC baseline that are intentionally NOT ported to UMMAYA
 # (1P-Anthropic business surfaces — see tui/src/components/.never-port.md).
-# These paths are accepted as "missing in KOSMOS" without triggering the
+# These paths are accepted as "missing in UMMAYA" without triggering the
 # deletion-detection failure; everything else missing is treated as a
 # regression (e.g. accidental `git rm`).
 NEVER_PORT = frozenset({
@@ -119,7 +119,7 @@ def main() -> int:  # noqa: C901
     parser.add_argument("--whitelist", required=True, type=Path,
                         help="Path to tui/src/.cc-byte-identical-whitelist.yaml")
     parser.add_argument("--slice-root", required=True, type=Path,
-                        help="Root of the KOSMOS slice (typically tui/src)")
+                        help="Root of the UMMAYA slice (typically tui/src)")
     parser.add_argument("--quiet", action="store_true",
                         help="Suppress PASS summary output")
     args = parser.parse_args()
@@ -154,7 +154,7 @@ def main() -> int:  # noqa: C901
         "total": 0,
         "byte_identical": 0,
         "whitelisted": 0,
-        "kosmos_only": 0,
+        "ummaya_only": 0,
         "missing_never_port": 0,
         "failed": 0,
     }
@@ -162,12 +162,12 @@ def main() -> int:  # noqa: C901
 
     # FR-003 + Codex P1 (PR #2723) — deletion guard.
     # Walk the BASELINE side first to catch CC-tracked files that have been
-    # removed from KOSMOS without an explicit NEVER-PORT carve-out. This is
-    # the inverse of the divergence walk below: if we only walked KOSMOS
+    # removed from UMMAYA without an explicit NEVER-PORT carve-out. This is
+    # the inverse of the divergence walk below: if we only walked UMMAYA
     # files, a `git rm tui/src/components/App.tsx` would silently pass.
-    kosmos_rels = {p.relative_to(slice_root).as_posix() for p in slice_files}
+    ummaya_rels = {p.relative_to(slice_root).as_posix() for p in slice_files}
     for cc_rel in baseline:
-        if cc_rel in kosmos_rels:
+        if cc_rel in ummaya_rels:
             continue
         if cc_rel in NEVER_PORT:
             stats["missing_never_port"] += 1
@@ -183,17 +183,17 @@ def main() -> int:  # noqa: C901
         ))
         stats["failed"] += 1
 
-    for kosmos_path in slice_files:
+    for ummaya_path in slice_files:
         stats["total"] += 1
-        rel_to_slice = kosmos_path.relative_to(slice_root).as_posix()
-        actual_sha = sha256_of(kosmos_path)
+        rel_to_slice = ummaya_path.relative_to(slice_root).as_posix()
+        actual_sha = sha256_of(ummaya_path)
 
         cc_sha = baseline.get(rel_to_slice)
         if cc_sha is None:
-            # KOSMOS-only file — no CC baseline. PASS (these are KOSMOS-original
+            # UMMAYA-only file — no CC baseline. PASS (these are UMMAYA-original
             # additions per audit § 6, e.g. active primitive renderers, onboarding,
             # citizen UI extensions).
-            stats["kosmos_only"] += 1
+            stats["ummaya_only"] += 1
             continue
 
         if actual_sha == cc_sha:
@@ -202,7 +202,7 @@ def main() -> int:  # noqa: C901
 
         # Divergent. Lookup in whitelist using repo-root relative path.
         try:
-            repo_rel = kosmos_path.resolve().relative_to(repo_root).as_posix()
+            repo_rel = ummaya_path.resolve().relative_to(repo_root).as_posix()
         except ValueError:
             repo_rel = f"tui/src/{rel_to_slice}"
 
@@ -237,13 +237,13 @@ def main() -> int:  # noqa: C901
         sys.stdout.write(f"::error file={repo_rel}::{msg}\n")
 
     if stats["failed"]:
-        # `failed` aggregates two failure modes: (a) divergent KOSMOS file
+        # `failed` aggregates two failure modes: (a) divergent UMMAYA file
         # without a whitelist entry, and (b) CC-baselined file missing from
         # tui/src without a NEVER_PORT carve-out (deletion guard). Worded
         # to cover both per Copilot review on PR #2723.
         sys.stderr.write(
             f"::error::cc-byte-identical-guard FAILED · {stats['failed']} "
-            f"unjustified divergence(s) (missing-from-kosmos OR sha-mismatch-without-whitelist). "
+            f"unjustified divergence(s) (missing-from-ummaya OR sha-mismatch-without-whitelist). "
             f"Total scanned: {stats['total']}.\n"
         )
         return 1
@@ -253,7 +253,7 @@ def main() -> int:  # noqa: C901
             f"PASS · scanned {stats['total']} files · "
             f"{stats['byte_identical']} byte-identical · "
             f"{stats['whitelisted']} whitelisted · "
-            f"{stats['kosmos_only']} KOSMOS-only · "
+            f"{stats['ummaya_only']} UMMAYA-only · "
             f"{stats['missing_never_port']} NEVER-PORT (CC-only, intentional) · "
             f"{stats['failed']} failed\n"
         )

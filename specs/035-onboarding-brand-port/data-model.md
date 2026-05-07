@@ -20,7 +20,7 @@
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `tokenName` | `string` conforming to `MetaphorRole Variant?` per `docs/design/brand-system.md § 2` BNF | yes | Primary key. camelCase `MetaphorRole` + TitleCase optional `Variant`. |
-| `primaryHex` | `string` matching `/^#[0-9a-f]{6}$/` | yes | Primary value. Lowercase hex. Must appear in `assets/kosmos-logo.svg` palette. |
+| `primaryHex` | `string` matching `/^#[0-9a-f]{6}$/` | yes | Primary value. Lowercase hex. Must appear in `assets/ummaya-logo.svg` palette. |
 | `shimmerHex` | `string | null` | no | Present iff a `Shimmer` variant ships for this token. |
 | `ministryBinding` | `MinistryCode | null` | no | Non-null iff `tokenName` starts with `agentSatellite`. Values: `Koroad`, `Kma`, `Hira`, `Nmc`. |
 | `measuredContrastRatio` | `float | null` | no | Measured against `backgroundHex` via WCAG formula. Two-decimal rounding. |
@@ -33,7 +33,7 @@
 - **I-2**: `primaryHex` lowercase (`#a78bfa`, not `#A78BFA`). Consistent with existing SVG source files.
 - **I-3**: If `tokenName` starts with `agentSatellite`, `ministryBinding` MUST be set and MUST match the `MinistryCode` suffix (`agentSatelliteKoroad` ↔ `Koroad`).
 - **I-4**: `measuredContrastRatio` ≥ 4.5 for any token rendered as body text in any component (FR-003); ≥ 3.0 for non-text UI chrome.
-- **I-5**: `primaryHex` MUST be drawn from the authoritative 16-hex palette in `assets/kosmos-logo.svg` OR inherit from a preserved semantic slot in the pre-edit `dark.ts`.
+- **I-5**: `primaryHex` MUST be drawn from the authoritative 16-hex palette in `assets/ummaya-logo.svg` OR inherit from a preserved semantic slot in the pre-edit `dark.ts`.
 
 **Relationships**:
 
@@ -98,7 +98,7 @@ read latest PIPAConsentRecord from memdir → match CONSENT_VERSION?
 
 **Purpose**: Append-only memdir USER-tier record capturing one PIPA consent decision.
 
-**Representation**: Pydantic v2 `frozen=True` model on Python side; Zod discriminated union on TypeScript side. Serialised as JSON at `~/.kosmos/memdir/user/consent/<timestamp>-<session_id>.json`.
+**Representation**: Pydantic v2 `frozen=True` model on Python side; Zod discriminated union on TypeScript side. Serialised as JSON at `~/.ummaya/memdir/user/consent/<timestamp>-<session_id>.json`.
 
 **Fields**:
 
@@ -143,7 +143,7 @@ read latest PIPAConsentRecord from memdir → match CONSENT_VERSION?
 
 **Purpose**: Memdir USER-tier record capturing the citizen's per-ministry opt-in decisions.
 
-**Representation**: Pydantic v2 `frozen=True` model on Python side; Zod schema on TypeScript side. Serialised as JSON at `~/.kosmos/memdir/user/ministry-scope/<timestamp>-<session_id>.json`.
+**Representation**: Pydantic v2 `frozen=True` model on Python side; Zod schema on TypeScript side. Serialised as JSON at `~/.ummaya/memdir/user/ministry-scope/<timestamp>-<session_id>.json`.
 
 **Fields**:
 
@@ -193,9 +193,9 @@ read latest PIPAConsentRecord from memdir → match CONSENT_VERSION?
 
 ---
 
-## Entity 5 — `KosmosThemeToken`
+## Entity 5 — `UmmayaThemeToken`
 
-**Purpose**: TypeScript type alias exported by `tui/src/theme/tokens.ts`; closed union of KOSMOS metaphor tokens + retained semantic slots.
+**Purpose**: TypeScript type alias exported by `tui/src/theme/tokens.ts`; closed union of UMMAYA metaphor tokens + retained semantic slots.
 
 **Representation**: TypeScript `type` alias with `string` field values. No runtime validation — the contract is compile-time only.
 
@@ -211,7 +211,7 @@ briefLabelClaude
 **Field set (ADD)**: 10 identifiers added per FR-006.
 
 ```
-kosmosCore, kosmosCoreShimmer,
+ummayaCore, ummayaCoreShimmer,
 orbitalRing, orbitalRingShimmer,
 wordmark, subtitle,
 agentSatelliteKoroad, agentSatelliteKma,
@@ -225,12 +225,12 @@ agentSatelliteHira, agentSatelliteNmc
 - **I-17**: Zero intersection between DELETE set and ADD set (enforced by unique-name property of TypeScript types).
 - **I-18**: The type surface compiles only if every consumer site has been updated to use the new identifier — a consumer still referencing `claude` fails at compile time.
 - **I-19**: Every token name passes the Brand Guardian grep gate BAN-01 through BAN-07 (see R-1).
-- **I-20**: Header comment in `tokens.ts` AND `dark.ts` includes the two lines required by FR-008 (upstream source + "KOSMOS 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)").
+- **I-20**: Header comment in `tokens.ts` AND `dark.ts` includes the two lines required by FR-008 (upstream source + "UMMAYA 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)").
 
 **Relationships**:
 
 - Concretised by `darkTheme: ThemeToken` in `dark.ts` (the type's canonical value instance).
-- Referenced by `useTheme()` in every KOSMOS TUI component.
+- Referenced by `useTheme()` in every UMMAYA TUI component.
 
 ---
 
@@ -245,7 +245,7 @@ agentSatelliteHira, agentSatelliteNmc
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `ccSourcePath` | `str` | yes | Path under `.references/claude-code-sourcemap/restored-src/src/components/` @ `a8a678c`. |
-| `kosmosTargetPath` | `str` | yes | Path under `tui/src/components/`. |
+| `ummayaTargetPath` | `str` | yes | Path under `tui/src/components/`. |
 | `verdict` | `"PORT" | "REWRITE"` | yes | 1 PORT (FeedColumn) + 8 REWRITE. |
 | `accessibilityGateAnchor` | `"[ag-logov2]" | "[ag-onboarding]" | "[ag-logo-wordmark]"` | yes | Anchor in `docs/tui/accessibility-gate.md § 3`. |
 | `tokenReferences` | `list[ThemeToken-key]` | yes | Which tokens `useTheme()` reads. |
@@ -255,17 +255,17 @@ agentSatelliteHira, agentSatelliteNmc
 
 **The 9 rows**:
 
-| # | ccSourcePath | kosmosTargetPath | verdict | anchor | primary tokens |
+| # | ccSourcePath | ummayaTargetPath | verdict | anchor | primary tokens |
 |---|---|---|---|---|---|
-| 1 | `LogoV2/AnimatedAsterisk.tsx` | `onboarding/LogoV2/AnimatedAsterisk.tsx` | REWRITE | `[ag-logov2]` | `kosmosCore`, `kosmosCoreShimmer` |
+| 1 | `LogoV2/AnimatedAsterisk.tsx` | `onboarding/LogoV2/AnimatedAsterisk.tsx` | REWRITE | `[ag-logov2]` | `ummayaCore`, `ummayaCoreShimmer` |
 | 2 | `LogoV2/CondensedLogo.tsx` | `onboarding/LogoV2/CondensedLogo.tsx` | REWRITE | `[ag-logov2]` | `wordmark`, `subtitle` |
 | 3 | `LogoV2/Feed.tsx` | `onboarding/LogoV2/Feed.tsx` | REWRITE | `[ag-logov2]` | `text`, `subtle`, `agentSatellite*` |
 | 4 | `LogoV2/FeedColumn.tsx` | `onboarding/LogoV2/FeedColumn.tsx` | PORT | `[ag-logov2]` | `subtle`, `text` |
 | 5 | `LogoV2/feedConfigs.tsx` | `onboarding/LogoV2/feedConfigs.tsx` | REWRITE | `[ag-logov2]` | `agentSatellite*` |
 | 6 | `LogoV2/LogoV2.tsx` | `onboarding/LogoV2/LogoV2.tsx` | REWRITE | `[ag-logov2]` | all 10 new tokens |
-| 7 | `LogoV2/WelcomeV2.tsx` | `onboarding/LogoV2/WelcomeV2.tsx` | REWRITE | `[ag-logov2]` | `wordmark`, `subtitle`, `kosmosCore` |
-| 8 | `FastIcon.tsx` | `chrome/KosmosCoreIcon.tsx` | REWRITE | `[ag-logo-wordmark]` | `kosmosCore` |
-| 9 | `Onboarding.tsx` | `onboarding/Onboarding.tsx` | REWRITE | `[ag-onboarding]` | `wordmark`, `subtitle`, `kosmosCore`, `orbitalRing` |
+| 7 | `LogoV2/WelcomeV2.tsx` | `onboarding/LogoV2/WelcomeV2.tsx` | REWRITE | `[ag-logov2]` | `wordmark`, `subtitle`, `ummayaCore` |
+| 8 | `FastIcon.tsx` | `chrome/UmmayaCoreIcon.tsx` | REWRITE | `[ag-logo-wordmark]` | `ummayaCore` |
+| 9 | `Onboarding.tsx` | `onboarding/Onboarding.tsx` | REWRITE | `[ag-onboarding]` | `wordmark`, `subtitle`, `ummayaCore`, `orbitalRing` |
 
 **Invariants**:
 
@@ -286,7 +286,7 @@ agentSatelliteHira, agentSatelliteNmc
 - **X-1 — Version coherence**: when `PIPAConsentRecord.consent_version` or `MinistryScopeAcknowledgment.scope_version` bumps, the corresponding `OnboardingStep.skipCondition` begins returning `false`, forcing a re-prompt.
 - **X-2 — Session binding**: a PIPAConsentRecord and its following MinistryScopeAcknowledgment share the same `session_id` (enforced by `OnboardingStep` writing both within the same flow).
 - **X-3 — Router refusal**: `MainToolRouter.resolve()` reads the latest `MinistryScopeAcknowledgment`; any ministry with `opt_in = false` triggers the SC-009 pre-network refusal with a Korean citizen-facing message.
-- **X-4 — Palette → component closure**: every `LogoV2RewriteComponent.tokenReferences` entry is a member of the DELETE-stripped / ADD-augmented `KosmosThemeToken` surface. No component references a token that does not exist.
+- **X-4 — Palette → component closure**: every `LogoV2RewriteComponent.tokenReferences` entry is a member of the DELETE-stripped / ADD-augmented `UmmayaThemeToken` surface. No component references a token that does not exist.
 
 ---
 
@@ -296,9 +296,9 @@ agentSatelliteHira, agentSatelliteNmc
 |---|---|---|---|
 | `BrandPalette` | MD table + TS literal | `docs/design/brand-system.md § 4` | compile-time constant |
 | `OnboardingStep` | TS const | `tui/src/components/onboarding/Onboarding.tsx` | compile-time constant |
-| `PIPAConsentRecord` | Pydantic v2 + Zod mirror | `src/kosmos/memdir/user_consent.py` | immutable (frozen=True) |
-| `MinistryScopeAcknowledgment` | Pydantic v2 + Zod mirror | `src/kosmos/memdir/ministry_scope.py` | immutable (frozen=True) |
-| `KosmosThemeToken` | TS type alias | `tui/src/theme/tokens.ts` | compile-time contract |
+| `PIPAConsentRecord` | Pydantic v2 + Zod mirror | `src/ummaya/memdir/user_consent.py` | immutable (frozen=True) |
+| `MinistryScopeAcknowledgment` | Pydantic v2 + Zod mirror | `src/ummaya/memdir/ministry_scope.py` | immutable (frozen=True) |
+| `UmmayaThemeToken` | TS type alias | `tui/src/theme/tokens.ts` | compile-time contract |
 | `LogoV2RewriteComponent` | MD catalog + .tsx files | `contracts/logov2-rewrite-visual-specs.md` | source-controlled |
 
 6 entities, 23 numbered invariants (I-1 … I-23), 4 cross-entity invariants (X-1 … X-4), 0 unresolved `NEEDS CLARIFICATION` markers.

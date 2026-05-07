@@ -16,7 +16,7 @@ v2 변경: `CallerGraph` + `DispositionMatrix` entity 신규 박제. `CleanupTar
 
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `kosmos_path` | string | ✅ | `tui/src/...` 상대경로 |
+| `ummaya_path` | string | ✅ | `tui/src/...` 상대경로 |
 | `module_path` | string | ✅ | import 절단 후 stem (예: `services/api/claude`) |
 | `line_count` | int | ✅ | 파일 라인 수 |
 | `importer_count` | int | ✅ | 이 파일을 import 하는 다른 파일 수 |
@@ -43,7 +43,7 @@ v2 변경: `CallerGraph` + `DispositionMatrix` entity 신규 박제. `CleanupTar
 
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `kosmos_path` | string | ✅ | `tui/src/...` 상대경로 |
+| `ummaya_path` | string | ✅ | `tui/src/...` 상대경로 |
 | `disposition` | enum {`DELETE`, `KEEP`} | ✅ | v2 결정 (v1 의 `migrate` 는 별도 spec 으로 deferred) |
 | `rationale` | string | ✅ | 1~3 줄 — 결정 근거 + caller-graph evidence + Spec 인용 |
 | `caller_cleanup_required` | bool | ✅ | DELETE 인 경우 importer cleanup 동시 진행 여부 |
@@ -67,7 +67,7 @@ v2 변경: `CallerGraph` + `DispositionMatrix` entity 신규 박제. `CleanupTar
 
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `kosmos_path` | string | ✅ | `tui/src/...` 상대경로 |
+| `ummaya_path` | string | ✅ | `tui/src/...` 상대경로 |
 | `disposition` | enum {`DELETE`, `KEEP`} | ✅ | DispositionMatrix 의 결정 |
 | `importer_count` | int | ✅ | CallerGraph 박제 |
 | `importers` | array<string> | ✅ | CallerGraph 박제 |
@@ -78,15 +78,15 @@ v2 변경: `CallerGraph` + `DispositionMatrix` entity 신규 박제. `CleanupTar
 
 ### Validation
 
-- `disposition == "DELETE"` 후 `git ls-files <kosmos_path>` 0 행 (acceptance gate)
+- `disposition == "DELETE"` 후 `git ls-files <ummaya_path>` 0 행 (acceptance gate)
 - `disposition == "DELETE" && caller_cleanup_required == true` 후 `importers` 의 각 path 도 cleanup 완료 (FR-002 / FR-008 / FR-010 grep gate 통과)
 - 31 entry 모두 `disposition` 값 둘 중 하나
 
 ---
 
-## 4. DecisionLog — 6 KOSMOS-only Tool + KEEP 결정 박제
+## 4. DecisionLog — 6 UMMAYA-only Tool + KEEP 결정 박제
 
-`decision-log.md` 의 § "KOSMOS-only Tool Decisions" + § "Cleanup Targets KEEP rows".
+`decision-log.md` 의 § "UMMAYA-only Tool Decisions" + § "Cleanup Targets KEEP rows".
 
 ### 필드
 
@@ -99,7 +99,7 @@ v2 변경: `CallerGraph` + `DispositionMatrix` entity 신규 박제. `CleanupTar
 
 ### Validation
 
-- 6 KOSMOS-only Tool entry (sonnet 1차에서 이미 deletion 완료 — DELETE 결정 박제)
+- 6 UMMAYA-only Tool entry (sonnet 1차에서 이미 deletion 완료 — DELETE 결정 박제)
 - 3 KEEP entry (permissionSetup / permissions / ui-l2/permission)
 - `decision == "KEEP"` 인 항목은 `rationale` 에 caller-graph evidence + Constitution II 비충돌 명시 필수
 - `decision == "DELETE"` 인 항목은 `tools.ts` registry 와 import site 모두에서 제거 (acceptance gate)
@@ -114,7 +114,7 @@ v2 변경: `CallerGraph` + `DispositionMatrix` entity 신규 박제. `CleanupTar
 
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `kosmos_path` | string | ✅ | callsite 파일 |
+| `ummaya_path` | string | ✅ | callsite 파일 |
 | `original_call` | string | ✅ | 변환 전 함수 호출 (예: `queryHaiku(promptId, args)`) |
 | `replacement` | string | ✅ | 변환 후 호출 또는 `feature_deleted` 또는 `dead_import_removed` |
 | `migration_type` | enum {`equivalent_replace`, `feature_delete`, `dead_import_only`} | ✅ | |
@@ -154,6 +154,6 @@ v2 변경: `CallerGraph` + `DispositionMatrix` entity 신규 박제. `CleanupTar
 | CallerGraph (NEW) | (없음 — JSON 직접) | `data/caller-graph.json` |
 | DispositionMatrix (NEW) | (없음 — JSON 직접) | `data/disposition.json` |
 | CleanupTarget × 31 | `decision-log.md § Cleanup Targets` | caller-graph.json + disposition.json 결합 |
-| DecisionLog × 9 (6 Tool + 3 KEEP) | `decision-log.md § KOSMOS-only Tool Decisions + § ui-l2/permission Decision + § utils/permissions KEEP` | — |
+| DecisionLog × 9 (6 Tool + 3 KEEP) | `decision-log.md § UMMAYA-only Tool Decisions + § ui-l2/permission Decision + § utils/permissions KEEP` | — |
 | CallsiteMigration × 8 | `decision-log.md § Callsite Migrations` | — |
 | TestBaseline + TestAfter | `baseline-test.txt` + `after-test.txt` plaintext | (선택) `data/test-diff-summary.json` |

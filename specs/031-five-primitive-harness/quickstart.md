@@ -8,9 +8,9 @@ This quickstart is for contributors touching the main tool surface. Goal: a fres
 
 ## 1. Mental model
 
-KOSMOS migrates the Claude Code harness (tool loop + permission + context + TUI) from the developer domain to the Korean public-service domain. The main surface declares **shape**; adapters own **domain**.
+UMMAYA migrates the Claude Code harness (tool loop + permission + context + TUI) from the developer domain to the Korean public-service domain. The main surface declares **shape**; adapters own **domain**.
 
-| KOSMOS primitive | Claude Code analogue | Harness verb |
+| UMMAYA primitive | Claude Code analogue | Harness verb |
 |---|---|---|
 | `lookup` (mode=search / fetch) | `Grep` + `Read` + `WebFetch` | search + fetch on tool registry |
 | `resolve_location` | `Glob` | address → coordinate / admin-code |
@@ -25,7 +25,7 @@ See [data-model.md](./data-model.md) for the full Pydantic v2 shapes and [resear
 ## 2. Directory layout
 
 ```
-src/kosmos/tools/
+src/ummaya/tools/
 ├── <ministry>/                  # real adapters (e.g. koroad/, hira/, nmc/)
 │   └── <adapter>.py
 └── mock/
@@ -41,7 +41,7 @@ docs/mock/                       # exactly 6 subdirs (SC-004)
 └── cbs/
     ├── README.md                # public-spec URL + license + mirror axis
     ├── fixtures/                # recorded fixtures (PyPinkSign, 3GPP TS 23.041, etc.)
-    └── adapters/                # stub pointing at src/kosmos/tools/mock/...
+    └── adapters/                # stub pointing at src/ummaya/tools/mock/...
 
 docs/scenarios/                  # exactly 3 OPAQUE journeys (SC-004)
 ├── gov24_submission.md          # 정부24 민원 제출
@@ -56,10 +56,10 @@ docs/scenarios/                  # exactly 3 OPAQUE journeys (SC-004)
 Register a mock `submit` adapter for a traffic-fine payment (`mock_traffic_fine_pay_v1`):
 
 ```python
-# src/kosmos/tools/mock/data_go_kr/fines_pay.py
+# src/ummaya/tools/mock/data_go_kr/fines_pay.py
 from pydantic import BaseModel, ConfigDict, Field
-from kosmos.tools.registry import ToolRegistry, AdapterRegistration, AdapterPrimitive
-from kosmos.primitives.submit import SubmitOutput, SubmitStatus
+from ummaya.tools.registry import ToolRegistry, AdapterRegistration, AdapterPrimitive
+from ummaya.primitives.submit import SubmitOutput, SubmitStatus
 
 class FinesPayParams(BaseModel):
     """Adapter-typed params. Ministry enum lives HERE, not on main surface."""
@@ -103,7 +103,7 @@ ToolRegistry.register(REGISTRATION)
 The main-surface call is always **shape-only**:
 
 ```python
-result = await kosmos.submit(
+result = await ummaya.submit(
     tool_id="mock_traffic_fine_pay_v1",
     params={"fine_reference": "2026-04-19-0001", "payment_method": "virtual_account"},
 )
@@ -118,23 +118,23 @@ No domain-specific field ever appears on `SubmitInput` / `SubmitOutput` (SC-002)
 
 ```python
 # lookup (preserved byte-identical from Spec 022)
-await kosmos.lookup(mode="search", query="교통사고 다발지역", top_k=5)
-await kosmos.lookup(mode="fetch", tool_id="koroad_accident_hazard_search", params={...})
+await ummaya.lookup(mode="search", query="교통사고 다발지역", top_k=5)
+await ummaya.lookup(mode="fetch", tool_id="koroad_accident_hazard_search", params={...})
 
 # resolve_location (preserved byte-identical from Spec 022)
-await kosmos.resolve_location(query="서울시 종로구 세종대로 209")
+await ummaya.resolve_location(query="서울시 종로구 세종대로 209")
 
 # submit (new — FR-001..005)
-await kosmos.submit(tool_id="mock_traffic_fine_pay_v1", params={...})
+await ummaya.submit(tool_id="mock_traffic_fine_pay_v1", params={...})
 
 # subscribe (new — FR-011..015, AsyncIterator; no webhook URL accepted)
-async for event in kosmos.subscribe(
+async for event in ummaya.subscribe(
     tool_id="mock_cbs_disaster_v1", params={"region": "서울"}, lifetime_seconds=3600,
 ):
     ...  # event: CbsBroadcastEvent | RestPullTickEvent | RssItemEvent | SubscriptionBackpressureDrop
 
 # verify (new — FR-006..010; delegation-only, no CA / HSM / VC issuer)
-auth_ctx = await kosmos.verify(family_hint="ganpyeon_injeung", session_context={...})
+auth_ctx = await ummaya.verify(family_hint="ganpyeon_injeung", session_context={...})
 # auth_ctx: discriminated on `family`, carries published_tier + nist_aal_hint
 ```
 

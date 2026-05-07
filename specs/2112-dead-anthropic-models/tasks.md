@@ -6,8 +6,8 @@ description: "Task list for P1 dead Anthropic model matrix removal"
 # Tasks: P1 Dead Anthropic Model Matrix Removal
 
 **Input**: Design documents from `/specs/2112-dead-anthropic-models/`
-**Epic**: [#2112](https://github.com/umyunsang/KOSMOS/issues/2112)
-**Phase**: P1 (`docs/requirements/kosmos-migration-tree.md § Execution Phase`)
+**Epic**: [#2112](https://github.com/umyunsang/UMMAYA/issues/2112)
+**Phase**: P1 (`docs/requirements/ummaya-migration-tree.md § Execution Phase`)
 **Prerequisites**: plan.md ✓ · spec.md ✓ · research.md ✓ · data-model.md ✓ · contracts/audit-contract.md ✓ · quickstart.md ✓
 
 **Tests**: NOT requested. This is a *deletion-driven* epic; verification is the audit-grade contracts (C1–C11) in `contracts/audit-contract.md`. The `bun test` + `uv run pytest` baselines (FR-010 / SC-004) act as the regression net.
@@ -22,9 +22,9 @@ description: "Task list for P1 dead Anthropic model matrix removal"
 
 ## Path Conventions
 
-KOSMOS canonical layout (per AGENTS.md):
+UMMAYA canonical layout (per AGENTS.md):
 - TUI (target of this epic): `tui/src/`
-- Python backend (read-only this epic): `src/kosmos/`
+- Python backend (read-only this epic): `src/ummaya/`
 - Spec artefacts: `specs/2112-dead-anthropic-models/`
 
 ---
@@ -66,7 +66,7 @@ KOSMOS canonical layout (per AGENTS.md):
 - [x] T009 [US1] Collapse `firstPartyNameToCanonical(name)` body in `tui/src/utils/model/model.ts:197-279` (15+ Anthropic name-pattern branches) to a single fail-safe expression: `name.toLowerCase().includes('k-exaone') ? 'k-exaone' as ModelShortName : name as ModelShortName`. Add `// [Deferred to P2 — issue #2147]` annotation referencing the marker from T005. Satisfies FR-005.
 - [x] T010 [US1] Convert `getDefaultSonnetModel()`, `getDefaultOpusModel()`, `getDefaultHaikuModel()` in `tui/src/utils/model/model.ts` to thin aliases — each body is `return getDefaultMainLoopModel()`. Per the caller-classification.md (T004) result, these MUST be aliased (not removed) because at least one caller is in bucket B (`services/api/claude.ts`). Add `[Deferred to P2 — issue #2147]` annotation per FR-006.
 - [x] T011 [US1] Replace `getSmallFastModel()` body in `tui/src/utils/model/model.ts:38-40` with `return getDefaultMainLoopModel()`. Remove the `process.env.ANTHROPIC_SMALL_FAST_MODEL` env read. Satisfies FR-001 and FR-004 inside this file.
-- [x] T012 [US1] Replace `isNonCustomOpusModel(model)` body in `tui/src/utils/model/model.ts:42-49` with `return false` (no Opus model exists in KOSMOS). Run `rg -n 'isNonCustomOpusModel' tui/src/` to confirm caller behaviour does not break. If callers expect `true` in some path, escalate.
+- [x] T012 [US1] Replace `isNonCustomOpusModel(model)` body in `tui/src/utils/model/model.ts:42-49` with `return false` (no Opus model exists in UMMAYA). Run `rg -n 'isNonCustomOpusModel' tui/src/` to confirm caller behaviour does not break. If callers expect `true` in some path, escalate.
 - [x] T013 [US1] Prune Anthropic model option entries from `tui/src/utils/model/modelOptions.ts`: remove all `claude-3-*`, `claude-opus-*`, `claude-sonnet-*`, `claude-haiku-*` `ModelOption` constructors and their references to `getDefault{Sonnet,Opus,Haiku}Model`. **PRESERVE** subscription-tier branches (`isClaudeAISubscriber`, `isMaxSubscriber`, `isTeamPremiumSubscriber`) — these are P2-deferred (research.md § Caller-reach rule). Satisfies FR-001 and the perimeter constraint.
 - [x] T014 [P] [US1] Run `bash specs/2112-dead-anthropic-models/audit.sh C1 C2` and confirm both PASS (regex 0 hits AND both target services files absent).
 - [x] T015 [US1] Run `cd tui && bun test 2>&1 | tail -3` and confirm ≥ 984 pass, 0 fail. Resolve any breakage caused by T006-T013 (most likely: a test imported a deleted helper — either delete the test if it was specifically `[ANT-ONLY]` or update the test to use `getDefaultMainLoopModel()`).
@@ -107,7 +107,7 @@ KOSMOS canonical layout (per AGENTS.md):
 ### Implementation for User Story 3
 
 - [x] T026 [P] [US3] Run C7 (dependency audit) — `git diff main...HEAD -- tui/package.json pyproject.toml | rg -E '^\+\s*"[^"]+"\s*:'` returns empty. Resolves FR-009 / SC-005.
-- [x] T027 [P] [US3] Run C4 + C5 + C6 (Python preservation audits) — confirm `temperature=1.0`, `top_p=0.95`, `presence_penalty=0.0`, `max_tokens=1024` defaults still present at `src/kosmos/llm/client.py:161-164,288-291`; `RetryPolicy`, `_compute_rate_limit_delay`, `_is_rate_limit_envelope` declarations untouched; `KOSMOS_K_EXAONE_THINKING` env + `chat_template_kwargs` payload field preserved. Validates FR-013/014/015.
+- [x] T027 [P] [US3] Run C4 + C5 + C6 (Python preservation audits) — confirm `temperature=1.0`, `top_p=0.95`, `presence_penalty=0.0`, `max_tokens=1024` defaults still present at `src/ummaya/llm/client.py:161-164,288-291`; `RetryPolicy`, `_compute_rate_limit_delay`, `_is_rate_limit_envelope` declarations untouched; `UMMAYA_K_EXAONE_THINKING` env + `chat_template_kwargs` payload field preserved. Validates FR-013/014/015.
 - [x] T028 [P] [US3] Run C3 (single source-of-truth) — `rg 'K-EXAONE-236B-A23B' --type ts --type py | sort -u` returns ≤ 3 lines, only at `config.py:37`, `model.ts:179`, `model.ts:187`. Validates FR-012.
 
 **Checkpoint**: SC-005 (zero new deps) and FR-012/013/014/015 preservation PASS.

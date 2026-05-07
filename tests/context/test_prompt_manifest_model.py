@@ -8,7 +8,7 @@ Covers:
 - extra="forbid" enforcement at manifest root
 - min_length=1 enforcement on entries
 
-RED phase: src/kosmos/context/prompt_models.py does not exist yet (T024).
+RED phase: src/ummaya/context/prompt_models.py does not exist yet (T024).
 A ModuleNotFoundError on collection is the expected RED signal.
 """
 
@@ -17,7 +17,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kosmos.context.prompt_models import PromptManifest, PromptManifestEntry
+from ummaya.context.prompt_models import PromptManifest, PromptManifestEntry
 
 # ---------------------------------------------------------------------------
 # Shared test fixtures

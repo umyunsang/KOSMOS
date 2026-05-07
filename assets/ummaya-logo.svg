@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1280" y2="640" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fff7ed"/>
+      <stop offset="100%" stop-color="#f8fafc"/>
+    </linearGradient>
+    <linearGradient id="home" x1="140" y1="150" x2="430" y2="470" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <linearGradient id="door" x1="210" y1="250" x2="360" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7c2d12"/>
+      <stop offset="100%" stop-color="#431407"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="640" rx="32" fill="url(#bg)"/>
+
+  <g transform="translate(120 94)">
+    <path d="M200 36 404 194H354V396H46V194H-4L200 36Z" fill="url(#home)"/>
+    <rect x="92" y="196" width="216" height="220" rx="42" fill="url(#door)"/>
+    <text x="200" y="342" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="118" font-weight="800" fill="#ffedd5">U</text>
+    <path d="M96 76C128 40 164 22 200 22C236 22 272 40 304 76" stroke="#fdba74" stroke-width="18" stroke-linecap="round"/>
+    <path d="M120 428H280" stroke="#fb923c" stroke-width="18" stroke-linecap="round"/>
+    <path d="M146 464H254" stroke="#34d399" stroke-width="14" stroke-linecap="round"/>
+    <path d="M172 496H228" stroke="#60a5fa" stroke-width="12" stroke-linecap="round"/>
+  </g>
+
+  <text x="560" y="286" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="78" font-weight="800" fill="#111827">UMMAYA</text>
+  <text x="564" y="338" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="20" font-weight="600" fill="#9a3412">UNIFIED MULTI-MINISTRY AGENT</text>
+  <text x="564" y="376" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="18" font-weight="400" fill="#475569">for your administration</text>
+  <rect x="564" y="404" width="118" height="4" rx="2" fill="#ea580c"/>
+  <rect x="696" y="404" width="52" height="4" rx="2" fill="#34d399"/>
+  <rect x="762" y="404" width="52" height="4" rx="2" fill="#60a5fa"/>
+</svg>

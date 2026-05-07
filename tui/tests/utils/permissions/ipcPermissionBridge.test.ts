@@ -15,13 +15,13 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test'
 
 // Audit-4 P0-8 — _sendPermissionResponse now routes via bridgeSingleton's
-// `bridge.send()`. We mock `getOrCreateKosmosBridge` BEFORE importing the
+// `bridge.send()`. We mock `getOrCreateUmmayaBridge` BEFORE importing the
 // SUT so the test never spawns a backend nor touches process.stdout. Each
 // test inspects the captured `sentFrames` to assert wire-format correctness.
 const sentFrames: unknown[] = []
 const stderrLines: string[] = []
 mock.module('../../../src/ipc/bridgeSingleton.js', () => ({
-  getOrCreateKosmosBridge: () => ({
+  getOrCreateUmmayaBridge: () => ({
     send: (frame: unknown) => {
       sentFrames.push(frame)
       return true

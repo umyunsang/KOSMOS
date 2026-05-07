@@ -1,6 +1,6 @@
 # Quickstart — Contributor Walkthrough (verifies SC-001)
 
-**Audience**: A developer who has never touched KOSMOS, has Python 3.12+ and uv installed, and wants to land their first KOSMOS plugin.
+**Audience**: A developer who has never touched UMMAYA, has Python 3.12+ and uv installed, and wants to land their first UMMAYA plugin.
 **Goal**: From `git clone` to a passing local `pytest` green in **under 30 minutes**. This file is the live reference for SC-001 and is itself the test artifact for that criterion (timed onboarding sessions follow this exact script).
 
 This is the *plan-phase* quickstart; the user-facing rendering goes to `docs/plugins/quickstart.ko.md` once implementation lands. The English version here is the source-of-truth (per AGENTS.md "All source text in English"); the Korean rendering is the translation contributors actually read.
@@ -12,7 +12,7 @@ This is the *plan-phase* quickstart; the user-facing rendering goes to `docs/plu
 - Python 3.12+ with `uv` installed (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
 - A GitHub account.
 - A `data.go.kr` API key if you plan to write a Live-tier plugin (free at https://data.go.kr).
-- Optional: KOSMOS TUI installed locally — only needed for `kosmos plugin init` interactive flow. CLI scaffolding can also run via `uvx kosmos-plugin-init <name>` (vendored entry-point) without the full TUI.
+- Optional: UMMAYA TUI installed locally — only needed for `ummaya plugin init` interactive flow. CLI scaffolding can also run via `uvx ummaya-plugin-init <name>` (vendored entry-point) without the full TUI.
 
 These prerequisites are NOT counted against the 30-minute budget; SC-001 measures from git clone forward.
 
@@ -24,19 +24,19 @@ Two options:
 
 ### Option A — GitHub "Use this template" (recommended)
 
-1. Go to https://github.com/kosmos-plugin-store/kosmos-plugin-template
+1. Go to https://github.com/ummaya-plugin-store/ummaya-plugin-template
 2. Click "Use this template" → "Create a new repository"
-3. Name it `kosmos-plugin-<your-plugin-name>` (e.g., `kosmos-plugin-busan-bike`)
+3. Name it `ummaya-plugin-<your-plugin-name>` (e.g., `ummaya-plugin-busan-bike`)
 4. Clone locally:
    ```sh
-   git clone https://github.com/<your-org>/kosmos-plugin-busan-bike
-   cd kosmos-plugin-busan-bike
+   git clone https://github.com/<your-org>/ummaya-plugin-busan-bike
+   cd ummaya-plugin-busan-bike
    ```
 
-### Option B — `kosmos plugin init` CLI (if you have the TUI)
+### Option B — `ummaya plugin init` CLI (if you have the TUI)
 
 ```sh
-kosmos plugin init busan-bike
+ummaya plugin init busan-bike
 cd busan-bike
 ```
 
@@ -62,7 +62,7 @@ If green: the scaffold works. Move on. If red: something is misconfigured locall
 
 ## Step 3 — Read the architecture (5 min)
 
-Open `docs/plugins/architecture.md` (in this repo, vendored as a stub during scaffold; canonical version at https://github.com/umyunsang/KOSMOS/blob/main/docs/plugins/architecture.md). Skim:
+Open `docs/plugins/architecture.md` (in this repo, vendored as a stub during scaffold; canonical version at https://github.com/umyunsang/UMMAYA/blob/main/docs/plugins/architecture.md). Skim:
 
 - The active plugin primitives: `lookup`, `submit`, `verify`.
 - Your plugin's `tool_id` MUST be `plugin.<plugin_id>.<verb>` where `<verb>` is one of those active plugin verbs.
@@ -94,15 +94,15 @@ adapter:
 tier: live
 mock_source_spec: null
 processes_pii: false        # public bike availability is non-personal
-slsa_provenance_url: https://github.com/<your-org>/kosmos-plugin-busan-bike
+slsa_provenance_url: https://github.com/<your-org>/ummaya-plugin-busan-bike
 otel_attributes:
-  kosmos.plugin.id: busan_bike
+  ummaya.plugin.id: busan_bike
 search_hint_ko: "부산 자전거 따릉이 대여소 자전거 잔여대수 부산광역시"
 search_hint_en: "Busan bike rental station availability"
 permission_layer: 1
 ```
 
-If `processes_pii: true`, add the `pipa_trustee_acknowledgment` block here (run `kosmos plugin pipa-text` to print the canonical text and SHA-256, or read `docs/plugins/security-review.md`).
+If `processes_pii: true`, add the `pipa_trustee_acknowledgment` block here (run `ummaya plugin pipa-text` to print the canonical text and SHA-256, or read `docs/plugins/security-review.md`).
 
 ---
 
@@ -139,7 +139,7 @@ Rules (enforced by Q1-PYV2 / Q1-NOANY / Q1-FIELD-DESC):
 import os
 import httpx
 
-from kosmos.tools.models import GovAPITool
+from ummaya.tools.models import GovAPITool
 
 from .schema import BusanBikeQueryInput, BusanBikeQueryOutput, BusanBikeStation
 
@@ -181,7 +181,7 @@ _TOOL_CACHE = None
 
 def __getattr__(name):
     """PEP 562 lazy TOOL — keeps standalone scaffold tests runnable
-    without ``kosmos`` being installed."""
+    without ``ummaya`` being installed."""
     global _TOOL_CACHE
     if name == "TOOL":
         if _TOOL_CACHE is None:
@@ -191,7 +191,7 @@ def __getattr__(name):
 
 
 async def adapter(payload: BusanBikeQueryInput) -> dict:
-    api_key = os.environ["KOSMOS_DATA_GO_KR_API_KEY"]
+    api_key = os.environ["UMMAYA_DATA_GO_KR_API_KEY"]
     async with httpx.AsyncClient(timeout=10.0, follow_redirects=False) as client:
         r = await client.get(
             ENDPOINT,
@@ -212,7 +212,7 @@ async def adapter(payload: BusanBikeQueryInput) -> dict:
 ```
 
 Rules:
-- Read API key from `KOSMOS_*` env var (never hardcode — Q-NO-HARDCODED-KEY).
+- Read API key from `UMMAYA_*` env var (never hardcode — Q-NO-HARDCODED-KEY).
 - Read every required GovAPITool field; defaults are conservative for fields you skip.
 - For Live tier, write a real network call; for Mock tier, replace `httpx.get` with fixture replay (see `docs/plugins/live-vs-mock.md`).
 
@@ -254,8 +254,8 @@ Expected: `2 passed`.
 ## Step 8 — Run validation locally (2 min)
 
 ```sh
-uvx --from git+https://github.com/umyunsang/KOSMOS@main \
-    kosmos-plugin-validate .
+uvx --from git+https://github.com/umyunsang/UMMAYA@main \
+    ummaya-plugin-validate .
 ```
 
 This runs all 50 review-checklist items locally — same checks the GitHub workflow runs on PR. Expected:
@@ -300,5 +300,5 @@ Open a PR; the `plugin-validation.yml` workflow runs against your PR. Expected: 
 
 - PIPA acknowledgment flow — only triggered if `processes_pii: true`. See `docs/plugins/security-review.md`.
 - Mock-tier path — see `docs/plugins/live-vs-mock.md`.
-- Publishing to `kosmos-plugin-store` — out of scope for this quickstart; happens after PR merge.
+- Publishing to `ummaya-plugin-store` — out of scope for this quickstart; happens after PR merge.
 - Marketplace browsing UI — deferred (#1820).

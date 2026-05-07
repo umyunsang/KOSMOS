@@ -42,17 +42,17 @@ _ALL_SEED_IDS: frozenset[str] = frozenset(
 def _build_registry() -> tuple[object, object]:
     """Build the test registry using the eval harness registry builder.
 
-    Delegates to ``kosmos.eval.retrieval._build_registry`` which registers
+    Delegates to ``ummaya.eval.retrieval._build_registry`` which registers
     each seed adapter individually and is resilient to partial availability.
     """
-    from kosmos.eval.retrieval import _build_registry as eval_build_registry
+    from ummaya.eval.retrieval import _build_registry as eval_build_registry
 
     return eval_build_registry()
 
 
 def _registered_ids(registry: object) -> frozenset[str]:
     """Return frozenset of all tool IDs in the registry."""
-    from kosmos.tools.registry import ToolRegistry
+    from ummaya.tools.registry import ToolRegistry
 
     assert isinstance(registry, ToolRegistry)
     return frozenset(t.id for t in registry.all_tools())
@@ -110,7 +110,7 @@ class TestRetrievalGate:
         # All 4 adapters are registered — run the full eval
         import yaml
 
-        from kosmos.eval.retrieval import _evaluate
+        from ummaya.eval.retrieval import _evaluate
 
         with _QUERIES_PATH.open(encoding="utf-8") as fh:
             data = yaml.safe_load(fh)
@@ -145,7 +145,7 @@ class TestRetrievalGate:
 
         import yaml
 
-        from kosmos.eval.retrieval import _evaluate
+        from ummaya.eval.retrieval import _evaluate
 
         with _QUERIES_PATH.open(encoding="utf-8") as fh:
             data = yaml.safe_load(fh)
@@ -168,7 +168,7 @@ class TestRetrievalGate:
 
         import yaml
 
-        from kosmos.eval.retrieval import _evaluate
+        from ummaya.eval.retrieval import _evaluate
 
         with _QUERIES_PATH.open(encoding="utf-8") as fh:
             data = yaml.safe_load(fh)
@@ -197,7 +197,7 @@ class TestRetrievalGate:
 
         import yaml
 
-        from kosmos.eval.retrieval import _evaluate
+        from ummaya.eval.retrieval import _evaluate
 
         with _QUERIES_PATH.open(encoding="utf-8") as fh:
             data = yaml.safe_load(fh)

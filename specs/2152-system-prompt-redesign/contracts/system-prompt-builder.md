@@ -1,8 +1,8 @@
-# Contract — `kosmos.llm.system_prompt_builder.build_system_prompt_with_tools` (R6 extension)
+# Contract — `ummaya.llm.system_prompt_builder.build_system_prompt_with_tools` (R6 extension)
 
 **Spec**: [../spec.md](../spec.md) · **Plan**: [../plan.md](../plan.md) · **Research**: [../research.md](../research.md) (R6)
 
-Extends the existing function at `src/kosmos/llm/system_prompt_builder.py:30-80` to emit one extra line per tool — the trigger phrase — alongside the structured description block. Backward-compatible additive change.
+Extends the existing function at `src/ummaya/llm/system_prompt_builder.py:30-80` to emit one extra line per tool — the trigger phrase — alongside the structured description block. Backward-compatible additive change.
 
 ---
 

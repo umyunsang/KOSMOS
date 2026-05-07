@@ -31,7 +31,7 @@ try {
   const bunGlobal = (globalThis as any).Bun
   if (bunGlobal && typeof bunGlobal.plugin === 'function') {
     bunGlobal.plugin({
-      name: 'kosmos-bun-bundle-shim',
+      name: 'ummaya-bun-bundle-shim',
       setup(build: {
         onResolve: (
           opts: { filter: RegExp },
@@ -51,14 +51,14 @@ try {
 // ═══════════════════════════════════════════════════════════════════════
 // Bun MACRO.* build-time constants
 // ═══════════════════════════════════════════════════════════════════════
-// KOSMOS version is sourced from tui/package.json — the single source of
+// UMMAYA version is sourced from tui/package.json — the single source of
 // truth. Bun supports native JSON imports, so editing package.json (manually
 // or via `npm version` / `bun pm version`) is the only step required to
-// bump the user-visible version. The previous "2.1.88-kosmos" hardcode was
-// a residue of the CC 2.1.88 source-map import; KOSMOS is a separate
-// project with its own release cadence (github.com/umyunsang/KOSMOS).
+// bump the user-visible version. The previous "2.1.88-ummaya" hardcode was
+// a residue of the CC 2.1.88 source-map import; UMMAYA is a separate
+// project with its own release cadence (github.com/umyunsang/UMMAYA).
 //
-// BUILD_TIME is injected from the env var KOSMOS_BUILD_TIME at runtime
+// BUILD_TIME is injected from the env var UMMAYA_BUILD_TIME at runtime
 // (set by the packaging step). When unset (e.g. local dev) we fall back to
 // the deterministic epoch-zero ISO string so reproducible builds stay
 // byte-stable across machines.
@@ -66,13 +66,13 @@ import pkg from '../../package.json' with { type: 'json' }
 
 ;(globalThis as any).MACRO = {
   VERSION: pkg.version,
-  VERSION_CHANGELOG: 'https://github.com/umyunsang/KOSMOS/releases',
-  BUILD_TIME: process.env.KOSMOS_BUILD_TIME ?? new Date(0).toISOString(),
-  FEEDBACK_CHANNEL: 'https://github.com/umyunsang/KOSMOS/issues',
+  VERSION_CHANGELOG: 'https://github.com/umyunsang/UMMAYA/releases',
+  BUILD_TIME: process.env.UMMAYA_BUILD_TIME ?? new Date(0).toISOString(),
+  FEEDBACK_CHANNEL: 'https://github.com/umyunsang/UMMAYA/issues',
   ISSUES_EXPLAINER:
-    'Please open a GitHub issue at https://github.com/umyunsang/KOSMOS/issues',
-  PACKAGE_URL: 'https://github.com/umyunsang/KOSMOS',
-  NATIVE_PACKAGE_URL: 'https://github.com/umyunsang/KOSMOS',
+    'Please open a GitHub issue at https://github.com/umyunsang/UMMAYA/issues',
+  PACKAGE_URL: 'https://github.com/umyunsang/UMMAYA',
+  NATIVE_PACKAGE_URL: 'https://github.com/umyunsang/UMMAYA',
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -118,18 +118,18 @@ if (typeof (React as any).useEffectEvent !== 'function') {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Debug hooks — OFF by default. Enable with `KOSMOS_DEBUG_PRELOAD=1`.
+// Debug hooks — OFF by default. Enable with `UMMAYA_DEBUG_PRELOAD=1`.
 // ═══════════════════════════════════════════════════════════════════════
-if (process.env.KOSMOS_DEBUG_PRELOAD === '1') {
+if (process.env.UMMAYA_DEBUG_PRELOAD === '1') {
   process.stderr.write(
-    `[KOSMOS/PRELOAD] loaded, pid=${process.pid}\n` +
-      `[KOSMOS/TTY] stdin=${process.stdin.isTTY} stdout=${process.stdout.isTTY} stderr=${process.stderr.isTTY}\n`,
+    `[UMMAYA/PRELOAD] loaded, pid=${process.pid}\n` +
+      `[UMMAYA/TTY] stdin=${process.stdin.isTTY} stdout=${process.stdout.isTTY} stderr=${process.stderr.isTTY}\n`,
   )
   process.on('unhandledRejection', (reason: unknown) => {
     try {
       require('fs').writeSync(
         2,
-        `[KOSMOS/DEBUG] unhandledRejection: ${
+        `[UMMAYA/DEBUG] unhandledRejection: ${
           reason instanceof Error ? reason.stack || reason.message : String(reason)
         }\n`,
       )
@@ -141,7 +141,7 @@ if (process.env.KOSMOS_DEBUG_PRELOAD === '1') {
     try {
       require('fs').writeSync(
         2,
-        `[KOSMOS/DEBUG] uncaughtException: ${err.stack || err.message}\n`,
+        `[UMMAYA/DEBUG] uncaughtException: ${err.stack || err.message}\n`,
       )
     } catch {
       /* stderr torn down */
@@ -149,7 +149,7 @@ if (process.env.KOSMOS_DEBUG_PRELOAD === '1') {
   })
   process.on('beforeExit', (code: number) => {
     try {
-      require('fs').writeSync(2, `[KOSMOS/DEBUG] beforeExit(${code})\n`)
+      require('fs').writeSync(2, `[UMMAYA/DEBUG] beforeExit(${code})\n`)
     } catch {
       /* stderr torn down */
     }
@@ -158,7 +158,7 @@ if (process.env.KOSMOS_DEBUG_PRELOAD === '1') {
     try {
       require('fs').writeSync(
         2,
-        `[KOSMOS/DEBUG] exit(${code}) exitCode=${process.exitCode}\n`,
+        `[UMMAYA/DEBUG] exit(${code}) exitCode=${process.exitCode}\n`,
       )
     } catch {
       /* stderr torn down */
@@ -166,7 +166,7 @@ if (process.env.KOSMOS_DEBUG_PRELOAD === '1') {
   })
 
   // Patch process.exit so we can see WHO is calling it before the process
-  // dies (boot crashes were silent — KOSMOS_FORCE_INTERACTIVE=1 prevents
+  // dies (boot crashes were silent — UMMAYA_FORCE_INTERACTIVE=1 prevents
   // the documented isTTY exit but a downstream caller is still firing
   // process.exit(1) without a stack trace). Wraps once per process; the
   // original is preserved on `process._origExit`.
@@ -177,7 +177,7 @@ if (process.env.KOSMOS_DEBUG_PRELOAD === '1') {
         const stack = new Error('process.exit caller').stack ?? ''
         require('fs').writeSync(
           2,
-          `[KOSMOS/DEBUG] process.exit(${code}) called\n${stack}\n`,
+          `[UMMAYA/DEBUG] process.exit(${code}) called\n${stack}\n`,
         )
       } catch {
         /* stderr torn down */

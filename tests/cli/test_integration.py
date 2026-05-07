@@ -10,13 +10,13 @@ from unittest.mock import MagicMock, patch
 
 from rich.console import Console
 
-from kosmos.cli.config import CLIConfig
-from kosmos.cli.renderer import EventRenderer
-from kosmos.cli.repl import REPLLoop
-from kosmos.engine.events import QueryEvent, StopReason
-from kosmos.llm.models import TokenUsage
-from kosmos.tools.models import ToolResult
-from kosmos.tools.registry import ToolRegistry
+from ummaya.cli.config import CLIConfig
+from ummaya.cli.renderer import EventRenderer
+from ummaya.cli.repl import REPLLoop
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.llm.models import TokenUsage
+from ummaya.tools.models import ToolResult
+from ummaya.tools.registry import ToolRegistry
 
 
 def _make_console() -> Console:
@@ -76,7 +76,7 @@ class TestEndToEndTurn:
 
         mock_session = MagicMock()
         mock_session.prompt_async = mock_prompt
-        with patch("kosmos.cli.repl.PromptSession", return_value=mock_session):
+        with patch("ummaya.cli.repl.PromptSession", return_value=mock_session):
             await repl.run()
 
         output = console.file.getvalue()  # type: ignore[union-attr]
@@ -107,7 +107,7 @@ class TestEndToEndTurn:
 
         mock_session = MagicMock()
         mock_session.prompt_async = mock_prompt
-        with patch("kosmos.cli.repl.PromptSession", return_value=mock_session):
+        with patch("ummaya.cli.repl.PromptSession", return_value=mock_session):
             await repl.run()
 
         assert repl._total_input_tokens == 25
@@ -142,7 +142,7 @@ class TestEndToEndTurn:
 
         mock_session = MagicMock()
         mock_session.prompt_async = mock_prompt
-        with patch("kosmos.cli.repl.PromptSession", return_value=mock_session):
+        with patch("ummaya.cli.repl.PromptSession", return_value=mock_session):
             await repl.run()
 
         output = console.file.getvalue()  # type: ignore[union-attr]
@@ -175,9 +175,9 @@ class TestEndToEndTurn:
 
         mock_session = MagicMock()
         mock_session.prompt_async = mock_prompt
-        with patch("kosmos.cli.repl.PromptSession", return_value=mock_session):
+        with patch("ummaya.cli.repl.PromptSession", return_value=mock_session):
             await repl.run()
 
         output = console.file.getvalue()  # type: ignore[union-attr]
-        assert "KOSMOS" in output
+        assert "UMMAYA" in output
         assert repl._session_id in output

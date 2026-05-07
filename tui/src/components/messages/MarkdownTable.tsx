@@ -5,7 +5,7 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/components/MarkdownTable.tsx
 // CC version: 2.1.88
 //
-// KOSMOS adaptation: imports updated to use KOSMOS ink.js path; otherwise
+// UMMAYA adaptation: imports updated to use UMMAYA ink.js path; otherwise
 // identical to CC to preserve ≥90% fidelity per FR-034 / feedback_cc_tui_90_fidelity.
 
 // Re-export the top-level MarkdownTable that lives in the shared components

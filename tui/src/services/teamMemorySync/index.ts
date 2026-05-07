@@ -4,18 +4,18 @@
 //   (CC 2.1.88, SHA-256 8d808458dafa4968a4660b7e7ba69b2393a134098078cad0842eab500219b3a0).
 // Three labeled swaps layer atop the byte-copy:
 //   • swap/llm-provider(2641)      — `constants/oauth` import replaced with
-//     KOSMOS-1633 inline stubs (CLAUDE_AI_INFERENCE_SCOPE/CLAUDE_AI_PROFILE_SCOPE/
-//     OAUTH_BETA_HEADER/getOauthConfig). KOSMOS uses FriendliAI; no Anthropic
+//     UMMAYA-1633 inline stubs (CLAUDE_AI_INFERENCE_SCOPE/CLAUDE_AI_PROFILE_SCOPE/
+//     OAUTH_BETA_HEADER/getOauthConfig). UMMAYA uses FriendliAI; no Anthropic
 //     OAuth tokens exist.
 //   • swap/anti-anthropic-1p(2641) — every public entry-point throws via the
-//     dead-call gate below unless KOSMOS_ENABLE_DEAD_TEAM_MEM_SYNC is set
+//     dead-call gate below unless UMMAYA_ENABLE_DEAD_TEAM_MEM_SYNC is set
 //     (defense-in-depth atop `feature('TEAMMEM')=false` at
 //     tui/src/setup.ts:358 + tui/src/stubs/bun-bundle.ts which already
 //     prevents `startTeamMemoryWatcher` from running). Even if a future
 //     change re-enables the feature flag, axios will not reach claude.ai
 //     unless the env override is intentionally set (Spec 2641 audit replay).
 //   • swap/identifier-rename(2641) — none required (file already uses
-//     KOSMOS-neutral naming where applicable; CC team-memory contract names
+//     UMMAYA-neutral naming where applicable; CC team-memory contract names
 //     remain for byte-copy fidelity).
 // This file has zero live callers in tui/src after Spec 2641 (verified by
 // callgraph audit: only sibling `teamMemSecretGuard` + `secretScanner` are
@@ -51,18 +51,18 @@
 // SWAP/anti-anthropic-1p(2641): dead-call gate. Throws unless the strict
 // override value `'1'` is set. Codex P2 (PR #2688): rejecting permissive
 // truthy checks (`Boolean(...)`) prevents accidental reactivation when CI
-// or shell environments template booleans as `KOSMOS_ENABLE_DEAD_*=0` or
+// or shell environments template booleans as `UMMAYA_ENABLE_DEAD_*=0` or
 // `=false`. Only the literal string `'1'` opens the gate.
 function isDeadCallOverrideExplicit(envValue: string | undefined): boolean {
   return envValue === '1'
 }
 
 function assertNotDeadCall(entryName: string): void {
-  if (!isDeadCallOverrideExplicit(process.env.KOSMOS_ENABLE_DEAD_TEAM_MEM_SYNC)) {
+  if (!isDeadCallOverrideExplicit(process.env.UMMAYA_ENABLE_DEAD_TEAM_MEM_SYNC)) {
     throw new Error(
-      `[KOSMOS] services/teamMemorySync.${entryName}: dead in KOSMOS — ` +
+      `[UMMAYA] services/teamMemorySync.${entryName}: dead in UMMAYA — ` +
         'claude.ai team memory is not part of the L1-A K-EXAONE harness. ' +
-        "Set KOSMOS_ENABLE_DEAD_TEAM_MEM_SYNC='1' (literal) only when " +
+        "Set UMMAYA_ENABLE_DEAD_TEAM_MEM_SYNC='1' (literal) only when " +
         'intentionally exercising the byte-copy reference (Spec 2641).',
     )
   }
@@ -72,7 +72,7 @@ import axios from 'axios'
 import { createHash } from 'crypto'
 import { mkdir, readdir, readFile, stat, writeFile } from 'fs/promises'
 import { join, relative, sep } from 'path'
-// constants/oauth removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI, not Anthropic OAuth.
+// constants/oauth removed in P1+P2 (Spec 1633); UMMAYA uses FriendliAI, not Anthropic OAuth.
 const CLAUDE_AI_INFERENCE_SCOPE = ''
 const CLAUDE_AI_PROFILE_SCOPE = ''
 const OAUTH_BETA_HEADER = ''
@@ -92,14 +92,14 @@ import { classifyAxiosError } from '../../utils/errors.js'
 import { getGithubRepo } from '../../utils/git.js'
 import {
   getAPIProvider,
-  isFirstPartyKosmosBaseUrl,
+  isFirstPartyUmmayaBaseUrl,
 } from '../../utils/model/providers.js'
 import { sleep } from '../../utils/sleep.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
 import { getClaudeCodeUserAgent } from '../../utils/userAgent.js'
 import { logEvent } from '../analytics/index.js'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../analytics/metadata.js'
-// KOSMOS Spec 1633 / Epic #2293 — services/api/withRetry deleted; inline stub returns 1s baseline.
+// UMMAYA Spec 1633 / Epic #2293 — services/api/withRetry deleted; inline stub returns 1s baseline.
 const getRetryDelay = (_attempt: number): number => 1000
 import { scanForSecrets } from './secretScanner.js'
 import {
@@ -193,7 +193,7 @@ function isErrnoException(e: unknown): e is NodeJS.ErrnoException {
  * Check if user is authenticated with first-party OAuth (required for team memory sync).
  */
 function isUsingOAuth(): boolean {
-  if (getAPIProvider() !== 'firstParty' || !isFirstPartyKosmosBaseUrl()) {
+  if (getAPIProvider() !== 'firstParty' || !isFirstPartyUmmayaBaseUrl()) {
     return false
   }
   const tokens = getClaudeAIOAuthTokens()

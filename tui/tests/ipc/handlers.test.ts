@@ -86,7 +86,7 @@ function makeFakeBridge(frameFactory: FrameFactory) {
 //
 // mock.module() must be called BEFORE the module under test is imported.
 // _currentBridge is swapped before each test via installBridge() and is
-// returned by the mocked getOrCreateKosmosBridge() as a live closure,
+// returned by the mocked getOrCreateUmmayaBridge() as a live closure,
 // so each test sees its own fresh FakeBridge.
 // ---------------------------------------------------------------------------
 
@@ -134,9 +134,9 @@ mock.module(join(TUI_ROOT, 'src/services/compact/microCompact.js'), () => ({
 }))
 
 mock.module(join(TUI_ROOT, 'src/ipc/bridgeSingleton.js'), () => ({
-  getOrCreateKosmosBridge: () => _currentBridge,
-  getKosmosBridgeSessionId: () => 'test-session-handlers',
-  closeKosmosBridge: async () => {},
+  getOrCreateUmmayaBridge: () => _currentBridge,
+  getUmmayaBridgeSessionId: () => 'test-session-handlers',
+  closeUmmayaBridge: async () => {},
 }))
 
 mock.module(join(TUI_ROOT, 'src/query/toolSerialization.js'), () => ({
@@ -145,7 +145,7 @@ mock.module(join(TUI_ROOT, 'src/query/toolSerialization.js'), () => ({
 }))
 
 mock.module(join(TUI_ROOT, 'src/utils/messages.js'), () => ({
-  SYNTHETIC_MODEL: 'kosmos-test-model',
+  SYNTHETIC_MODEL: 'ummaya-test-model',
   createAssistantMessage: ({ content }: { content: unknown }) => ({
     type: 'assistant',
     uuid: 'assistant-message-stub',
@@ -158,7 +158,7 @@ mock.module(join(TUI_ROOT, 'src/utils/messages.js'), () => ({
         typeof content === 'string'
           ? [{ type: 'text', text: content }]
           : content,
-      model: 'kosmos-test-model',
+      model: 'ummaya-test-model',
       stop_reason: null,
       stop_sequence: null,
       usage: {
@@ -226,10 +226,10 @@ function makeFrame(
 }
 
 async function run(buildFrames: (corrId: string) => StagedFrame[]): Promise<unknown[]> {
-  const previousPrimary = process.env.KOSMOS_FRIENDLI_TOKEN
-  const previousSession = process.env.KOSMOS_FRIENDLI_SESSION_ACTIVE
-  process.env.KOSMOS_FRIENDLI_TOKEN = 'test-token-handlers'
-  process.env.KOSMOS_FRIENDLI_SESSION_ACTIVE = '1'
+  const previousPrimary = process.env.UMMAYA_FRIENDLI_TOKEN
+  const previousSession = process.env.UMMAYA_FRIENDLI_SESSION_ACTIVE
+  process.env.UMMAYA_FRIENDLI_TOKEN = 'test-token-handlers'
+  process.env.UMMAYA_FRIENDLI_SESSION_ACTIVE = '1'
   installBridge(buildFrames)
   try {
     const callModel = productionDeps().callModel
@@ -243,14 +243,14 @@ async function run(buildFrames: (corrId: string) => StagedFrame[]): Promise<unkn
     return results
   } finally {
     if (previousPrimary === undefined) {
-      delete process.env.KOSMOS_FRIENDLI_TOKEN
+      delete process.env.UMMAYA_FRIENDLI_TOKEN
     } else {
-      process.env.KOSMOS_FRIENDLI_TOKEN = previousPrimary
+      process.env.UMMAYA_FRIENDLI_TOKEN = previousPrimary
     }
     if (previousSession === undefined) {
-      delete process.env.KOSMOS_FRIENDLI_SESSION_ACTIVE
+      delete process.env.UMMAYA_FRIENDLI_SESSION_ACTIVE
     } else {
-      process.env.KOSMOS_FRIENDLI_SESSION_ACTIVE = previousSession
+      process.env.UMMAYA_FRIENDLI_SESSION_ACTIVE = previousSession
     }
   }
 }
@@ -641,7 +641,7 @@ describe('stream-event projection I6', () => {
     // tool_use blocks render BEFORE the text block so the citizen sees the
     // tool calls (chronologically first) before the synthesis. CC's order
     // looked like [text, tool_use[]] only because each CC turn carries at
-    // most one block-type; KOSMOS' multi-turn-into-one-message assembly
+    // most one block-type; UMMAYA' multi-turn-into-one-message assembly
     // makes the relative order load-bearing.
     expect(content).toHaveLength(3)
 

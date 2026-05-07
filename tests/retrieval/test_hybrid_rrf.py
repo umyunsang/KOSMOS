@@ -16,7 +16,7 @@ All fused scores MUST be strictly positive.
 
 from __future__ import annotations
 
-from kosmos.tools.retrieval.hybrid import HybridBackend  # noqa: F401
+from ummaya.tools.retrieval.hybrid import HybridBackend  # noqa: F401
 
 
 class _MockBM25:

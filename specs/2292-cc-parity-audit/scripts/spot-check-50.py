@@ -62,23 +62,23 @@ def main() -> int:
 
     entries = []
     mismatches = []
-    for idx, kosmos_path in enumerate(sample):
-        if not kosmos_path.startswith("tui/src/"):
+    for idx, ummaya_path in enumerate(sample):
+        if not ummaya_path.startswith("tui/src/"):
             return 2
-        cc_path_rel = f"{CC_SRC_REL}/{kosmos_path[len('tui/src/'):]}"
-        kosmos_abs = REPO_ROOT / kosmos_path
+        cc_path_rel = f"{CC_SRC_REL}/{ummaya_path[len('tui/src/'):]}"
+        ummaya_abs = REPO_ROOT / ummaya_path
         cc_abs = REPO_ROOT / cc_path_rel
-        if not kosmos_abs.exists():
+        if not ummaya_abs.exists():
             return 2
         if not cc_abs.exists():
             return 2
-        kosmos_sha = sha256_file(kosmos_abs)
+        ummaya_sha = sha256_file(ummaya_abs)
         cc_sha = sha256_file(cc_abs)
-        match = kosmos_sha == cc_sha
+        match = ummaya_sha == cc_sha
         entry = {
-            "kosmos_path": kosmos_path,
+            "ummaya_path": ummaya_path,
             "cc_source_path": cc_path_rel,
-            "kosmos_sha256": kosmos_sha,
+            "ummaya_sha256": ummaya_sha,
             "cc_sha256": cc_sha,
             "hash_match": match,
             "sampling_seed": SEED,

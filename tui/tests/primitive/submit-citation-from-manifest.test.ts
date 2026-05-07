@@ -96,7 +96,7 @@ describe('SubmitPrimitive.validateInput: cold-boot race', () => {
 // ---------------------------------------------------------------------------
 
 describe('SubmitPrimitive.validateInput: citation from manifest', () => {
-  test('policy_authority_url from manifest entry populates kosmosCitations', async () => {
+  test('policy_authority_url from manifest entry populates ummayaCitations', async () => {
     ingestManifestFrame(
       makeManifestFrame([
         {
@@ -119,7 +119,7 @@ describe('SubmitPrimitive.validateInput: citation from manifest', () => {
     expect(result.result).toBe(true)
 
     // Citation slot must be populated with the agency-published URL
-    const citations = (ctx as { kosmosCitations?: { real_classification_url: string }[] }).kosmosCitations
+    const citations = (ctx as { ummayaCitations?: { real_classification_url: string }[] }).ummayaCitations
     expect(citations).toBeDefined()
     expect(citations!.length).toBeGreaterThan(0)
     expect(citations![0]?.real_classification_url).toContain('nts.go.kr')
@@ -146,7 +146,7 @@ describe('SubmitPrimitive.validateInput: citation from manifest', () => {
 
     // Internal adapters are allowed but have no citation URL
     expect(result.result).toBe(true)
-    const citations = (ctx as { kosmosCitations?: unknown[] }).kosmosCitations
+    const citations = (ctx as { ummayaCitations?: unknown[] }).ummayaCitations
     expect(citations?.length ?? 0).toBe(0)
   })
 })

@@ -1,7 +1,7 @@
 # Citizen scenario frame — 병원검색/04-adapter-detail
 # 병원 검색 — 3 부처 응답 합성
 # Captured 2026-04-26T16:08:04.499Z via ink-testing-library render()
-# KOSMOS v0.1-alpha · K-EXAONE-236B-A23B + FriendliAI Serverless
+# UMMAYA v0.1-alpha · K-EXAONE-236B-A23B + FriendliAI Serverless
 
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │  ⏺ 단계 4/5 · 3 부처 동시 fan-out → 합성                                                         │

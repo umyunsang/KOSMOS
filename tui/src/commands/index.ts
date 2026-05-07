@@ -1,4 +1,4 @@
-// KOSMOS-original command registry builder.
+// UMMAYA-original command registry builder.
 // Wires the four session commands into the default registry.
 //
 // Usage:
@@ -14,13 +14,13 @@ import pluginCommand from './plugin'
 import migrateSessionsCommand from './migrate-sessions'
 
 /**
- * Build and return the default KOSMOS command registry containing:
+ * Build and return the default UMMAYA command registry containing:
  *   /save              — save current session
  *   /sessions          — list sessions
  *   /resume            — resume session by id  (alias: /continue)
  *   /new               — start a new session
  *   /plugin            — install / list / uninstall plugins (Spec 1636 P5)
- *   /migrate-sessions  — migrate CC-workspace JSONL sessions to KOSMOS memdir
+ *   /migrate-sessions  — migrate CC-workspace JSONL sessions to UMMAYA memdir
  */
 export function buildDefaultRegistry(): CommandRegistry {
   const registry = createRegistry()

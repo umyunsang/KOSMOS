@@ -38,7 +38,7 @@ import { asAgentId } from '../../types/ids.js'
 import type { Message as MessageType } from '../../types/message.js'
 import { isAgentSwarmsEnabled } from '../../utils/agentSwarmsEnabled.js'
 import { logForDebugging } from '../../utils/debug.js'
-// KOSMOS: isInProtectedNamespace was only used in yoloClassifier block (deleted).
+// UMMAYA: isInProtectedNamespace was only used in yoloClassifier block (deleted).
 import { AbortError, errorMessage } from '../../utils/errors.js'
 import type { CacheSafeParams } from '../../utils/forkedAgent.js'
 import { lazySchema } from '../../utils/lazySchema.js'
@@ -48,7 +48,7 @@ import {
 } from '../../utils/messages.js'
 import type { PermissionMode } from '../../utils/permissions/PermissionMode.js'
 import { permissionRuleValueFromString } from '../../utils/permissions/permissionRuleParser.js'
-// KOSMOS: utils/permissions/yoloClassifier deleted (Anthropic growthbook auto-mode classifier).
+// UMMAYA: utils/permissions/yoloClassifier deleted (Anthropic growthbook auto-mode classifier).
 import { emitTaskProgress as emitTaskProgressEvent } from '../../utils/task/sdkProgress.js'
 import { isInProcessTeammate } from '../../utils/teammateContext.js'
 import { getTokenCountFromUsage } from '../../utils/tokens.js'
@@ -397,8 +397,8 @@ export async function classifyHandoffIfNeeded({
   subagentType: string
   totalToolUseCount: number
 }): Promise<string | null> {
-  // KOSMOS: TRANSCRIPT_CLASSIFIER (yoloClassifier) deleted — Anthropic growthbook auto-mode only.
-  // feature('TRANSCRIPT_CLASSIFIER') is always false in KOSMOS; return null unconditionally.
+  // UMMAYA: TRANSCRIPT_CLASSIFIER (yoloClassifier) deleted — Anthropic growthbook auto-mode only.
+  // feature('TRANSCRIPT_CLASSIFIER') is always false in UMMAYA; return null unconditionally.
   void agentMessages; void tools; void toolPermissionContext; void abortSignal; void subagentType; void totalToolUseCount
   return null
 }
@@ -527,7 +527,7 @@ export async function runAsyncAgentLifecycle({
 
     let finalMessage = extractTextContent(agentResult.content, '\n')
 
-    // KOSMOS: TRANSCRIPT_CLASSIFIER block removed (yoloClassifier deleted).
+    // UMMAYA: TRANSCRIPT_CLASSIFIER block removed (yoloClassifier deleted).
 
     const worktreeResult = await getWorktreeResult()
 

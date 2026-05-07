@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Live validation tests for the KOSMOS LLM client against the real FriendliAI K-EXAONE API.
+"""Live validation tests for the UMMAYA LLM client against the real FriendliAI K-EXAONE API.
 
 These tests hit the actual FriendliAI Serverless endpoint — no mocks.  They are
 marked ``@pytest.mark.live`` and are skipped by default; run them with::
@@ -7,15 +7,15 @@ marked ``@pytest.mark.live`` and are skipped by default; run them with::
     uv run pytest -m live tests/live/test_live_llm.py
 
 Required environment variable:
-    KOSMOS_FRIENDLI_TOKEN — FriendliAI API token (validated by the ``friendli_token`` fixture)
+    UMMAYA_FRIENDLI_TOKEN — FriendliAI API token (validated by the ``friendli_token`` fixture)
 """
 
 from __future__ import annotations
 
 import pytest
 
-from kosmos.llm.client import LLMClient
-from kosmos.llm.models import (
+from ummaya.llm.client import LLMClient
+from ummaya.llm.models import (
     ChatCompletionResponse,
     ChatMessage,
     FunctionSchema,
@@ -33,7 +33,7 @@ from kosmos.llm.models import (
 async def test_live_llm_stream_basic(friendli_token: str) -> None:
     """Stream a simple Korean greeting and verify the event structure.
 
-    The ``friendli_token`` fixture ensures ``KOSMOS_FRIENDLI_TOKEN`` is set in
+    The ``friendli_token`` fixture ensures ``UMMAYA_FRIENDLI_TOKEN`` is set in
     the environment before LLMClient reads it.
     """
     messages = [ChatMessage(role="user", content="한 문장으로 짧게 인사해주세요.")]

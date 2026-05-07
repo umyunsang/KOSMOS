@@ -1,5 +1,5 @@
 import { formatTotalCost } from '../../cost-tracker.js'
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — claudeAiLimits deleted.
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — claudeAiLimits deleted.
 const currentLimits = { isUsingOverage: false } as const
 import type { LocalCommandCall } from '../../types/command.js'
 import { isClaudeAISubscriber } from '../../utils/auth.js'

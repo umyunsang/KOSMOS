@@ -30,14 +30,14 @@ import {
   TOOL_TOKEN_COUNT_OVERHEAD,
 } from './analyzeContext.js'
 import { count } from './array.js'
-// KOSMOS: betas.js deleted by Spec 1633 P1. getMergedBetas → [] literal.
+// UMMAYA: betas.js deleted by Spec 1633 P1. getMergedBetas → [] literal.
 const getMergedBetas = (_model: string): string[] => []
 import { getContextWindowForModel } from './context.js'
 import { logForDebugging } from './debug.js'
 import { isEnvDefinedFalsy, isEnvTruthy } from './envUtils.js'
 import {
   getAPIProvider,
-  isFirstPartyKosmosBaseUrl,
+  isFirstPartyUmmayaBaseUrl,
 } from './model/providers.js'
 import { jsonStringify } from './slowOperations.js'
 import { zodToJsonSchema } from './zodToJsonSchema.js'
@@ -300,7 +300,7 @@ export function isToolSearchEnabledOptimistic(): boolean {
   if (
     !process.env.ENABLE_TOOL_SEARCH &&
     getAPIProvider() === 'firstParty' &&
-    !isFirstPartyKosmosBaseUrl()
+    !isFirstPartyUmmayaBaseUrl()
   ) {
     if (!loggedOptimistic) {
       loggedOptimistic = true
@@ -757,7 +757,7 @@ async function checkAutoThreshold(
 }
 
 // SWAP/anti-anthropic-1p(2521): byte-copied tui/src/services/api/claude.ts
-// imports `isToolSearchEnabled` from this module. KOSMOS already gates
+// imports `isToolSearchEnabled` from this module. UMMAYA already gates
 // auto-tool-search via `getAutoToolSearchPercentage()` and feature flags, so
 // the explicit boolean predicate is N/A here; stub returns false. The byte-
 // copy is zero-callers at runtime so the value is never consulted.

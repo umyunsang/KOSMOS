@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic ζ #2297 Phase 0b · T008
+// UMMAYA-original — Epic ζ #2297 Phase 0b · T008
 //
 // dispatchPrimitive — shared helper that replaces the {status: 'stub'} bodies
 // in the primitive call() implementations with real IPC dispatch.
@@ -25,7 +25,7 @@ export { PendingCallRegistry } from './pendingCallRegistry.js'
 // OTEL tracer
 // ---------------------------------------------------------------------------
 
-const _tracer = trace.getTracer('kosmos.tui.primitive', '0.1.0')
+const _tracer = trace.getTracer('ummaya.tui.primitive', '0.1.0')
 
 // ---------------------------------------------------------------------------
 // Environment-driven timeout (FR-006)
@@ -35,7 +35,7 @@ const DEFAULT_TIMEOUT_MS = 30_000
 
 function _resolveTimeoutMs(override?: number): number {
   if (override !== undefined && override > 0) return override
-  const env = process.env['KOSMOS_TUI_PRIMITIVE_TIMEOUT_MS']
+  const env = process.env['UMMAYA_TUI_PRIMITIVE_TIMEOUT_MS']
   if (env) {
     const n = parseInt(env, 10)
     if (!isNaN(n) && n > 0) return n
@@ -57,7 +57,7 @@ export interface DispatchPrimitiveOpts {
   registry: PendingCallRegistry
   /** IPC bridge (injected). */
   bridge: IPCBridge
-  /** Default 30_000 ms; env KOSMOS_TUI_PRIMITIVE_TIMEOUT_MS overrides. */
+  /** Default 30_000 ms; env UMMAYA_TUI_PRIMITIVE_TIMEOUT_MS overrides. */
   timeoutMs?: number
 }
 
@@ -78,7 +78,7 @@ function _maybeEmitCheckpoint(
   primitive: 'lookup' | 'resolve_location' | 'verify' | 'submit',
   frame: ToolResultFrame,
 ): void {
-  if (process.env['KOSMOS_SMOKE_CHECKPOINTS'] !== 'true') return
+  if (process.env['UMMAYA_SMOKE_CHECKPOINTS'] !== 'true') return
   if (primitive !== 'submit') return
   if (_checkpointEmitted) return
 
@@ -114,7 +114,7 @@ function _maybeEmitCheckpoint(
  *   I-D3 — mints callId, constructs ToolCallFrame, registers pending call,
  *           sends frame, returns Promise driven by registry resolution.
  *   I-D6 — timeout (default 30s) rejects with Korean error message and sets
- *           OTEL span attribute `kosmos.tui.primitive.timeout=true`.
+ *           OTEL span attribute `ummaya.tui.primitive.timeout=true`.
  *   I-D7 — error envelope (envelope.error set) surfaces as ok=false result.
  *   I-D8 — verify args forwarded verbatim (FR-009); no translation here.
  */
@@ -126,10 +126,10 @@ export async function dispatchPrimitive<O = unknown>(
   // ------------------------------------------------------------------
   // Step 1: OTEL span
   // ------------------------------------------------------------------
-  const span = _tracer.startSpan(`kosmos.tui.primitive.${opts.primitive}`, {
+  const span = _tracer.startSpan(`ummaya.tui.primitive.${opts.primitive}`, {
     attributes: {
-      'kosmos.tui.primitive.name': opts.primitive,
-      'kosmos.tui.primitive.timeout_ms': timeoutMs,
+      'ummaya.tui.primitive.name': opts.primitive,
+      'ummaya.tui.primitive.timeout_ms': timeoutMs,
     },
   })
 
@@ -171,7 +171,7 @@ export async function dispatchPrimitive<O = unknown>(
   const toolUseId =
     (opts.context as Record<string, unknown>)['toolUseId'] as string | undefined
   if (!toolUseId) {
-    span.setAttribute('kosmos.tui.primitive.error', 'missing_tool_use_id')
+    span.setAttribute('ummaya.tui.primitive.error', 'missing_tool_use_id')
     span.end()
     return {
       data: {
@@ -185,8 +185,8 @@ export async function dispatchPrimitive<O = unknown>(
     }
   }
 
-  span.setAttribute('kosmos.tui.primitive.dispatch_mode', 'register-and-await')
-  span.setAttribute('kosmos.tui.primitive.tool_use_id', toolUseId)
+  span.setAttribute('ummaya.tui.primitive.dispatch_mode', 'register-and-await')
+  span.setAttribute('ummaya.tui.primitive.tool_use_id', toolUseId)
 
   // Register-and-await. The backend has already started _dispatch_primitive
   // as a parallel task; we wait for the matching ToolResultFrame to arrive
@@ -212,7 +212,7 @@ export async function dispatchPrimitive<O = unknown>(
       })
     })
   } catch (err) {
-    span.setAttribute('kosmos.tui.primitive.timeout', true)
+    span.setAttribute('ummaya.tui.primitive.timeout', true)
     span.end()
     return {
       data: {
@@ -229,13 +229,13 @@ export async function dispatchPrimitive<O = unknown>(
   _maybeEmitCheckpoint(opts.primitive, resultFrame)
 
   // Unwrap envelope → SDK ToolResult.
-  // backend envelope shape (src/kosmos/ipc/stdio.py:1115):
+  // backend envelope shape (src/ummaya/ipc/stdio.py:1115):
   //   { kind: '<primitive>', result: <serialized primitive output>, ... }
   // or on failure:
   //   { kind: '<primitive>', error: '...', tool_id: '...' }
   const env = resultFrame.envelope as Record<string, unknown>
   span.setAttribute(
-    'kosmos.tui.primitive.envelope_kind',
+    'ummaya.tui.primitive.envelope_kind',
     typeof env?.kind === 'string' ? (env.kind as string) : 'unknown',
   )
   span.end()
@@ -268,7 +268,7 @@ export async function dispatchPrimitive<O = unknown>(
   // The legacy unwrap above only flips ``ok=false`` when the envelope has a
   // top-level ``error: string`` field. But the verify primitive (and several
   // mock adapters) signals failure inside ``result`` instead — for example
-  // ``VerifyMismatchError`` from ``kosmos.primitives.verify`` is dumped as
+  // ``VerifyMismatchError`` from ``ummaya.primitives.verify`` is dumped as
   // ``{ family: "mismatch_error", reason: "family_mismatch", message: ... }``
   // and the lookup mocks emit ``{ kind: "error", reason: "scope_violation",
   // message: ... }``. Without this branch, the dispatcher returns
@@ -329,7 +329,7 @@ export async function dispatchPrimitive<O = unknown>(
   }
 
   // Spec 2521 (2026-05-02) — surface envelope-level ``outbound_traces``
-  // (populated by ``kosmos.tools._outbound_trace`` on the backend) so the
+  // (populated by ``ummaya.tools._outbound_trace`` on the backend) so the
   // primitives' ``renderToolResultMessage`` can render the verbose
   // outbound HTTP request/response section. Without this, the dispatcher
   // strips the field at unwrap time and the verbose view shows nothing

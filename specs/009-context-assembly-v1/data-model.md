@@ -1,7 +1,7 @@
 # Data Model: Context Assembly v1 (Layer 5)
 
 **Feature**: Epic #9 — Context Assembly v1
-**Location**: `src/kosmos/context/models.py`
+**Location**: `src/ummaya/context/models.py`
 **Date**: 2026-04-13
 
 ---
@@ -27,7 +27,7 @@ SystemPromptConfig          ContextLayer          ContextBudget
 
 ## `SystemPromptConfig`
 
-**Module**: `src/kosmos/context/models.py`
+**Module**: `src/ummaya/context/models.py`
 **Parent**: `pydantic.BaseModel`
 **Config**: `frozen=True`
 
@@ -35,7 +35,7 @@ Carries the four mandatory policy sections that `SystemPromptAssembler` renders 
 
 | Field | Type | Default | Constraint | Notes |
 |---|---|---|---|---|
-| `platform_identity` | `str` | `"KOSMOS"` | non-empty | Injected into the platform identity section |
+| `platform_identity` | `str` | `"UMMAYA"` | non-empty | Injected into the platform identity section |
 | `language_policy` | `str` | `"Respond in Korean unless the citizen writes in another language."` | non-empty | FR-009 (b) |
 | `tool_use_policy` | `str` | `"Use tools when live government data is needed. Do not fabricate government data."` | non-empty | FR-009 (c) |
 | `personal_data_reminder` | `str` | `"Never expose personal identifiers beyond what the citizen provided."` | non-empty | FR-009 (d) |
@@ -51,7 +51,7 @@ Carries the four mandatory policy sections that `SystemPromptAssembler` renders 
 
 ## `ContextLayer`
 
-**Module**: `src/kosmos/context/models.py`
+**Module**: `src/ummaya/context/models.py`
 **Parent**: `pydantic.BaseModel`
 **Config**: `frozen=True`
 
@@ -70,7 +70,7 @@ Represents one assembled context tier. The `content` field is the rendered text 
 
 ## `ContextBudget`
 
-**Module**: `src/kosmos/context/models.py`
+**Module**: `src/ummaya/context/models.py`
 **Parent**: `pydantic.BaseModel`
 **Config**: `frozen=True`
 
@@ -92,7 +92,7 @@ Captures the token budget status of an assembled context. Computed by `BudgetEst
 
 ## `AssembledContext`
 
-**Module**: `src/kosmos/context/models.py`
+**Module**: `src/ummaya/context/models.py`
 **Parent**: `pydantic.BaseModel`
 **Config**: `frozen=True`
 
@@ -126,7 +126,7 @@ The `tool_definitions` list is passed as the `tools=` parameter to `LLMClient.st
 
 ## `QueryState` (additive change)
 
-**Module**: `src/kosmos/engine/models.py`
+**Module**: `src/ummaya/engine/models.py`
 **Type**: `dataclass` (mutable, existing)
 
 One new field is added to the existing `QueryState` dataclass:
@@ -165,7 +165,7 @@ The `SystemPromptAssembler` caches its output in `ContextBuilder` after the firs
 
 ## Token estimation methodology
 
-All token estimates in `ContextLayer.estimated_tokens` and the tool-definition estimate use `kosmos.engine.tokens.estimate_tokens()`:
+All token estimates in `ContextLayer.estimated_tokens` and the tool-definition estimate use `ummaya.engine.tokens.estimate_tokens()`:
 
 ```
 Korean Hangul syllables (U+AC00–U+D7A3): ceil(count / 2) tokens

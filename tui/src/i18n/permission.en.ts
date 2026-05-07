@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Spec 2294 — KOSMOS Primitive Permission UI — English strings.
+// Spec 2294 — UMMAYA Primitive Permission UI — English strings.
 //
 // Citations:
 //   PIPA §22-2: Personal information processors shall disclose matters related
@@ -49,8 +49,8 @@ const permissionEn: PermissionI18nEn = {
   selectorAllowOnce: 'Allow once',
   selectorAllowSession: 'Allow for this session',
   selectorDeny: 'Deny',
-  acceptFeedbackPlaceholder: 'tell KOSMOS what to do next',
-  rejectFeedbackPlaceholder: 'tell KOSMOS what to do differently',
+  acceptFeedbackPlaceholder: 'tell UMMAYA what to do next',
+  rejectFeedbackPlaceholder: 'tell UMMAYA what to do differently',
 
   // Toast
   toastAllowedOnce: (toolName) => `"${toolName}" allowed once`,

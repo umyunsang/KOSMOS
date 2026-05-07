@@ -1,4 +1,4 @@
-# Implementation Plan: TUI Component Catalog — CC → KOSMOS Verdict Matrix + Brand-System Doctrine
+# Implementation Plan: TUI Component Catalog — CC → UMMAYA Verdict Matrix + Brand-System Doctrine
 
 **Branch**: `034-tui-component-catalog` | **Date**: 2026-04-20 | **Spec**: [`specs/034-tui-component-catalog/spec.md`](./spec.md)
 **Input**: Feature specification from `/specs/034-tui-component-catalog/spec.md`
@@ -6,7 +6,7 @@
 
 ## Summary
 
-Epic M produces the **authoritative verdict matrix** for porting Claude Code's 389 `src/components/` files into the KOSMOS TUI, plus the **brand-system doctrine** (metaphor + token naming) that every downstream design-concerned Epic (H / J / K / L / E) must cite as source-of-truth. Deliverables are **four Markdown documents + one tokens-type-surface edit**:
+Epic M produces the **authoritative verdict matrix** for porting Claude Code's 389 `src/components/` files into the UMMAYA TUI, plus the **brand-system doctrine** (metaphor + token naming) that every downstream design-concerned Epic (H / J / K / L / E) must cite as source-of-truth. Deliverables are **four Markdown documents + one tokens-type-surface edit**:
 
 1. `docs/tui/component-catalog.md` — 389 rows across 31+ families, one verdict per file (PORT / REWRITE / DISCARD / DEFER), each with owning-Epic + target-path + evidence.
 2. `docs/tui/accessibility-gate.md` — per PORT/REWRITE row, WCAG 2.1 AA subset + KWCAG 2.2 notes + IME flag + contrast constraint.
@@ -42,9 +42,9 @@ Epic M produces the **authoritative verdict matrix** for porting Claude Code's 3
 | II. Fail-Closed Security (NON-NEGOTIABLE) | Adapter defaults, permission bypass-immune | ✅ N/A | No tool adapters introduced; no permission checks added. Catalog rows that flag citizen-facing text input propagate the IME + permission constraints to the owning Epic, not to this PR. |
 | III. Pydantic v2 Strict Typing (NON-NEGOTIABLE) | No `Any`, schemas required | ✅ N/A | No new tool I/O schemas introduced. `data-model.md` documents logical entity shapes consumed by `/speckit-analyze` as lint rules; not Python classes. |
 | IV. Government API Compliance | No live API in CI, quota tracking, fail-closed defaults | ✅ N/A | No API touched. |
-| V. Policy Alignment | PIPA, 공공AX Principles 5/8/9, permission gauntlet | ✅ PASS | §1 of brand-system.md explicitly grounds the KOSMOS metaphor in Principle 8 (single conversational window). FR-021 + FR-022 propagate PIPA-adjacent safety constraints (IME composition, contrast) to downstream Epics. |
+| V. Policy Alignment | PIPA, 공공AX Principles 5/8/9, permission gauntlet | ✅ PASS | §1 of brand-system.md explicitly grounds the UMMAYA metaphor in Principle 8 (single conversational window). FR-021 + FR-022 propagate PIPA-adjacent safety constraints (IME composition, contrast) to downstream Epics. |
 | VI. Deferred Work Accountability | Every deferral tracked, 0 unregistered | ✅ PASS | `research.md § 3` — 16 deferred items; 10 tracked to existing issues; 6 `NEEDS TRACKING` to be backfilled by `/speckit-taskstoissues`. 0 unregistered deferral patterns (regex scan in §3.3). |
-| ADR-006 Part D-3 | KOSMOS-original surfaces out of scope | ✅ PASS | FR-033 codifies the exclusion; catalog enumeration is limited to `.references/claude-code-sourcemap/restored-src/src/components/`. |
+| ADR-006 Part D-3 | UMMAYA-original surfaces out of scope | ✅ PASS | FR-033 codifies the exclusion; catalog enumeration is limited to `.references/claude-code-sourcemap/restored-src/src/components/`. |
 | AGENTS.md Issue hierarchy | Initiative → Epic → Task; Sub-Issues API v2 `subIssues`/`parent` | ✅ PASS | FR-023 uses `addSubIssue` mutation; FR-025 honors 90-cap (auto-memory lesson from #287 orphan-Task incident). Closed-Epic handling (research §R3) re-parents to M to avoid reopen. |
 | AGENTS.md GraphQL-only tracking | No REST/CLI list fallback for state claims | ✅ PASS | All Epic state facts verified via `gh api graphql` in `research.md § 2.3`. |
 | AGENTS.md zero-dep rule | No new deps outside spec-driven PR | ✅ PASS | Zero additions. |
@@ -77,7 +77,7 @@ specs/034-tui-component-catalog/
 
 ### Source Code (repository root)
 
-This Epic modifies the KOSMOS tree minimally. Structure decision: **documentation-only Epic with a narrow type-surface edit**.
+This Epic modifies the UMMAYA tree minimally. Structure decision: **documentation-only Epic with a narrow type-surface edit**.
 
 ```text
 # NEW files — created by this Epic's PR
@@ -98,19 +98,19 @@ tui/src/theme/
 # tui/src/theme/.brand-guardian-allowlist.txt  → regenerated at workflow-impl time
 
 # UNCHANGED directories (governed out by FR-030, FR-031, FR-033)
-src/kosmos/**                         # untouched — KOSMOS-original per ADR-006 Part D-3
+src/ummaya/**                         # untouched — UMMAYA-original per ADR-006 Part D-3
 tui/src/components/**                 # untouched — per-component ports are owning-Epic Tasks
 tui/src/theme/dark.ts, default.ts, light.ts  # untouched — palette values are Epic H #1302 territory
 ```
 
-**Structure Decision**: Single-project Markdown deliverables under existing `docs/` tree (creating `docs/tui/` new directory). The one source-code edit is scoped to `tui/src/theme/tokens.ts` **type surface only** — same file already exists (Spec 287 legacy), and modifications stay within the TypeScript `type ThemeToken = { … }` block per FR-030. No Python files, no new `src/kosmos/` additions. No `pyproject.toml` or `package.json` edits.
+**Structure Decision**: Single-project Markdown deliverables under existing `docs/` tree (creating `docs/tui/` new directory). The one source-code edit is scoped to `tui/src/theme/tokens.ts` **type surface only** — same file already exists (Spec 287 legacy), and modifications stay within the TypeScript `type ThemeToken = { … }` block per FR-030. No Python files, no new `src/ummaya/` additions. No `pyproject.toml` or `package.json` edits.
 
 ## Phase 0: Outline & Research — summary
 
 Executed. Output: `research.md`. Key findings:
 
 - **Reference mapping** ✅: 13 design decisions → 13 concrete reference citations (CC sourcemap + ADR-006 + claw-code PARITY.md + Constitution §I).
-- **Codebase facts verified** ✅: 389 files; 31 subdirectories (minor spec prose says 30 — acceptable); CC sourcemap pinned at `a8a678c`; KOSMOS HEAD at `34c48f4`; `docs/tui/` does NOT exist yet (plan creates it).
+- **Codebase facts verified** ✅: 389 files; 31 subdirectories (minor spec prose says 30 — acceptable); CC sourcemap pinned at `a8a678c`; UMMAYA HEAD at `34c48f4`; `docs/tui/` does NOT exist yet (plan creates it).
 - **Epic state verified via GraphQL** ✅: B #1297 CLOSED, A #1298 CLOSED; all others OPEN. Closed-Epic edge case handled (research §R3 — re-parent REWRITE Tasks to Epic M).
 - **Deferred-item validation** ✅: 16 items; 10 tracked; 6 `NEEDS TRACKING` awaiting `/speckit-taskstoissues`. 0 unregistered deferrals.
 - **6 NEEDS CLARIFICATION items resolved** (R1–R6): catalog granularity, 30-vs-31 discrepancy, closed-Epic owning, sub-issue budget allocation, grep gate location, §10 owner tracking.

@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.tools.kma.projection import KMADomainError, latlon_to_lcc
+from ummaya.tools.kma.projection import KMADomainError, latlon_to_lcc
 
 _REPO_ROOT = Path(__file__).parent.parent.parent.parent
 _BASELINE_FILE = _REPO_ROOT / "tests" / "fixtures" / "legacy" / "address_to_grid_baseline.json"
@@ -38,12 +38,12 @@ class TestCanonicalSeoulGovOffice:
     OLON=126, OLAT=38, XO=43, YO=136) produces (nx=62, ny=128) for
     (lat=37.5665, lon=127.0495).  This result is confirmed by the
     existing ``latlon_to_grid`` reference implementation in
-    ``kosmos.tools.kma.grid_coords`` which uses identical constants.
+    ``ummaya.tools.kma.grid_coords`` which uses identical constants.
     """
 
     def test_seoulcheong_matches_reference_implementation(self) -> None:
         """latlon_to_lcc and latlon_to_grid must agree on the canonical point."""
-        from kosmos.tools.kma.grid_coords import latlon_to_grid
+        from ummaya.tools.kma.grid_coords import latlon_to_grid
 
         nx_ref, ny_ref = latlon_to_grid(37.5665, 127.0495)
         nx_lcc, ny_lcc = latlon_to_lcc(37.5665, 127.0495)

@@ -2,11 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 # audit-prod § Audit 6 (real install) — exercise the live catalog with the
 # correct catalog `name` (seoul-subway, hyphen, not seoul_subway underscore).
-# KOSMOS_PLUGIN_SLSA_SKIP=true is set by the harness env to skip live SLSA
+# UMMAYA_PLUGIN_SLSA_SKIP=true is set by the harness env to skip live SLSA
 # binary download; the bundle SHA-256 + manifest validation still run.
 set -uo pipefail
 
-wait_for_pane "KOSMOS|kosmos" 60 || true
+wait_for_pane "UMMAYA|ummaya" 60 || true
 snapshot_pane 0-boot
 
 # /plugin install seoul-subway --dry-run (correct catalog name)

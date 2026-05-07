@@ -251,12 +251,12 @@
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -300,12 +300,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -349,12 +349,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ 서울 호우주의보 발효 가능성 알려줘
@@ -398,12 +398,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 호우주의보 발효 가능성 알려줘
 
@@ -447,9 +447,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 호우주의보 발효 가능성 알려줘
 
@@ -496,9 +496,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 ⏺ lookup(kma_pre_warning)
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 호우주의보 발효 가능성 알려줘
 
@@ -545,9 +545,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 ⏺ lookup(kma_pre_warning)
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 호우주의보 발효 가능성 알려줘
 
@@ -594,9 +594,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 ⏺ lookup(kma_pre_warning)
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 호우주의보 발효 가능성 알려줘
 
@@ -643,9 +643,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 ⏺ lookup(kma_pre_warning)
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 호우주의보 발효 가능성 알려줘
 
@@ -692,9 +692,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 ⏺ lookup(kma_pre_warning)
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 호우주의보 발효 가능성 알려줘
 
@@ -741,9 +741,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 ⏺ lookup(kma_pre_warning)
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 호우주의보 발효 가능성 알려줘
 
@@ -790,9 +790,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 ⏺ lookup(kma_pre_warning)
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 서울 호우주의보 발효 가능성 알려줘
 

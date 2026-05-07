@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosmos.dev/schemas/spec-287/user-input.schema.json",
+  "$id": "https://ummaya.dev/schemas/spec-287/user-input.schema.json",
   "title": "UserInputFrame",
   "description": "TUI → backend: a citizen's typed input. Direction: TUI → backend.",
   "type": "object",

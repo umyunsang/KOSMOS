@@ -16,10 +16,10 @@
 ```
 
 After this swap:
-- `/plugin install <name>` → `tui/src/commands/plugin.ts` (KOSMOS singular) → emits `plugin_op_request:install`.
-- `/plugin uninstall <name>` → same KOSMOS singular → emits `plugin_op_request:uninstall`.
-- `/plugin list` → same KOSMOS singular → emits `plugin_op_request:list` (returns synchronously to its acknowledgment surface).
-- `/plugin pipa-text` → same KOSMOS singular → returns canonical SHA-256.
+- `/plugin install <name>` → `tui/src/commands/plugin.ts` (UMMAYA singular) → emits `plugin_op_request:install`.
+- `/plugin uninstall <name>` → same UMMAYA singular → emits `plugin_op_request:uninstall`.
+- `/plugin list` → same UMMAYA singular → emits `plugin_op_request:list` (returns synchronously to its acknowledgment surface).
+- `/plugin pipa-text` → same UMMAYA singular → returns canonical SHA-256.
 - `/plugins` (plural) → routes to `tui/src/commands/plugins.ts` (T066 entry — modified) → opens PluginBrowser.
 - `/marketplace` → no longer aliased; either unbound (slash autocomplete shows nothing) or bound to a Korean message "marketplace browser deferred to #1820" — TBD in implementation.
 
@@ -76,7 +76,7 @@ Backwards compatibility: existing Spec 1635 T065 PluginBrowser tests using only 
 ## Visual layout (preserves Spec 1635 T065 ≥ 90 % fidelity)
 
 ```
-✻ KOSMOS 플러그인 (3 installed)
+✻ UMMAYA 플러그인 (3 installed)
 
   ⏺  ›  seoul-subway     v1.0  [Live]  ⓵  서울 지하철 도착 정보 조회 …       (지금 활성)
   ○      post-office     v0.5  [Live]  ⓶  우편물 추적 — 우정사업본부            (비활성)
@@ -95,7 +95,7 @@ Column allocation (extends existing 3-column Spec 1635 layout):
 | Version | 6 chars | `v${version}` |
 | Tier badge | 6 chars | `[Live]` or `[Mock]` |
 | Layer glyph | 3 chars | `⓵` / `⓶` / `⓷` colored green/orange/red |
-| Description | flex-grow | `description_ko` (or `_en` if `KOSMOS_TUI_LOCALE=en`) |
+| Description | flex-grow | `description_ko` (or `_en` if `UMMAYA_TUI_LOCALE=en`) |
 | Active hint | right-aligned | `(지금 활성)` / `(비활성)` |
 
 The keybinding hint line below the list is preserved from Spec 1635; updated to add `r 제거` and `a 스토어 (deferred)`.
@@ -157,8 +157,8 @@ For `processes_pii=true` plugins, an additional section:
 ⚠  플러그인 제거 확인
 
   seoul-subway v1.0 을 제거하시겠습니까?
-  ⏺  설치 디렉터리: ~/.kosmos/memdir/user/plugins/seoul_subway/
-  ⏺  영수증 (uninstall) 이 ~/.kosmos/memdir/user/consent/ 에 추가됩니다.
+  ⏺  설치 디렉터리: ~/.ummaya/memdir/user/plugins/seoul_subway/
+  ⏺  영수증 (uninstall) 이 ~/.ummaya/memdir/user/consent/ 에 추가됩니다.
 
   [Y 제거 / N 취소]
 ```
@@ -184,16 +184,16 @@ The placeholder converts to a real row when `plugin_op_complete:success` arrives
 - All citizen-facing strings (column labels, key bindings hint, detail labels, confirmation modals, deferred messages) are bilingual:
   - Korean primary text rendered first.
   - English fallback in parentheses or as secondary line.
-- `KOSMOS_TUI_LOCALE=en` environment variable suppresses Korean primary, English-only mode.
+- `UMMAYA_TUI_LOCALE=en` environment variable suppresses Korean primary, English-only mode.
 - Source code identifiers stay English per AGENTS.md hard rule.
 
 ---
 
 ## OTEL surface emission
 
-`tui/src/commands/plugins.ts:executePlugins` continues to emit `kosmos.ui.surface=plugins` (existing Spec 1635 FR-037).
+`tui/src/commands/plugins.ts:executePlugins` continues to emit `ummaya.ui.surface=plugins` (existing Spec 1635 FR-037).
 
-The new `awaitPluginOpComplete` round-trip wraps the existing IPC frame plumbing — no new TUI-side OTEL needed; backend's `kosmos.plugin.list` span (R-1) covers it.
+The new `awaitPluginOpComplete` round-trip wraps the existing IPC frame plumbing — no new TUI-side OTEL needed; backend's `ummaya.plugin.list` span (R-1) covers it.
 
 ---
 
@@ -208,7 +208,7 @@ The new `awaitPluginOpComplete` round-trip wraps the existing IPC frame plumbing
 6. `executePlugins round-trips list request`: mock IPC → assert correlation ID + frame shape; mock complete frame → assert PluginEntry[] parsed.
 
 ### PTY (smoke-1979.expect)
-1. Type `/plugins` → expect Korean header "✻ KOSMOS 플러그인" within 2 s.
+1. Type `/plugins` → expect Korean header "✻ UMMAYA 플러그인" within 2 s.
 2. Send `r` → expect confirmation modal → send `Y` → expect "(제거 중…)" placeholder.
 3. Wait for terminal frame → expect row removal.
 
@@ -218,7 +218,7 @@ The new `awaitPluginOpComplete` round-trip wraps the existing IPC frame plumbing
 
 - `tui/src/components/plugins/PluginBrowser.tsx:1-171` (Spec 1635 T065)
 - `tui/src/commands/plugins.ts:1-52` (Spec 1635 T066 — current env-var stub)
-- `tui/src/commands/plugin.ts:1-209` (KOSMOS singular — current orphaned)
+- `tui/src/commands/plugin.ts:1-209` (UMMAYA singular — current orphaned)
 - `tui/src/commands.ts:133` (CC residue import — to be swapped)
-- `docs/requirements/kosmos-migration-tree.md § UI-E.3` (key binding mandate)
-- `docs/requirements/kosmos-migration-tree.md § UI-C.1` (layer color glyph mandate)
+- `docs/requirements/ummaya-migration-tree.md § UI-E.3` (key binding mandate)
+- `docs/requirements/ummaya-migration-tree.md § UI-C.1` (layer color glyph mandate)

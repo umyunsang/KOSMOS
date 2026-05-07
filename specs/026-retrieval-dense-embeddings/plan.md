@@ -5,7 +5,7 @@
 
 ## Summary
 
-Introduce a pluggable retrieval layer behind a minimal `Retriever` protocol that mirrors the current `BM25Index` surface, so `ToolRegistry` and `kosmos.tools.search.search()` remain byte-identical to callers. Three interchangeable backends — `bm25` (default, wraps today's implementation verbatim), `dense` (CPU-only multilingual sentence encoder + in-memory numpy cosine index), and `hybrid` (Reciprocal Rank Fusion over BM25 + Dense at k=60) — are selected at registry construction via `KOSMOS_RETRIEVAL_BACKEND`. Dense/hybrid initialisation failures degrade fail-open to pure BM25 with a single structured WARN log; auth/invocation gates stay fail-closed. Model weights are resolved from the Hugging Face hub cache at first boot (never committed, never CI-downloaded); a weight SHA-256 + tokenizer version + embedding dim enter the release manifest via Epic #467 extension fields. Success criteria are re-anchored to an adversarial-paraphrase subset authored in this PR and to the Epic #22 extended corpus (`PENDING_#22` when absent), since the committed 30-query set is saturated at recall@5 = 1.0.
+Introduce a pluggable retrieval layer behind a minimal `Retriever` protocol that mirrors the current `BM25Index` surface, so `ToolRegistry` and `ummaya.tools.search.search()` remain byte-identical to callers. Three interchangeable backends — `bm25` (default, wraps today's implementation verbatim), `dense` (CPU-only multilingual sentence encoder + in-memory numpy cosine index), and `hybrid` (Reciprocal Rank Fusion over BM25 + Dense at k=60) — are selected at registry construction via `UMMAYA_RETRIEVAL_BACKEND`. Dense/hybrid initialisation failures degrade fail-open to pure BM25 with a single structured WARN log; auth/invocation gates stay fail-closed. Model weights are resolved from the Hugging Face hub cache at first boot (never committed, never CI-downloaded); a weight SHA-256 + tokenizer version + embedding dim enter the release manifest via Epic #467 extension fields. Success criteria are re-anchored to an adversarial-paraphrase subset authored in this PR and to the Epic #22 extended corpus (`PENDING_#22` when absent), since the committed 30-query set is saturated at recall@5 = 1.0.
 
 ## Technical Context
 
@@ -19,7 +19,7 @@ Introduce a pluggable retrieval layer behind a minimal `Retriever` protocol that
 **Storage**: N/A — in-memory vector matrix + in-memory BM25 doc vectors; HF hub cache at `~/.cache/huggingface/hub/` for weights (user-scoped, not repo-committed).
 **Testing**: `pytest` + `pytest-asyncio` (existing). New surfaces: `tests/retrieval/test_retriever_protocol.py`, `tests/retrieval/test_bm25_backend.py`, `tests/retrieval/test_dense_backend.py` (mocked encoder), `tests/retrieval/test_hybrid_rrf.py`, `tests/retrieval/test_fail_open.py`, `tests/retrieval/test_schema_snapshot.py`, `tests/retrieval/test_latency.py` (100-adapter synthetic). Live model load tests gated behind `@pytest.mark.live_embedder` and skipped in CI.
 **Target Platform**: CPU-only. Primary: Apple M-series 8-core macOS. Fallback: Linux x86_64 8-core. No CUDA, no GPU, no MPS dependency (CPU wheel of torch only).
-**Project Type**: Single Python project (existing layout under `src/kosmos/`).
+**Project Type**: Single Python project (existing layout under `src/ummaya/`).
 **Performance Goals**:
 - `backend=bm25` (default): p99 per-query latency within ±10 % of pre-#585 baseline on padded 100-adapter registry.
 - `backend=hybrid`: p99 per-query latency < 50 ms on padded 100-adapter registry (reference CPU).
@@ -77,7 +77,7 @@ specs/026-retrieval-dense-embeddings/
 ### Source Code (repository root)
 
 ```text
-src/kosmos/
+src/ummaya/
 ├── tools/
 │   ├── retrieval/                      # NEW subpackage (mirrors composite/, geocoding/ conventions)
 │   │   ├── __init__.py
@@ -123,7 +123,7 @@ docs/
 pyproject.toml                          # Dependency addition: sentence-transformers (spec-driven)
 ```
 
-**Structure Decision**: Single-project layout (Option 1). The retrieval subsystem is a new subpackage under `src/kosmos/tools/retrieval/`, mirroring the existing flat convention used by `composite/` and `geocoding/` packages. `lookup.py` and `models.py` are the byte-level contract surface and remain untouched. `registry.py` and `search.py` change by dependency injection only (swap a concrete `BM25Index` for a `Retriever` Protocol instance); their external signatures are unchanged. `tests/retrieval/` is the new test home for protocol conformance, fail-open behaviour, schema snapshots, and the latency envelope. `eval/retrieval_queries_adversarial.yaml` is authored in this PR to gate SC-002 independently of Epic #22.
+**Structure Decision**: Single-project layout (Option 1). The retrieval subsystem is a new subpackage under `src/ummaya/tools/retrieval/`, mirroring the existing flat convention used by `composite/` and `geocoding/` packages. `lookup.py` and `models.py` are the byte-level contract surface and remain untouched. `registry.py` and `search.py` change by dependency injection only (swap a concrete `BM25Index` for a `Retriever` Protocol instance); their external signatures are unchanged. `tests/retrieval/` is the new test home for protocol conformance, fail-open behaviour, schema snapshots, and the latency envelope. `eval/retrieval_queries_adversarial.yaml` is authored in this PR to gate SC-002 independently of Epic #22.
 
 ## Post-Design Constitution Re-check
 

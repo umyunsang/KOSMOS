@@ -16,9 +16,9 @@ from __future__ import annotations
 import pytest
 from pydantic import BaseModel, ConfigDict, RootModel
 
-from kosmos.tools.errors import AdapterIdCollisionError, DuplicateToolError
-from kosmos.tools.models import GovAPITool
-from kosmos.tools.registry import ToolRegistry
+from ummaya.tools.errors import AdapterIdCollisionError, DuplicateToolError
+from ummaya.tools.models import GovAPITool
+from ummaya.tools.registry import ToolRegistry
 
 
 class _StubInput(BaseModel):
@@ -103,5 +103,5 @@ def test_collision_exposes_existing_module_metadata() -> None:
     with pytest.raises(AdapterIdCollisionError) as exc_info:
         registry.register(_make_tool("metadata_probe"))
 
-    # GovAPITool lives under kosmos.tools.models; existing_module MUST reflect that.
-    assert exc_info.value.existing_module == "kosmos.tools.models"
+    # GovAPITool lives under ummaya.tools.models; existing_module MUST reflect that.
+    assert exc_info.value.existing_module == "ummaya.tools.models"

@@ -1,6 +1,6 @@
 # Accessibility Checklist
 
-**Spec**: Spec 287 (KOSMOS TUI — Ink + React + Bun)
+**Spec**: Spec 287 (UMMAYA TUI — Ink + React + Bun)
 **Status**: T123 keyboard-only navigation pass completed 2026-04-19. T124 screen-reader smoke plan appended 2026-04-19. Items remain unchecked until manual execution.
 **Requirements**: FR-055 (keyboard-only navigation), FR-056 (screen-reader manual smoke test).
 
@@ -101,14 +101,14 @@ Items below reflect the state of the actual source code as of 2026-04-19. Tickin
 3. With VoiceOver active, use VO+Right arrow to move through the terminal output line by line. Confirm the assistant message text is spoken without embedded ANSI escape codes (`\e[` sequences).
 4. Trigger a `tool_result` with `kind: "lookup"` returning a `LookupCollection`. Confirm VoiceOver reads the `CollectionList` row text and the truncation notice.
 5. Trigger the permission modal by replaying `tests/fixtures/coordinator/permission-gauntlet.jsonl` (if the file exists) or injecting a `permission_request` frame manually. Confirm VoiceOver reads: (a) the modal title, (b) the `description_ko` and `description_en` text, (c) the `[y]` / `[n]` prompt. Confirm VoiceOver does NOT continue reading background content while the modal is open (Ink's `useInput` activation blocks other input but does not enforce an ARIA modal — known limitation).
-6. Kill the backend process (`kill -9 <pid>`) and confirm VoiceOver reads the `CrashNotice` text. Confirm no `KOSMOS_*` env var values appear in the spoken output.
+6. Kill the backend process (`kill -9 <pid>`) and confirm VoiceOver reads the `CrashNotice` text. Confirm no `UMMAYA_*` env var values appear in the spoken output.
 
 **Checklist items** (tick when manually verified by a human tester):
 
 - [ ] Assistant chunk text is spoken without raw ANSI codes in line-review mode.
 - [ ] `CollectionList` row text and truncation notice are spoken.
 - [ ] Permission modal title, bilingual description, and y/n prompt are spoken.
-- [ ] `CrashNotice` text is spoken; no `KOSMOS_*` values in spoken output.
+- [ ] `CrashNotice` text is spoken; no `UMMAYA_*` values in spoken output.
 - [ ] **Known issue acknowledged**: VoiceOver does not receive an ARIA-modal signal; background content may be navigable with VO cursor — this is a known Ink limitation.
 - [ ] **Known issue acknowledged**: ANSI escape codes may appear in spoken output for colored or styled text — logged as a known issue, not a blocker for v1.
 
@@ -134,14 +134,14 @@ Items below reflect the state of the actual source code as of 2026-04-19. Tickin
 3. Use Orca's flat-review mode: Orca+KP_8 to read the line above, Orca+KP_2 to read the line below. Navigate rendered rows and confirm the assistant message text is spoken without `\e[` sequences.
 4. Trigger a `tool_result` with `kind: "lookup"` returning a `LookupCollection`. Confirm Orca reads the row text and truncation notice.
 5. Trigger the permission modal. Confirm Orca announces the modal content. Note: Orca does not receive an ARIA-modal signal from Ink; flat-review may still navigate to background content (known limitation).
-6. Kill the backend and confirm Orca reads the `CrashNotice` text without leaking `KOSMOS_*` values.
+6. Kill the backend and confirm Orca reads the `CrashNotice` text without leaking `UMMAYA_*` values.
 
 **Checklist items** (tick when manually verified by a human tester):
 
 - [ ] Assistant chunk text is spoken without raw ANSI codes in Orca flat-review mode.
 - [ ] `CollectionList` row text and truncation notice are spoken.
 - [ ] Permission modal title, bilingual description, and y/n prompt are spoken.
-- [ ] `CrashNotice` text is spoken; no `KOSMOS_*` values in spoken output.
+- [ ] `CrashNotice` text is spoken; no `UMMAYA_*` values in spoken output.
 - [ ] **Known issue acknowledged**: Orca does not receive an ARIA-modal signal — known Ink limitation.
 - [ ] **Known issue acknowledged**: ANSI escape codes may appear in spoken output — known limitation.
 
@@ -185,13 +185,13 @@ FR-037: "User-visible command text MUST be localized to Korean + English; intern
 All user-visible strings live in `tui/i18n/en.ts` (English source) and `tui/i18n/ko.ts` (Korean translation). Internal command identifiers (e.g., `/save`, `/sessions`) are English-only.
 
 - [ ] All strings in `tui/i18n/ko.ts` have a corresponding key in `tui/i18n/en.ts`; no orphaned keys.
-- [ ] `KOSMOS_TUI_LANG=ko` renders Korean strings for all user-visible surfaces.
-- [ ] `KOSMOS_TUI_LANG=en` (or unset) renders English strings.
+- [ ] `UMMAYA_TUI_LANG=ko` renders Korean strings for all user-visible surfaces.
+- [ ] `UMMAYA_TUI_LANG=en` (or unset) renders English strings.
 - [ ] Internal slash-command identifiers (`/save`, `/sessions`, `/resume`, `/new`) are not translated.
 
 ### RTL support
 
-RTL (right-to-left) layout is not in scope for v1. Ink's layout model does not provide RTL support, and no KOSMOS v1 data sources require Arabic or Hebrew rendering.
+RTL (right-to-left) layout is not in scope for v1. Ink's layout model does not provide RTL support, and no UMMAYA v1 data sources require Arabic or Hebrew rendering.
 
 **Deferral note**: RTL support is deferred to a future ADR and tracking issue per Spec 287 § Scope Boundaries & Deferred Items. If RTL is required in a future release, a dedicated Spec and ADR must be opened before any RTL layout changes are made.
 

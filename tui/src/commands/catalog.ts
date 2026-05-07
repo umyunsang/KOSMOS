@@ -14,14 +14,6 @@ import {
 
 export const UI_L2_SLASH_COMMANDS: readonly SlashCommandCatalogEntryT[] = [
   {
-    name: '/onboarding',
-    group: 'session',
-    description_ko: '온보딩 시퀀스를 처음부터 다시 진행합니다',
-    description_en: 'Restart onboarding from step 1',
-    arg_signature: '[step-name]',
-    hidden: false,
-  },
-  {
     name: '/lang',
     group: 'session',
     description_ko: '언어를 한국어/영어로 전환합니다',
@@ -77,7 +69,7 @@ export const UI_L2_SLASH_COMMANDS: readonly SlashCommandCatalogEntryT[] = [
     arg_signature: null,
     hidden: false,
   },
-  // Session lifecycle commands — kosmos-migration-tree.md § L1-A · A5
+  // Session lifecycle commands — ummaya-migration-tree.md § L1-A · A5
   // promises four distinct citizen-facing modes: --continue / --resume /
   // --fork / new. Surfaced in the autocomplete dropdown (FR-014) so the
   // citizen can discover them without reading docs. Decision:
@@ -149,8 +141,8 @@ export const UI_L2_SLASH_COMMANDS: readonly SlashCommandCatalogEntryT[] = [
   {
     name: '/migrate-sessions',
     group: 'storage',
-    description_ko: 'CC 워크스페이스 JSONL 세션을 KOSMOS memdir로 마이그레이션합니다',
-    description_en: 'Migrate CC-workspace JSONL sessions to the KOSMOS memdir sessions directory',
+    description_ko: 'CC 워크스페이스 JSONL 세션을 UMMAYA memdir로 마이그레이션합니다',
+    description_en: 'Migrate CC-workspace JSONL sessions to the UMMAYA memdir sessions directory',
     arg_signature: '[--dry-run] [--filter-cwd <regex>] [--prune]',
     hidden: false,
   },

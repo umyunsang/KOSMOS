@@ -20,7 +20,7 @@ plan § 0.1):
 * `Tool.ts:210 notify(notificationType)` is an in-process callback,
   not an IPC frame.
 
-Conclusion: KOSMOS's `notification_push` arm is a swap-2 add-on
+Conclusion: UMMAYA's `notification_push` arm is a swap-2 add-on
 carrying Spec 031 SubscriptionHandle pushes (KMA disaster CBS, RSS
 newsroom, hospital alerts) over the same stdio plane. Orthogonal to
 CC's terminal OSC notification path — neither divergence nor
@@ -35,7 +35,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kosmos.ipc.frame_schema import (
+from ummaya.ipc.frame_schema import (
     _ROLE_KIND_ALLOW_LIST,
     NotificationPushFrame,
 )

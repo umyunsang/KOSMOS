@@ -43,7 +43,7 @@ function groupLabel(group: SlashCommandGroupT, locale: 'ko' | 'en'): string {
 /**
  * Execute the /help command.
  *
- * Emits `kosmos.ui.surface=help` (FR-037) and returns a grouped command
+ * Emits `ummaya.ui.surface=help` (FR-037) and returns a grouped command
  * catalogue for both plain-text and React rendering paths.
  */
 export function executeHelp(locale: 'ko' | 'en' = 'ko'): HelpCommandResult {

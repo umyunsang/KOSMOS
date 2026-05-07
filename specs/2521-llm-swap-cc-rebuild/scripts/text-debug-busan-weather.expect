@@ -23,7 +23,7 @@ expect {
   timeout { puts "\n\[FAIL A1\] no boot"; exit 1 }
 }
 expect {
-  -re "KOSMOS" { puts "\n\[A2\] branding" }
+  -re "UMMAYA" { puts "\n\[A2\] branding" }
   timeout { puts "\n\[FAIL A2\]"; exit 1 }
 }
 

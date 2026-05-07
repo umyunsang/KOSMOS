@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1633 stub restoration.
+// UMMAYA-original — Epic #1633 stub restoration.
 //
 // All Anthropic OAuth / Claude.ai / ant-internal subscriber surfaces are
-// inert in KOSMOS (FriendliAI API-key auth only). Every getter returns null
+// inert in UMMAYA (FriendliAI API-key auth only). Every getter returns null
 // or `false`; every clearer is a no-op.
 
 export async function getClaudeAIOAuthTokens(): Promise<null> {

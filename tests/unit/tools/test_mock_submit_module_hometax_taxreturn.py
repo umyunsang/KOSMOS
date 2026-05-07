@@ -20,12 +20,12 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from kosmos.primitives.delegation import (
+from ummaya.primitives.delegation import (
     DelegationContext,
     DelegationToken,
     DelegationValidationOutcome,
 )
-from kosmos.primitives.submit import SubmitStatus
+from ummaya.primitives.submit import SubmitStatus
 
 # ---------------------------------------------------------------------------
 # Shared transparency field list
@@ -96,18 +96,18 @@ def _make_params(
 @pytest.mark.asyncio
 async def test_happy_path_returns_succeeded() -> None:
     """Success path: validate_delegation returns OK → SubmitStatus.succeeded."""
-    from kosmos.tools.mock.submit_module_hometax_taxreturn import invoke
+    from ummaya.tools.mock.submit_module_hometax_taxreturn import invoke
 
     params = _make_params()
 
     # Mock validate_delegation to return OK (bypasses session/ledger checks)
     with (
         mock.patch(
-            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            "ummaya.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
             return_value=DelegationValidationOutcome.OK,
         ),
         mock.patch(
-            "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
+            "ummaya.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
         ) as mock_append,
     ):
         result = await invoke(params)
@@ -130,16 +130,16 @@ async def test_happy_path_returns_succeeded() -> None:
 @pytest.mark.asyncio
 async def test_transparency_fields_present_on_success() -> None:
     """All six transparency fields must appear in adapter_receipt on success."""
-    from kosmos.tools.mock.submit_module_hometax_taxreturn import invoke
+    from ummaya.tools.mock.submit_module_hometax_taxreturn import invoke
 
     params = _make_params()
 
     with (
         mock.patch(
-            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            "ummaya.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
             return_value=DelegationValidationOutcome.OK,
         ),
-        mock.patch("kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"),
+        mock.patch("ummaya.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"),
     ):
         result = await invoke(params)
 
@@ -157,17 +157,17 @@ async def test_transparency_fields_present_on_success() -> None:
 @pytest.mark.asyncio
 async def test_scope_violation_returns_rejected() -> None:
     """Scope violation → rejected with scope_violation outcome."""
-    from kosmos.tools.mock.submit_module_hometax_taxreturn import invoke
+    from ummaya.tools.mock.submit_module_hometax_taxreturn import invoke
 
     params = _make_params(scope="submit:gov24.minwon")  # wrong scope
 
     with (
         mock.patch(
-            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            "ummaya.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
             return_value=DelegationValidationOutcome.SCOPE_VIOLATION,
         ),
         mock.patch(
-            "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
+            "ummaya.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
         ) as mock_append,
     ):
         result = await invoke(params)
@@ -190,17 +190,17 @@ async def test_scope_violation_returns_rejected() -> None:
 @pytest.mark.asyncio
 async def test_expired_token_returns_rejected() -> None:
     """Expired outcome → SubmitStatus.rejected."""
-    from kosmos.tools.mock.submit_module_hometax_taxreturn import invoke
+    from ummaya.tools.mock.submit_module_hometax_taxreturn import invoke
 
     params = _make_params()
 
     with (
         mock.patch(
-            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            "ummaya.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
             return_value=DelegationValidationOutcome.EXPIRED,
         ),
         mock.patch(
-            "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
+            "ummaya.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
         ) as mock_append,
     ):
         result = await invoke(params)
@@ -213,17 +213,17 @@ async def test_expired_token_returns_rejected() -> None:
 @pytest.mark.asyncio
 async def test_session_violation_returns_rejected() -> None:
     """Session violation → SubmitStatus.rejected."""
-    from kosmos.tools.mock.submit_module_hometax_taxreturn import invoke
+    from ummaya.tools.mock.submit_module_hometax_taxreturn import invoke
 
     params = _make_params(session_id="sess-B")
 
     with (
         mock.patch(
-            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            "ummaya.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
             return_value=DelegationValidationOutcome.SESSION_VIOLATION,
         ),
         mock.patch(
-            "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
+            "ummaya.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
         ) as mock_append,
     ):
         result = await invoke(params)
@@ -236,17 +236,17 @@ async def test_session_violation_returns_rejected() -> None:
 @pytest.mark.asyncio
 async def test_ledger_event_consumer_tool_id() -> None:
     """delegation_used event must identify the consuming adapter correctly."""
-    from kosmos.tools.mock.submit_module_hometax_taxreturn import invoke
+    from ummaya.tools.mock.submit_module_hometax_taxreturn import invoke
 
     params = _make_params()
 
     with (
         mock.patch(
-            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            "ummaya.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
             return_value=DelegationValidationOutcome.SCOPE_VIOLATION,
         ),
         mock.patch(
-            "kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
+            "ummaya.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"
         ) as mock_append,
     ):
         await invoke(params)
@@ -258,16 +258,16 @@ async def test_ledger_event_consumer_tool_id() -> None:
 @pytest.mark.asyncio
 async def test_receipt_id_starts_with_hometax() -> None:
     """On success, receipt_id must start with 'hometax-' as per task spec."""
-    from kosmos.tools.mock.submit_module_hometax_taxreturn import invoke
+    from ummaya.tools.mock.submit_module_hometax_taxreturn import invoke
 
     params = _make_params()
 
     with (
         mock.patch(
-            "kosmos.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
+            "ummaya.tools.mock.submit_module_hometax_taxreturn.validate_delegation",
             return_value=DelegationValidationOutcome.OK,
         ),
-        mock.patch("kosmos.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"),
+        mock.patch("ummaya.tools.mock.submit_module_hometax_taxreturn.append_delegation_used"),
     ):
         result = await invoke(params)
 

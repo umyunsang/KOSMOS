@@ -15,7 +15,7 @@ import sys
 import time
 from dataclasses import dataclass
 
-REPO = "umyunsang/KOSMOS"
+REPO = "umyunsang/UMMAYA"
 EPIC_NUM = 1979
 
 
@@ -38,7 +38,7 @@ TASKS: list[Task] = [
         1, "", True, "S",
         "Use existing 4-layer ladder (`expect` + `script` + raw stdio probe) against `main` branch baseline. Output: `specs/1979-plugin-dx-tui-integration/notes-baseline.txt` + `notes-baseline.jsonl`.\n\n"
         "Reference: docs/testing.md § TUI verification methodology, memory `feedback_runtime_verification`.\n\n"
-        "**Acceptance**: artifact files exist; observably show `tui/src/commands/plugin/index.tsx` (CC marketplace) being invoked under `/plugin install` rather than KOSMOS path."
+        "**Acceptance**: artifact files exist; observably show `tui/src/commands/plugin/index.tsx` (CC marketplace) being invoked under `/plugin install` rather than UMMAYA path."
     ),
     Task(
         "T002", "Document gap analysis to notes-baseline.md",
@@ -51,7 +51,7 @@ TASKS: list[Task] = [
     Task(
         "T003", "Add plugin_op arm to stdio.py:1675 if-elif dispatch chain",
         2, "", False, "S",
-        "Add `frame.kind == \"plugin_op\"` branch after `session_event` arm in `src/kosmos/ipc/stdio.py`. Wrap handler call in try/except → ErrorFrame fanout matching the existing `chat_request` / `tool_result` / `permission_response` arms.\n\n"
+        "Add `frame.kind == \"plugin_op\"` branch after `session_event` arm in `src/ummaya/ipc/stdio.py`. Wrap handler call in try/except → ErrorFrame fanout matching the existing `chat_request` / `tool_result` / `permission_response` arms.\n\n"
         "Reference: contracts/dispatcher-routing.md § Dispatch logic.\n\n"
         "**Blocks**: T004, T013\n\n"
         "**Acceptance**: dispatch arm exists; malformed plugin_op frames produce ErrorFrame; well-formed pass through to handler module."
@@ -59,7 +59,7 @@ TASKS: list[Task] = [
     Task(
         "T004", "[P] Create plugin_op_dispatcher.py module skeleton",
         2, "", True, "M",
-        "Create `src/kosmos/ipc/plugin_op_dispatcher.py` (NEW) with `handle_plugin_op_request(frame, *, registry, executor, write_frame, consent_bridge, session_id)` entry point + `handle_install` / `handle_uninstall` / `handle_list` private routers (signatures only; bodies stub `NotImplementedError`).\n\n"
+        "Create `src/ummaya/ipc/plugin_op_dispatcher.py` (NEW) with `handle_plugin_op_request(frame, *, registry, executor, write_frame, consent_bridge, session_id)` entry point + `handle_install` / `handle_uninstall` / `handle_list` private routers (signatures only; bodies stub `NotImplementedError`).\n\n"
         "Reference: data-model.md § E1 + contracts/dispatcher-routing.md.\n\n"
         "**Blocked by**: T003\n\n"
         "**Acceptance**: module imports without error; type signatures match data-model.md § E1."
@@ -67,7 +67,7 @@ TASKS: list[Task] = [
     Task(
         "T005", "[P] Extend ToolRegistry with _inactive set + lifecycle methods",
         2, "", True, "M",
-        "Extend `src/kosmos/tools/registry.py:ToolRegistry` with: `_inactive: set[str]` field + `set_active(tool_id, active: bool) -> None` + `is_active(tool_id) -> bool` + `deregister(tool_id) -> None` methods. Filter `_inactive` from `core_tools` / `all_tools` / `to_openai_tool` / BM25 corpus rebuild.\n\n"
+        "Extend `src/ummaya/tools/registry.py:ToolRegistry` with: `_inactive: set[str]` field + `set_active(tool_id, active: bool) -> None` + `is_active(tool_id) -> bool` + `deregister(tool_id) -> None` methods. Filter `_inactive` from `core_tools` / `all_tools` / `to_openai_tool` / BM25 corpus rebuild.\n\n"
         "Reference: data-model.md § E4.\n\n"
         "**Blocks**: T011 (uninstall calls deregister)\n\n"
         "**Acceptance**: 4 new test methods in T015 pass; existing registry tests still pass."
@@ -75,7 +75,7 @@ TASKS: list[Task] = [
     Task(
         "T006", "[P] Create IPCConsentBridge module (consent_bridge.py)",
         2, "", True, "M",
-        "Create `src/kosmos/plugins/consent_bridge.py` (NEW) with `IPCConsentBridge` class — sync `__call__(entry, version, manifest) -> bool` matching `installer.ConsentPrompt` signature; emits `PermissionRequestFrame` + awaits `_pending_perms[request_id]` future via `asyncio.wait_for(timeout=60.0)`; returns `False` on TimeoutError (fail-closed).\n\n"
+        "Create `src/ummaya/plugins/consent_bridge.py` (NEW) with `IPCConsentBridge` class — sync `__call__(entry, version, manifest) -> bool` matching `installer.ConsentPrompt` signature; emits `PermissionRequestFrame` + awaits `_pending_perms[request_id]` future via `asyncio.wait_for(timeout=60.0)`; returns `False` on TimeoutError (fail-closed).\n\n"
         "Reference: data-model.md § E2 + contracts/consent-bridge.md.\n\n"
         "**Blocks**: T009, T013\n\n"
         "**Acceptance**: 6 unit tests in T016 pass."
@@ -84,7 +84,7 @@ TASKS: list[Task] = [
     Task(
         "T007", "[US1] Add progress_emitter param to install_plugin()",
         3, "US1", False, "M",
-        "Modify `src/kosmos/plugins/installer.py:install_plugin()` to accept optional `progress_emitter: Callable[[int, str, str], Awaitable[None]] | None = None` parameter. Call `await progress_emitter(phase_num, message_ko, message_en)` between each of the 7 phases using canonical text from `specs/1636-plugin-dx-5tier/contracts/plugin-install.cli.md § Phases`. Backwards compatible (None → no emit).\n\n"
+        "Modify `src/ummaya/plugins/installer.py:install_plugin()` to accept optional `progress_emitter: Callable[[int, str, str], Awaitable[None]] | None = None` parameter. Call `await progress_emitter(phase_num, message_ko, message_en)` between each of the 7 phases using canonical text from `specs/1636-plugin-dx-5tier/contracts/plugin-install.cli.md § Phases`. Backwards compatible (None → no emit).\n\n"
         "Reference: contracts/dispatcher-routing.md § Outbound frame sequence.\n\n"
         "**Blocks**: T008, T010\n\n"
         "**Acceptance**: existing 6 integration tests + 4 SC tests still pass; new test asserts 7 emitter calls in phase order."
@@ -92,7 +92,7 @@ TASKS: list[Task] = [
     Task(
         "T008", "[US1] Implement handle_install in plugin_op_dispatcher.py",
         3, "US1", False, "M",
-        "Implement `handle_install` in `src/kosmos/ipc/plugin_op_dispatcher.py`: build progress_emitter closure that wraps each phase tick into a `PluginOpFrame(op=\"progress\", progress_phase=N, progress_message_ko=..., progress_message_en=...)` + `write_frame(...)`. On `install_plugin` return, emit terminal `plugin_op_complete` with `result` + `exit_code` + `receipt_id`.\n\n"
+        "Implement `handle_install` in `src/ummaya/ipc/plugin_op_dispatcher.py`: build progress_emitter closure that wraps each phase tick into a `PluginOpFrame(op=\"progress\", progress_phase=N, progress_message_ko=..., progress_message_en=...)` + `write_frame(...)`. On `install_plugin` return, emit terminal `plugin_op_complete` with `result` + `exit_code` + `receipt_id`.\n\n"
         "Reference: contracts/dispatcher-routing.md § install sequence.\n\n"
         "**Blocked by**: T007\n\n"
         "**Acceptance**: install request → 7 progress frames + 1 complete frame observed; exit_code matches installer return."
@@ -108,7 +108,7 @@ TASKS: list[Task] = [
     Task(
         "T010", "[P] [US1] Create uninstall_plugin module",
         3, "US1", True, "M",
-        "Create `src/kosmos/plugins/uninstall.py` (NEW) with `uninstall_plugin(plugin_id, *, registry, executor, progress_emitter=None) -> UninstallResult` 3-phase flow: deregister → rmtree → write `PluginConsentReceipt(action_type=\"plugin_uninstall\")`. Idempotent on already-removed plugin.\n\n"
+        "Create `src/ummaya/plugins/uninstall.py` (NEW) with `uninstall_plugin(plugin_id, *, registry, executor, progress_emitter=None) -> UninstallResult` 3-phase flow: deregister → rmtree → write `PluginConsentReceipt(action_type=\"plugin_uninstall\")`. Idempotent on already-removed plugin.\n\n"
         "Reference: data-model.md § E3 + contracts/dispatcher-routing.md § Outbound (uninstall).\n\n"
         "**Blocks**: T011\n\n"
         "**Acceptance**: 4 new tests in T015's sister file pass (rmtree + deregister + receipt + idempotent)."
@@ -116,7 +116,7 @@ TASKS: list[Task] = [
     Task(
         "T011", "[US1] Implement handle_uninstall mirroring handle_install pattern",
         3, "US1", False, "S",
-        "Implement `handle_uninstall` in `src/kosmos/ipc/plugin_op_dispatcher.py` mirroring T008 with the 3-phase progress emitter from T010. Reuse the same `_allocate_consent_position` flock for receipt position assignment.\n\n"
+        "Implement `handle_uninstall` in `src/ummaya/ipc/plugin_op_dispatcher.py` mirroring T008 with the 3-phase progress emitter from T010. Reuse the same `_allocate_consent_position` flock for receipt position assignment.\n\n"
         "Reference: contracts/dispatcher-routing.md § uninstall sequence.\n\n"
         "**Blocked by**: T005, T010\n\n"
         "**Acceptance**: uninstall request → 3 progress frames + 1 complete frame; receipt position monotonic."
@@ -124,7 +124,7 @@ TASKS: list[Task] = [
     Task(
         "T012", "[US1] Implement handle_list with payload_delta enumeration",
         3, "US1", False, "M",
-        "Implement `handle_list` in `src/kosmos/ipc/plugin_op_dispatcher.py`: enumerate `registry._tools` (filtered through `is_active`) + load each plugin's manifest snapshot from install root → emit `payload_start` + `payload_delta` + `payload_end` triplet carrying `PluginListEntry[]` JSON, then a single `plugin_op_complete` with `correlation_id` matching.\n\n"
+        "Implement `handle_list` in `src/ummaya/ipc/plugin_op_dispatcher.py`: enumerate `registry._tools` (filtered through `is_active`) + load each plugin's manifest snapshot from install root → emit `payload_start` + `payload_delta` + `payload_end` triplet carrying `PluginListEntry[]` JSON, then a single `plugin_op_complete` with `correlation_id` matching.\n\n"
         "Reference: contracts/dispatcher-routing.md § list payload.\n\n"
         "**Blocked by**: T005\n\n"
         "**Acceptance**: list request → 0 progress frames + payload triplet + complete frame; payload JSON parses to PluginListEntry[]."
@@ -132,7 +132,7 @@ TASKS: list[Task] = [
     Task(
         "T013", "[US1] Wire dispatcher boot params into stdio.py",
         3, "US1", False, "S",
-        "In `src/kosmos/ipc/stdio.py`, pass `_ensure_tool_registry()` + `_ensure_tool_executor()` + `write_frame` + freshly-constructed `IPCConsentBridge(write_frame=write_frame, pending_perms=_pending_perms, session_id=frame.session_id)` into the T003 if-elif arm's `handle_plugin_op_request` call.\n\n"
+        "In `src/ummaya/ipc/stdio.py`, pass `_ensure_tool_registry()` + `_ensure_tool_executor()` + `write_frame` + freshly-constructed `IPCConsentBridge(write_frame=write_frame, pending_perms=_pending_perms, session_id=frame.session_id)` into the T003 if-elif arm's `handle_plugin_op_request` call.\n\n"
         "Reference: contracts/dispatcher-routing.md § Dispatch logic.\n\n"
         "**Blocked by**: T003, T006, T008, T011, T012\n\n"
         "**Acceptance**: end-to-end fixture test (T014) passes."
@@ -140,7 +140,7 @@ TASKS: list[Task] = [
     Task(
         "T014", "[P] [US1] Author unit tests test_plugin_op_dispatch.py",
         3, "US1", True, "M",
-        "Author `tests/ipc/test_plugin_op_dispatch.py`: 5 cases — install_request_dispatches, uninstall_request_dispatches, list_request_emits_payload_only, unknown_request_op_returns_error_frame, consent_timeout_emits_complete_exit5. Add SC-009 sub-test (analysis.md C2): `test_concurrent_installs_assign_monotonic_positions`. Add FR-010 sub-test (analysis.md C1): `test_install_emits_kosmos_plugin_id_otel_attribute`.\n\n"
+        "Author `tests/ipc/test_plugin_op_dispatch.py`: 5 cases — install_request_dispatches, uninstall_request_dispatches, list_request_emits_payload_only, unknown_request_op_returns_error_frame, consent_timeout_emits_complete_exit5. Add SC-009 sub-test (analysis.md C2): `test_concurrent_installs_assign_monotonic_positions`. Add FR-010 sub-test (analysis.md C1): `test_install_emits_ummaya_plugin_id_otel_attribute`.\n\n"
         "Reference: contracts/e2e-pty-scenario.md § L1 + analysis.md C1/C2.\n\n"
         "**Acceptance**: all 7 tests pass."
     ),
@@ -163,7 +163,7 @@ TASKS: list[Task] = [
     Task(
         "T017", "[US2] Empty frame.tools when pluginsModifiedThisSession is true",
         4, "US2", False, "S",
-        "In TUI ChatRequestFrame builder (likely `tui/src/services/api/` or `tui/src/ipc/bridge.ts` outbound path), if `pluginsModifiedThisSession === true`, set `frame.tools = []` to defer to backend's `registry.export_core_tools_openai()` fallback at `src/kosmos/ipc/stdio.py:1192-1195`. Reset flag after emit.\n\n"
+        "In TUI ChatRequestFrame builder (likely `tui/src/services/api/` or `tui/src/ipc/bridge.ts` outbound path), if `pluginsModifiedThisSession === true`, set `frame.tools = []` to defer to backend's `registry.export_core_tools_openai()` fallback at `src/ummaya/ipc/stdio.py:1192-1195`. Reset flag after emit.\n\n"
         "Reference: research.md § R-6.\n\n"
         "**Blocked by**: T016\n\n"
         "**Acceptance**: T018 integration test passes."
@@ -191,9 +191,9 @@ TASKS: list[Task] = [
     ),
     # ── Phase 5: User Story 3 ──
     Task(
-        "T021", "[US3] CRITICAL: Swap commands.ts:133 import to KOSMOS plugin.ts",
+        "T021", "[US3] CRITICAL: Swap commands.ts:133 import to UMMAYA plugin.ts",
         5, "US3", False, "S",
-        "**CRITICAL wire-up**: In `tui/src/commands.ts`, change line 133 from `import plugin from './commands/plugin/index.js'` to `import plugin from './commands/plugin.js'`. This is the single line that activates the entire KOSMOS citizen plugin path; all subsequent US3 tasks depend on it.\n\n"
+        "**CRITICAL wire-up**: In `tui/src/commands.ts`, change line 133 from `import plugin from './commands/plugin/index.js'` to `import plugin from './commands/plugin.js'`. This is the single line that activates the entire UMMAYA citizen plugin path; all subsequent US3 tasks depend on it.\n\n"
         "Reference: research.md § V1 verdict.\n\n"
         "**Blocks**: T022, T023..T030\n\n"
         "**Acceptance**: bun test passes; `/plugin install <name>` reaches backend dispatcher (verified via L2 stdio probe at T032)."
@@ -207,9 +207,9 @@ TASKS: list[Task] = [
         "**Acceptance**: grep for the deferred suffix returns 0; bun test still passes."
     ),
     Task(
-        "T023", "[US3] Replace KOSMOS_PLUGIN_REGISTRY env-var stub with IPC round-trip",
+        "T023", "[US3] Replace UMMAYA_PLUGIN_REGISTRY env-var stub with IPC round-trip",
         5, "US3", False, "M",
-        "In `tui/src/commands/plugins.ts`, replace the `KOSMOS_PLUGIN_REGISTRY` env-var stub (lines 32-51) with: emit `plugin_op_request:list` with fresh correlation_id → await matching `plugin_op_complete` + reassembled payload → parse `PluginListEntry[]` → return as `PluginEntry[]`.\n\n"
+        "In `tui/src/commands/plugins.ts`, replace the `UMMAYA_PLUGIN_REGISTRY` env-var stub (lines 32-51) with: emit `plugin_op_request:list` with fresh correlation_id → await matching `plugin_op_complete` + reassembled payload → parse `PluginListEntry[]` → return as `PluginEntry[]`.\n\n"
         "Reference: data-model.md § E5 + contracts/citizen-plugin-store.md § /plugins browser data flow.\n\n"
         "**Blocked by**: T021\n\n"
         "**Acceptance**: T030 bun test pass; manual `/plugins` open shows real backend state."
@@ -273,7 +273,7 @@ TASKS: list[Task] = [
     Task(
         "T031", "[P] [US4] Author fixture catalog + bundle + provenance under scripts/fixtures/",
         6, "US4", True, "M",
-        "Author fixture catalog + bundle under `specs/1979-plugin-dx-tui-integration/scripts/fixtures/`: `catalog.json` (CatalogIndex schema with 1 entry pointing at file:// URLs), `seoul-subway.tar.gz` (containing `manifest.yaml` + `adapter.py` + minimal Pydantic v2 input/output schemas), `seoul-subway.intoto.jsonl` (SLSA provenance compatible with `KOSMOS_PLUGIN_SLSA_SKIP=true` test path).\n\n"
+        "Author fixture catalog + bundle under `specs/1979-plugin-dx-tui-integration/scripts/fixtures/`: `catalog.json` (CatalogIndex schema with 1 entry pointing at file:// URLs), `seoul-subway.tar.gz` (containing `manifest.yaml` + `adapter.py` + minimal Pydantic v2 input/output schemas), `seoul-subway.intoto.jsonl` (SLSA provenance compatible with `UMMAYA_PLUGIN_SLSA_SKIP=true` test path).\n\n"
         "Reference: contracts/e2e-pty-scenario.md § L2 + spec/1636 contracts/manifest.schema.json.\n\n"
         "**Acceptance**: T032 stdio probe runs to completion against the fixture; install succeeds + receipt written."
     ),
@@ -342,14 +342,14 @@ DEFERRED: list[Deferred] = [
         "[Deferred] CC marketplace residue cleanup (commands/plugin/* + services/plugins/* + utils/plugins/*)",
         "## Originating Epic\n\n#1979 (Plugin DX TUI integration)\n\n"
         "## Deferral reason\n\n"
-        "Epic #1979 swaps the `commands.ts:133` import to point at the KOSMOS singular `plugin.ts`, making the CC marketplace residue (`tui/src/commands/plugin/*`, `tui/src/services/plugins/*`, `tui/src/utils/plugins/*` — ~16 files, 89 grep matches) unreachable from citizen surface. Deleting the residue in Epic #1979 was rejected because:\n"
+        "Epic #1979 swaps the `commands.ts:133` import to point at the UMMAYA singular `plugin.ts`, making the CC marketplace residue (`tui/src/commands/plugin/*`, `tui/src/services/plugins/*`, `tui/src/utils/plugins/*` — ~16 files, 89 grep matches) unreachable from citizen surface. Deleting the residue in Epic #1979 was rejected because:\n"
         "1. SC-005 baseline-parity (`bun test ≥ 984`) risk — ~89 grep matches across multiple files might cascade into test failures.\n"
         "2. Sub-issue budget — adding cleanup tasks would balloon the count past 90.\n\n"
         "## Target\n\n"
         "Spec 1633-style dead-code-elimination follow-up Epic. Verify all 89 matches removed; bun test parity preserved; CHANGELOG documents the residue removal.\n\n"
         "## Reference\n\n"
         "- specs/1979-plugin-dx-tui-integration/research.md § V1\n"
-        "- memory `feedback_kosmos_scope_cc_plus_two_swaps`\n"
+        "- memory `feedback_ummaya_scope_cc_plus_two_swaps`\n"
         "- Spec 1633 dead-code-elimination pattern"
     ),
     Deferred(
@@ -358,22 +358,22 @@ DEFERRED: list[Deferred] = [
         "## Deferral reason\n\n"
         "Epic #1979 adds `_inactive: set[str]` shadow set to `ToolRegistry` (Phase 2 T005) but does NOT expose it via IPC. The PluginBrowser's ⏺/○ Space toggle is implemented as visual-only because adding a 4th `PluginOpFrame.request_op` value (`activate` / `deactivate`) would trigger:\n"
         "1. Spec 032 envelope schema bump\n"
-        "2. New SHA-256 hash for the `kosmos.ipc.schema.hash` OTEL attribute\n"
+        "2. New SHA-256 hash for the `ummaya.ipc.schema.hash` OTEL attribute\n"
         "3. Sub-issue budget overrun\n\n"
         "## Target\n\n"
         "Post-P5 plugin-lifecycle Epic. Adds `request_op ∈ {activate, deactivate}` to the discriminated union; updates Spec 032 envelope hash; wires PluginBrowser Space keystroke to backend IPC.\n\n"
         "## Reference\n\n"
         "- specs/1979-plugin-dx-tui-integration/research.md § R-3+R-4\n"
         "- specs/1979-plugin-dx-tui-integration/data-model.md § E4\n"
-        "- docs/requirements/kosmos-migration-tree.md § UI-E.3"
+        "- docs/requirements/ummaya-migration-tree.md § UI-E.3"
     ),
     Deferred(
-        "[Deferred] SC-001 live environment validation against kosmos-plugin-store",
+        "[Deferred] SC-001 live environment validation against ummaya-plugin-store",
         "## Originating Epic\n\n#1979 (Plugin DX TUI integration)\n\n"
         "## Deferral reason\n\n"
-        "Epic #1979 SC-001 (≤30s install) is measured against fixture catalog under `file://` URLs only. Live network latency variance from the `kosmos-plugin-store` GitHub catalog + bundle download is not quantified. The fixture path is known to be ≤ 13s (analysis.md quickstart measurement); live network adds variance.\n\n"
+        "Epic #1979 SC-001 (≤30s install) is measured against fixture catalog under `file://` URLs only. Live network latency variance from the `ummaya-plugin-store` GitHub catalog + bundle download is not quantified. The fixture path is known to be ≤ 13s (analysis.md quickstart measurement); live network adds variance.\n\n"
         "## Target\n\n"
-        "Post-P5 fixture→live calibration Epic. Measures SC-001 against actual `kosmos-plugin-store/seoul-subway` catalog + bundle URLs; calibrates the 30s ceiling against real network conditions.\n\n"
+        "Post-P5 fixture→live calibration Epic. Measures SC-001 against actual `ummaya-plugin-store/seoul-subway` catalog + bundle URLs; calibrates the 30s ceiling against real network conditions.\n\n"
         "## Reference\n\n"
         "- specs/1979-plugin-dx-tui-integration/analysis.md Risk C\n"
         "- specs/1979-plugin-dx-tui-integration/spec.md SC-001"
@@ -465,7 +465,7 @@ def create_issue(title: str, body: str, labels: list[str]) -> int:
     if label_str:
         args.extend(["--label", label_str])
     url = gh(*args)
-    # URL format: https://github.com/umyunsang/KOSMOS/issues/2208
+    # URL format: https://github.com/umyunsang/UMMAYA/issues/2208
     return int(url.rsplit("/", 1)[-1])
 
 
@@ -487,7 +487,7 @@ def link_subissue(epic_id: str, sub_id: str) -> None:
 def main() -> None:
     epic_id = gh(
         "api", "graphql", "-f",
-        f'query=query {{ repository(owner: "umyunsang", name: "KOSMOS") {{ issue(number: {EPIC_NUM}) {{ id }} }} }}',
+        f'query=query {{ repository(owner: "umyunsang", name: "UMMAYA") {{ issue(number: {EPIC_NUM}) {{ id }} }} }}',
         "--jq", ".data.repository.issue.id",
     )
 
@@ -516,7 +516,7 @@ def main() -> None:
 
     final_count = gh(
         "api", "graphql", "-f",
-        f'query=query {{ repository(owner: "umyunsang", name: "KOSMOS") {{ issue(number: {EPIC_NUM}) {{ subIssues {{ totalCount }} }} }} }}',
+        f'query=query {{ repository(owner: "umyunsang", name: "UMMAYA") {{ issue(number: {EPIC_NUM}) {{ subIssues {{ totalCount }} }} }} }}',
         "--jq", ".data.repository.issue.subIssues.totalCount",
     )
 

@@ -1,6 +1,6 @@
 # Contract — `plugin_op` backend dispatcher routing
 
-**Surface**: `src/kosmos/ipc/stdio.py` if-elif dispatch chain (line ~1675) → `src/kosmos/ipc/plugin_op_dispatcher.py` (NEW).
+**Surface**: `src/ummaya/ipc/stdio.py` if-elif dispatch chain (line ~1675) → `src/ummaya/ipc/plugin_op_dispatcher.py` (NEW).
 **Trigger**: TUI emits `PluginOpFrame` with `op="request"`.
 **Purpose**: Route incoming citizen-initiated plugin lifecycle operations to backend handlers; emit progress + complete frames per the IPC envelope.
 
@@ -195,19 +195,19 @@ This is causally race-free: `register_plugin_adapter` updates the registry BEFOR
 
 | Span name | Parent | Attributes |
 |---|---|---|
-| `kosmos.plugin.install` | `kosmos.session` | `kosmos.plugin.id`, `kosmos.plugin.tier`, `kosmos.plugin.permission_layer`, `kosmos.plugin.slsa_verification` |
-| `kosmos.plugin.uninstall` | `kosmos.session` | `kosmos.plugin.id` |
-| `kosmos.plugin.list` | `kosmos.session` | (none — count of returned entries logged at info level) |
+| `ummaya.plugin.install` | `ummaya.session` | `ummaya.plugin.id`, `ummaya.plugin.tier`, `ummaya.plugin.permission_layer`, `ummaya.plugin.slsa_verification` |
+| `ummaya.plugin.uninstall` | `ummaya.session` | `ummaya.plugin.id` |
+| `ummaya.plugin.list` | `ummaya.session` | (none — count of returned entries logged at info level) |
 
-Each span emits `kosmos.ipc.frame` child spans for every progress + complete frame, per existing Spec 032 OTEL conventions.
+Each span emits `ummaya.ipc.frame` child spans for every progress + complete frame, per existing Spec 032 OTEL conventions.
 
 ---
 
 ## Citations
 
-- `src/kosmos/ipc/stdio.py:1675-1751` (existing dispatch chain)
-- `src/kosmos/ipc/frame_schema.py:776-936` (PluginOpFrame schema)
-- `src/kosmos/plugins/installer.py:install_plugin` (8-phase impl)
+- `src/ummaya/ipc/stdio.py:1675-1751` (existing dispatch chain)
+- `src/ummaya/ipc/frame_schema.py:776-936` (PluginOpFrame schema)
+- `src/ummaya/plugins/installer.py:install_plugin` (8-phase impl)
 - `specs/1636-plugin-dx-5tier/contracts/plugin-install.cli.md` (canonical phase text)
 - `specs/032-ipc-stdio-hardening/` (envelope conventions)
 - Epic #1978 (ChatRequestFrame.tools[] auto-build path)

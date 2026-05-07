@@ -4,7 +4,7 @@
 **Lead**: Opus (single Epic)
 **Total tasks**: 49 (T001-T049)
 **Total sonnets**: 11 (병렬)
-**Worktree**: `/Users/um-yunsang/KOSMOS-w-2522/`
+**Worktree**: `/Users/um-yunsang/UMMAYA-w-2522/`
 **Branch**: `feat/2522-tool-surface-v4`
 
 ## Two-layer parallelism (AGENTS.md § Agent Teams)
@@ -72,16 +72,16 @@ Phase 3-9 의 8 sonnet 이 동시 작업 시 file 충돌 0 보장:
 
 | Sonnet | 변경 file |
 |---|---|
-| sonnet-us1-kma-a | `src/kosmos/tools/kma/{kma_current_observation,kma_short_term_forecast,kma_ultra_short_term_forecast,forecast_fetch,kma_pre_warning}.py` |
-| sonnet-us1-kma-b | `src/kosmos/tools/kma/kma_weather_alert_status.py` + `tests/tools/kma/test_v4_*.py` |
-| sonnet-us2-hira | `src/kosmos/tools/hira/hospital_search.py` + `tests/tools/hira/test_v4.py` + `docs/api/hira/hospital_search.md` |
-| sonnet-us3-nmc | `src/kosmos/tools/nmc/emergency_search.py` + `tests/tools/nmc/test_v4.py` + `docs/api/nmc/emergency_search.md` |
-| sonnet-us4-mohw | `src/kosmos/tools/mohw/welfare_eligibility_search.py` + `tests/tools/mohw/test_v4.py` + `docs/api/mohw/welfare_eligibility_search.md` |
-| sonnet-us5-nfa | `src/kosmos/tools/nfa119/emergency_info_service.py` + `tests/tools/nfa119/test_v4.py` + `docs/api/nfa119/emergency_info_service.md` + `specs/2522-tool-surface-v4/research-nfa-wire.md` |
-| sonnet-us6-koroad | `src/kosmos/tools/koroad/{accident_search,accident_hazard_search}.py` + `tests/tools/koroad/test_v4.py` + `docs/api/koroad/{accident_search,accident_hazard_search}.md` |
-| sonnet-us7-resolve | `src/kosmos/tools/resolve_location.py` + `src/kosmos/tools/models.py` (ResolveLocationOutput 추가, sonnet-foundational-b 의 :577 정정과 line 분리) + `tests/tools/test_resolve_location_v4.py` + `docs/api/resolve_location/index.md` |
+| sonnet-us1-kma-a | `src/ummaya/tools/kma/{kma_current_observation,kma_short_term_forecast,kma_ultra_short_term_forecast,forecast_fetch,kma_pre_warning}.py` |
+| sonnet-us1-kma-b | `src/ummaya/tools/kma/kma_weather_alert_status.py` + `tests/tools/kma/test_v4_*.py` |
+| sonnet-us2-hira | `src/ummaya/tools/hira/hospital_search.py` + `tests/tools/hira/test_v4.py` + `docs/api/hira/hospital_search.md` |
+| sonnet-us3-nmc | `src/ummaya/tools/nmc/emergency_search.py` + `tests/tools/nmc/test_v4.py` + `docs/api/nmc/emergency_search.md` |
+| sonnet-us4-mohw | `src/ummaya/tools/mohw/welfare_eligibility_search.py` + `tests/tools/mohw/test_v4.py` + `docs/api/mohw/welfare_eligibility_search.md` |
+| sonnet-us5-nfa | `src/ummaya/tools/nfa119/emergency_info_service.py` + `tests/tools/nfa119/test_v4.py` + `docs/api/nfa119/emergency_info_service.md` + `specs/2522-tool-surface-v4/research-nfa-wire.md` |
+| sonnet-us6-koroad | `src/ummaya/tools/koroad/{accident_search,accident_hazard_search}.py` + `tests/tools/koroad/test_v4.py` + `docs/api/koroad/{accident_search,accident_hazard_search}.md` |
+| sonnet-us7-resolve | `src/ummaya/tools/resolve_location.py` + `src/ummaya/tools/models.py` (ResolveLocationOutput 추가, sonnet-foundational-b 의 :577 정정과 line 분리) + `tests/tools/test_resolve_location_v4.py` + `docs/api/resolve_location/index.md` |
 
-**잠재 충돌**: `src/kosmos/tools/models.py` — sonnet-foundational-b (T009 :577 정정) + sonnet-us7-resolve (ResolveLocationOutput 신모델, 별도 line). 시간 분리: sonnet-foundational-b 가 Phase 2 에서 먼저 완료, sonnet-us7-resolve 가 Phase 9 에서 ResolveLocationOutput 추가 — sequential 라 충돌 0.
+**잠재 충돌**: `src/ummaya/tools/models.py` — sonnet-foundational-b (T009 :577 정정) + sonnet-us7-resolve (ResolveLocationOutput 신모델, 별도 line). 시간 분리: sonnet-foundational-b 가 Phase 2 에서 먼저 완료, sonnet-us7-resolve 가 Phase 9 에서 ResolveLocationOutput 추가 — sequential 라 충돌 0.
 
 ## Lead Opus 책임 (Sonnet 위임 X)
 

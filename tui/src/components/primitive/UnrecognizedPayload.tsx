@@ -1,5 +1,5 @@
 /**
- * KOSMOS-original — UnrecognizedPayload renderer.
+ * UMMAYA-original — UnrecognizedPayload renderer.
  *
  * Yellow warning banner displayed when the dispatcher receives a tool_result
  * envelope whose `kind` (or `subtype`) does not match any known renderer.

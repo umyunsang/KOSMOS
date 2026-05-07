@@ -47,7 +47,7 @@ per-prompt hallucination count below:
 `tests/ipc/test_stdio.py::test_chat_request_appends_available_tools_section`
 confirms the LLM-bound system message ends with `## Available tools`. Combined
 with `frame.tools` carrying the same inventory (T007 + T010), K-EXAONE has
-the canonical KOSMOS tool list in BOTH channels CC's `appendSystemContext`
+the canonical UMMAYA tool list in BOTH channels CC's `appendSystemContext`
 provides — the documented anti-hallucination pattern.
 
 This addresses the root cause from the handoff diagnosis: prior to T007/T010,

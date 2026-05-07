@@ -13,7 +13,7 @@ import { renderModelSetting } from '../../utils/model/model.js';
 import { OffscreenFreeze } from '../OffscreenFreeze.js';
 import { AnimatedClawd } from './AnimatedClawd.js';
 import { Clawd } from './Clawd.js';
-// GuestPassesUpsell + OverageCreditUpsell removed — claude.ai SaaS billing dead in KOSMOS
+// GuestPassesUpsell + OverageCreditUpsell removed — claude.ai SaaS billing dead in UMMAYA
 export function CondensedLogo() {
   const $ = _c(17);
   const {
@@ -49,7 +49,7 @@ export function CondensedLogo() {
   }
   let t5;
   if ($[1] === Symbol.for("react.memo_cache_sentinel")) {
-    t5 = <Text bold={true}>KOSMOS</Text>;
+    t5 = <Text bold={true}>UMMAYA</Text>;
     $[1] = t5;
   } else {
     t5 = $[1];

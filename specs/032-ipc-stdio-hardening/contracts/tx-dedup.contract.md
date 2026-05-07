@@ -84,11 +84,11 @@ For every other frame the envelope has `transaction_id: null`.
     └─ if tool.is_irreversible == true:
          ├─ hit = TransactionLRU.get((session_id, transaction_id))
          ├─ if hit != None:
-         │    ├─ span attribute: kosmos.ipc.tx.cache_state = "hit"
+         │    ├─ span attribute: ummaya.ipc.tx.cache_state = "hit"
          │    ├─ return hit.cached_response immediately
          │    └─ audit: ToolCallAuditRecord(status="dedup_hit", ...)
          └─ if hit == None:
-              ├─ span attribute: kosmos.ipc.tx.cache_state = "miss"
+              ├─ span attribute: ummaya.ipc.tx.cache_state = "miss"
               ├─ execute tool
               ├─ TransactionLRU.record(TxEntry(
               │    session_id, transaction_id, tool_id,
@@ -101,7 +101,7 @@ For every other frame the envelope has `transaction_id: null`.
 
 ### 2.3 Cache sizing & eviction
 
-- Capacity: 512 entries (`KOSMOS_IPC_TX_CACHE_CAPACITY`, `ge=1`).
+- Capacity: 512 entries (`UMMAYA_IPC_TX_CACHE_CAPACITY`, `ge=1`).
 - Structure: `collections.OrderedDict`; insertion order = eviction order (FIFO).
 - Pinned entries (`is_irreversible=true`) NEVER evicted regardless of LRU pressure.
 - Non-pinned overflow → oldest non-pinned evicted first.
@@ -150,9 +150,9 @@ The audit log is therefore a true record of intent (one row per request), separa
 
 All tool-call spans gain:
 
-- `kosmos.ipc.correlation_id` (always)
-- `kosmos.ipc.transaction_id` (when present)
-- `kosmos.ipc.tx.cache_state` = `"hit" | "miss" | "bypass"` (for `is_irreversible=false`)
+- `ummaya.ipc.correlation_id` (always)
+- `ummaya.ipc.transaction_id` (when present)
+- `ummaya.ipc.tx.cache_state` = `"hit" | "miss" | "bypass"` (for `is_irreversible=false`)
 
 ---
 

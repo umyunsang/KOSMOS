@@ -1,4 +1,4 @@
-# Specification Quality Checklist: Secrets & Config — Infisical OIDC + 12-Factor + KOSMOS_* Registry
+# Specification Quality Checklist: Secrets & Config — Infisical OIDC + 12-Factor + UMMAYA_* Registry
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-04-17
@@ -18,7 +18,7 @@
 ## Requirement Completeness
 
 - [x] No [NEEDS CLARIFICATION] markers remain
-    - *Evidence*: `grep -c "NEEDS CLARIFICATION" spec.md` returns zero. Informed defaults were adopted for: activation flag name (`KOSMOS_ENV`), activation values (`dev`/`ci`/`prod`), guard SLO budget (100 ms), `LANGFUSE_*` as the sole allowlisted non-`KOSMOS_` prefix, rollback SLO (15 minutes), and test-only variable grouping under a subsection.
+    - *Evidence*: `grep -c "NEEDS CLARIFICATION" spec.md` returns zero. Informed defaults were adopted for: activation flag name (`UMMAYA_ENV`), activation values (`dev`/`ci`/`prod`), guard SLO budget (100 ms), `LANGFUSE_*` as the sole allowlisted non-`UMMAYA_` prefix, rollback SLO (15 minutes), and test-only variable grouping under a subsection.
 - [x] Requirements are testable and unambiguous
     - Every FR carries an objective acceptance condition. FR-001 ("within 100 ms"), FR-020 ("exits non-zero with a diff-style report"), FR-030 ("no GitHub Encrypted Secret") are all scriptable.
 - [x] Success criteria are measurable
@@ -43,11 +43,11 @@
 - [x] Feature meets measurable outcomes defined in Success Criteria
     - SC-001..SC-008 together span secret-hygiene, operational rotation, registry integrity, live suite viability, failure surface, regression guard, onboarding latency, and rollback SLO.
 - [x] No implementation details leak into specification
-    - `src/kosmos/config/guard.py` appears as the **artifact path** in FR-003 / Key Entities, consistent with Epic body's allowed file surface. No guard source code, algorithm, or library choice is prescribed.
+    - `src/ummaya/config/guard.py` appears as the **artifact path** in FR-003 / Key Entities, consistent with Epic body's allowed file surface. No guard source code, algorithm, or library choice is prescribed.
 
 ## Notes
 
 - Zero [NEEDS CLARIFICATION] markers were emitted; the Lead prompt's stop condition ("> 3 markers") is not triggered.
 - The Lead prompt's file-surface constraints ("Allowed / Forbidden") are carried into the spec as a dedicated table so they survive through `/speckit-plan` Phase 0.
-- The spec deliberately names the legacy `KOSMOS_API_KEY` fallback and the `KOSMOS_<TOOL_ID>_API_KEY` override pattern as first-class registry entries so the audit script can tolerate them without a special case.
+- The spec deliberately names the legacy `UMMAYA_API_KEY` fallback and the `UMMAYA_<TOOL_ID>_API_KEY` override pattern as first-class registry entries so the audit script can tolerate them without a special case.
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`. No items are incomplete — ready for `/speckit-plan`.

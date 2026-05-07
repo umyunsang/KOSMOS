@@ -11,11 +11,11 @@
 The first 20 lines of `docs/tui/component-catalog.md` MUST contain:
 
 ```markdown
-# TUI Component Catalog — CC → KOSMOS Verdict Matrix
+# TUI Component Catalog — CC → UMMAYA Verdict Matrix
 
 **Epic**: M #1310
 **Branch at authoring**: 034-tui-component-catalog
-**Commit at authoring**: <KOSMOS repo HEAD at merge>
+**Commit at authoring**: <UMMAYA repo HEAD at merge>
 **CC sourcemap commit (pinned)**: a8a678c
 **CC file count at pinned commit**: 389 (`.tsx` + `.ts` under `.references/claude-code-sourcemap/restored-src/src/components/`)
 **Top-level subdirectories**: 31
@@ -28,7 +28,7 @@ The first 20 lines of `docs/tui/component-catalog.md` MUST contain:
 ## 2 · Row format (per FR-006; PARITY.md-inspired)
 
 ```markdown
-| # | CC source path | Files | Family | Verdict | Owning Epic | KOSMOS target | Rationale | Evidence | Accessibility gate | Task sub-issue | Feature commit | Merge commit |
+| # | CC source path | Files | Family | Verdict | Owning Epic | UMMAYA target | Rationale | Evidence | Accessibility gate | Task sub-issue | Feature commit | Merge commit |
 |---|---|---:|---|---|---|---|---|---|---|---|---|---|
 ```
 
@@ -42,7 +42,7 @@ The first 20 lines of `docs/tui/component-catalog.md` MUST contain:
 | `Family` | all rows | one of 31 subdirectory names OR `root.<semantic-bin>` for root-level files (e.g., `root.logo-wordmark`, `root.dialogs`, `root.shortcuts`, `root.dev-ui`) |
 | `Verdict` | all rows | one of `PORT` \| `REWRITE` \| `DISCARD` \| `DEFER` |
 | `Owning Epic` | PORT/REWRITE/DEFER | format `{id} #{issue}` (e.g., `H #1302`); CLOSED Epics annotated `{id} #{issue} (closed)` |
-| `KOSMOS target` | PORT/REWRITE only | absolute path under `tui/src/` (creating directories allowed) |
+| `UMMAYA target` | PORT/REWRITE only | absolute path under `tui/src/` (creating directories allowed) |
 | `Rationale` | DISCARD/DEFER (mandatory); PORT/REWRITE (recommended) | free-text; for DISCARD must start with one of `ADR-006 Part D-1`, `ADR-006 Part D-3`, or `Domain mismatch:`; for DEFER must contain `unblock when` |
 | `Evidence` | all rows | citation to file path, spec number, or ADR section |
 | `Accessibility gate` | PORT/REWRITE | markdown anchor into `docs/tui/accessibility-gate.md` |

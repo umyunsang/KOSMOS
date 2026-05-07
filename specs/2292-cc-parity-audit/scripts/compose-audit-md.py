@@ -89,7 +89,7 @@ def main() -> int:
 **Date**: 2026-04-29
 **Status**: Read-only audit complete
 **Authority**:
-- `AGENTS.md § CORE THESIS` — KOSMOS = AX-infrastructure callable-channel client
+- `AGENTS.md § CORE THESIS` — UMMAYA = AX-infrastructure callable-channel client
 - `specs/1979-plugin-dx-tui-integration/cc-source-scope-audit.md § 1.1, § 1.2, § 3 (Phase α)` — 1,531 / 73 / 212 / 274 / 68 baseline
 - `specs/1979-plugin-dx-tui-integration/delegation-flow-design.md § 12` — final canonical architecture
 - `.references/claude-code-sourcemap/restored-src/` — CC 2.1.88 byte-identical source-of-truth (research-only)
@@ -106,7 +106,7 @@ def main() -> int:
 | keep-byte-identical | {actual['keep-byte-identical']['actual']} | {actual['keep-byte-identical']['baseline']} | {actual['keep-byte-identical']['delta']:+d} |
 | import-candidate    | {actual['import-candidate']['actual']} | {actual['import-candidate']['baseline']} | {actual['import-candidate']['delta']:+d} |
 | modified (strictly) | {actual['modified']['actual']} | {actual['modified']['baseline']} | {actual['modified']['delta']:+d} |
-| kosmos-only         | {actual['kosmos-only']['actual']} | {actual['kosmos-only']['baseline']} | {actual['kosmos-only']['delta']:+d} |
+| ummaya-only         | {actual['ummaya-only']['actual']} | {actual['ummaya-only']['baseline']} | {actual['ummaya-only']['delta']:+d} |
 | cc-only             | {actual['cc-only']['actual']} | {actual['cc-only']['baseline']} | {actual['cc-only']['delta']:+d} |
 | **differing union** | {enum_summary['totals']['differing_union_actual']} | {enum_summary['totals']['differing_union_baseline']} | {enum_summary['totals']['differing_union_delta']:+d} |
 
@@ -144,14 +144,14 @@ Import-only diff verification: **{import_only_confirmed}/{len(imports)} confirme
     for idx, e in enumerate(modified, 1):
         rows.append([
             str(idx),
-            e["kosmos_path"],
+            e["ummaya_path"],
             e["classification"],
             truncate(e["change_summary"], 60),
             truncate(e["reference_citation"], 50),
         ])
     modified_section += md_table_from_entries(
         rows,
-        ["#", "kosmos_path", "classification", "change_summary", "reference"],
+        ["#", "ummaya_path", "classification", "change_summary", "reference"],
     )
     modified_section += "\n\n</details>\n\n"
     modified_section += "**Raw data**: [`data/modified-218-classification.json`](data/modified-218-classification.json) — full schema (signals + cc_source_path 등) 포함.\n"
@@ -159,7 +159,7 @@ Import-only diff verification: **{import_only_confirmed}/{len(imports)} confirme
     # ---- Suspicious Transfer ----
     transfer_section = "## 3. Suspicious Transfer List (T008 · spec.md FR-005 / SC-004)\n\n"
     cleanup_count = suspicious["cleanup_needed_transfer_summary"]["count"]
-    transfer_section += "Suspicious 분류 0 건 — audit 결과 모든 modified 파일에 명확한 KOSMOS 정당화 또는 알려진 Spec 1633 잔재. 후속 Epic 진입을 위한 transfer 는 다음과 같다:\n\n"
+    transfer_section += "Suspicious 분류 0 건 — audit 결과 모든 modified 파일에 명확한 UMMAYA 정당화 또는 알려진 Spec 1633 잔재. 후속 Epic 진입을 위한 transfer 는 다음과 같다:\n\n"
     transfer_section += "**Suspicious transfer (Epic β/δ)**\n\n"
     transfer_section += "| Destination Epic | Count |\n|---|---|\n"
     transfer_section += "| Epic β #2293 (Suspicious) | 0 |\n"
@@ -181,12 +181,12 @@ Import-only diff verification: **{import_only_confirmed}/{len(imports)} confirme
     for e in spot:
         spot_rows.append([
             str(e["sampling_index"]),
-            e["kosmos_path"],
+            e["ummaya_path"],
             "✅" if e["hash_match"] else "❌",
-            e["kosmos_sha256"][:10] + "…",
+            e["ummaya_sha256"][:10] + "…",
         ])
     spot_section += md_table_from_entries(
-        spot_rows, ["idx", "kosmos_path", "match", "sha256 (prefix)"]
+        spot_rows, ["idx", "ummaya_path", "match", "sha256 (prefix)"]
     )
     spot_section += "\n\n</details>\n\n"
     spot_section += "**Reproducibility**: seed=2292; sample list 가 본 markdown plaintext + [`data/spot-check-results.json`](data/spot-check-results.json) 두 곳에 박제 — 시드 유실 시에도 sample 재현 보장.\n"
@@ -201,12 +201,12 @@ Import-only diff verification: **{import_only_confirmed}/{len(imports)} confirme
         verdict = "import-only confirmed" if not e["body_diff_present"] else "re-classified to Modified"
         first_change = e["import_lines_changed"][0] if e["import_lines_changed"] else "—"
         imp_rows.append([
-            e["kosmos_path"],
+            e["ummaya_path"],
             verdict,
             truncate(first_change, 60),
         ])
     import_section += md_table_from_entries(
-        imp_rows, ["kosmos_path", "verdict", "first import line changed"]
+        imp_rows, ["ummaya_path", "verdict", "first import line changed"]
     )
     import_section += "\n\n</details>\n\n"
     import_section += "**Raw data**: [`data/import-verify-results.json`](data/import-verify-results.json).\n"
@@ -222,7 +222,7 @@ Import-only diff verification: **{import_only_confirmed}/{len(imports)} confirme
     repro_section = "## 7. Reproducibility (T018 · spec.md FR-006 / SC-005)\n\n"
     repro_section += "Re-run sequence (≈5 min total):\n\n"
     repro_section += "```bash\n"
-    repro_section += "cd /Users/um-yunsang/KOSMOS  # or your repo root\n"
+    repro_section += "cd /Users/um-yunsang/UMMAYA  # or your repo root\n"
     repro_section += "specs/2292-cc-parity-audit/scripts/enumerate-files.sh        # R1\n"
     repro_section += "python3 specs/2292-cc-parity-audit/scripts/spot-check-50.py     # R2 (seed=2292)\n"
     repro_section += "python3 specs/2292-cc-parity-audit/scripts/verify-import-diff.py # R3\n"
@@ -241,9 +241,9 @@ Import-only diff verification: **{import_only_confirmed}/{len(imports)} confirme
     exit_section += "| Read-only invariant | ✅ § 9 verification |\n"
     exit_section += "\n"
     exit_section += "### Next-Epic readiness\n\n"
-    exit_section += "- **Epic β #2293 (KOSMOS-original UI residue cleanup)**: 진입 가능. 30 Cleanup-needed 항목이 task 입력 — 그 중 15개는 `tui/src/services/api/*` (claude.ts dispatcher Spec 1633 closure), 8개는 `queryHaiku` callsite, 3개는 `utils/permissions/*` (Spec 033 잔재).\n"
+    exit_section += "- **Epic β #2293 (UMMAYA-original UI residue cleanup)**: 진입 가능. 30 Cleanup-needed 항목이 task 입력 — 그 중 15개는 `tui/src/services/api/*` (claude.ts dispatcher Spec 1633 closure), 8개는 `queryHaiku` callsite, 3개는 `utils/permissions/*` (Spec 033 잔재).\n"
     exit_section += "- **Epic γ #2294 (5-primitive align with CC Tool.ts)**: 본 audit 산출이 직접 transfer 항목 0 건 — Epic γ 는 별도 design 진입 (delegation-flow-design § 12 의존).\n"
-    exit_section += "- **Epic δ #2295 (Backend permissions/ cleanup)**: 본 audit (TUI-only) 산출이 직접 transfer 항목 0 건 — Epic δ 는 `src/kosmos/permissions/` 백엔드 audit 별도 필요 (Out of Scope Permanent of this Epic α).\n"
+    exit_section += "- **Epic δ #2295 (Backend permissions/ cleanup)**: 본 audit (TUI-only) 산출이 직접 transfer 항목 0 건 — Epic δ 는 `src/ummaya/permissions/` 백엔드 audit 별도 필요 (Out of Scope Permanent of this Epic α).\n"
     exit_section += "- **Epic ε #2296 (AX-infrastructure mock adapters)**: 의존성 없음, Epic γ/δ 결과 후 진입.\n"
     exit_section += "- **Epic ζ #2297 (E2E smoke + policy mapping)**: Epic ε 후속.\n"
     exit_section += "- **Epic η #2298 (System prompt rewrite)**: 선택, 마지막 진입.\n"

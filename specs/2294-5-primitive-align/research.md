@@ -4,17 +4,17 @@
 
 This document satisfies AGENTS.md "Reference source rule" — every Phase 0 design decision is mapped to a concrete file:line reference in the constitutional source set.
 
-## R-1 — `Tool<In, Out>` is already byte-identical-ported into KOSMOS
+## R-1 — `Tool<In, Out>` is already byte-identical-ported into UMMAYA
 
-**Decision**: The KOSMOS file `tui/src/Tool.ts` (792 LOC) is **byte-identical** to `.references/claude-code-sourcemap/restored-src/src/Tool.ts` (792 LOC). The Epic-γ goal "verbatim alignment with CC Tool.ts interface" is therefore **already met at the type-system level**. The actual implementation gap is at the **primitive instance layer** — the four primitives consume a partial subset of the contract `ToolDef<In, Out>` exposes.
+**Decision**: The UMMAYA file `tui/src/Tool.ts` (792 LOC) is **byte-identical** to `.references/claude-code-sourcemap/restored-src/src/Tool.ts` (792 LOC). The Epic-γ goal "verbatim alignment with CC Tool.ts interface" is therefore **already met at the type-system level**. The actual implementation gap is at the **primitive instance layer** — the four primitives consume a partial subset of the contract `ToolDef<In, Out>` exposes.
 
-**Rationale**: Verified by `wc -l` parity, `grep` confirmation that `tui/src/Tool.ts` exports the same surface as the CC counterpart at the same line numbers (`Tool<>` at 362, `isMcp?` at 436, `validateInput?` at 489, `renderToolResultMessage?` at 566, `ToolDef<>` at 721, `buildTool` at 783). The reconstructed CC file under `.references/` and the KOSMOS port live in the same import path tree (`src/Tool.ts`); the import path of `tui/src/tools/LookupPrimitive/LookupPrimitive.ts` line 15 (`import { buildTool, type ToolDef } from '../../Tool.js'`) routes to the byte-identical contract.
+**Rationale**: Verified by `wc -l` parity, `grep` confirmation that `tui/src/Tool.ts` exports the same surface as the CC counterpart at the same line numbers (`Tool<>` at 362, `isMcp?` at 436, `validateInput?` at 489, `renderToolResultMessage?` at 566, `ToolDef<>` at 721, `buildTool` at 783). The reconstructed CC file under `.references/` and the UMMAYA port live in the same import path tree (`src/Tool.ts`); the import path of `tui/src/tools/LookupPrimitive/LookupPrimitive.ts` line 15 (`import { buildTool, type ToolDef } from '../../Tool.js'`) routes to the byte-identical contract.
 
 **Implication for the spec**: FR-001's "9-member surface" is enforced by the **type system already** for any code that types against `ToolDef<In, Out>`. The new boot-time runtime guard (FR-008) is therefore a **belt-and-suspenders defense**: it catches `model_construct`-style bypass (e.g., a plugin author who casts via `as ToolDef<...>` to dodge TypeScript) and gives a Korean diagnostic instead of a runtime `undefined is not a function` deep in the LLM dispatch path.
 
 **Alternatives considered**:
 - _Re-port `Tool.ts` from `.references/`_: rejected — already done; would be a no-op.
-- _Forking the contract into a KOSMOS-specific superset_: rejected — violates Constitution § I (Reference-Driven Development) and the AGENTS.md core thesis ("CC + 2 swaps only").
+- _Forking the contract into a UMMAYA-specific superset_: rejected — violates Constitution § I (Reference-Driven Development) and the AGENTS.md core thesis ("CC + 2 swaps only").
 
 **Reference**: `.references/claude-code-sourcemap/restored-src/src/Tool.ts` :362–783; `tui/src/Tool.ts` :362–783.
 
@@ -36,7 +36,7 @@ This document satisfies AGENTS.md "Reference source rule" — every Phase 0 desi
 
 **Decision**: The shape-and-citation guard lives at `tui/src/services/toolRegistry/bootGuard.ts` and is invoked by the existing registry construction path. It exposes one function `verifyBootRegistry(registry: ToolRegistry): BootResult` that walks every entry, asserts each one's `name`, `description`, `inputSchema`, `isReadOnly`, `isMcp`, `validateInput`, `call`, `renderToolUseMessage`, `renderToolResultMessage` are non-undefined (the 9 members from spec FR-001), and additionally asserts that any entry tagged `is_live` or `is_mock` has a non-empty `real_classification_url` from its `AdapterRealDomainPolicy` block. Failure produces a Korean diagnostic naming the offending tool id and the missing field, exits with code 1 in production and throws in test.
 
-**Rationale**: Splitting the guard from the registry constructor is the minimum-diff way to make the guard unit-testable in isolation (Story 2's `registry-boot.test.ts` mounts a fake registry with deliberately broken entries). The CC equivalent of "registry validates its members at boot" lives in `.references/claude-code-sourcemap/restored-src/src/Tool.ts` :721–792 (`buildTool`) — which only does compile-time enforcement; KOSMOS adds the runtime enforcement on top. This is a **KOSMOS extension** under Constitution § I "do not copy line-for-line; adapt patterns to KOSMOS's domain" — the rationale (plugin contributors via Spec 1636) is documented in the existing Spec 1636 acceptance bundle (50-item validation matrix Q9 plugin checks).
+**Rationale**: Splitting the guard from the registry constructor is the minimum-diff way to make the guard unit-testable in isolation (Story 2's `registry-boot.test.ts` mounts a fake registry with deliberately broken entries). The CC equivalent of "registry validates its members at boot" lives in `.references/claude-code-sourcemap/restored-src/src/Tool.ts` :721–792 (`buildTool`) — which only does compile-time enforcement; UMMAYA adds the runtime enforcement on top. This is a **UMMAYA extension** under Constitution § I "do not copy line-for-line; adapt patterns to UMMAYA's domain" — the rationale (plugin contributors via Spec 1636) is documented in the existing Spec 1636 acceptance bundle (50-item validation matrix Q9 plugin checks).
 
 **Alternatives considered**:
 - _Inline the assertions in the registry constructor_: rejected — breaks unit-test isolation and bloats the existing constructor with conditional branches.
@@ -54,13 +54,13 @@ This document satisfies AGENTS.md "Reference source rule" — every Phase 0 desi
 - _Pass adapter object across `validateInput → call`_: rejected — couples validation and dispatch, complicates cancellation, breaks parity with CC pattern (which keeps validateInput pure).
 - _BM25 hint stays in `call`_: rejected — splits adapter-resolution logic across two surfaces; one fails fast (validation), the other fails only after permission prompt is shown, leading to confused user-facing error timing.
 
-**Reference**: `.references/claude-code-sourcemap/restored-src/src/Tool.ts` :489–494 (validateInput contract); existing Spec 022 BM25 retrieval doc + `kosmos.tools.registry.ToolRegistry.lookup_adapter()`.
+**Reference**: `.references/claude-code-sourcemap/restored-src/src/Tool.ts` :489–494 (validateInput contract); existing Spec 022 BM25 retrieval doc + `ummaya.tools.registry.ToolRegistry.lookup_adapter()`.
 
 ## R-5 — `renderToolResultMessage` is per-primitive Korean renderer; FallbackPermissionRequest is unchanged
 
 **Decision**: Each primitive ships its own `renderToolResultMessage` that takes the structured `PrimitiveOutput` envelope and returns a `ReactNode` of Korean citizen-facing text (lookup → list rendering with adapter-name + result count + first-3-summary; submit → submission receipt id + ministry name; verify → verification status + cited authority; subscribe → handle id + cancel CTA). The CC `FallbackPermissionRequest` component is unchanged — it already renders the citation strings passed in via `permissionContext.citations`; the new code only sets that field with adapter-supplied content.
 
-**Rationale**: CC's `Tool.ts` :566–582 says `renderToolResultMessage` and `userFacingName` are independent concerns from permission rendering. The spec's FR-006 forbids custom permission components — KOSMOS uses CC's `FallbackPermissionRequest` byte-identical (it lives at `tui/src/components/permissions/FallbackPermissionRequest.tsx`, ported in Spec 2293). Each primitive's `validateInput` populates the citation slot in the `ToolUseContext`'s `permissionContext` field; the Fallback component reads it and renders. No new component is introduced.
+**Rationale**: CC's `Tool.ts` :566–582 says `renderToolResultMessage` and `userFacingName` are independent concerns from permission rendering. The spec's FR-006 forbids custom permission components — UMMAYA uses CC's `FallbackPermissionRequest` byte-identical (it lives at `tui/src/components/permissions/FallbackPermissionRequest.tsx`, ported in Spec 2293). Each primitive's `validateInput` populates the citation slot in the `ToolUseContext`'s `permissionContext` field; the Fallback component reads it and renders. No new component is introduced.
 
 **Alternatives considered**:
 - _One shared renderer for all 4 primitives_: rejected — citizen-facing Korean text differs structurally per primitive (lookup is read; submit is action; verify is yes/no; subscribe is handle). Forcing a single renderer either bloats it with `switch (mode)` or loses information.
@@ -70,7 +70,7 @@ This document satisfies AGENTS.md "Reference source rule" — every Phase 0 desi
 
 ## R-6 — PTY smoke pattern reuses Spec 1979 / 2293 / 2112 harness
 
-**Decision**: PTY transcript captured with `expect`. Script lives at `specs/2294-5-primitive-align/scripts/smoke-emergency-lookup.expect`; output text log at `specs/2294-5-primitive-align/smoke-emergency-lookup-pty.txt`. Optional `.gif` via vhs is companion-only (not LLM-greppable). Skeleton: spawn `bun run tui` → assert `KOSMOS` branding → send `의정부 응급실 알려줘\r` → wait 8 s → send `y` (permission accept) → wait 4 s → assert "응급실" + adapter result block in transcript → send `\003\003` → expect eof.
+**Decision**: PTY transcript captured with `expect`. Script lives at `specs/2294-5-primitive-align/scripts/smoke-emergency-lookup.expect`; output text log at `specs/2294-5-primitive-align/smoke-emergency-lookup-pty.txt`. Optional `.gif` via vhs is companion-only (not LLM-greppable). Skeleton: spawn `bun run tui` → assert `UMMAYA` branding → send `의정부 응급실 알려줘\r` → wait 8 s → send `y` (permission accept) → wait 4 s → assert "응급실" + adapter result block in transcript → send `\003\003` → expect eof.
 
 **Rationale**: Memory `feedback_vhs_tui_smoke` (text log primary) + `feedback_pr_pre_merge_interactive_test` (mandatory before PR) + the v6 handoff doc all converge on this pattern. Specs 1979, 2293, and 2112 use the same harness — no new tooling needed.
 
@@ -82,7 +82,7 @@ This document satisfies AGENTS.md "Reference source rule" — every Phase 0 desi
 
 ## R-7 — Span-attribute parity is verifiable by snapshot
 
-**Decision**: New test `tui/src/tools/__tests__/span-attribute-parity.test.ts` mounts a primitive, dispatches a synthetic `lookup(mode='fetch', tool_id='nmc_emergency_search', ...)` call, and snapshots the OTEL span's attribute set. Snapshot baseline is the pre-refactor span emitted from main `c6747dd`. SC-007 passes when post-refactor snapshot is byte-identical to baseline plus optionally the new `kosmos.adapter.real_classification_url` attribute (Epic δ extension introduced in commit `c6747dd`).
+**Decision**: New test `tui/src/tools/__tests__/span-attribute-parity.test.ts` mounts a primitive, dispatches a synthetic `lookup(mode='fetch', tool_id='nmc_emergency_search', ...)` call, and snapshots the OTEL span's attribute set. Snapshot baseline is the pre-refactor span emitted from main `c6747dd`. SC-007 passes when post-refactor snapshot is byte-identical to baseline plus optionally the new `ummaya.adapter.real_classification_url` attribute (Epic δ extension introduced in commit `c6747dd`).
 
 **Rationale**: Spec 021 OTEL infrastructure is stable; the only span-attribute drift risk is from the new adapter-citation extension. Snapshot test is the simplest safe verification.
 
@@ -90,7 +90,7 @@ This document satisfies AGENTS.md "Reference source rule" — every Phase 0 desi
 - _Manual span reading via Langfuse UI_: rejected — not reproducible in CI; out-of-band evidence.
 - _Skip span verification, rely on bun test_: rejected — span attributes are part of L1-A's observability contract (Spec 021); a refactor that silently drops one is a regression.
 
-**Reference**: Spec 021 OTEL attribute schema (`kosmos.tool.id`, `kosmos.tool.mode`, etc.); commit `c6747dd` (Epic δ — adds `kosmos.adapter.real_classification_url`).
+**Reference**: Spec 021 OTEL attribute schema (`ummaya.tool.id`, `ummaya.tool.mode`, etc.); commit `c6747dd` (Epic δ — adds `ummaya.adapter.real_classification_url`).
 
 ## Deferred-Item Validation (Constitution § VI gate)
 

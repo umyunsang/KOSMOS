@@ -1,7 +1,7 @@
 # Contract — PIPA §15(2) Consent Prompt Builder
 
 **Feature**: 033-permission-v2-spectrum
-**Artifact**: Behavioral contract for `src/kosmos/permissions/prompt.py::PIPAConsentPrompt`
+**Artifact**: Behavioral contract for `src/ummaya/permissions/prompt.py::PIPAConsentPrompt`
 **Date**: 2026-04-20
 
 > References: PIPA §15(2) 4-tuple, §22(1) individual consent, Kantara CR v1.1.0 §5.1 notice elements, ISO/IEC 29184:2020 §5.3 plain-language binding.

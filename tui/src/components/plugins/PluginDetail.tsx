@@ -49,7 +49,7 @@ export function PluginDetail({
   return (
     <Box flexDirection="column" paddingX={1} paddingY={1}>
       <Box marginBottom={1}>
-        <Text bold color={theme.kosmosCore}>{'✻ '}</Text>
+        <Text bold color={theme.ummayaCore}>{'✻ '}</Text>
         <Text bold color={theme.wordmark}>{plugin.name}</Text>
         <Text color={theme.subtle}>{` v${plugin.version} [${tierLabel}]`}</Text>
       </Box>

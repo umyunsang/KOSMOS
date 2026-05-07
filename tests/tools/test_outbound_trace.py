@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for kosmos.tools._outbound_trace (Spec 2521)."""
+"""Unit tests for ummaya.tools._outbound_trace (Spec 2521)."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from collections.abc import Callable
 import httpx
 import pytest
 
-from kosmos.tools._outbound_trace import (
+from ummaya.tools._outbound_trace import (
     OutboundCallTrace,
     consume_outbound_capture,
     is_outbound_capture_active,
@@ -218,7 +218,7 @@ async def test_kma_forecast_fetch_emits_trace() -> None:
     """
     import os
 
-    from kosmos.tools.kma.forecast_fetch import KmaForecastFetchInput, _fetch
+    from ummaya.tools.kma.forecast_fetch import KmaForecastFetchInput, _fetch
 
     def handler(request: httpx.Request) -> httpx.Response:
         # Minimal valid KMA envelope.
@@ -245,7 +245,7 @@ async def test_kma_forecast_fetch_emits_trace() -> None:
         )
 
     # _require_env reads the api key — set a placeholder for the test run.
-    os.environ.setdefault("KOSMOS_DATA_GO_KR_API_KEY", "test-key-only")
+    os.environ.setdefault("UMMAYA_DATA_GO_KR_API_KEY", "test-key-only")
 
     inp = KmaForecastFetchInput(
         lat=37.5665,

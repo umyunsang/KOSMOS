@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-KOSMOS is in early development and has no stable releases yet. Security fixes are applied to the `main` branch only.
+UMMAYA is in early development and has no stable releases yet. Security fixes are applied to the `main` branch only.
 
 | Version | Supported |
 |---|---|
@@ -49,4 +49,4 @@ Coordinated disclosure is preferred. Once a fix is merged, the reporter will be 
 - Vulnerabilities in upstream dependencies (report to the upstream project)
 - Issues in `data.go.kr` APIs themselves (report to the operating ministry)
 - Model-level issues in K-EXAONE (report to LG AI Research)
-- Theoretical issues without a reproducible impact on KOSMOS
+- Theoretical issues without a reproducible impact on UMMAYA

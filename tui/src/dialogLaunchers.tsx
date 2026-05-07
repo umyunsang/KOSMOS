@@ -83,7 +83,7 @@ export async function launchAssistantInstallWizard(root: Root): Promise<string |
   return Promise.race([resultPromise, errorPromise]);
 }
 
-// SWAP: dead-code-cleanup (Epic #2639 D1 — TeleportResumeWrapper component removed from KOSMOS)
+// SWAP: dead-code-cleanup (Epic #2639 D1 — TeleportResumeWrapper component removed from UMMAYA)
 // CC reference: .references/claude-code-sourcemap/restored-src/src/dialogLaunchers.tsx (lines 87-96)
 // Divergence LOC: 9 (launchTeleportResumeWrapper export + Site ~4549 doc comment removed)
 // Spec citation: Epic #2639 (audit § 4 row #7), specs/cc-migration-audit/decisions.md § S3 D1

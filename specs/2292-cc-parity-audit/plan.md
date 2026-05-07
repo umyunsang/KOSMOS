@@ -13,7 +13,7 @@ Initiative #2290 의 첫 Epic. `tui/src/` 의 1,604 KEEP (1,531 byte-identical +
 
 **Language/Version**: Bash (POSIX) + Python 3.12+ (이미 프로젝트 baseline) — audit 스크립트는 stdlib 만 사용, 신규 의존성 0
 **Primary Dependencies**: 시스템 바이너리만 — `diff`, `sha256sum` (또는 `shasum -a 256`, macOS), `git`, `find`, `grep`. Python stdlib `random`, `hashlib`, `pathlib`, `json`. 신규 런타임 의존성 0 (AGENTS.md 하드 룰).
-**Storage**: 산출물은 markdown + 보조 JSON appendix 만. `specs/2292-cc-parity-audit/` 디렉토리 내부에만 기록. CC restored-src 와 KOSMOS `tui/src/` 는 read-only 입력.
+**Storage**: 산출물은 markdown + 보조 JSON appendix 만. `specs/2292-cc-parity-audit/` 디렉토리 내부에만 기록. CC restored-src 와 UMMAYA `tui/src/` 는 read-only 입력.
 **Testing**: 산출물 자체에 대한 자기 검증 — (a) `Modified Files` 표 행 수 = 212 (`wc -l` 기반 assertion), (b) `SuspiciousTransferList` 추출 결과가 표의 `Suspicious` 행과 1:1, (c) reproducibility 스크립트 재실행 시 동일 표본 set 재현.
 **Target Platform**: macOS / Linux dev 환경 (Bash + GNU coreutils 또는 BSD coreutils 호환). CI 의존성 없음 (audit 는 로컬 머신에서 1 회 실행).
 **Project Type**: Documentation deliverable — `tui/src/` 와 `.references/claude-code-sourcemap/restored-src/src/` 두 디렉토리에 대한 read-only audit. Source code modification 없음.
@@ -28,7 +28,7 @@ Initiative #2290 의 첫 Epic. `tui/src/` 의 1,604 KEEP (1,531 byte-identical +
 | Principle | 적용 여부 | 평가 |
 |---|---|---|
 | **I. Reference-Driven Development** | ✅ 직접 적용 | 본 Epic 의 본질이 reference (`restored-src`) 와의 parity 입증. spec.md 가 4 개 reference (AGENTS.md § CORE THESIS, cc-source-scope-audit.md § 1.1/1.2/3, delegation-flow-design.md § 12, restored-src) 를 박제. plan.md 도 같은 4 개 인용. 추가 escalation 없음. |
-| **II. Fail-Closed Security** | ✅ 적용 (read-only 형태) | 본 Epic 은 어댑터 정책을 발명하지 않음. Audit 결과로 KOSMOS 가 임의 추가한 `5-mode spectrum / pipa_class / auth_level / permission_tier` 등의 잔재가 발견되면 Suspicious 로 분류해 Epic δ (#2295) 로 transfer. |
+| **II. Fail-Closed Security** | ✅ 적용 (read-only 형태) | 본 Epic 은 어댑터 정책을 발명하지 않음. Audit 결과로 UMMAYA 가 임의 추가한 `5-mode spectrum / pipa_class / auth_level / permission_tier` 등의 잔재가 발견되면 Suspicious 로 분류해 Epic δ (#2295) 로 transfer. |
 | **III. Pydantic v2 Strict Typing** | N/A | 신규 도구 어댑터 없음. 산출물은 markdown. JSON appendix 도 schema 강제 대상 아님. |
 | **IV. Government API Compliance** | N/A | live API 호출 없음. 어댑터 신설 없음. 픽스처 변경 없음. |
 | **V. Policy Alignment** | N/A | 시민 데이터 흐름 신규 없음. PIPA 영향 없음. |
@@ -75,12 +75,12 @@ specs/2292-cc-parity-audit/
 
 ```text
 # 본 Epic 은 source code 0 라인 변경. 입력 디렉토리는 read-only.
-tui/src/                                                     # KOSMOS TUI (읽기 전용 입력)
+tui/src/                                                     # UMMAYA TUI (읽기 전용 입력)
 .references/claude-code-sourcemap/restored-src/src/          # CC 2.1.88 source-of-truth (읽기 전용 입력, AGENTS.md § Do not touch)
 specs/2292-cc-parity-audit/                                  # 모든 산출물의 유일한 출력 위치
 ```
 
-**Structure Decision**: 본 Epic 은 "documentation + audit 스크립트" 조합으로 구성된 read-only deliverable. KOSMOS 의 web-service / library / CLI 프로젝트 카테고리 어디에도 속하지 않음. 따라서 plan-template 의 Option 1/2/3 트리는 사용하지 않고, `specs/2292-cc-parity-audit/` 단일 디렉토리만 변경. `tui/src/` 와 `restored-src/src/` 는 입력으로만 읽힘 — `find` + `diff` + `sha256sum` 으로 비교만 수행하고 absolute import-graph 를 만들지 않음.
+**Structure Decision**: 본 Epic 은 "documentation + audit 스크립트" 조합으로 구성된 read-only deliverable. UMMAYA 의 web-service / library / CLI 프로젝트 카테고리 어디에도 속하지 않음. 따라서 plan-template 의 Option 1/2/3 트리는 사용하지 않고, `specs/2292-cc-parity-audit/` 단일 디렉토리만 변경. `tui/src/` 와 `restored-src/src/` 는 입력으로만 읽힘 — `find` + `diff` + `sha256sum` 으로 비교만 수행하고 absolute import-graph 를 만들지 않음.
 
 ## Complexity Tracking
 

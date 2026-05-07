@@ -7,12 +7,12 @@ import httpx
 import pytest
 from pydantic import BaseModel
 
-from kosmos.recovery.auth_refresh import attempt_auth_refresh, get_credential
-from kosmos.recovery.circuit_breaker import CircuitBreakerConfig
-from kosmos.recovery.classifier import ErrorClass
-from kosmos.recovery.executor import RecoveryExecutor
-from kosmos.recovery.retry import ToolRetryPolicy
-from kosmos.tools.models import GovAPITool
+from ummaya.recovery.auth_refresh import attempt_auth_refresh, get_credential
+from ummaya.recovery.circuit_breaker import CircuitBreakerConfig
+from ummaya.recovery.classifier import ErrorClass
+from ummaya.recovery.executor import RecoveryExecutor
+from ummaya.recovery.retry import ToolRetryPolicy
+from ummaya.tools.models import GovAPITool
 
 # ---------------------------------------------------------------------------
 # attempt_auth_refresh — env var behaviour
@@ -23,7 +23,7 @@ async def test_attempt_auth_refresh_returns_true_when_specific_var_set(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Returns True when the tool-specific env var is present."""
-    monkeypatch.setenv("KOSMOS_MY_TOOL_API_KEY", "secret_key_value")
+    monkeypatch.setenv("UMMAYA_MY_TOOL_API_KEY", "secret_key_value")
     result = await attempt_auth_refresh("my_tool")
     assert result is True
 
@@ -31,10 +31,10 @@ async def test_attempt_auth_refresh_returns_true_when_specific_var_set(
 async def test_attempt_auth_refresh_returns_true_when_global_var_set(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Returns True when only the global KOSMOS_API_KEY is set."""
-    monkeypatch.delenv("KOSMOS_MY_TOOL_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
-    monkeypatch.setenv("KOSMOS_API_KEY", "global_key")
+    """Returns True when only the global UMMAYA_API_KEY is set."""
+    monkeypatch.delenv("UMMAYA_MY_TOOL_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_DATA_GO_KR_API_KEY", raising=False)
+    monkeypatch.setenv("UMMAYA_API_KEY", "global_key")
     result = await attempt_auth_refresh("my_tool")
     assert result is True
 
@@ -43,9 +43,9 @@ async def test_attempt_auth_refresh_returns_false_when_no_vars(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Returns False when neither the specific nor global env var is present."""
-    monkeypatch.delenv("KOSMOS_MY_TOOL_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_MY_TOOL_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_DATA_GO_KR_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_API_KEY", raising=False)
     result = await attempt_auth_refresh("my_tool")
     assert result is False
 
@@ -54,9 +54,9 @@ async def test_attempt_auth_refresh_returns_false_for_empty_var(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Returns False when the env var is set to an empty string."""
-    monkeypatch.setenv("KOSMOS_MY_TOOL_API_KEY", "")
-    monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_API_KEY", raising=False)
+    monkeypatch.setenv("UMMAYA_MY_TOOL_API_KEY", "")
+    monkeypatch.delenv("UMMAYA_DATA_GO_KR_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_API_KEY", raising=False)
     result = await attempt_auth_refresh("my_tool")
     assert result is False
 
@@ -65,8 +65,8 @@ async def test_attempt_auth_refresh_prefers_specific_over_global(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Tool-specific key takes precedence over the global fallback."""
-    monkeypatch.setenv("KOSMOS_SPECIFIC_TOOL_API_KEY", "specific_val")
-    monkeypatch.setenv("KOSMOS_API_KEY", "global_val")
+    monkeypatch.setenv("UMMAYA_SPECIFIC_TOOL_API_KEY", "specific_val")
+    monkeypatch.setenv("UMMAYA_API_KEY", "global_val")
     result = await attempt_auth_refresh("specific_tool")
     assert result is True
 
@@ -77,21 +77,21 @@ async def test_attempt_auth_refresh_prefers_specific_over_global(
 
 
 def test_get_credential_returns_specific_value(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("KOSMOS_MYAPI_API_KEY", "the_key")
+    monkeypatch.setenv("UMMAYA_MYAPI_API_KEY", "the_key")
     assert get_credential("myapi") == "the_key"
 
 
 def test_get_credential_falls_back_to_global(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("KOSMOS_MYAPI_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
-    monkeypatch.setenv("KOSMOS_API_KEY", "global_key")
+    monkeypatch.delenv("UMMAYA_MYAPI_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_DATA_GO_KR_API_KEY", raising=False)
+    monkeypatch.setenv("UMMAYA_API_KEY", "global_key")
     assert get_credential("myapi") == "global_key"
 
 
 def test_get_credential_returns_none_when_absent(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("KOSMOS_MYAPI_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_MYAPI_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_DATA_GO_KR_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_API_KEY", raising=False)
     assert get_credential("myapi") is None
 
 
@@ -157,7 +157,7 @@ async def test_401_triggers_auth_refresh_and_succeeds_on_retry(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """After a 401, auth refresh succeeds (env var present) and retry succeeds."""
-    monkeypatch.setenv("KOSMOS_AUTH_TEST_TOOL_API_KEY", "refreshed_key")
+    monkeypatch.setenv("UMMAYA_AUTH_TEST_TOOL_API_KEY", "refreshed_key")
 
     call_count = 0
     request = httpx.Request("GET", "https://api.example.com/")
@@ -183,9 +183,9 @@ async def test_401_without_credentials_returns_auth_expired(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """401 with no credentials available results in auth_expired error."""
-    monkeypatch.delenv("KOSMOS_AUTH_TEST_TOOL_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_AUTH_TEST_TOOL_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_DATA_GO_KR_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_API_KEY", raising=False)
 
     request = httpx.Request("GET", "https://api.example.com/")
     response_401 = httpx.Response(401, request=request)
@@ -205,7 +205,7 @@ async def test_401_with_refresh_but_still_fails_returns_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """401 even after credential refresh results in auth_expired."""
-    monkeypatch.setenv("KOSMOS_AUTH_TEST_TOOL_API_KEY", "some_key")
+    monkeypatch.setenv("UMMAYA_AUTH_TEST_TOOL_API_KEY", "some_key")
 
     request = httpx.Request("GET", "https://api.example.com/")
     response_401 = httpx.Response(401, request=request)
@@ -221,7 +221,7 @@ async def test_401_with_refresh_but_still_fails_returns_error(
 
 async def test_401_classification_in_classifier() -> None:
     """DataGoKrErrorClassifier maps HTTP 401 to AUTH_EXPIRED."""
-    from kosmos.recovery.classifier import DataGoKrErrorClassifier
+    from ummaya.recovery.classifier import DataGoKrErrorClassifier
 
     clf = DataGoKrErrorClassifier()
     result = clf.classify_response(401, "Unauthorized")
@@ -232,7 +232,7 @@ async def test_401_classification_in_classifier() -> None:
 
 async def test_403_still_maps_to_auth_failure() -> None:
     """HTTP 403 maps to AUTH_FAILURE (not AUTH_EXPIRED)."""
-    from kosmos.recovery.classifier import DataGoKrErrorClassifier
+    from ummaya.recovery.classifier import DataGoKrErrorClassifier
 
     clf = DataGoKrErrorClassifier()
     result = clf.classify_response(403, "Forbidden")
@@ -247,11 +247,11 @@ async def test_403_still_maps_to_auth_failure() -> None:
 async def test_kakao_tool_refresh_uses_kakao_key(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Regression: Kakao-backed tools must discover KOSMOS_KAKAO_API_KEY."""
-    monkeypatch.delenv("KOSMOS_ADDRESS_TO_REGION_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_API_KEY", raising=False)
-    monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", "kakao-key")
+    """Regression: Kakao-backed tools must discover UMMAYA_KAKAO_API_KEY."""
+    monkeypatch.delenv("UMMAYA_ADDRESS_TO_REGION_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_DATA_GO_KR_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_API_KEY", raising=False)
+    monkeypatch.setenv("UMMAYA_KAKAO_API_KEY", "kakao-key")
 
     assert await attempt_auth_refresh("address_to_region") is True
     assert get_credential("address_to_region") == "kakao-key"
@@ -260,11 +260,11 @@ async def test_kakao_tool_refresh_uses_kakao_key(
 async def test_data_go_kr_tool_refresh_uses_data_go_kr_key(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Regression: KOROAD/KMA tools discover KOSMOS_DATA_GO_KR_API_KEY."""
-    monkeypatch.delenv("KOSMOS_KOROAD_ACCIDENT_SEARCH_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_KAKAO_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_API_KEY", raising=False)
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "data-key")
+    """Regression: KOROAD/KMA tools discover UMMAYA_DATA_GO_KR_API_KEY."""
+    monkeypatch.delenv("UMMAYA_KOROAD_ACCIDENT_SEARCH_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_KAKAO_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_API_KEY", raising=False)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "data-key")
 
     assert await attempt_auth_refresh("koroad_accident_search") is True
     assert get_credential("koroad_accident_search") == "data-key"
@@ -278,10 +278,10 @@ async def test_kakao_tool_rejects_data_go_kr_only_environment(
     Without a Kakao, per-tool, or legacy global key, the refresh has to
     fail closed so the caller surfaces ``needs_authentication``.
     """
-    monkeypatch.delenv("KOSMOS_ADDRESS_TO_REGION_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_KAKAO_API_KEY", raising=False)
-    monkeypatch.delenv("KOSMOS_API_KEY", raising=False)
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "data-only")
+    monkeypatch.delenv("UMMAYA_ADDRESS_TO_REGION_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_KAKAO_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_API_KEY", raising=False)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "data-only")
 
     assert await attempt_auth_refresh("address_to_region") is False
     assert get_credential("address_to_region") is None
@@ -291,8 +291,8 @@ async def test_per_tool_override_wins_over_provider_var(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Per-tool override env var beats the provider-level key."""
-    monkeypatch.setenv("KOSMOS_ADDRESS_TO_REGION_API_KEY", "override")
-    monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", "provider")
-    monkeypatch.delenv("KOSMOS_API_KEY", raising=False)
+    monkeypatch.setenv("UMMAYA_ADDRESS_TO_REGION_API_KEY", "override")
+    monkeypatch.setenv("UMMAYA_KAKAO_API_KEY", "provider")
+    monkeypatch.delenv("UMMAYA_API_KEY", raising=False)
 
     assert get_credential("address_to_region") == "override"

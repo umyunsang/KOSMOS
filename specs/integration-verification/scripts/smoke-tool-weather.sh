@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Live K-EXAONE + KMA forecast tool call (날씨 조회)
 set -euo pipefail
-wait_for_pane "KOSMOS v0\\.[0-9]" 30
+wait_for_pane "UMMAYA v0\\.[0-9]" 30
 snapshot_pane "boot-ready"
 send_text_pane "서울 날씨 알려줘"
 sleep 1

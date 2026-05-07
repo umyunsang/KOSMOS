@@ -100,49 +100,49 @@ async function sendDecisionPath(
 }
 
 export default async function run(h: Harness): Promise<void> {
-  const prompt = env('KOSMOS_REALUSE_PROMPT')
+  const prompt = env('UMMAYA_REALUSE_PROMPT')
   if (!prompt) {
-    throw new Error('KOSMOS_REALUSE_PROMPT is required')
+    throw new Error('UMMAYA_REALUSE_PROMPT is required')
   }
 
-  const ready = regexFromEnv('KOSMOS_REALUSE_READY_REGEX', /KOSMOS|❯/)
+  const ready = regexFromEnv('UMMAYA_REALUSE_READY_REGEX', /UMMAYA|❯/)
   const observe = regexFromEnv(
-    'KOSMOS_REALUSE_OBSERVE_REGEX',
+    'UMMAYA_REALUSE_OBSERVE_REGEX',
     /resolve_location|lookup|verify|submit|subscribe|도구 결과|검색 오류|Error/i,
   )
   const expand = regexFromEnv(
-    'KOSMOS_REALUSE_EXPAND_REGEX',
+    'UMMAYA_REALUSE_EXPAND_REGEX',
     /Showing detailed transcript|outbound_traces|request_url|response_status|status_code|응답 envelope|response envelope|adapter_receipt|receipt_id|transaction_id|delegation_context|Error|검색 오류/i,
   )
   const result = regexFromEnv(
-    'KOSMOS_REALUSE_RESULT_REGEX',
+    'UMMAYA_REALUSE_RESULT_REGEX',
     /⎿|도구 결과|검색 오류|Error|receipt|영수증|결과|완료/i,
   )
-  const observeTimeoutSec = Number(env('KOSMOS_REALUSE_OBSERVE_TIMEOUT_SEC', '180'))
-  const expandTimeoutSec = Number(env('KOSMOS_REALUSE_EXPAND_TIMEOUT_SEC', '30'))
-  const resultTimeoutSec = Number(env('KOSMOS_REALUSE_RESULT_TIMEOUT_SEC', '180'))
+  const observeTimeoutSec = Number(env('UMMAYA_REALUSE_OBSERVE_TIMEOUT_SEC', '180'))
+  const expandTimeoutSec = Number(env('UMMAYA_REALUSE_EXPAND_TIMEOUT_SEC', '30'))
+  const resultTimeoutSec = Number(env('UMMAYA_REALUSE_RESULT_TIMEOUT_SEC', '180'))
   const afterDecisionTimeoutSec = Number(
-    env('KOSMOS_REALUSE_AFTER_DECISION_TIMEOUT_SEC', '120'),
+    env('UMMAYA_REALUSE_AFTER_DECISION_TIMEOUT_SEC', '120'),
   )
   const decisionReadyTimeoutSec = Number(
-    env('KOSMOS_REALUSE_DECISION_READY_TIMEOUT_SEC', '180'),
+    env('UMMAYA_REALUSE_DECISION_READY_TIMEOUT_SEC', '180'),
   )
-  const shouldExpand = env('KOSMOS_REALUSE_EXPAND', '1') !== '0'
+  const shouldExpand = env('UMMAYA_REALUSE_EXPAND', '1') !== '0'
   const shouldWaitForResult = env(
-    'KOSMOS_REALUSE_WAIT_FOR_RESULT',
+    'UMMAYA_REALUSE_WAIT_FOR_RESULT',
     shouldExpand ? '1' : '0',
   ) !== '0'
-  const decisionPath = env('KOSMOS_REALUSE_DECISION_PATH')
-  const decisionFeedback = env('KOSMOS_REALUSE_DECISION_FEEDBACK')
-  const decisionReadyRaw = env('KOSMOS_REALUSE_DECISION_READY_REGEX')
+  const decisionPath = env('UMMAYA_REALUSE_DECISION_PATH')
+  const decisionFeedback = env('UMMAYA_REALUSE_DECISION_FEEDBACK')
+  const decisionReadyRaw = env('UMMAYA_REALUSE_DECISION_READY_REGEX')
   const decisionReady = decisionReadyRaw ? new RegExp(decisionReadyRaw, 'i') : null
   const afterDecision = regexFromEnv(
-    'KOSMOS_REALUSE_AFTER_DECISION_REGEX',
+    'UMMAYA_REALUSE_AFTER_DECISION_REGEX',
     /receipt|영수증|denied|거부|완료|제출|결과|Error|검색 오류/i,
   )
-  const finalRaw = env('KOSMOS_REALUSE_FINAL_REGEX')
+  const finalRaw = env('UMMAYA_REALUSE_FINAL_REGEX')
   const finalRegex = finalRaw ? new RegExp(finalRaw, 'i') : null
-  const finalTimeoutSec = Number(env('KOSMOS_REALUSE_FINAL_TIMEOUT_SEC', '180'))
+  const finalTimeoutSec = Number(env('UMMAYA_REALUSE_FINAL_TIMEOUT_SEC', '180'))
   let finalSearchStartMark: number | null = null
 
   await h.waitForPane(ready, 60)
@@ -167,7 +167,7 @@ export default async function run(h: Harness): Promise<void> {
   if (decisionPath) {
     if (!isDecisionPath(decisionPath)) {
       throw new Error(
-        `Unsupported KOSMOS_REALUSE_DECISION_PATH: ${decisionPath}`,
+        `Unsupported UMMAYA_REALUSE_DECISION_PATH: ${decisionPath}`,
       )
     }
     const decisionGate =

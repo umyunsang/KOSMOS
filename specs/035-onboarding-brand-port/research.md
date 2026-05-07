@@ -20,12 +20,12 @@ All ten open research items from plan.md are resolved. Zero `NEEDS CLARIFICATION
   - Kebab-case (`agent-satellite-koroad`) — rejected: § 2 prohibits separators ("Concatenation is direct with no separator").
   - Dropping the `agentSatellite` prefix (`koroad`) — rejected: § 2 requires the `MetaphorRole` prefix; bare ministry code would resolve to `SemanticRole` bucket which does not accept these values.
 
-## R-2 — Shimmer-variant hex selection for `kosmosCore` + `orbitalRing`
+## R-2 — Shimmer-variant hex selection for `ummayaCore` + `orbitalRing`
 
 - **Decision**:
-  - `kosmosCoreShimmer = #a5b4fc` (lightened lavender — indigo-300 family; one step lighter than `kosmosCore`'s `#818cf8` → `#6366f1` gradient base).
+  - `ummayaCoreShimmer = #a5b4fc` (lightened lavender — indigo-300 family; one step lighter than `ummayaCore`'s `#818cf8` → `#6366f1` gradient base).
   - `orbitalRingShimmer = #c7d2fe` (lightened indigo — two steps lighter than `orbitalRing`'s `#60a5fa` → `#a78bfa` gradient).
-- **Rationale**: Both values are present in the `assets/kosmos-logo.svg` 16-hex palette (verified 2026-04-20 by `grep -oE "#[0-9a-fA-F]{6}"` over the SVG). Both pass 4.5 : 1 against `#0a0e27` navy when used as text-weight shimmer and 3.0 : 1 against the orbital ring gradient anchors when used as non-text UI chrome. Pattern parallel from CC `dark.ts` L15–16: `claude = rgb(215,119,87)` + `claudeShimmer = rgb(235,159,127)` — shimmer is a uniformly lightened variant of the primary. Confirmation pending R-3 contrast measurement pass.
+- **Rationale**: Both values are present in the `assets/ummaya-logo.svg` 16-hex palette (verified 2026-04-20 by `grep -oE "#[0-9a-fA-F]{6}"` over the SVG). Both pass 4.5 : 1 against `#0a0e27` navy when used as text-weight shimmer and 3.0 : 1 against the orbital ring gradient anchors when used as non-text UI chrome. Pattern parallel from CC `dark.ts` L15–16: `claude = rgb(215,119,87)` + `claudeShimmer = rgb(235,159,127)` — shimmer is a uniformly lightened variant of the primary. Confirmation pending R-3 contrast measurement pass.
 - **Alternatives considered**:
   - `#6ee7b7` (mint green) — rejected: belongs to the `agentSatelliteKma` family's near neighbours; would create perceptual collision with the KMA satellite node.
   - `#f9a8d4` (light pink) — rejected: belongs to the `agentSatelliteKoroad` family; same collision concern.
@@ -47,22 +47,22 @@ All ten open research items from plan.md are resolved. Zero `NEEDS CLARIFICATION
 ## R-4 — Memdir USER-tier record file layout
 
 - **Decision**:
-  - Consent records at `~/.kosmos/memdir/user/consent/<timestamp>-<session_id>.json`.
+  - Consent records at `~/.ummaya/memdir/user/consent/<timestamp>-<session_id>.json`.
     - `<timestamp>` = ISO-8601 UTC with `Z` suffix, colons replaced by `-` for POSIX portability (`2026-04-20T14-32-05Z`).
     - `<session_id>` = UUIDv7 (timestamp-prepended, Spec 032 precedent).
-  - Ministry-scope records at `~/.kosmos/memdir/user/ministry-scope/<timestamp>-<session_id>.json`.
+  - Ministry-scope records at `~/.ummaya/memdir/user/ministry-scope/<timestamp>-<session_id>.json`.
   - Append-only: never overwrite or delete a record. "Latest effective state" = most recent record by timestamp.
   - Atomic write: write to `<path>.tmp`, `os.fsync()`, then `os.rename()` — Spec 027 § 4 mailbox pattern.
-- **Rationale**: Spec 027 § 4 established the `~/.kosmos/mailbox/` precedent for Python-backend POSIX filesystem state; extending under `~/.kosmos/memdir/user/` keeps the state-root coherent. Append-only is required by Constitution Principle II (audit log) + vision.md § Permission pipeline Step 7 ("every call is logged"). UUIDv7 is already used by Spec 032 for `correlation_id` generation — `uuid.uuid7()` is a 3.12 stdlib function, no new dep. The `consent/` and `ministry-scope/` subdirectories are new but fall under the existing memdir umbrella.
+- **Rationale**: Spec 027 § 4 established the `~/.ummaya/mailbox/` precedent for Python-backend POSIX filesystem state; extending under `~/.ummaya/memdir/user/` keeps the state-root coherent. Append-only is required by Constitution Principle II (audit log) + vision.md § Permission pipeline Step 7 ("every call is logged"). UUIDv7 is already used by Spec 032 for `correlation_id` generation — `uuid.uuid7()` is a 3.12 stdlib function, no new dep. The `consent/` and `ministry-scope/` subdirectories are new but fall under the existing memdir umbrella.
 - **Alternatives considered**:
-  - Single overwriting file (`~/.kosmos/memdir/user/consent.json`) — rejected: violates audit-log invariant; a mistaken re-consent could erase evidence of the prior decision.
-  - SQLite database (`~/.kosmos/memdir/user.db`) — rejected: new runtime dep (`sqlite3` is stdlib, but a schema migration story is required; violates the "files only" convention of Spec 027).
+  - Single overwriting file (`~/.ummaya/memdir/user/consent.json`) — rejected: violates audit-log invariant; a mistaken re-consent could erase evidence of the prior decision.
+  - SQLite database (`~/.ummaya/memdir/user.db`) — rejected: new runtime dep (`sqlite3` is stdlib, but a schema migration story is required; violates the "files only" convention of Spec 027).
   - JSON Lines append at a single file (`consent.jsonl`) — rejected: harder to prune old records in a future GDPR-style deletion; one-file-per-record is easier to audit.
 
 ## R-5 — AAL gate value taxonomy
 
 - **Decision**: Reuse the `AuthenticatorAssuranceLevel` enum from `specs/033-permission-v2-spectrum/`. Values: `{AAL1, AAL2, AAL3}` with default `AAL1` at onboarding time (pre-identity-verification).
-- **Rationale**: Spec 033 merged 2026-04 (PR #1441, Epic M precursor) and is the normative source for permission + authentication assurance levels in KOSMOS. Duplicating an enum here would violate DRY and create drift. The `aalGate` field in `PIPAConsentRecord` is a snapshot of the citizen's AAL at consent time; subsequent AAL upgrades (e.g., identity-verification completion) trigger new consent records per R-4.
+- **Rationale**: Spec 033 merged 2026-04 (PR #1441, Epic M precursor) and is the normative source for permission + authentication assurance levels in UMMAYA. Duplicating an enum here would violate DRY and create drift. The `aalGate` field in `PIPAConsentRecord` is a snapshot of the citizen's AAL at consent time; subsequent AAL upgrades (e.g., identity-verification completion) trigger new consent records per R-4.
 - **Alternatives considered**:
   - Local enum with numeric values (`aal: 1 | 2 | 3`) — rejected: would fork Spec 033's contract.
   - Boolean `isVerified` — rejected: loses the 3-tier assurance distinction required by PIPA § 24 (고유식별정보 처리 동의) and Spec 033.
@@ -97,16 +97,16 @@ All ten open research items from plan.md are resolved. Zero `NEEDS CLARIFICATION
 
 - **Decision**: Partial PORT. From `.references/claude-code-sourcemap/restored-src/src/utils/logoV2Utils.ts`:
   - **PORT** (generic terminal-size math, no CC content): `getLayoutMode`, `calculateLayoutDimensions`, `calculateOptimalLeftWidth`, `formatWelcomeMessage`, `truncatePath`.
-  - **REWRITE** (CC-specific content binding): `getRecentActivitySync` → `getKosmosSessionHistorySync` (reads `~/.kosmos/memdir/session/` via Spec 027 infrastructure); `getRecentReleaseNotesSync` → `getMinistryAvailabilitySync` (reads Spec 022 adapter registry snapshot).
-  - **DISCARD** (CC brand identifier): `getLogoDisplayData` — embeds Anthropic Clawd branding; LogoV2 KOSMOS-REWRITE inlines its own display data.
-- **Rationale**: Component-catalog PORT-first principle — lift verbatim when the logic is content-agnostic; REWRITE when content binds to CC-specific data sources. The 5 PORT-candidates are pure geometry / string utilities; the 2 REWRITE targets are thin adapters over KOSMOS data sources. `getLogoDisplayData` is the only DISCARD because it hardcodes CC wordmark + Clawd poses.
+  - **REWRITE** (CC-specific content binding): `getRecentActivitySync` → `getUmmayaSessionHistorySync` (reads `~/.ummaya/memdir/session/` via Spec 027 infrastructure); `getRecentReleaseNotesSync` → `getMinistryAvailabilitySync` (reads Spec 022 adapter registry snapshot).
+  - **DISCARD** (CC brand identifier): `getLogoDisplayData` — embeds Anthropic Clawd branding; LogoV2 UMMAYA-REWRITE inlines its own display data.
+- **Rationale**: Component-catalog PORT-first principle — lift verbatim when the logic is content-agnostic; REWRITE when content binds to CC-specific data sources. The 5 PORT-candidates are pure geometry / string utilities; the 2 REWRITE targets are thin adapters over UMMAYA data sources. `getLogoDisplayData` is the only DISCARD because it hardcodes CC wordmark + Clawd poses.
 - **Alternatives considered**:
   - Rewrite entire `logoV2Utils.ts` — rejected: wastes ~200 lines of reusable geometry code; violates catalog PORT principle.
   - Keep DISCARD function and stub out Anthropic content — rejected: leaves dead code paths and import-site drift.
 
 ## R-8 — Reduced-motion env flag handling
 
-- **Decision**: Create `tui/src/hooks/useReducedMotion.ts` (new hook) that reads `process.env.NO_COLOR` and `process.env.KOSMOS_REDUCED_MOTION` at hook-init time and returns a boolean `prefersReducedMotion`. The hook returns a stable value for the session lifetime (env flags are read once at mount, per Ink convention). Consumed by:
+- **Decision**: Create `tui/src/hooks/useReducedMotion.ts` (new hook) that reads `process.env.NO_COLOR` and `process.env.UMMAYA_REDUCED_MOTION` at hook-init time and returns a boolean `prefersReducedMotion`. The hook returns a stable value for the session lifetime (env flags are read once at mount, per Ink convention). Consumed by:
   - `AnimatedAsterisk` (REWRITE — skips `useShimmerAnimation` subscription, emits static asterisk).
   - `orbitalRing` render path in `LogoV2.tsx` (REWRITE — skips gradient animation, emits static ring).
   - `CondensedLogo` (REWRITE — skips pulse, emits static header).
@@ -126,12 +126,12 @@ All ten open research items from plan.md are resolved. Zero `NEEDS CLARIFICATION
   - Pure Korean labels with no English codes — rejected: breaks screen-reader disambiguation when the user's TTS engine only speaks English; blocks KWCAG audit.
   - Bilingual double-line labels (Korean \n English) — rejected: doubles the ministry-node row height; breaks the 80-column budget.
 
-## R-10 — `kosmos-logo-dark.svg` doc-drift fix
+## R-10 — `ummaya-logo-dark.svg` doc-drift fix
 
-- **Decision**: Single-line edit to `docs/design/brand-system.md § 1 Permanent cross-references` — replace the bullet `../../assets/kosmos-logo-dark.svg — logo optimised for the KOSMOS navy dark background; cited directly in ADR-006 A-9 as the onboarding splash source` with `../../assets/kosmos-banner-dark.svg — wide wordmark + subtitle on dark background; canonical palette extraction source per ADR-006 A-9` (the existing next-line entry already names this file; the replacement collapses the two entries into one accurate line). Bundle in Epic H PR (FR-027 § 3 authoring already touches § 1 ministry roster — low-conflict edit).
-- **Rationale**: Filesystem verification (`ls /Users/um-yunsang/KOSMOS/assets/`) confirms only `kosmos-logo.svg`, `kosmos-banner-dark.svg`, `kosmos-banner-light.svg`, `kosmos-logo.png`, `kosmos-banner-dark.png`, `kosmos-banner-light.png`, `kosmos-org-avatar.svg`, `kosmos-org-avatar.png` exist. ADR-006 A-9 line "`assets/kosmos-logo-dark.svg` / icon component equivalent" indicates the SVG was planned but the "icon component equivalent" (KosmosCoreIcon per FR-023) was accepted as the delivered form. TUI does not render SVG — the hex palette is the only consumed output.
+- **Decision**: Single-line edit to `docs/design/brand-system.md § 1 Permanent cross-references` — replace the bullet `../../assets/ummaya-logo-dark.svg — logo optimised for the UMMAYA navy dark background; cited directly in ADR-006 A-9 as the onboarding splash source` with `../../assets/ummaya-banner-dark.svg — wide wordmark + subtitle on dark background; canonical palette extraction source per ADR-006 A-9` (the existing next-line entry already names this file; the replacement collapses the two entries into one accurate line). Bundle in Epic H PR (FR-027 § 3 authoring already touches § 1 ministry roster — low-conflict edit).
+- **Rationale**: Filesystem verification (`ls /Users/um-yunsang/UMMAYA/assets/`) confirms only `ummaya-logo.svg`, `ummaya-banner-dark.svg`, `ummaya-banner-light.svg`, `ummaya-logo.png`, `ummaya-banner-dark.png`, `ummaya-banner-light.png`, `ummaya-org-avatar.svg`, `ummaya-org-avatar.png` exist. ADR-006 A-9 line "`assets/ummaya-logo-dark.svg` / icon component equivalent" indicates the SVG was planned but the "icon component equivalent" (UmmayaCoreIcon per FR-023) was accepted as the delivered form. TUI does not render SVG — the hex palette is the only consumed output.
 - **Alternatives considered**:
-  - Author `kosmos-logo-dark.svg` from scratch — rejected: redundant (TUI does not render SVG); would fork the `kosmos-logo.svg` file with an identical palette.
+  - Author `ummaya-logo-dark.svg` from scratch — rejected: redundant (TUI does not render SVG); would fork the `ummaya-logo.svg` file with an identical palette.
   - Leave the drift — rejected: violates Constitution Principle I (reference traceability) because § 1 points at a non-existent file.
   - Split into a separate doc-fix PR under Brand Guardian — rejected: adds a round-trip cost without scope benefit; Epic H PR already touches § 1 for the ministry-roster accent binding.
 
@@ -145,7 +145,7 @@ From `spec.md § Scope Boundaries & Deferred Items`, consolidated:
 
 1. Light and high-contrast themes — Phase 1 `dark` only (Epic body acceptance # 4).
 2. SVG-to-terminal rendering — terminal character grid only (AGENTS.md TUI stack).
-3. Audio / voice feedback — no audio subsystem in KOSMOS.
+3. Audio / voice feedback — no audio subsystem in UMMAYA.
 4. Browser / mobile equivalent — AGENTS.md hard rule: TypeScript for TUI only.
 
 ### Deferred to Future Work — 10 rows
@@ -162,7 +162,7 @@ From `spec.md § Scope Boundaries & Deferred Items`, consolidated:
 | 8 | § 10 Component usage appendix | Epics B/C/D/E/H/I/J/K/L/M — ongoing | Issue exists | #1310 anchor ✅ |
 | 9 | Phase 2 ministry tokens (119 NFA, Geocoding, MOHW, MOLIT) | Phase 2 adapter Epics | NEEDS TRACKING | Spec 029 is nearest — placeholder will cite |
 | 10 | Deep 4.1.2 (Name Role Value) compliance | Issue #25 | Issue exists | ✅ |
-| 11 | `brand-system.md § 1` doc-fix (kosmos-logo-dark.svg ref) | Epic H PR (this spec) | In-scope (bundled) | Resolved in R-10 above |
+| 11 | `brand-system.md § 1` doc-fix (ummaya-logo-dark.svg ref) | Epic H PR (this spec) | In-scope (bundled) | Resolved in R-10 above |
 
 ### Ghost-deferral scan
 

@@ -4,7 +4,7 @@
 # different adapter classes.
 set -euo pipefail
 
-wait_for_pane "KOSMOS|❯" 25
+wait_for_pane "UMMAYA|❯" 25
 snapshot_pane 01-boot
 
 # Scenario 1: weather (KMA chain)

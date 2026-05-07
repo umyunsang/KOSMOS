@@ -14,9 +14,9 @@ import {
   type HistoryPage,
 } from '../assistant/sessionHistory.js'
 import type { ScrollBoxHandle } from '../ink/components/ScrollBox.js'
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — remote/ deleted; types live in
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — remote/ deleted; types live in
 // the no-op hook stubs. convertSDKMessage downgraded to identity for any
-// straggling caller (KOSMOS local TUI never enters this path).
+// straggling caller (UMMAYA local TUI never enters this path).
 import type { RemoteSessionConfig } from './useRemoteSession.js'
 const convertSDKMessage = <T,>(msg: T): T => msg
 import type { Message, SystemInformationalMessage } from '../types/message.js'

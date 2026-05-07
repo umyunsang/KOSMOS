@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # S2: 응급 — verify(mobile_id) + lookup(nmc/hira) + subscribe(cbs_disaster) + Shift+Tab
 set -euo pipefail
-wait_for_pane "KOSMOS|❯" 30
+wait_for_pane "UMMAYA|❯" 30
 snapshot_pane 00-boot
 
 # Shift+Tab mode switch

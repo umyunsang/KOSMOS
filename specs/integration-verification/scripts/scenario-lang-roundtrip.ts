@@ -5,7 +5,7 @@
 import type { Harness } from '../../../scripts/bun-pty-capture';
 
 export default async function (h: Harness): Promise<void> {
-  await h.waitForPane(/KOSMOS\s*v?0\./, 30);
+  await h.waitForPane(/UMMAYA\s*v?0\./, 30);
   h.snapshot('boot-default-ko');
 
   // Stage A — open /help in default ko

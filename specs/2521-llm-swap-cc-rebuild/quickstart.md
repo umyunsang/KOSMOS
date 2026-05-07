@@ -10,7 +10,7 @@ This document describes how to execute and verify the rebuild procedure.
 - Clean working tree on `main` branch (or rebase target).
 - `.references/claude-code-sourcemap/restored-src/` present (CC 2.1.88 source-of-truth).
 - Bun 1.2.x + Python 3.12+ + uv installed.
-- `KOSMOS_FRIENDLI_TOKEN` + `KOSMOS_DATA_GO_KR_API_KEY` set in `.env` for live smoke.
+- `UMMAYA_FRIENDLI_TOKEN` + `UMMAYA_DATA_GO_KR_API_KEY` set in `.env` for live smoke.
 
 ## Step 1 — Switch to rebuild branch
 
@@ -53,14 +53,14 @@ git diff 2521-llm-swap-cc-rebuild
 ```
 
 Replay script applies, in order:
-1. Step A byte-copy commits per Procedure-A file (using `cp <cc_source_path> <kosmos_path>` then `git commit -m "byte-copy(2521): import CC <path>"`)
+1. Step A byte-copy commits per Procedure-A file (using `cp <cc_source_path> <ummaya_path>` then `git commit -m "byte-copy(2521): import CC <path>"`)
 2. Step B swap commits in their original order, each with their category-prefixed subject
 
 ## Step 5 — Verify the user-visible thinking display (Layer 4 vhs smoke)
 
 ```sh
-pkill -f "bun.*tui|kosmos.*ipc" 2>/dev/null
-find src/kosmos/ipc/__pycache__ src/kosmos/llm/__pycache__ -name '*.pyc' -delete 2>/dev/null
+pkill -f "bun.*tui|ummaya.*ipc" 2>/dev/null
+find src/ummaya/ipc/__pycache__ src/ummaya/llm/__pycache__ -name '*.pyc' -delete 2>/dev/null
 
 # Run vhs scenario
 vhs specs/2521-llm-swap-cc-rebuild/scripts/smoke-thinking-render.tape
@@ -89,7 +89,7 @@ Expected: ≥1660 passed Python tests + bun test baseline green.
 Inspect commits by category:
 
 ```sh
-# llm-provider swaps (Anthropic SDK → KOSMOS IPC)
+# llm-provider swaps (Anthropic SDK → UMMAYA IPC)
 git log --oneline 2521-llm-swap-cc-rebuild --grep '^swap/llm-provider:'
 
 # anti-anthropic-1p deletions
@@ -98,7 +98,7 @@ git log --oneline 2521-llm-swap-cc-rebuild --grep '^swap/anti-anthropic-1p:'
 # identifier renames (brand tokens)
 git log --oneline 2521-llm-swap-cc-rebuild --grep '^swap/identifier-rename:'
 
-# tool-domain (CC dev tools → KOSMOS primitives) — likely 0 commits in this Epic
+# tool-domain (CC dev tools → UMMAYA primitives) — likely 0 commits in this Epic
 git log --oneline 2521-llm-swap-cc-rebuild --grep '^swap/tool-domain:'
 ```
 
@@ -133,7 +133,7 @@ git rebase --continue
 
 ### Audit fails: missing CC citation in Procedure-B file
 
-Cause: a function in a Procedure-B file (e.g., `src/kosmos/llm/client.py`) lacks `CC reference: ...` in its docstring.
+Cause: a function in a Procedure-B file (e.g., `src/ummaya/llm/client.py`) lacks `CC reference: ...` in its docstring.
 
 Fix: add a comment like:
 ```python
@@ -150,7 +150,7 @@ def _stream_response(self, ...):
 
 When the CC source-of-truth is updated to a newer CC release (e.g. CC 2.1.88 → CC 2.2.0),
 the byte-copy commit's SHA will become stale and `scripts/llm_swap_parity_audit.sh` will
-report a SHA mismatch. Use this step-by-step procedure to bring KOSMOS back in sync.
+report a SHA mismatch. Use this step-by-step procedure to bring UMMAYA back in sync.
 
 ### Step R-1 — Update the CC source directory
 
@@ -173,7 +173,7 @@ scripts/llm_swap_parity_audit.sh --strict
 The audit output will show:
 - `byte_copy_sha_match=false` for `tui/src/services/api/claude.ts`
 - Possibly new unjustified hunks if the CC file changed in regions that were previously
-  byte-identical (i.e., no KOSMOS swap was needed there before, but now the CC and KOSMOS
+  byte-identical (i.e., no UMMAYA swap was needed there before, but now the CC and UMMAYA
   files differ)
 
 Save the drift report:
@@ -224,7 +224,7 @@ swap points — no further action needed except a follow-up commit to record the
    - Accept the CC change if the new CC code still compiles with the existing swap (e.g. a
      refactor that does not affect the IPC call site) — result is still a `SWAP/llm-provider`
      diff, just against new CC lines.
-   - Reject the CC change if KOSMOS's IPC bridge already handles the new CC behavior through
+   - Reject the CC change if UMMAYA's IPC bridge already handles the new CC behavior through
      a different code path — result is a `SWAP/anti-anthropic-1p` or `SWAP/llm-provider`
      deletion with updated citation.
 3. After resolving, stage the file and continue:
@@ -254,7 +254,7 @@ Create a dedicated PR for the CC refresh using the per-file swap commit conventi
 2. **One swap commit per changed swap point** (re-applies each SWAP category with updated
    citations):
    ```
-   swap/llm-provider(2521): route claude.ts through KOSMOS IPC adapter [CC vX.Y.Z refresh]
+   swap/llm-provider(2521): route claude.ts through UMMAYA IPC adapter [CC vX.Y.Z refresh]
    Refs: services/api/claude.ts:<new-line-range>
    ```
 

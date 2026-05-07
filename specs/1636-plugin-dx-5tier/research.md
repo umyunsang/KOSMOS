@@ -2,26 +2,26 @@
 
 **Spec**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md) | **Date**: 2026-04-25
 
-This file resolves every NEEDS CLARIFICATION carried into Phase 0 (none — spec was clean), maps every plan decision to a canonical reference per Constitution §I, derives the 50-item review checklist from authoritative KOSMOS sources (Assumption A8), and validates the Deferred Items table per Constitution §VI.
+This file resolves every NEEDS CLARIFICATION carried into Phase 0 (none — spec was clean), maps every plan decision to a canonical reference per Constitution §I, derives the 50-item review checklist from authoritative UMMAYA sources (Assumption A8), and validates the Deferred Items table per Constitution §VI.
 
 ---
 
 ## R-0 · Reference mapping (Constitution §I obligation)
 
-Every design decision in `plan.md` traces to one of the following sources from `docs/vision.md § Reference materials` or a prior KOSMOS Spec.
+Every design decision in `plan.md` traces to one of the following sources from `docs/vision.md § Reference materials` or a prior UMMAYA Spec.
 
 | Plan decision | Reference source | Notes |
 |---|---|---|
-| Pydantic v2 manifest schema with discriminated nested PIPA block | **Pydantic AI** (`pydantic/pydantic-ai`, MIT) — schema-driven tool registry pattern | We adopt the *pattern* (declarative typed registration with discriminated unions). The actual manifest fields are KOSMOS-specific (`processes_pii`, `pipa_trustee_acknowledgment`). |
-| Auto-discovery loader scanning installed plugins at boot | **Claude Agent SDK** (`anthropics/claude-agent-sdk-python`, MIT) — agent-definition discovery + Claude Code `builtinPlugins.ts` (`registerBuiltinPlugin` at startup) | CC uses `Map<string, BuiltinPluginDefinition>` populated by an `initBuiltinPlugins()` call. KOSMOS uses `importlib` walk over `~/.kosmos/memdir/user/plugins/` because plugins are user-installed, not bundled. |
+| Pydantic v2 manifest schema with discriminated nested PIPA block | **Pydantic AI** (`pydantic/pydantic-ai`, MIT) — schema-driven tool registry pattern | We adopt the *pattern* (declarative typed registration with discriminated unions). The actual manifest fields are UMMAYA-specific (`processes_pii`, `pipa_trustee_acknowledgment`). |
+| Auto-discovery loader scanning installed plugins at boot | **Claude Agent SDK** (`anthropics/claude-agent-sdk-python`, MIT) — agent-definition discovery + Claude Code `builtinPlugins.ts` (`registerBuiltinPlugin` at startup) | CC uses `Map<string, BuiltinPluginDefinition>` populated by an `initBuiltinPlugins()` call. UMMAYA uses `importlib` walk over `~/.ummaya/memdir/user/plugins/` because plugins are user-installed, not bundled. |
 | Plugin namespace `plugin.<plugin_id>.<verb>` and root-primitive reservation | **Spec 031** (`specs/031-five-primitive-harness/spec.md` § 4 `AdapterRegistration`) and migration tree § L1-C C7 (`plugin.<id>.<verb>` namespace explicitly named) | Reuses the existing `AdapterRegistration` class — plugins are GovAPITool instances behind the same registry. |
 | Fail-closed manifest defaults (4 fields) | **Constitution §II** + `docs/tool-adapters.md` adapter-shape table | Identical defaults to existing GovAPITool. The scaffold CLI emits the strict defaults verbatim. |
 | `auth_level` / `pipa_class` / `is_irreversible` / `dpa_reference` fields required | **Spec 024** (`specs/024-tool-security-v1`) + **Spec 025** (`specs/025-tool-security-v6`) — V1–V6 invariants enforced by Pydantic `@model_validator` on GovAPITool | Plugins inherit these fields by virtue of being GovAPITool instances. The 50-item checklist has dedicated items for each. |
 | Permission Layer 1/2/3 decision tree in `docs/plugins/permission-tier.md` | **Spec 033** (`specs/033-permission-v2-spectrum/spec.md`) — PermissionMode spectrum + ConsentDecision schema | Doc page is a contributor-facing decision tree mapping adapter properties to a Layer; the runtime enforcement remains in Spec 033's pipeline. |
-| `kosmos.plugin.id` OTEL span attribute | **Spec 021** (`specs/021-observability-otel-genai`) — GenAI semantic-conventions extension via `kosmos.*` prefix | New attribute under existing `kosmos.*` namespace; emission is enforced at adapter invocation time by the registry wrapper, not by individual plugins. |
+| `ummaya.plugin.id` OTEL span attribute | **Spec 021** (`specs/021-observability-otel-genai`) — GenAI semantic-conventions extension via `ummaya.*` prefix | New attribute under existing `ummaya.*` namespace; emission is enforced at adapter invocation time by the registry wrapper, not by individual plugins. |
 | Manifest `tier: live | mock` and `mock_source_spec` requirement | Memory `feedback_mock_evidence_based` + memory `feedback_mock_vs_scenario` (byte/shape mirror only when public spec exists) | Encoded in `docs/plugins/live-vs-mock.md` and enforced by validation-workflow lint. |
 | TUI commands (`/plugin init` / `/plugin install` / `/plugin list`) using Ink + React | **Spec 287** (`specs/287-tui-ink-react-bun`) — TUI stack + memory `project_tui_architecture` (`.references/claude-code-sourcemap/restored-src/` as primary migration source) | Reuses existing command dispatcher and Ink prompt patterns. |
-| Consent receipt for `kosmos plugin install` action written to memdir | **Spec 035** (`specs/035-onboarding-brand-port`) consent ledger at `~/.kosmos/memdir/user/consent/` | New action type `plugin_install`; existing append-only ledger format unchanged. |
+| Consent receipt for `ummaya plugin install` action written to memdir | **Spec 035** (`specs/035-onboarding-brand-port`) consent ledger at `~/.ummaya/memdir/user/consent/` | New action type `plugin_install`; existing append-only ledger format unchanged. |
 | Korean-primary documentation policy in 9 guides | Memory `feedback_output_language` + AGENTS.md "All source text in English. Korean domain data is the only exception." + existing `docs/plugins/README.md` already in Korean-primary format | Code identifiers stay English; only `description_ko` / `search_hint_ko` / `*.ko.md` carry Korean. |
 | 50-item review checklist as canonical source-of-truth feeding the workflow | **Memory `feedback_no_hardcoding`** (LLM-driven, not static keyword) — applied here as: each checklist item is mechanical *but the human-readable Markdown is the source-of-truth*, the workflow derives executable checks from a manifest mapping (see § R-1). | This is the source-of-truth-once principle, identical to how Spec 026 made `prompts/manifest.yaml` the SHA-256-keyed source-of-truth feeding the runtime PromptLoader. |
 
@@ -29,7 +29,7 @@ Every design decision in `plan.md` traces to one of the following sources from `
 
 ## R-1 · 50-item review checklist derivation (Assumption A8)
 
-Per spec Assumption A8, the 50 items are derived from the union of: AGENTS.md `docs/tool-adapters.md` PR checklist (9 items) + Constitution §I–VI obligations (~12 items mapped) + Spec 024 V1–V4 invariants (4) + Spec 025 V6 invariant (1) + Spec 022/031 `AdapterRegistration` invariants (~6) + Spec 033 permission-decision shape (~3) + Spec 021 OTEL emission (~2) + KOSMOS-specific PIPA + Korean-primary doc rules (~13). Final count: 50 (verified item-by-item below).
+Per spec Assumption A8, the 50 items are derived from the union of: AGENTS.md `docs/tool-adapters.md` PR checklist (9 items) + Constitution §I–VI obligations (~12 items mapped) + Spec 024 V1–V4 invariants (4) + Spec 025 V6 invariant (1) + Spec 022/031 `AdapterRegistration` invariants (~6) + Spec 033 permission-decision shape (~3) + Spec 021 OTEL emission (~2) + UMMAYA-specific PIPA + Korean-primary doc rules (~13). Final count: 50 (verified item-by-item below).
 
 Each item has: `id`, Korean description, English description, Source rule, Mechanical check (lint / unit test / workflow step). The `docs/plugins/review-checklist.md` page (FR-013) is the human-readable Markdown rendering of this same data; the YAML manifest at `tests/fixtures/plugin_validation/checklist_manifest.yaml` (created during implementation) drives the workflow's executable step matrix so they cannot drift.
 
@@ -121,8 +121,8 @@ Each item has: `id`, Korean description, English description, Source rule, Mecha
 
 | ID | Korean | English | Source | Mechanical check |
 |---|---|---|---|---|
-| Q9-OTEL-ATTR | otel_attributes 에 kosmos.plugin.id 포함 | otel_attributes contains kosmos.plugin.id | FR-021 + Spec 021 | Dict-key check |
-| Q9-OTEL-EMIT | invocation 시 span 에 kosmos.plugin.id 가 실제로 attach | Span actually carries kosmos.plugin.id at runtime | FR-021 | Test-time fake-OTLP collector assertion |
+| Q9-OTEL-ATTR | otel_attributes 에 ummaya.plugin.id 포함 | otel_attributes contains ummaya.plugin.id | FR-021 + Spec 021 | Dict-key check |
+| Q9-OTEL-EMIT | invocation 시 span 에 ummaya.plugin.id 가 실제로 attach | Span actually carries ummaya.plugin.id at runtime | FR-021 | Test-time fake-OTLP collector assertion |
 
 ### Q10 — Tests & fixtures (4 items)
 
@@ -139,19 +139,19 @@ Each item has: `id`, Korean description, English description, Source rule, Mecha
 
 ## R-2 · Example-plugin repo layout (Assumption A2)
 
-**Decision**: Standalone repositories under the new `kosmos-plugin-store` GitHub organization. One repo per example: `kosmos-plugin-seoul-subway`, `kosmos-plugin-post-office`, `kosmos-plugin-nts-homtax` (Mock), `kosmos-plugin-nhis-check` (Mock).
+**Decision**: Standalone repositories under the new `ummaya-plugin-store` GitHub organization. One repo per example: `ummaya-plugin-seoul-subway`, `ummaya-plugin-post-office`, `ummaya-plugin-nts-homtax` (Mock), `ummaya-plugin-nhis-check` (Mock).
 
 **Rationale**:
-1. **Authentic dogfooding** — external contributors will publish their plugins as standalone repos under `kosmos-plugin-store`. The 4 examples following the same convention is the highest-fidelity demonstration. A mono-repo of examples teaches contributors to do the wrong thing.
+1. **Authentic dogfooding** — external contributors will publish their plugins as standalone repos under `ummaya-plugin-store`. The 4 examples following the same convention is the highest-fidelity demonstration. A mono-repo of examples teaches contributors to do the wrong thing.
 2. **SLSA provenance per artifact** — `slsa-github-generator` works at the *repository level* (one OIDC identity per repo, one provenance trail per release). Mono-repo would force every example to share a single provenance trail, breaking traceability.
 3. **Independent versioning** — each example evolves at its own pace (e.g., the Seoul subway adapter may need to track the city's API revisions while the post-office adapter is stable).
 4. **Spec 026 release-manifest precedent** — Spec 026 already established per-component release manifests (`docs/release-manifests/<sha>.yaml`). Per-repo provenance fits the same pattern.
 
 **Alternatives considered**:
-- *Sub-directories under a single `kosmos-plugin-examples` repo*: simpler initial setup, but breaks SLSA-per-artifact and creates an awkward asymmetry between examples and contributor plugins. Rejected.
-- *Sub-directories under the main KOSMOS repo (`examples/plugins/`)*: keeps everything close, but would push generated example code into the main repo and conflict with the "external contribution path" the examples are demonstrating. Rejected.
+- *Sub-directories under a single `ummaya-plugin-examples` repo*: simpler initial setup, but breaks SLSA-per-artifact and creates an awkward asymmetry between examples and contributor plugins. Rejected.
+- *Sub-directories under the main UMMAYA repo (`examples/plugins/`)*: keeps everything close, but would push generated example code into the main repo and conflict with the "external contribution path" the examples are demonstrating. Rejected.
 
-**Cost of decision**: 4 new GitHub repos to create (one-time scripted via `gh repo create`), 4 separate CI configurations to maintain (mitigated by all four sharing the canonical `plugin-validation.yml` from this repo, fetched as a reusable workflow via `uses: umyunsang/KOSMOS/.github/workflows/plugin-validation.yml@<sha>`).
+**Cost of decision**: 4 new GitHub repos to create (one-time scripted via `gh repo create`), 4 separate CI configurations to maintain (mitigated by all four sharing the canonical `plugin-validation.yml` from this repo, fetched as a reusable workflow via `uses: umyunsang/UMMAYA/.github/workflows/plugin-validation.yml@<sha>`).
 
 **Documented in**: `docs/plugins/quickstart.ko.md` step 6 ("저장소 생성") + `docs/plugins/architecture.md`.
 
@@ -165,22 +165,22 @@ Each item has: `id`, Korean description, English description, Source rule, Mecha
 1. **Industry standard** — `slsa-github-generator` is the reference implementation cited in the SLSA v1.0 spec (`slsa.dev`). Using it gets us SLSA Build L3 (hosted, signed, non-falsifiable) on day one.
 2. **No new Python deps** — verification runs as a subprocess (`slsa.py` wraps `subprocess.run([slsa_verifier_path, ...])`). Zero `pip install` impact (AGENTS.md hard rule preserved).
 3. **No JS dep either** — alternatives like `npm install @slsa-framework/slsa-verifier-js` would add a new TS dep. Vendored binary keeps both stacks clean.
-4. **Cross-platform** — `slsa-verifier` ships pre-built binaries for darwin/amd64, darwin/arm64, linux/amd64, linux/arm64. The `installer.py` resolves the right binary from `~/.kosmos/vendor/slsa-verifier/<platform>/slsa-verifier` (downloaded once at first install or pre-fetched at TUI bootstrap).
+4. **Cross-platform** — `slsa-verifier` ships pre-built binaries for darwin/amd64, darwin/arm64, linux/amd64, linux/arm64. The `installer.py` resolves the right binary from `~/.ummaya/vendor/slsa-verifier/<platform>/slsa-verifier` (downloaded once at first install or pre-fetched at TUI bootstrap).
 
 **Verification flow**:
 ```
-kosmos plugin install seoul-subway
+ummaya plugin install seoul-subway
   → installer.py:
-      1. Fetch catalog index from kosmos-plugin-store/index.json
+      1. Fetch catalog index from ummaya-plugin-store/index.json
       2. Resolve "seoul-subway" → bundle URL + provenance URL
       3. Download bundle (.tar.gz) + provenance (.intoto.jsonl)
       4. subprocess: slsa-verifier verify-artifact --provenance-path <prov> \
-                       --source-uri github.com/kosmos-plugin-store/kosmos-plugin-seoul-subway \
+                       --source-uri github.com/ummaya-plugin-store/ummaya-plugin-seoul-subway \
                        <bundle.tar.gz>
       5. Verify exit code 0
       6. Validate manifest (manifest_schema.py)
-      7. Stage to ~/.kosmos/memdir/user/plugins/seoul-subway/
-      8. Append consent receipt to ~/.kosmos/memdir/user/consent/
+      7. Stage to ~/.ummaya/memdir/user/plugins/seoul-subway/
+      8. Append consent receipt to ~/.ummaya/memdir/user/consent/
       9. Notify backend via stdio IPC: registry.reload_plugin("seoul-subway")
      10. Backend rebuilds BM25 index entry for the new tool_id
 ```
@@ -196,7 +196,7 @@ kosmos plugin install seoul-subway
 
 ## R-4 · PIPA §26 trustee acknowledgment text canonical location + SHA-256 (FR-014)
 
-**Decision**: The canonical trustee acknowledgment text lives in `docs/plugins/security-review.md` under a `<!-- CANONICAL-PIPA-ACK-START -->` / `<!-- CANONICAL-PIPA-ACK-END -->` HTML comment block. The text content between those markers (after stripping leading/trailing whitespace and normalizing line endings to `\n`) is hashed with SHA-256 to produce the canonical hash. The hash itself is published in two places: (a) at the top of `docs/plugins/security-review.md` for human-readable reference; (b) as a `CANONICAL_ACKNOWLEDGMENT_SHA256` constant in `src/kosmos/plugins/canonical_acknowledgment.py` (computed at module load by hashing the text extracted from the docs file, so the two cannot drift).
+**Decision**: The canonical trustee acknowledgment text lives in `docs/plugins/security-review.md` under a `<!-- CANONICAL-PIPA-ACK-START -->` / `<!-- CANONICAL-PIPA-ACK-END -->` HTML comment block. The text content between those markers (after stripping leading/trailing whitespace and normalizing line endings to `\n`) is hashed with SHA-256 to produce the canonical hash. The hash itself is published in two places: (a) at the top of `docs/plugins/security-review.md` for human-readable reference; (b) as a `CANONICAL_ACKNOWLEDGMENT_SHA256` constant in `src/ummaya/plugins/canonical_acknowledgment.py` (computed at module load by hashing the text extracted from the docs file, so the two cannot drift).
 
 **Rationale**:
 1. **Source-of-truth-once** — the same Spec 026 pattern that made `prompts/manifest.yaml` SHA-256-keyed. One file holds the text; the hash is derived, never typed.
@@ -244,7 +244,7 @@ def _validate_acknowledgment_hash(self) -> "PluginManifest":
 
 ## R-5 · TUI commands layer (Spec 287 Ink + Bun) integration
 
-**Decision**: Three new commands under `tui/src/commands/`: `plugin-init.ts`, `plugin-install.ts`, `plugin-list.ts`. Registered into the existing command dispatcher (`tui/src/commands/index.ts`). UI uses `@inkjs/ui` `Select` and `TextInput` (already in P4 stack) for the init scaffold prompts. `plugin-install` shells out to the Python backend's `installer.py` via the existing stdio IPC envelope (Spec 032) — the TUI never directly writes to `~/.kosmos/memdir/user/plugins/`; that's the backend's responsibility.
+**Decision**: Three new commands under `tui/src/commands/`: `plugin-init.ts`, `plugin-install.ts`, `plugin-list.ts`. Registered into the existing command dispatcher (`tui/src/commands/index.ts`). UI uses `@inkjs/ui` `Select` and `TextInput` (already in P4 stack) for the init scaffold prompts. `plugin-install` shells out to the Python backend's `installer.py` via the existing stdio IPC envelope (Spec 032) — the TUI never directly writes to `~/.ummaya/memdir/user/plugins/`; that's the backend's responsibility.
 
 **Rationale**:
 1. **Spec 287 stack reuse** — Ink + Bun stack is already shipped, P4 added 9 surfaces (`PluginBrowser`, `OnboardingFlow`, `PermissionGauntlet`, etc.). Adding 3 commands is a straightforward extension.
@@ -284,7 +284,7 @@ import {Select, TextInput} from '@inkjs/ui';
 
 ## R-6 · Pydantic v2 manifest schema ↔ Spec 022/031 self-classify metadata join (Special order #6)
 
-**Decision**: The new `PluginManifest` (Pydantic v2 model, `src/kosmos/plugins/manifest_schema.py`) is a **superset** of the existing `AdapterRegistration` (Spec 031) — every plugin manifest contains an embedded `AdapterRegistration` instance via composition (not inheritance, to keep the existing `AdapterRegistration` clean). The plugin-specific fields (`processes_pii`, `pipa_trustee_acknowledgment`, `tier`, `mock_source_spec`, `slsa_provenance_url`, `pipa_class`, `auth_level`, `is_irreversible`, `dpa_reference`) live alongside the embedded `AdapterRegistration`.
+**Decision**: The new `PluginManifest` (Pydantic v2 model, `src/ummaya/plugins/manifest_schema.py`) is a **superset** of the existing `AdapterRegistration` (Spec 031) — every plugin manifest contains an embedded `AdapterRegistration` instance via composition (not inheritance, to keep the existing `AdapterRegistration` clean). The plugin-specific fields (`processes_pii`, `pipa_trustee_acknowledgment`, `tier`, `mock_source_spec`, `slsa_provenance_url`, `pipa_class`, `auth_level`, `is_irreversible`, `dpa_reference`) live alongside the embedded `AdapterRegistration`.
 
 **Why composition not inheritance**: `AdapterRegistration` has 8 required fields; subclassing would force a redundant re-declaration of every field. Composition keeps the parent untouched and makes the relationship explicit.
 
@@ -296,7 +296,7 @@ class PluginManifest(BaseModel):
     plugin_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$", max_length=64)
     version: str = Field(pattern=r"^\d+\.\d+\.\d+$")  # SemVer
     # --- the embedded AdapterRegistration ---
-    adapter: AdapterRegistration  # from kosmos.tools.registry
+    adapter: AdapterRegistration  # from ummaya.tools.registry
     # --- plugin-specific tier ---
     tier: Literal["live", "mock"]
     mock_source_spec: str | None = None  # required if tier=="mock", checked by validator
@@ -306,7 +306,7 @@ class PluginManifest(BaseModel):
     # --- plugin-specific provenance ---
     slsa_provenance_url: str = Field(pattern=r"^https://github\.com/")
     # --- plugin-specific OTEL ---
-    otel_attributes: dict[str, str]  # must contain "kosmos.plugin.id"
+    otel_attributes: dict[str, str]  # must contain "ummaya.plugin.id"
     # --- search hints (mirrors GovAPITool but redeclared because they're plugin-presentation, not adapter-internal) ---
     search_hint_ko: str = Field(min_length=1)
     search_hint_en: str = Field(min_length=1)
@@ -314,7 +314,7 @@ class PluginManifest(BaseModel):
     permission_layer: Literal[1, 2, 3]
 ```
 
-**Join with `tools/registry.py` BM25 index**: at install time, `installer.py` constructs the `AdapterRegistration` from `manifest.adapter`, calls `ToolRegistry.register_plugin_adapter(adapter, source=manifest)`, which (a) validates against the existing Spec 022/024/025/031/033 invariant chain (free reuse — no new validators), (b) inserts the tool into the in-memory registry, (c) calls `BM25Index.add_or_update(adapter.tool_id, search_hint_ko + " " + search_hint_en)`, (d) emits the install OTEL span with `kosmos.plugin.id=<plugin_id>`. The backend exports a single new function `register_plugin_adapter()` — everything else is reuse.
+**Join with `tools/registry.py` BM25 index**: at install time, `installer.py` constructs the `AdapterRegistration` from `manifest.adapter`, calls `ToolRegistry.register_plugin_adapter(adapter, source=manifest)`, which (a) validates against the existing Spec 022/024/025/031/033 invariant chain (free reuse — no new validators), (b) inserts the tool into the in-memory registry, (c) calls `BM25Index.add_or_update(adapter.tool_id, search_hint_ko + " " + search_hint_en)`, (d) emits the install OTEL span with `ummaya.plugin.id=<plugin_id>`. The backend exports a single new function `register_plugin_adapter()` — everything else is reuse.
 
 **Alternatives considered**:
 - *Inheritance* — `class PluginManifest(AdapterRegistration)`: rejected because it would require either re-declaring required fields (no schema benefit) or making `AdapterRegistration` fields default-able (breaks Spec 031 contract).
@@ -364,4 +364,4 @@ Scanned spec.md for `separate epic`, `future epic`, `Phase [2+]`, `v2`, `deferre
 
 ## Summary
 
-All NEEDS CLARIFICATION resolved (none in spec). All 6 special orders decided. 50-item checklist derived from authoritative KOSMOS sources with full traceability. Constitution §VI deferred-items gate PASS. Phase 0 complete — proceed to Phase 1 (data-model.md, contracts/, quickstart.md).
+All NEEDS CLARIFICATION resolved (none in spec). All 6 special orders decided. 50-item checklist derived from authoritative UMMAYA sources with full traceability. Constitution §VI deferred-items gate PASS. Phase 0 complete — proceed to Phase 1 (data-model.md, contracts/, quickstart.md).

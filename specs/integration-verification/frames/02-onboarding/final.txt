@@ -1,8 +1,8 @@
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ 
@@ -15,7 +15,7 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
    PDF attachments will open in external viewer
  ✗ FRIENDLI_API_KEY
    FRIENDLI_API_KEY is not set
- ✓ KOSMOS_DATA_GO_KR_KEY
+ ✓ UMMAYA_DATA_GO_KR_KEY
    absent — Mock mode (no live data.go.kr calls)
 
  ⚠ 일부 항목이 설정되지 않았습니다. 계속 진행할 수 있지만 일부 기능이 제한될 수 있습니다.

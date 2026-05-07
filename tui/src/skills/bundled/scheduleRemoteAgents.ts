@@ -1,6 +1,6 @@
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
 import type { MCPServerConnection } from '../../services/mcp/types.js'
-// policyLimits removed in P1+P2 (Spec 1633); KOSMOS opens features by default via Spec 033 permission gauntlet.
+// policyLimits removed in P1+P2 (Spec 1633); UMMAYA opens features by default via Spec 033 permission gauntlet.
 const isPolicyAllowed = (_policy: string): boolean => true
 import type { ToolUseContext } from '../../Tool.js'
 import { ASK_USER_QUESTION_TOOL_NAME } from '../../tools/AskUserQuestionTool/prompt.js'
@@ -14,12 +14,12 @@ import {
 } from '../../utils/detectRepository.js'
 import { getRemoteUrl } from '../../utils/git.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport/ deleted; stub.
 type EnvironmentKind = 'anthropic_cloud' | 'byoc' | 'bridge'
 type EnvironmentResource = { kind: EnvironmentKind; environment_id: string; name: string; created_at: string; state: 'active' }
 const fetchEnvironments = async (): Promise<EnvironmentResource[]> => []
 const createDefaultCloudEnvironment = async (_name: string): Promise<EnvironmentResource> => {
-  throw new Error('KOSMOS: remote CCR environments not supported')
+  throw new Error('UMMAYA: remote CCR environments not supported')
 }
 import { registerBundledSkill } from '../bundledSkills.js'
 

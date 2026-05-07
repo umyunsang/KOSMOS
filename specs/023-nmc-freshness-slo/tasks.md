@@ -30,8 +30,8 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [X] T003 Add `freshness_status: Literal["fresh"] | None = None` field to `LookupMeta` in src/kosmos/tools/models.py — add after `rate_limit_remaining` field, include docstring: "Set to 'fresh' when adapter freshness check passes. None for adapters without freshness semantics."
-- [X] T004 Create freshness check utility module at src/kosmos/tools/nmc/freshness.py — implement `FreshnessResult` dataclass (fields: `is_fresh: bool`, `data_age_minutes: float`, `threshold_minutes: int`, `hvidate_raw: str | None`) and `check_freshness(hvidate_str: str | None, threshold_minutes: int | None = None) -> FreshnessResult` function. When `threshold_minutes` is `None`, read `settings.nmc_freshness_minutes` from `kosmos.settings.settings` as default. Parse `hvidate` with `datetime.strptime("%Y-%m-%d %H:%M:%S")`, localize to `ZoneInfo("Asia/Seoul")`, compare age against threshold. Missing/empty/unparseable `hvidate` → `FreshnessResult(is_fresh=False, ...)` (fail-closed per Constitution § II).
+- [X] T003 Add `freshness_status: Literal["fresh"] | None = None` field to `LookupMeta` in src/ummaya/tools/models.py — add after `rate_limit_remaining` field, include docstring: "Set to 'fresh' when adapter freshness check passes. None for adapters without freshness semantics."
+- [X] T004 Create freshness check utility module at src/ummaya/tools/nmc/freshness.py — implement `FreshnessResult` dataclass (fields: `is_fresh: bool`, `data_age_minutes: float`, `threshold_minutes: int`, `hvidate_raw: str | None`) and `check_freshness(hvidate_str: str | None, threshold_minutes: int | None = None) -> FreshnessResult` function. When `threshold_minutes` is `None`, read `settings.nmc_freshness_minutes` from `ummaya.settings.settings` as default. Parse `hvidate` with `datetime.strptime("%Y-%m-%d %H:%M:%S")`, localize to `ZoneInfo("Asia/Seoul")`, compare age against threshold. Missing/empty/unparseable `hvidate` → `FreshnessResult(is_fresh=False, ...)` (fail-closed per Constitution § II).
 
 **Checkpoint**: Foundation ready — freshness utility and model extension in place
 
@@ -52,7 +52,7 @@
 
 ### Implementation for User Stories 1 & 2
 
-- [X] T007 [US1] [US2] Integrate freshness validation into NMC adapter handler in src/kosmos/tools/nmc/emergency_search.py — replace `Layer3GateViolation` raise with real handler logic: (1) call upstream NMC API via httpx, (2) extract `hvidate` from response items, (3) call `check_freshness()` from `kosmos.tools.nmc.freshness`, (4) if fresh: return response dict with items + inject `freshness_status: "fresh"` key for envelope meta enrichment, (5) if stale: return dict matching `LookupError` shape with `kind="error"`, `reason="stale_data"`, `message` including data age and threshold, `retryable=False`. Update module docstring to remove "freshness deferred" comment (FR-034 is now implemented).
+- [X] T007 [US1] [US2] Integrate freshness validation into NMC adapter handler in src/ummaya/tools/nmc/emergency_search.py — replace `Layer3GateViolation` raise with real handler logic: (1) call upstream NMC API via httpx, (2) extract `hvidate` from response items, (3) call `check_freshness()` from `ummaya.tools.nmc.freshness`, (4) if fresh: return response dict with items + inject `freshness_status: "fresh"` key for envelope meta enrichment, (5) if stale: return dict matching `LookupError` shape with `kind="error"`, `reason="stale_data"`, `message` including data age and threshold, `retryable=False`. Update module docstring to remove "freshness deferred" comment (FR-034 is now implemented).
 - [X] T008 [US1] [US2] Write integration test in tests/tools/nmc/test_freshness_validation.py — test full `executor.invoke()` flow with mocked httpx response (respx): (1) mock NMC API to return fresh fixture → verify result is LookupCollection/LookupRecord with `meta.freshness_status == "fresh"`, (2) mock NMC API to return stale fixture → verify result is LookupError with `reason == "stale_data"` and message contains age and threshold info, (3) mock NMC API to return response with missing `hvidate` → verify result is LookupError with `reason == "stale_data"`
 
 **Checkpoint**: US1 + US2 complete — fresh data delivered with status, stale data rejected with error
@@ -61,17 +61,17 @@
 
 ## Phase 4: User Story 3 — Configurable Freshness Threshold (Priority: P2)
 
-**Goal**: Freshness threshold is configurable via `KOSMOS_NMC_FRESHNESS_MINUTES` env var with default 30, clamped [1, 1440]
+**Goal**: Freshness threshold is configurable via `UMMAYA_NMC_FRESHNESS_MINUTES` env var with default 30, clamped [1, 1440]
 
 **Independent Test**: Set env var to different values and verify freshness check uses the configured threshold
 
 ### Tests for User Story 3
 
-- [X] T009 [P] [US3] Write threshold configuration tests in tests/tools/nmc/test_freshness_validation.py — (1) test `check_freshness()` with explicit `threshold_minutes=60` and hvidate 59 min old → `is_fresh=True`, (2) test with `threshold_minutes=60` and hvidate 61 min old → `is_fresh=False`, (3) test default threshold from `settings.nmc_freshness_minutes` is used when no explicit threshold passed, (4) verify `KosmosSettings.nmc_freshness_minutes` Field constraint `ge=1, le=1440` rejects out-of-range values via `pydantic.ValidationError`
+- [X] T009 [P] [US3] Write threshold configuration tests in tests/tools/nmc/test_freshness_validation.py — (1) test `check_freshness()` with explicit `threshold_minutes=60` and hvidate 59 min old → `is_fresh=True`, (2) test with `threshold_minutes=60` and hvidate 61 min old → `is_fresh=False`, (3) test default threshold from `settings.nmc_freshness_minutes` is used when no explicit threshold passed, (4) verify `UmmayaSettings.nmc_freshness_minutes` Field constraint `ge=1, le=1440` rejects out-of-range values via `pydantic.ValidationError`
 
 ### Implementation for User Story 3
 
-- [X] T010 [US3] Verify threshold integration in src/kosmos/tools/nmc/freshness.py — confirm `check_freshness()` correctly reads `settings.nmc_freshness_minutes` as default when `threshold_minutes=None` (signature already defined in T004). Write a focused integration test: call `check_freshness(hvidate_str, threshold_minutes=None)` and verify it uses the settings default. No changes needed to src/kosmos/settings.py (field already exists with correct constraints).
+- [X] T010 [US3] Verify threshold integration in src/ummaya/tools/nmc/freshness.py — confirm `check_freshness()` correctly reads `settings.nmc_freshness_minutes` as default when `threshold_minutes=None` (signature already defined in T004). Write a focused integration test: call `check_freshness(hvidate_str, threshold_minutes=None)` and verify it uses the settings default. No changes needed to src/ummaya/settings.py (field already exists with correct constraints).
 
 **Checkpoint**: US3 complete — threshold configurable via env var, defaults and clamp validated
 
@@ -81,7 +81,7 @@
 
 **Purpose**: Cleanup, documentation, and regression verification
 
-- [X] T011 Update NMC adapter module docstring in src/kosmos/tools/nmc/emergency_search.py — remove all "FR-034: Freshness check deferred" comments and replace with "FR-034: Freshness enforcement via check_freshness() — see freshness.py"
+- [X] T011 Update NMC adapter module docstring in src/ummaya/tools/nmc/emergency_search.py — remove all "FR-034: Freshness check deferred" comments and replace with "FR-034: Freshness enforcement via check_freshness() — see freshness.py"
 - [X] T012 Run full test suite via `uv run pytest` and verify zero regressions — existing tests in tests/tools/nmc/test_emergency_search_auth_gate.py must still pass (auth gate behavior unchanged), existing envelope normalization tests must still pass (LookupMeta backward-compatible with new optional field)
 
 ---
@@ -121,8 +121,8 @@
 
 ```bash
 # Launch both foundational tasks together:
-Task: "Add freshness_status to LookupMeta in src/kosmos/tools/models.py"
-Task: "Create freshness utility in src/kosmos/tools/nmc/freshness.py"
+Task: "Add freshness_status to LookupMeta in src/ummaya/tools/models.py"
+Task: "Create freshness utility in src/ummaya/tools/nmc/freshness.py"
 ```
 
 ## Parallel Example: Phase 3 (Tests)

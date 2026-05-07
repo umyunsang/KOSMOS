@@ -7,10 +7,10 @@
 ## Scope of this document
 
 This Epic adds **zero new persistent entities**. All Pydantic v2 schemas are reused as-is from upstream specs:
-- `PluginOpFrame` (Spec 1636 + Spec 032) — already at `src/kosmos/ipc/frame_schema.py:780-936`
-- `PluginManifest` (Spec 1636) — already at `src/kosmos/plugins/manifest_schema.py`
-- `PluginConsentReceipt` (Spec 1636) — already at `src/kosmos/plugins/installer.py:153-181`
-- `CatalogIndex` / `CatalogEntry` / `CatalogVersion` (Spec 1636) — already at `src/kosmos/plugins/installer.py:91-134`
+- `PluginOpFrame` (Spec 1636 + Spec 032) — already at `src/ummaya/ipc/frame_schema.py:780-936`
+- `PluginManifest` (Spec 1636) — already at `src/ummaya/plugins/manifest_schema.py`
+- `PluginConsentReceipt` (Spec 1636) — already at `src/ummaya/plugins/installer.py:153-181`
+- `CatalogIndex` / `CatalogEntry` / `CatalogVersion` (Spec 1636) — already at `src/ummaya/plugins/installer.py:91-134`
 - `ChatRequestFrame.tools[]` (Epic #1978) — already populated via `stdio.py:1182-1196`
 - `PermissionRequestFrame` / `PermissionResponseFrame` (Spec 1978 + Spec 033) — reused for IPCConsentBridge
 
@@ -20,7 +20,7 @@ This document describes the **runtime entities** (function groups + class bounda
 
 ## E1 — `PluginOpDispatcher` (backend-side function group)
 
-**Module**: `src/kosmos/ipc/plugin_op_dispatcher.py` (NEW)
+**Module**: `src/ummaya/ipc/plugin_op_dispatcher.py` (NEW)
 
 **Purpose**: Pattern-match incoming `PluginOpFrame` frames with `op="request"` and route to install / uninstall / list handlers. Bridge `installer.py:install_plugin()` phase progression to `plugin_op_progress` frame emission.
 
@@ -86,13 +86,13 @@ async def handle_list(
 
 **State**: Stateless — every call reconstructs from frame + injected dependencies.
 
-**OTEL**: Each handler opens a child span `kosmos.plugin.<install|uninstall|list>` under the existing `kosmos.session` root. `kosmos.plugin.id` attribute populated from `frame.name` (install/uninstall) or absent (list).
+**OTEL**: Each handler opens a child span `ummaya.plugin.<install|uninstall|list>` under the existing `ummaya.session` root. `ummaya.plugin.id` attribute populated from `frame.name` (install/uninstall) or absent (list).
 
 ---
 
 ## E2 — `IPCConsentBridge` (backend-side adapter)
 
-**Module**: `src/kosmos/plugins/consent_bridge.py` (NEW)
+**Module**: `src/ummaya/plugins/consent_bridge.py` (NEW)
 
 **Purpose**: Replace `installer.py:_default_consent_prompt` (current "deny by default" stub at lines 219-229) with an IPC round-trip that emits a `permission_request` frame to the TUI and awaits the citizen's `permission_response`.
 
@@ -146,13 +146,13 @@ class IPCConsentBridge:
 
 **State**: Per-request future stored in `_pending_perms` dict (existing Spec 1978 infrastructure at `stdio.py:521`).
 
-**OTEL**: Inherits the dispatcher's `kosmos.plugin.install` span. Adds attribute `kosmos.permission.decision` ∈ {`allow_once`, `allow_session`, `deny`, `timeout`} on completion.
+**OTEL**: Inherits the dispatcher's `ummaya.plugin.install` span. Adds attribute `ummaya.permission.decision` ∈ {`allow_once`, `allow_session`, `deny`, `timeout`} on completion.
 
 ---
 
 ## E3 — `uninstall_plugin` function
 
-**Module**: `src/kosmos/plugins/uninstall.py` (NEW)
+**Module**: `src/ummaya/plugins/uninstall.py` (NEW)
 
 **Purpose**: Mirror `installer.py:install_plugin()` for the uninstall direction. Idempotent — calling twice does not error.
 
@@ -194,15 +194,15 @@ def uninstall_plugin(
 - Idempotent: calling on a non-installed plugin returns exit_code=0 with warning log.
 - Audit ledger position monotonically advances on each uninstall (reuses `_allocate_consent_position` flock).
 
-**State**: Reads `~/.kosmos/memdir/user/plugins/<plugin_id>/` (Spec 1636 install_root). Writes `~/.kosmos/memdir/user/consent/<receipt_id>.json` (Spec 1636 + Spec 035 ledger).
+**State**: Reads `~/.ummaya/memdir/user/plugins/<plugin_id>/` (Spec 1636 install_root). Writes `~/.ummaya/memdir/user/consent/<receipt_id>.json` (Spec 1636 + Spec 035 ledger).
 
-**OTEL**: Span `kosmos.plugin.uninstall` carrying `kosmos.plugin.id` attribute.
+**OTEL**: Span `ummaya.plugin.uninstall` carrying `ummaya.plugin.id` attribute.
 
 ---
 
 ## E4 — `ToolRegistry._inactive` shadow set
 
-**Module**: `src/kosmos/tools/registry.py` (MODIFIED)
+**Module**: `src/ummaya/tools/registry.py` (MODIFIED)
 
 **Purpose**: In-memory enable/disable state for tools (R-3/R-4 verdict — backend support reserved; not exposed via IPC in this Epic).
 
@@ -295,7 +295,7 @@ export type PluginsCommandResult = {
 export async function executePlugins(
   args: CommandHandlerArgs,
 ): Promise<PluginsCommandResult> {
-  // Phase E.1: emit kosmos.ui.surface=plugins (FR-037 — preserved)
+  // Phase E.1: emit ummaya.ui.surface=plugins (FR-037 — preserved)
   emitSurfaceActivation('plugins');
 
   // Phase E.2: round-trip plugin_op_request:list → plugin_op_complete
@@ -325,7 +325,7 @@ export async function executePlugins(
 
 **State**: Component-scoped. Re-fetched on each `/plugins` invocation.
 
-**OTEL**: TUI does not emit OTEL directly; the round-trip's `kosmos.plugin.list` span lives on the backend (E1.handle_list).
+**OTEL**: TUI does not emit OTEL directly; the round-trip's `ummaya.plugin.list` span lives on the backend (E1.handle_list).
 
 ---
 
@@ -347,7 +347,7 @@ export async function executePlugins(
                          │  stdio JSONL
                          ▼
               ┌─────────────────────────┐
-              │ src/kosmos/ipc/         │
+              │ src/ummaya/ipc/         │
               │ stdio.py:1675 dispatch  │
               │   if frame.kind ==      │
               │   "plugin_op":          │
@@ -422,7 +422,7 @@ Single transition — no progress frames (R-1 + FR-007):
 
 ## Invariants (preserved across all changes)
 
-- **I-1** (FR-005, ✓): A failed install leaves zero state under `~/.kosmos/memdir/user/plugins/` and `~/.kosmos/memdir/user/consent/`.
+- **I-1** (FR-005, ✓): A failed install leaves zero state under `~/.ummaya/memdir/user/plugins/` and `~/.ummaya/memdir/user/consent/`.
 - **I-2** (FR-007, ✓): `list` operation MUST emit exactly one `plugin_op_complete` frame; no `plugin_op_progress` frames.
 - **I-3** (FR-008, ✓): After successful install, the next `ChatRequestFrame.tools[]` includes the new plugin's `tool_id` (relies on Epic #1978 + R-6 fallback path).
 - **I-4** (FR-013, ✓): Revoked consent receipts cause subsequent invocations to fail-closed at the gauntlet (Spec 033 invariant — preserved unchanged).

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
-// Spec 1979 — KOSMOS citizen plugin install/uninstall/list flow component.
+// Spec 1979 — UMMAYA citizen plugin install/uninstall/list flow component.
 // Audit-6 P1 fixes:
 //   - payload_start/delta/end triplet consumed for /plugin list (P1 fix)
 //   - exit_code → citizen-friendly Korean error messages (P1 fix)
@@ -16,7 +16,7 @@
 //   - Arrow keys + Enter for navigation (NOT direct Y/N/A keystrokes)
 //   - Esc for cancellation
 //
-// KOSMOS-internal Y/N/A direct-keystroke pattern (earlier dev iteration) is
+// UMMAYA-internal Y/N/A direct-keystroke pattern (earlier dev iteration) is
 // replaced here by CC's Select-based pattern for consistency with the rest
 // of the TUI (PluginBrowser, PermissionGauntletModal in Spec 1978, etc).
 
@@ -25,7 +25,7 @@ import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Select, type OptionWithDescription } from '../CustomSelect/index.js';
-import { getKosmosBridgeSessionId, getOrCreateKosmosBridge } from '../../ipc/bridgeSingleton.js';
+import { getUmmayaBridgeSessionId, getOrCreateUmmayaBridge } from '../../ipc/bridgeSingleton.js';
 import { useTheme } from '../../theme/provider.js';
 
 // ---------------------------------------------------------------------------
@@ -46,7 +46,7 @@ const _EXIT_CODE_KO: Record<number, string> = {
 
 function _exitCodeKo(exitCode: number | undefined | null, errorKind?: string | null): string {
   if (errorKind === 'bundle_sha_mismatch') return _EXIT_CODE_KO[2] ?? `오류 코드 ${exitCode ?? '?'}`;
-  if (errorKind === 'slsa_skip_in_production') return 'KOSMOS_PLUGIN_SLSA_SKIP은 production 환경에서 거부됩니다';
+  if (errorKind === 'slsa_skip_in_production') return 'UMMAYA_PLUGIN_SLSA_SKIP은 production 환경에서 거부됩니다';
   if (errorKind === 'slsa_skip_layer_3_forbidden') return 'Layer 3 플러그인은 SLSA 검증이 필수입니다';
   if (errorKind === 'binary_not_found' || errorKind === 'slsa_bootstrap_failed') return _EXIT_CODE_KO[7] ?? `오류 코드 ${exitCode ?? '?'}`;
   if (errorKind === 'consent_rejected') return _EXIT_CODE_KO[5] ?? '동의 거부';
@@ -124,8 +124,8 @@ export function PluginInstallFlow({
   // Send a permission_response frame (allow_once / allow_session / deny).
   const sendPermissionResponse = useCallback(
     (requestId: string, decision: 'allow_once' | 'allow_session' | 'deny') => {
-      const bridge = getOrCreateKosmosBridge();
-      const sessionId = getKosmosBridgeSessionId();
+      const bridge = getOrCreateUmmayaBridge();
+      const sessionId = getUmmayaBridgeSessionId();
       bridge.send({
         kind: 'permission_response',
         version: '1.0',
@@ -163,8 +163,8 @@ export function PluginInstallFlow({
   // Main round-trip effect: emit request + iterate frames until terminal.
   useEffect(() => {
     let cancelled = false;
-    const bridge = getOrCreateKosmosBridge();
-    const sessionId = getKosmosBridgeSessionId();
+    const bridge = getOrCreateUmmayaBridge();
+    const sessionId = getUmmayaBridgeSessionId();
     payloadBufRef.current = '';
 
     // Build + send the request frame.
@@ -353,15 +353,15 @@ export function PluginInstallFlow({
   return (
     <Box flexDirection="column" paddingX={1} paddingY={1}>
       <Box marginBottom={1}>
-        <Text bold color={theme.kosmosCore}>
+        <Text bold color={theme.ummayaCore}>
           {'✻ '}
         </Text>
         <Text bold>
           {sub === 'install'
-            ? `KOSMOS 플러그인 설치: ${name}`
+            ? `UMMAYA 플러그인 설치: ${name}`
             : sub === 'uninstall'
-              ? `KOSMOS 플러그인 제거: ${name}`
-              : 'KOSMOS 플러그인 목록 조회'}
+              ? `UMMAYA 플러그인 제거: ${name}`
+              : 'UMMAYA 플러그인 목록 조회'}
         </Text>
       </Box>
 
@@ -397,7 +397,7 @@ export function PluginInstallFlow({
 
       {state.kind === 'completed' ? (
         <Box flexDirection="column">
-          <Text color={theme.kosmosCore}>{state.summary}</Text>
+          <Text color={theme.ummayaCore}>{state.summary}</Text>
           {state.plugins && state.plugins.length > 0 ? (
             <Box flexDirection="column" marginTop={1}>
               {state.plugins.map((p) => (

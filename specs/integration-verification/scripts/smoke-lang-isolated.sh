@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-wait_for_pane "KOSMOS v0\\.[0-9]" 30
+wait_for_pane "UMMAYA v0\\.[0-9]" 30
 snapshot_pane "boot-default-ko"
 # Stage A — open /help in the default ko locale
 send_text_pane "/help"

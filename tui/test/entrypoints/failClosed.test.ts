@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// T020 — TUI fail-closed boot: refuses to run without FRIENDLI_API_KEY / KOSMOS_FRIENDLI_TOKEN
+// T020 — TUI fail-closed boot: refuses to run without FRIENDLI_API_KEY / UMMAYA_FRIENDLI_TOKEN
 // Contract ref: specs/1633-dead-code-friendli-migration/contracts/llm-client.md § 5
 
 import { describe, test, expect } from 'bun:test'
@@ -12,11 +12,11 @@ const TUI_ROOT = join(__dirname, '../../')
 
 // ---------------------------------------------------------------------------
 // Option A: import the env-check function from init.ts if it exists.
-// The KOSMOS-rewritten init.ts should export `checkRequiredEnv()` or similar.
+// The UMMAYA-rewritten init.ts should export `checkRequiredEnv()` or similar.
 // If T011 is not yet wired (init.ts still carries the original CC content),
 // we fall back to Option B (spawn check) or mark tests as todo.
 //
-// We try to dynamically detect whether a KOSMOS-specific env-check export
+// We try to dynamically detect whether a UMMAYA-specific env-check export
 // exists; if not, we fall back gracefully.
 // ---------------------------------------------------------------------------
 
@@ -28,7 +28,7 @@ const TUI_ROOT = join(__dirname, '../../')
 async function tryLoadEnvGuard(): Promise<
   null | ((env: Record<string, string | undefined>) => void)
 > {
-  // T011 is expected to export `checkKosmosEnv` or `assertFriendliKey` from
+  // T011 is expected to export `checkUmmayaEnv` or `assertFriendliKey` from
   // tui/src/entrypoints/init.ts, or from a dedicated
   // tui/src/entrypoints/envGuard.ts module.
   const candidates = [
@@ -41,7 +41,7 @@ async function tryLoadEnvGuard(): Promise<
       const mod = await import(join(TUI_ROOT, candidate))
       // Look for the canonical export names T011 may use.
       const fn =
-        mod.checkKosmosEnv ??
+        mod.checkUmmayaEnv ??
         mod.assertFriendliKey ??
         mod.checkRequiredEnv ??
         mod.checkEnv ??
@@ -78,7 +78,7 @@ async function spawnTuiWithoutKey(): Promise<{
   for (const [k, v] of Object.entries(process.env)) {
     if (
       k !== 'FRIENDLI_API_KEY' &&
-      k !== 'KOSMOS_FRIENDLI_TOKEN' &&
+      k !== 'UMMAYA_FRIENDLI_TOKEN' &&
       v !== undefined
     ) {
       env[k] = v
@@ -162,12 +162,12 @@ describe('TUI fail-closed boot without FRIENDLI_API_KEY (T020, § 5)', () => {
   // -------------------------------------------------------------------------
   // Option B: spawn-based test — verifies actual boot behavior.
   //
-  // Gated behind KOSMOS_T020_SPAWN_TEST=1 because spawning main.tsx is
+  // Gated behind UMMAYA_T020_SPAWN_TEST=1 because spawning main.tsx is
   // heavyweight and requires the TUI to have the fail-closed check wired
   // (T011). Enable in CI once T011 lands.
   // -------------------------------------------------------------------------
 
-  const spawnTestEnabled = process.env.KOSMOS_T020_SPAWN_TEST === '1'
+  const spawnTestEnabled = process.env.UMMAYA_T020_SPAWN_TEST === '1'
 
   test.skipIf(!spawnTestEnabled)(
     'spawned TUI exits non-zero when FRIENDLI_API_KEY is unset (Option B)',

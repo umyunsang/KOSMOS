@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 # Spec 2294 Epic γ T009 — PTY smoke: citizen emergency-room lookup.
 #
-# User story US1: a citizen types "의정부 응급실 알려줘" and the KOSMOS TUI:
-#  1. boots with KOSMOS branding
+# User story US1: a citizen types "의정부 응급실 알려줘" and the UMMAYA TUI:
+#  1. boots with UMMAYA branding
 #  2. submits the natural-language query to the agentic loop
 #  3. LLM calls lookup(mode='fetch', tool_id='nmc_emergency_search', ...)
 #  4. permission prompt surfaces nmc_emergency_search + real_classification_url
@@ -16,7 +16,7 @@
 #          > specs/2294-5-primitive-align/smoke-emergency-lookup-pty.txt
 #
 # Grep markers (must all appear in the captured log):
-#   CHECKPOINTKOSMOS branding observed
+#   CHECKPOINTUMMAYA branding observed
 #   CHECKPOINTquery submitted
 #   CHECKPOINTpermission prompt observed
 #   CHECKPOINTpermission approved
@@ -30,18 +30,18 @@ set log_path "$spec_dir/smoke-emergency-lookup-pty.txt"
 
 # Use a mock backend command so the test does not hit live data.go.kr APIs.
 # The agentic loop still exercises validateInput + renderToolResultMessage.
-set env(KOSMOS_BACKEND_CMD) "sleep 60"
+set env(UMMAYA_BACKEND_CMD) "sleep 60"
 
 # Spawn the TUI session under script(1) so the PTY output is saved to log_path.
-spawn script -q $log_path bash -c "cd /Users/um-yunsang/KOSMOS-w-2294/tui && bun run tui"
+spawn script -q $log_path bash -c "cd /Users/um-yunsang/UMMAYA-w-2294/tui && bun run tui"
 
-# ── Checkpoint 1: KOSMOS branding ────────────────────────────────────────────
+# ── Checkpoint 1: UMMAYA branding ────────────────────────────────────────────
 expect {
-  -re {.*KOSMOS.*} {
-    puts "CHECKPOINTKOSMOS branding observed"
+  -re {.*UMMAYA.*} {
+    puts "CHECKPOINTUMMAYA branding observed"
   }
   timeout {
-    puts "FAILKOSMOS branding never appeared"
+    puts "FAILUMMAYA branding never appeared"
     exit 1
   }
 }

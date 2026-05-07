@@ -1,7 +1,7 @@
 {
   "_comment": "Scripted chain scenario for the citizen tax-return US1 smoke (Epic ε #2296).",
-  "_doc": "Run with: uv run python -m kosmos.ipc.demo.scripted_chain --scenario specs/2296-ax-mock-adapters/scenarios/citizen-taxreturn.json",
-  "_fallback": "Used when KOSMOS_FRIENDLI_API_KEY / KOSMOS_FRIENDLI_TOKEN is unavailable (offline / CI). Exercises the same Mock adapters and audit ledger as the LLM-driven path.",
+  "_doc": "Run with: uv run python -m ummaya.ipc.demo.scripted_chain --scenario specs/2296-ax-mock-adapters/scenarios/citizen-taxreturn.json",
+  "_fallback": "Used when UMMAYA_FRIENDLI_API_KEY / UMMAYA_FRIENDLI_TOKEN is unavailable (offline / CI). Exercises the same Mock adapters and audit ledger as the LLM-driven path.",
   "scenario_id": "citizen-taxreturn-v1",
   "description_ko": "국민이 종합소득세 신고를 요청 → verify(modid) → lookup(hometax_simplified) → submit(hometax_taxreturn) → 접수번호 반환",
   "description_en": "Citizen files comprehensive income tax return — verify(modid) → lookup(hometax_simplified) → submit(hometax_taxreturn) → receipt number returned",
@@ -46,7 +46,7 @@
   ],
   "acceptance_criteria": {
     "SC-001": "Total wall-clock time for all 3 steps < 30s",
-    "SC-002": "3 ledger entries appended to ~/.kosmos/memdir/user/consent/<today>.jsonl — one delegation_issued + two delegation_used — all sharing the same delegation_token",
+    "SC-002": "3 ledger entries appended to ~/.ummaya/memdir/user/consent/<today>.jsonl — one delegation_issued + two delegation_used — all sharing the same delegation_token",
     "SC-007": "verify step triggers PermissionRequest flow (even in scripted mode, the adapter's permission_class field is inspected)"
   }
 }

@@ -7,7 +7,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/mock_welfare_application_submit_v1.json",
+  "$id": "https://ummaya.example/api/schemas/mock_welfare_application_submit_v1.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "Typed params for the welfare application filing adapter.\n\nDomain vocabulary lives here, not on the main SubmitInput envelope (SC-002).\nReal-world counterpart: 마이데이터 복지 서비스 신청 API (KFTC MyData v240930).",

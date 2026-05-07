@@ -4,10 +4,9 @@
 // Closes #1584. FR-020 (≤ 300 ms open), FR-021 (consent-scope gating),
 // FR-022 (escape byte-for-byte draft restore), FR-029..FR-032 (a11y).
 //
-// Modal-shell shape borrowed from the Spec 035 onboarding pattern
-// (`tui/src/components/onboarding/Onboarding.tsx`) — same flexDirection +
-// padding + theme-token wiring, same IME-gated `useInput` for the
-// keystroke loop. The overlay deliberately does NOT subscribe to the
+// Modal-shell shape keeps the same flexDirection + padding + theme-token
+// wiring as the original implementation, plus the same IME-gated `useInput`
+// for the keystroke loop. The overlay deliberately does NOT subscribe to the
 // keybinding registry: it is a `HistorySearch` context (see
 // data-model.md § 1) so its local handlers win the resolver precedence
 // while it is mounted (D7).
@@ -211,7 +210,7 @@ export function HistorySearchOverlay({
         </Text>
       )}
       <Box marginTop={1}>
-        <Text color={theme.kosmosCore}>{`> ${needle}`}</Text>
+        <Text color={theme.ummayaCore}>{`> ${needle}`}</Text>
       </Box>
       <Box marginTop={1} flexDirection="column">
         {visible.length === 0 ? (
@@ -220,7 +219,7 @@ export function HistorySearchOverlay({
           visible.map((entry, idx) => (
             <Text
               key={`${entry.session_id}:${entry.timestamp}`}
-              color={idx === cursorInWindow ? theme.kosmosCore : theme.text}
+              color={idx === cursorInWindow ? theme.ummayaCore : theme.text}
             >
               {idx === cursorInWindow ? '› ' : '  '}
               {entry.query_text}

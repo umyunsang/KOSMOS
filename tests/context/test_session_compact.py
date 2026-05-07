@@ -16,12 +16,12 @@ Covers:
 
 from __future__ import annotations
 
-from kosmos.context.compact_models import CompactionConfig
-from kosmos.context.session_compact import (
+from ummaya.context.compact_models import CompactionConfig
+from ummaya.context.session_compact import (
     _SUMMARY_HEADER,
     session_compact,
 )
-from kosmos.llm.models import ChatMessage, FunctionCall, ToolCall
+from ummaya.llm.models import ChatMessage, FunctionCall, ToolCall
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -1,4 +1,4 @@
-// KOSMOS-original session command: /save
+// UMMAYA-original session command: /save
 // Emits session_event IPC frame with event="save".
 
 import type { CommandDefinition, CommandHandlerArgs, CommandResult } from './types'

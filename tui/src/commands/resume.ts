@@ -1,4 +1,4 @@
-// KOSMOS-original session command: /resume [session-id]
+// UMMAYA-original session command: /resume [session-id]
 // Emits session_event IPC frame with event="resume" and payload={id: sessionId}.
 
 import type { CommandDefinition, CommandHandlerArgs, CommandResult } from './types'

@@ -6,7 +6,7 @@ For each file in modified-218-classification.json with classification='Cleanup-n
 - inspect file contents for Anthropic-token signal (queryHaiku/queryWithModel/verifyApiKey/@anthropic-ai/)
 - emit JSON to specs/2293-ui-residue-cleanup/data/caller-graph.json
 
-Run from repo root (worktree at /Users/um-yunsang/KOSMOS-w-2293/).
+Run from repo root (worktree at /Users/um-yunsang/UMMAYA-w-2293/).
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import re
 import subprocess
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[3]  # KOSMOS-w-2293
+REPO_ROOT = Path(__file__).resolve().parents[3]  # UMMAYA-w-2293
 SPEC_DIR = REPO_ROOT / "specs" / "2293-ui-residue-cleanup"
 EPIC_ALPHA_JSON = REPO_ROOT / "specs" / "2292-cc-parity-audit" / "data" / "modified-218-classification.json"
 OUTPUT_JSON = SPEC_DIR / "data" / "caller-graph.json"
@@ -33,9 +33,9 @@ DEPENDENCY_TOKENS = [
 ]
 
 
-def module_path(kosmos_path: str) -> str:
+def module_path(ummaya_path: str) -> str:
     """Strip leading tui/src/ and trailing .ts(x) to get import-path stem."""
-    p = kosmos_path
+    p = ummaya_path
     if p.startswith("tui/src/"):
         p = p[len("tui/src/"):]
     for suffix in (".tsx", ".ts"):
@@ -58,18 +58,18 @@ def list_importers(mod: str, exclude_self: str) -> list[str]:
     return sorted(set(files))
 
 
-def file_token_matches(kosmos_path: str) -> dict[str, int]:
+def file_token_matches(ummaya_path: str) -> dict[str, int]:
     """Count occurrences of each Anthropic token in the file content."""
-    fpath = REPO_ROOT / kosmos_path
+    fpath = REPO_ROOT / ummaya_path
     if not fpath.exists():
         return dict.fromkeys(ANTHROPIC_TOKENS, 0)
     text = fpath.read_text(encoding="utf-8", errors="replace")
     return {tok: text.count(tok) for tok in ANTHROPIC_TOKENS}
 
 
-def file_dependency_signals(kosmos_path: str) -> dict:
+def file_dependency_signals(ummaya_path: str) -> dict:
     """Extract line count + dependency token hits + first-line summary."""
-    fpath = REPO_ROOT / kosmos_path
+    fpath = REPO_ROOT / ummaya_path
     if not fpath.exists():
         return {"line_count": 0, "dependency_hits": {}, "first_lines": ""}
     text = fpath.read_text(encoding="utf-8", errors="replace")
@@ -88,13 +88,13 @@ def main() -> int:
 
     rows: list[dict] = []
     for entry in cleanup:
-        kosmos = entry["kosmos_path"]
-        mod = module_path(kosmos)
-        importers = list_importers(mod, exclude_self=kosmos)
-        tokens = file_token_matches(kosmos)
-        deps = file_dependency_signals(kosmos)
+        ummaya = entry["ummaya_path"]
+        mod = module_path(ummaya)
+        importers = list_importers(mod, exclude_self=ummaya)
+        tokens = file_token_matches(ummaya)
+        deps = file_dependency_signals(ummaya)
         rows.append({
-            "kosmos_path": kosmos,
+            "ummaya_path": ummaya,
             "module_path": mod,
             "line_count": deps["line_count"],
             "importer_count": len(importers),

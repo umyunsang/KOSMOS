@@ -57,7 +57,7 @@ Filters `messages` to user/assistant typed entries with no `isMeta` flag and no 
 
 ## Swap-1 deviation log
 
-| Line (CC) | CC | KOSMOS | Reason |
+| Line (CC) | CC | UMMAYA | Reason |
 |---|---|---|---|
 | Line 0 (new) | (no header) | `// SWAP/llm-swap(2643): queryHaiku target = K-EXAONE via FriendliAI (Spec 2521 byte-copy bridge).` | swap-1 attribution comment per AGENTS.md SWAP convention |
 
@@ -109,4 +109,4 @@ import { extractTextContent } from './messages.js'
 import { asSystemPrompt } from './systemPromptType.js'
 ```
 
-All 10 imports MUST resolve in KOSMOS without modification (verified Phase 0 R-5).
+All 10 imports MUST resolve in UMMAYA without modification (verified Phase 0 R-5).

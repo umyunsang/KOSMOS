@@ -30,11 +30,11 @@
 #   the same POSIX ERE pattern. We strip the Tcl {}-quoting and translate
 #   to a bash-safe double-quote form.
 #
-# NOTE on KOSMOS_SMOKE_CHECKPOINTS:
+# NOTE on UMMAYA_SMOKE_CHECKPOINTS:
 #   The original set this env in the spawn command. In the tmux harness the
 #   session is spawned by the harness script (tui-tmux-capture.sh) which
-#   reads KOSMOS_* from the caller's environment. Export this before invoking:
-#     KOSMOS_SMOKE_CHECKPOINTS=true scripts/tui-tmux-capture.sh ...
+#   reads UMMAYA_* from the caller's environment. Export this before invoking:
+#     UMMAYA_SMOKE_CHECKPOINTS=true scripts/tui-tmux-capture.sh ...
 #   When not set the CHECKPOINTreceipt check is marked non-fatal (|| true),
 #   mirroring the original smoke's WARN-not-FAIL for this optional marker.
 #
@@ -47,7 +47,7 @@
 
 # ── 1. Boot ─────────────────────────────────────────────────────────────────
 wait_for_pane "tool_registry: [0-9]+ entries verified" 60
-wait_for_pane "KOSMOS" 30
+wait_for_pane "UMMAYA" 30
 snapshot_pane boot
 
 # ── 2. Citizen prompt ────────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ snapshot_pane input-submitted
 # instead of dispatching a tool. Both outcomes are captured for informational
 # review — neither is a CI failure in isolation.
 # The original expect required "● submit" strictly; that only works with aimock
-# fixture injection (KOSMOS_SMOKE_CHECKPOINTS=true + fixture wired in §P0).
+# fixture injection (UMMAYA_SMOKE_CHECKPOINTS=true + fixture wired in §P0).
 wait_for_pane "● (submit|lookup|verify)|신고|귀속|소득|홈택스|정보" 120 || {
   echo "[SMOKE WARN] no tool_call or clarifying response within 120s" >&2
 }

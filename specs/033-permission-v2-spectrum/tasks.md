@@ -20,7 +20,7 @@ description: "Task list for 033-permission-v2-spectrum (Epic #1297)"
 
 ## Path Conventions
 
-- Backend: `src/kosmos/permissions/` (new package)
+- Backend: `src/ummaya/permissions/` (new package)
 - TUI: `tui/src/permissions/` (new component tree, Ink + Bun + TypeScript 5.6)
 - Tests: `tests/permissions/`
 - Docs: `docs/security/permission-v2-*.md`
@@ -31,10 +31,10 @@ description: "Task list for 033-permission-v2-spectrum (Epic #1297)"
 
 **Purpose**: scaffold package tree, test harness, env knobs — no behavioral code.
 
-- [ ] T001 Create `src/kosmos/permissions/__init__.py` with `__version__ = "1.0.0"` and public re-exports (`PermissionMode`, `ToolPermissionContext`, `PermissionRule`, `ConsentLedgerRecord`)
+- [ ] T001 Create `src/ummaya/permissions/__init__.py` with `__version__ = "1.0.0"` and public re-exports (`PermissionMode`, `ToolPermissionContext`, `PermissionRule`, `ConsentLedgerRecord`)
 - [ ] T002 [P] Create `tests/permissions/` directory + `conftest.py` with tmp-path fixtures for `permissions.json` / `consent_ledger.jsonl` / `keys/ledger.key` (mode 0400)
 - [ ] T003 [P] Create `tui/src/permissions/` TypeScript component tree skeleton (`index.ts`, `types.ts` stubs) following Spec 287 conventions
-- [ ] T004 [P] Register `KOSMOS_PERMISSION_*` env knobs (`TIMEOUT_SEC`, `TTL_SESSION_SEC`, `KEY_PATH`, `LEDGER_PATH`, `RULE_STORE_PATH`) in `src/kosmos/settings.py` pydantic-settings catalog
+- [ ] T004 [P] Register `UMMAYA_PERMISSION_*` env knobs (`TIMEOUT_SEC`, `TTL_SESSION_SEC`, `KEY_PATH`, `LEDGER_PATH`, `RULE_STORE_PATH`) in `src/ummaya/settings.py` pydantic-settings catalog
 
 ---
 
@@ -44,14 +44,14 @@ description: "Task list for 033-permission-v2-spectrum (Epic #1297)"
 
 **⚠️ CRITICAL**: no US-tagged task may start until Phase 2 is complete.
 
-- [ ] T005 Implement `src/kosmos/permissions/canonical_json.py` — RFC 8785 JCS encoder (stdlib-only, ~50 lines, sort keys, number canonicalization, UTF-8 NFC)
+- [ ] T005 Implement `src/ummaya/permissions/canonical_json.py` — RFC 8785 JCS encoder (stdlib-only, ~50 lines, sort keys, number canonicalization, UTF-8 NFC)
 - [ ] T006 Add RFC 8785 Appendix A test vectors in `tests/permissions/test_canonical_json.py` (all 13 vectors must pass byte-identical)
-- [ ] T007 [P] Implement `src/kosmos/permissions/modes.py` — `PermissionMode` Literal alias + mode adjacency table + `next_mode_shift_tab()` (default→plan→acceptEdits→default, escape hatch from bypass/dontAsk to default)
-- [ ] T008 [P] Implement `src/kosmos/permissions/models.py` — pydantic v2 frozen models: `PermissionRule`, `ToolPermissionContext`, `AdapterPermissionMetadata`, `ConsentDecision`, `ConsentLedgerRecord`, `LedgerVerifyReport` (all `extra="forbid"`, `strict=True`, concrete Literals/StrictStr/constr)
-- [ ] T009 Implement `src/kosmos/permissions/hmac_key.py` — load/generate `~/.kosmos/keys/ledger.key` (mode 0400 enforcement via `os.stat()`, `secrets.token_bytes(32)` on first boot, fail-closed refusal on mode drift)
-- [ ] T010 [P] Implement `src/kosmos/permissions/adapter_metadata.py` — read-only projection from Spec 024 `GovAPITool` (fails closed if `is_irreversible` / `auth_level` / `pipa_class` missing — Invariant A1)
-- [ ] T011 Implement permission pipeline skeleton `src/kosmos/permissions/pipeline.py` — ordered `killswitch.pre_evaluate() → mode.evaluate() → rule.resolve() → prompt.ask()` stubs that raise `NotImplementedError` (to be filled per story)
-- [ ] T012 [P] Create CLI skeleton `src/kosmos/permissions/cli.py` with argparse + `pyproject.toml` entry point `kosmos-permissions = kosmos.permissions.cli:main`
+- [ ] T007 [P] Implement `src/ummaya/permissions/modes.py` — `PermissionMode` Literal alias + mode adjacency table + `next_mode_shift_tab()` (default→plan→acceptEdits→default, escape hatch from bypass/dontAsk to default)
+- [ ] T008 [P] Implement `src/ummaya/permissions/models.py` — pydantic v2 frozen models: `PermissionRule`, `ToolPermissionContext`, `AdapterPermissionMetadata`, `ConsentDecision`, `ConsentLedgerRecord`, `LedgerVerifyReport` (all `extra="forbid"`, `strict=True`, concrete Literals/StrictStr/constr)
+- [ ] T009 Implement `src/ummaya/permissions/hmac_key.py` — load/generate `~/.ummaya/keys/ledger.key` (mode 0400 enforcement via `os.stat()`, `secrets.token_bytes(32)` on first boot, fail-closed refusal on mode drift)
+- [ ] T010 [P] Implement `src/ummaya/permissions/adapter_metadata.py` — read-only projection from Spec 024 `GovAPITool` (fails closed if `is_irreversible` / `auth_level` / `pipa_class` missing — Invariant A1)
+- [ ] T011 Implement permission pipeline skeleton `src/ummaya/permissions/pipeline.py` — ordered `killswitch.pre_evaluate() → mode.evaluate() → rule.resolve() → prompt.ask()` stubs that raise `NotImplementedError` (to be filled per story)
+- [ ] T012 [P] Create CLI skeleton `src/ummaya/permissions/cli.py` with argparse + `pyproject.toml` entry point `ummaya-permissions = ummaya.permissions.cli:main`
 
 **Checkpoint**: foundational package importable; `pytest tests/permissions/test_canonical_json.py` passes 13 JCS vectors.
 
@@ -63,11 +63,11 @@ description: "Task list for 033-permission-v2-spectrum (Epic #1297)"
 
 **Independent Test**: mock HIRA adapter + `default` mode → 1 prompt + 2 silent executions + 1 ledger record chained to genesis.
 
-- [ ] T013 [P] [US1] Implement `src/kosmos/permissions/rules.py` — tri-state rule store with session/project/user scope resolver (R1 deny-wins, R2 narrower-wins, R3 ask≡no-rule)
-- [ ] T014 [US1] Extend `src/kosmos/permissions/rules.py` with atomic-write via `os.rename()` + JSON schema validation against `contracts/permissions-store.schema.json` on load (fail-closed on violation)
-- [ ] T015 [P] [US1] Implement `src/kosmos/permissions/prompt.py::PIPAConsentPrompt` — 4-tuple builder (Invariant C1: all fields `StrictStr(min_length=1)`), individual-consent rule (Invariant C2: bundling 민감/고유식별/특수 raises `ValidationError`)
-- [ ] T016 [US1] Implement `src/kosmos/permissions/ledger.py` — append path with fsync + `O_WRONLY|O_APPEND|O_CREAT` + `fcntl.LOCK_EX`, computes `prev_hash`/`record_hash`/`hmac_seal` via canonical JSON (Invariants L1–L5, C4)
-- [ ] T017 [US1] Wire `default` mode behavior into `pipeline.py` — ASK every call unless persistent `allow` rule; persist user-approved rules to `~/.kosmos/permissions.json`
+- [ ] T013 [P] [US1] Implement `src/ummaya/permissions/rules.py` — tri-state rule store with session/project/user scope resolver (R1 deny-wins, R2 narrower-wins, R3 ask≡no-rule)
+- [ ] T014 [US1] Extend `src/ummaya/permissions/rules.py` with atomic-write via `os.rename()` + JSON schema validation against `contracts/permissions-store.schema.json` on load (fail-closed on violation)
+- [ ] T015 [P] [US1] Implement `src/ummaya/permissions/prompt.py::PIPAConsentPrompt` — 4-tuple builder (Invariant C1: all fields `StrictStr(min_length=1)`), individual-consent rule (Invariant C2: bundling 민감/고유식별/특수 raises `ValidationError`)
+- [ ] T016 [US1] Implement `src/ummaya/permissions/ledger.py` — append path with fsync + `O_WRONLY|O_APPEND|O_CREAT` + `fcntl.LOCK_EX`, computes `prev_hash`/`record_hash`/`hmac_seal` via canonical JSON (Invariants L1–L5, C4)
+- [ ] T017 [US1] Wire `default` mode behavior into `pipeline.py` — ASK every call unless persistent `allow` rule; persist user-approved rules to `~/.ummaya/permissions.json`
 - [ ] T018 [US1] TUI: implement `tui/src/permissions/ConsentPrompt.tsx` — Ink component rendering 5-section prompt (title/목적/항목/보유기간/거부권+불이익), default focus on 거부, Y/N/ESC keyboard
 - [ ] T019 [US1] TUI: wire `tui/src/permissions/consentBridge.ts` — round-trip consent request/decision over Spec 032 IPC envelope (uses `correlation_id` from `ToolPermissionContext`)
 - [ ] T020 [US1] Emit OTEL spans `consent.prompt.shown` / `consent.prompt.decided` with attrs per contracts/consent-prompt §6
@@ -80,13 +80,13 @@ description: "Task list for 033-permission-v2-spectrum (Epic #1297)"
 
 ## Phase 4: User Story 2 — 외부 변조 탐지 (Priority: P1)
 
-**Goal**: auditor flips a single byte in ledger; `kosmos permissions verify` exits non-zero with distinguishable reason.
+**Goal**: auditor flips a single byte in ledger; `ummaya permissions verify` exits non-zero with distinguishable reason.
 
 **Independent Test**: 5-record ledger → flip 1 byte → verify exits 1 with `CHAIN_RECORD_HASH_MISMATCH` + points to first broken index.
 
-- [ ] T023 [P] [US2] Implement `src/kosmos/permissions/ledger_verify.py` — streaming JSONL read, chain-walk with `prev_hash`↔`record_hash` check + HMAC-SHA-256 seal verification per record using key-ID registry (Invariants L2, L3, L4)
-- [ ] T024 [US2] Wire `kosmos-permissions verify` subcommand in `cli.py` — implements contracts/ledger-verify.cli.md exit-code taxonomy (0/1/2/3/4/5/6/64), supports `--path`, `--hash-only`, `--acknowledge-key-loss`, `--json`
-- [ ] T025 [US2] Implement `kosmos-permissions rotate-key` subcommand — archives `keys/ledger.key` → `keys/ledger.key.k0001`, generates new key at next sequence, records key-ID in registry
+- [ ] T023 [P] [US2] Implement `src/ummaya/permissions/ledger_verify.py` — streaming JSONL read, chain-walk with `prev_hash`↔`record_hash` check + HMAC-SHA-256 seal verification per record using key-ID registry (Invariants L2, L3, L4)
+- [ ] T024 [US2] Wire `ummaya-permissions verify` subcommand in `cli.py` — implements contracts/ledger-verify.cli.md exit-code taxonomy (0/1/2/3/4/5/6/64), supports `--path`, `--hash-only`, `--acknowledge-key-loss`, `--json`
+- [ ] T025 [US2] Implement `ummaya-permissions rotate-key` subcommand — archives `keys/ledger.key` → `keys/ledger.key.k0001`, generates new key at next sequence, records key-ID in registry
 - [ ] T026 [P] [US2] Contract test `tests/permissions/test_ledger_verify_cli.py` covering 12 V-matrix scenarios from contracts/ledger-verify.cli.md §7 (exit codes + `broken_reason` mapping)
 - [ ] T027 [US2] Integration test `tests/permissions/test_us2_tamper_detect.py` — quickstart scenario 2 end-to-end: write 5 records → single-byte flip → verify exit 1 (SC-004)
 
@@ -100,7 +100,7 @@ description: "Task list for 033-permission-v2-spectrum (Epic #1297)"
 
 **Independent Test**: `is_irreversible=True` adapter + `bypassPermissions` mode + 2 calls → 2 prompts + 2 independent ledger records (K5, K6).
 
-- [ ] T028 [P] [US3] Implement `src/kosmos/permissions/killswitch.py::pre_evaluate()` — returns `Decision.ASK` when mode=`bypassPermissions` AND (`is_irreversible` OR `pipa_class=특수` OR `auth_level=AAL3`); returns `None` otherwise (K2/K3/K4)
+- [ ] T028 [P] [US3] Implement `src/ummaya/permissions/killswitch.py::pre_evaluate()` — returns `Decision.ASK` when mode=`bypassPermissions` AND (`is_irreversible` OR `pipa_class=특수` OR `auth_level=AAL3`); returns `None` otherwise (K2/K3/K4)
 - [ ] T029 [US3] Wire killswitch as step 1 in `pipeline.py` BEFORE mode evaluation (Invariant K1/P1); add mutation test to assert order
 - [ ] T030 [US3] Implement `bypassPermissions` mode behavior in `modes.py` / `pipeline.py` — silent-allow for non-killswitch calls; REJECT any attempt to cache killswitch-triggered prompts (K5)
 - [ ] T031 [US3] Implement `action_digest` computation in `ledger.py` — SHA-256 over `(tool_id, canonical(arguments), uuid7_nonce)` so two identical bypass-mode irreversible calls get distinct digests (K6, FR-B04)
@@ -121,7 +121,7 @@ description: "Task list for 033-permission-v2-spectrum (Epic #1297)"
 **Independent Test**: 3 rules (allow/deny/ask) → restart → each tool call produces expected behavior.
 
 - [ ] T037 [US4] Implement session-restart behavior — process boot reloads `permissions.json`, resets `mode` to `default` (Invariant M3/PR1), retains `user` scope rules
-- [ ] T038 [P] [US4] CLI: implement `/permissions allow|deny|ask|revoke <tool_id>` slash-command handlers in `src/kosmos/permissions/cli.py::rule_commands` (writes `user` scope rules via rules.py atomic write)
+- [ ] T038 [P] [US4] CLI: implement `/permissions allow|deny|ask|revoke <tool_id>` slash-command handlers in `src/ummaya/permissions/cli.py::rule_commands` (writes `user` scope rules via rules.py atomic write)
 - [ ] T039 [US4] TUI: implement `tui/src/permissions/RuleListView.tsx` — `/permissions list` command renders current rules with scope + decision + created_at
 - [ ] T040 [US4] Integration test `tests/permissions/test_us4_tri_state_persistence.py` — quickstart scenario 4 end-to-end: 3 rules → restart → 3 expected behaviors (SC-002)
 - [ ] T041 [US4] Integration test `tests/permissions/test_us4_fail_closed_edit.py` — externally corrupt `permissions.json` → boot refuses to load, falls back to `default` mode with all rules cleared (FR-C02)
@@ -151,10 +151,10 @@ description: "Task list for 033-permission-v2-spectrum (Epic #1297)"
 
 **Purpose**: couple Permission v2 to existing Specs 024 / 025 V6 / 021 without modifying their invariants; enforce LLM synthesis PII boundary.
 
-- [ ] T048 [P] Implement `src/kosmos/permissions/audit_coupling.py` — populates Spec 024 `ToolCallAuditRecord.consent_receipt_id` + `correlation_id` (from Spec 032) on every tool call that required consent (FR-F01)
-- [ ] T049 [P] Implement `src/kosmos/permissions/aal_backstop.py` — detects Spec 025 V6 AAL downgrade attempts (e.g., `auth_level=AAL3` at prompt time but `AAL1` at execution) → raises `AALDowngradeBlocked` (FR-F02 + edge case)
-- [ ] T050 [P] Implement `src/kosmos/permissions/synthesis_guard.py::redact()` — scans adapter output schemas, drops fields tagged `pipa_class ∈ {민감, 고유식별}` before LLM prompt assembly (Invariant C5, FR-E02, MEMORY `project_pipa_role` LLM controller carve-out)
-- [ ] T051 Wire permission-layer OTEL attrs (`kosmos.permission.mode`, `kosmos.permission.decision`, `kosmos.consent.receipt_id`) onto existing tool-call spans (FR-F03, Spec 021 coupling)
+- [ ] T048 [P] Implement `src/ummaya/permissions/audit_coupling.py` — populates Spec 024 `ToolCallAuditRecord.consent_receipt_id` + `correlation_id` (from Spec 032) on every tool call that required consent (FR-F01)
+- [ ] T049 [P] Implement `src/ummaya/permissions/aal_backstop.py` — detects Spec 025 V6 AAL downgrade attempts (e.g., `auth_level=AAL3` at prompt time but `AAL1` at execution) → raises `AALDowngradeBlocked` (FR-F02 + edge case)
+- [ ] T050 [P] Implement `src/ummaya/permissions/synthesis_guard.py::redact()` — scans adapter output schemas, drops fields tagged `pipa_class ∈ {민감, 고유식별}` before LLM prompt assembly (Invariant C5, FR-E02, MEMORY `project_pipa_role` LLM controller carve-out)
+- [ ] T051 Wire permission-layer OTEL attrs (`ummaya.permission.mode`, `ummaya.permission.decision`, `ummaya.consent.receipt_id`) onto existing tool-call spans (FR-F03, Spec 021 coupling)
 - [ ] T052 Integration test `tests/permissions/test_integration_spec_024_025_021.py` — end-to-end: consent prompt → decision → audit record has `consent_receipt_id` + AAL backstop + OTEL attrs present + synthesis_guard redacts 민감 fields
 
 ---

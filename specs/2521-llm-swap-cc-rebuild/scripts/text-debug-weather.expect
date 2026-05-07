@@ -9,7 +9,7 @@
 # plain-text cell-grid snapshots (frame_NNNN_t<sec>_<sha>.txt).
 #
 # Flow anchors (verifiable in the resulting timeline.txt):
-#   A. branding   — KOSMOS / ✻ / tool_registry verified
+#   A. branding   — UMMAYA / ✻ / tool_registry verified
 #   B. input typed
 #   C. reasoning  — Symbioting / Crunched / ⏵ spinner
 #   D. tool call  — ● lookup(fetch:resolve_location|kma_*|hira_*)
@@ -32,7 +32,7 @@ expect {
   timeout { puts "\n\[FAIL A1\] no backend boot"; exit 1 }
 }
 expect {
-  -re "KOSMOS" { puts "\n\[A2\] branding visible" }
+  -re "UMMAYA" { puts "\n\[A2\] branding visible" }
   timeout { puts "\n\[FAIL A2\] no branding"; exit 1 }
 }
 

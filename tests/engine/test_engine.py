@@ -18,21 +18,21 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from kosmos.context.builder import ContextBuilder
-from kosmos.context.models import SystemPromptConfig
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.engine import QueryEngine
-from kosmos.engine.events import QueryEvent, StopReason
-from kosmos.engine.models import QueryContext, SessionBudget
+from ummaya.context.builder import ContextBuilder
+from ummaya.context.models import SystemPromptConfig
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.engine import QueryEngine
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.engine.models import QueryContext, SessionBudget
 
 # LLMClient must be imported (not just under TYPE_CHECKING) so that
 # QueryContext.model_rebuild() can resolve the forward reference and accept
 # mock objects for the llm_client field.
-from kosmos.llm.client import LLMClient  # noqa: F401
-from kosmos.llm.models import ChatMessage
-from kosmos.llm.usage import UsageTracker
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.registry import ToolRegistry
+from ummaya.llm.client import LLMClient  # noqa: F401
+from ummaya.llm.models import ChatMessage
+from ummaya.llm.usage import UsageTracker
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.registry import ToolRegistry
 
 QueryContext.model_rebuild()
 
@@ -364,7 +364,7 @@ def test_default_system_prompt_is_first_message(
     # Content must be non-empty (default ContextBuilder uses SystemPromptConfig defaults)
     assert first_message.content
     # The default persona must be present
-    assert "KOSMOS" in (first_message.content or "")
+    assert "UMMAYA" in (first_message.content or "")
 
 
 def test_custom_system_prompt(

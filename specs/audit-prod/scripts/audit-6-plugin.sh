@@ -3,16 +3,16 @@
 # audit-prod § Audit 6 — Plugin DX (Tier 1-5) + /plugin slash commands
 #
 # Scope (Spec 1636 + Spec 1979):
-#   Tier 1 — kosmos-plugin-template + `kosmos plugin init` TUI + uvx fallback
+#   Tier 1 — ummaya-plugin-template + `ummaya plugin init` TUI + uvx fallback
 #   Tier 2 — 9 Korean-primary guides under docs/plugins/
 #   Tier 3 — 4 example repos (seoul-subway / post-office Live + nts-homtax / nhis-check Mock)
 #   Tier 4 — 50-item validation matrix + reusable workflow + plugin_submission template
-#   Tier 5 — kosmos-plugin-store/index catalog + 8-phase installer + SLSA verifier
+#   Tier 5 — ummaya-plugin-store/index catalog + 8-phase installer + SLSA verifier
 #   /plugin install/list/uninstall/pipa-text  +  /plugins (browser surface)
 #   PIPA §26 trustee acknowledgment SHA-256 gate
 #   tool_id namespace `plugin.<id>.<verb>` (ADR-007)
 #
-# Hard rule: no live SLSA download in CI smoke. KOSMOS_PLUGIN_SLSA_SKIP=true
+# Hard rule: no live SLSA download in CI smoke. UMMAYA_PLUGIN_SLSA_SKIP=true
 # is set by the harness; the manifest's L3 path remains hard-refused.
 #
 # Helpers exported by scripts/tui-tmux-capture.sh:
@@ -28,7 +28,7 @@ set -uo pipefail
 # ---------------------------------------------------------------------------
 # Stage 0 — Boot + branding
 # ---------------------------------------------------------------------------
-wait_for_pane "KOSMOS|kosmos" 60 || true
+wait_for_pane "UMMAYA|ummaya" 60 || true
 snapshot_pane 0-boot
 
 # ---------------------------------------------------------------------------
@@ -74,7 +74,7 @@ snapshot_pane 4b-plugins-after-esc
 
 # ---------------------------------------------------------------------------
 # Stage 5 — /plugin install <known-bad-name> → catalog miss path
-#   Expected: "✗" + exit_code=1 + KOSMOS branding for failure summary.
+#   Expected: "✗" + exit_code=1 + UMMAYA branding for failure summary.
 # ---------------------------------------------------------------------------
 send_text_pane '/plugin install nonexistent-plugin-zzzz'
 send_enter_pane
@@ -93,8 +93,8 @@ sleep 2
 
 # ---------------------------------------------------------------------------
 # Stage 7 — /plugin install seoul_subway --dry-run
-#   Uses cached bundle if present (~/.kosmos/cache/plugin-bundles/) but
-#   may catalog-miss if KOSMOS_PLUGIN_CATALOG_URL is the live default.
+#   Uses cached bundle if present (~/.ummaya/cache/plugin-bundles/) but
+#   may catalog-miss if UMMAYA_PLUGIN_CATALOG_URL is the live default.
 #   Either way, a structured ✗/✓ summary must surface.
 # ---------------------------------------------------------------------------
 send_text_pane '/plugin install seoul_subway --dry-run'

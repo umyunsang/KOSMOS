@@ -13,7 +13,7 @@ In a clean session, the citizen sends two consecutive turns:
 
 K-EXAONE's response to turn 2 begins its `reasoning_content` (thinking blob, captured in `snap-S2-006` of the integration-verification frame stream) with literal text "The user is asking for 강남역 근처 내과 which means..." — i.e. the model is reasoning over turn 1's payload, not turn 2's. Subsequently it emits `resolve_location(query="강남구")`, a query string that appears in **neither** turn 1 nor turn 2 (turn 1 contained "강남역", not "강남구"; turn 2 contained no location at all). The hallucinated location-name shape rules out a simple "off-by-one indexing" (which would have replayed turn 1 verbatim); something in the messages-array serialization, the K-EXAONE Hermes parser, or the parallel-tool-call accumulator is contaminating the per-turn prompt-state in a non-trivial way.
 
-This contamination blocks the subscribe-primitive Layer 5 smoke (the second turn never gets a `subscribe(...)` call), and — more importantly — it threatens every multi-turn citizen scenario KOSMOS demos: any second turn risks being either silently dropped or replayed with a stale prior-turn payload. Single-turn flows (which is what every prior smoke captured) cannot detect this regression.
+This contamination blocks the subscribe-primitive Layer 5 smoke (the second turn never gets a `subscribe(...)` call), and — more importantly — it threatens every multi-turn citizen scenario UMMAYA demos: any second turn risks being either silently dropped or replayed with a stale prior-turn payload. Single-turn flows (which is what every prior smoke captured) cannot detect this regression.
 
 ## Methodology — diagnosis before fix
 
@@ -21,7 +21,7 @@ Per AGENTS.md `feedback_partial_fix_revealed_by_better_infra` (Spec 2521 lesson)
 
 - **H1 — Frontend race condition.** `tui/src/query/deps.ts:122-130` walks `messages: Message[]` (CC's loose-typed transcript) and pushes `{role, content}` into `chatMessages: ChatMessage[]`. If turn 2's user message is appended to the React store AFTER `callModel` already snapshotted `messages`, the emitted `ChatRequestFrame.messages` tail would still be turn 1, and K-EXAONE is correctly reasoning over the only user message it received.
 - **H2 — K-EXAONE thinking-state contamination.** FriendliAI's K-EXAONE 236B-A23B with `enable_thinking=true` may carry its own internal reasoning state across requests in some way (KV cache, attention sink, or the FriendliAI serverless multi-turn cache key collision); even with a correct `messages` array on the wire, the model's first reasoning token may anchor on whichever user-turn the FriendliAI-side cache keyed against this `session_id`.
-- **H3 — Tool-call accumulation residue.** The agentic loop in `_handle_chat_request` (`src/kosmos/ipc/stdio.py:1786+`) accumulates `role="tool"` messages between turns. If turn 1's tool-result block is left in the local history and turn 2 prepends new user text without first re-anchoring the prompt, K-EXAONE's tail-attention may correctly identify turn 2's user message but its reasoning prelude may still be paraphrasing the most-recent assistant-turn that referenced "강남역 근처 내과".
+- **H3 — Tool-call accumulation residue.** The agentic loop in `_handle_chat_request` (`src/ummaya/ipc/stdio.py:1786+`) accumulates `role="tool"` messages between turns. If turn 1's tool-result block is left in the local history and turn 2 prepends new user text without first re-anchoring the prompt, K-EXAONE's tail-attention may correctly identify turn 2's user message but its reasoning prelude may still be paraphrasing the most-recent assistant-turn that referenced "강남역 근처 내과".
 
 The diagnostic phase (US1 / FR-001..FR-005) MUST collect evidence sufficient to discriminate among H1/H2/H3 BEFORE any fix is committed. Memory: `feedback_systematic_debugging`.
 
@@ -29,7 +29,7 @@ The diagnostic phase (US1 / FR-001..FR-005) MUST collect evidence sufficient to 
 
 ### User Story 1 — Diagnostic instrumentation surfaces the contamination layer (Priority: P1)
 
-A KOSMOS engineer, on encountering a multi-turn contamination bug report, can run a single PTY scenario script that reproduces the two-turn flow AND emits, to backend stderr, the byte-exact `ChatRequestFrame.messages` array as it arrives at `_handle_chat_request`, AND the byte-exact `messages: list[ChatMessage]` actually forwarded to the LLM client, AND the first 1024 bytes of K-EXAONE's `reasoning_content`. The engineer cross-correlates the three logs and concludes within minutes which of H1/H2/H3 is responsible.
+A UMMAYA engineer, on encountering a multi-turn contamination bug report, can run a single PTY scenario script that reproduces the two-turn flow AND emits, to backend stderr, the byte-exact `ChatRequestFrame.messages` array as it arrives at `_handle_chat_request`, AND the byte-exact `messages: list[ChatMessage]` actually forwarded to the LLM client, AND the first 1024 bytes of K-EXAONE's `reasoning_content`. The engineer cross-correlates the three logs and concludes within minutes which of H1/H2/H3 is responsible.
 
 **Why this priority**: Per AGENTS.md `feedback_partial_fix_revealed_by_better_infra`, fixing the symptom without the diagnostic infrastructure (which the existing tmux-capture harness lacks for IPC envelope dumps) leaves the next regression hidden behind the same blind spot. Diagnosis is mandatory before fix.
 
@@ -50,7 +50,7 @@ A KOSMOS engineer, on encountering a multi-turn contamination bug report, can ru
 
 A citizen sends two unrelated requests in one session — turn 1 lookup-style (hospital), turn 2 subscribe-style (disaster alert). K-EXAONE's response to turn 2 reasons exclusively over turn 2's payload (no thinking-blob lines paraphrasing turn 1, no tool calls whose parameters originate in turn 1's text, no hallucinated parameters not in turn 2). Tool dispatch matches the turn-2 intent.
 
-**Why this priority**: This is the citizen-visible correctness invariant. Without it, KOSMOS cannot demo any multi-turn flow — the second turn is non-deterministically replaced by a stale prior turn. P1 because it blocks the subscribe-primitive Layer 5 smoke AND every roadmap scenario beyond single-turn (proposal-iv 5-state Ministry Agent, /agents flow, every UI L2 acceptance scenario above one prompt).
+**Why this priority**: This is the citizen-visible correctness invariant. Without it, UMMAYA cannot demo any multi-turn flow — the second turn is non-deterministically replaced by a stale prior turn. P1 because it blocks the subscribe-primitive Layer 5 smoke AND every roadmap scenario beyond single-turn (proposal-iv 5-state Ministry Agent, /agents flow, every UI L2 acceptance scenario above one prompt).
 
 **Independent Test**: After fix, replay `specs/spec-multi-turn-contamination/scripts/repro-two-turn.sh`. Assert in `<outdir>/snap-NNN-*.txt`:
 1. Turn 2's reasoning blob first 256 chars contain "재난" or "구독" or "subscribe" — NOT "강남역" or "내과" or "병원".
@@ -68,13 +68,13 @@ A citizen sends two unrelated requests in one session — turn 1 lookup-style (h
 
 ### User Story 3 — Multi-turn regression test locks the fix permanently (Priority: P1)
 
-A maintainer adds an automated test that fails if any future change re-introduces multi-turn contamination. The test runs in `bun test` (Layer 1b Ink snapshot via `ink-testing-library`) AND in a Layer 5 tmux smoke (`scripts/tui-tmux-capture.sh`) and is enumerated in CI. Diagnostic stderr lines are still emitted (under env-var gate `KOSMOS_CHAT_REQUEST_DUMP=1`) so future investigations skip re-instrumenting the backend.
+A maintainer adds an automated test that fails if any future change re-introduces multi-turn contamination. The test runs in `bun test` (Layer 1b Ink snapshot via `ink-testing-library`) AND in a Layer 5 tmux smoke (`scripts/tui-tmux-capture.sh`) and is enumerated in CI. Diagnostic stderr lines are still emitted (under env-var gate `UMMAYA_CHAT_REQUEST_DUMP=1`) so future investigations skip re-instrumenting the backend.
 
 **Why this priority**: AGENTS.md anti-pattern #1 ("final-state fallacy") + memory `feedback_pty_log_full_inspection` — the existing single-turn smokes literally cannot catch this regression. Without a multi-turn lock test, the fix decays at the next refactor. P1 because the diagnostic + fix without a lock is two-thirds of the work.
 
 **Independent Test**: Two regression assets MUST exist after this Epic merges:
 1. `tui/src/__tests__/multi-turn-contamination.test.ts` — `ink-testing-library` simulates turn 1 + turn 2, intercepts the emitted `ChatRequestFrame` payloads via a stub bridge, asserts message-array tail invariants.
-2. `specs/spec-multi-turn-contamination/scripts/regress-multi-turn.sh` — Layer 5 tmux scenario that runs against a real backend (with `KOSMOS_LLM_PROVIDER=fake-multi-turn` deterministic stub, NOT FriendliAI) and asserts turn-2's tool-call name / params via `wait_for_pane <regex> <deadline>`.
+2. `specs/spec-multi-turn-contamination/scripts/regress-multi-turn.sh` — Layer 5 tmux scenario that runs against a real backend (with `UMMAYA_LLM_PROVIDER=fake-multi-turn` deterministic stub, NOT FriendliAI) and asserts turn-2's tool-call name / params via `wait_for_pane <regex> <deadline>`.
 
 Live FriendliAI E2E verification is run manually under `@pytest.mark.live` per AGENTS.md "Never call live `data.go.kr` APIs from CI tests" + the LLM equivalent.
 
@@ -82,7 +82,7 @@ Live FriendliAI E2E verification is run manually under `@pytest.mark.live` per A
 
 1. **Given** the regression test in `tui/src/__tests__/`, **When** `bun test` runs, **Then** PASS on the rebuilt branch + FAIL on a synthetic regression that re-introduces an off-by-one in `chatMessages` construction (verified by mutation-testing one-liner: replace `messages` with `messages.slice(0, -1)` in `tui/src/query/deps.ts:117`).
 2. **Given** the Layer 5 smoke script under `specs/spec-multi-turn-contamination/scripts/`, **When** executed, **Then** every committed `snap-*.txt` keyframe demonstrates turn-2 → turn-2 reasoning without turn-1 leakage.
-3. **Given** `KOSMOS_CHAT_REQUEST_DUMP=1` in env, **When** any subsequent multi-turn run executes, **Then** backend stderr re-emits the diagnostic lines from US1 — opt-in, zero overhead by default (AGENTS.md hard rule: stdlib `logging` only, KOSMOS_-prefixed env, no `print()`).
+3. **Given** `UMMAYA_CHAT_REQUEST_DUMP=1` in env, **When** any subsequent multi-turn run executes, **Then** backend stderr re-emits the diagnostic lines from US1 — opt-in, zero overhead by default (AGENTS.md hard rule: stdlib `logging` only, UMMAYA_-prefixed env, no `print()`).
 
 ---
 
@@ -105,7 +105,7 @@ After diagnosis converges, the active hypothesis (H1 / H2 / H3) is documented as
 
 - **Tool-result re-injection between turns** — The agentic loop injects synthetic `role="tool"` messages mid-turn. Does the count of tool-result messages between turn 1's user message and turn 2's user message change the contamination? (Likely H3 signal.)
 - **`session_id` collision on FriendliAI side** — Does the contamination disappear if the TUI rotates `session_id` on every `ChatRequestFrame`? (H2 isolation test — but breaks Spec 027 session continuity, so ONLY a diagnostic, never a fix.)
-- **`enable_thinking=false` flag** — Does setting `KOSMOS_K_EXAONE_THINKING=false` eliminate the contamination, or merely hide the reasoning blob while the tool calls remain wrong? (Discriminates H2 from H3.)
+- **`enable_thinking=false` flag** — Does setting `UMMAYA_K_EXAONE_THINKING=false` eliminate the contamination, or merely hide the reasoning blob while the tool calls remain wrong? (Discriminates H2 from H3.)
 - **First-turn-only sessions** — Does a session with only one turn ever show this symptom? (Negative control — should always be NO; if YES, the bug is unrelated to multi-turn and is in single-turn message ordering.)
 - **Three-or-more-turn drift** — Does the contamination amplify with turn count, or is it strictly turn-2-replays-turn-1? (Discriminates O(1) state from accumulating residue.)
 - **Tool-result-only second turn** — If turn 1 errors and the user retries identically, does the same contamination shape appear? (Isolates user-text-content from tool-result-state.)
@@ -115,9 +115,9 @@ After diagnosis converges, the active hypothesis (H1 / H2 / H3) is documented as
 
 ### Functional Requirements — Diagnosis Phase (US1)
 
-- **FR-001**: Backend `_handle_chat_request` MUST emit a `[CHAT_REQUEST_DUMP] turn=<N> ...` stderr line on every invocation when `KOSMOS_CHAT_REQUEST_DUMP=1`. The line MUST contain: the full `frame.messages` array (each entry's role + content first 256 chars + tool_call_id if present), the `correlation_id`, the `session_id`, and a turn counter scoped to the session.
+- **FR-001**: Backend `_handle_chat_request` MUST emit a `[CHAT_REQUEST_DUMP] turn=<N> ...` stderr line on every invocation when `UMMAYA_CHAT_REQUEST_DUMP=1`. The line MUST contain: the full `frame.messages` array (each entry's role + content first 256 chars + tool_call_id if present), the `correlation_id`, the `session_id`, and a turn counter scoped to the session.
 - **FR-002**: Backend MUST emit a `[REASONING_PREVIEW] turn=<N> first1024=<...>` stderr line containing the first 1024 bytes of K-EXAONE's `reasoning_content` for that turn, on the same env gate. Truncate at 1024 to bound log size; mark truncation explicitly.
-- **FR-003**: Frontend `tui/src/query/deps.ts:122-130` MUST emit a `[CHAT_MESSAGES_BUILT] turn=<N> count=<K> tail_role=<...> tail_text_first256=<...>` stderr line on every `callModel` invocation when `KOSMOS_QUERY_TRACE=1` (the existing trace gate — extend, do not add a new env var).
+- **FR-003**: Frontend `tui/src/query/deps.ts:122-130` MUST emit a `[CHAT_MESSAGES_BUILT] turn=<N> count=<K> tail_role=<...> tail_text_first256=<...>` stderr line on every `callModel` invocation when `UMMAYA_QUERY_TRACE=1` (the existing trace gate — extend, do not add a new env var).
 - **FR-004**: A new `specs/spec-multi-turn-contamination/scripts/repro-two-turn.sh` MUST execute the canonical two-turn scenario (hospital → disaster-alert) inside the tmux capture harness, capture all three diagnostic streams (FR-001/FR-002/FR-003), and snapshot `snap-NNN-*.txt` per turn.
 - **FR-005**: Diagnostic logs from one canonical reproduction run MUST be committed under `specs/spec-multi-turn-contamination/diagnostic-runs/<timestamp>/` so the verdict in US4's ADR is reproducible by reading repo state alone.
 
@@ -128,12 +128,12 @@ After diagnosis converges, the active hypothesis (H1 / H2 / H3) is documented as
 - **FR-008**: The fix MUST be at the layer the diagnostic phase confirms (FR-001..FR-005). The spec deliberately does NOT pre-commit to the fix layer; tasks.md derives the fix surface from the diagnostic verdict.
 - **FR-009**: If the fix involves changing the IPC `ChatRequestFrame` envelope (Spec 032), the change MUST follow Spec 032 ADR cycle — no silent envelope mutation. If the fix is purely Python or purely TS, the change MUST cite the file + line range under `.references/claude-code-sourcemap/restored-src/` (CC analog) per AGENTS.md `feedback_cc_source_migration_pattern`.
 - **FR-010**: The fix MUST NOT introduce any new runtime dependency (AGENTS.md hard rule — Python or TS).
-- **FR-011**: The fix MUST NOT touch the K-EXAONE / FriendliAI client surface (`src/kosmos/llm/client.py` and adjacent) unless the diagnostic phase confirms H2 (K-EXAONE itself), in which case the fix MUST cite Spec 2521's strict CC byte-copy procedure for any LLM-client-layer changes.
+- **FR-011**: The fix MUST NOT touch the K-EXAONE / FriendliAI client surface (`src/ummaya/llm/client.py` and adjacent) unless the diagnostic phase confirms H2 (K-EXAONE itself), in which case the fix MUST cite Spec 2521's strict CC byte-copy procedure for any LLM-client-layer changes.
 
 ### Functional Requirements — Regression Lock (US3)
 
 - **FR-012**: A `tui/src/__tests__/multi-turn-contamination.test.ts` Bun unit test MUST exist that asserts: given a stub bridge, a two-turn `callModel` flow emits two `ChatRequestFrame`s where the second frame's `messages` array tail is the second user message AND the first frame's `messages` array tail is the first user message.
-- **FR-013**: A `specs/spec-multi-turn-contamination/scripts/regress-multi-turn.sh` Layer 5 tmux smoke MUST exist that runs against a deterministic fake LLM backend (`KOSMOS_LLM_PROVIDER=fake-multi-turn`) and asserts via `wait_for_pane <regex> <deadline>` that turn-2's reasoning blob references turn-2's intent, NOT turn-1's. (Real FriendliAI verification stays out of CI per AGENTS.md.)
+- **FR-013**: A `specs/spec-multi-turn-contamination/scripts/regress-multi-turn.sh` Layer 5 tmux smoke MUST exist that runs against a deterministic fake LLM backend (`UMMAYA_LLM_PROVIDER=fake-multi-turn`) and asserts via `wait_for_pane <regex> <deadline>` that turn-2's reasoning blob references turn-2's intent, NOT turn-1's. (Real FriendliAI verification stays out of CI per AGENTS.md.)
 - **FR-014**: The diagnostic stderr emitters from FR-001/FR-002/FR-003 MUST remain in production code, gated by env var, with documented activation in `docs/testing.md § TUI verification methodology` so future contamination diagnoses skip re-instrumentation.
 - **FR-015**: Regression test failures MUST report enough detail to discriminate among H1/H2/H3 directly from the test output (e.g. log the captured `messages` array on assertion failure).
 
@@ -157,7 +157,7 @@ After diagnosis converges, the active hypothesis (H1 / H2 / H3) is documented as
 - **SC-003**: A 4-turn scenario (US2 acceptance #4) shows zero contamination across all four turns. Per-turn reasoning-blob keyword check passes for turns 2 / 3 / 4.
 - **SC-004**: One ADR + ≥3 diagnostic-run log directories are committed under `docs/adr/` and `specs/spec-multi-turn-contamination/diagnostic-runs/`. The Decision section of the ADR cites a specific log file path + line in those directories.
 - **SC-005**: Zero new runtime dependencies introduced (Python `pyproject.toml` and TS `tui/package.json` lockfile diff = 0 lines).
-- **SC-006**: Diagnostic env vars `KOSMOS_CHAT_REQUEST_DUMP=1` and `KOSMOS_QUERY_TRACE=1` documented in `docs/testing.md § TUI verification methodology`. Manual run instructions reproduce the diagnostic-runs/ artefacts byte-identically (modulo timestamps).
+- **SC-006**: Diagnostic env vars `UMMAYA_CHAT_REQUEST_DUMP=1` and `UMMAYA_QUERY_TRACE=1` documented in `docs/testing.md § TUI verification methodology`. Manual run instructions reproduce the diagnostic-runs/ artefacts byte-identically (modulo timestamps).
 - **SC-007**: Regression test in CI catches a synthetic re-introduction of the bug — verified by deliberately reverting the fix in a throwaway commit and observing the test fail.
 
 ## Assumptions
@@ -165,7 +165,7 @@ After diagnosis converges, the active hypothesis (H1 / H2 / H3) is documented as
 - **A1** — The contamination is reproducible on demand with the canonical two-turn scenario (hospital → disaster-alert). If the bug turns out to be flaky / non-deterministic under reproduction, the spec's diagnostic phase MUST escalate to capturing N consecutive runs and reporting the failure rate before proceeding to fix.
 - **A2** — K-EXAONE on FriendliAI Tier 1 is the operative LLM (per AGENTS.md L1-A pillar A1 + memory `project_friendli_tier_wait`). The fix MUST hold for that exact LLM + provider combination; behavior on alternative providers is out of scope.
 - **A3** — The existing Spec 032 IPC envelope is correct in shape; the contamination is at the message-content layer or below (frontend assembly, backend forwarding, or LLM internal state), NOT at the envelope-discrimination layer.
-- **A4** — The agentic loop's bound (`KOSMOS_AGENTIC_LOOP_MAX_TURNS=8`) is unrelated to this bug; the contamination occurs on turn 2 well below that bound.
+- **A4** — The agentic loop's bound (`UMMAYA_AGENTIC_LOOP_MAX_TURNS=8`) is unrelated to this bug; the contamination occurs on turn 2 well below that bound.
 - **A5** — The TUI's React message store correctly accumulates user messages across turns (verified by Spec 287 + Spec 1635 acceptance smokes); if H1 is confirmed, the contamination is in the snapshot timing of `messages` BY `callModel`, not in the store itself.
 - **A6** — `parallel_tool_calls=False` (Spec 2521 hotfix, memory `feedback_llm_api_option_first_suspect`) is in effect; this spec does NOT re-litigate that decision.
 - **A7** — A deterministic fake LLM backend (`fake-multi-turn`) suitable for CI smoke (FR-013) either exists or can be added as a tiny extension to the existing test infra without introducing a new dependency.
@@ -175,7 +175,7 @@ After diagnosis converges, the active hypothesis (H1 / H2 / H3) is documented as
 ### Out of Scope (Permanent)
 
 - **Full conversation summarization / compaction redesign** — Spec 026 owns prompt-cache + compaction. This spec touches multi-turn message ordering only, not summarization.
-- **K-EXAONE model fine-tuning or system-prompt re-engineering** — KOSMOS does not control the K-EXAONE model. If H2 confirms, the fix is workaround at the IPC / client layer, not a model-side change.
+- **K-EXAONE model fine-tuning or system-prompt re-engineering** — UMMAYA does not control the K-EXAONE model. If H2 confirms, the fix is workaround at the IPC / client layer, not a model-side change.
 - **Cross-session contamination** — This spec is scoped to multi-turn WITHIN ONE session. Cross-session leakage is a separate (and so-far unobserved) failure mode tracked separately if it ever surfaces.
 - **Performance optimization of the agentic loop** — The fix MUST be O(1)-per-turn correct, but speedups beyond that are not in scope.
 - **TUI / Ink UI changes for displaying turn boundaries** — Citizen-facing UI is unchanged. The fix is invisible-when-correct (which is the point).

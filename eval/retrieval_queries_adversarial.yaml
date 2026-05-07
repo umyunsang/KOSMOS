@@ -8,7 +8,7 @@
 # Target recall@5 on hybrid backend: >= 0.80 (SC-002, T024)
 # Target recall@5 on bm25 backend:   <  0.50 (SC-002, T024)
 #
-# Token overlap computed with kosmos.tools.tokenizer.tokenize which uses
+# Token overlap computed with ummaya.tools.tokenizer.tokenize which uses
 # kiwipiepy POS filter (NNG, NNP, VV, VA, SL).
 
 queries:

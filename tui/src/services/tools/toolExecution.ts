@@ -87,8 +87,8 @@ import {
 } from '../../utils/sessionActivity.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
 import { Stream } from '../../utils/stream.js'
-// KOSMOS Epic #2637 — Spec 021 OTEL Tool layer wire (4-tier OTEL, R-6).
-// 9 inline stubs replaced with KOSMOS OTEL helper (toolSpans.ts).
+// UMMAYA Epic #2637 — Spec 021 OTEL Tool layer wire (4-tier OTEL, R-6).
+// 9 inline stubs replaced with UMMAYA OTEL helper (toolSpans.ts).
 import {
   logOTelEvent,
   addToolContentEvent,

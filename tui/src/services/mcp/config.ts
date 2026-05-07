@@ -40,7 +40,7 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../analytics/index.js'
-// services/mcp/claudeai removed in P1+P2 (Spec 1633); KOSMOS does not use claude.ai MCP proxy.
+// services/mcp/claudeai removed in P1+P2 (Spec 1633); UMMAYA does not use claude.ai MCP proxy.
 const fetchClaudeAIMcpConfigsIfEligible = async (): Promise<Record<string, ScopedMcpServerConfig>> => ({})
 import { expandEnvVarsInString } from './envExpansion.js'
 import {

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
-# KOSMOS OTel Collector Contrib — local dev pipeline contract.
+# UMMAYA OTel Collector Contrib — local dev pipeline contract.
 # Spec: specs/028-otlp-collector/
 # Ref: research.md §3 (Reference mapping)
 #
@@ -42,7 +42,7 @@ processors:
       - key: patient.address
         action: delete
       # --- hash the raw location query (preserve cardinality, redact content) ---
-      - key: kosmos.location.query
+      - key: ummaya.location.query
         action: hash
         # algorithm: SHA-256 (collector default for `hash` action since v0.92.0)
 
@@ -57,9 +57,9 @@ exporters:
     # Set endpoint to base URL only (e.g. http://langfuse-web:3000/api/public/otel),
     # NOT the full traces path — otherwise the request lands at .../v1/traces/v1/traces.
     # Ref: opentelemetry-collector-contrib otlphttpexporter README
-    endpoint: "${env:KOSMOS_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel}"
+    endpoint: "${env:UMMAYA_LANGFUSE_OTLP_ENDPOINT:-http://langfuse-web:3000/api/public/otel}"
     headers:
-      Authorization: "${env:KOSMOS_LANGFUSE_OTLP_AUTH_HEADER}"
+      Authorization: "${env:UMMAYA_LANGFUSE_OTLP_AUTH_HEADER}"
       x-langfuse-ingestion-version: "4"
     compression: gzip
     tls:

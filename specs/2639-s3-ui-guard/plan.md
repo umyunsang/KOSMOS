@@ -11,10 +11,10 @@
 
 | Decision | Reference |
 |---|---|
-| **D1 — TeleportResumeWrapper DROP** | `specs/cc-migration-audit/decisions.md § S3 D1` (양쪽 DROP, NEVER-PORT 박제) · `specs/cc-migration-audit/scope-S3-components-screens.md § 4 #7 + § 10 NEVER-PORT 명단` · `AGENTS.md § CORE THESIS` (KOSMOS = CC + 2 swap; 1P-Anthropic 비즈니스 surface 는 정당한 제3 제거) · `feedback_kosmos_scope_cc_plus_two_swaps` 메모리 |
+| **D1 — TeleportResumeWrapper DROP** | `specs/cc-migration-audit/decisions.md § S3 D1` (양쪽 DROP, NEVER-PORT 박제) · `specs/cc-migration-audit/scope-S3-components-screens.md § 4 #7 + § 10 NEVER-PORT 명단` · `AGENTS.md § CORE THESIS` (UMMAYA = CC + 2 swap; 1P-Anthropic 비즈니스 surface 는 정당한 제3 제거) · `feedback_ummaya_scope_cc_plus_two_swaps` 메모리 |
 | **D2 — SHA-256 fail-build CI invariant** | `specs/cc-migration-audit/decisions.md § S3 D2` · `specs/cc-migration-audit/scope-S3-components-screens.md § 9 D2 + § 7 W1~W12` · `AGENTS.md § TUI verification` (5 layer 가 catch 못 하는 stale-import / SHA drift 회귀 차단) · `.github/workflows/tui-attribution-gate.yml` + `tui/scripts/diff-upstream.sh` (FR-011/SC-9 패턴 재사용) |
 | **D3 — 5파일 SWAP 주석 백필** | `specs/cc-migration-audit/decisions.md § S3 D3` · `specs/cc-migration-audit/scope-S3-components-screens.md § 5.5 8-66 lines table + § 9 D3` · CC restored-src 의 5 파일 본문 (divergence cause 식별) · 기존 `// SWAP:` 패턴 (Markdown.tsx, Messages.tsx, AssistantThinkingMessage.tsx) |
-| **whitelist YAML schema** | `tui/src/sdk-compat.js` (W1 substitution path) · `docs/requirements/kosmos-migration-tree.md § 마스코트 · 브랜딩` (W2/W3/W4/W6) · `prompts/system_v1.md` (한국어 i18n W5 source) · Spec 2519 PR (W10 Korean IME) · Spec 2521 docs (W9 K-EXAONE multi-tool layout) |
+| **whitelist YAML schema** | `tui/src/sdk-compat.js` (W1 substitution path) · `docs/requirements/ummaya-migration-tree.md § 마스코트 · 브랜딩` (W2/W3/W4/W6) · `prompts/system_v1.md` (한국어 i18n W5 source) · Spec 2519 PR (W10 Korean IME) · Spec 2521 docs (W9 K-EXAONE multi-tool layout) |
 | **CC sourcemap baseline distribution** | `.gitignore` 가 `.references/` 제외 → vendored snapshot 방식 (`specs/2639-s3-ui-guard/fixtures/cc-baseline-shas.txt`). 384 entry 정도 (audit § 11 enumeration). |
 
 **Constitution check**: `.specify/memory/constitution.md` 의 "spec-first, ports byte-identical, swap-citations 필수" 원칙과 정합. 본 Epic 자체가 byte-identical default 를 박제하는 가드이므로 constitution 의 first-class 적용.
@@ -40,10 +40,10 @@
 │      1. checkout (fetch-depth: 1)                                      │
 │      2. read fixtures/cc-baseline-shas.txt                             │
 │      3. read .cc-byte-identical-whitelist.yaml                         │
-│      4. for each KOSMOS file in slice:                                 │
+│      4. for each UMMAYA file in slice:                                 │
 │           a. compute sha256                                            │
 │           b. lookup CC baseline by relative path                       │
-│           c. if path missing in CC → PASS (KOSMOS-only)                │
+│           c. if path missing in CC → PASS (UMMAYA-only)                │
 │           d. if sha matches CC → PASS                                  │
 │           e. if sha mismatch + path in whitelist → PASS                │
 │           f. else → FAIL with file + cause                             │
@@ -52,7 +52,7 @@
                            │ blocks merge if FAIL
                            ▼
 ┌────────────────────────────────────────────────────────────────────────┐
-│  KOSMOS PR author                                                      │
+│  UMMAYA PR author                                                      │
 │    - SHA mismatch → choose:                                            │
 │        (a) revert change to restore byte-identical, OR                 │
 │        (b) add whitelist entry with cause + spec_ref                   │
@@ -79,11 +79,11 @@ schema:
 
 causes:
   W1: "@anthropic-ai/sdk → src/sdk-compat.js import substitution"
-  W2: "Brand string substitution (Claude Code → KOSMOS)"
+  W2: "Brand string substitution (Claude Code → UMMAYA)"
   W3: "Mascot character swap (Clawd → UFO)"
   W4: "Brand glyph (✻ preserved)"
   W5: "Korean i18n string injection"
-  W6: "Color palette (CC blue → KOSMOS violet #a78bfa)"
+  W6: "Color palette (CC blue → UMMAYA violet #a78bfa)"
   W7: "Anthropic 1P-business surface removed (no replacement)"
   W8: "sourceMappingURL trailing line stripped"
   W9: "K-EXAONE-specific render (reasoning_content, multi-tool layout)"
@@ -95,7 +95,7 @@ causes:
 entries:
   - path: tui/src/components/messages/UserToolResultMessage/utils.tsx
     cause: W1
-    spec_ref: docs/requirements/kosmos-migration-tree.md § L1-A
+    spec_ref: docs/requirements/ummaya-migration-tree.md § L1-A
     notes: "@anthropic-ai/sdk import → src/sdk-compat.js"
   # ... ~60 entries total per audit § 5
 ```
@@ -104,7 +104,7 @@ entries:
 
 생성 명령:
 ```bash
-cd /Users/um-yunsang/KOSMOS/.references/claude-code-sourcemap/restored-src/src
+cd /Users/um-yunsang/UMMAYA/.references/claude-code-sourcemap/restored-src/src
 {
   find components -type f \( -name '*.ts' -o -name '*.tsx' \)
   find screens -type f \( -name '*.ts' -o -name '*.tsx' \)
@@ -112,7 +112,7 @@ cd /Users/um-yunsang/KOSMOS/.references/claude-code-sourcemap/restored-src/src
   echo "dialogLaunchers.tsx"
   echo "interactiveHelpers.tsx"
   echo "replLauncher.tsx"
-} | sort | xargs shasum -a 256 > /Users/um-yunsang/KOSMOS-w-2639/specs/2639-s3-ui-guard/fixtures/cc-baseline-shas.txt
+} | sort | xargs shasum -a 256 > /Users/um-yunsang/UMMAYA-w-2639/specs/2639-s3-ui-guard/fixtures/cc-baseline-shas.txt
 ```
 
 포맷: `shasum -a 256` 표준 출력 (`<hex_sha>  <relative_path>`).
@@ -159,15 +159,15 @@ slice_paths = walk(tui/src/{components,screens,outputStyles,moreright})
             + [tui/src/{dialogLaunchers,interactiveHelpers,replLauncher}.tsx]
 
 failures = []
-stats = {"total": 0, "byte_identical": 0, "whitelisted": 0, "kosmos_only": 0, "failed": 0}
+stats = {"total": 0, "byte_identical": 0, "whitelisted": 0, "ummaya_only": 0, "failed": 0}
 
-for kosmos_path in slice_paths:
-    rel = relative_to_tui_src(kosmos_path)  # e.g., "components/App.tsx"
-    actual_sha = sha256(read(kosmos_path))
+for ummaya_path in slice_paths:
+    rel = relative_to_tui_src(ummaya_path)  # e.g., "components/App.tsx"
+    actual_sha = sha256(read(ummaya_path))
     cc_sha = baseline.get(rel)
 
     if cc_sha is None:
-        stats["kosmos_only"] += 1; continue
+        stats["ummaya_only"] += 1; continue
     if actual_sha == cc_sha:
         stats["byte_identical"] += 1; continue
 
@@ -184,7 +184,7 @@ for kosmos_path in slice_paths:
 if failures:
     for f in failures: print(f"::error file={f[0]}::SHA-256 mismatch — {f[3]} (got {f[1][:12]}, expected {f[2][:12]})")
     sys.exit(1)
-print(f"PASS · {stats['byte_identical']} byte-identical · {stats['whitelisted']} whitelisted · {stats['kosmos_only']} KOSMOS-only · {stats['failed']} failed")
+print(f"PASS · {stats['byte_identical']} byte-identical · {stats['whitelisted']} whitelisted · {stats['ummaya_only']} UMMAYA-only · {stats['failed']} failed")
 ```
 
 ## Phase 3 — D3 SWAP 주석 박제
@@ -197,7 +197,7 @@ print(f"PASS · {stats['byte_identical']} byte-identical · {stats['whitelisted'
 // CC reference: .references/claude-code-sourcemap/restored-src/src/components/messages/AssistantTextMessage.tsx
 // Divergence LOC: 18 (services/api/errors inlined; secureStorage stub; sdk-compat import)
 // Spec citation: #1633 (Anthropic services/api removal), #2293 (secureStorage removal)
-// Justification: Anthropic services/api/errors and secureStorage modules removed by KOSMOS dead-code cleanup; constants and isMacOsKeychainLocked → false stub inlined to preserve component contract.
+// Justification: Anthropic services/api/errors and secureStorage modules removed by UMMAYA dead-code cleanup; constants and isMacOsKeychainLocked → false stub inlined to preserve component contract.
 ```
 
 ### `tui/src/components/permissions/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx`
@@ -206,7 +206,7 @@ print(f"PASS · {stats['byte_identical']} byte-identical · {stats['whitelisted'
 // CC reference: .references/claude-code-sourcemap/restored-src/src/components/permissions/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx
 // Divergence LOC: 51 (autoNameSessionFromPlan no-op; UUID/generateSessionName/getSettings_DEPRECATED removed; sdk-compat)
 // Spec citation: #1633 (Anthropic queryHaiku auto-naming removal), #2293 (utils/auth removal)
-// Justification: Anthropic queryHaiku-driven auto-naming requires Anthropic SDK; KOSMOS exits plan mode without auto-naming.
+// Justification: Anthropic queryHaiku-driven auto-naming requires Anthropic SDK; UMMAYA exits plan mode without auto-naming.
 ```
 
 ### `tui/src/replLauncher.tsx`
@@ -224,7 +224,7 @@ print(f"PASS · {stats['byte_identical']} byte-identical · {stats['whitelisted'
 // CC reference: .references/claude-code-sourcemap/restored-src/src/interactiveHelpers.tsx
 // Divergence LOC: 51 (Grove dialog removed; logEvent calls removed; getClaudeAIOAuthTokens removed; channel-allowlist OAuth check fall-through)
 // Spec citation: #1633 (Anthropic services/api/grove + utils/auth removal), audit § 5.7
-// Justification: Grove growth-experiment, Anthropic OAuth, and tengu_* analytics events all swap-1 dependent (claude.ai 계정 + Anthropic telemetry); KOSMOS removes them and falls through to no-OAuth branches.
+// Justification: Grove growth-experiment, Anthropic OAuth, and tengu_* analytics events all swap-1 dependent (claude.ai 계정 + Anthropic telemetry); UMMAYA removes them and falls through to no-OAuth branches.
 ```
 
 ### `tui/src/screens/REPL.tsx`
@@ -279,7 +279,7 @@ AGENTS.md § TUI verification 의 5-layer 중 본 Epic 변경이 모두 "comment
 5. Snapshot trigger — frames/ 디렉토리에 stage-별 snap-NNN-*.txt 박제
 
 기대 frames:
-- snap-000-boot.txt (KOSMOS 브랜딩 + tool_registry verified)
+- snap-000-boot.txt (UMMAYA 브랜딩 + tool_registry verified)
 - snap-001-help.txt (help overlay rendered)
 - snap-002-exit.txt (graceful shutdown)
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env -S uv run python
 # SPDX-License-Identifier: Apache-2.0
-"""Full-backend channel probe — spawns the actual KOSMOS stdio backend, sends
+"""Full-backend channel probe — spawns the actual UMMAYA stdio backend, sends
 a real ChatRequestFrame, and dumps every IPC frame back, including the channel
 each AssistantChunkFrame uses (delta = visible content vs thinking = reasoning).
 
@@ -27,7 +27,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 async def main() -> None:
     enable_thinking = os.environ.get("PROBE_THINKING", "false")
     env = dict(os.environ)
-    env["KOSMOS_K_EXAONE_THINKING"] = enable_thinking
+    env["UMMAYA_K_EXAONE_THINKING"] = enable_thinking
 
     sid = str(uuid.uuid4())
     cid = str(uuid.uuid4())
@@ -39,7 +39,7 @@ async def main() -> None:
             "type": "function",
             "function": {
                 "name": n,
-                "description": f"KOSMOS {n} primitive (probe stub)",
+                "description": f"UMMAYA {n} primitive (probe stub)",
                 "parameters": {"type": "object", "properties": {}, "additionalProperties": True},
             },
         }
@@ -73,7 +73,7 @@ async def main() -> None:
     }
 
     proc = await asyncio.create_subprocess_exec(
-        "uv", "run", "kosmos", "--ipc", "stdio",
+        "uv", "run", "ummaya", "--ipc", "stdio",
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
@@ -142,7 +142,7 @@ async def main() -> None:
 
     print("=" * 78)
     print(f"PROBE_THINKING={enable_thinking}")
-    print(f"KOSMOS_K_EXAONE_THINKING={env.get('KOSMOS_K_EXAONE_THINKING')}")
+    print(f"UMMAYA_K_EXAONE_THINKING={env.get('UMMAYA_K_EXAONE_THINKING')}")
     print("=" * 78)
     print(f"\ndelta (visible content) bytes: {delta_bytes}")
     print(f"thinking (reasoning) bytes:    {thinking_bytes}")

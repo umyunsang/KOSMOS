@@ -145,7 +145,7 @@ describe('useKoreanIME.setBuffer — Spec 288 Codex P1 history-navigate recall',
     unmount()
   })
 
-  it('setBuffer carries Hangul content verbatim (KOSMOS citizen-query use case)', async () => {
+  it('setBuffer carries Hangul content verbatim (UMMAYA citizen-query use case)', async () => {
     // Korean queries are the actual payload for Tier-1 history recall.
     // Frame assertion is skipped here because ink-testing-library's default
     // terminal width + CJK width doubling can break the frame over multiple

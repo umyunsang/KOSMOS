@@ -10,7 +10,7 @@ This Epic introduces 1 new TypeScript type and re-exposes 2 existing CC function
 
 **Module**: `tui/src/utils/permissions/yoloClassifier.ts`
 
-**Source-of-truth**: KOSMOS-side stub (CC's interior is Spec 1633 deletion target; the type *shape* is preserved for callsite stability).
+**Source-of-truth**: UMMAYA-side stub (CC's interior is Spec 1633 deletion target; the type *shape* is preserved for callsite stability).
 
 **Definition**:
 
@@ -47,7 +47,7 @@ export type YoloClassifierResult = {
 **Rationale**: Byte-identical with the inline shape currently absorbed in `permissions.ts:103-145`. Moving the type to the sibling `yoloClassifier.ts` module is a pure refactor — callsites see the same surface.
 
 **Validation rules**:
-- Always returned with `unavailable: true, shouldBlock: false` (KOSMOS auto-mode = no-op per Spec 1633).
+- Always returned with `unavailable: true, shouldBlock: false` (UMMAYA auto-mode = no-op per Spec 1633).
 - All optional fields remain `undefined` in the stub (CC's stage1/stage2 telemetry not surfaced).
 
 **Lifecycle**: Created on every `classifyYoloAction` invocation; consumed by `permissions.ts` decision branches; not persisted.
@@ -118,7 +118,7 @@ export function extractConversationText(messages: Message[]): string
 2. Concatenates extracted text content with `\n` separator.
 3. Tail-slices to last 1000 chars (`MAX_CONVERSATION_TEXT`).
 
-**Note**: This helper is also re-imported by CC's `commands/rename/generateSessionName.ts` — KOSMOS keeps that helper inlined locally (Spec 1633 deletion of `generateSessionName.ts` itself), so KOSMOS only needs one copy here.
+**Note**: This helper is also re-imported by CC's `commands/rename/generateSessionName.ts` — UMMAYA keeps that helper inlined locally (Spec 1633 deletion of `generateSessionName.ts` itself), so UMMAYA only needs one copy here.
 
 ### `parseNaturalLanguageDateTime`
 
@@ -166,7 +166,7 @@ export async function classifyYoloAction(
 ): Promise<YoloClassifierResult>
 ```
 
-**Behavior contract**: always returns `{unavailable: true, shouldBlock: false}` (KOSMOS auto-mode = no-op per Spec 1633). Promise resolves synchronously without awaiting any I/O.
+**Behavior contract**: always returns `{unavailable: true, shouldBlock: false}` (UMMAYA auto-mode = no-op per Spec 1633). Promise resolves synchronously without awaiting any I/O.
 
 ### `formatActionForClassifier`
 
@@ -178,11 +178,11 @@ export async function classifyYoloAction(
 export function formatActionForClassifier(toolName: string, input: unknown): string
 ```
 
-**Behavior contract**: always returns empty string `''`. CC signature compatibility only — not invoked for any meaningful classification in KOSMOS.
+**Behavior contract**: always returns empty string `''`. CC signature compatibility only — not invoked for any meaningful classification in UMMAYA.
 
 ## Migration Map (caller stability invariant)
 
-| Caller | Before (KOSMOS main) | After (Epic G) | Behavior |
+| Caller | Before (UMMAYA main) | After (Epic G) | Behavior |
 |---|---|---|---|
 | `tui/src/cli/print.ts:156` | `import { generateSessionTitle } from 'src/utils/sessionTitle.js'` (broken — file missing) | unchanged (resolves naturally) | Unchanged |
 | `tui/src/cli/print.ts:3803` | `await generateSessionTitle(description, titleSignal)` (dead — unreachable due to broken import) | resolves to `Promise<string \| null>` | Restored |
@@ -194,4 +194,4 @@ export function formatActionForClassifier(toolName: string, input: unknown): str
 
 ## Constitution Re-check (post-Phase 1)
 
-All 6 principles still PASS. No new types violate Pydantic v2 strict typing (TypeScript-only Epic). No KOSMOS-invented permission classifications introduced (`YoloClassifierResult` is byte-identical CC shape preserved for callsite stability, not a new policy invention).
+All 6 principles still PASS. No new types violate Pydantic v2 strict typing (TypeScript-only Epic). No UMMAYA-invented permission classifications introduced (`YoloClassifierResult` is byte-identical CC shape preserved for callsite stability, not a new policy invention).

@@ -10,7 +10,7 @@ fake-LLM server. The server scans all `*.json` files except `aimock.json`
 (the server config) and loads every `fixtures[]` entry into an in-memory
 match table.
 
-When the KOSMOS Python backend POSTs to `/v1/chat/completions`, the server
+When the UMMAYA Python backend POSTs to `/v1/chat/completions`, the server
 checks the last user message against each fixture's `match` rule (first-match
 wins, fixture file load order is alphabetical).
 
@@ -78,7 +78,7 @@ data: [DONE]
 
 Arguments are streamed as JSON string fragments (20 chars/chunk by aimock-bun,
 or a single chunk for the real aimock image — behavior is implementation-defined).
-The Python LLM client (`src/kosmos/llm/client.py`) accumulates fragments and
+The Python LLM client (`src/ummaya/llm/client.py`) accumulates fragments and
 delivers a complete `ToolCallFrame` to the TUI via IPC.
 
 ---
@@ -112,7 +112,7 @@ the LLM with a longer message history, the messages=[2] turn also contains
 ### 2. Agentic loop is infinite with tool_call-only fixtures
 
 When a fixture always returns a `toolCalls` response (never a final text
-answer), the KOSMOS Python backend's agentic loop will:
+answer), the UMMAYA Python backend's agentic loop will:
 
 1. Receive tool_call → dispatch mock adapter → get timeseries result
 2. Append result to conversation history → call LLM again

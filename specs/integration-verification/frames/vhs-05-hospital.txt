@@ -301,12 +301,12 @@
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -353,12 +353,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯
@@ -405,12 +405,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ 강남역 근처 내과 병원 알려줘
@@ -457,12 +457,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ❯ 강남역 근처 내과 병원 알려줘
@@ -509,12 +509,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 강남역 근처 내과 병원 알려줘
 
@@ -561,12 +561,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 강남역 근처 내과 병원 알려줘
 
@@ -613,12 +613,12 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-> cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+> cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 강남역 근처 내과 병원 알려줘
 
@@ -665,9 +665,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
 
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 강남역 근처 내과 병원 알려줘
 
@@ -717,9 +717,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   6. 365엠씨(mc)병원
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 강남역 근처 내과 병원 알려줘
 
@@ -769,9 +769,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   6. 365엠씨(mc)병원
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 강남역 근처 내과 병원 알려줘
 
@@ -821,9 +821,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   6. 365엠씨(mc)병원
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 강남역 근처 내과 병원 알려줘
 
@@ -873,9 +873,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   6. 365엠씨(mc)병원
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 강남역 근처 내과 병원 알려줘
 
@@ -925,9 +925,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   6. 365엠씨(mc)병원
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 강남역 근처 내과 병원 알려줘
 
@@ -977,9 +977,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   6. 365엠씨(mc)병원
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 강남역 근처 내과 병원 알려줘
 
@@ -1029,9 +1029,9 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
 
   6. 365엠씨(mc)병원
 ────────────────────────────────────────────────────────────────────────────────
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 강남역 근처 내과 병원 알려줘
 

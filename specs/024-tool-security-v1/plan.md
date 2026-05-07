@@ -10,8 +10,8 @@ Synthesize six security research lanes (Epic #605) plus the cross-lane consisten
 **Primary outputs** (spec-deliverable layer):
 
 1. Normative document `docs/security/tool-template-security-spec-v1.md` — threats, controls, invariants, PR checklist diff, with every control citing at least one Korean statutory artifact (PIPA, 전자정부법, 전자서명법, K-ISMS-P) and at least one international standard (NIST SP 800-63-4, OWASP ASVS 4.0, OWASP Top 10 for LLM, ISO 27001, NIST SP 800-207).
-2. Pydantic v2 `ToolCallAuditRecord` model + JSON Schema Draft 2020-12 artifact under `docs/security/` (schema) and `src/kosmos/security/audit.py` (model seed).
-3. `GovAPITool` schema extension at `src/kosmos/tools/models.py` adding four mandatory fields: `auth_level`, `pipa_class`, `is_irreversible`, `dpa_reference`.
+2. Pydantic v2 `ToolCallAuditRecord` model + JSON Schema Draft 2020-12 artifact under `docs/security/` (schema) and `src/ummaya/security/audit.py` (model seed).
+3. `GovAPITool` schema extension at `src/ummaya/tools/models.py` adding four mandatory fields: `auth_level`, `pipa_class`, `is_irreversible`, `dpa_reference`.
 4. OpenAPI 3.0 skeleton `docs/security/agent-delegation.openapi.yaml` covering consent creation, token issuance/refresh/introspection/revocation, grounded only in IETF RFCs (8628, 8693, 9068, 7636, 7662, 7009) and W3C VC Data Model v2.0 / DID Core.
 5. `docs/tool-adapters.md` PR checklist extension — minimum 5 new unified items covering the six research-lane domains.
 6. GitHub Actions SBOM workflow scaffold `.github/workflows/sbom.yml` — emits SPDX 2.3 and CycloneDX 1.6 on every push to `main` and every tag, with build-gate behavior on divergence.
@@ -33,10 +33,10 @@ Synthesize six security research lanes (Epic #605) plus the cross-lane consisten
 **Storage**: N/A at this layer. `ToolCallAuditRecord` is a schema contract. Actual append-only audit storage and Merkle chain construction are explicitly deferred.
 **Testing**: `pytest` unit tests for the extended `GovAPITool` registration invariants and the `ToolCallAuditRecord` round-trip validation. `@pytest.mark.live` is not exercised — the spec does not call external systems. JSON Schema validation of three worked audit-record examples is a CI step.
 **Target Platform**: Linux CI runner for SBOM workflow; macOS/Linux dev machines for Python-side changes. Pure-documentation artifacts are platform-agnostic.
-**Project Type**: Single project (spec + code seed within existing `src/kosmos/` tree). No new deployable surface.
+**Project Type**: Single project (spec + code seed within existing `src/ummaya/` tree). No new deployable surface.
 **Performance Goals**: None for the normative spec itself. The `ToolCallAuditRecord` model MUST validate in < 5 ms per record under pydantic v2 `model_validate` to ensure per-call overhead is negligible when the Merkle chain construction per Deferred Items row "Full Merkle audit chain implementation" lands.
 **Constraints**: Strict fail-closed semantics at `ToolRegistry.register()` — any missing or inconsistent new `GovAPITool` field raises at load time. No silent defaults for `auth_level`, `pipa_class`, `is_irreversible`, or `dpa_reference`.
-**Scale/Scope**: Covers 8 canonical tools (`lookup`, `pay`, `issue_certificate`, `submit_application`, `reserve_slot`, `subscribe_alert`, `resolve_location`, `check_eligibility`) — the full KOSMOS Tool Template surface. Spec length estimate: 2,500-3,500 lines of normative prose plus artifacts.
+**Scale/Scope**: Covers 8 canonical tools (`lookup`, `pay`, `issue_certificate`, `submit_application`, `reserve_slot`, `subscribe_alert`, `resolve_location`, `check_eligibility`) — the full UMMAYA Tool Template surface. Spec length estimate: 2,500-3,500 lines of normative prose plus artifacts.
 
 ## Constitution Check
 
@@ -75,7 +75,7 @@ specs/024-tool-security-v1/
 ### Source Code (repository root)
 
 ```text
-src/kosmos/
+src/ummaya/
 ├── tools/
 │   └── models.py           # EXTEND: add auth_level, pipa_class, is_irreversible, dpa_reference to GovAPITool
 ├── security/               # NEW module for this spec
@@ -100,7 +100,7 @@ tests/
 └── sbom.yml                # NEW: SPDX 2.3 + CycloneDX 1.6 generation on push to main + tag release
 ```
 
-**Structure Decision**: Single project (Option 1). The spec extends the existing `src/kosmos/` tree with a new `security/` submodule for audit-record typing and extends `tools/models.py` for the `GovAPITool` field additions. Documentation lands under a new `docs/security/` directory. No new top-level projects, no new deployable services, no TypeScript surface. This keeps the spec's code footprint minimal (the model contract plus registration invariants) while the full enforcement pipeline, Merkle chain construction, and delegation endpoint implementation land in separate epics per the Deferred Items table.
+**Structure Decision**: Single project (Option 1). The spec extends the existing `src/ummaya/` tree with a new `security/` submodule for audit-record typing and extends `tools/models.py` for the `GovAPITool` field additions. Documentation lands under a new `docs/security/` directory. No new top-level projects, no new deployable services, no TypeScript surface. This keeps the spec's code footprint minimal (the model contract plus registration invariants) while the full enforcement pipeline, Merkle chain construction, and delegation endpoint implementation land in separate epics per the Deferred Items table.
 
 ## Complexity Tracking
 

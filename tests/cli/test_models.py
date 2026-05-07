@@ -6,7 +6,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kosmos.cli.models import COMMANDS, SlashCommand
+from ummaya.cli.models import COMMANDS, SlashCommand
 
 
 class TestSlashCommand:

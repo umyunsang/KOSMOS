@@ -66,15 +66,15 @@ Validated against `.specify/memory/constitution.md`:
 
 ### Module Structure
 
-The spec defines module paths under `src/kosmos/tools/<provider>/`. This plan adopts those paths exactly (as required by `docs/tool-adapters.md § Naming`).
+The spec defines module paths under `src/ummaya/tools/<provider>/`. This plan adopts those paths exactly (as required by `docs/tool-adapters.md § Naming`).
 
 ```
-src/kosmos/tools/
+src/ummaya/tools/
 ├── __init__.py                          (existing)
 ├── models.py                            (existing — GovAPITool, ToolResult, etc.)
 ├── registry.py                          (existing — ToolRegistry)
 ├── executor.py                          (existing — ToolExecutor)
-├── errors.py                            (existing — KosmosToolError hierarchy)
+├── errors.py                            (existing — UmmayaToolError hierarchy)
 ├── rate_limiter.py                      (existing)
 ├── search.py                            (existing)
 │
@@ -113,9 +113,9 @@ When `client=None`, the adapter creates a short-lived `httpx.AsyncClient` with a
 
 ```python
 import os
-from kosmos.tools.errors import KosmosToolError
+from ummaya.tools.errors import UmmayaToolError
 
-class ConfigurationError(KosmosToolError):
+class ConfigurationError(UmmayaToolError):
     """Required environment variable is not set."""
 
 def _require_env(var: str) -> str:
@@ -145,7 +145,7 @@ Partial-failure handling:
 
 See `specs/007-api-adapters/data-model.md` for complete entity definitions.
 
-**New Pydantic models** (all in `src/kosmos/tools/<subpackage>/`):
+**New Pydantic models** (all in `src/ummaya/tools/<subpackage>/`):
 
 | Model | Location | Purpose |
 |---|---|---|
@@ -175,7 +175,7 @@ See `specs/007-api-adapters/data-model.md` for complete entity definitions.
 
 ```
 src/
-└── kosmos/
+└── ummaya/
     └── tools/
         ├── koroad/
         │   ├── __init__.py
@@ -227,12 +227,12 @@ docs/
 ### Phase 1: Shared Infrastructure
 
 **Deliverables**:
-- `src/kosmos/tools/koroad/__init__.py`
-- `src/kosmos/tools/koroad/code_tables.py`
-- `src/kosmos/tools/kma/__init__.py`
-- `src/kosmos/tools/kma/grid_coords.py`
-- `src/kosmos/tools/composite/__init__.py`
-- `src/kosmos/tools/errors.py` update — add `ConfigurationError`
+- `src/ummaya/tools/koroad/__init__.py`
+- `src/ummaya/tools/koroad/code_tables.py`
+- `src/ummaya/tools/kma/__init__.py`
+- `src/ummaya/tools/kma/grid_coords.py`
+- `src/ummaya/tools/composite/__init__.py`
+- `src/ummaya/tools/errors.py` update — add `ConfigurationError`
 
 **`code_tables.py` implementation notes**:
 
@@ -287,7 +287,7 @@ The KMA LCC coordinate formula (from the C source in the technical guide) is pro
 ### Phase 2: KOROAD Adapter
 
 **Deliverables**:
-- `src/kosmos/tools/koroad/koroad_accident_search.py`
+- `src/ummaya/tools/koroad/koroad_accident_search.py`
 
 **Implementation sequence within the file**:
 1. Input/output Pydantic models (`KoroadAccidentSearchInput`, `KoroadAccidentSearchOutput`, `AccidentHotspot`)
@@ -301,7 +301,7 @@ The KMA LCC coordinate formula (from the C source in the technical guide) is pro
 **Key implementation detail — `_call()` skeleton**:
 ```python
 async def _call(params: KoroadAccidentSearchInput, *, client=None) -> dict:
-    api_key = _require_env("KOSMOS_KOROAD_API_KEY")
+    api_key = _require_env("UMMAYA_KOROAD_API_KEY")
     query = {
         "serviceKey": api_key,
         "_type": "json",
@@ -334,8 +334,8 @@ async def _call(params: KoroadAccidentSearchInput, *, client=None) -> dict:
 ### Phase 3: KMA Adapters
 
 **Deliverables**:
-- `src/kosmos/tools/kma/kma_weather_alert_status.py`
-- `src/kosmos/tools/kma/kma_current_observation.py`
+- `src/ummaya/tools/kma/kma_weather_alert_status.py`
+- `src/ummaya/tools/kma/kma_current_observation.py`
 
 **`kma_weather_alert_status.py` notes**:
 - Input model is minimal (no required fields); `numOfRows` defaults to 2000 to get all active warnings in one page
@@ -355,14 +355,14 @@ async def _call(params: KoroadAccidentSearchInput, *, client=None) -> dict:
 ### Phase 4: Road Risk Composite Adapter
 
 **Deliverables**:
-- `src/kosmos/tools/composite/road_risk_score.py`
+- `src/ummaya/tools/composite/road_risk_score.py`
 
 **Implementation notes**:
 
 The composite adapter imports the inner adapter functions directly:
 ```python
-from kosmos.tools.koroad.koroad_accident_search import _call as _koroad_call
-from kosmos.tools.kma.kma_current_observation import _call as _kma_obs_call
+from ummaya.tools.koroad.koroad_accident_search import _call as _koroad_call
+from ummaya.tools.kma.kma_current_observation import _call as _kma_obs_call
 ```
 
 It does NOT import `kma_weather_alert_status` — the scoring algorithm in the spec uses `active_weather_warnings` count, but the spec's `RoadRiskScoreInput` does not take a KMA alert filter. The composite tool uses only `koroad_accident_search` + `kma_current_observation` for the scoring formula, and queries `kma_weather_alert_status` separately to count active warnings in the vicinity.
@@ -420,8 +420,8 @@ risk_level: [0, 0.3) = low; [0.3, 0.6) = moderate; [0.6, 0.8) = high; [0.8, 1.0]
 
 **Fixture recording procedure** (requires live API keys, run once locally):
 ```bash
-export KOSMOS_KOROAD_API_KEY=<key>
-export KOSMOS_DATA_GO_KR_KEY=<key>
+export UMMAYA_KOROAD_API_KEY=<key>
+export UMMAYA_DATA_GO_KR_KEY=<key>
 uv run python scripts/record_fixture.py koroad_accident_search
 uv run python scripts/record_fixture.py kma_weather_alert_status
 uv run python scripts/record_fixture.py kma_current_observation

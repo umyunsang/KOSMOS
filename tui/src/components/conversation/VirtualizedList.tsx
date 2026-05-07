@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * VirtualizedList<T> — generic virtualized list for KOSMOS TUI.
+ * VirtualizedList<T> — generic virtualized list for UMMAYA TUI.
  *
  * Renders only the items within the visible viewport (computed from
  * useVirtualScroll's scroll position + terminal height) plus OVERSCAN_ROWS on

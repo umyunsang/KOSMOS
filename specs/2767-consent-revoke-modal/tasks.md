@@ -18,7 +18,7 @@
 
 **Reference baseline** (메모리 `feedback_cc_source_migration_pattern`):
 - `.references/claude-code-sourcemap/restored-src/src/components/PermissionRequest.tsx` — CC 2.1.88 모달 dialog shell (research-use)
-- `tui/src/components/consent/ConsentListView.tsx` — KOSMOS 측 consent UI 패턴 (i18n + theme 사용 + Esc fallback)
+- `tui/src/components/consent/ConsentListView.tsx` — UMMAYA 측 consent UI 패턴 (i18n + theme 사용 + Esc fallback)
 - `tui/src/components/ExportPdfDialog.tsx` — Spec 035 P4 dialog ported 형식 (3-key footer)
 
 **Implementation**:
@@ -28,7 +28,7 @@
 - 3-key footer: `[Y] 한번만 철회 · [A] 영구 철회 · [N] 취소`.
 - `useInput` 핸들러: `y/Y` → `onConfirm('once')`, `a/A` → `onConfirm('session-all')`, `n/N` 또는 `key.escape` → `onCancel()`.
 - AGENTS.md "Infrastructure insights" #4 — `useKeybinding` 미사용, `useInput` 직접 fallback.
-- box-bordered + theme 토큰 (`theme.kosmosCore`, `theme.error`, `theme.text`, `theme.subtle`).
+- box-bordered + theme 토큰 (`theme.ummayaCore`, `theme.error`, `theme.text`, `theme.subtle`).
 
 **Acceptance** (FR-A01..A05):
 - 컴포넌트가 props 4 필드 + PIPA 안내 + 3-key footer 모두 렌더.
@@ -65,11 +65,11 @@
 ### T003 [P] [US1] IPC frame schema arm 추가 (consent_revoke_request / consent_revoke_response)
 
 **Files**:
-- `src/kosmos/ipc/frame_schema.py` (수정)
+- `src/ummaya/ipc/frame_schema.py` (수정)
 - `tui/src/ipc/frames.generated.ts` (재생성)
 
 **Reference baseline**:
-- `src/kosmos/ipc/frame_schema.py:462-509` — `PermissionRequestFrame` / `PermissionResponseFrame` 패턴
+- `src/ummaya/ipc/frame_schema.py:462-509` — `PermissionRequestFrame` / `PermissionResponseFrame` 패턴
 - `specs/032-ipc-stdio-hardening/spec.md` § E3 role allow-list
 
 **Implementation**:
@@ -94,8 +94,8 @@
 - TS 측: `bun run codegen:ipc` (또는 동급 build script) 로 `frames.generated.ts` 재생성. 수동 편집 금지.
 
 **Acceptance** (FR-C01..C04):
-- `pytest src/kosmos/ipc/tests/test_frame_schema.py` PASS (기존 테스트 + 신규 arm 검증).
-- `pytest src/kosmos/ipc/tests/test_frame_schema_role_allowlist.py` PASS (Spec 032 invariant).
+- `pytest src/ummaya/ipc/tests/test_frame_schema.py` PASS (기존 테스트 + 신규 arm 검증).
+- `pytest src/ummaya/ipc/tests/test_frame_schema_role_allowlist.py` PASS (Spec 032 invariant).
 - `tui/src/ipc/frames.generated.ts` 의 arm count 가 21 → 23 으로 증가.
 
 **Dependencies**: 없음 ([P] mark — T001/T006 과 병렬 dispatch 가능).
@@ -105,21 +105,21 @@
 ### T004 [US1] backend handler `_handle_consent_revoke_request` 구현
 
 **Files**:
-- `src/kosmos/ipc/stdio.py` (수정 — 새 dispatcher 추가)
+- `src/ummaya/ipc/stdio.py` (수정 — 새 dispatcher 추가)
 
 **Reference baseline**:
-- `src/kosmos/ipc/stdio.py:1320-1490` — 기존 permission_response 핸들러 (consent receipt write 패턴)
-- `src/kosmos/permissions/ledger.py:append()` — Spec 033 ledger append 함수
-- `src/kosmos/permissions/hmac_key.py:load_or_generate_key` — fail-closed key check
+- `src/ummaya/ipc/stdio.py:1320-1490` — 기존 permission_response 핸들러 (consent receipt write 패턴)
+- `src/ummaya/permissions/ledger.py:append()` — Spec 033 ledger append 함수
+- `src/ummaya/permissions/hmac_key.py:load_or_generate_key` — fail-closed key check
 
 **Implementation**: plan.md § 1.3 의 6단계 sketch 구현:
 1. HMAC 키 검증 → 부재 시 `ledger_key_missing` 응답.
-2. Receipt 파일 (`~/.kosmos/memdir/user/consent/<receipt_id>.json`) 존재 검증 → 부재 시 `not_found`.
+2. Receipt 파일 (`~/.ummaya/memdir/user/consent/<receipt_id>.json`) 존재 검증 → 부재 시 `not_found`.
 3. `revoked_at` 필드 idempotent 검증 → 이미 set 시 `already_revoked` (FR-021).
-4. `kosmos.permissions.ledger.append()` 호출 — `action="withdraw"`, `scope=<receipt_id>`, `decision="denied"`, `withdrawn_at=<ISO8601 UTC>`, `consent_receipt_id=<UUIDv7>`.
+4. `ummaya.permissions.ledger.append()` 호출 — `action="withdraw"`, `scope=<receipt_id>`, `decision="denied"`, `withdrawn_at=<ISO8601 UTC>`, `consent_receipt_id=<UUIDv7>`.
 5. Receipt 파일 atomic 갱신 — `revoked_at` 추가, temp+rename, 0o600 mode.
 6. `ConsentRevokeResponseFrame{ok=True, revoked_at, record_hash}` 송출.
-- OTEL span: `kosmos.consent.revoke` with attributes `kosmos.consent.receipt_id`, `kosmos.permission.decision="revoked"`.
+- OTEL span: `ummaya.consent.revoke` with attributes `ummaya.consent.receipt_id`, `ummaya.permission.decision="revoked"`.
 - Dispatcher 등록: `_kind_dispatch_table` (또는 등가) 에 `"consent_revoke_request": _handle_consent_revoke_request` 추가.
 
 **Acceptance** (FR-D01..D05):
@@ -134,7 +134,7 @@
 ### T005 [US1] backend dispatcher 테스트 + bridge 단위 테스트
 
 **Files**:
-- `src/kosmos/ipc/tests/test_consent_revoke_dispatch.py` (신규)
+- `src/ummaya/ipc/tests/test_consent_revoke_dispatch.py` (신규)
 - `tui/src/services/ipc/__tests__/consentBridge.test.ts` (신규)
 
 **Implementation**:
@@ -144,7 +144,7 @@ Python (`pytest-asyncio`):
 - Test 2 `test_fail_closed_no_hmac`: HMAC 키 파일 삭제 → request 송출 → response `ok=False, error="ledger_key_missing"` + ledger.append 호출 0회.
 - Test 3 `test_not_found`: 존재하지 않는 receipt_id → response `ok=False, error="not_found"`.
 - Test 4 `test_idempotent_double_revoke`: 동일 receipt 2회 revoke → 첫 응답 `ok=True`, 두번째 `ok=False, error="already_revoked"` + ledger record 정확히 1개.
-- Test 5 `test_otel_span_emitted`: span exporter mock 으로 `kosmos.consent.revoke` span 1건 capture.
+- Test 5 `test_otel_span_emitted`: span exporter mock 으로 `ummaya.consent.revoke` span 1건 capture.
 
 TS (`bun:test` + mock transport):
 - Test 1 `test_request_response_match`: mock backend 가 동일 `request_id` 로 응답 → promise resolve `ok=True`.
@@ -196,14 +196,14 @@ TS (`bun:test` + mock transport):
 - `tui/src/screens/__tests__/REPL.consent-revoke.test.tsx` (신규)
 
 **Reference baseline**:
-- `tui/src/screens/REPL.tsx:3664-3693` — 기존 `_kosmosCmd === 'consent'` 분기
+- `tui/src/screens/REPL.tsx:3664-3693` — 기존 `_ummayaCmd === 'consent'` 분기
 - `tui/src/screens/REPL.tsx:3623-3644` — `/export` ToolJSX mount 패턴 (`isLocalJSXCommand: false` 정답 사례)
 
 **Implementation**: plan.md § 1.5 sketch 그대로:
-- `parseConsentArgs(_kosmosArgs)` 호출 + 4 분기 (`unknown` / `not found` / `already revoked` / 모달 mount).
+- `parseConsentArgs(_ummayaArgs)` 호출 + 4 분기 (`unknown` / `not found` / `already revoked` / 모달 mount).
 - `consentBridge.requestRevoke()` 호출 + 성공 시 `permissionReceiptsCtx.revokeReceipt()` + 토스트.
 - 실패 시 error code 별 토스트 (FR-E02).
-- 기존 placeholder `addNotification({key: 'kosmos-consent-revoke', text: '... (P5 연동 예정)', ...})` 라인 완전 삭제 (FR-E03).
+- 기존 placeholder `addNotification({key: 'ummaya-consent-revoke', text: '... (P5 연동 예정)', ...})` 라인 완전 삭제 (FR-E03).
 - `tui/src/commands/consent.ts:10` 의 `consentBridge.ts` 코멘트 → `consentBridge.js` 로 (TS extension is `.ts`, but Bun import resolves `.js`); `:83` 동일 정정.
 
 통합 테스트:
@@ -240,7 +240,7 @@ TS (`bun:test` + mock transport):
 - `specs/2767-consent-revoke-modal/pr-description.md` (신규 — PR body draft)
 
 **Reference baseline**:
-- `scripts/tui-tmux-capture.sh` — KOSMOS tmux 시나리오 harness (Spec debug-infra-rebuild)
+- `scripts/tui-tmux-capture.sh` — UMMAYA tmux 시나리오 harness (Spec debug-infra-rebuild)
 - `tui/src/test-utils/waitForFrame.ts` — Bubble Tea `teatest.WaitFor` 패턴 포팅
 - `specs/2521-llm-swap-cc-rebuild/scripts/text-debug-smoke.sh` — vhs `.tape` 패턴 참고
 - AGENTS.md "TUI verification methodology" Layer 4/5

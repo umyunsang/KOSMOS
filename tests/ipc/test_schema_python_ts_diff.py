@@ -22,7 +22,7 @@ import pathlib
 
 import pytest
 
-from kosmos.ipc.frame_schema import ipc_frame_json_schema
+from ummaya.ipc.frame_schema import ipc_frame_json_schema
 
 # ---------------------------------------------------------------------------
 # Path constants

@@ -7,7 +7,7 @@
 //
 // Fix: `parseChord()` normalises `meta` → `alt` at parse time so
 // loader-accepted strings and matcher-emitted events agree on a single
-// canonical form (the KOSMOS invariant).
+// canonical form (the UMMAYA invariant).
 
 import { describe, expect, test } from 'bun:test'
 import { loadUserBindings } from '../../src/keybindings/loadUserBindings'

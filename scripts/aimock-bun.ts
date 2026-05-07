@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // SPDX-License-Identifier: Apache-2.0
 // aimock-bun.ts — hand-rolled Bun HTTP server that serves OpenAI-compatible
-// SSE responses from the KOSMOS fixture JSON files.
+// SSE responses from the UMMAYA fixture JSON files.
 //
 // Fallback for environments where ghcr.io/copilotkit/aimock:latest is
 // unavailable (Docker not installed, image pull failure, CI constraints).
@@ -338,7 +338,7 @@ async function handleCompletions(req: Request): Promise<Response> {
       ` fixture=${fixture ? JSON.stringify(fixture.match) : "none"}`
   );
 
-  // Non-streaming path (rare for KOSMOS but handle it)
+  // Non-streaming path (rare for UMMAYA but handle it)
   if (!stream) {
     if (!fixture) {
       return Response.json({
@@ -491,4 +491,4 @@ console.log(
   `[aimock-bun] listening on http://localhost:${PORT} — ` +
     `${allFixtures.length} fixture(s) loaded from ${FIXTURES_DIR}`
 );
-console.log("[aimock-bun] set KOSMOS_FRIENDLI_BASE_URL=http://localhost:4010/v1 to use this server");
+console.log("[aimock-bun] set UMMAYA_FRIENDLI_BASE_URL=http://localhost:4010/v1 to use this server");

@@ -1,11 +1,11 @@
-# kosmos-plugin-my_plugin
+# ummaya-plugin-my_plugin
 
-KOSMOS 플러그인 — `my_plugin` 어댑터.
+UMMAYA 플러그인 — `my_plugin` 어댑터.
 
 ## 설치
 
 ```bash
-kosmos plugin install my_plugin
+ummaya plugin install my_plugin
 ```
 
 ## 개발

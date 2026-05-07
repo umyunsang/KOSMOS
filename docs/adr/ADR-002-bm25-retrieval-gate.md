@@ -2,7 +2,7 @@
 
 **Status**: Accepted
 **Date**: 2026-04-16
-**Epic**: #507 (KOSMOS MVP Main Tool)
+**Epic**: #507 (UMMAYA MVP Main Tool)
 
 ---
 
@@ -19,7 +19,7 @@ Requirements driving the design:
    whitespace splitting produces poor IDF distributions and low recall on
    morphologically varied queries.  A morpheme-level tokenizer is needed at both
    index time and query time.
-2. **Pure-Python, zero system deps**: KOSMOS CI runs under `uv`; any library
+2. **Pure-Python, zero system deps**: UMMAYA CI runs under `uv`; any library
    requiring a system-installed binary (e.g. mecab C extension) breaks the CI
    matrix without extra setup steps.
 3. **MVP scale**: the registry holds 4–50 adapters at MVP.  Vector-store
@@ -76,7 +76,7 @@ Candidates evaluated:
 
    The 80% target is the Kruczek/MCP-Bench midpoint for BM25 at < 100-tool
    scale.  The 60% fail threshold equals Anthropic's published 64% BM25 accuracy
-   at 4K-tool scale; anything worse at KOSMOS's smaller scale indicates a
+   at 4K-tool scale; anything worse at UMMAYA's smaller scale indicates a
    structural retrieval problem, not a scale problem.
 
 **Rejected alternative — mecab-ko**: requires a system-installed `libmecab`
@@ -94,7 +94,7 @@ dependency.
 - `rank_bm25` and `kiwipiepy` are pure-Python packages; `uv add` is the only
   installation step in any environment.
 - Apache-2.0 (`rank_bm25`) and MIT (`kiwipiepy`) licenses are compatible with
-  KOSMOS's Apache-2.0 project license.
+  UMMAYA's Apache-2.0 project license.
 - The `Kiwi` singleton is initialised lazily on first use (~300 ms startup cost,
   paid once per process); the hot BM25 scoring path adds negligible latency.
 - The 30-query eval gate in CI prevents silent retrieval regressions as the
@@ -140,11 +140,11 @@ dependency.
 
 ## References
 
-- Epic #507 — KOSMOS MVP Main Tool
+- Epic #507 — UMMAYA MVP Main Tool
 - `docs/design/mvp-tools.md §3.3` (frozen design, BM25 retrieval gate) and
   `§5.5.1` (retrieval quality gate definition)
-- `src/kosmos/tools/bm25_index.py` — BM25Okapi wrapper with deterministic tie-break
-- `src/kosmos/tools/tokenizer.py` — kiwipiepy thin wrapper with ASCII fast path
+- `src/ummaya/tools/bm25_index.py` — BM25Okapi wrapper with deterministic tie-break
+- `src/ummaya/tools/tokenizer.py` — kiwipiepy thin wrapper with ASCII fast path
 - `eval/retrieval_queries.yaml` — 30-query labeled evaluation set
 - Arcade replication of Anthropic Tool Search Tool (BM25, 64% accuracy at 4K tools):
   https://blog.arcade.dev/anthropic-tool-search-claude-mcp-runtime

@@ -14,7 +14,7 @@
 # wait_for_pane / snapshot_pane / send_text_pane / send_keys_pane / etc.
 #
 # Run from repo root:
-#   KOSMOS_BACKEND_LOG_FILE=/tmp/audit-4.log \
+#   UMMAYA_BACKEND_LOG_FILE=/tmp/audit-4.log \
 #     bash scripts/tui-tmux-capture.sh \
 #       specs/audit-prod/audit-4-permission \
 #       specs/audit-prod/scripts/audit-4-permission.sh
@@ -37,7 +37,7 @@ send_keys_pane "Escape"
 sleep 0.5
 
 # ---------------------------------------------------------------------------
-# Stage 2 — verify primitive (Layer ⓵ — should mount KosmosPrimitive Layer1)
+# Stage 2 — verify primitive (Layer ⓵ — should mount UmmayaPrimitive Layer1)
 #   Citizen prompt asks the LLM to verify identity for Mobile ID.
 #   Expected: Layer ⓵ green modal, Y/A/N selector, PIPA §22-2/§26 footer,
 #   receipt ID line.  We pick Y (allow_once).
@@ -127,9 +127,9 @@ snapshot_pane "14-consent-revoke-not-found"
 send_keys_pane "Escape"
 sleep 0.5
 
-# Extract the actual receipt_id from the kosmos memdir, then attempt revoke.
+# Extract the actual receipt_id from the ummaya memdir, then attempt revoke.
 # We do this AFTER the prior snapshots so the output is clean.
-LATEST_RECEIPT="$(ls -t ~/.kosmos/memdir/user/consent/*.json 2>/dev/null \
+LATEST_RECEIPT="$(ls -t ~/.ummaya/memdir/user/consent/*.json 2>/dev/null \
   | grep -v 'jsonl$' | head -1 | xargs -I{} basename {} .json || true)"
 echo "[stage 7] LATEST_RECEIPT='${LATEST_RECEIPT}'"
 if [[ -n "${LATEST_RECEIPT}" ]]; then

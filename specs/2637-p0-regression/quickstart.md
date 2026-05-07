@@ -4,14 +4,14 @@
 
 > **For Sonnet teammate**: 단일 Sonnet teammate 가 sequential 로 7 task 순차 실행. 각 task 는 PORT/wire/박제 + verification 으로 self-contained.
 >
-> **워크트리**: `/Users/um-yunsang/KOSMOS-w-2637` · **브랜치**: `feat/2637-p0-regression`
+> **워크트리**: `/Users/um-yunsang/UMMAYA-w-2637` · **브랜치**: `feat/2637-p0-regression`
 >
 > **CC source-of-truth**: `.references/claude-code-sourcemap/restored-src/src/` (read-only, NEVER modify).
 
 ## 사전 조건
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/UMMAYA-w-2637
 
 # 워크트리 확인
 git branch --show-current  # → feat/2637-p0-regression
@@ -27,7 +27,7 @@ bun typecheck 2>&1 | tail -5
 ### T001 — events_mono types byte-copy PORT
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/UMMAYA-w-2637
 
 # R-1a: claude_code_internal_event.ts
 cp .references/claude-code-sourcemap/restored-src/src/types/generated/events_mono/claude_code/v1/claude_code_internal_event.ts \
@@ -59,7 +59,7 @@ grep -rn "from.*events_mono.*claude_code" tui/src/ | head -10
 ### T002 — Constants/Types Proxy stub byte-copy PORT
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/UMMAYA-w-2637
 
 # R-2a: messages.ts
 cp .references/claude-code-sourcemap/restored-src/src/constants/messages.ts \
@@ -91,21 +91,21 @@ bun typecheck 2>&1 | grep -E "messages.ts|xml.ts|figures.ts|logs.ts" | head -20
 ### T003 — constants/oauth.ts byte-copy PORT (swap-1 식별자 교체)
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/UMMAYA-w-2637
 
 # R-4: byte-copy first
 cp .references/claude-code-sourcemap/restored-src/src/constants/oauth.ts \
    tui/src/constants/oauth.ts
 
 # swap-1 식별자 enumerate (data-model.md § Swap1IdentifierWhitelist)
-# - OAuth client_id 상수 → KOSMOS-side null
-# - console.anthropic.com / claude.ai/oauth URL 상수 → KOSMOS-side null
+# - OAuth client_id 상수 → UMMAYA-side null
+# - console.anthropic.com / claude.ai/oauth URL 상수 → UMMAYA-side null
 # CC 의 USER_TYPE === 'ant' 가드는 그대로 유지 (자동 prod fallback)
 
 # Edit tool 로 swap-1 식별자만 교체:
-# - 식별자 기존 값 → null 또는 KOSMOS-side placeholder
+# - 식별자 기존 값 → null 또는 UMMAYA-side placeholder
 # - 헤더 주석 추가:
-#   // KOSMOS Epic #2637 — byte-copy from CC 2.1.88 (oauth.ts).
+#   // UMMAYA Epic #2637 — byte-copy from CC 2.1.88 (oauth.ts).
 #   // SWAP/anti-anthropic-1p: Anthropic OAuth client_id + endpoints replaced
 #   // with null (FriendliAI K-EXAONE = API-key only, no OAuth flow).
 #   // process.env.USER_TYPE === 'ant' guard preserved per CC source.
@@ -118,7 +118,7 @@ diff tui/src/constants/oauth.ts .references/claude-code-sourcemap/restored-src/s
 ### T004 — utils/telemetry/instrumentation.ts PORT + 8 OTel deps + cascade stub
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/UMMAYA-w-2637
 
 # Step 1: 8개 OTel dependency 추가
 cd tui
@@ -149,43 +149,43 @@ cp .references/claude-code-sourcemap/restored-src/src/utils/telemetry/instrument
 # - tui/src/utils/mtls.ts (확인)
 # - tui/src/utils/startupProfiler.ts (확인)
 
-# 각 누락 cascade 발견 시 KOSMOS-side stub 패턴:
+# 각 누락 cascade 발견 시 UMMAYA-side stub 패턴:
 # // SPDX-License-Identifier: Apache-2.0
-# // KOSMOS-original — Epic #2637 cascade · stub-noop replacement.
+# // UMMAYA-original — Epic #2637 cascade · stub-noop replacement.
 # // SWAP/anti-anthropic-1p(2637): swap-1 dependent telemetry helper (Anthropic 1P
 # // GrowthBook/BigQuery/Perfetto) replaced with no-op for instrumentation.ts byte-copy.
-# // KOSMOS uses Spec 021 OTEL pipeline directly (toolExecution.ts wire, T005).
+# // UMMAYA uses Spec 021 OTEL pipeline directly (toolExecution.ts wire, T005).
 
 # Step 4: 검증 V1 — typecheck
 bun typecheck 2>&1 | grep "instrumentation\|telemetry" | head -10
 ```
 
-### T005 — toolExecution.ts 9 stub wire (KOSMOS Spec 021 OTEL helper 직접 사용)
+### T005 — toolExecution.ts 9 stub wire (UMMAYA Spec 021 OTEL helper 직접 사용)
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/UMMAYA-w-2637
 
-# Step 1: 신규 KOSMOS OTEL helper 작성 (또는 sessionTracing.ts 확장)
+# Step 1: 신규 UMMAYA OTEL helper 작성 (또는 sessionTracing.ts 확장)
 # tui/src/utils/telemetry/toolSpans.ts (NEW)
-# - logOTelEvent(): @opentelemetry/api logs.getLogger('kosmos.tools').emit(...)
-# - startToolSpan(name, attrs): trace.getTracer('kosmos.tools').startSpan(...)
-# - endToolSpan(toolResultStr): span.setAttribute('kosmos.tool.outcome', ...).end()
+# - logOTelEvent(): @opentelemetry/api logs.getLogger('ummaya.tools').emit(...)
+# - startToolSpan(name, attrs): trace.getTracer('ummaya.tools').startSpan(...)
+# - endToolSpan(toolResultStr): span.setAttribute('ummaya.tool.outcome', ...).end()
 # - addToolContentEvent(span, contentAttrs): span.addEvent('tool.output', contentAttrs)
 # - startToolExecutionSpan / endToolExecutionSpan / startToolBlockedOnUserSpan / endToolBlockedOnUserSpan
-# - isBetaTracingEnabled(): false (KOSMOS 비활성)
+# - isBetaTracingEnabled(): false (UMMAYA 비활성)
 #
 # Spec 021 attribute namespace:
-# - kosmos.tool.id, kosmos.tool.input_size_bytes, kosmos.tool.outcome,
-#   kosmos.tool.error_type, kosmos.tool.duration_ms,
-#   kosmos.tool.permission_decision, kosmos.tool.user_facing_name
+# - ummaya.tool.id, ummaya.tool.input_size_bytes, ummaya.tool.outcome,
+#   ummaya.tool.error_type, ummaya.tool.duration_ms,
+#   ummaya.tool.permission_decision, ummaya.tool.user_facing_name
 
 # Step 2: toolExecution.ts line 91-100 의 9 inline stub 교체
 # 기존:
-#   // KOSMOS: utils/telemetry/events.js deleted by Spec 1633 P1. logOTelEvent → no-op.
+#   // UMMAYA: utils/telemetry/events.js deleted by Spec 1633 P1. logOTelEvent → no-op.
 #   const logOTelEvent = (_event: string, _data?: unknown): void => {}
 #   ... 8개 더
 # 신규:
-#   // KOSMOS Epic #2637 — Spec 021 OTEL Tool layer wire (4-tier OTEL).
+#   // UMMAYA Epic #2637 — Spec 021 OTEL Tool layer wire (4-tier OTEL).
 #   import {
 #     logOTelEvent,
 #     addToolContentEvent,
@@ -195,7 +195,7 @@ cd /Users/um-yunsang/KOSMOS-w-2637
 #   } from '../../utils/telemetry/toolSpans.js'
 
 # Step 3: 검증 V5 (PTY smoke)
-# bun run tui --port  → lookup 1회 → Langfuse trace 에 kosmos.tool.id 출현 확인
+# bun run tui --port  → lookup 1회 → Langfuse trace 에 ummaya.tool.id 출현 확인
 
 # Step 4: 검증 V1
 bun typecheck 2>&1 | grep "toolExecution" | head -5
@@ -204,20 +204,20 @@ bun typecheck 2>&1 | grep "toolExecution" | head -5
 ### T006 — cli/print.ts byte-copy PORT + main.tsx 차단 제거 + cascade stub
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/UMMAYA-w-2637
 
 # Step 1: cascade stub 신설 (R-3-cascade)
 mkdir -p tui/src/services/remoteManagedSettings
 cat > tui/src/services/remoteManagedSettings/index.ts <<'EOF'
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #2637 cascade · stub-noop replacement for CC remoteManagedSettings.
+// UMMAYA-original — Epic #2637 cascade · stub-noop replacement for CC remoteManagedSettings.
 // SWAP/anti-anthropic-1p(2637): Anthropic enterprise managed settings (claude.ai 1P)
-// surface is dead in KOSMOS. CC's print.ts cascade requires this import to resolve.
+// surface is dead in UMMAYA. CC's print.ts cascade requires this import to resolve.
 // Pattern follows tui/src/services/analytics/index.ts (Spec 1633 P1 stub-noop).
 
 export async function waitForRemoteManagedSettingsToLoad(): Promise<void> {
   // Intentional no-op (Epic #2637 stub). Anthropic remote managed settings (claude.ai 1P)
-  // is swap-1 dependent — permanently disabled in KOSMOS.
+  // is swap-1 dependent — permanently disabled in UMMAYA.
 }
 EOF
 
@@ -228,7 +228,7 @@ cp .references/claude-code-sourcemap/restored-src/src/cli/print.ts \
 # Step 3: 추가 cascade dep 발견 (typecheck 으로 누락 모듈 enumerate)
 bun typecheck 2>&1 | grep -E "Cannot find module|has no exported member" | head -30
 # 발견되는 누락 모듈마다:
-# - 본체가 swap-1 종속이면 KOSMOS-side stub 신설 (analytics/index.ts 패턴)
+# - 본체가 swap-1 종속이면 UMMAYA-side stub 신설 (analytics/index.ts 패턴)
 # - byte-identical 일치 가능하면 추가 byte-copy
 
 # Step 4: main.tsx L1960 "--print not supported" 차단 메시지 제거
@@ -243,23 +243,23 @@ bun run tui --print "안녕" 2>&1
 ### T007 — Stage-1 NO-OP 3건 헤더 박제 + decisions.md 업데이트 + 최종 검증
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/UMMAYA-w-2637
 
 # Step 1: protectedNamespace.ts 헤더 박제
 # Step 2: systemThemeWatcher.ts 헤더 박제
 # Step 3: ultraplan/prompt.txt 헤더 박제
 # 각 파일 헤더 패턴 (Edit tool 사용):
 #   // SPDX-License-Identifier: Apache-2.0
-#   // SWAP/no-cc-source(2637): KOSMOS-only stub. CC source absent
+#   // SWAP/no-cc-source(2637): UMMAYA-only stub. CC source absent
 #   // (find .references/.../src -name "<file>" returns 0). decisions.md S9 § Stage-1 cite.
 #   // CC consumer references (envUtils.ts:142 / ThemeProvider.tsx:69) imply CC has
-#   // runtime equivalents but they're not in restored-src — KOSMOS NO-OP is justified
-#   // until TUI Fidelity Meta-Epic decides on KOSMOS-original implementation.
+#   // runtime equivalents but they're not in restored-src — UMMAYA NO-OP is justified
+#   // until TUI Fidelity Meta-Epic decides on UMMAYA-original implementation.
 
 # Step 4: decisions.md Stage-1 row 업데이트
 # specs/cc-migration-audit/decisions.md 의 S9 § Stage-1 행 수정:
 # 기존: "byte-copy 채우기 (Epic A에 포함)"
-# 변경: "CC source 부재 확정 — KOSMOS-only stub 박제 처리 (Epic A #2637 완료),
+# 변경: "CC source 부재 확정 — UMMAYA-only stub 박제 처리 (Epic A #2637 완료),
 #        TUI Fidelity Meta-Epic deferred (#TBD-protectedNamespace, #TBD-systemThemeWatcher,
 #        #TBD-ultraplan)"
 
@@ -282,7 +282,7 @@ uv run pytest 2>&1 | tail -10                      # V3
 ## 빠른 검증 (Sonnet teammate 가 PR 전 마지막 sanity check)
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2637
+cd /Users/um-yunsang/UMMAYA-w-2637
 
 # 1. byte-identical 검증 — PORTed 파일 모두 (T001/T002/T004/T006 의 cp 대상)
 PORTED=(
@@ -310,14 +310,14 @@ done
 # 3. 부팅 + Layer 5 smoke
 scripts/tui-tmux-capture.sh /tmp/2637-smoke specs/2637-p0-regression/scripts/smoke-2637.sh
 ls /tmp/2637-smoke/snap-*.txt
-cat /tmp/2637-smoke/final.txt | grep -E "tool_registry: \d+ entries verified|KOSMOS"
+cat /tmp/2637-smoke/final.txt | grep -E "tool_registry: \d+ entries verified|UMMAYA"
 ```
 
 ## 회귀 발견 시 대응
 
 각 T0NN 별로 발견된 회귀는 다음 단계로 처리:
 
-1. typecheck 회귀 → 누락 cascade dep 발견 → KOSMOS-side stub 신설 (analytics/index.ts 패턴)
+1. typecheck 회귀 → 누락 cascade dep 발견 → UMMAYA-side stub 신설 (analytics/index.ts 패턴)
 2. bun test 회귀 → 회귀 root cause 식별 → byte-copy 정합성 재검증
 3. PTY smoke 회귀 → frame_NNNN.txt enumerate (AGENTS.md anti-pattern #1 차단)
 4. Langfuse trace 누락 → toolSpans.ts wire 정합 재검증

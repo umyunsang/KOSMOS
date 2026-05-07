@@ -2,9 +2,9 @@
 
 **Feature**: Epic H #1302
 **Phase**: 1
-**Owner of authoritative source**: `src/kosmos/memdir/user_consent.py` (Pydantic v2) + `tui/src/memdir/consent.ts` (Zod mirror)
-**Storage root**: `~/.kosmos/memdir/user/consent/`
-**PIPA reference**: 개인정보 보호법 § 22 (수집·이용 동의) + § 24 (고유식별정보 처리); KOSMOS as PIPA § 26 수탁자 per project memory
+**Owner of authoritative source**: `src/ummaya/memdir/user_consent.py` (Pydantic v2) + `tui/src/memdir/consent.ts` (Zod mirror)
+**Storage root**: `~/.ummaya/memdir/user/consent/`
+**PIPA reference**: 개인정보 보호법 § 22 (수집·이용 동의) + § 24 (고유식별정보 처리); UMMAYA as PIPA § 26 수탁자 per project memory
 
 This contract specifies the JSON record schema, directory layout, and write semantics for `PIPAConsentRecord`.
 
@@ -15,7 +15,7 @@ This contract specifies the JSON record schema, directory layout, and write sema
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "kosmos.memdir.user.consent/1",
+  "$id": "ummaya.memdir.user.consent/1",
   "title": "PIPAConsentRecord",
   "type": "object",
   "additionalProperties": false,
@@ -61,7 +61,7 @@ This contract specifies the JSON record schema, directory layout, and write sema
 ## § 2 · Pydantic v2 stub (Python)
 
 ```python
-# src/kosmos/memdir/user_consent.py
+# src/ummaya/memdir/user_consent.py
 from __future__ import annotations
 
 from datetime import datetime
@@ -70,7 +70,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from kosmos.permissions import AuthenticatorAssuranceLevel  # Spec 033
+from ummaya.permissions import AuthenticatorAssuranceLevel  # Spec 033
 
 
 class PIPAConsentRecord(BaseModel):
@@ -109,7 +109,7 @@ export type PIPAConsentRecord = z.infer<typeof PIPAConsentRecordSchema>
 ## § 4 · Storage layout
 
 ```
-~/.kosmos/memdir/user/consent/
+~/.ummaya/memdir/user/consent/
 ├── 2026-04-20T14-32-05Z-018f8a72-d4c9-7a1e-9c8b-0b2c3d4e5f60.json
 ├── 2026-04-25T09-11-42Z-018f9123-abc4-7bef-8d1e-1a2b3c4d5e6f.json   ← consent version bump writes new file
 └── ...
@@ -134,7 +134,7 @@ os.rename(tmp, final_path)
 ## § 5 · Reader contract
 
 ```python
-# src/kosmos/memdir/user_consent.py
+# src/ummaya/memdir/user_consent.py
 def latest_consent(base: Path) -> PIPAConsentRecord | None:
     """Return the most recent PIPAConsentRecord, or None if no record exists."""
     candidates = sorted(base.glob("*.json"), reverse=True)

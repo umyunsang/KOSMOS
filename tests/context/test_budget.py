@@ -15,9 +15,9 @@ from __future__ import annotations
 
 import json
 
-from kosmos.context.budget import BudgetEstimator
-from kosmos.context.models import AssembledContext, ContextLayer
-from kosmos.engine.tokens import estimate_tokens
+from ummaya.context.budget import BudgetEstimator
+from ummaya.context.models import AssembledContext, ContextLayer
+from ummaya.engine.tokens import estimate_tokens
 
 # ---------------------------------------------------------------------------
 # Test helper

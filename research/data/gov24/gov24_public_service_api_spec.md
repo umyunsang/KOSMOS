@@ -4,7 +4,7 @@
 > Provider: 행정안전부 (Ministry of the Interior and Safety)
 > Data name: 대한민국 공공서비스(혜택) 정보
 > Base URL: https://api.odcloud.kr/api
-> Auth: serviceKey query parameter (KOSMOS_DATA_GO_KR_KEY)
+> Auth: serviceKey query parameter (UMMAYA_DATA_GO_KR_KEY)
 > Daily limit: 500,000 calls
 > Formats: JSON, XML
 

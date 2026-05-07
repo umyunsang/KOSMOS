@@ -136,7 +136,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/kma_weather_alert_status.json",
+  "$id": "https://ummaya.example/api/schemas/kma_weather_alert_status.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Input parameters for the kma_weather_alert_status tool.\n\nAt least one of ``stn_id`` or ``tmFc`` must be provided.  Omitting both\ncauses the KMA API to return resultCode=11 (NO_MANDATORY_REQUEST_PARAMETERS_ERROR).\nTypically ``stn_id`` is obtained from a prior ``kma_pre_warning`` call.",
   "properties": {

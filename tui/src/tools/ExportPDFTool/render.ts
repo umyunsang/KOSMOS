@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS Epic #1634 · T026 · P3 Tool System Wiring
+// UMMAYA Epic #1634 · T026 · P3 Tool System Wiring
 //
 // Renders citizen-facing markdown to a self-contained HTML document.
 // Uses the `marked` package already present in tui/package.json (no new deps).
@@ -28,7 +28,7 @@ export function renderMarkdownToHtml(title: string, markdown: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(title)}</title>
   <style>
-    /* KOSMOS citizen export — print-optimised, palette-purple brand */
+    /* UMMAYA citizen export — print-optimised, palette-purple brand */
     :root {
       --brand-bg: #4c1d95;
       --brand-accent: #a78bfa;
@@ -112,7 +112,7 @@ export function renderMarkdownToHtml(title: string, markdown: string): string {
 </head>
 <body>
   <header>
-    <div class="glyph">✻ KOSMOS</div>
+    <div class="glyph">✻ UMMAYA</div>
     <h1>${escapeHtml(title)}</h1>
     <div class="meta">생성일: ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</div>
   </header>
@@ -120,7 +120,7 @@ export function renderMarkdownToHtml(title: string, markdown: string): string {
 ${bodyHtml}
   </main>
   <footer>
-    KOSMOS 시민 서비스 하네스 — 이 문서는 자동 생성되었습니다.
+    UMMAYA 시민 서비스 하네스 — 이 문서는 자동 생성되었습니다.
     <!-- P3 stub: HTML format. Upgrade to PDF in a future phase once a zero-dep PDF encoder is decided. -->
   </footer>
 </body>

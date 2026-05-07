@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #2293 FR-010 · mcpb compatibility shim.
+// UMMAYA-original — Epic #2293 FR-010 · mcpb compatibility shim.
 //
 // Purpose: every tui/src/ file that needs mcpb types or the lazy manifest
 // validator imports from 'src/mcpb-compat.js' instead of directly from the

@@ -16,11 +16,11 @@ import asyncio
 
 import pytest
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.lookup import lookup
-from kosmos.tools.models import LookupSearchInput
-from kosmos.tools.register_all import register_all_tools
-from kosmos.tools.registry import ToolRegistry
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.lookup import lookup
+from ummaya.tools.models import LookupSearchInput
+from ummaya.tools.register_all import register_all_tools
+from ummaya.tools.registry import ToolRegistry
 
 
 @pytest.fixture(scope="module")

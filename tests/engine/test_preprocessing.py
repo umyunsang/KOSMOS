@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for the KOSMOS Query Engine preprocessing pipeline.
+"""Unit tests for the UMMAYA Query Engine preprocessing pipeline.
 
 Tests cover all four stages individually and the PreprocessingPipeline
 orchestrator.  No live API calls; all inputs are constructed inline.
@@ -7,15 +7,15 @@ orchestrator.  No live API calls; all inputs are constructed inline.
 
 from __future__ import annotations
 
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.preprocessing import (
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.preprocessing import (
     PreprocessingPipeline,
     stage_collapse,
     stage_microcompact,
     stage_snip,
     stage_tool_result_budget,
 )
-from kosmos.llm.models import ChatMessage, FunctionCall, ToolCall
+from ummaya.llm.models import ChatMessage, FunctionCall, ToolCall
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -97,7 +97,7 @@ def test_tool_result_budget_non_tool_never_modified() -> None:
     """User, assistant, and system messages are never touched."""
     config = QueryEngineConfig(tool_result_budget=5)
     msgs = [
-        _system_msg("You are KOSMOS."),
+        _system_msg("You are UMMAYA."),
         _user_msg("Hello " * 200),  # very long user content
         _assistant_msg("Response " * 200),
     ]
@@ -257,7 +257,7 @@ def test_stage_microcompact_recent_message_unchanged() -> None:
 def test_stage_microcompact_system_messages_never_modified() -> None:
     """System messages are skipped unconditionally."""
     config = QueryEngineConfig(microcompact_turn_age=1)
-    original = "You are   KOSMOS  assistant."
+    original = "You are   UMMAYA  assistant."
     msgs = [_system_msg(original)]
 
     result = stage_microcompact(msgs, config, current_turn=100)

@@ -23,8 +23,8 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.permissions.ledger import append as ledger_append
-from kosmos.permissions.ledger_verify import verify_ledger
+from ummaya.permissions.ledger import append as ledger_append
+from ummaya.permissions.ledger_verify import verify_ledger
 
 # ---------------------------------------------------------------------------
 # Fixture: temporary ledger environment

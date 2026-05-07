@@ -2,13 +2,13 @@
 
 **Status**: Accepted
 **Date**: 2026-04-14
-**Epic**: #288 (KOSMOS Geocoding Adapter)
+**Epic**: #288 (UMMAYA Geocoding Adapter)
 
 ---
 
 ## Context
 
-KOSMOS tools (KOROAD accident search, KMA weather APIs) require precise Korean
+UMMAYA tools (KOROAD accident search, KMA weather APIs) require precise Korean
 administrative region codes (SidoCode, GugunCode) and KMA 5 km grid coordinates
 (nx, ny).  Free-form address strings are the natural user-facing input, so a
 geocoding service is needed to bridge the two.
@@ -36,8 +36,8 @@ primary geocoding provider.
    map directly to SidoCode / GugunCode without additional parsing.
 
 2. **Single API key**: Kakao Local API is authenticated via a single REST API
-   key (`KOSMOS_KAKAO_API_KEY`), fitting the KOSMOS `KOSMOS_` env-var convention.
-   This is independent of the `KOSMOS_DATA_GO_KR_API_KEY` used by KOROAD/KMA.
+   key (`UMMAYA_KAKAO_API_KEY`), fitting the UMMAYA `UMMAYA_` env-var convention.
+   This is independent of the `UMMAYA_DATA_GO_KR_API_KEY` used by KOROAD/KMA.
 
 3. **Coordinate quality**: Returns `(x, y)` as longitude/latitude decimal strings
    with sufficient precision for the KMA 5 km LCC grid conversion.
@@ -63,8 +63,8 @@ primary geocoding provider.
   lookup remains functional when the Kakao API is unavailable.
 
 **Negative / Trade-offs**:
-- Adds a new dependency on a commercial API (`KOSMOS_KAKAO_API_KEY`).  This key
-  must be managed separately from `KOSMOS_DATA_GO_KR_API_KEY`.
+- Adds a new dependency on a commercial API (`UMMAYA_KAKAO_API_KEY`).  This key
+  must be managed separately from `UMMAYA_DATA_GO_KR_API_KEY`.
 - Kakao's free tier (300k calls/day) is adequate for the current load model but
   must be monitored as usage scales.
 - `is_personal_data=False` justified: address lookup returns public geographic
@@ -86,7 +86,7 @@ primary geocoding provider.
   increasing secret-management complexity.
 - **Nominatim**: 1 req/s rate limit is insufficient; Korean address structure
   quality is lower than Kakao/Naver.
-- **data.go.kr road address API**: Shares the `KOSMOS_DATA_GO_KR_API_KEY` quota
+- **data.go.kr road address API**: Shares the `UMMAYA_DATA_GO_KR_API_KEY` quota
   but returns raw jibun/road text, requiring additional parsing to extract
   region codes.  Kakao's structured response is simpler.
 
@@ -95,6 +95,6 @@ primary geocoding provider.
 ## References
 
 - `docs/vision.md` § Layer 3 (Tool Adapters)
-- `src/kosmos/tools/koroad/code_tables.py` — SidoCode, GugunCode enums
-- `src/kosmos/tools/kma/grid_coords.py` — REGION_TO_GRID, latlon_to_grid
+- `src/ummaya/tools/koroad/code_tables.py` — SidoCode, GugunCode enums
+- `src/ummaya/tools/kma/grid_coords.py` — REGION_TO_GRID, latlon_to_grid
 - `specs/015-geocoding-adapter/spec.md` — full feature specification

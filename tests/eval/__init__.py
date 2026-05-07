@@ -1,2 +1,2 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for the KOSMOS evaluation harness."""
+"""Tests for the UMMAYA evaluation harness."""

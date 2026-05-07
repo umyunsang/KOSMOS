@@ -1,6 +1,6 @@
 # Contract: LLM Client API
 
-**Module**: `kosmos.llm`
+**Module**: `ummaya.llm`
 **Date**: 2026-04-12
 
 ## Public Interface
@@ -15,7 +15,7 @@ class LLMClient:
         """Initialize with config. Loads from env vars if config is None.
 
         Raises:
-            ConfigurationError: If KOSMOS_FRIENDLI_TOKEN is missing.
+            ConfigurationError: If UMMAYA_FRIENDLI_TOKEN is missing.
         """
 
     async def complete(
@@ -95,32 +95,32 @@ class UsageTracker:
 ## Error Hierarchy
 
 ```python
-class KosmosLLMError(Exception):
+class UmmayaLLMError(Exception):
     """Base exception for all LLM client errors."""
 
-class ConfigurationError(KosmosLLMError):
-    """Missing or invalid configuration (e.g., missing KOSMOS_FRIENDLI_TOKEN)."""
+class ConfigurationError(UmmayaLLMError):
+    """Missing or invalid configuration (e.g., missing UMMAYA_FRIENDLI_TOKEN)."""
 
-class BudgetExceededError(KosmosLLMError):
+class BudgetExceededError(UmmayaLLMError):
     """Session token budget exhausted."""
 
-class AuthenticationError(KosmosLLMError):
+class AuthenticationError(UmmayaLLMError):
     """API authentication failed (401/403)."""
 
-class LLMConnectionError(KosmosLLMError):
+class LLMConnectionError(UmmayaLLMError):
     """Endpoint unreachable after retry exhaustion."""
 
-class LLMResponseError(KosmosLLMError):
+class LLMResponseError(UmmayaLLMError):
     """Non-retryable API error (400, 404, 500)."""
 
-class StreamInterruptedError(KosmosLLMError):
+class StreamInterruptedError(UmmayaLLMError):
     """Streaming response interrupted mid-delivery."""
 ```
 
 ## Module Layout
 
 ```
-src/kosmos/llm/
+src/ummaya/llm/
 ├── __init__.py          # Public exports: LLMClient, models, errors
 ├── client.py            # LLMClient implementation
 ├── models.py            # Pydantic v2 models (ChatMessage, StreamEvent, etc.)

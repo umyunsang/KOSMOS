@@ -2,7 +2,7 @@
 
 **Canonical annotation**: `// [Deferred to P2 — issue #2147]` (TS) · `# [Deferred to P2 — issue #2147]` (Python — N/A in this Epic)
 
-**Anchor issue**: [#2147](https://github.com/umyunsang/KOSMOS/issues/2147) — `[Deferred] services/api/claude.ts Anthropic SDK invocation removal (P2)`.
+**Anchor issue**: [#2147](https://github.com/umyunsang/UMMAYA/issues/2147) — `[Deferred] services/api/claude.ts Anthropic SDK invocation removal (P2)`.
 
 This is the primary P2 anchor because `services/api/claude.ts` is the file that keeps the alias chain alive in P1; removing it removes the need for the aliased helpers in this Epic.
 

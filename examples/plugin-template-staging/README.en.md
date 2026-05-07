@@ -1,11 +1,11 @@
-# kosmos-plugin-my_plugin
+# ummaya-plugin-my_plugin
 
-KOSMOS plugin — `my_plugin` adapter.
+UMMAYA plugin — `my_plugin` adapter.
 
 ## Install
 
 ```bash
-kosmos plugin install my_plugin
+ummaya plugin install my_plugin
 ```
 
 ## Develop

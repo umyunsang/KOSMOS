@@ -9,7 +9,7 @@ All models are Pydantic v2 with `model_config = ConfigDict(extra="forbid")`. Fro
 ## Module map
 
 ```text
-src/kosmos/agents/
+src/ummaya/agents/
 ├── context.py         # AgentContext
 ├── plan.py            # CoordinatorPlan, PlanStep, PlanStatus, ExecutionMode, StepStatus
 ├── errors.py          # AgentConfigurationError, AgentIsolationViolation,
@@ -24,15 +24,15 @@ src/kosmos/agents/
 
 ## 1. `AgentContext` — frozen per-worker injection
 
-Module: `src/kosmos/agents/context.py`
+Module: `src/ummaya/agents/context.py`
 FR traces: FR-010
 
 ```python
 from __future__ import annotations
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
-from kosmos.llm.client import LLMClient
-from kosmos.tools.registry import ToolRegistry
+from ummaya.llm.client import LLMClient
+from ummaya.tools.registry import ToolRegistry
 
 class AgentContext(BaseModel):
     """Immutable per-worker context pinned at spawn time."""
@@ -78,7 +78,7 @@ class AgentContext(BaseModel):
 
 ## 2. Mailbox message schema
 
-Module: `src/kosmos/agents/mailbox/messages.py`
+Module: `src/ummaya/agents/mailbox/messages.py`
 FR traces: FR-016, FR-025
 
 ### 2.1 `MessageType` enum
@@ -98,7 +98,7 @@ class MessageType(StrEnum):
 ### 2.2 Six payload union members (all frozen)
 
 ```python
-from kosmos.tools.models import LookupCollection, LookupRecord, LookupTimeseries
+from ummaya.tools.models import LookupCollection, LookupRecord, LookupTimeseries
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal
 from uuid import UUID
@@ -190,7 +190,7 @@ class AgentMessage(BaseModel):
 
 ## 3. Coordinator output
 
-Module: `src/kosmos/agents/plan.py`
+Module: `src/ummaya/agents/plan.py`
 FR traces: FR-005
 
 ```python
@@ -254,7 +254,7 @@ class CoordinatorPlan(BaseModel):
 
 ## 4. Mailbox interface
 
-Module: `src/kosmos/agents/mailbox/base.py`
+Module: `src/ummaya/agents/mailbox/base.py`
 FR traces: FR-014, FR-022
 
 ```python
@@ -296,10 +296,10 @@ class Mailbox(ABC):
 
 ## 5. `FileMailbox` on-disk layout
 
-Module: `src/kosmos/agents/mailbox/file_mailbox.py`
+Module: `src/ummaya/agents/mailbox/file_mailbox.py`
 
 ```text
-$KOSMOS_AGENT_MAILBOX_ROOT/
+$UMMAYA_AGENT_MAILBOX_ROOT/
 └── <session_id>/
     ├── coordinator/
     │   ├── <message_id>.json             # unconsumed
@@ -327,7 +327,7 @@ $KOSMOS_AGENT_MAILBOX_ROOT/
 3. `os.rename(tmp, final)`.
 4. `os.fsync(dir_fd)`.
 
-**Overflow check** (FR-021): before step 2 of the write order, count `.json` files under `<session_id>/` (excluding `.consumed` markers). If `≥ KOSMOS_AGENT_MAILBOX_MAX_MESSAGES`, raise `MailboxOverflowError`.
+**Overflow check** (FR-021): before step 2 of the write order, count `.json` files under `<session_id>/` (excluding `.consumed` markers). If `≥ UMMAYA_AGENT_MAILBOX_MAX_MESSAGES`, raise `MailboxOverflowError`.
 
 **Routing invariant** (FR-025): `receive(recipient)` walks `<session_id>/*/` and yields only messages whose `recipient` field equals the argument. Messages addressed to a different recipient are NOT yielded — even if the caller has read access to the filesystem. The invariant is enforced in code, not in POSIX permissions.
 
@@ -335,7 +335,7 @@ $KOSMOS_AGENT_MAILBOX_ROOT/
 
 ## 6. Exceptions
 
-Module: `src/kosmos/agents/errors.py`
+Module: `src/ummaya/agents/errors.py`
 
 ```python
 class AgentConfigurationError(ValueError):
@@ -406,48 +406,48 @@ SPAWNED ──run()──► RUNNING ──tool loop ends──► POSTING_RESUL
 
 ## 8. Observability attribute inventory
 
-Module: `src/kosmos/observability/semconv.py` (extended)
+Module: `src/ummaya/observability/semconv.py` (extended)
 FR traces: FR-028..FR-031
 
-New string constants (all `kosmos.agent.*`):
+New string constants (all `ummaya.agent.*`):
 
 | Constant | Value | Used by span |
 |---|---|---|
-| `KOSMOS_AGENT_COORDINATOR_PHASE` | `"kosmos.agent.coordinator.phase"` | `gen_ai.agent.coordinator.phase` |
-| `KOSMOS_AGENT_ROLE` | `"kosmos.agent.role"` | `gen_ai.agent.worker.iteration` |
-| `KOSMOS_AGENT_SESSION_ID` | `"kosmos.agent.session_id"` | `gen_ai.agent.worker.iteration` |
-| `KOSMOS_AGENT_MAILBOX_MSG_TYPE` | `"kosmos.agent.mailbox.msg_type"` | `gen_ai.agent.mailbox.message` |
-| `KOSMOS_AGENT_MAILBOX_CORRELATION_ID` | `"kosmos.agent.mailbox.correlation_id"` | `gen_ai.agent.mailbox.message` |
-| `KOSMOS_AGENT_MAILBOX_SENDER` | `"kosmos.agent.mailbox.sender"` | `gen_ai.agent.mailbox.message` |
-| `KOSMOS_AGENT_MAILBOX_RECIPIENT` | `"kosmos.agent.mailbox.recipient"` | `gen_ai.agent.mailbox.message` |
+| `UMMAYA_AGENT_COORDINATOR_PHASE` | `"ummaya.agent.coordinator.phase"` | `gen_ai.agent.coordinator.phase` |
+| `UMMAYA_AGENT_ROLE` | `"ummaya.agent.role"` | `gen_ai.agent.worker.iteration` |
+| `UMMAYA_AGENT_SESSION_ID` | `"ummaya.agent.session_id"` | `gen_ai.agent.worker.iteration` |
+| `UMMAYA_AGENT_MAILBOX_MSG_TYPE` | `"ummaya.agent.mailbox.msg_type"` | `gen_ai.agent.mailbox.message` |
+| `UMMAYA_AGENT_MAILBOX_CORRELATION_ID` | `"ummaya.agent.mailbox.correlation_id"` | `gen_ai.agent.mailbox.message` |
+| `UMMAYA_AGENT_MAILBOX_SENDER` | `"ummaya.agent.mailbox.sender"` | `gen_ai.agent.mailbox.message` |
+| `UMMAYA_AGENT_MAILBOX_RECIPIENT` | `"ummaya.agent.mailbox.recipient"` | `gen_ai.agent.mailbox.message` |
 
 These names MUST be submitted to Epic #501's boundary table before any collector deploys (FR-031).
 
 ---
 
-## 9. Settings fields (extension to `KosmosSettings`)
+## 9. Settings fields (extension to `UmmayaSettings`)
 
-Module: `src/kosmos/settings.py` (additive)
+Module: `src/ummaya/settings.py` (additive)
 FR traces: FR-032..FR-036
 
 ```python
-class KosmosSettings(BaseSettings):
+class UmmayaSettings(BaseSettings):
     ...  # existing fields
 
     # --- Agent swarm (Epic #13) ---
     agent_mailbox_root: Path = Field(
-        default_factory=lambda: Path.home() / ".kosmos" / "mailbox",
+        default_factory=lambda: Path.home() / ".ummaya" / "mailbox",
     )
-    """Root directory for FileMailbox (KOSMOS_AGENT_MAILBOX_ROOT)."""
+    """Root directory for FileMailbox (UMMAYA_AGENT_MAILBOX_ROOT)."""
 
     agent_mailbox_max_messages: int = Field(default=1000, ge=100, le=10_000)
-    """Per-session message cap (KOSMOS_AGENT_MAILBOX_MAX_MESSAGES)."""
+    """Per-session message cap (UMMAYA_AGENT_MAILBOX_MAX_MESSAGES)."""
 
     agent_max_workers: int = Field(default=4, ge=1, le=16)
-    """Max concurrent workers per coordinator (KOSMOS_AGENT_MAX_WORKERS)."""
+    """Max concurrent workers per coordinator (UMMAYA_AGENT_MAX_WORKERS)."""
 
     agent_worker_timeout_seconds: int = Field(default=120, ge=10, le=600)
-    """Worker timeout before coordinator cancels (KOSMOS_AGENT_WORKER_TIMEOUT_SECONDS)."""
+    """Worker timeout before coordinator cancels (UMMAYA_AGENT_WORKER_TIMEOUT_SECONDS)."""
 ```
 
 All four fields documented in `docs/configuration.md § Agent Swarm` (FR-036).

@@ -6,9 +6,9 @@ description: "Tasks for Epic γ #2294 — 5-primitive align with CC Tool.ts inte
 
 # Tasks: 5-Primitive Align with CC Tool.ts Interface
 
-**Input**: Design documents from `/Users/um-yunsang/KOSMOS-w-2294/specs/2294-5-primitive-align/`
+**Input**: Design documents from `/Users/um-yunsang/UMMAYA-w-2294/specs/2294-5-primitive-align/`
 **Prerequisites**: spec.md, plan.md, research.md, data-model.md, contracts/ (primitive-shape.md + registry-boot-guard.md), quickstart.md
-**Worktree**: `/Users/um-yunsang/KOSMOS-w-2294`
+**Worktree**: `/Users/um-yunsang/UMMAYA-w-2294`
 **Branch**: `2294-5-primitive-align`
 **Epic**: #2294 (Initiative #2290)
 
@@ -24,7 +24,7 @@ description: "Tasks for Epic γ #2294 — 5-primitive align with CC Tool.ts inte
 
 ## Path Conventions
 
-This is a TUI single-app project layered over a stable Python backend. All edits live under `tui/src/`; specs/docs live under `specs/2294-5-primitive-align/`. The Python backend (`src/kosmos/primitives/`) is **not** modified by this Epic.
+This is a TUI single-app project layered over a stable Python backend. All edits live under `tui/src/`; specs/docs live under `specs/2294-5-primitive-align/`. The Python backend (`src/ummaya/primitives/`) is **not** modified by this Epic.
 
 ## Dispatch Tree (per AGENTS.md § Agent Teams two-layer parallelism)
 
@@ -50,7 +50,7 @@ Sonnet teammate budget per group: ≤ 5 tasks AND ≤ 10 files. Verified per gro
 
 **Purpose**: Confirm the worktree is clean and reference materials are in place. CC source migration pattern (memory `feedback_cc_source_migration_pattern`) — Sonnet teammates copy from `.references/claude-code-sourcemap/` and adapt; do NOT write from scratch.
 
-- [X] T001 Verify worktree state and dependencies — run `cd tui && bun install && bun typecheck` and `uv sync && uv run pytest -q` from `/Users/um-yunsang/KOSMOS-w-2294`; record baseline pass count for SC-005 comparison in `specs/2294-5-primitive-align/baseline.md` (1 pre-existing TUI snapshot fail + 1 pre-existing pytest fail expected per `c6747dd` baseline).
+- [X] T001 Verify worktree state and dependencies — run `cd tui && bun install && bun typecheck` and `uv sync && uv run pytest -q` from `/Users/um-yunsang/UMMAYA-w-2294`; record baseline pass count for SC-005 comparison in `specs/2294-5-primitive-align/baseline.md` (1 pre-existing TUI snapshot fail + 1 pre-existing pytest fail expected per `c6747dd` baseline).
 - [X] T002 Read 4 primitive source files (`tui/src/tools/{Lookup,Submit,Verify,Subscribe}Primitive/*.ts`) and the CC reference (`.references/claude-code-sourcemap/restored-src/src/Tool.ts` :436/489/566; `.references/claude-code-sourcemap/restored-src/src/tools/AgentTool/AgentTool.tsx` for the implementation pattern of `validateInput`/`renderToolResultMessage`); produce a 1-page `specs/2294-5-primitive-align/cc-mapping.md` per memory `feedback_cc_source_migration_pattern`.
 
 ---
@@ -82,7 +82,7 @@ Sonnet teammate budget per group: ≤ 5 tasks AND ≤ 10 files. Verified per gro
 - [X] T006 [US1] Replace the Phase 2 stub in `tui/src/tools/LookupPrimitive/LookupPrimitive.ts` with the real `validateInput`: for `mode='fetch'`, resolve `tool_id` against ToolRegistry, populate `permissionContext.citations` from `extractCitation()`, return Korean diagnostics on failure; for `mode='search'`, skip resolution and pass through to BM25 hint resolution (Spec 022). Per `contracts/primitive-shape.md § validateInput contract`.
 - [X] T007 [US1] Replace the Phase 2 placeholder in `tui/src/tools/LookupPrimitive/LookupPrimitive.ts` with the real `renderToolResultMessage` per `contracts/primitive-shape.md § renderToolResultMessage` Lookup row — render adapter-name + count + first-3 summary for `mode='fetch'`; ranked-hit list for `mode='search'`; Korean error message for `output.ok === false`.
 - [X] T008 [US1] Tighten `tui/src/tools/LookupPrimitive/prompt.ts` Korean `description` text — citizen-facing, ≤ 240 chars; remove the P3 MVP stub note from the file header comment now that real dispatch is wired (FR-002 + cleanup of dead `LookupPrimitive.ts:9` comment).
-- [X] T009 [US1] Author `specs/2294-5-primitive-align/scripts/smoke-emergency-lookup.expect` per `research.md § R-6` — spawn `bun run tui` → assert `KOSMOS` branding → send `의정부 응급실 알려줘\r` → wait 8s → send `y` → wait 4s → assert `nmc_emergency_search` + `real_classification_url` + Korean result tokens in the transcript → send `\003\003` → expect eof. Smoke is RUN by Lead in Phase 7.
+- [X] T009 [US1] Author `specs/2294-5-primitive-align/scripts/smoke-emergency-lookup.expect` per `research.md § R-6` — spawn `bun run tui` → assert `UMMAYA` branding → send `의정부 응급실 알려줘\r` → wait 8s → send `y` → wait 4s → assert `nmc_emergency_search` + `real_classification_url` + Korean result tokens in the transcript → send `\003\003` → expect eof. Smoke is RUN by Lead in Phase 7.
 
 **Checkpoint**: LookupPrimitive's full Tool-shape is implemented; PTY harness exists; SubmitPrimitive/VerifyPrimitive/SubscribePrimitive are still on Phase 2 stubs.
 
@@ -116,17 +116,17 @@ Sonnet teammate budget per group: ≤ 5 tasks AND ≤ 10 files. Verified per gro
 
 ## Phase 5: User Story 3 - Adapter policy citation surfaces verbatim in permission UI (Priority: P2)
 
-**Goal**: Every `<PermissionRequest>` rendered for a primitive call contains the adapter's `real_classification_url` + `policy_authority` byte-for-byte, with zero KOSMOS-invented permission language.
+**Goal**: Every `<PermissionRequest>` rendered for a primitive call contains the adapter's `real_classification_url` + `policy_authority` byte-for-byte, with zero UMMAYA-invented permission language.
 
-**Independent Test**: `bun test src/tools/__tests__/permission-citation.test.ts` walks every Live + Mock adapter, renders the permission prompt with a representative invocation, asserts the citation strings match snapshot, asserts no string from the KOSMOS-invented blocklist appears.
+**Independent Test**: `bun test src/tools/__tests__/permission-citation.test.ts` walks every Live + Mock adapter, renders the permission prompt with a representative invocation, asserts the citation strings match snapshot, asserts no string from the UMMAYA-invented blocklist appears.
 
 **Dispatch**: 1 Sonnet teammate `sonnet-citation` (1 task, 1 file).
 
 ### Implementation for User Story 3
 
-- [X] T021 [US3] [sonnet-citation] Author `tui/src/tools/__tests__/permission-citation.test.ts` — fixture-walk every adapter (Live + Mock from the actual Python adapter manifests imported via the existing IPC stub or a static-fixture variant for CI), render the `<FallbackPermissionRequest>` with a synthetic primitive-call context, snapshot-assert that `real_classification_url` and `policy_authority` strings appear verbatim, blocklist-assert no string from `["안전한 권한 등급", "본 시스템은", "KOSMOS는 다음과 같이", ...]` appears anywhere in the rendered prompt body. Blocklist enumerated in the file's top constant.
+- [X] T021 [US3] [sonnet-citation] Author `tui/src/tools/__tests__/permission-citation.test.ts` — fixture-walk every adapter (Live + Mock from the actual Python adapter manifests imported via the existing IPC stub or a static-fixture variant for CI), render the `<FallbackPermissionRequest>` with a synthetic primitive-call context, snapshot-assert that `real_classification_url` and `policy_authority` strings appear verbatim, blocklist-assert no string from `["안전한 권한 등급", "본 시스템은", "UMMAYA는 다음과 같이", ...]` appears anywhere in the rendered prompt body. Blocklist enumerated in the file's top constant.
 
-**Checkpoint**: 100% of adapter-routed permission prompts contain a verbatim citation; 0% contain KOSMOS-invented copy.
+**Checkpoint**: 100% of adapter-routed permission prompts contain a verbatim citation; 0% contain UMMAYA-invented copy.
 
 ---
 
@@ -140,7 +140,7 @@ Sonnet teammate budget per group: ≤ 5 tasks AND ≤ 10 files. Verified per gro
 
 ### Implementation for User Story 4
 
-- [X] T022 [P] [US4] [sonnet-regress] Author `tui/src/tools/__tests__/span-attribute-parity.test.ts` — mount `LookupPrimitive`, dispatch a synthetic `lookup(mode='fetch', tool_id='nmc_emergency_search', ...)` call, snapshot OTEL span attributes (`kosmos.tool.id`, `kosmos.tool.mode`, `kosmos.adapter.real_classification_url`, plus existing Spec 021 GenAI/Tool/Permission attribute families); baseline = pre-refactor snapshot from `c6747dd` (capture as part of T001 baseline if not already present).
+- [X] T022 [P] [US4] [sonnet-regress] Author `tui/src/tools/__tests__/span-attribute-parity.test.ts` — mount `LookupPrimitive`, dispatch a synthetic `lookup(mode='fetch', tool_id='nmc_emergency_search', ...)` call, snapshot OTEL span attributes (`ummaya.tool.id`, `ummaya.tool.mode`, `ummaya.adapter.real_classification_url`, plus existing Spec 021 GenAI/Tool/Permission attribute families); baseline = pre-refactor snapshot from `c6747dd` (capture as part of T001 baseline if not already present).
 - [X] T023 [P] [US4] [sonnet-regress] Validate-only — run existing `uv run pytest tests/primitives/test_lookup_resolve_location.py` and confirm it passes unchanged; if the test does NOT exist or has rotted, file a sub-issue rather than expanding scope (per spec FR-010 the sub-mode behaviour is regression-only — no new code expected).
 
 **Checkpoint**: span snapshot matches; resolve_location sub-mode envelope unchanged.

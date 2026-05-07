@@ -3,8 +3,8 @@
 
 Boots the registry and asserts the active count breakdown from spec.md SC-003:
   - Main ToolRegistry: 33 entries
-  - kosmos.primitives.verify._VERIFY_ADAPTERS: 10 families
-  - kosmos.primitives.submit._ADAPTER_REGISTRY: 5 families
+  - ummaya.primitives.verify._VERIFY_ADAPTERS: 10 families
+  - ummaya.primitives.submit._ADAPTER_REGISTRY: 5 families
 
 Test FAILS if any count is off-by-one.
 
@@ -72,10 +72,10 @@ _EXPECTED_LOOKUP_MOCK_IDS = frozenset(
 
 def test_main_registry_total_count() -> None:
     """Main ToolRegistry must have exactly 16 entries after register_all_tools()."""
-    import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.register_all import register_all_tools
-    from kosmos.tools.registry import ToolRegistry
+    import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.register_all import register_all_tools
+    from ummaya.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -91,10 +91,10 @@ def test_main_registry_total_count() -> None:
 
 def test_main_registry_live_tool_ids_present() -> None:
     """All 12 expected Live tool IDs must be registered in the main ToolRegistry."""
-    import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.register_all import register_all_tools
-    from kosmos.tools.registry import ToolRegistry
+    import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.register_all import register_all_tools
+    from ummaya.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -110,10 +110,10 @@ def test_main_registry_live_tool_ids_present() -> None:
 
 def test_main_registry_mvp_surface_ids_present() -> None:
     """The 2 MVP-surface tool IDs (lookup, resolve_location) must be registered."""
-    import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.register_all import register_all_tools
-    from kosmos.tools.registry import ToolRegistry
+    import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.register_all import register_all_tools
+    from ummaya.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -129,10 +129,10 @@ def test_main_registry_mvp_surface_ids_present() -> None:
 
 def test_main_registry_lookup_mock_ids_present() -> None:
     """The 2 new lookup mock IDs must be registered in the main ToolRegistry."""
-    import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.register_all import register_all_tools
-    from kosmos.tools.registry import ToolRegistry
+    import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.register_all import register_all_tools
+    from ummaya.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -171,9 +171,9 @@ _EXPECTED_VERIFY_FAMILIES = frozenset(
 
 
 def test_verify_adapter_registry_count() -> None:
-    """kosmos.primitives.verify._VERIFY_ADAPTERS must have exactly 10 families."""
-    import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-    from kosmos.primitives.verify import _VERIFY_ADAPTERS
+    """ummaya.primitives.verify._VERIFY_ADAPTERS must have exactly 10 families."""
+    import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
+    from ummaya.primitives.verify import _VERIFY_ADAPTERS
 
     actual = len(_VERIFY_ADAPTERS)
     assert actual == _EXPECTED_VERIFY_COUNT, (
@@ -185,8 +185,8 @@ def test_verify_adapter_registry_count() -> None:
 
 def test_verify_adapter_registry_families() -> None:
     """All 10 expected verify family keys must be present in _VERIFY_ADAPTERS."""
-    import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-    from kosmos.primitives.verify import _VERIFY_ADAPTERS
+    import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
+    from ummaya.primitives.verify import _VERIFY_ADAPTERS
 
     registered = frozenset(_VERIFY_ADAPTERS.keys())
     missing = _EXPECTED_VERIFY_FAMILIES - registered
@@ -203,8 +203,8 @@ def test_verify_adapter_registry_families() -> None:
 
 def test_verify_digital_onepass_not_in_registry() -> None:
     """digital_onepass must NOT be in _VERIFY_ADAPTERS (FR-004 deletion guard)."""
-    import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-    from kosmos.primitives.verify import _VERIFY_ADAPTERS
+    import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
+    from ummaya.primitives.verify import _VERIFY_ADAPTERS
 
     for family_key in _VERIFY_ADAPTERS:
         assert "digital_onepass" not in family_key, (
@@ -237,9 +237,9 @@ _EXPECTED_SUBMIT_IDS = frozenset(
 
 
 def test_submit_adapter_registry_count() -> None:
-    """kosmos.primitives.submit._ADAPTER_REGISTRY must have exactly 5 entries."""
-    import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-    from kosmos.primitives.submit import _ADAPTER_REGISTRY
+    """ummaya.primitives.submit._ADAPTER_REGISTRY must have exactly 5 entries."""
+    import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
+    from ummaya.primitives.submit import _ADAPTER_REGISTRY
 
     actual = len(_ADAPTER_REGISTRY)
     assert actual == _EXPECTED_SUBMIT_COUNT, (
@@ -251,8 +251,8 @@ def test_submit_adapter_registry_count() -> None:
 
 def test_submit_adapter_registry_ids() -> None:
     """All 5 expected submit adapter IDs must be present in _ADAPTER_REGISTRY."""
-    import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-    from kosmos.primitives.submit import _ADAPTER_REGISTRY
+    import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
+    from ummaya.primitives.submit import _ADAPTER_REGISTRY
 
     registered = frozenset(_ADAPTER_REGISTRY.keys())
     missing = _EXPECTED_SUBMIT_IDS - registered
@@ -279,12 +279,12 @@ def test_all_active_surface_counts_match_canonical() -> None:
     This is the single-test summary that must stay green for SC-003 compliance.
     If it fails, run the individual count tests above to identify which surface drifted.
     """
-    import kosmos.tools.mock  # noqa: F401 — trigger side-effect registration
-    from kosmos.primitives.submit import _ADAPTER_REGISTRY as submit_reg  # noqa: N811
-    from kosmos.primitives.verify import _VERIFY_ADAPTERS as verify_reg  # noqa: N811
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.register_all import register_all_tools
-    from kosmos.tools.registry import ToolRegistry
+    import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
+    from ummaya.primitives.submit import _ADAPTER_REGISTRY as submit_reg  # noqa: N811
+    from ummaya.primitives.verify import _VERIFY_ADAPTERS as verify_reg  # noqa: N811
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.register_all import register_all_tools
+    from ummaya.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)

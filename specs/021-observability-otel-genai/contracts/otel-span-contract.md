@@ -4,7 +4,7 @@
 **Version**: v1.0 (aligns with OTel GenAI semconv v1.40)
 **Stability**: Development (requires `OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental`)
 
-This contract is the **observable agreement** between KOSMOS and any OTLP-compatible backend (Langfuse v3, Datadog, Phoenix, Uptrace). Changing any name, attribute key, or status mapping in this document is a breaking change to downstream dashboards and requires a new spec.
+This contract is the **observable agreement** between UMMAYA and any OTLP-compatible backend (Langfuse v3, Datadog, Phoenix, Uptrace). Changing any name, attribute key, or status mapping in this document is a breaking change to downstream dashboards and requires a new spec.
 
 ## Transport
 
@@ -20,11 +20,11 @@ This contract is the **observable agreement** between KOSMOS and any OTLP-compat
 
 | Attribute | Type | Value |
 |---|---|---|
-| `service.name` | str | `kosmos` |
+| `service.name` | str | `ummaya` |
 | `service.version` | str | `pyproject.toml[project.version]` (read at boot) |
 | `deployment.environment.name` | str | `OTEL_DEPLOYMENT_ENVIRONMENT` env (default `dev`) |
 
-## Span 1 — `invoke_agent kosmos-query`
+## Span 1 — `invoke_agent ummaya-query`
 
 Parent span opened at `engine.query.query()` entry, closed at generator exhaustion or exception.
 
@@ -33,7 +33,7 @@ Parent span opened at `engine.query.query()` entry, closed at generator exhausti
 | Key | Type | Value |
 |---|---|---|
 | `gen_ai.operation.name` | str | `invoke_agent` |
-| `gen_ai.agent.name` | str | `kosmos-query` |
+| `gen_ai.agent.name` | str | `ummaya-query` |
 
 **Conditional attributes**
 
@@ -90,7 +90,7 @@ Created per LLM call in `LLMClient.generate_stream`. Closed when the stream fina
 
 **Streaming usage rule**: Token counters MUST be written exactly once, at stream end. Per-chunk updates are a contract violation (Langfuse sums attribute overwrites).
 
-**Retry rule**: HTTP 429 retries inside a single logical call remain within the **same** `chat` span. Do not create per-attempt spans. Each retry increments `kosmos_llm_rate_limit_retries_total{provider, model}` (see Metrics).
+**Retry rule**: HTTP 429 retries inside a single logical call remain within the **same** `chat` span. Do not create per-attempt spans. Each retry increments `ummaya_llm_rate_limit_retries_total{provider, model}` (see Metrics).
 
 ## Span 3 — `execute_tool {tool_id}`
 
@@ -102,7 +102,7 @@ Created per tool dispatch in `ToolExecutor.dispatch`.
 |---|---|---|
 | `gen_ai.operation.name` | str | `execute_tool` |
 | `gen_ai.tool.name` | str | `tool_id` |
-| `gen_ai.tool.type` | str | `function` (all KOSMOS tools are function-call) |
+| `gen_ai.tool.type` | str | `function` (all UMMAYA tools are function-call) |
 
 **Optional attributes**
 
@@ -125,7 +125,7 @@ Created per tool dispatch in `ToolExecutor.dispatch`.
 
 **PII rule**: Tool input payloads, tool output payloads, and API response bodies MUST NOT be attached as span attributes. Only whitelist-approved metadata keys (`tool_id`, `step`, `decision`, `error_class`, `model`) pass through.
 
-## Metric — `kosmos_llm_rate_limit_retries_total`
+## Metric — `ummaya_llm_rate_limit_retries_total`
 
 | Property | Value |
 |---|---|
@@ -137,7 +137,7 @@ Created per tool dispatch in `ToolExecutor.dispatch`.
 
 ## Attribute whitelist (PII prefilter)
 
-Any `dict`-shaped metadata passing through `otel_bridge.filter_metadata` is prefiltered against the canonical frozenset imported from `src/kosmos/observability/event_logger.py`:
+Any `dict`-shaped metadata passing through `otel_bridge.filter_metadata` is prefiltered against the canonical frozenset imported from `src/ummaya/observability/event_logger.py`:
 
 ```
 {"tool_id", "step", "decision", "error_class", "model"}

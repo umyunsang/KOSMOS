@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * dump-plugin-frames.tsx — Visual frame dump for KOSMOS plugin surfaces.
+ * dump-plugin-frames.tsx — Visual frame dump for UMMAYA plugin surfaces.
  *
  * Renders each plugin-related Ink surface via ink-testing-library and
  * writes the rendered ANSI-stripped frame to
@@ -83,7 +83,7 @@ function dump(name: string, frame: string | undefined): void {
 const SAMPLE_PLUGINS: PluginEntry[] = [
   {
     id: 'seoul_subway',
-    name: 'kosmos-plugin-seoul-subway',
+    name: 'ummaya-plugin-seoul-subway',
     version: '0.1.0',
     description_ko: '서울 지하철 실시간 도착 정보',
     description_en: 'Seoul subway realtime arrival',
@@ -91,7 +91,7 @@ const SAMPLE_PLUGINS: PluginEntry[] = [
   },
   {
     id: 'post_office',
-    name: 'kosmos-plugin-post-office',
+    name: 'ummaya-plugin-post-office',
     version: '0.1.0',
     description_ko: '우체국 등기 / EMS 배송 추적',
     description_en: 'Korea Post tracking',
@@ -99,7 +99,7 @@ const SAMPLE_PLUGINS: PluginEntry[] = [
   },
   {
     id: 'nts_homtax',
-    name: 'kosmos-plugin-nts-homtax',
+    name: 'ummaya-plugin-nts-homtax',
     version: '0.1.0',
     description_ko: '국세청 홈택스 자료 조회 (Mock)',
     description_en: 'NTS Hometax mock',
@@ -107,7 +107,7 @@ const SAMPLE_PLUGINS: PluginEntry[] = [
   },
   {
     id: 'nhis_check',
-    name: 'kosmos-plugin-nhis-check',
+    name: 'ummaya-plugin-nhis-check',
     version: '0.1.0',
     description_ko: 'NHIS 건강검진 결과 (Mock)',
     description_en: 'NHIS health checkup mock',

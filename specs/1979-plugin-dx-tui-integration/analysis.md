@@ -10,13 +10,13 @@
 
 | ID | Category | Severity | Location(s) | Summary | Recommendation |
 |----|----------|----------|-------------|---------|----------------|
-| C1 | Coverage Gap | MEDIUM | spec.md FR-010 (OTEL `kosmos.plugin.id`) | No explicit task verifies plugin tool invocation emits OTEL span carrying `kosmos.plugin.id`. Relies on Spec 1636 FR-021 + register_plugin_adapter invariant. | Add an assertion line to T018 or T020 integration test verifying `kosmos.plugin.id` attribute on the tool-invocation span. |
+| C1 | Coverage Gap | MEDIUM | spec.md FR-010 (OTEL `ummaya.plugin.id`) | No explicit task verifies plugin tool invocation emits OTEL span carrying `ummaya.plugin.id`. Relies on Spec 1636 FR-021 + register_plugin_adapter invariant. | Add an assertion line to T018 or T020 integration test verifying `ummaya.plugin.id` attribute on the tool-invocation span. |
 | C2 | Coverage Gap | MEDIUM | spec.md SC-009 (concurrent ledger position) | No explicit task tests "concurrent installs from two TUI sessions assign monotonic `consent_ledger_position`". Spec 1636's `_allocate_consent_position` flock infrastructure is reused but uncovered by this Epic's tests. | Add a sub-bullet to T014 (`tests/ipc/test_plugin_op_dispatch.py`): `test_concurrent_installs_assign_monotonic_positions` running ≥ 5 simulated parallel `handle_install` invocations. |
 | C3 | Coverage Gap | LOW | spec.md FR-023 / FR-024 / FR-025 / FR-027 (cross-cutting governance) | These FRs are governance invariants verified at PR time (zero deps grep, English-source grep, logging grep, sub-issue count) rather than via dedicated tasks. T038 (final quickstart validation) covers some. | Acceptable — invariants don't need dedicated tasks; T038 + post-merge audit is canonical. No action. |
 | A1 | Ambiguity | LOW | spec.md US3 § FR-016 vs research.md § R-3+R-4 | "Space toggles activation" in FR-016 (citizen-visible mandate) is intentionally interpreted as visual-only in this Epic per research.md's runtime-toggle-IPC deferral. The conflict is acknowledged + tracked but not eliminated. | Document the visual-only interpretation in spec.md FR-016 explicitly as a one-line clarification, OR rely on research.md's deferral entry. Currently deferred. Acceptable. |
 | R1 | Risk (cliff edge) | HIGH | tasks.md T021 (commands.ts:133 swap) | Single 1-line change activates the entire citizen plugin path. If the swap silently breaks (e.g., cyclic import, wrong relative path), all of US1+US2+US3 acceptance fails simultaneously. | Mitigation already present: T030 bun tests mock the swap before integration; T035 master orchestrator runs L1+L2+L3 sequentially so the swap regression surfaces early. **Accept risk with monitoring.** |
-| R2 | Risk (live env) | LOW | spec.md SC-001 (≤30s install) | Wall-clock measurement is fixture-only; live `kosmos-plugin-store` measurement is implicit. Network latency variance not quantified. | Add a follow-up tracking issue (NEEDS TRACKING) for live-environment SC-001 validation post-PR merge. Update spec.md Deferred table. |
-| R3 | Risk (scaling) | LOW | tasks.md T020 (plugins.ts data binding) + Spec 1636 SC-010 | Payload reassembly for `plugin_op_request:list` not stress-tested at >100 plugins; Spec 1636 SC-010 (200ms boot per plugin) implies catalogs may grow large. | Acceptable for MVP3 (1-4 plugins from kosmos-plugin-store). Add follow-up task to E2E suite when catalog exceeds ~50 plugins. NEEDS TRACKING. |
+| R2 | Risk (live env) | LOW | spec.md SC-001 (≤30s install) | Wall-clock measurement is fixture-only; live `ummaya-plugin-store` measurement is implicit. Network latency variance not quantified. | Add a follow-up tracking issue (NEEDS TRACKING) for live-environment SC-001 validation post-PR merge. Update spec.md Deferred table. |
+| R3 | Risk (scaling) | LOW | tasks.md T020 (plugins.ts data binding) + Spec 1636 SC-010 | Payload reassembly for `plugin_op_request:list` not stress-tested at >100 plugins; Spec 1636 SC-010 (200ms boot per plugin) implies catalogs may grow large. | Acceptable for MVP3 (1-4 plugins from ummaya-plugin-store). Add follow-up task to E2E suite when catalog exceeds ~50 plugins. NEEDS TRACKING. |
 | D1 | Deferred (HIGH→tracked) | INFO | spec.md § Deferred table + research.md § Phase 0 deferred validation | 8 total deferred items: 4 with concrete issue numbers (#585, #1820, #1926, #1980), 2 inherited NEEDS TRACKING, 2 new NEEDS TRACKING discovered in research.md (CC residue cleanup + runtime enable/disable IPC). | T036 (Phase 7 Polish) commits to updating spec.md Deferred table with the 2 new entries. `/speckit-taskstoissues` resolves all NEEDS TRACKING markers. ✅ Compliant with §VI. |
 | T1 | Terminology | LOW | spec.md vs contracts/dispatcher-routing.md ("envelope" vs "frame") | Spec 1636 contracts use "20th arm" / "discriminated union arm"; spec.md uses both "frame arm" and "frame" interchangeably. | Cosmetic. Already consistent enough for review. No action. |
 
@@ -54,7 +54,7 @@
 | FR-007 (list single complete frame + payload) | T012, T014 | ✅ |
 | FR-008 (post-install tools[] propagation) | T016, T017, T018 | ✅ |
 | FR-009 (post-uninstall tools[] exclusion) | T016, T017 | ✅ |
-| FR-010 (OTEL kosmos.plugin.id span) | (relies on Spec 1636 invariant) | ⚠️ MEDIUM (C1) |
+| FR-010 (OTEL ummaya.plugin.id span) | (relies on Spec 1636 invariant) | ⚠️ MEDIUM (C1) |
 | FR-011 (gauntlet routes by manifest layer) | T009, T019 | ✅ |
 | FR-012 (PII modal shows trustee + ack hash) | T006, T015, T020 | ✅ |
 | FR-013 (revocation fail-closed) | T019, T033 (revoke smoke) | ✅ |
@@ -210,9 +210,9 @@ All 6 matches occur within the structured Deferred to Future Work table or its s
 | `feedback_codex_reviewer` | tasks.md Notes: post-push Codex coment processing | ✅ |
 | `feedback_copilot_gate_race` | (Implicit — applies during /speckit-implement push iterations; no spec-level task needed) | ✅ |
 | `feedback_subissue_100_cap` | SC-007 + Sub-Issue Budget Projection above; 38 ≪ 90 | ✅ |
-| `feedback_kosmos_uses_cc_query_engine` | research.md cites "agentic loop CC 쿼리 엔진 보존"; Plan technical approach reuses Epic #1978 | ✅ |
-| `feedback_no_stubs_remove_or_migrate` | research.md V1: "leaving CC residue inert satisfies the rule by making it KOSMOS-unreachable" — explicit rationale | ✅ |
-| `feedback_kosmos_scope_cc_plus_two_swaps` | research.md V1 explicit citation; rationale anchored in this memory | ✅ |
+| `feedback_ummaya_uses_cc_query_engine` | research.md cites "agentic loop CC 쿼리 엔진 보존"; Plan technical approach reuses Epic #1978 | ✅ |
+| `feedback_no_stubs_remove_or_migrate` | research.md V1: "leaving CC residue inert satisfies the rule by making it UMMAYA-unreachable" — explicit rationale | ✅ |
+| `feedback_ummaya_scope_cc_plus_two_swaps` | research.md V1 explicit citation; rationale anchored in this memory | ✅ |
 
 **Memory audit**: 14 / 14 applied with traceable evidence. ✅ FULL COMPLIANCE.
 
@@ -224,7 +224,7 @@ All 6 matches occur within the structured Deferred to Future Work table or its s
 |---|---|---|
 | **Risk A** — T021 single cliff-edge | HIGH | ⚠️ Managed: T030 (bun tests) + T035 (master orchestrator) catch swap regression. Acceptable with monitoring. PR description must explicitly note T021 as gate. |
 | **Risk B** — Space toggle visual-only conflict | LOW | ✅ Documented in research.md R-3/R-4 + listed as Deferred item #8. Acceptable. |
-| **Risk C** — SC-001 fixture-only measurement | LOW | ⏳ Add NEEDS TRACKING entry for live `kosmos-plugin-store` validation. T036 should include this as a third deferred entry to surface in spec.md. |
+| **Risk C** — SC-001 fixture-only measurement | LOW | ⏳ Add NEEDS TRACKING entry for live `ummaya-plugin-store` validation. T036 should include this as a third deferred entry to surface in spec.md. |
 | **Risk D** — payload reassembly at scale | LOW | ✅ Acceptable for MVP3 (1-4 plugins). Add NEEDS TRACKING entry for >50 plugins stress test. T036 should include this. |
 
 **Recommendation**: Update T036 scope to include 4 (not 2) new deferred entries: V1 cleanup + R-3/R-4 toggle IPC + Risk C live env + Risk D scale test.
@@ -267,7 +267,7 @@ The Epic #1979 specification suite passes Constitution §I-VI, cross-artifact co
 **Recommended pre-`/speckit-implement` adjustments** (optional, do not block `/speckit-taskstoissues`):
 
 - **Optional**: Update T036 to enumerate 4 new deferred entries (V1, R-3/R-4, Risk C, Risk D) instead of 2.
-- **Optional**: Add a sub-bullet to T014 covering FR-010 OTEL `kosmos.plugin.id` assertion.
+- **Optional**: Add a sub-bullet to T014 covering FR-010 OTEL `ummaya.plugin.id` assertion.
 - **Optional**: Add a sub-bullet to T014 covering SC-009 concurrent install ledger assertion.
 
 These are quality improvements that can land as part of the implement phase or in a separate fix-up commit.

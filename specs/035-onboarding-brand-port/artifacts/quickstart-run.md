@@ -28,7 +28,7 @@ This file records the pass/fail outcome of every automated step in `quickstart.m
 | 7  | `uv run pytest tests/memdir/ tests/tools/test_main_router.py` | PASS | 32/32 tests; includes the SC-009 < 100 ms refusal-latency assertion. |
 | 8  | live launch — fresh onboarding | DEFERRED | Covered by Onboarding.snap.test.tsx startStep matrix. |
 | 9  | live launch — returning citizen fast-path | DEFERRED | Covered by Onboarding.snap.test.tsx memdir-fresh branch. |
-| 10 | live launch — reduced motion | DEFERRED | Covered by LogoV2.snap.test.tsx 6-cell matrix (3 cols × 2 motion states) + AnimatedAsterisk / WelcomeV2 / KosmosCoreIcon tests. |
+| 10 | live launch — reduced motion | DEFERRED | Covered by LogoV2.snap.test.tsx 6-cell matrix (3 cols × 2 motion states) + AnimatedAsterisk / WelcomeV2 / UmmayaCoreIcon tests. |
 | 11 | live launch — narrow terminal | DEFERRED | Covered by LogoV2.snap.test.tsx 80/60/45 col matrix. |
 | 12 | live launch — decline consent | DEFERRED | Covered by PIPAConsentStep.snap.test.tsx decline-branch test. |
 | 13 | live launch — partial opt-in + refused tool call | DEFERRED | Covered by test_main_router.py::test_opt_out_refusal (live API + latency). |

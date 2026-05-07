@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1634 P3 · SubmitPrimitive.
+// UMMAYA-original — Epic #1634 P3 · SubmitPrimitive.
 //
 // LLM-visible tool name: "submit"
-// Primitive wrapper over Spec 031 kosmos.primitives.submit.
+// Primitive wrapper over Spec 031 ummaya.primitives.submit.
 // Permission-gated side-effecting citizen action (application, report, etc.)
 //
 // Epic γ #2294 · T010/T011/T012: real validateInput + renderToolResultMessage.
@@ -32,16 +32,16 @@ import {
   renderVerboseInputJson,
   renderVerboseOutputJson,
 } from '../_shared/verboseRender.js'
-import { getOrCreateKosmosBridge } from '../../ipc/bridgeSingleton.js'
+import { getOrCreateUmmayaBridge } from '../../ipc/bridgeSingleton.js'
 import { getOrCreatePendingCallRegistry } from '../../ipc/pendingCallSingleton.js'
 
 // ---------------------------------------------------------------------------
-// KOSMOS citation extension — augments context at runtime for permission UI.
+// UMMAYA citation extension — augments context at runtime for permission UI.
 // Does NOT modify Tool.ts or ToolPermissionContext; uses a local cast to attach
 // the citation so FallbackPermissionRequest can surface verbatim agency text.
 // ---------------------------------------------------------------------------
 type ContextWithCitation = ToolUseContext & {
-  kosmosCitations?: AdapterCitation[]
+  ummayaCitations?: AdapterCitation[]
 }
 
 // ---------------------------------------------------------------------------
@@ -183,7 +183,7 @@ export const SubmitPrimitive = buildTool({
         // themselves, resolve_location, etc.) are not citizen-facing
         // agency calls and are exempt from the citation invariant.
         if (backendEntry.source_mode === 'internal') {
-          ;(context as ContextWithCitation).kosmosCitations = []
+          ;(context as ContextWithCitation).ummayaCitations = []
           return { result: true as const }
         }
         if (!backendEntry.policy_authority_url) {
@@ -197,7 +197,7 @@ export const SubmitPrimitive = buildTool({
           real_classification_url: backendEntry.policy_authority_url,
           policy_authority: backendEntry.name,
         }
-        ;(context as ContextWithCitation).kosmosCitations = [citation]
+        ;(context as ContextWithCitation).ummayaCitations = [citation]
         return { result: true as const }
       }
     }
@@ -216,7 +216,7 @@ export const SubmitPrimitive = buildTool({
           errorCode: PrimitiveErrorCode.CitationMissing,
         }
       }
-      ;(context as ContextWithCitation).kosmosCitations = [citation]
+      ;(context as ContextWithCitation).ummayaCitations = [citation]
       return { result: true as const }
     }
 
@@ -251,7 +251,7 @@ export const SubmitPrimitive = buildTool({
     // NOTE: This file is `.ts` (not `.tsx`); Bun runtime cannot parse JSX in
     // `.ts`. Use `React.createElement` for parity with the other 3 primitives.
     //
-    // KOSMOS hotfix #2519 — after dispatchPrimitive register-and-await
+    // UMMAYA hotfix #2519 — after dispatchPrimitive register-and-await
     // rewrite, output.result is the actual submit primitive output
     // (transaction_id / ministry / status / agency_handoff_url) unwrapped
     // from ToolResultEnvelope.result.
@@ -281,7 +281,7 @@ export const SubmitPrimitive = buildTool({
               ? '반려됨'
               : status
 
-      // KOSMOS hotfix #2519 — wrap in <MessageResponse> for the CC ⎿ prefix.
+      // UMMAYA hotfix #2519 — wrap in <MessageResponse> for the CC ⎿ prefix.
       // Audit-2 P0: check _mode === 'mock' from transparency stamp (Spec 024).
       const mockMeta = extractMockMeta(output)
       const isMock = mockMeta.isMock
@@ -356,7 +356,7 @@ export const SubmitPrimitive = buildTool({
    * submit is a side-effecting citizen action (신청, 신고, etc.) that may
    * be irreversible. Always ask for citizen permission before proceeding.
    * Spec 024 invariant: adapters cite agency policy; the permission gauntlet
-   * surfaces that citation via context.kosmosCitations (set in validateInput).
+   * surfaces that citation via context.ummayaCitations (set in validateInput).
    */
   async checkPermissions(_input) {
     return {
@@ -374,7 +374,7 @@ export const SubmitPrimitive = buildTool({
       args: input as Record<string, unknown>,
       context,
       registry: getOrCreatePendingCallRegistry(),
-      bridge: getOrCreateKosmosBridge(),
+      bridge: getOrCreateUmmayaBridge(),
     })
   },
 } satisfies ToolDef<InputSchema, Output>)

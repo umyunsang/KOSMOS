@@ -22,12 +22,12 @@ async def test_reader_loop_reads_permission_response_while_chat_request_runs() -
     chat_request handler is awaiting a pending Future. If the reader awaits the
     whole chat_request inline, the permission_response line can never be read.
     """
-    from kosmos.ipc.frame_schema import (
+    from ummaya.ipc.frame_schema import (
         ChatRequestFrame,
         IPCFrame,
         PermissionResponseFrame,
     )
-    from kosmos.ipc.stdio import _reader_loop
+    from ummaya.ipc.stdio import _reader_loop
 
     session_id = str(uuid.uuid4())
     request_id = str(uuid.uuid4())
@@ -76,7 +76,7 @@ async def test_reader_loop_reads_permission_response_while_chat_request_runs() -
 
 def test_build_verify_session_context_packs_params_shape() -> None:
     """Backend dispatch must mirror the LLM-visible verify(tool_id, params) schema."""
-    from kosmos.ipc.stdio import _build_verify_session_context
+    from ummaya.ipc.stdio import _build_verify_session_context
 
     ctx = _build_verify_session_context(
         {
@@ -97,7 +97,7 @@ def test_build_verify_session_context_packs_params_shape() -> None:
 
 def test_build_verify_session_context_normalizes_tool_id_scopes() -> None:
     """Model-emitted verb:tool_id scope shorthand should not block verify."""
-    from kosmos.ipc.stdio import _build_verify_session_context
+    from ummaya.ipc.stdio import _build_verify_session_context
 
     ctx = _build_verify_session_context(
         {
@@ -117,7 +117,7 @@ def test_build_verify_session_context_normalizes_tool_id_scopes() -> None:
 
 def test_build_verify_session_context_canonicalizes_gov24_submit_tool_scope() -> None:
     """Gov24 submit tool-id shorthand must map to its published domain scope."""
-    from kosmos.ipc.stdio import _build_verify_session_context
+    from ummaya.ipc.stdio import _build_verify_session_context
 
     ctx = _build_verify_session_context(
         {
@@ -137,7 +137,7 @@ def test_build_verify_session_context_canonicalizes_gov24_submit_tool_scope() ->
 
 def test_build_verify_session_context_flattens_nested_legacy_context() -> None:
     """Citizen-shape params may carry a legacy session_context object from the LLM."""
-    from kosmos.ipc.stdio import _build_verify_session_context
+    from ummaya.ipc.stdio import _build_verify_session_context
 
     ctx = _build_verify_session_context(
         {
@@ -158,7 +158,7 @@ def test_build_verify_session_context_flattens_nested_legacy_context() -> None:
 
 def test_inject_delegation_context_overwrites_partial_llm_copy() -> None:
     """Submit dispatch should use the typed backend-owned DelegationContext."""
-    from kosmos.ipc.stdio import _inject_delegation_context
+    from ummaya.ipc.stdio import _inject_delegation_context
 
     def _model_dump(*, mode: str) -> dict[str, object]:
         assert mode == "json"
@@ -203,7 +203,7 @@ def test_inject_delegation_context_overwrites_partial_llm_copy() -> None:
 
 def test_bind_submit_session_id_overwrites_llm_value_without_mutation() -> None:
     """Submit session binding must stay tied to the verified delegation session."""
-    from kosmos.ipc.stdio import _bind_submit_session_id
+    from ummaya.ipc.stdio import _bind_submit_session_id
 
     original = {
         "session_id": "GOV24-MINWON-SESSION-001",
@@ -221,7 +221,7 @@ def test_bind_submit_session_id_overwrites_llm_value_without_mutation() -> None:
 
 def test_bind_submit_session_id_leaves_unscoped_payload_identity() -> None:
     """Payloads without a session field should pass through unchanged."""
-    from kosmos.ipc.stdio import _bind_submit_session_id
+    from ummaya.ipc.stdio import _bind_submit_session_id
 
     original = {"service_code": "JUMINDEUNGCHOBON"}
 
@@ -233,12 +233,12 @@ def test_bind_submit_session_id_leaves_unscoped_payload_identity() -> None:
 @pytest.mark.asyncio
 async def test_mydata_verify_issues_scope_bound_delegation_context(tmp_path) -> None:
     """Public MyData action submit must receive a real DelegationContext."""
-    from kosmos.memdir.consent_ledger import FileLedgerReader
-    from kosmos.primitives.delegation import (
+    from ummaya.memdir.consent_ledger import FileLedgerReader
+    from ummaya.primitives.delegation import (
         DelegationValidationOutcome,
         validate_delegation,
     )
-    from kosmos.tools.mock.verify_mydata import invoke
+    from ummaya.tools.mock.verify_mydata import invoke
 
     session_id = "MYDATA-ACTION-SESSION-001"
     ctx = invoke(
@@ -267,7 +267,7 @@ async def test_mydata_verify_issues_scope_bound_delegation_context(tmp_path) -> 
 
 def test_invalid_gated_primitive_tool_id_result_blocks_blank_tool() -> None:
     """Gated primitives must not open permission modals for blank tool ids."""
-    from kosmos.ipc.stdio import _invalid_gated_primitive_tool_id_result
+    from ummaya.ipc.stdio import _invalid_gated_primitive_tool_id_result
 
     result = _invalid_gated_primitive_tool_id_result("submit", {"params": {}})
 
@@ -287,7 +287,7 @@ def test_invalid_gated_primitive_tool_id_result_blocks_blank_tool() -> None:
 
 def test_invalid_gated_primitive_tool_id_result_accepts_valid_tool() -> None:
     """Valid adapter ids should continue into the normal permission gauntlet."""
-    from kosmos.ipc.stdio import _invalid_gated_primitive_tool_id_result
+    from ummaya.ipc.stdio import _invalid_gated_primitive_tool_id_result
 
     assert (
         _invalid_gated_primitive_tool_id_result(
@@ -300,7 +300,7 @@ def test_invalid_gated_primitive_tool_id_result_accepts_valid_tool() -> None:
 
 def test_contains_mock_marker_detects_nested_adapter_receipt() -> None:
     """Mock transparency can live below result.adapter_receipt."""
-    from kosmos.ipc.stdio import _contains_mock_marker
+    from ummaya.ipc.stdio import _contains_mock_marker
 
     assert _contains_mock_marker(
         {
@@ -318,7 +318,7 @@ def test_contains_mock_marker_detects_nested_adapter_receipt() -> None:
 
 def test_ensure_mock_disclosure_appends_once() -> None:
     """Citizen-facing final answers must carry a mandatory mock disclosure."""
-    from kosmos.ipc.stdio import _ensure_mock_disclosure
+    from ummaya.ipc.stdio import _ensure_mock_disclosure
 
     prose = "주민등록등본 신청 접수가 완료되었습니다."
 
@@ -332,7 +332,7 @@ def test_ensure_mock_disclosure_appends_once() -> None:
 
 def test_ensure_mock_disclosure_removes_real_portal_claims() -> None:
     """Mock final answers must not retain real portal lookup instructions."""
-    from kosmos.ipc.stdio import _ensure_mock_disclosure
+    from ummaya.ipc.stdio import _ensure_mock_disclosure
 
     disclosed = _ensure_mock_disclosure(
         "\n".join(
@@ -353,7 +353,7 @@ def test_ensure_mock_disclosure_removes_real_portal_claims() -> None:
 
 def test_ensure_mock_disclosure_removes_unsupported_gov24_next_steps() -> None:
     """Mock final answers must not invent real-world processing guidance."""
-    from kosmos.ipc.stdio import _ensure_mock_disclosure
+    from ummaya.ipc.stdio import _ensure_mock_disclosure
 
     disclosed = _ensure_mock_disclosure(
         "\n".join(
@@ -378,7 +378,7 @@ def test_ensure_mock_disclosure_removes_unsupported_gov24_next_steps() -> None:
                 "안내사항:",
                 "인증 절차 완료: 간편인증 모듈을 통해 위임 토큰 발급",
                 "민원 신청 완료: 정부24 시스템에 정식 접수",
-                "신청 ID: urn:kosmos:submit:abc",
+                "신청 ID: urn:ummaya:submit:abc",
                 "접수번호를 보관하시면 조회 시 필요합니다.",
                 "접수번호를 확인하시고 필요시 보관해주세요.",
                 "발급 완료 시 등록된 연락처로 알림이 발송됩니다.",
@@ -431,7 +431,7 @@ def test_ensure_mock_disclosure_removes_unsupported_gov24_next_steps() -> None:
 
 def test_ensure_mock_disclosure_normalizes_gov24_mock_submit_summary() -> None:
     """Gov24 mock submit finals should be receipt-only, not portal guidance."""
-    from kosmos.ipc.stdio import _ensure_mock_disclosure
+    from ummaya.ipc.stdio import _ensure_mock_disclosure
 
     disclosed = _ensure_mock_disclosure(
         "\n".join(
@@ -439,7 +439,7 @@ def test_ensure_mock_disclosure_normalizes_gov24_mock_submit_summary() -> None:
                 "정부24 주민등록등본 발급 민원 신청이 완료되었습니다!",
                 "접수번호: gov24-2026-05-07-MW-4FA74579",
                 "거래 ID: "
-                "urn:kosmos:submit:807823304ad5dfeb0b4d8b938bf8f493c76ea9f30d2b7abecee3401179faaf84",
+                "urn:ummaya:submit:807823304ad5dfeb0b4d8b938bf8f493c76ea9f30d2b7abecee3401179faaf84",
                 "신청자: 홍길동",
                 "수령 방법: 온라인 발급",
                 "세션 ID: GOV24-MINWON-SESSION-001",
@@ -458,7 +458,7 @@ def test_ensure_mock_disclosure_normalizes_gov24_mock_submit_summary() -> None:
     assert "시연 환경에서 접수되었습니다" in disclosed
     assert "gov24-2026-05-07-MW-4FA74579 (시연용)" in disclosed
     assert (
-        "urn:kosmos:submit:807823304ad5dfeb0b4d8b938bf8f493c76ea9f30d2b7abecee3401179faaf84"
+        "urn:ummaya:submit:807823304ad5dfeb0b4d8b938bf8f493c76ea9f30d2b7abecee3401179faaf84"
         in disclosed
     )
     assert "홍길동" in disclosed
@@ -475,7 +475,7 @@ def test_ensure_mock_disclosure_normalizes_gov24_mock_submit_summary() -> None:
 
 def test_ensure_mock_disclosure_normalizes_hometax_mock_submit_summary() -> None:
     """Hometax mock submit finals must not claim real portal lookup is possible."""
-    from kosmos.ipc.stdio import _ensure_mock_disclosure
+    from ummaya.ipc.stdio import _ensure_mock_disclosure
 
     disclosed = _ensure_mock_disclosure(
         "\n".join(
@@ -483,7 +483,7 @@ def test_ensure_mock_disclosure_normalizes_hometax_mock_submit_summary() -> None
                 "작년 종합소득세 신고 절차가 완료되었습니다.",
                 "접수번호: hometax-2026-05-07-RX-76814FEF",
                 "거래 ID: "
-                "urn:kosmos:submit:72d28a717acb576351be4106aa78b4a8cd552bd889b6e79b5875242f76b7507b",
+                "urn:ummaya:submit:72d28a717acb576351be4106aa78b4a8cd552bd889b6e79b5875242f76b7507b",
                 "총 신고 소득: 42,000,000원",
                 "홈택스 로그인 후 신고 내역에서 확인 가능합니다.",
                 "기한 내 추가 수정이 필요하면 홈택스에서 직접 진행하실 수 있습니다.",
@@ -494,7 +494,7 @@ def test_ensure_mock_disclosure_normalizes_hometax_mock_submit_summary() -> None
     assert "홈택스 종합소득세 신고가 시연 환경에서 접수되었습니다" in disclosed
     assert "hometax-2026-05-07-RX-76814FEF (시연용)" in disclosed
     assert (
-        "urn:kosmos:submit:72d28a717acb576351be4106aa78b4a8cd552bd889b6e79b5875242f76b7507b"
+        "urn:ummaya:submit:72d28a717acb576351be4106aa78b4a8cd552bd889b6e79b5875242f76b7507b"
         in disclosed
     )
     assert "42,000,000원" in disclosed

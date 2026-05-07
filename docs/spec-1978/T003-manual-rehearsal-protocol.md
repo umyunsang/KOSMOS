@@ -16,26 +16,26 @@ This preserves user direction (option 2 = avoid PTY harness; ink-testing-library
 ## Procedure (user runs in interactive Terminal/iTerm)
 
 ```bash
-cd ~/KOSMOS/tui      # NOT ~/KOSMOS — the `tui` script lives in tui/package.json,
+cd ~/UMMAYA/tui      # NOT ~/UMMAYA — the `tui` script lives in tui/package.json,
                      # there is no root-level package.json. bun cannot resolve
                      # `bun run tui` from the repo root.
 
 # Tail the structured DEBUG log in a SECOND terminal pane:
-#   tail -f /tmp/kosmos-tui.log
+#   tail -f /tmp/ummaya-tui.log
 
 # In the FIRST pane, launch with stderr split:
-KOSMOS_TUI_LOG_LEVEL=DEBUG bun run tui 2> /tmp/kosmos-tui.log
+UMMAYA_TUI_LOG_LEVEL=DEBUG bun run tui 2> /tmp/ummaya-tui.log
 ```
 
 Expected timeline:
 
-1. Banner renders (`KOSMOS v… · K-EXAONE 236B …`).
+1. Banner renders (`UMMAYA v… · K-EXAONE 236B …`).
 2. Type any message in Korean (e.g., `안녕`).
 3. Press Enter.
 
 Three possible outcomes:
 
-| Stderr line in `/tmp/kosmos-tui.log` | Diagnosis |
+| Stderr line in `/tmp/ummaya-tui.log` | Diagnosis |
 |---|---|
 | `[onSubmit] enter input="안녕"` then `[onSubmit] guard:footerSelection swallow ...` | Footer pill (e.g., `↑ Opus now defaults to 1M context …`) is selected. Press `Esc` first. Patch target: prevent stale footer pill from auto-selecting on boot. |
 | `[onSubmit] enter ...` then `[onSubmit] guard:viewSelectionMode=selecting-agent swallow` | A `/agents` modal is half-open. `Esc` recovers. Patch: ensure boot path leaves `viewSelectionMode='none'`. |
@@ -46,7 +46,7 @@ Three possible outcomes:
 
 ## Reporting back
 
-Paste the relevant `/tmp/kosmos-tui.log` lines (the block immediately around the Enter keystroke — usually 5–15 lines) into a comment on Epic [#1978](https://github.com/umyunsang/KOSMOS/issues/1978) or share with the implementing agent. We will land T004 (the actual patch) based on which guard fired.
+Paste the relevant `/tmp/ummaya-tui.log` lines (the block immediately around the Enter keystroke — usually 5–15 lines) into a comment on Epic [#1978](https://github.com/umyunsang/UMMAYA/issues/1978) or share with the implementing agent. We will land T004 (the actual patch) based on which guard fired.
 
 ## Cleanup after T004 lands
 

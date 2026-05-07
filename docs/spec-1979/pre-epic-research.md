@@ -48,25 +48,25 @@
 | `plugin_op` request emit | `tui/src/commands/plugin.ts:95-107,122-131,151-161` | EMIT (TUI→backend) |
 | TUI plugin browser | `tui/src/components/plugins/PluginBrowser.tsx` | EXISTS · 5800B |
 | TUI bundled fixtures | `tui/src/plugins/builtinPlugins.ts` | EXISTS · 4980B |
-| Backend registry | `src/kosmos/plugins/registry.py` | ACTIVE · `auto_discover()` + OTEL emit |
-| Backend installer | `src/kosmos/plugins/installer.py` | ACTIVE · 8-phase flow · **IPC emit 0** |
-| Manifest schema | `src/kosmos/plugins/manifest_schema.py` | ACTIVE · Pydantic v2 |
-| Validation checks | `src/kosmos/plugins/checks/q1..q10.py` | ACTIVE · 50-item matrix |
-| Memdir path | `~/.kosmos/memdir/user/plugins/<id>/` | USED BY auto_discover |
-| **Backend `plugin_op` dispatcher** | `src/kosmos/` | **MISSING** (H7 deferred) |
+| Backend registry | `src/ummaya/plugins/registry.py` | ACTIVE · `auto_discover()` + OTEL emit |
+| Backend installer | `src/ummaya/plugins/installer.py` | ACTIVE · 8-phase flow · **IPC emit 0** |
+| Manifest schema | `src/ummaya/plugins/manifest_schema.py` | ACTIVE · Pydantic v2 |
+| Validation checks | `src/ummaya/plugins/checks/q1..q10.py` | ACTIVE · 50-item matrix |
+| Memdir path | `~/.ummaya/memdir/user/plugins/<id>/` | USED BY auto_discover |
+| **Backend `plugin_op` dispatcher** | `src/ummaya/` | **MISSING** (H7 deferred) |
 
-**핵심 갭**: TUI는 `plugin_op` request를 보낼 줄 알지만 backend는 받아서 `installer.py` 8-phase에 라우팅 + progress/complete emit하는 코드가 없다. **단일 모듈(`src/kosmos/plugins/dispatcher.py` 신설)** 가 핵심 작업.
+**핵심 갭**: TUI는 `plugin_op` request를 보낼 줄 알지만 backend는 받아서 `installer.py` 8-phase에 라우팅 + progress/complete emit하는 코드가 없다. **단일 모듈(`src/ummaya/plugins/dispatcher.py` 신설)** 가 핵심 작업.
 
 ### 1.3 Agent Swarm 코드 인벤토리 (#1980 대상)
 
 | 항목 | 경로 | 상태 |
 |---|---|---|
-| Coordinator | `src/kosmos/agents/coordinator.py:78+` | ACTIVE · 4-phase (Research→Synthesis→Implementation→Verification) |
-| Worker | `src/kosmos/agents/worker.py` | ACTIVE · Spec 027 mailbox 통합 |
-| Mailbox base | `src/kosmos/agents/mailbox/base.py` | ACTIVE |
-| File mailbox | `src/kosmos/agents/mailbox/file_mailbox.py` | ACTIVE · POSIX `~/.kosmos/mailbox/` |
-| Messages | `src/kosmos/agents/mailbox/messages.py` | ACTIVE · discriminated union |
-| Consent gateway | `src/kosmos/agents/consent.py` | ACTIVE · `AlwaysGrantConsentGateway` |
+| Coordinator | `src/ummaya/agents/coordinator.py:78+` | ACTIVE · 4-phase (Research→Synthesis→Implementation→Verification) |
+| Worker | `src/ummaya/agents/worker.py` | ACTIVE · Spec 027 mailbox 통합 |
+| Mailbox base | `src/ummaya/agents/mailbox/base.py` | ACTIVE |
+| File mailbox | `src/ummaya/agents/mailbox/file_mailbox.py` | ACTIVE · POSIX `~/.ummaya/mailbox/` |
+| Messages | `src/ummaya/agents/mailbox/messages.py` | ACTIVE · discriminated union |
+| Consent gateway | `src/ummaya/agents/consent.py` | ACTIVE · `AlwaysGrantConsentGateway` |
 | TUI agents folder | `tui/src/components/agents/` | EXISTS · 18 files / 640KB |
 | TUI `AgentVisibilityPanel` | `tui/src/components/agents/AgentVisibilityPanel.tsx` | EXISTS · listens for `worker_status` (no emit) |
 | TUI `PhaseIndicator` | `tui/src/components/coordinator/PhaseIndicator.tsx` | EXISTS · listens for `coordinator_phase` (no emit) |
@@ -82,13 +82,13 @@
 
 | Primitive | 경로 | 상태 |
 |---|---|---|
-| `lookup` | `src/kosmos/tools/lookup.py` | ACTIVE · BM25 search + typed fetch |
-| `resolve_location` | `src/kosmos/tools/resolve_location.py` | ACTIVE · geocoding |
-| `submit` | `src/kosmos/primitives/submit.py` | ACTIVE · Spec 031 US1 |
+| `lookup` | `src/ummaya/tools/lookup.py` | ACTIVE · BM25 search + typed fetch |
+| `resolve_location` | `src/ummaya/tools/resolve_location.py` | ACTIVE · geocoding |
+| `submit` | `src/ummaya/primitives/submit.py` | ACTIVE · Spec 031 US1 |
 | `subscribe` | — | DEFERRED · app/push runtime required |
-| `verify` | `src/kosmos/primitives/verify.py` | ACTIVE · Spec 031 US2 |
+| `verify` | `src/ummaya/primitives/verify.py` | ACTIVE · Spec 031 US2 |
 
-활성 어댑터 14종 (`src/kosmos/tools/register_all.py:51-65`):
+활성 어댑터 14종 (`src/ummaya/tools/register_all.py:51-65`):
 - core: `resolve_location`, `lookup`
 - KOROAD ×2: accident_search, accident_hazard_search
 - KMA ×6: weather_alert_status, current_observation, short/ultra-short forecast, pre_warning, forecast_fetch
@@ -123,7 +123,7 @@ Deprecated 어댑터 0 (composite 제거는 P3 epic으로 끝).
 | KSC 2026 시연 임팩트 | ★★★ — "외부 개발자가 기여한 도구 즉시 LLM에 노출" 메시지 | ★★★★★ — 다부처 swarm + 4-phase 시각화는 시각적으로 가장 강함 |
 | Mock-only 데모 가능성 | ◎ (4 example plugin 즉시 사용) | ○ (이사=OPAQUE submit 부분, 응급=Mock 100% OK 둘 다 후보) |
 | Hard dependency | Epic #1978 (CLOSED) | Epic #1978 (CLOSED) |
-| Soft dependency | `kosmos-plugin-store/<repo>` 4종 publish 상태 | Mock 어댑터 인벤토리 (현재 6 family ship) |
+| Soft dependency | `ummaya-plugin-store/<repo>` 4종 publish 상태 | Mock 어댑터 인벤토리 (현재 6 family ship) |
 | Sub-issue 예산 (≤90 cap) | M (≈30-40 task 추정) | L (≈60-90 task 추정 — 90 cap 위험) |
 | Constitution §VI/§II 영향 | PIPA §26 ack flow가 IPC progress에 노출 | Bypass-immune permission steps 다부처 환경에서 재검토 필요 (§II) |
 
@@ -160,32 +160,32 @@ Initiative #1631
 | Claude Code Plugins | `/plugin` slash + marketplace.json | `.claude-plugin/plugin.json` (skills+commands+agents+hooks+MCP) | 격리 없음 | host 권한 위임 | `claude-plugins-official` GitHub | semver |
 | Gemini CLI Extensions | extension list / GitHub | `gemini-extension.json` | 격리 없음 | host 권한 위임 | GitHub | manifest version |
 | OpenAI Custom GPT Actions | (deprecated) GPT builder | OpenAPI 3.x | 외부 백엔드 책임 | OAuth 2.0 | GPT Store (deprecated) | OpenAPI version |
-| **KOSMOS Spec 1636** | `kosmos plugin install` + 5-tier registry | `manifest.yaml` (Pydantic) — `tool_id` `plugin.<id>.<verb>` + verb + ko/en hint + permission level + auth_type + pipa_class | host 공유 (미구현) | 3-layer (Spec 033) + PIPA §26 SHA-256 ack | `kosmos-plugin-store/index` GitHub + SLSA verifier | semver + SLSA provenance |
+| **UMMAYA Spec 1636** | `ummaya plugin install` + 5-tier registry | `manifest.yaml` (Pydantic) — `tool_id` `plugin.<id>.<verb>` + verb + ko/en hint + permission level + auth_type + pipa_class | host 공유 (미구현) | 3-layer (Spec 033) + PIPA §26 SHA-256 ack | `ummaya-plugin-store/index` GitHub + SLSA verifier | semver + SLSA provenance |
 
 #### 적용 표준 (2026-04 시점)
 
-| 표준 | 상태 | KOSMOS 적합 지점 | 비용 |
+| 표준 | 상태 | UMMAYA 적합 지점 | 비용 |
 |---|---|---|---|
 | W3C VC 2.0 | Recommendation 2025-05-15 | `verify` 출력을 VC envelope wrap → EUDI Wallet 정합 | EdDSA/ECDSA suite + NPKI hybrid |
 | OAuth 2.1 | draft-15 (미확정) | RFC 9700 BCP 인용이 안전 | — |
-| RFC 9700 OAuth BCP | Published 2025-01 | KOSMOS auth 패턴에 PKCE 강제 upgrade | 낮음 |
+| RFC 9700 OAuth BCP | Published 2025-01 | UMMAYA auth 패턴에 PKCE 강제 upgrade | 낮음 |
 | RFC 9396 RAR | Published 2023-05 | 부처 권한 세분화 receipt에 `authorization_details` 인코딩 | MCP 자체에서 미채택 — 선도 가능 |
 
 #### 한국 공공 API 신규
 
-| 채널 | 변화 | KOSMOS 적용 |
+| 채널 | 변화 | UMMAYA 적용 |
 |---|---|---|
 | 공공데이터포털 | 100,000개 데이터셋 돌파 (2024-12) | BM25 색인 월간 cron 권고 |
 | 정부24 OpenAPI | 행안부 "공유서비스 OpenAPI 가이드라인 + 기술표준" 갱신 | adapter 작성 시 1차 참조 |
 | 공공 마이데이터 | 2025-12 167종 (`adm.mydata.go.kr`) | `verify` 후속 어댑터 직접 매핑 — VC 2.0 envelope과 시너지 최대 |
 | MOIS 행정정보 공동이용 | 마이데이터 활성화 정책 | verify Mock 6종 → Live 승격 1순위 |
 
-#### KOSMOS 갭 인사이트 (#1979에서 도입 가치)
+#### UMMAYA 갭 인사이트 (#1979에서 도입 가치)
 
-1. **`/.well-known/mcp/server-card.json` dual-publish** — KOSMOS plugin manifest를 MCP Server Card 호환으로 dual-publish 시 lock-in 회피 + 표준 영향력. CC `Tool.ts` 마이그레이션 정신과 일치.
+1. **`/.well-known/mcp/server-card.json` dual-publish** — UMMAYA plugin manifest를 MCP Server Card 호환으로 dual-publish 시 lock-in 회피 + 표준 영향력. CC `Tool.ts` 마이그레이션 정신과 일치.
 2. **VC 2.0 envelope on verify primitive** — 어느 plugin DX도 verify를 W3C 표준 envelope으로 wrap하지 않았다. 한국 공공 + EUDI Wallet 호환성은 학술 contribution.
 3. **RFC 9396 RAR로 Layer 3 권한 인코딩** — receipt JCS canonical JSON에 `authorization_details` 추가, MCP RAR 미채택 영역 선도.
-4. **`engines.kosmos` 호환성 필드** — 현 manifest는 plugin semver만, host 호환성 미선언 (VSCode 패턴 차용).
+4. **`engines.ummaya` 호환성 필드** — 현 manifest는 plugin semver만, host 호환성 미선언 (VSCode 패턴 차용).
 5. **proposed-API 게이트** — 신규 primitive verb marketplace 게시 차단 + opt-in 발행. `subscribe` is deferred until app/push delivery exists.
 6. **OS-level sandbox** (Copilot agent 2026 패턴) — PII 처리 plugin은 process-level isolation 권고.
 
@@ -202,15 +202,15 @@ Initiative #1631
 | OpenAI Swarm → Agents SDK (2025-03) | Triage agent + handoff | handoff = function | stateless · Agents SDK + guardrail | Swarm 약함 / SDK retry+guardrail | scope-attenuated token 권장 | Swarm=없음 / SDK 자체 trace |
 | Claude Code Task tool | main + Task spawning | 최대 10 concurrent fresh context | sub→main return only | context isolation 강함 | sub-agent type별 tool whitelist | Anthropic SDK trace |
 
-**KOSMOS 매핑**: `coordinator.py` 4-phase ≈ Anthropic Lead-Sub 패턴, spawn은 POSIX mailbox = AutoGen actor 모델에 사상적으로 가까움.
+**UMMAYA 매핑**: `coordinator.py` 4-phase ≈ Anthropic Lead-Sub 패턴, spawn은 POSIX mailbox = AutoGen actor 모델에 사상적으로 가까움.
 
 #### Spec 027 mailbox 패턴 vs 외부
 
-| KOSMOS 027 요소 | 가장 가까운 외부 패턴 | 평가 |
+| UMMAYA 027 요소 | 가장 가까운 외부 패턴 | 평가 |
 |---|---|---|
-| `~/.kosmos/mailbox/<sid>/<sender>/<mid>.json` | qmail/Postfix Maildir + Akka.NET `AtLeastOnceDeliveryActor` | 잘 알려진 crash-safe 패턴 |
-| `<mid>.json.consumed` sibling marker | Maildir `cur`/`new` + Postfix queue D flag | 동일 사상; rename atomic하므로 KOSMOS marker가 더 안전 |
-| crash replay (no `.consumed` scan) | Akka.NET persistence journal · Ray actor `max_task_retries=-1` | KOSMOS는 marker로 idempotency 보장 → stateful 워커에도 OK |
+| `~/.ummaya/mailbox/<sid>/<sender>/<mid>.json` | qmail/Postfix Maildir + Akka.NET `AtLeastOnceDeliveryActor` | 잘 알려진 crash-safe 패턴 |
+| `<mid>.json.consumed` sibling marker | Maildir `cur`/`new` + Postfix queue D flag | 동일 사상; rename atomic하므로 UMMAYA marker가 더 안전 |
+| crash replay (no `.consumed` scan) | Akka.NET persistence journal · Ray actor `max_task_retries=-1` | UMMAYA는 marker로 idempotency 보장 → stateful 워커에도 OK |
 | at-least-once delivery | Akka.NET ALOD · AutoGen gRPC + idempotency | filesystem 기반 외부 의존성 0 |
 
 빌려올 만한 것: AutoGen 0.4 CloudEvent 스키마 (frame emit을 type+source+data triplet 표준화) · LangGraph time-travel replay (`.consumed` 마커 제거 = step replay) · Akka.NET dedup ID (sender_id+message_id).
@@ -219,32 +219,32 @@ Initiative #1631
 
 | 시나리오 | 다부처 동시성 | Mock-only | 시각 임팩트 | 시간 압박 | 추천도 |
 |---|---|---|---|---|---|
-| 이사 (행안부 전입 + 국토부 부동산 + 건강보험 자격) | ★★★ | △ (행안부 submit OPAQUE — receipt mock 가능) | ★★ 폼/receipt 정적 | 없음 | ★★★★☆ — KOSMOS 미션 직설 |
+| 이사 (행안부 전입 + 국토부 부동산 + 건강보험 자격) | ★★★ | △ (행안부 submit OPAQUE — receipt mock 가능) | ★★ 폼/receipt 정적 | 없음 | ★★★★☆ — UMMAYA 미션 직설 |
 | 응급 (119 위치 + 도로위험 + 응급실) | ★★ (3부처지만 순차 의존) | ◎ 모두 search/lookup Mock 100% OK | ★★★ 지도/위험점/혼잡도 동적 | ★★★ 분초 텐션 | ★★★★★ — 시연 임팩트 최강 |
 
 **권고**: 응급=main demo, 이사=후속 30초 컷.
 
 #### Permission delegation 표준
 
-| 표준 | 적용 | KOSMOS 매핑 |
+| 표준 | 적용 | UMMAYA 매핑 |
 |---|---|---|
 | W3C VC 2.0 | Rec 2025-05-15 | Spec 033 receipt를 VC wrap, PIPA §26 controller-vs-processor 매핑 필요 |
 | GNAP (RFC 9635, 2024-10) | sub-agent attenuated token 위임 | coord → worker scope 축소 명시화 가능 |
 | Authenticated Delegation (arXiv 2501.09674) | Human→Agent A→Agent B chain audit | Spec 033 ledger SHA-256 chain과 1:1 호환 |
-| Agentic JWT (IETF I-D goswami, 2025) | 워커 버전+워크플로+위임체인 토큰 claim | OTEL `kosmos.permission.*` span으로 절반 커버 |
-| Anthropic "scopes-not-prompts" (2025) | `flight.booking:create` capability grant | KOSMOS 4 primitive × adapter scope에 그대로 매핑 |
+| Agentic JWT (IETF I-D goswami, 2025) | 워커 버전+워크플로+위임체인 토큰 claim | OTEL `ummaya.permission.*` span으로 절반 커버 |
+| Anthropic "scopes-not-prompts" (2025) | `flight.booking:create` capability grant | UMMAYA 4 primitive × adapter scope에 그대로 매핑 |
 
 #### ReAct 후속 논문
 
-| 논문 | 패턴 | KOSMOS 적용 |
+| 논문 | 패턴 | UMMAYA 적용 |
 |---|---|---|
 | Reflexion (NeurIPS 2023) | verbal self-critique + episodic memory | △ single-agent reflexion same-blind-spot 강화 — coord-level cross-worker 검토가 효과적 |
 | ReWOO (arXiv 2305.18323) | Planner → Worker(병렬 tool) → Solver | ◎◎ 4-phase가 ReWOO 변형. Research=Planner, Synthesis=Solver, Implementation=Worker 병렬 (5x token efficiency) |
 | AgentInstruct / Orca-3 (MS 2024-07) | Content transform → Instruction gen → Refinement | △ runtime 부적합, Mock fixture 자동 생성에 응용 가능 |
-| MIRROR (IJCAI 2025) | Planner → Tool agent → Executor → Answer agent | ◎ KOSMOS 4-phase 1:1 대응 · "임의가 아닌 IJCAI 검증된 분할" 주장 가능 |
+| MIRROR (IJCAI 2025) | Planner → Tool agent → Executor → Answer agent | ◎ UMMAYA 4-phase 1:1 대응 · "임의가 아닌 IJCAI 검증된 분할" 주장 가능 |
 | Plan-and-Execute (LangChain) | 큰 plan 한 번 + step + replan | △ ReWOO 약화판 |
 
-> 시연/논문 narration: "ReAct 가 아니라 ReWOO + MIRROR 계열 plan-then-decompose" — `feedback_kosmos_uses_cc_query_engine` 메모리와 정합.
+> 시연/논문 narration: "ReAct 가 아니라 ReWOO + MIRROR 계열 plan-then-decompose" — `feedback_ummaya_uses_cc_query_engine` 메모리와 정합.
 
 ---
 
@@ -285,7 +285,7 @@ Initiative #1631
 
 - **architectural question 5종** (Epic #1980 body 명시) — `/speckit-clarify`로 처리:
   1. Coordinator dispatch trigger — citizen-intent classifier vs `/agents start`?
-  2. Worker process model — separate `kosmos.ipc.worker_server` subprocess vs in-process asyncio task?
+  2. Worker process model — separate `ummaya.ipc.worker_server` subprocess vs in-process asyncio task?
   3. Frame envelope correlation — turn `correlation_id` vs per-worker subspan?
   4. Failure containment — single worker crash vs coordinator crash vs full swarm timeout?
   5. Bypass-immune permission steps under delegation — Constitution §II compliance.

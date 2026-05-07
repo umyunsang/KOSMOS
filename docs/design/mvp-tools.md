@@ -1,8 +1,8 @@
-# KOSMOS MVP — Main Tools Precision Design
+# UMMAYA MVP — Main Tools Precision Design
 
 > **Status**: Shipped design (Spec 022 merged). This document is the historical record for the MVP 2-tool facade as shipped.
 > **Scope (as shipped)**: MVP ships **1 main tool** (`lookup`) and **1 primitive** (`resolve_location`) on top of the existing 6-layer architecture in `docs/vision.md`.
-> **Expansion**: The main-tool axis was reset to an active primitive harness design. Current active primitives are `lookup`, `resolve_location`, `submit`, and `verify`; `subscribe` is deferred until KOSMOS has an app/push-notification runtime. All ministry- and domain-specific knowledge (eligibility, payment, certificate issuance, application submission, slot reservation, notification handoff) collapses into adapters under `src/kosmos/tools/<ministry>/<adapter>.py`; the main surface stays domain-agnostic. The previous 8-verb proposal and its Discussion have been retired.
+> **Expansion**: The main-tool axis was reset to an active primitive harness design. Current active primitives are `lookup`, `resolve_location`, `submit`, and `verify`; `subscribe` is deferred until UMMAYA has an app/push-notification runtime. All ministry- and domain-specific knowledge (eligibility, payment, certificate issuance, application submission, slot reservation, notification handoff) collapses into adapters under `src/ummaya/tools/<ministry>/<adapter>.py`; the main surface stays domain-agnostic. The previous 8-verb proposal and its Discussion have been retired.
 > **Last updated**: 2026-05-07 (8-verb expansion retired; active primitive harness corrected after subscribe deferral. Body preserved at 2026-04-16 shipped-MVP state).
 
 ## 1. Scope and non-goals
@@ -22,16 +22,16 @@
 
 Citations abbreviated; full URLs in § 11.
 
-| Finding | Source | Implication for KOSMOS |
+| Finding | Source | Implication for UMMAYA |
 |---|---|---|
 | **Single "universal" API-call facade hallucinates 30–45% of params** | ToolBench (arXiv:2307.16789), API-Bank (arXiv:2304.08244) | Do NOT expose `lookup(api_id, params)` as a flat tool. |
 | **Hierarchical retrieval router beats flat facades** on 16k-tool benchmarks | AnyTool (arXiv:2402.04253) | `lookup` must be a *retrieval surface*, not a monolithic dispatcher. |
 | **Tree dispatcher anti-pattern**: nested tool calls amplify failure up to 17× | NESTful (EMNLP'25, arXiv:2409.03797); multi-agent-trap survey | Dispatcher tool calling sub-tools is banned. Use 2-step flat chain: retrieve → call. |
-| **Anthropic Tool Search Tool (BM25)** ships as first-party primitive (2025-11) | Anthropic docs; Arcade, Spring, Stacklok replications | Pattern is validated. KOSMOS reimplements client-side (FriendliAI/K-EXAONE has no server-side equivalent). |
+| **Anthropic Tool Search Tool (BM25)** ships as first-party primitive (2025-11) | Anthropic docs; Arcade, Spring, Stacklok replications | Pattern is validated. UMMAYA reimplements client-side (FriendliAI/K-EXAONE has no server-side equivalent). |
 | **Cursor Dynamic Context Discovery: 46.9% token reduction** (production A/B) | Cursor blog (2026-01) | Realistic ceiling; design for 30–50% savings, not 90%. |
 | **Structured envelope `{items, next_cursor, meta}` + opaque cursor** | LangChain / MCP reference servers; data.go.kr convention | Canonical shape for `lookup` return. Offset/page pagination causes loops. |
 | **`shape` discriminator beats inference** (record / timeseries / collection) | Anthropic computer-use; Cursor `@docs` | Return `shape` field explicitly. |
-| **Claude Code tool convention: 2–4 required params, mode enums over booleans, discriminated-union returns, fail-closed defaults via `buildTool()` factory** | `.references/claude-reviews-claude/docs/chapters/02-tool-system.md` | Direct blueprint — KOSMOS adopts the same shape. |
+| **Claude Code tool convention: 2–4 required params, mode enums over booleans, discriminated-union returns, fail-closed defaults via `buildTool()` factory** | `.references/claude-reviews-claude/docs/chapters/02-tool-system.md` | Direct blueprint — UMMAYA adopts the same shape. |
 | **Korean geocoding: 카카오 Local + 도로명주소 + SGIS** covers all MVP needs with zero-cost student access | API survey (this doc's Agent C) | `resolve_location` backend is a 3-provider deterministic chain. |
 | **Korean-public-API specifics**: ~`response.header.resultCode` envelope, XML default with `?type=json`, 429 signalled in-band not via HTTP status | data.go.kr convention; KOROAD docs | Adapter layer must normalize envelope; client HTTP status is insufficient. |
 
@@ -78,7 +78,7 @@ Citations abbreviated; full URLs in § 11.
 
 Published benchmarks (ToolBench, API-Bank, AnyTool) show flat universal facades fail on **param hallucination**: the model guesses `startDate` vs `start_date`, `region` vs `sido`, omits required auth params, etc. Rate: 30–45% of failures. A hierarchical retrieve-then-call pattern shifts failures to tool-selection (~20%), which is recoverable via retrieval re-ranking.
 
-KOSMOS `lookup` therefore exposes **two operations** — `search` (retrieve candidates) and `fetch` (invoke the selected adapter with typed args). The LLM sees one tool with a `mode` discriminator, which is how Claude Code's `Grep` handles `output_mode: "content"|"files_with_matches"|"count"`.
+UMMAYA `lookup` therefore exposes **two operations** — `search` (retrieve candidates) and `fetch` (invoke the selected adapter with typed args). The LLM sees one tool with a `mode` discriminator, which is how Claude Code's `Grep` handles `output_mode: "content"|"files_with_matches"|"count"`.
 
 ## 4. Tool #1 — `resolve_location`
 
@@ -408,9 +408,9 @@ LookupFetchOutput = Annotated[
 
 - **Algorithm**: BM25 (`rank_bm25`) over a corpus of `{name_ko + name_en + search_hint + input_schema.field_names}` per adapter. Matches Anthropic's Tool Search Tool v1 (BM25 variant), whose Arcade-replicated accuracy is 64% on 4k-tool pools.
 - **Tokenizer**: **`kiwipiepy>=0.17`** (pure Python, MIT). Chosen over `mecab-ko` because it has no system-install dependency (CI-friendly under `uv`), matches mecab-ko on F1 in 2024-2025 benchmarks, and is actively maintained. Morpheme tokens are used both at indexing time and at query time.
-- **Index source**: the in-process `ToolRegistry` (existing `src/kosmos/tools/registry.py`). Build on startup; rebuild on adapter add/remove.
+- **Index source**: the in-process `ToolRegistry` (existing `src/ummaya/tools/registry.py`). Build on startup; rebuild on adapter add/remove.
 - **Not a vector store**: BM25 is sufficient at MVP scale (<100 adapters), zero infra cost, matches Anthropic/Arcade results. Defer embeddings to post-MVP if retrieval precision becomes a bottleneck (gate defined in §5.5.1).
-- **Top-k default**: `min(5, len(registry))`. Env override: `KOSMOS_LOOKUP_TOPK` (clamped to `[1, 20]`). Adaptive floor prevents empty candidate lists during MVP's 4-adapter phase; hard ceiling prevents LLM context explosion as the registry grows. Matches Anthropic Tool Search Tool defaults (5) and Arcade's finding that increasing k beyond 5 yields marginal recall gains.
+- **Top-k default**: `min(5, len(registry))`. Env override: `UMMAYA_LOOKUP_TOPK` (clamped to `[1, 20]`). Adaptive floor prevents empty candidate lists during MVP's 4-adapter phase; hard ceiling prevents LLM context explosion as the registry grows. Matches Anthropic Tool Search Tool defaults (5) and Arcade's finding that increasing k beyond 5 yields marginal recall gains.
 - **Domain filter**: when `domain` is set, restrict corpus to adapters with matching `category` tag before BM25. Reduces false positives on broad queries.
 
 #### 5.5.1 Retrieval quality gate (recall evaluation)
@@ -444,12 +444,12 @@ To prevent the BM25 retriever from silently degrading as adapters are added, `/s
 
 - All registered `GovAPITool` instances are **not** sent to the LLM as individual tools. They live only in the BM25 index.
 - The LLM only ever sees `lookup` + `resolve_location`. Context tokens for adapters: **zero until requested**.
-- This is the KOSMOS equivalent of Anthropic's `defer_loading: true`, implemented client-side because FriendliAI/K-EXAONE has no server-side Tool Search primitive.
+- This is the UMMAYA equivalent of Anthropic's `defer_loading: true`, implemented client-side because FriendliAI/K-EXAONE has no server-side Tool Search primitive.
 - When `lookup(mode="search")` returns candidates, their `input_schema` field provides the just-in-time schema the LLM needs to construct a correct `fetch` call. Mirrors Cursor's `describe_tools` and Claude Code's `shouldDefer` + ToolSearch hint pattern (`02-tool-system.md:250-263, 371-398`).
 
 ### 5.8 Seed adapter set (MVP closure)
 
-To validate the pattern end-to-end, MVP ships with **4 adapters** covering every canonical shape and every spatial-parameter convention KOSMOS will ever encounter:
+To validate the pattern end-to-end, MVP ships with **4 adapters** covering every canonical shape and every spatial-parameter convention UMMAYA will ever encounter:
 
 | adapter_id | provider | endpoint | spatial input | shape | PII | rationale |
 |---|---|---|---|---|---|---|
@@ -458,11 +458,11 @@ To validate the pattern end-to-end, MVP ships with **4 adapters** covering every
 | `hira_hospital_search` | HIRA | `HospInfoServicev2/getHospBasisList` (병원 목록) | `xPos` + `yPos` + `radius` (meters, WGS84) | collection | `is_personal_data=False` | Only seed adapter with **native coord+radius** — exercises `ykiho` as the downstream join key for follow-up detail calls |
 | `nmc_emergency_search` | NMC | `ErmctInfoInqireService/getEgytLcinfoInqire` (응급실 검색, 거리순) | `WGS84_LON` + `WGS84_LAT` only (distance-sorted, no radius) | collection | `is_personal_data=True` ⚑ | Tests "coords-in, no-radius" pattern + real-time bed fields (`hv1`~`hv61`, `hvidate` freshness). **Deliberately flagged PII** so Layer 3 harness has a live end-to-end path in MVP (stub gate returns `auth_required`) |
 
-**Coverage claim**: these 4 adapters together span (a) both canonical shapes (`collection` + `timeseries` — `record` is covered post-MVP by composite adapters), (b) all four spatial-input flavors KOSMOS will encounter in practice (code-pair, LCC grid, coord+radius, coord-only), (c) both ways a data.go.kr provider signals rate-limiting (`resultCode=22` in envelope), and (d) **one live Layer 3 harness path** via `nmc_emergency_search` so the auth-gate is demonstrable rather than theoretical.
+**Coverage claim**: these 4 adapters together span (a) both canonical shapes (`collection` + `timeseries` — `record` is covered post-MVP by composite adapters), (b) all four spatial-input flavors UMMAYA will encounter in practice (code-pair, LCC grid, coord+radius, coord-only), (c) both ways a data.go.kr provider signals rate-limiting (`resultCode=22` in envelope), and (d) **one live Layer 3 harness path** via `nmc_emergency_search` so the auth-gate is demonstrable rather than theoretical.
 
 **Implementation sequencing**: KOROAD first (Lead solo) to land the executor/envelope/fixture pipeline, then KMA + HIRA + NMC in parallel via Agent Teams once the pipeline is stable. Rationale: avoid 4-way schema divergence before executor conventions are fixed.
 
-**NMC freshness threshold**: `hvidate` older than **30 minutes** emits `LookupError(reason="stale_data", retryable=False)`. Override via `KOSMOS_NMC_FRESHNESS_MINUTES`.
+**NMC freshness threshold**: `hvidate` older than **30 minutes** emits `LookupError(reason="stale_data", retryable=False)`. Override via `UMMAYA_NMC_FRESHNESS_MINUTES`.
 
 Additional adapters follow the standard `docs/tool-adapters.md` spec cycle and require no changes to `lookup` itself — pure registration.
 
@@ -505,7 +505,7 @@ This is the **entire** tool list the model sees, in order:
 
 ### System-prompt coupling (instruction preamble)
 
-Following Claude Code's static/dynamic split (`10-context-assembly.md:25-54`), the KOSMOS system prompt adds these rules — *not* the tool description:
+Following Claude Code's static/dynamic split (`10-context-assembly.md:25-54`), the UMMAYA system prompt adds these rules — *not* the tool description:
 
 ```
 # Tool usage rules
@@ -521,7 +521,7 @@ Following Claude Code's static/dynamic split (`10-context-assembly.md:25-54`), t
   the error to the user plainly.
 ```
 
-This preamble is the KOSMOS analog of Claude Code's "Use FileRead instead of cat" rule — behavior couples to tool design via the system prompt, not via nested tool calls.
+This preamble is the UMMAYA analog of Claude Code's "Use FileRead instead of cat" rule — behavior couples to tool design via the system prompt, not via nested tool calls.
 
 ## 7. Chain patterns (happy-path walkthroughs)
 
@@ -601,13 +601,13 @@ LLM → [explains to user: real-time bed data requires consent (post-MVP);
        falls back to nearest canonical hospitals via HIRA]
 ```
 
-**Pattern D is the KOSMOS sweet spot**: one `resolve_location` output feeds multiple adapters with different spatial conventions + the Layer 3 harness gate fires on the PII-flagged adapter, letting the LLM gracefully degrade to a non-PII alternative.
+**Pattern D is the UMMAYA sweet spot**: one `resolve_location` output feeds multiple adapters with different spatial conventions + the Layer 3 harness gate fires on the PII-flagged adapter, letting the LLM gracefully degrade to a non-PII alternative.
 
 ## 8. Non-MVP / deferred (tracked but not built)
 
 ### 8.1 Layer 3 harness posture (interface-only in MVP)
 
-KOSMOS is a **harness/framework**, not a turnkey citizen app. Layer 3 (auth, permission, consent) ships as **interface slots only** in MVP:
+UMMAYA is a **harness/framework**, not a turnkey citizen app. Layer 3 (auth, permission, consent) ships as **interface slots only** in MVP:
 
 - `requires_auth`, `is_personal_data`, `auth_required` `LookupError` variant, and the fail-closed default matrix are **wired through the schema and executor** — the LLM and adapters interact with them as if Layer 3 were live.
 - No identity Provider is implemented. No OAuth, no 본인인증, no 간편인증, no PASS/카카오/NAVER/Toss/신한 broker integration. Attempts to invoke an adapter with `is_personal_data=True` return `LookupError(reason="auth_required", retryable=False)` from a stub guard, not from a real provider.
@@ -630,7 +630,7 @@ This preserves the architectural shape for KSC 2026 evaluation while keeping sco
 ## 9. Decisions log (Q1–Q5 all resolved as of 2026-04-16)
 
 1. ~~**Korean tokenizer choice**~~ **Resolved (2026-04-16)**: `kiwipiepy>=0.17` (MIT, pure Python). mecab-ko rejected due to CI system-install friction under `uv`. 2024-2025 benchmarks show F1 parity on morpheme segmentation.
-2. ~~**Default `top_k` for `lookup.search`**~~ **Resolved (2026-04-16)**: `min(5, len(registry))` with env override `KOSMOS_LOOKUP_TOPK` clamped to `[1, 20]`. Adaptive floor handles MVP's 4-adapter phase; ceiling prevents context explosion at scale.
+2. ~~**Default `top_k` for `lookup.search`**~~ **Resolved (2026-04-16)**: `min(5, len(registry))` with env override `UMMAYA_LOOKUP_TOPK` clamped to `[1, 20]`. Adaptive floor handles MVP's 4-adapter phase; ceiling prevents context explosion at scale.
 3. ~~**Seed adapter count**: 3 vs 5~~ **Resolved (2026-04-16)**: 4 adapters selected — KOROAD + KMA + HIRA + NMC. Justification in §5.8: covers both canonical shapes (`collection`+`timeseries`) and all four spatial-input flavors (code-pair, LCC grid, coord+radius, coord-only).
 4. ~~**Tool-Search recall gate**~~ **Resolved (2026-04-16)**: 30-query eval set at `eval/retrieval_queries.yaml`, measured `recall@5` and `recall@1`. Gates: pass ≥ 80% / warn [60%, 80%) / fail < 60%. Detail in §5.5.1.
 5. ~~**`resolve_location.want=all` token cost**~~ **Resolved (2026-04-16)**: default is `coords_and_admcd` (bundle with 2 slots). `all` is opt-in only. Adapter-specific variants (KMA LCC grid, KOROAD sido/gugun) are derived inside their adapters from `coords`/`adm_cd` — not exposed as first-class `want` values.
@@ -640,7 +640,7 @@ This preserves the architectural shape for KSC 2026 evaluation while keeping sco
 | Rule (`AGENTS.md § Hard rules`) | Status |
 |---|---|
 | All source text in English | ✓ (Korean only in domain data — place names, `name_ko`) |
-| `KOSMOS_` env prefix | ✓ (`KOSMOS_KAKAO_API_KEY`, `KOSMOS_JUSO_CONFM_KEY`, `KOSMOS_SGIS_KEY`, `KOSMOS_SGIS_SECRET`, `KOSMOS_LOOKUP_TOPK`, `KOSMOS_NMC_FRESHNESS_MINUTES`) |
+| `UMMAYA_` env prefix | ✓ (`UMMAYA_KAKAO_API_KEY`, `UMMAYA_JUSO_CONFM_KEY`, `UMMAYA_SGIS_KEY`, `UMMAYA_SGIS_SECRET`, `UMMAYA_LOOKUP_TOPK`, `UMMAYA_NMC_FRESHNESS_MINUTES`) |
 | Stdlib logging only | ✓ |
 | Pydantic v2, never `Any` | ✓ (all schemas typed; `args: dict[str, object]` in `LookupInput` is the only loose field, validated against adapter schema at fetch time) |
 | No live API from CI | ✓ (recorded fixtures per `docs/tool-adapters.md § Recording fixtures`) |
@@ -685,7 +685,7 @@ This preserves the architectural shape for KSC 2026 evaluation while keeping sco
 - SGIS (통계청): https://sgis.kostat.go.kr/developer/html/newOpenApi/api/dataApi/addr.html
 - Kakao Local: https://developers.kakao.com/docs/latest/ko/local/dev-guide
 
-### KOSMOS internal
+### UMMAYA internal
 - `docs/vision.md` — 6-layer canonical architecture
 - `docs/tool-adapters.md` — `GovAPITool` shape, PR checklist
 - `docs/conventions.md` — commit / PR rules

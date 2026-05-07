@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosmos/specs/027-agent-swarm-core/contracts/coordinator-plan.schema.json",
+  "$id": "https://ummaya/specs/027-agent-swarm-core/contracts/coordinator-plan.schema.json",
   "title": "CoordinatorPlan",
   "description": "Output of the Coordinator Synthesis phase. Produced by LLM text generation only — lookup / resolve_location are NOT injected into the synthesis-phase tool definitions (FR-004 + FR-038).",
   "type": "object",

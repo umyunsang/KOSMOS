@@ -7,7 +7,7 @@
 
 The current `prompts/system_v1.md` line 14 hard-locks the LLM to two callable tools (`resolve_location` + `lookup`). After Epic ε #2296 wired the verify/submit/subscribe primitives + 5 new verify-module mocks, the LLM cannot start any citizen OPAQUE-domain chain because it does not know `verify`, `submit`, or `subscribe` exist — producing the post-ε infinite "Hatching… / Boogieing…" spinner whenever a citizen submits requests like `내 종합소득세 신고해줘`. This Epic rewrites `prompts/system_v1.md` to teach the LLM (a) the **4 reserved primitives + `resolve_location` = 5 callable tools**, (b) the **10 active verify families** + canonical AAL hint per family, (c) the **citizen verify→lookup→submit chain pattern** with a worked modid → hometax-simplified → hometax-taxreturn example, (d) the **delegation token vocabulary** (scope grammar `<verb>:<adapter_family>.<action>`, comma-joined multi-scope, bilingual `purpose_ko/en`). The rewrite preserves all Spec 2152 XML scaffolding tags, all Spec 035/2295 citizen-data carry-forward rules, and the Spec 026 manifest fail-closed boot guard. Five new shadow-eval fixtures cover the 5 Epic ε families; the existing 8 lookup-only fixtures must regress 0. A vhs Layer 4 visual smoke + PTY Layer 2 expect smoke verify the chain end-to-end on the rewritten prompt.
 
-**Technical approach**: Single-file Markdown rewrite + manifest YAML SHA-256 update + 5 shadow-eval fixture additions + 2 smoke scripts + 1 PTY log. **No Python/TS source edits in this Epic** — `tui/src/**` and `src/kosmos/**` are read-only inputs. The schema-level gap (FamilyHint Literal + VerifyOutput.result discriminator each missing the 5 Epic ε families) is explicitly deferred to Epic ζ #2297 per spec.md § Deferred Items — the verify dispatcher takes plain `str` so prompt-only teaching functions correctly without Literal expansion.
+**Technical approach**: Single-file Markdown rewrite + manifest YAML SHA-256 update + 5 shadow-eval fixture additions + 2 smoke scripts + 1 PTY log. **No Python/TS source edits in this Epic** — `tui/src/**` and `src/ummaya/**` are read-only inputs. The schema-level gap (FamilyHint Literal + VerifyOutput.result discriminator each missing the 5 Epic ε families) is explicitly deferred to Epic ζ #2297 per spec.md § Deferred Items — the verify dispatcher takes plain `str` so prompt-only teaching functions correctly without Literal expansion.
 
 ## Technical Context
 
@@ -15,7 +15,7 @@ The current `prompts/system_v1.md` line 14 hard-locks the LLM to two callable to
 
 **Primary Dependencies**: All existing — `pydantic >= 2.13` (PromptManifest schema, no change), `pydantic-settings >= 2.0` (env catalog, no change), `pytest` + `pytest-asyncio` (existing test stack for shadow-eval fixture loader), stdlib `hashlib` (SHA-256 recompute via `shasum -a 256` shell tool), stdlib `xml.etree.ElementTree` (SC-005 XML well-formedness check). **Zero new runtime dependencies** (AGENTS.md hard rule + spec FR-018 + SC-007).
 
-**Storage**: N/A. The rewritten `prompts/system_v1.md` is loaded into the existing `PromptLoader` immutable in-memory cache at process boot (Spec 026, unchanged). The `prompts/manifest.yaml` SHA-256 entry is the only persistent contract recomputed. No database, no new on-disk schema. Consent ledger writes (US1 chain) reuse the existing `~/.kosmos/memdir/user/consent/<YYYY-MM-DD>.jsonl` Spec 035 surface.
+**Storage**: N/A. The rewritten `prompts/system_v1.md` is loaded into the existing `PromptLoader` immutable in-memory cache at process boot (Spec 026, unchanged). The `prompts/manifest.yaml` SHA-256 entry is the only persistent contract recomputed. No database, no new on-disk schema. Consent ledger writes (US1 chain) reuse the existing `~/.ummaya/memdir/user/consent/<YYYY-MM-DD>.jsonl` Spec 035 surface.
 
 **Testing**: `uv run pytest tests/integration/test_e2e_citizen_taxreturn_chain.py` for chain assertions (existing); `uv run pytest tests/integration/test_verify_module_dispatch.py` for the 6 dispatch tests (existing); a new fixture loader test at `tests/integration/test_shadow_eval_citizen_chain_fixtures.py` for the 5 new fixtures (created this Epic); `bash specs/2298-system-prompt-rewrite/scripts/smoke-citizen-taxreturn.expect` for PTY Layer 2 (created this Epic); `vhs specs/2298-system-prompt-rewrite/scripts/smoke-citizen-taxreturn.tape` for Layer 4 (created this Epic).
 
@@ -23,7 +23,7 @@ The current `prompts/system_v1.md` line 14 hard-locks the LLM to two callable to
 
 **Project Type**: Single-project monorepo with TUI subtree. This Epic touches only `prompts/`, `tests/fixtures/`, and `specs/2298-system-prompt-rewrite/` paths.
 
-**Performance Goals**: The rewritten prompt MUST stay within FriendliAI K-EXAONE prompt-cache budget. Current `system_v1.md` is 28 lines / ~2 KB; expansion budget +50 lines / +4 KB to ~6 KB total. Hard ceiling: 8 KB (10 % cushion under the existing prompt-cache TTL break-even). Spec 026's `kosmos.prompt.hash` OTEL attribute will reflect the new SHA-256 on every assistant turn.
+**Performance Goals**: The rewritten prompt MUST stay within FriendliAI K-EXAONE prompt-cache budget. Current `system_v1.md` is 28 lines / ~2 KB; expansion budget +50 lines / +4 KB to ~6 KB total. Hard ceiling: 8 KB (10 % cushion under the existing prompt-cache TTL break-even). Spec 026's `ummaya.prompt.hash` OTEL attribute will reflect the new SHA-256 on every assistant turn.
 
 **Constraints**: System prompt must be deterministic (no Jinja-style templating beyond the existing `{platform_name}` substitution at line 2). The rewrite MUST NOT introduce new template variables. The rewrite MUST NOT touch any other file under `prompts/` (`compact_v1.md` and `session_guidance_v1.md` are out of scope — their SHA-256 entries in `manifest.yaml` are not edited).
 
@@ -36,9 +36,9 @@ The current `prompts/system_v1.md` line 14 hard-locks the LLM to two callable to
 | Principle | Check | Status |
 |---|---|---|
 | **I. Reference-Driven Development** | Every rewrite section maps to a concrete reference (CC restored-src is irrelevant for prompt content; primary references are Spec 2152 + Spec 026 + Spec 2296 contracts + Spec 031 verify primitive + Spec 035 consent ledger). Mapping documented in research.md § R-1. | PASS |
-| **II. Fail-Closed Security** | Rewrite cites agency policy (each verify family lists its real-domain reference per FR-002); no KOSMOS-invented permission classifications introduced; OPAQUE-forever fallback preserved (FR-011); `<PermissionRequest>` pipeline untouched (no TUI changes). | PASS |
+| **II. Fail-Closed Security** | Rewrite cites agency policy (each verify family lists its real-domain reference per FR-002); no UMMAYA-invented permission classifications introduced; OPAQUE-forever fallback preserved (FR-011); `<PermissionRequest>` pipeline untouched (no TUI changes). | PASS |
 | **III. Pydantic v2 Strict Typing** | No new tool I/O schemas authored this Epic. Existing schemas (`VerifyInput`, `VerifyOutput`) noted for deferred expansion in Epic ζ. Shadow-eval fixtures use Pydantic v2 schema authored at `tests/fixtures/shadow_eval/citizen_chain/_schema.py` (new file, ≤30 LOC). | PASS |
-| **IV. Government API Compliance** | No live `data.go.kr` calls in tests (PTY smoke runs against Mock adapters only); no hardcoded keys; existing `KOSMOS_*` env catalog unchanged. | PASS |
+| **IV. Government API Compliance** | No live `data.go.kr` calls in tests (PTY smoke runs against Mock adapters only); no hardcoded keys; existing `UMMAYA_*` env catalog unchanged. | PASS |
 | **V. Policy Alignment** | Citizen chain teaching directly serves Principle 8 (single conversational window) + Principle 9 (Open API integration). Principle 5 (no paper, consent-based) is upheld by the unchanged Spec 035 consent ledger writes during the chain. | PASS |
 | **VI. Deferred Work Accountability** | spec.md § "Scope Boundaries & Deferred Items" lists 6 deferred items; all have target Epic/Phase. 5 carry "NEEDS TRACKING" — to be resolved by `/speckit-taskstoissues`. The `FamilyHint` / `VerifyOutput` schema gap is explicitly deferred to Epic ζ #2297. | PASS |
 
@@ -97,7 +97,7 @@ tests/
     └── test_shadow_eval_citizen_chain_fixtures.py  # NEW — fixture loader + schema validation
 ```
 
-**Structure Decision**: Single-project monorepo. The Epic touches three top-level directories — `prompts/`, `tests/fixtures/`, `specs/2298-system-prompt-rewrite/` — plus one new test module under `tests/integration/`. No `src/kosmos/**` edits, no `tui/src/**` edits.
+**Structure Decision**: Single-project monorepo. The Epic touches three top-level directories — `prompts/`, `tests/fixtures/`, `specs/2298-system-prompt-rewrite/` — plus one new test module under `tests/integration/`. No `src/ummaya/**` edits, no `tui/src/**` edits.
 
 ## Complexity Tracking
 

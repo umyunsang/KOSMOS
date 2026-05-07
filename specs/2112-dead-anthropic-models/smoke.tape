@@ -1,4 +1,4 @@
-# KOSMOS Epic #2112 — Citizen E2E smoke (vhs visual scenario flow).
+# UMMAYA Epic #2112 — Citizen E2E smoke (vhs visual scenario flow).
 # Output: smoke.gif (interactive UI capture) + per-step PNG snapshots.
 #
 # Per memory feedback_vhs_tui_smoke: text log (smoke.txt via expect) is the

@@ -11,7 +11,7 @@ Verifies:
 - Values match the mock's final usage totals.
 
 Strategy:
-- Monkeypatch the module-level ``_tracer`` in ``kosmos.llm.client`` to use a
+- Monkeypatch the module-level ``_tracer`` in ``ummaya.llm.client`` to use a
   dedicated TracerProvider backed by an InMemorySpanExporter, following the
   proven pattern from test_tool_execute_span.py.
 - Patch ``LLMClient._stream_with_retry`` to yield a controlled sequence of
@@ -36,8 +36,8 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
-from kosmos.llm.models import ChatMessage, StreamEvent, TokenUsage
-from kosmos.observability.semconv import (
+from ummaya.llm.models import ChatMessage, StreamEvent, TokenUsage
+from ummaya.observability.semconv import (
     GEN_AI_RESPONSE_FINISH_REASONS,
     GEN_AI_RESPONSE_MODEL,
     GEN_AI_USAGE_INPUT_TOKENS,
@@ -55,7 +55,7 @@ _USAGE_KEYS = frozenset(
 )
 
 # Minimal valid env so LLMClientConfig loads without touching the network.
-_FAKE_ENV = {"KOSMOS_FRIENDLI_TOKEN": "test-token-for-unit-tests"}
+_FAKE_ENV = {"UMMAYA_FRIENDLI_TOKEN": "test-token-for-unit-tests"}
 
 
 # ---------------------------------------------------------------------------
@@ -65,15 +65,15 @@ _FAKE_ENV = {"KOSMOS_FRIENDLI_TOKEN": "test-token-for-unit-tests"}
 
 @pytest.fixture()
 def mem_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
-    """Patch _tracer in kosmos.llm.client with a dedicated test TracerProvider."""
+    """Patch _tracer in ummaya.llm.client with a dedicated test TracerProvider."""
     monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
     exporter = InMemorySpanExporter()
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))
 
-    import kosmos.llm.client as client_mod
+    import ummaya.llm.client as client_mod
 
-    monkeypatch.setattr(client_mod, "_tracer", provider.get_tracer("kosmos.llm.client"))
+    monkeypatch.setattr(client_mod, "_tracer", provider.get_tracer("ummaya.llm.client"))
     exporter.clear()
     return exporter
 
@@ -85,8 +85,8 @@ def mem_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
 
 def _make_client() -> Any:
     """Create an LLMClient with fake env vars (no network calls)."""
-    from kosmos.llm.client import LLMClient
-    from kosmos.llm.config import LLMClientConfig
+    from ummaya.llm.client import LLMClient
+    from ummaya.llm.config import LLMClientConfig
 
     with patch.dict(os.environ, _FAKE_ENV):
         config = LLMClientConfig()
@@ -191,7 +191,7 @@ async def test_chat_span_stop_finish_reason(
     # Install spy BEFORE stream() is called so the span is captured.
     # We inject the spy via a custom start_span wrapper that instruments the span
     # after _tracer.start_span("chat") creates it.
-    import kosmos.llm.client as client_mod
+    import ummaya.llm.client as client_mod
 
     original_start_span = client_mod._tracer.start_span  # type: ignore[attr-defined]
     captured_spies: list[_SetAttributesSpy] = []

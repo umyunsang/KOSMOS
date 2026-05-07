@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.tools.transparency import stamp_mock_response
+from ummaya.tools.transparency import stamp_mock_response
 
 # ---------------------------------------------------------------------------
 # Happy path
@@ -21,7 +21,7 @@ from kosmos.tools.transparency import stamp_mock_response
 
 _VALID_KWARGS = {
     "reference_implementation": "ax-infrastructure-callable-channel",
-    "actual_endpoint_when_live": "https://api.gateway.kosmos.gov.kr/v1/verify/modid",
+    "actual_endpoint_when_live": "https://api.gateway.ummaya.gov.kr/v1/verify/modid",
     "security_wrapping_pattern": "OID4VP + DID-resolved RP + DPoP",
     "policy_authority": "https://www.mois.go.kr/frt/bbs/type001/commonSelectBoardArticle.do",
     "international_reference": "EU EUDI Wallet",
@@ -41,7 +41,7 @@ def test_stamp_mock_response_happy_path() -> None:
     assert result["_mode"] == "mock"
     assert result["_reference_implementation"] == "ax-infrastructure-callable-channel"
     assert result["_actual_endpoint_when_live"] == (
-        "https://api.gateway.kosmos.gov.kr/v1/verify/modid"
+        "https://api.gateway.ummaya.gov.kr/v1/verify/modid"
     )
     assert result["_security_wrapping_pattern"] == "OID4VP + DID-resolved RP + DPoP"
     assert result["_policy_authority"].startswith("https://")

@@ -10,15 +10,15 @@
 
 | # | Item (요약) | Tracking Issue | State (2026-04-24) |
 |---|---|---|---|
-| 1 | Anthropic-only dead code 제거 | [#1633](https://github.com/umyunsang/KOSMOS/issues/1633) | OPEN |
-| 2 | FriendliAI 엔드포인트 연결 · 세션 JSONL 저장 | [#1633](https://github.com/umyunsang/KOSMOS/issues/1633) | OPEN |
-| 3 | Tool system wiring · 4 primitive · Python stdio MCP | [#1634](https://github.com/umyunsang/KOSMOS/issues/1634) | OPEN |
-| 4 | UI L2 컴포넌트 구현 | [#1635](https://github.com/umyunsang/KOSMOS/issues/1635) | OPEN |
-| 5 | Plugin DX Full 5-tier | [#1636](https://github.com/umyunsang/KOSMOS/issues/1636) | OPEN |
-| 6 | Docs/API specs + 종단간 smoke | [#1637](https://github.com/umyunsang/KOSMOS/issues/1637) | OPEN |
-| 7 | Coordinator · KAIROS · SSH · BG sessions · bridge mode | [#1633](https://github.com/umyunsang/KOSMOS/issues/1633) | OPEN |
-| 8 | Telemetry sinks 재연결 | [#1633](https://github.com/umyunsang/KOSMOS/issues/1633) | OPEN |
-| 9 | GrowthBook analytics · refresh·growthbook·* · services/analytics/* | [#1633](https://github.com/umyunsang/KOSMOS/issues/1633) | OPEN |
+| 1 | Anthropic-only dead code 제거 | [#1633](https://github.com/umyunsang/UMMAYA/issues/1633) | OPEN |
+| 2 | FriendliAI 엔드포인트 연결 · 세션 JSONL 저장 | [#1633](https://github.com/umyunsang/UMMAYA/issues/1633) | OPEN |
+| 3 | Tool system wiring · 4 primitive · Python stdio MCP | [#1634](https://github.com/umyunsang/UMMAYA/issues/1634) | OPEN |
+| 4 | UI L2 컴포넌트 구현 | [#1635](https://github.com/umyunsang/UMMAYA/issues/1635) | OPEN |
+| 5 | Plugin DX Full 5-tier | [#1636](https://github.com/umyunsang/UMMAYA/issues/1636) | OPEN |
+| 6 | Docs/API specs + 종단간 smoke | [#1637](https://github.com/umyunsang/UMMAYA/issues/1637) | OPEN |
+| 7 | Coordinator · KAIROS · SSH · BG sessions · bridge mode | [#1633](https://github.com/umyunsang/UMMAYA/issues/1633) | OPEN |
+| 8 | Telemetry sinks 재연결 | [#1633](https://github.com/umyunsang/UMMAYA/issues/1633) | OPEN |
+| 9 | GrowthBook analytics · refresh·growthbook·* · services/analytics/* | [#1633](https://github.com/umyunsang/UMMAYA/issues/1633) | OPEN |
 
 **Unregistered-deferral scan**: spec.md 전문에서 정규식 `(separate epic|future
 epic|Phase [2-9]|v2|deferred to|later release|out of scope for v1)` 매치를 수행.
@@ -114,7 +114,7 @@ PR' — 본 Epic 이 그 spec. PR 본문에서 명시.
   일괄 추적 가능.
 
 **Alternatives considered**:
-- **`src/entrypoints/kosmos-main.tsx` 신설**: CC `src/entrypoints/cli.tsx`, `init.ts`
+- **`src/entrypoints/ummaya-main.tsx` 신설**: CC `src/entrypoints/cli.tsx`, `init.ts`
   등과 공존 → 엔트리 포인트 혼란, `bun run` target 변경 필요.
 - **`feature()` 가드로 전부 감싸기**: 이미 일부 호출은 그 패턴. 일관성은 있으나
   diff 가 이 Epic 에서 커짐 — P1 에서 해당 가드 + call-site 통째로 제거하는

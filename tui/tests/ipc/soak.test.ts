@@ -22,12 +22,12 @@ import { createBridge } from '../../src/ipc/bridge'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const FIXTURE = join(__dirname, '../fixtures/soak/default.jsonl')
-const BACKEND_CMD = ['uv', 'run', '--directory', join(__dirname, '../../../'), 'python', '-m', 'kosmos.cli', '--ipc', 'stdio']
+const BACKEND_CMD = ['uv', 'run', '--directory', join(__dirname, '../../../'), 'python', '-m', 'ummaya.cli', '--ipc', 'stdio']
 
 describe('soak: codec throughput (5 s / 100 ev/s)', () => {
-  // Skip during normal test run if KOSMOS_SKIP_SOAK is set
+  // Skip during normal test run if UMMAYA_SKIP_SOAK is set
   // (set automatically when running in CI without soak profile)
-  const skip = process.env['KOSMOS_SKIP_SOAK'] === '1'
+  const skip = process.env['UMMAYA_SKIP_SOAK'] === '1'
 
   test('no decode errors at 100 ev/s for 5 s', async () => {
     if (skip) return

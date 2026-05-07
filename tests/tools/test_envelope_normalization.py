@@ -18,9 +18,9 @@ from datetime import UTC, datetime
 import pytest
 from pydantic import BaseModel
 
-from kosmos.tools.envelope import make_error_envelope, normalize
-from kosmos.tools.errors import EnvelopeNormalizationError
-from kosmos.tools.models import (
+from ummaya.tools.envelope import make_error_envelope, normalize
+from ummaya.tools.errors import EnvelopeNormalizationError
+from ummaya.tools.models import (
     GovAPITool,
     LookupCollection,
     LookupError,  # noqa: A004

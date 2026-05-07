@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDynamicConfig } from 'src/hooks/useDynamicConfig.js';
 import { isFeedbackSurveyDisabled } from 'src/services/analytics/config.js';
 import { type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS, logEvent } from 'src/services/analytics/index.js';
-// policyLimits removed in P1+P2 (Spec 1633); KOSMOS opens features by default via Spec 033 permission gauntlet.
+// policyLimits removed in P1+P2 (Spec 1633); UMMAYA opens features by default via Spec 033 permission gauntlet.
 const isPolicyAllowed = (_policy: string): boolean => true
 import type { Message } from '../../types/message.js';
 import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js';
@@ -10,7 +10,7 @@ import { isEnvTruthy } from '../../utils/envUtils.js';
 import { getLastAssistantMessage } from '../../utils/messages.js';
 import { getMainLoopModel } from '../../utils/model/model.js';
 import { getInitialSettings } from '../../utils/settings/settings.js';
-// utils/telemetry/events removed — KOSMOS telemetry handled by Spec 021 OTEL pipeline.
+// utils/telemetry/events removed — UMMAYA telemetry handled by Spec 021 OTEL pipeline.
 const logOTelEvent = (_event: string, _attrs?: Record<string, unknown>): void => { /* no-op */ }
 import { submitTranscriptShare, type TranscriptShareTrigger } from './submitTranscriptShare.js';
 import type { TranscriptShareResponse } from './TranscriptSharePrompt.js';

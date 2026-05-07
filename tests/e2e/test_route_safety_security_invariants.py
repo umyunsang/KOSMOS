@@ -16,10 +16,10 @@ from datetime import UTC, datetime
 import pytest
 from pydantic import ValidationError
 
-from kosmos.tools.errors import RegistrationError
-from kosmos.tools.models import AdapterRealDomainPolicy, GovAPITool
-from kosmos.tools.registry import ToolRegistry
 from tests.engine.conftest import MockInput, MockOutput
+from ummaya.tools.errors import RegistrationError
+from ummaya.tools.models import AdapterRealDomainPolicy, GovAPITool
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Helper: clone of koroad adapter with deliberate V6 violation
@@ -149,10 +149,10 @@ def test_mvp_adapters_pass_v1_to_v6() -> None:
     This is the MVP meta-tool pattern: (public, AAL1) + requires_auth=True
     is explicitly documented as compliant (not an exemption).
     """
-    from kosmos.recovery.executor import RecoveryExecutor
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.kma.forecast_fetch import KMA_FORECAST_FETCH_TOOL
-    from kosmos.tools.koroad.accident_hazard_search import register as reg_koroad
+    from ummaya.recovery.executor import RecoveryExecutor
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.kma.forecast_fetch import KMA_FORECAST_FETCH_TOOL
+    from ummaya.tools.koroad.accident_hazard_search import register as reg_koroad
 
     registry = ToolRegistry()
     recovery = RecoveryExecutor()

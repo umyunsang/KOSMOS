@@ -2,12 +2,12 @@
 // Epic γ #2294 · T021 · US3 — Adapter policy citation surfaces verbatim in permission UI.
 //
 // SC-003: 100% of adapter-routed permission prompts contain a verbatim
-// real_classification_url; 0% contain any KOSMOS-invented phrase from the
+// real_classification_url; 0% contain any UMMAYA-invented phrase from the
 // blocklist below. All assertions use the synthetic KOROAD adapter fixture.
 //
 // Coverage:
-//  1. Happy-path: validateInput populates kosmosCitations on context.
-//  2. Blocklist: renderToolResultMessage output contains no KOSMOS-invented phrases.
+//  1. Happy-path: validateInput populates ummayaCitations on context.
+//  2. Blocklist: renderToolResultMessage output contains no UMMAYA-invented phrases.
 //  3. Citation-missing: empty policy fields → errorCode 1002 + Korean message.
 //  4. Adapter-not-found: unknown tool_id → errorCode 1001.
 
@@ -22,12 +22,12 @@ import { SubmitPrimitive } from '../SubmitPrimitive/SubmitPrimitive.js'
 import { VerifyPrimitive } from '../VerifyPrimitive/VerifyPrimitive.js'
 
 // ---------------------------------------------------------------------------
-// SC-003 blocklist — phrases KOSMOS must never invent.
+// SC-003 blocklist — phrases UMMAYA must never invent.
 // ---------------------------------------------------------------------------
-const FORBIDDEN_KOSMOS_INVENTED_PHRASES: readonly string[] = [
+const FORBIDDEN_UMMAYA_INVENTED_PHRASES: readonly string[] = [
   '안전한 권한 등급',
   '본 시스템은',
-  'KOSMOS는 다음과 같이',
+  'UMMAYA는 다음과 같이',
   '권한 등급 1',
   '권한 등급 2',
   '권한 등급 3',
@@ -124,12 +124,12 @@ describe('extractCitation — unit sanity check', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Happy-path: active primitives populate kosmosCitations on context.
+// Happy-path: active primitives populate ummayaCitations on context.
 // (LookupPrimitive mode='search' is excluded — it intentionally skips citation.)
 // ---------------------------------------------------------------------------
 
 describe('validateInput — happy path (citation populates context)', () => {
-  test('LookupPrimitive mode=fetch: result true + kosmosCitations populated', async () => {
+  test('LookupPrimitive mode=fetch: result true + ummayaCitations populated', async () => {
     const context = buildContext([syntheticAdapter])
     const result = await LookupPrimitive.validateInput(
       { tool_id: 'koroad_accident_hazard_search', params: {} },
@@ -137,13 +137,13 @@ describe('validateInput — happy path (citation populates context)', () => {
     )
 
     expect(result.result).toBe(true)
-    const citations = (context as unknown as Record<string, unknown>).kosmosCitations as { real_classification_url: string; policy_authority: string }[]
+    const citations = (context as unknown as Record<string, unknown>).ummayaCitations as { real_classification_url: string; policy_authority: string }[]
     expect(citations).toBeDefined()
     expect(citations[0].real_classification_url).toBe(KOROAD_CITATION_URL)
     expect(citations[0].policy_authority).toBe(KOROAD_POLICY_AUTHORITY)
   })
 
-  test('SubmitPrimitive: result true + kosmosCitations populated', async () => {
+  test('SubmitPrimitive: result true + ummayaCitations populated', async () => {
     const context = buildContext([syntheticAdapter])
     const result = await SubmitPrimitive.validateInput(
       { tool_id: 'koroad_accident_hazard_search', params: {} },
@@ -151,13 +151,13 @@ describe('validateInput — happy path (citation populates context)', () => {
     )
 
     expect(result.result).toBe(true)
-    const citations = (context as unknown as Record<string, unknown>).kosmosCitations as { real_classification_url: string; policy_authority: string }[]
+    const citations = (context as unknown as Record<string, unknown>).ummayaCitations as { real_classification_url: string; policy_authority: string }[]
     expect(citations).toBeDefined()
     expect(citations[0].real_classification_url).toBe(KOROAD_CITATION_URL)
     expect(citations[0].policy_authority).toBe(KOROAD_POLICY_AUTHORITY)
   })
 
-  test('VerifyPrimitive: result true + kosmosCitations populated', async () => {
+  test('VerifyPrimitive: result true + ummayaCitations populated', async () => {
     const context = buildContext([syntheticAdapter])
     const result = await VerifyPrimitive.validateInput(
       { tool_id: 'koroad_accident_hazard_search', params: {} },
@@ -165,7 +165,7 @@ describe('validateInput — happy path (citation populates context)', () => {
     )
 
     expect(result.result).toBe(true)
-    const citations = (context as unknown as Record<string, unknown>).kosmosCitations as { real_classification_url: string; policy_authority: string }[]
+    const citations = (context as unknown as Record<string, unknown>).ummayaCitations as { real_classification_url: string; policy_authority: string }[]
     expect(citations).toBeDefined()
     expect(citations[0].real_classification_url).toBe(KOROAD_CITATION_URL)
     expect(citations[0].policy_authority).toBe(KOROAD_POLICY_AUTHORITY)
@@ -180,14 +180,14 @@ describe('validateInput — happy path (citation populates context)', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Blocklist: renderToolResultMessage output must not contain KOSMOS-invented phrases.
+// Blocklist: renderToolResultMessage output must not contain UMMAYA-invented phrases.
 // Tests each primitive's ok=true render path.
 // ---------------------------------------------------------------------------
 
 describe('renderToolResultMessage — blocklist assertion (SC-003 0% rule)', () => {
   function assertNoForbiddenPhrases(rendered: unknown, label: string) {
     const flat = flattenReactNode(rendered)
-    for (const phrase of FORBIDDEN_KOSMOS_INVENTED_PHRASES) {
+    for (const phrase of FORBIDDEN_UMMAYA_INVENTED_PHRASES) {
       expect(flat).not.toContain(phrase)
     }
     // Sanity: rendered output is not empty for ok=true

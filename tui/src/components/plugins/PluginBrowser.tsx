@@ -82,7 +82,7 @@ export type PluginBrowserProps = {
 const GLYPH_ACTIVE   = '⏺'; // CC thread glyph — active plugin
 const GLYPH_INACTIVE = '○'; // empty circle — inactive plugin
 
-// Spec 1979 T025 — Layer color glyphs per kosmos-migration-tree.md UI-C.1.
+// Spec 1979 T025 — Layer color glyphs per ummaya-migration-tree.md UI-C.1.
 // Layer 1 = green ⓵ (low-risk, public-data lookup)
 // Layer 2 = orange ⓶ (medium-risk, citizen-personal lookup)
 // Layer 3 = red ⓷ (high-risk, irreversible / write actions)
@@ -95,7 +95,7 @@ const LAYER_GLYPH: Record<1 | 2 | 3, string> = {
 function _layerColor(layer: 1 | 2 | 3, theme: ReturnType<typeof useTheme>): string {
   // Theme palette mapping — falls back to plain ANSI codes when the theme
   // doesn't define explicit layer colors.
-  if (layer === 1) return (theme.success ?? theme.kosmosCore) || 'green';
+  if (layer === 1) return (theme.success ?? theme.ummayaCore) || 'green';
   if (layer === 2) return (theme.warning ?? theme.subtle) || 'yellow';
   return (theme.error ?? theme.subtle) || 'red';
 }
@@ -122,7 +122,7 @@ export function PluginBrowser({
 }: PluginBrowserProps): React.ReactElement {
   const theme = useTheme();
   const i18n = useUiL2I18n();
-  const locale = (process.env['KOSMOS_TUI_LOCALE'] ?? 'ko') as 'ko' | 'en';
+  const locale = (process.env['UMMAYA_TUI_LOCALE'] ?? 'ko') as 'ko' | 'en';
 
   const [cursor, setCursor] = useState(0);
   // Spec 1979 T028 — `a` keystroke renders a deferred-to-#1820 banner inline
@@ -175,7 +175,7 @@ export function PluginBrowser({
     <Box flexDirection="column" paddingX={1} paddingY={1}>
       {/* Title */}
       <Box marginBottom={1}>
-        <Text bold color={theme.kosmosCore}>{'✻ '}</Text>
+        <Text bold color={theme.ummayaCore}>{'✻ '}</Text>
         <Text bold color={theme.wordmark}>{i18n.pluginBrowserTitle}</Text>
       </Box>
 
@@ -209,7 +209,7 @@ export function PluginBrowser({
           const isSelected = idx === cursor;
           const description = locale === 'en' ? plugin.description_en : plugin.description_ko;
           const glyph = plugin.isActive ? GLYPH_ACTIVE : GLYPH_INACTIVE;
-          const glyphColor = plugin.isActive ? theme.kosmosCore : theme.inactive;
+          const glyphColor = plugin.isActive ? theme.ummayaCore : theme.inactive;
 
           // Spec 1979 T025 — additive optional fields surface as inline columns
           // when populated (Spec 1635 T065 callers without these fields keep
@@ -231,7 +231,7 @@ export function PluginBrowser({
 
               {/* Name + version */}
               <Box width={24} flexShrink={0}>
-                <Text bold={isSelected} color={isSelected ? theme.kosmosCore : theme.text}>
+                <Text bold={isSelected} color={isSelected ? theme.ummayaCore : theme.text}>
                   {isSelected ? '› ' : '  '}
                   {plugin.name}
                 </Text>

@@ -56,7 +56,7 @@ $ python scripts/pty-scenario.py greeting
 
 ❌ **FAIL** — PTY harness raises `OSError [Errno 5]` (EIO) shortly after backend boot. Suspected cause: Bun's `process.stdin` raw-mode transition is incompatible with the harness's PTY parent-side I/O loop (Python `pty.fork` returns the parent fd with line-discipline defaults). The same `bun run tui` works in interactive Terminal.app / iTerm2 sessions.
 
-**Mitigation:** Manual rehearsal — citizen runs `bun run tui` in their terminal, types `안녕하세요` and `강남구 응급실 알려줘` interactively. Frame capture is achieved by setting `KOSMOS_IPC_DEBUG_LOG=/tmp/ipc.log` (if implemented) or running with `KOSMOS_TUI_LOG_LEVEL=DEBUG` and tailing stderr. The CC-fidelity TUI surface is preserved (per memory `feedback_cc_tui_90_fidelity`).
+**Mitigation:** Manual rehearsal — citizen runs `bun run tui` in their terminal, types `안녕하세요` and `강남구 응급실 알려줘` interactively. Frame capture is achieved by setting `UMMAYA_IPC_DEBUG_LOG=/tmp/ipc.log` (if implemented) or running with `UMMAYA_TUI_LOG_LEVEL=DEBUG` and tailing stderr. The CC-fidelity TUI surface is preserved (per memory `feedback_cc_tui_90_fidelity`).
 
 This is a **harness limitation, not a product defect**. The backend + IPC + frame schema all validate via S1/S2.
 
@@ -76,7 +76,7 @@ This is a **harness limitation, not a product defect**. The backend + IPC + fram
 
 ## Conclusion
 
-The Spec 1978 backend + IPC + agentic-loop architecture is **validated end-to-end**. The CC query-engine (per memory `feedback_kosmos_uses_cc_query_engine` — KOSMOS adopts CC's native function calling + streaming + parallel tool dispatch architecture, not academic ReAct) handles K-EXAONE conversational responses correctly with 21-arm frame schema parity.
+The Spec 1978 backend + IPC + agentic-loop architecture is **validated end-to-end**. The CC query-engine (per memory `feedback_ummaya_uses_cc_query_engine` — UMMAYA adopts CC's native function calling + streaming + parallel tool dispatch architecture, not academic ReAct) handles K-EXAONE conversational responses correctly with 21-arm frame schema parity.
 
 Outstanding items:
 

@@ -10,7 +10,7 @@
 
 ```
 TokenName       ::= MetaphorRole Variant?
-MetaphorRole    ::= "kosmosCore"
+MetaphorRole    ::= "ummayaCore"
                   | "orbitalRing"
                   | "wordmark"
                   | "subtitle"
@@ -37,7 +37,7 @@ Variant         ::= <TitleCased> (one of: "Shimmer" | "Muted" | "Hover" | "Activ
 The single canonical regex below is derived 1:1 from the BNF above. Any token identifier added to `tui/src/theme/tokens.ts` type surface MUST match this regex AND not match any BAN-01..BAN-07 rule in §2. When the BNF changes (e.g., new `MinistryCode` or new `Variant`), this regex MUST be updated in the same PR.
 
 ```regex
-^(kosmosCore|orbitalRing|wordmark|subtitle|agentSatellite(Koroad|Kma|Hira|Nmc|Nfa119|Geocoding)|permissionGauntlet|planMode|autoAccept|success|error|warning|info|text|inverseText|inactive|subtle|suggestion|remember)(Shimmer|Muted|Hover|Active|Background|Border|Dimmed|Selected)?$
+^(ummayaCore|orbitalRing|wordmark|subtitle|agentSatellite(Koroad|Kma|Hira|Nmc|Nfa119|Geocoding)|permissionGauntlet|planMode|autoAccept|success|error|warning|info|text|inverseText|inactive|subtle|suggestion|remember)(Shimmer|Muted|Hover|Active|Background|Border|Dimmed|Selected)?$
 ```
 
 **Caveats**:
@@ -52,12 +52,12 @@ Regex applied to every identifier added in a PR touching `tui/src/theme/tokens.t
 | ID | Regex | Error message |
 |---|---|---|
 | BAN-01 | `^claude[A-Za-z0-9_]*$` | `Banned token: CC-legacy '{name}'. See brand-system.md §2 — use an 'orbitalRing*' or ministry-specific name instead.` |
-| BAN-02 | `^clawd[A-Za-z0-9_]*$` | `Banned token: leaked-source prefix '{name}'. Remove; rename under KOSMOS metaphor vocabulary.` |
-| BAN-03 | `^anthropic[A-Za-z0-9_]*$` | `Banned token: vendor-specific '{name}'. KOSMOS is not an Anthropic product.` |
-| BAN-04 | `^(primary\|secondary\|tertiary)$` | `Banned token: content-free '{name}'. Use a semantic role from brand-system.md §1 (e.g., 'kosmosCore', 'orbitalRing', or a ministry satellite).` |
+| BAN-02 | `^clawd[A-Za-z0-9_]*$` | `Banned token: leaked-source prefix '{name}'. Remove; rename under UMMAYA metaphor vocabulary.` |
+| BAN-03 | `^anthropic[A-Za-z0-9_]*$` | `Banned token: vendor-specific '{name}'. UMMAYA is not an Anthropic product.` |
+| BAN-04 | `^(primary\|secondary\|tertiary)$` | `Banned token: content-free '{name}'. Use a semantic role from brand-system.md §1 (e.g., 'ummayaCore', 'orbitalRing', or a ministry satellite).` |
 | BAN-05 | `^accent[0-9]+$` | `Banned token: numeric-suffix '{name}'. Tokens must describe semantic role, not ordinal.` |
 | BAN-06 | `^mainColor$` | `Banned token: '{name}' conveys no semantic intent.` |
-| BAN-07 | `^(background\|foreground)$` | `Banned token: standalone '{name}'. Qualify with a role (e.g., 'orbitalRingBackground', 'kosmosCoreForeground').` |
+| BAN-07 | `^(background\|foreground)$` | `Banned token: standalone '{name}'. Qualify with a role (e.g., 'orbitalRingBackground', 'ummayaCoreForeground').` |
 
 ## 3 · Exceptions
 
@@ -73,7 +73,7 @@ Regex applied to every identifier added in a PR touching `tui/src/theme/tokens.t
 // tokens.ts type surface additions that pass
 export type ThemeToken = {
   orbitalRingBackground: string
-  kosmosCoreShimmer: string
+  ummayaCoreShimmer: string
   agentSatelliteKoroad: string
   agentSatelliteHiraMuted: string
   wordmarkActive: string
@@ -104,6 +104,6 @@ export type ThemeToken = {
 
 Why `{metaphorRole}{Variant}?` instead of Tailwind/Chakra-style tokens?
 
-- **KOSMOS = 은하계 metaphor** (ADR-006 A-9). Visual tokens carry semantic weight tied to the multi-ministry orchestration story. A reader of `orbitalRingShimmer` immediately understands it decorates the tool-loop visual affordance; a reader of `accent2` understands nothing.
+- **UMMAYA = 은하계 metaphor** (ADR-006 A-9). Visual tokens carry semantic weight tied to the multi-ministry orchestration story. A reader of `orbitalRingShimmer` immediately understands it decorates the tool-loop visual affordance; a reader of `accent2` understands nothing.
 - **Brand Guardian can reject with a single citation**: BAN rules map 1:1 to a §2 subsection. No judgment call required.
 - **Cross-Epic consistency** (SC-012 test): a simulated ad-hoc proposal like `primary`, `accent1`, or `claudeShimmer` can be rejected by citing BAN-04, BAN-05, or BAN-01 respectively.

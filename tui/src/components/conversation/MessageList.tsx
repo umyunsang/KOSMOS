@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original (no direct upstream; Claude Code's VirtualMessageList is
+// UMMAYA-original (no direct upstream; Claude Code's VirtualMessageList is
 // significantly more complex — this is a plain skeleton per task spec).
 //
 // MessageList: renders the full conversation history from session-store.

@@ -10,9 +10,9 @@ Adds freshness validation to the NMC emergency room adapter. When NMC API respon
 
 | File | Change |
 |------|--------|
-| `src/kosmos/tools/models.py` | Add `freshness_status: Literal["fresh"] \| None = None` to `LookupMeta` |
-| `src/kosmos/tools/nmc/freshness.py` | New file: `check_freshness()` utility function |
-| `src/kosmos/tools/nmc/emergency_search.py` | Integrate freshness check into adapter handler |
+| `src/ummaya/tools/models.py` | Add `freshness_status: Literal["fresh"] \| None = None` to `LookupMeta` |
+| `src/ummaya/tools/nmc/freshness.py` | New file: `check_freshness()` utility function |
+| `src/ummaya/tools/nmc/emergency_search.py` | Integrate freshness check into adapter handler |
 
 ## Files to Create (Tests)
 
@@ -26,10 +26,10 @@ Adds freshness validation to the NMC emergency room adapter. When NMC API respon
 
 | File | Reason |
 |------|--------|
-| `src/kosmos/settings.py` | `nmc_freshness_minutes` already defined |
-| `src/kosmos/tools/errors.py` | `LookupErrorReason.stale_data` already in enum |
-| `src/kosmos/tools/envelope.py` | No adapter-specific logic; stays generic |
-| `src/kosmos/tools/executor.py` | No NMC-specific logic; stays generic |
+| `src/ummaya/settings.py` | `nmc_freshness_minutes` already defined |
+| `src/ummaya/tools/errors.py` | `LookupErrorReason.stale_data` already in enum |
+| `src/ummaya/tools/envelope.py` | No adapter-specific logic; stays generic |
+| `src/ummaya/tools/executor.py` | No NMC-specific logic; stays generic |
 
 ## How to Test
 

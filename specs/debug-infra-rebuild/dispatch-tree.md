@@ -40,8 +40,8 @@ Author Phase 2 of `specs/debug-infra-rebuild/RFC.md` § P0 / § 5:
    base_time params) and `busan-multi-tool.json` (multi-tool turn used
    to verify Codex's `parallel_tool_calls=False` fix actually drops
    the extras when aimock emits 3 tool_calls).
-4. Document the env switch: `KOSMOS_FRIENDLI_BASE_URL=http://localhost:4010`
-   + `KOSMOS_FRIENDLI_TOKEN=aimock-test`.
+4. Document the env switch: `UMMAYA_FRIENDLI_BASE_URL=http://localhost:4010`
+   + `UMMAYA_FRIENDLI_TOKEN=aimock-test`.
 5. Verify the existing `bun test` + `pytest` suite stays green with
    aimock NOT running (i.e., aimock is opt-in, default real-FriendliAI
    path unchanged).
@@ -56,14 +56,14 @@ Diagnose why `kma_short_term_forecast` rejects K-EXAONE's params with
 `9a1a090`:
 
 1. Trace the call path from the new `<available_adapters>` suffix
-   (in `src/kosmos/ipc/stdio.py:_build_available_adapters_suffix`)
+   (in `src/ummaya/ipc/stdio.py:_build_available_adapters_suffix`)
    to the actual system prompt sent to FriendliAI. Confirm the schema
    field signatures (`lat`, `lon`, `base_date`, `base_time` for
    `kma_forecast_fetch`) are present in the assembled system message.
-2. Reproduce the K-EXAONE call with a httpx probe that mirrors KOSMOS's
-   exact payload (use the prior probe at `/tmp/kosmos-payload-probe.py`
+2. Reproduce the K-EXAONE call with a httpx probe that mirrors UMMAYA's
+   exact payload (use the prior probe at `/tmp/ummaya-payload-probe.py`
    as the seed). Capture the actual `tool_calls[0].function.arguments`
-   K-EXAONE returns and compare to the schema KOSMOS sent.
+   K-EXAONE returns and compare to the schema UMMAYA sent.
 3. Identify the gap. Hypotheses ordered by likelihood (apply RFC
    heuristic H2 — "verify the costliest hypothesis first"):
    (a) The dispatcher injects the suffix into a different system

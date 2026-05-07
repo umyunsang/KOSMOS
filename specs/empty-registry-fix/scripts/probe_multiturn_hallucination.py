@@ -12,7 +12,7 @@ Scenario:
             (i) honest failure narrative ("fetch failed, retry"), or
             (ii) HALLUCINATED weather data (the user's reported symptom)?
 
-Run twice — enable_thinking=False (KOSMOS default) and True.
+Run twice — enable_thinking=False (UMMAYA default) and True.
 """
 
 from __future__ import annotations
@@ -27,8 +27,8 @@ import httpx
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from kosmos._dotenv import load_repo_dotenv
-from kosmos.llm.config import LLMClientConfig
+from ummaya._dotenv import load_repo_dotenv
+from ummaya.llm.config import LLMClientConfig
 
 load_repo_dotenv()
 

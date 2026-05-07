@@ -23,14 +23,14 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from kosmos.agents.coordinator import Coordinator
-from kosmos.agents.mailbox.messages import (
+from tests.agents.conftest import StubLLMClient, build_test_registry
+from ummaya.agents.coordinator import Coordinator
+from ummaya.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     ResultPayload,
 )
-from kosmos.tools.models import LookupMeta, LookupRecord
-from tests.agents.conftest import StubLLMClient, build_test_registry
+from ummaya.tools.models import LookupMeta, LookupRecord
 
 # ---------------------------------------------------------------------------
 # Helpers

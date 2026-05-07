@@ -7,7 +7,7 @@
 
 Ship 10 Mock adapters that mirror the LLM-callable secure-wrapping channels Korea's national AX policy stack (국가인공지능전략위원회 행동계획 2026-2028 + 공공AX + 범정부 AI 공통기반) is mandating, plus the `DelegationToken` / `DelegationContext` schema that captures the OID4VP-style envelope those channels are expected to issue. Piggyback Codex P1 #2395 by emitting an `adapter_manifest_sync` IPC frame at backend boot so the TS-side primitive `validateInput` can resolve any backend adapter ID (not just the 14 internal TS tools) and populate the citation slot from the agency-published policy URL.
 
-**Technical approach**: Extend the existing per-primitive sub-registry pattern (`kosmos.primitives.{verify,submit,subscribe}._ADAPTER_REGISTRY` from Spec 031) with the new `mock_*_module_*` adapters; introduce one new `IPCFrame` arm (`AdapterManifestSyncFrame`) in `kosmos.ipc.frame_schema` reusing the Spec 032 envelope; cache the synced manifest in a new TS-side `tui/src/services/api/adapterManifest.ts` module; modify the four `*Primitive.validateInput` methods to consult the cached manifest before falling back to `context.options.tools.find`. Audit ledger gains three new event kinds appended to the existing Spec 035 consent JSONL (`delegation_issued/used/revoked`).
+**Technical approach**: Extend the existing per-primitive sub-registry pattern (`ummaya.primitives.{verify,submit,subscribe}._ADAPTER_REGISTRY` from Spec 031) with the new `mock_*_module_*` adapters; introduce one new `IPCFrame` arm (`AdapterManifestSyncFrame`) in `ummaya.ipc.frame_schema` reusing the Spec 032 envelope; cache the synced manifest in a new TS-side `tui/src/services/api/adapterManifest.ts` module; modify the four `*Primitive.validateInput` methods to consult the cached manifest before falling back to `context.options.tools.find`. Audit ledger gains three new event kinds appended to the existing Spec 035 consent JSONL (`delegation_issued/used/revoked`).
 
 ## Technical Context
 
@@ -17,10 +17,10 @@ Ship 10 Mock adapters that mirror the LLM-callable secure-wrapping channels Kore
 - TypeScript: `ink`, `react`, `@inkjs/ui`, `string-width`, `zod ^3.23` (resolves to 3.25.76, ships `zod/v4` namespace — existing); `@modelcontextprotocol/sdk` (existing). **Zero new runtime deps** (AGENTS.md hard rule + spec FR-023).
 **Storage**:
 - In-memory at runtime: per-primitive `_ADAPTER_REGISTRY` (Spec 031), main `ToolRegistry` (Spec 022), TS-side adapter-manifest cache (new, ephemeral)
-- Append-only on disk: Spec 035 consent ledger at `~/.kosmos/memdir/user/consent/` gains `delegation_*` event kinds; session JSONL transcripts at `~/.kosmos/memdir/user/sessions/` (Spec 027 unchanged)
+- Append-only on disk: Spec 035 consent ledger at `~/.ummaya/memdir/user/consent/` gains `delegation_*` event kinds; session JSONL transcripts at `~/.ummaya/memdir/user/sessions/` (Spec 027 unchanged)
 - No new schemas on disk
 **Testing**: `uv run pytest` (Python — happy + error per adapter, IPC frame round-trip, registry-wide transparency scan, scope-violation regression); `bun test` (TS — manifest cache + primitive validateInput resolution + cold-boot race); PTY scenario via `expect` (Layer 2); vhs `.tape` with three Screenshot keyframes (Layer 4 mandate)
-**Target Platform**: Single-user terminal (KOSMOS TUI); Python backend speaks JSONL frames over stdio to TS-side TUI process
+**Target Platform**: Single-user terminal (UMMAYA TUI); Python backend speaks JSONL frames over stdio to TS-side TUI process
 **Project Type**: Multi-package monorepo (Python backend + TypeScript TUI sibling)
 **Performance Goals**:
 - US1 end-to-end chain (verify → lookup → submit) under 30 seconds wall-clock on developer machine (SC-001)
@@ -30,8 +30,8 @@ Ship 10 Mock adapters that mirror the LLM-callable secure-wrapping channels Kore
 - Zero new runtime dependencies (FR-023, AGENTS.md hard rule, SC-008)
 - All new source text English; Korean only in domain-data fields (FR-024)
 - IPC frame variant MUST be a NEW arm (Spec 032 ring-buffer replay invariant)
-- Each Mock adapter MUST cite an agency-published policy URL — no KOSMOS-invented classifications (FR-025, Constitution § II)
-- Mock backend for PTY smoke is a real Python process speaking JSONL — NOT `KOSMOS_BACKEND_CMD=sleep 60` (FR-021, closes Codex P1 PTY-coverage gap)
+- Each Mock adapter MUST cite an agency-published policy URL — no UMMAYA-invented classifications (FR-025, Constitution § II)
+- Mock backend for PTY smoke is a real Python process speaking JSONL — NOT `UMMAYA_BACKEND_CMD=sleep 60` (FR-021, closes Codex P1 PTY-coverage gap)
 **Scale/Scope**:
 - Adapter count target after merge: ≈ 20 distinct Mock adapter surfaces across four sub-registries (10 verify + 5 submit + 3 subscribe + 2 lookup) plus 14 main-ToolRegistry entries (12 Live + 2 MVP-surface). Manifest frame size scales linearly; chunking deferred (see spec § Deferred Items).
 
@@ -42,10 +42,10 @@ Ship 10 Mock adapters that mirror the LLM-callable secure-wrapping channels Kore
 | Principle | Status | Justification |
 |---|---|---|
 | **I. Reference-Driven Development** | ✅ PASS | Each design decision maps to a concrete reference (see Reference Mapping table below). DelegationToken envelope mirrors OID4VP draft 21 + Singapore Myinfo (`delegation-flow-design.md § 3.1, 5.6`). IPC frame variant follows Spec 032 + restored-src CC pattern. Per-primitive sub-registry pattern is Spec 031 prior art. |
-| **II. Fail-Closed Security** | ✅ PASS | Every Mock adapter MUST cite agency-published policy URL in `_policy_authority` (FR-025). No KOSMOS-invented classifications. The `mock_verify_module_any_id_sso` returns identity-only, NOT a delegation token (per `delegation-flow-design.md § 2.2` constraint). Cold-boot manifest race fails closed (FR-019). Token expiry/scope/session violations all fail closed (FR-009/010/011). |
+| **II. Fail-Closed Security** | ✅ PASS | Every Mock adapter MUST cite agency-published policy URL in `_policy_authority` (FR-025). No UMMAYA-invented classifications. The `mock_verify_module_any_id_sso` returns identity-only, NOT a delegation token (per `delegation-flow-design.md § 2.2` constraint). Cold-boot manifest race fails closed (FR-019). Token expiry/scope/session violations all fail closed (FR-009/010/011). |
 | **III. Pydantic v2 Strict Typing** | ✅ PASS | New `DelegationToken`, `DelegationContext`, `AdapterManifestEntry`, `AdapterManifestFrame` are frozen Pydantic v2 models. Existing per-primitive context types (`MobileIdContext`, etc.) extend with frozen fields — no `Any` introduced. |
 | **IV. Government API Compliance** | ✅ PASS | All 10 new adapters are Mock — no live `data.go.kr` calls. Existing `rate_limit_per_minute` field on `AdapterRegistration` carries through (verify_mobile_id.py:34 reference). Happy + error path tests required per FR-006. No hardcoded credentials. |
-| **V. Policy Alignment** | ✅ PASS | KOSMOS = "client-side reference implementation for Korea's national AX infrastructure" framing aligns with Principle 8 (single conversational window) and Principle 9 (Open API/OpenMCP). The `_policy_authority` transparency field is the visible artefact for Public AI Impact Assessment 과제 54. |
+| **V. Policy Alignment** | ✅ PASS | UMMAYA = "client-side reference implementation for Korea's national AX infrastructure" framing aligns with Principle 8 (single conversational window) and Principle 9 (Open API/OpenMCP). The `_policy_authority` transparency field is the visible artefact for Public AI Impact Assessment 과제 54. |
 | **VI. Deferred Work Accountability** | ✅ PASS | Spec § "Scope Boundaries & Deferred Items" populated with 6 entries: 2 cite tracking issues (#2297, #2298), 4 marked NEEDS TRACKING for `/speckit-taskstoissues`. No free-text "future epic" references in spec prose. |
 
 **Reference Mapping** (mandatory per Constitution § I):
@@ -53,7 +53,7 @@ Ship 10 Mock adapters that mirror the LLM-callable secure-wrapping channels Kore
 | Decision | Primary reference | Secondary reference |
 |---|---|---|
 | 5-primitive harness preserved (lookup/submit/verify/subscribe + resolve_location) | Spec 031 (Five-Primitive Harness) | Spec 022 (MVP Main-Tool) |
-| Per-primitive `_ADAPTER_REGISTRY` pattern for new mock adapters | Spec 031 prior art (`kosmos.tools.mock.__init__.py` 6 verify + 2 submit + 3 subscribe) | Pydantic AI schema-driven registry |
+| Per-primitive `_ADAPTER_REGISTRY` pattern for new mock adapters | Spec 031 prior art (`ummaya.tools.mock.__init__.py` 6 verify + 2 submit + 3 subscribe) | Pydantic AI schema-driven registry |
 | `DelegationToken` shape (vp_jwt, delegation_token, scope, expires_at, issuer_did) | OID4VP draft 21 (`delegation-flow-design.md § 5.6`) | Singapore Myinfo + APEX (`delegation-flow-design.md § 3.1`) |
 | Six transparency fields contract | `delegation-flow-design.md § 12.7` (3rd correction final canonical) | Estonia X-Road audit-by-design pattern |
 | New `IPCFrame` arm for adapter manifest | Spec 032 (envelope hardening, 20-arm union) | restored-src CC tool registry sync pattern |
@@ -84,7 +84,7 @@ specs/2296-ax-mock-adapters/
 ### Source Code (repository root)
 
 ```text
-src/kosmos/
+src/ummaya/
 ├── primitives/
 │   ├── delegation.py                   # NEW — DelegationToken + DelegationContext (FR-007/008)
 │   ├── verify.py                       # MODIFY — extend per-family context types with transparency fields
@@ -104,7 +104,7 @@ src/kosmos/
 │   │   ├── submit_module_public_mydata_action.py                # NEW (FR-002)
 │   │   ├── lookup_module_hometax_simplified.py                  # NEW (FR-003) — main ToolRegistry GovAPITool
 │   │   └── lookup_module_gov24_certificate.py                   # NEW (FR-003) — main ToolRegistry GovAPITool
-│   ├── register_all.py                                          # MODIFY — import kosmos.tools.mock for production registry boot
+│   ├── register_all.py                                          # MODIFY — import ummaya.tools.mock for production registry boot
 │   └── transparency.py                                          # NEW — six-field stamping helper used by every Mock adapter
 ├── ipc/
 │   ├── frame_schema.py                                          # MODIFY — add AdapterManifestSyncFrame + extend IPCFrame union (20→21 arms)
@@ -149,7 +149,7 @@ specs/2296-ax-mock-adapters/scripts/
 └── smoke-citizen-taxreturn.tape                                 # NEW — Layer 4 vhs tape with 3 Screenshot keyframes (FR-022)
 ```
 
-**Structure Decision**: Multi-package monorepo (Python backend `src/kosmos/` + TS TUI `tui/src/`). New code lives in three locations matching the existing layering: (a) Python adapter implementations under `src/kosmos/tools/mock/` extending the Spec 031 sub-registry pattern; (b) Python IPC frame variant in `src/kosmos/ipc/frame_schema.py` extending the 20-arm union; (c) TS adapter-manifest cache + four primitive `validateInput` modifications under `tui/src/`. Tests parallel each layer.
+**Structure Decision**: Multi-package monorepo (Python backend `src/ummaya/` + TS TUI `tui/src/`). New code lives in three locations matching the existing layering: (a) Python adapter implementations under `src/ummaya/tools/mock/` extending the Spec 031 sub-registry pattern; (b) Python IPC frame variant in `src/ummaya/ipc/frame_schema.py` extending the 20-arm union; (c) TS adapter-manifest cache + four primitive `validateInput` modifications under `tui/src/`. Tests parallel each layer.
 
 ## Reference Mapping & Reuse Plan
 
@@ -174,7 +174,7 @@ See [research.md](./research.md) for the resolved unknowns. Key decisions:
 1. **Mock-count reconciliation**: The spec's "27 = 12 Live + 15 Mock" arithmetic does not survive Phase 0 because per-primitive sub-registries hold most mocks (not the main `ToolRegistry`). Correction folded into spec SC-003 amendment (this plan triggers a minor spec edit before `/speckit-analyze`).
 2. **Mock catalog: ADD alongside, do NOT delete existing 5 verify mocks**: Existing 5 verify mocks (after onepass deletion) keep their tool IDs and gain transparency fields per FR-005 retrofit. New 5 mocks ship under the `mock_verify_module_*` prefix to make the AX-channel-reference framing visible in the ID.
 3. **IPC frame: NEW arm, NOT extend existing**: Confirmed. Adding a new arm preserves the Spec 032 ring-buffer replay invariant; extending an existing arm would break correlation-id ordering.
-4. **Mock-fixture backend pattern for PTY smoke**: Spawn a real Python process via `KOSMOS_BACKEND_CMD=python -m kosmos.ipc.demo.mock_backend` (new module). The process speaks the same JSONL frames the production backend speaks, but with deterministic mock fixtures for the US1 chain.
+4. **Mock-fixture backend pattern for PTY smoke**: Spawn a real Python process via `UMMAYA_BACKEND_CMD=python -m ummaya.ipc.demo.mock_backend` (new module). The process speaks the same JSONL frames the production backend speaks, but with deterministic mock fixtures for the US1 chain.
 5. **Deferred-item validation**: All 6 entries in the spec's deferred-items table either have a tracking issue (#2297, #2298) or are flagged `NEEDS TRACKING` for `/speckit-taskstoissues`. No untracked deferrals remain.
 
 ## Phase 1: Design & Contracts — completed

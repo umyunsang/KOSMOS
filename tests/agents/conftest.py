@@ -18,9 +18,9 @@ from uuid import uuid4
 
 import pytest
 
-from kosmos.llm.client import LLMClient
-from kosmos.llm.models import StreamEvent, TokenUsage
-from kosmos.tools.registry import ToolRegistry
+from ummaya.llm.client import LLMClient
+from ummaya.llm.models import StreamEvent, TokenUsage
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Stub LLM client — proper subclass of LLMClient for Pydantic type checking
@@ -81,11 +81,11 @@ class StubLLMClient(LLMClient):
 def tmp_mailbox_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """Provide a per-test temp directory as the mailbox root.
 
-    Patches KOSMOS_AGENT_MAILBOX_ROOT so FileMailbox uses it.
+    Patches UMMAYA_AGENT_MAILBOX_ROOT so FileMailbox uses it.
     """
     mailbox_dir = tmp_path / "mailbox"
     mailbox_dir.mkdir(mode=0o700)
-    monkeypatch.setenv("KOSMOS_AGENT_MAILBOX_ROOT", str(mailbox_dir))
+    monkeypatch.setenv("UMMAYA_AGENT_MAILBOX_ROOT", str(mailbox_dir))
     return mailbox_dir
 
 

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for kosmos.llm.system_prompt_builder.build_system_prompt_with_tools.
+"""Tests for ummaya.llm.system_prompt_builder.build_system_prompt_with_tools.
 
 Coverage table (contracts/system-prompt-builder.md § Test coverage):
   T1  test_empty_tools_returns_base_unchanged
@@ -13,8 +13,8 @@ Coverage table (contracts/system-prompt-builder.md § Test coverage):
 
 from __future__ import annotations
 
-from kosmos.llm.models import FunctionSchema, ToolDefinition
-from kosmos.llm.system_prompt_builder import build_system_prompt_with_tools
+from ummaya.llm.models import FunctionSchema, ToolDefinition
+from ummaya.llm.system_prompt_builder import build_system_prompt_with_tools
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
@@ -201,7 +201,7 @@ def test_caller_order_preserved() -> None:
 
 
 def test_no_timestamp_or_env_leakage() -> None:
-    """The function must not inject current-year strings or KOSMOS_ env var names."""
+    """The function must not inject current-year strings or UMMAYA_ env var names."""
     result = build_system_prompt_with_tools(BASE_PROMPT, [LOOKUP_TOOL, WEATHER_TOOL])
 
     # No year strings (determinism check — no datetime.now() calls)
@@ -209,7 +209,7 @@ def test_no_timestamp_or_env_leakage() -> None:
     assert "2025" not in result
 
     # No env var names (no os.environ lookups inside the helper)
-    assert "KOSMOS_" not in result
+    assert "UMMAYA_" not in result
 
 
 # ---------------------------------------------------------------------------

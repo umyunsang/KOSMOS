@@ -4,7 +4,7 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../../services/analytics/index.js'
-// KOSMOS: services/api/claude.js deleted by Spec 1633 P1+P2. queryHaiku not available.
+// UMMAYA: services/api/claude.js deleted by Spec 1633 P1+P2. queryHaiku not available.
 import { AbortError } from '../../utils/errors.js'
 import { getWebFetchUserAgent } from '../../utils/http.js'
 import { logError } from '../../utils/log.js'
@@ -500,8 +500,8 @@ export async function applyPromptToMarkdown(
     prompt,
     isPreapprovedDomain,
   )
-  // KOSMOS: queryHaiku removed (Spec 1633 P1+P2). Return raw truncated content.
-  throw new Error('Anthropic API not available in KOSMOS — Spec 1633')
+  // UMMAYA: queryHaiku removed (Spec 1633 P1+P2). Return raw truncated content.
+  throw new Error('Anthropic API not available in UMMAYA — Spec 1633')
   const assistantMessage = await Promise.resolve(null as never)
   void assistantMessage
 

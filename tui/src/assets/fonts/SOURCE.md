@@ -1,6 +1,6 @@
 # NotoSansKR-Hangul-subset.ttf
 
-Korean Hangul subset of NanumGothic Regular for KOSMOS PDF export (`/export`).
+Korean Hangul subset of NanumGothic Regular for UMMAYA PDF export (`/export`).
 
 - **Source font**: NanumGothic-Regular.ttf
 - **Source license**: SIL Open Font License 1.1 (OFL-1.1)
@@ -21,7 +21,7 @@ The `@pdf-lib/fontkit` package is a peer dependency of `pdf-lib` (already in tui
 ## Subset rationale
 
 Full NanumGothic-Regular.ttf is 2.0 MB — exceeds the AGENTS.md "no commit > 1 MB without ask" rule.
-Subsetted version is 952 KB. Coverage verified against realistic KOSMOS Korean text including
+Subsetted version is 952 KB. Coverage verified against realistic UMMAYA Korean text including
 all standard agency-name vocabulary (도로교통공단, 기상청, 건강보험심사평가원, etc.).
 
 ## OFL compliance

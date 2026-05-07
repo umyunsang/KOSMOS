@@ -1,6 +1,6 @@
 # Test Fixtures
 
-This directory contains recorded HTTP response fixtures used by the KOSMOS tool
+This directory contains recorded HTTP response fixtures used by the UMMAYA tool
 adapter test suite. Fixtures allow tests to run without making live API calls to
 `data.go.kr` or any other external service.
 
@@ -87,7 +87,7 @@ import httpx
 async def test_record_koroad_fixture():
     """Run with: uv run pytest -m live tests/tools/koroad/ -v"""
     import os
-    api_key = os.environ["KOSMOS_KOROAD_API_KEY"]
+    api_key = os.environ["UMMAYA_KOROAD_API_KEY"]
     async with httpx.AsyncClient() as client:
         response = await client.get(
             "https://apis.data.go.kr/B552061/frequentzoneLg/getRestFrequentzoneLg",
@@ -112,7 +112,7 @@ async def test_record_koroad_fixture():
 Live tests are skipped by default (`uv run pytest` without `-m live`). To run them:
 
 ```bash
-KOSMOS_KOROAD_API_KEY=... KOSMOS_DATA_GO_KR_API_KEY=... uv run pytest -m live -v
+UMMAYA_KOROAD_API_KEY=... UMMAYA_DATA_GO_KR_API_KEY=... uv run pytest -m live -v
 ```
 
 See `docs/testing.md` for the full guide on live test markers and CI policy.

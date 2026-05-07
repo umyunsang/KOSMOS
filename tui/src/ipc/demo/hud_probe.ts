@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Spec 032 T054 (TUI side of Scenario C).
+// UMMAYA-original — Spec 032 T054 (TUI side of Scenario C).
 //
-// Quickstart § 3.2 companion for `src/kosmos/ipc/demo/upstream_429_probe.py`.
+// Quickstart § 3.2 companion for `src/ummaya/ipc/demo/upstream_429_probe.py`.
 //
 // Loads a persisted `BackpressureSignalFrame(signal="throttle", source="upstream_429")`
 // from disk (written by the Python probe), validates it through the real

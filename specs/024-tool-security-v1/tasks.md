@@ -1,6 +1,6 @@
 # Tasks: Tool Template Security Spec v1 — Ministry-PR-ready hardening
 
-**Input**: Design documents from `/Users/um-yunsang/KOSMOS/specs/024-tool-security-v1/`
+**Input**: Design documents from `/Users/um-yunsang/UMMAYA/specs/024-tool-security-v1/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md
 
 **Tests**: Unit tests are IN SCOPE for this spec — see data-model.md §8. Two new test modules land with the schema models (covering FR-005, FR-009, FR-010, FR-012, SC-003, SC-004). Integration/live tests are out of scope (no network I/O introduced by this spec).
@@ -19,7 +19,7 @@
 
 **Purpose**: Create directory scaffolding and empty module placeholders so later tasks can write into predictable locations.
 
-- [X] T001 [P] Create `src/kosmos/security/` package with `__init__.py` exporting `audit` submodule (empty module body — downstream tasks fill it).
+- [X] T001 [P] Create `src/ummaya/security/` package with `__init__.py` exporting `audit` submodule (empty module body — downstream tasks fill it).
 - [X] T002 [P] Create `docs/security/` directory and add an empty `.gitkeep` (three doc artifacts land here in US1/US2).
 - [X] T003 [P] Create `tests/unit/` marker directory if absent and confirm `conftest.py` requires no new fixtures (read-only check; do not modify existing tests).
 
@@ -33,11 +33,11 @@
 
 **⚠️ CRITICAL**: No user-story phase may begin until this phase is complete.
 
-- [X] T004 Add `TOOL_MIN_AAL: Final[dict[str, str]]` static lookup table and `PublicPathMeta` dataclass in `src/kosmos/security/audit.py` per data-model.md §2. Include docstring citing NIST SP 800-63-4 and listing all 8 canonical tools.
-- [X] T005 Extend `GovAPITool` in `src/kosmos/tools/models.py` with the four new mandatory fields (`auth_level`, `pipa_class`, `is_irreversible`, `dpa_reference`) using `Literal` typing per data-model.md §1. Required (no defaults) — load-time failure is the invariant.
-- [X] T006 Add cross-field validators V1–V4 to `GovAPITool` via pydantic v2 `model_validator(mode="after")` in `src/kosmos/tools/models.py`. Each validator raises `ValueError` with a message referencing the FR (V1→FR-004, V2→FR-014 documentation gap, V3→FR-001/FR-005, V4→FR-004 extension).
-- [X] T007 Wire `ToolRegistry.register()` (existing call site) to import `TOOL_MIN_AAL` and enforce V3 consistency at registration time; failure path emits a structured log via stdlib `logging` and re-raises the `ValueError`. File: `src/kosmos/tools/registry.py`.
-- [X] T008 Migrate the 4 existing seed adapter registrations (`koroad_accident_hazard_search`, `kma_forecast_fetch`, `hira_hospital_search`, `nmc_emergency_search`) to populate all four new fields per `TOOL_MIN_AAL` row. File: `src/kosmos/tools/adapters/` (search and edit the 4 registration sites).
+- [X] T004 Add `TOOL_MIN_AAL: Final[dict[str, str]]` static lookup table and `PublicPathMeta` dataclass in `src/ummaya/security/audit.py` per data-model.md §2. Include docstring citing NIST SP 800-63-4 and listing all 8 canonical tools.
+- [X] T005 Extend `GovAPITool` in `src/ummaya/tools/models.py` with the four new mandatory fields (`auth_level`, `pipa_class`, `is_irreversible`, `dpa_reference`) using `Literal` typing per data-model.md §1. Required (no defaults) — load-time failure is the invariant.
+- [X] T006 Add cross-field validators V1–V4 to `GovAPITool` via pydantic v2 `model_validator(mode="after")` in `src/ummaya/tools/models.py`. Each validator raises `ValueError` with a message referencing the FR (V1→FR-004, V2→FR-014 documentation gap, V3→FR-001/FR-005, V4→FR-004 extension).
+- [X] T007 Wire `ToolRegistry.register()` (existing call site) to import `TOOL_MIN_AAL` and enforce V3 consistency at registration time; failure path emits a structured log via stdlib `logging` and re-raises the `ValueError`. File: `src/ummaya/tools/registry.py`.
+- [X] T008 Migrate the 4 existing seed adapter registrations (`koroad_accident_hazard_search`, `kma_forecast_fetch`, `hira_hospital_search`, `nmc_emergency_search`) to populate all four new fields per `TOOL_MIN_AAL` row. File: `src/ummaya/tools/adapters/` (search and edit the 4 registration sites).
 
 **Checkpoint**: Registry now fails closed on any adapter missing the 4 new fields. All 4 seed adapters register cleanly. `uv run pytest tests/unit/test_tool_registry.py` (existing) still passes.
 
@@ -51,7 +51,7 @@
 
 ### Implementation tasks for US1
 
-- [X] T009 [US1] Author `src/kosmos/security/audit.py` `ToolCallAuditRecord` pydantic v2 model with `ConfigDict(frozen=True)` per data-model.md §3 — all 18 fields typed with `Literal` where applicable, invariants I1–I4 enforced via `model_validator(mode="after")`.
+- [X] T009 [US1] Author `src/ummaya/security/audit.py` `ToolCallAuditRecord` pydantic v2 model with `ConfigDict(frozen=True)` per data-model.md §3 — all 18 fields typed with `Literal` where applicable, invariants I1–I4 enforced via `model_validator(mode="after")`.
 - [X] T010 [P] [US1] Copy `specs/024-tool-security-v1/contracts/tool-call-audit-record.schema.json` to `docs/security/tool-call-audit-record.schema.json` (final published location; the contracts/ path remains as the spec-internal source).
 - [X] T011 [P] [US1] Author the normative spec document `docs/security/tool-template-security-spec-v1.md` with sections: (1) Purpose & audience, (2) `TOOL_MIN_AAL` table with Korean+English descriptions and NIST SP 800-63-4 citations, (3) `check_eligibility` `public_path` conditions (FR-002), (4) `GovAPITool` field contract (FR-003/FR-004/FR-005), (5) Permission pipeline (FR-006/FR-007/FR-008, ASVS V4.1.5 cite), (6) Audit trail (FR-009/FR-010/FR-011/FR-012, retention citation reconciling PIPA §8 + 전자정부법 §33 to 5-year binding maximum), (7) PIPA role — §26 수탁자 default + LLM-synthesis controller-level carve-out, (8) Edge case disposition (all 7 from spec.md).
 - [X] T012 [US1] Embed the 3 worked audit-record examples (authenticated allow, deny_aal, check_eligibility public_path) into `docs/security/tool-template-security-spec-v1.md` §Audit trail, copy-pasted from `quickstart.md` §2-§3 with minimum cosmetic changes. Each example MUST validate against the JSON Schema (SC-004).
@@ -64,7 +64,7 @@
 
 ## Phase 4: User Story 2 — Citizen delegates authority via OAuth 2.1 + VC skeleton (Priority: P1)
 
-**Story Goal**: A standards-literate reviewer confirms the `/agent-delegation` OpenAPI 3.0 skeleton is implementable by any ministry adopting OAuth 2.1 + mTLS without KOSMOS-proprietary coupling, and the normative delegation section documents the citizen-revocable, scope-limited, time-bounded protocol.
+**Story Goal**: A standards-literate reviewer confirms the `/agent-delegation` OpenAPI 3.0 skeleton is implementable by any ministry adopting OAuth 2.1 + mTLS without UMMAYA-proprietary coupling, and the normative delegation section documents the citizen-revocable, scope-limited, time-bounded protocol.
 
 **Independent Test**: The OpenAPI skeleton validates under a standard OpenAPI 3.0 linter with zero errors and every normative citation resolves to an IETF RFC, W3C recommendation, or Korean statute.
 
@@ -81,7 +81,7 @@
 
 ## Phase 5: User Story 3 — Tool-adapter developer self-verifies via unified PR checklist (Priority: P2)
 
-**Story Goal**: A KOSMOS contributor opens an adapter PR, applies the unified checklist once, and covers all six research-lane domains without lane-specific knowledge; a reviewer completes checklist-mediated review in <30 min.
+**Story Goal**: A UMMAYA contributor opens an adapter PR, applies the unified checklist once, and covers all six research-lane domains without lane-specific knowledge; a reviewer completes checklist-mediated review in <30 min.
 
 **Independent Test**: A contributor unfamiliar with the six lanes applies the checklist to a representative adapter and produces a compliance report matching a senior reviewer's with at most one false-negative within 30 min.
 
@@ -89,7 +89,7 @@
 
 - [X] T019 [US3] Extend `docs/tool-adapters.md` with a new §Security PR checklist (spec v1) section containing the 5 unified checklist items from `quickstart.md` §6 (AAL alignment, audit shape parity, output sanitization declaration, irreversible-action introspection, DPA + synthesis consent). Each item cross-links to the relevant FR in the normative spec and the relevant research-lane domain.
 - [X] T020 [P] [US3] Author `tests/unit/test_gov_api_tool_extensions.py` covering: (a) happy-path registration of a compliant adapter, (b) V1 violation (`pipa_class=personal` + `auth_level=public` → `ValueError`), (c) V2 violation (`pipa_class=identifier` + `dpa_reference=None` → `ValueError`), (d) V3 violation (`auth_level` disagrees with `TOOL_MIN_AAL` row → `ValueError`), (e) V4 violation (`is_irreversible=True` + `auth_level=public` → `ValueError`), (f) omission of each of the 4 new fields in turn → `ValueError` at load.
-- [X] T021 [US3] Add a registry-scan invariant test to `tests/unit/test_gov_api_tool_extensions.py`: load every in-tree adapter module under `src/kosmos/tools/adapters/` via `importlib` and assert each registers without raising. This guards SC-003 (100% of canonical tools carry all 4 new fields at load time).
+- [X] T021 [US3] Add a registry-scan invariant test to `tests/unit/test_gov_api_tool_extensions.py`: load every in-tree adapter module under `src/ummaya/tools/adapters/` via `importlib` and assert each registers without raising. This guards SC-003 (100% of canonical tools carry all 4 new fields at load time).
 - [X] T022 [US3] Update `docs/tool-adapters.md` existing sections (if any reference old NIST SP 800-63-3 text or describe fields without `auth_level`/`pipa_class`/`is_irreversible`/`dpa_reference`) to reflect the new contract. Do not remove existing sections; amend in place.
 
 **Checkpoint**: Contributors have a single 5-item security checklist. Invariant tests guard the registry. SC-002 verifiable once checklist is applied to 3 representative adapters by an unfamiliar reviewer.

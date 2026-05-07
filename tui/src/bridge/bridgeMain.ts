@@ -4,7 +4,7 @@ import { hostname, tmpdir } from 'os'
 import { basename, join, resolve } from 'path'
 import { getRemoteSessionUrl } from '../constants/product.js'
 import { checkGate_CACHED_OR_BLOCKING } from '../services/analytics/growthbook.js'
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — vendor analytics modules deleted;
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — vendor analytics modules deleted;
 // canonical surface lives in analytics/index.ts.
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,

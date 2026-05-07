@@ -7,11 +7,11 @@ import httpx
 import pytest
 from pydantic import BaseModel
 
-from kosmos.recovery.executor import RecoveryExecutor
-from kosmos.recovery.retry import ToolRetryPolicy
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.models import GovAPITool
-from kosmos.tools.registry import ToolRegistry
+from ummaya.recovery.executor import RecoveryExecutor
+from ummaya.recovery.retry import ToolRetryPolicy
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.models import GovAPITool
+from ummaya.tools.registry import ToolRegistry
 
 
 class _In(BaseModel):

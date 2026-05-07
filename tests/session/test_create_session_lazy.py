@@ -19,8 +19,8 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.session.models import SessionEntry
-from kosmos.session.store import (
+from ummaya.session.models import SessionEntry
+from ummaya.session.store import (
     create_session,
     get_session_metadata,
     list_sessions,

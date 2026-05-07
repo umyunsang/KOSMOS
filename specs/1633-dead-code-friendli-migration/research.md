@@ -6,29 +6,29 @@
 
 ## Scope of this research
 
-Resolve the 9 PLAN-PHASE-0 items flagged in the spec's Deferred Items table and surface any late-discovery facts that must adjust the spec's FR set before `/speckit-tasks`. All decisions below are grounded in (a) source reads of `.references/claude-code-sourcemap/restored-src/src/` + `tui/src/` + `src/kosmos/llm/`, (b) FriendliAI public docs (2026-04-24), and (c) Canonical tree `docs/requirements/kosmos-migration-tree.md § L1-A`.
+Resolve the 9 PLAN-PHASE-0 items flagged in the spec's Deferred Items table and surface any late-discovery facts that must adjust the spec's FR set before `/speckit-tasks`. All decisions below are grounded in (a) source reads of `.references/claude-code-sourcemap/restored-src/src/` + `tui/src/` + `src/ummaya/llm/`, (b) FriendliAI public docs (2026-04-24), and (c) Canonical tree `docs/requirements/ummaya-migration-tree.md § L1-A`.
 
 ## Decision 1 — Model ID final form
 
 **Decision**: `LGAI-EXAONE/K-EXAONE-236B-A23B`
 
 **Rationale**:
-- Canonical tree `docs/requirements/kosmos-migration-tree.md § L1-A A1` pins **"K-EXAONE 단일 고정"** — the K-EXAONE brand. `K-EXAONE-236B-A23B` is the literal K-EXAONE release; `EXAONE-4.0-32B` belongs to a different brand family (EXAONE 4.0), not K-EXAONE. Brand-name alignment with the tree's normative language dominates unrelated generation-novelty arguments.
+- Canonical tree `docs/requirements/ummaya-migration-tree.md § L1-A A1` pins **"K-EXAONE 단일 고정"** — the K-EXAONE brand. `K-EXAONE-236B-A23B` is the literal K-EXAONE release; `EXAONE-4.0-32B` belongs to a different brand family (EXAONE 4.0), not K-EXAONE. Brand-name alignment with the tree's normative language dominates unrelated generation-novelty arguments.
 - FriendliAI provides **exclusive Day-0 support** for `K-EXAONE-236B-A23B` (https://friendli.ai/blog/k-exaone-on-serverless · https://friendli.ai/models/LGAI-EXAONE/K-EXAONE-236B-A23B). LG AI Research + FriendliAI partnership flagship → highest operational confidence on Serverless.
-- `src/kosmos/llm/config.py:37` **already uses** `LGAI-EXAONE/K-EXAONE-236B-A23B` as its default, set before this Epic. Retaining it avoids otherwise-unnecessary Python config churn and preserves the baseline that Spec 019/020/021 live-validation work already exercised.
+- `src/ummaya/llm/config.py:37` **already uses** `LGAI-EXAONE/K-EXAONE-236B-A23B` as its default, set before this Epic. Retaining it avoids otherwise-unnecessary Python config churn and preserves the baseline that Spec 019/020/021 live-validation work already exercised.
 - MoE architecture (236B total params / A23B = ~23B activated per token) yields **~23B-dense-equivalent inference compute** — comparable cost/latency to a 32B dense model, while the 236B parameter pool serves quality on longer-tail civil-affairs queries where rare-domain knowledge matters.
 - FriendliAI public pricing for `K-EXAONE-236B-A23B` is $0.2 / 1 M input, $0.1 / 1 M cached input, $0.8 / 1 M output — the cached-input tier is what makes Decision 3 (keep `promptCacheBreakDetection.ts`) viable.
 
 **Alternatives considered**:
 - `LGAI-EXAONE/EXAONE-4.0-32B` — 32B dense, hybrid attention + QK-Reorder-Norm, 131 K context, open-weight on Hugging Face, agentic tool use. **Rejected**: (a) brand-name mismatch against canonical tree "K-EXAONE" pinning; (b) Epic body previously referenced this ID in error (see "Epic body correction" below — corrected during this plan cycle after Epic-author reconfirmation); (c) no compelling citizen-UX delta that overcomes (a) and (b).
 - `LGAI-EXAONE/EXAONE-4.0.1-32B` — minor release on Hugging Face. **Rejected** for the same brand-alignment reason.
-- `KOSMOS_FRIENDLI_MODEL` env-var-driven multi-model switching. **Rejected** — violates canonical tree's "단일 고정" directive (L1-A A1).
+- `UMMAYA_FRIENDLI_MODEL` env-var-driven multi-model switching. **Rejected** — violates canonical tree's "단일 고정" directive (L1-A A1).
 
 **Epic body correction (executed during Phase 0)**:
 - `docs/requirements/epic-p1-p2-llm.md` and Epic #1633 body originally stated `Model ID = LGAI-EXAONE/EXAONE-4.0-32B`. The Epic author reconfirmed intent against (a) canonical tree brand pinning, (b) existing Python config default, (c) FriendliAI Day-0 support status and directed a correction to `LGAI-EXAONE/K-EXAONE-236B-A23B`. Both the Epic body and the doc are updated in the same commit as this research file.
 
 **Spec/code adjustments this forces**:
-- **`src/kosmos/llm/config.py:37` — NO change** (default already `"LGAI-EXAONE/K-EXAONE-236B-A23B"`).
+- **`src/ummaya/llm/config.py:37` — NO change** (default already `"LGAI-EXAONE/K-EXAONE-236B-A23B"`).
 - spec.md FR-011 path correction (see Decision 12 / Finding B) — unrelated to model ID, still required.
 
 ## Decision 2 — `filesApi.ts` keep-or-delete
@@ -46,7 +46,7 @@ Resolve the 9 PLAN-PHASE-0 items flagged in the spec's Deferred Items table and 
 - **Migrate to Python backend** (upload via Python httpx to FriendliAI Files if available): rejected as out of scope for this Epic. If a future feature (e.g., OCR upload) needs files, it will be introduced via a new Epic.
 
 **Callsite impact** (from `grep -rln 'filesApi' tui/src`):
-- `main.tsx`, `context.ts`, `commands.ts`, `QueryEngine.ts`, `setup.ts`, tool files (`NotebookEditTool.ts`, `FileWriteTool.ts`, `FileEditTool.ts`, `PowerShellTool/pathValidation.ts`, `GlobTool.ts`) — total 10 files reference `filesApi`. These are **CC developer-tool paths** that the P3 tool-system rewrite will either delete or replace with KOSMOS primitives. For this Epic, stub out the import sites with no-op equivalents (an empty `{}` returns) so the tool files keep compiling until P3.
+- `main.tsx`, `context.ts`, `commands.ts`, `QueryEngine.ts`, `setup.ts`, tool files (`NotebookEditTool.ts`, `FileWriteTool.ts`, `FileEditTool.ts`, `PowerShellTool/pathValidation.ts`, `GlobTool.ts`) — total 10 files reference `filesApi`. These are **CC developer-tool paths** that the P3 tool-system rewrite will either delete or replace with UMMAYA primitives. For this Epic, stub out the import sites with no-op equivalents (an empty `{}` returns) so the tool files keep compiling until P3.
 
 ## Decision 3 — `promptCacheBreakDetection.ts` keep-or-delete
 
@@ -58,7 +58,7 @@ Resolve the 9 PLAN-PHASE-0 items flagged in the spec's Deferred Items table and 
 - `promptCacheBreakDetection.ts` in CC detects cache-hit discontinuities (large cached-token drop between turns) to avoid prefix-breakage — a useful signal that is provider-agnostic once the field name is correct.
 
 **Alternatives considered**:
-- **Delete**: rejected because cache metrics are useful for the KOSMOS OTEL observability layer (Spec 021) and for FP&A cost tracking.
+- **Delete**: rejected because cache metrics are useful for the UMMAYA OTEL observability layer (Spec 021) and for FP&A cost tracking.
 - **Move to Python backend only**: plan-level detail — Python `LLMClient` already parses `usage`; TUI's detection module adds a UX signal (warn when cache breaks, reducing citizen-visible latency spikes). Kept in TS as UX utility.
 
 ## Decision 4 — Spec 032 frame envelope LLM packing strategy
@@ -95,10 +95,10 @@ and the resolved usage/stop-reason trailers.
 2. Serialize to a Spec 032 `UserInputFrame` (system prompt in metadata, messages in payload) and push via `bridge.ts`.
 3. Consume Python-backend-originated `AssistantChunkFrame` + `ToolCallFrame` stream and yield `BetaRawMessageStreamEvent`-shaped events (type translation layer, not a protocol change).
 4. Finalize on `done=true` trailer; surface `ErrorFrame` as thrown error.
-5. Emit OTEL `gen_ai.client.invoke` span with `gen_ai.system=friendli_exaone`, `gen_ai.request.model=LGAI-EXAONE/K-EXAONE-236B-A23B`, `kosmos.prompt.hash=<sha256>`.
+5. Emit OTEL `gen_ai.client.invoke` span with `gen_ai.system=friendli_exaone`, `gen_ai.request.model=LGAI-EXAONE/K-EXAONE-236B-A23B`, `ummaya.prompt.hash=<sha256>`.
 
-**KOSMOS type replacement**:
-- Define `tui/src/ipc/llmTypes.ts` with `KosmosMessageStreamParams`, `KosmosRawMessageStreamEvent`, `KosmosContentBlockParam`, `KosmosTextBlockParam` as structural supersets of the Anthropic SDK types currently imported. This lets us delete `@anthropic-ai/sdk` imports without rewriting QueryEngine's control flow.
+**UMMAYA type replacement**:
+- Define `tui/src/ipc/llmTypes.ts` with `UmmayaMessageStreamParams`, `UmmayaRawMessageStreamEvent`, `UmmayaContentBlockParam`, `UmmayaTextBlockParam` as structural supersets of the Anthropic SDK types currently imported. This lets us delete `@anthropic-ai/sdk` imports without rewriting QueryEngine's control flow.
 
 **Alternatives considered**:
 - **Direct FriendliAI HTTPS call from TS**: rejected — violates `docs/vision.md § L1-A A1` + rewrite boundary ("services/api/* only goes over stdio to Python backend").
@@ -107,9 +107,9 @@ and the resolved usage/stop-reason trailers.
 
 ## Decision 6 — Error code mapping matrix
 
-Anthropic-specific error codes (from `tui/src/services/api/errors.ts` CC reference) → KOSMOS envelope (LLM · Tool · Network) via FriendliAI HTTP + stdio IPC transport signals:
+Anthropic-specific error codes (from `tui/src/services/api/errors.ts` CC reference) → UMMAYA envelope (LLM · Tool · Network) via FriendliAI HTTP + stdio IPC transport signals:
 
-| Anthropic code | HTTP | FriendliAI equivalent | KOSMOS envelope | Retry? |
+| Anthropic code | HTTP | FriendliAI equivalent | UMMAYA envelope | Retry? |
 |---|---|---|---|---|
 | `invalid_request_error` | 400 | 400 / same JSON body | `ErrorFrame(class=llm, code=invalid_request)` | No |
 | `authentication_error` | 401 | 401 (missing `FRIENDLI_API_KEY`) | `ErrorFrame(class=llm, code=auth)` | No; fail-closed at boot |
@@ -126,7 +126,7 @@ Anthropic-specific error codes (from `tui/src/services/api/errors.ts` CC referen
 
 ## Decision 7 — `withRetry.ts` retry policy
 
-**Decision**: Retry targets = `{ 429, 500, 502, 503, 504 }`. Max attempts = 3. Backoff = exponential (1s, 2s, 4s) with `Retry-After` header override when present. Consistent with `src/kosmos/llm/client.py` Python-side retry.
+**Decision**: Retry targets = `{ 429, 500, 502, 503, 504 }`. Max attempts = 3. Backoff = exponential (1s, 2s, 4s) with `Retry-After` header override when present. Consistent with `src/ummaya/llm/client.py` Python-side retry.
 
 **Rationale**:
 - Python `LLMClient` (already deployed) uses per-session semaphore + exponential backoff + Retry-After override (Spec 019/020 heritage).
@@ -148,15 +148,15 @@ Anthropic-specific error codes (from `tui/src/services/api/errors.ts` CC referen
 | `gen_ai.operation.name` | `"chat"` | constant |
 | `gen_ai.usage.input_tokens` | from `AssistantChunkFrame` final trailer | populated on done |
 | `gen_ai.usage.output_tokens` | from final trailer | populated on done |
-| `kosmos.prompt.hash` | SHA-256 of `prompts/system_v1.md` | **required by SC-008** (Spec 026) |
-| `kosmos.correlation_id` | `envelope.correlation_id` | Spec 032 correlation |
-| `kosmos.transaction_id` | `envelope.transaction_id` | Spec 032, may be null for streaming |
+| `ummaya.prompt.hash` | SHA-256 of `prompts/system_v1.md` | **required by SC-008** (Spec 026) |
+| `ummaya.correlation_id` | `envelope.correlation_id` | Spec 032 correlation |
+| `ummaya.transaction_id` | `envelope.transaction_id` | Spec 032, may be null for streaming |
 
-Python backend (`src/kosmos/llm/client.py`) already emits these same attributes on its side — we get dual-emission (TS + Python) naturally joined by `correlation_id` at the OTEL collector.
+Python backend (`src/ummaya/llm/client.py`) already emits these same attributes on its side — we get dual-emission (TS + Python) naturally joined by `correlation_id` at the OTEL collector.
 
 **Rationale**:
 - Spec 021 already defined the semconv; this spec just wires the TS emission point.
-- Spec 026 already defines `kosmos.prompt.hash`; `PromptLoader` is the Python authority and forwards the hash via IPC metadata (see Decision 9).
+- Spec 026 already defines `ummaya.prompt.hash`; `PromptLoader` is the Python authority and forwards the hash via IPC metadata (see Decision 9).
 
 **Alternatives considered**:
 - Emit at `QueryEngine.ts` agentic-loop entry: rejected — would double-count tool calls and shift semantics from "one LLM invoke" to "one conversation turn."
@@ -172,12 +172,12 @@ Python backend (`src/kosmos/llm/client.py`) already emits these same attributes 
 - Onboarding Step-5 (`terminal-setup` per Spec 035 UI-A) — no login step; directly instructs citizen to `export FRIENDLI_API_KEY=...`.
 
 **Rationale**:
-- No KOSMOS user-facing account concept exists — FRIENDLI_API_KEY is env-var only, held by the user.
+- No UMMAYA user-facing account concept exists — FRIENDLI_API_KEY is env-var only, held by the user.
 - Spec 035 onboarding flow ends with `terminal-setup` (preflight → theme → pipa-consent → ministry-scope → terminal-setup); there's no Anthropic-style OAuth handshake.
 - Retaining no-op `/login` / `/logout` confuses citizens.
 
 **Alternatives considered**:
-- **Keep `/login` as a help-only stub**: rejected — "login" has no meaning in the KOSMOS model.
+- **Keep `/login` as a help-only stub**: rejected — "login" has no meaning in the UMMAYA model.
 - **Rename to `/account`**: rejected — no account surface exists.
 
 ## Late-discovery findings
@@ -205,7 +205,7 @@ Files not named in Epic body but belonging to the same dead-code groups:
 
 ### Finding D — 137 `@anthropic-ai/sdk` import sites
 
-Initial `grep -c '@anthropic-ai/sdk' tui/src` returned **137** imports across ~30 files. A significant fraction are **type-only imports** (`import type {...}` from `@anthropic-ai/sdk/resources/*`). The TS LLMClient in Decision 5 replaces these with KOSMOS-scoped types in `tui/src/ipc/llmTypes.ts`. The mechanical substitution is ~137 edits × 1 line each plus 1 new KOSMOS types file.
+Initial `grep -c '@anthropic-ai/sdk' tui/src` returned **137** imports across ~30 files. A significant fraction are **type-only imports** (`import type {...}` from `@anthropic-ai/sdk/resources/*`). The TS LLMClient in Decision 5 replaces these with UMMAYA-scoped types in `tui/src/ipc/llmTypes.ts`. The mechanical substitution is ~137 edits × 1 line each plus 1 new UMMAYA types file.
 
 ## Deferred Items validation (Constitution Principle VI gate)
 
@@ -231,7 +231,7 @@ Spec `Scope Boundaries & Deferred Items` table has 8 rows. Review:
 This research produces the following downstream outputs (tracked in plan.md Phase 1):
 
 1. **Code edits (TS)**: ~137 `@anthropic-ai/sdk` imports removed; new `tui/src/ipc/llmClient.ts` + `llmTypes.ts`; `tui/src/utils/model/model.ts:206` return-value change; ~50 file deletions; `/login`·`/logout` slash commands removed.
-2. **Code edits (Python)**: none — `src/kosmos/llm/config.py:37` default is already `LGAI-EXAONE/K-EXAONE-236B-A23B` (matches Decision 1).
+2. **Code edits (Python)**: none — `src/ummaya/llm/config.py:37` default is already `LGAI-EXAONE/K-EXAONE-236B-A23B` (matches Decision 1).
 3. **Tests**: regression tests for each FR (grep-based invariants); US1 end-to-end test harness (mocked Python backend responding with fake `AssistantChunkFrame` stream).
 4. **Docs (in-Epic)**: `data-model.md` (frame envelope LLM usage), `contracts/llm-client.md` (TS LLMClient interface + IPC frame contract), `quickstart.md` (fresh-clone → first-K-EXAONE-token flow).
 5. **Docs (post-merge)**: none — Tree propagation PR #1652 already covers README/CLAUDE/AGENTS.
@@ -241,14 +241,14 @@ This research produces the following downstream outputs (tracked in plan.md Phas
 - `.references/claude-code-sourcemap/restored-src/src/services/api/claude.ts` — CC 2.1.88 baseline for `claude.ts` rewire target
 - `.references/claude-code-sourcemap/restored-src/src/QueryEngine.ts:2` — Anthropic SDK type import site (reference for emulation)
 - `tui/src/ipc/envelope.ts` + `frames.generated.ts` — Spec 032 envelope definitions
-- `src/kosmos/llm/client.py` + `config.py` — Python backend FriendliAI implementation (target for Spec 032 IPC bridging)
+- `src/ummaya/llm/client.py` + `config.py` — Python backend FriendliAI implementation (target for Spec 032 IPC bridging)
 - `docs/vision.md § 28-44` — thesis (CC is first reference)
-- `docs/requirements/kosmos-migration-tree.md § L1-A` — canonical LLM-layer decisions (A1-A7)
+- `docs/requirements/ummaya-migration-tree.md § L1-A` — canonical LLM-layer decisions (A1-A7)
 - `docs/requirements/epic-p1-p2-llm.md` — Epic body scope
 - `.specify/memory/constitution.md` — Principles I · II · III · VI
 - Spec 019 (LLM 429 resilience) — retry semantics
 - Spec 021 (OTEL observability) — GenAI semconv
-- Spec 026 (Prompt Registry) — PromptLoader + `kosmos.prompt.hash`
+- Spec 026 (Prompt Registry) — PromptLoader + `ummaya.prompt.hash`
 - Spec 032 (IPC stdio hardening) — envelope + role=llm + `AssistantChunkFrame`
 - Spec 035 (Onboarding) — 5-step flow terminating at `terminal-setup`
 - FriendliAI announcement 2025-10: https://friendli.ai/blog/lg-ai-research-partnership-exaone-4.0

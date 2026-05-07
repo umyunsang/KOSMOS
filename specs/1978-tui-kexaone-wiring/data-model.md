@@ -30,7 +30,7 @@ Full-context conversational request from TUI to backend harness.
 - `messages[-1].role` MUST be `"user"` or `"tool"` (a tool result feeding back into the loop).
 - Sum of message string lengths SHOULD NOT exceed `LLMClientConfig.session_budget` × ~4 chars/token; over-budget rejected with `error{code="budget_exceeded"}`.
 
-### `ChatMessage` (re-used from `kosmos.llm.models`)
+### `ChatMessage` (re-used from `ummaya.llm.models`)
 
 | Field | Type | Constraint |
 |---|---|---|
@@ -39,7 +39,7 @@ Full-context conversational request from TUI to backend harness.
 | `name` | `str | None` | required when `role="tool"` (matches the `tool_call.name`) |
 | `tool_call_id` | `str | None` | required when `role="tool"`, ULID matching the originating `tool_call` |
 
-### `ToolDefinition` (re-used from `kosmos.llm.models`)
+### `ToolDefinition` (re-used from `ummaya.llm.models`)
 
 | Field | Type | Source |
 |---|---|---|
@@ -107,7 +107,7 @@ Sent by TUI (role `"tui"`) after the modal closes. Backend awaits this with 60 s
 | `granted_at` | `str` (ISO-8601 UTC) | Time of citizen choice |
 | `revoked_at` | `str | None` | Set if citizen revokes via `/consent revoke` |
 
-**Storage**: append-only JSON file at `~/.kosmos/memdir/user/consent/<receipt_id>.json` (Spec 035 + Spec 027 paths). Listed by `/consent list` slash command. Revocation marker is a sibling `<receipt_id>.json.revoked` (Spec 027 marker pattern).
+**Storage**: append-only JSON file at `~/.ummaya/memdir/user/consent/<receipt_id>.json` (Spec 035 + Spec 027 paths). Listed by `/consent list` slash command. Revocation marker is a sibling `<receipt_id>.json.revoked` (Spec 027 marker pattern).
 
 ### `Citizen Session`
 
@@ -116,7 +116,7 @@ Already exists in TUI memory; this Epic does NOT change its shape. Reference onl
 | Aspect | Storage | Owner |
 |---|---|---|
 | Conversation history (`Messages[]`) | `tui/src/query.ts` in-memory | TUI (canonical per ADR-0005) |
-| Persisted JSONL | `~/.kosmos/memdir/user/sessions/<session_id>.jsonl` | TUI writer (Spec 027) |
+| Persisted JSONL | `~/.ummaya/memdir/user/sessions/<session_id>.jsonl` | TUI writer (Spec 027) |
 | Session-scoped consent grants | TUI `useStore` permissions slice | TUI |
 | OTEL session span | OpenTelemetry SDK in-process | Backend (per ADR-0004) |
 
@@ -127,7 +127,7 @@ Logical entity, not a stored record. Boundaries:
 - **Open**: receipt of `ChatRequestFrame` on backend, or `query.ts` agentic-loop iteration start on TUI
 - **Close**: emit of `assistant_chunk{done=True}` AND no pending tool calls
 
-Telemetry: `kosmos.turn` span (ADR-0004). One turn may contain ≥0 tool calls and ≥0 permission requests.
+Telemetry: `ummaya.turn` span (ADR-0004). One turn may contain ≥0 tool calls and ≥0 permission requests.
 
 ## Frame schema integration table
 
@@ -144,7 +144,7 @@ Telemetry: `kosmos.turn` span (ADR-0004). One turn may contain ≥0 tool calls a
 | `session_event` | ✅ | unchanged | backend ×4 | unchanged | TUI |
 | (15 other dead arms) | ✅ | unchanged | none | none (deferred per spec.md) | partial |
 
-**SHA-256 contract** (Spec 032 FR-037): `frame.schema.json` SHA-256 will change due to new arm. Backend `kosmos.ipc.schema.hash` OTEL attribute updated at boot — verified by Phase C task `T021_schema_hash_update`.
+**SHA-256 contract** (Spec 032 FR-037): `frame.schema.json` SHA-256 will change due to new arm. Backend `ummaya.ipc.schema.hash` OTEL attribute updated at boot — verified by Phase C task `T021_schema_hash_update`.
 
 ## State transitions
 

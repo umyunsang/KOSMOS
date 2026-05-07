@@ -56,7 +56,7 @@ The scope-violation acceptance scenario (US1 acceptance #3) tests that a token w
 ## 4. Token-validation function
 
 ```python
-# src/kosmos/primitives/delegation.py
+# src/ummaya/primitives/delegation.py
 
 from datetime import datetime, UTC
 from enum import Enum
@@ -109,7 +109,7 @@ def _scope_matches(token_scope: str, required: str) -> bool:
 
 ## 5. Audit ledger contract
 
-Every issuance + use + revocation appends exactly one JSONL line to `~/.kosmos/memdir/user/consent/<YYYY-MM-DD>.jsonl`. The append path is unchanged from Spec 035 (`open(path, "a")` + `json.dumps()` + fsync); only the new event-kind union members are added.
+Every issuance + use + revocation appends exactly one JSONL line to `~/.ummaya/memdir/user/consent/<YYYY-MM-DD>.jsonl`. The append path is unchanged from Spec 035 (`open(path, "a")` + `json.dumps()` + fsync); only the new event-kind union members are added.
 
 **Per US1 chain run** (one citizen request, no scope violations), exactly **3** new ledger lines:
 

@@ -22,7 +22,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from kosmos.safety._injection import run_detector  # noqa: E402
+from ummaya.safety._injection import run_detector  # noqa: E402
 
 _KOROAD = {
     "spot_cd": "1168010800",

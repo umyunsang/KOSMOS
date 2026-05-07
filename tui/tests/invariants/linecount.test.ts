@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1633 SC-003 informational line-count report.
+// UMMAYA-original — Epic #1633 SC-003 informational line-count report.
 //
 // The spec targets main.tsx ≤ 2,500 lines (aspirational: 2,000).  Epic #1633
 // Wave A/B/C dropped the file from 4,693 → 2,767 lines (-41 %).  The

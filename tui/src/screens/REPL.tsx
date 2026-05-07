@@ -2,7 +2,7 @@
 // CC reference: .references/claude-code-sourcemap/restored-src/src/screens/REPL.tsx
 // Divergence LOC: ~678 (LLM provider plumbing, IPC envelope routing, permission gauntlet, K-EXAONE multi-tool layout, services/api removal)
 // Spec citation: #2521 (LLM swap), #032 (IPC stdio hardening), #2293 (services/api removal), #1978 (Enter-swallow diagnostics), Epic #2639 (audit § 5.7)
-// Justification: Largest TUI file (920 KB) where both KOSMOS swaps converge (IPC routing + FriendliAI K-EXAONE streaming + permission propagation); inline site comments mark each edit.
+// Justification: Largest TUI file (920 KB) where both UMMAYA swaps converge (IPC routing + FriendliAI K-EXAONE streaming + permission propagation); inline site comments mark each edit.
 import { c as _c } from "react/compiler-runtime";
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import { feature } from 'bun:bundle';
@@ -50,7 +50,7 @@ import { injectUserMessageToTeammate, getAllInProcessTeammateTasks } from '../ta
 import { isLocalAgentTask, queuePendingMessage, appendMessageToLocalAgent, type LocalAgentTaskState } from '../tasks/LocalAgentTask/LocalAgentTask.js';
 import { registerLeaderToolUseConfirmQueue, unregisterLeaderToolUseConfirmQueue, registerLeaderSetToolPermissionContext, unregisterLeaderSetToolPermissionContext } from '../utils/swarm/leaderPermissionBridge.js';
 import { registerIpcToolUseConfirmQueue } from '../utils/permissions/ipcPermissionBridge.js';
-// utils/telemetry/sessionTracing removed — KOSMOS telemetry handled by Spec 021 OTEL pipeline.
+// utils/telemetry/sessionTracing removed — UMMAYA telemetry handled by Spec 021 OTEL pipeline.
 const endInteractionSpan = (): void => { /* no-op */ }
 import { useLogMessages } from '../hooks/useLogMessages.js';
 import { useReplBridge } from '../hooks/useReplBridge.js';
@@ -65,7 +65,7 @@ import type { PromptRequest, PromptResponse } from '../types/hooks.js';
 import PromptInput from '../components/PromptInput/PromptInput.js';
 import { PromptInputQueuedCommands } from '../components/PromptInput/PromptInputQueuedCommands.js';
 import { useRemoteSession } from '../hooks/useRemoteSession.js';
-// KOSMOS-2642 / Epic F · S7 — directConnect/server/ DROPPED (claude.ai sync swap-out, Spec 2642 § US1).
+// UMMAYA-2642 / Epic F · S7 — directConnect/server/ DROPPED (claude.ai sync swap-out, Spec 2642 § US1).
 import { useSSHSession } from '../hooks/useSSHSession.js';
 import { useAssistantHistory } from '../hooks/useAssistantHistory.js';
 import type { SSHSession } from '../ssh/createSSHSession.js';
@@ -121,13 +121,13 @@ function VoiceKeybindingHandler(props: Parameters<typeof import('../hooks/useVoi
 // builds eliminate the module entirely (including its two O(n) useMemos that run
 // on every messages change, plus the GrowthBook fetch).
 function useFrustrationDetection(...args: Parameters<typeof import('../components/FeedbackSurvey/useFrustrationDetection.js').useFrustrationDetection>) {
-  // "external" === 'ant' is always false — keep as no-op for KOSMOS builds.
+  // "external" === 'ant' is always false — keep as no-op for UMMAYA builds.
   return { state: 'closed' as const, handleTranscriptSelect: () => {} }
 }
 // Ant-only org warning. Conditional require so the org UUID list is
 // eliminated from external builds (one UUID is on excluded-strings).
 function useAntOrgWarningNotification() {
-  // "external" === 'ant' is always false — no-op for KOSMOS builds.
+  // "external" === 'ant' is always false — no-op for UMMAYA builds.
 }
 // Dead code elimination: conditional import for coordinator mode
 function getCoordinatorUserContext(mcpClients: ReadonlyArray<{ name: string }>, scratchpadDir?: string): { [k: string]: string } {
@@ -309,7 +309,7 @@ import { useTeammateLifecycleNotification } from 'src/hooks/notifs/useTeammateSh
 import { useFastModeNotification } from 'src/hooks/notifs/useFastModeNotification.js';
 import { AutoRunIssueNotification, shouldAutoRunIssue, getAutoRunIssueReasonText, getAutoRunCommand, type AutoRunIssueReason } from '../utils/autoRunIssue.js';
 import type { HookProgress } from '../types/hooks.js';
-// KOSMOS Spec 1633 / Epic #2293 — TungstenTool deleted (claude-code internal tool).
+// UMMAYA Spec 1633 / Epic #2293 — TungstenTool deleted (claude-code internal tool).
 // Use function declaration (hoisted, no TDZ) for feature-gated panel module.
 /* eslint-disable @typescript-eslint/no-require-imports */
 function getWebBrowserPanelModule() {
@@ -322,10 +322,10 @@ import { useIssueFlagBanner } from '../hooks/useIssueFlagBanner.js';
 import { CompanionSprite, CompanionFloatingBubble, MIN_COLS_FOR_FULL_SPRITE } from '../buddy/CompanionSprite.js';
 import { DevBar } from '../components/DevBar.js';
 // Session manager removed - using AppState now
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — remote/RemoteSessionManager deleted.
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — remote/RemoteSessionManager deleted.
 import type { RemoteSessionConfig } from '../hooks/useRemoteSession.js';
 import { REMOTE_SAFE_COMMANDS } from '../commands.js';
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport/ deleted; stub.
 type RemoteMessageContent = string | Array<{ type: string; [key: string]: unknown }>
 import { FullscreenLayout, useUnseenDivider, computeUnseenDivider } from '../components/FullscreenLayout.js';
 import { isFullscreenEnvEnabled, maybeGetTmuxMouseHint, isMouseTrackingEnabled } from '../utils/fullscreen.js';
@@ -336,7 +336,7 @@ import { setClipboard } from '../ink/termio/osc.js';
 import type { ScrollBoxHandle } from '../ink/components/ScrollBox.js';
 import { createAttachmentMessage, getQueuedCommandAttachments } from '../utils/attachments.js';
 
-// KOSMOS P4 UI L2 — US1/US2/US3/US4/US5 wiring imports (T022/T023/T026/T036/T039/T056/T059/T072)
+// UMMAYA P4 UI L2 — US1/US2/US3/US4/US5 wiring imports (T022/T023/T026/T036/T039/T056/T059/T072)
 import { StreamingChunk } from '../components/messages/StreamingChunk.js';
 import { CtrlOToExpand } from '../components/PromptInput/CtrlOToExpand.js';
 import { MarkdownRenderer } from '../components/messages/MarkdownRenderer.js';
@@ -346,7 +346,7 @@ import type { ErrorEnvelopeT } from '../schemas/ui-l2/error.js';
 import { ContextQuoteBlock } from '../components/messages/ContextQuoteBlock.js';
 // SlashCommandSuggestions import removed (P0-2 single-stack): CC useTypeahead
 // now drives the dropdown via UI_L2_SLASH_COMMANDS catalog.
-// KOSMOS Spec 1979 — KOSMOS-original permission UI imports removed.
+// UMMAYA Spec 1979 — UMMAYA-original permission UI imports removed.
 // CC's canonical PermissionRequest pipeline carries permission UX.
 import { useSessionStore } from '../store/session-store.js';
 import { PermissionReceiptProvider, usePermissionReceipts } from '../context/PermissionReceiptContext.js';
@@ -363,19 +363,15 @@ import { ExportPdfDialog } from '../components/export/ExportPdfDialog.js';
 import { HistorySearchDialog } from '../components/history/HistorySearchDialog.js';
 import { MigrateSessionsResult } from '../components/MigrateSessionsResult.js';
 import { migrateSessions } from '../utils/migrateSessions.js';
-import { OnboardingFlow, resetOnboardingState } from '../components/onboarding/OnboardingFlow.js';
 import { emitSurfaceActivation } from '../observability/surface.js';
-import { getKosmosBridgeSessionId } from '../ipc/bridgeSingleton.js';
-// KOSMOS Spec 1979 — Spec 033 mode cycle import removed.
+import { getUmmayaBridgeSessionId } from '../ipc/bridgeSingleton.js';
+// UMMAYA Spec 1979 — Spec 033 mode cycle import removed.
 import { executeHelp } from '../commands/help.js';
 import { executeConfig, applyConfigChanges } from '../commands/config.js';
 import { executePlugins } from '../commands/plugins.js';
 import { executeExport } from '../commands/export.js';
 import { executeHistory } from '../commands/history.js';
 import { parseConsentArgs } from '../commands/consent.js';
-import { parseOnboardingCommand } from '../commands/onboarding.js';
-import { loadOnboardingState } from '../utils/uiL2Memdir.js';
-import { isOnboardingComplete } from '../schemas/ui-l2/onboarding.js';
 import type { ConversationTurn, ToolInvocationRecord } from '../components/export/ExportPdfDialog.js';
 
 // Stable empty array for hooks that accept MCPServerConnection[] — avoids
@@ -637,7 +633,7 @@ function _temp2(setFrame_0) {
 function _temp(f) {
   return (f + 1) % _getTitleAnimationFrames().length;
 }
-// KOSMOS Spec 1979 — KosmosActivePermissionGate removed.  Permission UX now
+// UMMAYA Spec 1979 — UmmayaActivePermissionGate removed.  Permission UX now
 // flows through CC's canonical PermissionRequest pipeline.  See
 // specs/1979-plugin-dx-tui-integration/migration-scope-analysis.md.
 
@@ -679,7 +675,7 @@ export type Props = {
   taskListId?: string;
   // Remote session config for --remote mode (uses CCR as execution engine)
   remoteSessionConfig?: RemoteSessionConfig;
-  // KOSMOS-2642 / Epic F · S7 — directConnectConfig prop DROPPED
+  // UMMAYA-2642 / Epic F · S7 — directConnectConfig prop DROPPED
   // (claude.ai sync swap-out, Spec 2642 § US1 / FR-002).
   // SSH session for `claude ssh` mode (local REPL, remote tools over ssh)
   sshSession?: SSHSession;
@@ -730,15 +726,15 @@ export function REPL({
     return () => logForDebugging(`[REPL:unmount] REPL unmounting`);
   }, [disabled]);
 
-  // KOSMOS P4 UI L2 — T026: emit kosmos.ui.surface=repl on mount
+  // UMMAYA P4 UI L2 — T026: emit ummaya.ui.surface=repl on mount
   useEffect(() => {
     emitSurfaceActivation('repl');
   }, []);
 
-  // KOSMOS P4 UI L2 — T022/T023: streaming state + 5-second no-chunk timeout
-  const [kosmosCurrentError, setKosmosCurrentError] = useState<ErrorEnvelopeT | null>(null);
-  const kosmosLastChunkTimeRef = useRef<number>(Date.now());
-  // KOSMOS_STREAM_TIMEOUT_MS — first-token / inter-chunk silence detector
+  // UMMAYA P4 UI L2 — T022/T023: streaming state + 5-second no-chunk timeout
+  const [ummayaCurrentError, setUmmayaCurrentError] = useState<ErrorEnvelopeT | null>(null);
+  const ummayaLastChunkTimeRef = useRef<number>(Date.now());
+  // UMMAYA_STREAM_TIMEOUT_MS — first-token / inter-chunk silence detector
   // for the "no response" network-error envelope. K-EXAONE 236B on FriendliAI
   // Tier 1 with `high effort` reasoning routinely takes 1-3 minutes for the
   // very first chunk when the system prompt + tool catalog is large (12
@@ -746,15 +742,9 @@ export function REPL({
   // false-flagged every turn before the model finished its reasoning trace.
   // 300_000 (5 min) is safely above the empirical p99 first-token latency
   // and still surfaces real network outages without burying the citizen
-  // under a hung spinner. Override via KOSMOS_STREAM_TIMEOUT_MS env var if
+  // under a hung spinner. Override via UMMAYA_STREAM_TIMEOUT_MS env var if
   // a deployment needs further tuning.
-  const KOSMOS_STREAM_TIMEOUT_MS = Number(process.env.KOSMOS_STREAM_TIMEOUT_MS ?? 300000);
-
-  // KOSMOS P4 UI L2 — T049/T052: onboarding mode state for /onboarding command
-  const [kosmosOnboardingMode, setKosmosOnboardingMode] = useState<{
-    active: boolean;
-    isolatedStep?: import('../schemas/ui-l2/onboarding.js').OnboardingStepNameT;
-  }>({ active: false });
+  const UMMAYA_STREAM_TIMEOUT_MS = Number(process.env.UMMAYA_STREAM_TIMEOUT_MS ?? 300000);
 
   // Agent definition is state so /resume can update it mid-session
   const [mainThreadAgentDefinition, setMainThreadAgentDefinition] = useState(initialMainThreadAgentDefinition);
@@ -816,11 +806,11 @@ export function REPL({
   const terminal = useTerminalNotification();
   const mainLoopModel = useMainLoopModel();
 
-  // KOSMOS-1978 T050 — session ID from IPC session-store
+  // UMMAYA-1978 T050 — session ID from IPC session-store
   // (still used elsewhere in REPL for IPC frame headers)
   void useSessionStore((s) => s.session_id)
 
-  // KOSMOS Spec 1979 — bypassPermissions reinforcement intercept removed.
+  // UMMAYA Spec 1979 — bypassPermissions reinforcement intercept removed.
   // CC's PermissionRequest pipeline owns the dangerous-mode UX.
 
   // Note: standaloneAgentContext is initialized in main.tsx (via initialState) or
@@ -1068,7 +1058,7 @@ export function REPL({
   // external loading by setIsExternalLoading.
   const isLoading = isQueryActive || isExternalLoading;
 
-  // KOSMOS P4 UI L2 — T023 stream timeout effect moved below messages state
+  // UMMAYA P4 UI L2 — T023 stream timeout effect moved below messages state
   // declaration so messages.length can be a dependency (Codex P1 fix on
   // PR #1847: chunk arrival now resets the 5s window).
 
@@ -1195,7 +1185,7 @@ export function REPL({
     isImmediate?: boolean;
   } | null>(null);
 
-  // KOSMOS — receipts mirror used by /export + /consent list (FR-019/032).
+  // UMMAYA — receipts mirror used by /export + /consent list (FR-019/032).
   // The PermissionReceiptProvider lives BELOW REPL in the JSX tree, so the
   // onSubmit useCallback (which fires above the provider) cannot consume it
   // directly. A tiny consumer component (PermissionReceiptsRefSync, mounted
@@ -1300,7 +1290,7 @@ export function REPL({
   // session from mid-conversation context.
   const haikuTitleAttemptedRef = useRef((initialMessages?.length ?? 0) > 0);
   const agentTitle = mainThreadAgentDefinition?.agentType;
-  const terminalTitle = sessionTitle ?? agentTitle ?? haikuTitle ?? 'KOSMOS';
+  const terminalTitle = sessionTitle ?? agentTitle ?? haikuTitle ?? 'UMMAYA';
   const isWaitingForApproval = toolUseConfirmQueue.length > 0 || promptQueue.length > 0 || pendingWorkerRequest || pendingSandboxRequest;
   // Local-jsx commands (like /plugin, /config) show user-facing dialogs that
   // wait for input. Require jsx != null — if the flag is stuck true but jsx
@@ -1350,7 +1340,7 @@ export function REPL({
 
   // Epic FU-4 — register the IPC permission bridge so backend permission_request
   // frames synthesize a ToolUseConfirm and push it into toolUseConfirmQueue.
-  // This replaces the KosmosIpcPermissionGauntletModal deleted in Spec 1979
+  // This replaces the UmmayaIpcPermissionGauntletModal deleted in Spec 1979
   // and restores the CC 4-arm permissionComponentForTool switch path.
   useEffect(() => {
     registerIpcToolUseConfirmQueue(setToolUseConfirmQueue);
@@ -1452,7 +1442,7 @@ export function REPL({
       repinScroll();
     }
   }, [lastMsgIsHuman, lastMsg, repinScroll]);
-  // KOSMOS Epic #2077 — inter-chunk silence detector moved below the
+  // UMMAYA Epic #2077 — inter-chunk silence detector moved below the
   // streamingText / streamingThinking state declarations (line ~1716+) so
   // the dep array can reference them without hitting TS TDZ. See the
   // useEffect at the streamingText declaration site.
@@ -1581,7 +1571,7 @@ export function REPL({
     setInProgressToolUseIDs
   });
 
-  // KOSMOS-2642 / Epic F · S7 — useDirectConnect / `claude connect` DROPPED
+  // UMMAYA-2642 / Epic F · S7 — useDirectConnect / `claude connect` DROPPED
   // (claude.ai sync swap-out, Spec 2642 § US1 / FR-002).
 
   // SSH session hook - manages ssh child process for `claude ssh` mode.
@@ -1642,22 +1632,22 @@ export function REPL({
     setStreamingText(f);
   }, [showStreamingText]);
 
-  // KOSMOS Epic #2077 — inter-chunk silence detector. Reschedules the
+  // UMMAYA Epic #2077 — inter-chunk silence detector. Reschedules the
   // network-error timer on EVERY chunk arrival so K-EXAONE high-effort
   // reasoning (which can stream `thinking_delta` tokens for minutes before
   // emitting the first visible `text_delta`) does not falsely fire the
   // network-error envelope. Original logic only re-armed on `messages.length`
   // (turn completion — too late). Dep on streamingText/streamingThinking
   // length keeps the timer rolling per chunk; the 5-minute hard ceiling
-  // (KOSMOS_STREAM_TIMEOUT_MS) still surfaces real outages.
+  // (UMMAYA_STREAM_TIMEOUT_MS) still surfaces real outages.
   useEffect(() => {
     if (!isLoading) {
-      kosmosLastChunkTimeRef.current = Date.now();
+      ummayaLastChunkTimeRef.current = Date.now();
       return;
     }
-    kosmosLastChunkTimeRef.current = Date.now();
+    ummayaLastChunkTimeRef.current = Date.now();
     const timer = setTimeout(() => {
-      if (Date.now() - kosmosLastChunkTimeRef.current >= KOSMOS_STREAM_TIMEOUT_MS) {
+      if (Date.now() - ummayaLastChunkTimeRef.current >= UMMAYA_STREAM_TIMEOUT_MS) {
         const networkError: ErrorEnvelopeT = {
           type: 'network',
           title_ko: '네트워크 연결이 끊어졌습니다',
@@ -1667,16 +1657,16 @@ export function REPL({
           retry_suggested: true,
           occurred_at: new Date().toISOString(),
         };
-        setKosmosCurrentError(networkError);
+        setUmmayaCurrentError(networkError);
       }
-    }, KOSMOS_STREAM_TIMEOUT_MS);
+    }, UMMAYA_STREAM_TIMEOUT_MS);
     return () => clearTimeout(timer);
   }, [
     isLoading,
     messages.length,
     streamingText?.length ?? 0,
     streamingThinking?.thinking?.length ?? 0,
-    KOSMOS_STREAM_TIMEOUT_MS,
+    UMMAYA_STREAM_TIMEOUT_MS,
   ]);
 
   // Hide the in-progress source line so text streams line-by-line, not
@@ -2898,7 +2888,7 @@ export function REPL({
     // processTextPrompt) — both pushed length past 1 on turn one, so the
     // title silently fell through to the "Claude Code" default.
     // generateSessionTitle (Anthropic queryHaiku-based) removed — Spec 1633 / Epic #2293.
-    // KOSMOS does not auto-derive a terminal title from LLM; haikuTitleAttemptedRef stays false.
+    // UMMAYA does not auto-derive a terminal title from LLM; haikuTitleAttemptedRef stays false.
 
     // Apply slash-command-scoped allowedTools (from skill frontmatter) to the
     // store once per turn. This also covers the reset: the next non-skill turn
@@ -3359,27 +3349,27 @@ export function REPL({
       resumeProactive();
     }
 
-    // Auxiliary KOSMOS-only command dispatch. CC-owned local-jsx commands
+    // Auxiliary UMMAYA-only command dispatch. CC-owned local-jsx commands
     // such as /login, /logout, and /agents fall through to the normal command
     // router.
     if (!speculationAccept && input.trim().startsWith('/')) {
-      const _kosmosRaw = expandPastedTextRefs(input, pastedContents).trim();
-      const _kosmosSpaceIdx = _kosmosRaw.indexOf(' ');
-      const _kosmosCmd = _kosmosSpaceIdx === -1 ? _kosmosRaw.slice(1) : _kosmosRaw.slice(1, _kosmosSpaceIdx);
-      const _kosmosArgs = _kosmosSpaceIdx === -1 ? '' : _kosmosRaw.slice(_kosmosSpaceIdx + 1).trim();
+      const _ummayaRaw = expandPastedTextRefs(input, pastedContents).trim();
+      const _ummayaSpaceIdx = _ummayaRaw.indexOf(' ');
+      const _ummayaCmd = _ummayaSpaceIdx === -1 ? _ummayaRaw.slice(1) : _ummayaRaw.slice(1, _ummayaSpaceIdx);
+      const _ummayaArgs = _ummayaSpaceIdx === -1 ? '' : _ummayaRaw.slice(_ummayaSpaceIdx + 1).trim();
 
-      const _kosmosCloseJSX = (result?: string): void => {
+      const _ummayaCloseJSX = (result?: string): void => {
         setToolJSX({ jsx: null, shouldHidePromptInput: false, clearLocalJSX: true });
         if (result) {
-          addNotification({ key: `kosmos-cmd-${_kosmosCmd}`, text: result, priority: 'immediate' });
+          addNotification({ key: `ummaya-cmd-${_ummayaCmd}`, text: result, priority: 'immediate' });
         }
       };
 
-      if (_kosmosCmd === 'help') {
+      if (_ummayaCmd === 'help') {
         setInputValue('');
         helpers.setCursorOffset(0);
         helpers.clearBuffer();
-        // Mount the KOSMOS 4-group help overlay (HelpV2Grouped) but with
+        // Mount the UMMAYA 4-group help overlay (HelpV2Grouped) but with
         // `isLocalJSXCommand: false` so PromptInput.tsx:244's
         // `isLocalJSXCommandActive` flag stays false — that flag, when
         // true, sets `isModalOverlayActive` to true and deactivates EVERY
@@ -3392,33 +3382,33 @@ export function REPL({
         // HelpV2Grouped.tsx now wires both `useKeybinding` and a
         // `useInput((_,key)=>key.escape && onDismiss())` fallback so the
         // overlay actually closes on a single Esc.
-        executeHelp((process.env['KOSMOS_TUI_LOCALE'] as 'ko' | 'en' | undefined) ?? 'ko');
+        executeHelp((process.env['UMMAYA_TUI_LOCALE'] as 'ko' | 'en' | undefined) ?? 'ko');
         setToolJSX({
-          jsx: React.createElement(HelpV2Grouped, { onDismiss: () => _kosmosCloseJSX() }),
+          jsx: React.createElement(HelpV2Grouped, { onDismiss: () => _ummayaCloseJSX() }),
           shouldHidePromptInput: false,
           isLocalJSXCommand: false,
         });
         return;
       }
 
-      if (_kosmosCmd === 'config') {
+      if (_ummayaCmd === 'config') {
         setInputValue('');
         helpers.setCursorOffset(0);
         helpers.clearBuffer();
-        const configResult = executeConfig(_kosmosArgs || undefined);
+        const configResult = executeConfig(_ummayaArgs || undefined);
         let _showSecretEditor = configResult.openSecretEditorFor;
         setToolJSX({
           jsx: React.createElement(ConfigOverlay, {
             entries: configResult.entries,
-            onSave: (updated) => { applyConfigChanges(updated); _kosmosCloseJSX(); },
-            onCancel: () => _kosmosCloseJSX(),
+            onSave: (updated) => { applyConfigChanges(updated); _ummayaCloseJSX(); },
+            onCancel: () => _ummayaCloseJSX(),
             onOpenSecretEditor: (key) => {
               _showSecretEditor = key;
               setToolJSX({
                 jsx: React.createElement(EnvSecretIsolatedEditor, {
                   secretKey: key,
-                  onConfirm: (_k, _v) => { _kosmosCloseJSX(); },
-                  onCancel: () => _kosmosCloseJSX(),
+                  onConfirm: (_k, _v) => { _ummayaCloseJSX(); },
+                  onCancel: () => _ummayaCloseJSX(),
                 }),
                 shouldHidePromptInput: false,
                 isLocalJSXCommand: true,
@@ -3432,14 +3422,14 @@ export function REPL({
       }
 
       // Spec 1979 — citizen plugin lifecycle (install/uninstall/list/pipa-text).
-      // Routed via the KOSMOS auxiliary dispatch (NOT processSlashCommand) because
+      // Routed via the UMMAYA auxiliary dispatch (NOT processSlashCommand) because
       // local-jsx commands mounted via processSlashCommand don't receive useInput
       // events (likely a focus/raw-mode issue with shouldHidePromptInput: true).
       // Mounted via setToolJSX with shouldHidePromptInput: false so PromptInput
       // stays mounted (keeps stdin raw mode active) and useInput in the
       // PluginInstallFlow / Select component receives keystrokes.
-      if (_kosmosCmd === 'plugin') {
-        const _pluginRest = _kosmosArgs;
+      if (_ummayaCmd === 'plugin') {
+        const _pluginRest = _ummayaArgs;
         const _pluginSpaceIdx = _pluginRest.indexOf(' ');
         const _pluginSub =
           _pluginSpaceIdx === -1 ? _pluginRest : _pluginRest.slice(0, _pluginSpaceIdx);
@@ -3451,7 +3441,7 @@ export function REPL({
           helpers.clearBuffer();
           if (_pluginSub === '') {
             addNotification({
-              key: 'kosmos-plugin-usage',
+              key: 'ummaya-plugin-usage',
               text: '사용법: /plugin <install|list|uninstall|pipa-text> [...]',
               priority: 'immediate',
             });
@@ -3459,7 +3449,7 @@ export function REPL({
             // pipa-text — surface the canonical SHA-256 directly without a flow component.
             void import('../ipc/pipa.generated.js').then(({ CANONICAL_PIPA_ACK_SHA256 }) => {
               addNotification({
-                key: 'kosmos-plugin-pipa',
+                key: 'ummaya-plugin-pipa',
                 text: [
                   'PIPA §26 trustee acknowledgment canonical SHA-256:',
                   `  ${CANONICAL_PIPA_ACK_SHA256}`,
@@ -3494,7 +3484,7 @@ export function REPL({
           }
           if ((_pluginSub === 'install' || _pluginSub === 'uninstall') && !_pluginName) {
             addNotification({
-              key: 'kosmos-plugin-no-name',
+              key: 'ummaya-plugin-no-name',
               text: `플러그인 이름이 필요합니다: /plugin ${_pluginSub} <name>`,
               priority: 'immediate',
             });
@@ -3531,14 +3521,14 @@ export function REPL({
           return;
         }
         addNotification({
-          key: 'kosmos-plugin-unknown',
+          key: 'ummaya-plugin-unknown',
           text: `알 수 없는 subcommand: ${_pluginSub}\n사용법: /plugin <install|list|uninstall|pipa-text> [...]`,
           priority: 'immediate',
         });
         return;
       }
 
-      if (_kosmosCmd === 'plugins') {
+      if (_ummayaCmd === 'plugins') {
         setInputValue('');
         helpers.setCursorOffset(0);
         helpers.clearBuffer();
@@ -3553,7 +3543,7 @@ export function REPL({
             onDetail: () => {},
             onRemove: () => {},
             onMarketplace: () => {},
-            onDismiss: () => _kosmosCloseJSX(),
+            onDismiss: () => _ummayaCloseJSX(),
           }),
           shouldHidePromptInput: false,
           // Audit-6 P0-1: isLocalJSXCommand:true → false. AGENTS.md
@@ -3574,7 +3564,7 @@ export function REPL({
                 onDetail: () => {},
                 onRemove: () => {},
                 onMarketplace: () => {},
-                onDismiss: () => _kosmosCloseJSX(),
+                onDismiss: () => _ummayaCloseJSX(),
               }),
               shouldHidePromptInput: false,
               isLocalJSXCommand: false,
@@ -3587,7 +3577,7 @@ export function REPL({
         return;
       }
 
-      if (_kosmosCmd === 'export') {
+      if (_ummayaCmd === 'export') {
         setInputValue('');
         helpers.setCursorOffset(0);
         helpers.clearBuffer();
@@ -3666,8 +3656,8 @@ export function REPL({
             toolInvocations: exportResult.toolInvocations,
             receipts: exportResult.receipts,
             outputPath: exportResult.outputPath,
-            onDone: (result) => _kosmosCloseJSX(result.message),
-            onCancel: () => _kosmosCloseJSX(),
+            onDone: (result) => _ummayaCloseJSX(result.message),
+            onCancel: () => _ummayaCloseJSX(),
           }),
           shouldHidePromptInput: false,
           isLocalJSXCommand: false,
@@ -3675,16 +3665,16 @@ export function REPL({
         return;
       }
 
-      if (_kosmosCmd === 'history') {
+      if (_ummayaCmd === 'history') {
         setInputValue('');
         helpers.setCursorOffset(0);
         helpers.clearBuffer();
-        const { sessions } = executeHistory(_kosmosArgs);
+        const { sessions } = executeHistory(_ummayaArgs);
         setToolJSX({
           jsx: React.createElement(HistorySearchDialog, {
             sessions,
-            onSelect: (sessionId) => { _kosmosCloseJSX(); },
-            onCancel: () => _kosmosCloseJSX(),
+            onSelect: (sessionId) => { _ummayaCloseJSX(); },
+            onCancel: () => _ummayaCloseJSX(),
           }),
           shouldHidePromptInput: false,
           // Audit-7 P0-2 fix: isLocalJSXCommand:false (AGENTS.md insight #3
@@ -3694,12 +3684,12 @@ export function REPL({
         return;
       }
 
-      if (_kosmosCmd === 'consent') {
+      if (_ummayaCmd === 'consent') {
         setInputValue('');
         helpers.setCursorOffset(0);
         helpers.clearBuffer();
-        const subCmd = _kosmosArgs.split(/\s/)[0] ?? '';
-        if (subCmd === 'list' || _kosmosArgs === '') {
+        const subCmd = _ummayaArgs.split(/\s/)[0] ?? '';
+        if (subCmd === 'list' || _ummayaArgs === '') {
           // FR-019: render the in-session receipt table inside the toolJSX
           // overlay slot.  Pull receipts from the ref bridge so the data
           // matches whatever the PermissionReceiptProvider currently holds.
@@ -3710,17 +3700,17 @@ export function REPL({
           setToolJSX({
             jsx: React.createElement(ConsentListView, {
               receipts,
-              onExit: () => _kosmosCloseJSX(),
+              onExit: () => _ummayaCloseJSX(),
             }),
             shouldHidePromptInput: false,
             isLocalJSXCommand: false,
           });
         } else if (subCmd === 'revoke') {
           // FR-020: parse /consent revoke rcpt-<id> → show ConsentRevokeConfirmDialog.
-          const parsed = parseConsentArgs(_kosmosArgs);
+          const parsed = parseConsentArgs(_ummayaArgs);
           if (parsed.sub !== 'revoke') {
             addNotification({
-              key: 'kosmos-consent-revoke-invalid',
+              key: 'ummaya-consent-revoke-invalid',
               text: '사용법: /consent revoke rcpt-<id>',
               priority: 'immediate',
             });
@@ -3732,7 +3722,7 @@ export function REPL({
           const receipt = receipts.find((r) => r.receipt_id === receiptId);
           if (!receipt) {
             addNotification({
-              key: 'kosmos-consent-revoke-not-found',
+              key: 'ummaya-consent-revoke-not-found',
               text: `영수증을 찾을 수 없습니다: ${receiptId}`,
               priority: 'immediate',
             });
@@ -3746,34 +3736,34 @@ export function REPL({
             jsx: React.createElement(ConsentRevokeConfirmDialog, {
               receipt,
               locale: 'ko',
-              onCancel: () => _kosmosCloseJSX(),
+              onCancel: () => _ummayaCloseJSX(),
               onConfirm: (scope) => {
-                _kosmosCloseJSX();
+                _ummayaCloseJSX();
                 // Optimistic in-session revoke.
                 const outcome = revokeReceiptRef.current?.(receiptId);
                 if (outcome === 'already_revoked') {
                   addNotification({
-                    key: 'kosmos-consent-already-revoked',
+                    key: 'ummaya-consent-already-revoked',
                     text: `이미 철회된 영수증입니다: ${receiptId}`,
                     priority: 'immediate',
                   });
                   return;
                 }
                 // Async IPC revoke — fire and handle result.
-                const bridgeSessionId = getKosmosBridgeSessionId?.() ?? '';
+                const bridgeSessionId = getUmmayaBridgeSessionId?.() ?? '';
                 void requestRevoke(receiptId, {
                   scope,
                   sessionId: bridgeSessionId,
                 }).then((result) => {
                   if (result.ok) {
                     addNotification({
-                      key: 'kosmos-consent-revoked',
+                      key: 'ummaya-consent-revoked',
                       text: `영수증 철회 완료: ${receiptId}`,
                       priority: 'immediate',
                     });
                   } else {
                     addNotification({
-                      key: 'kosmos-consent-revoke-error',
+                      key: 'ummaya-consent-revoke-error',
                       text: `철회 오류 (${result.error}): ${receiptId}`,
                       priority: 'immediate',
                     });
@@ -3788,32 +3778,13 @@ export function REPL({
         return;
       }
 
-      if (_kosmosCmd === 'onboarding') {
-        setInputValue('');
-        helpers.setCursorOffset(0);
-        helpers.clearBuffer();
-        const onboardingResult = parseOnboardingCommand(_kosmosArgs);
-        if (onboardingResult.mode === 'error') {
-          addNotification({ key: 'kosmos-onboarding-error', text: onboardingResult.message, priority: 'immediate' });
-        } else if (onboardingResult.mode === 'full') {
-          void loadOnboardingState().then((current) => {
-            void resetOnboardingState(current).then(() => {
-              setKosmosOnboardingMode({ active: true, isolatedStep: undefined });
-            });
-          });
-        } else {
-          setKosmosOnboardingMode({ active: true, isolatedStep: onboardingResult.step });
-        }
-        return;
-      }
-
-      if (_kosmosCmd === 'lang') {
+      if (_ummayaCmd === 'lang') {
         setInputValue('');
         helpers.setCursorOffset(0);
         helpers.clearBuffer();
         const { parseLangCommand } = await import('../commands/lang.js');
         const { getUiL2I18n } = await import('../i18n/uiL2.js');
-        const langResult = parseLangCommand(_kosmosArgs);
+        const langResult = parseLangCommand(_ummayaArgs);
         if (langResult.ok) {
           // Force any currently-mounted i18n consumer (e.g. HelpV2Grouped) to
           // unmount so the next /help invocation re-evaluates useUiL2I18n() and
@@ -3824,9 +3795,9 @@ export function REPL({
           setToolJSX({ jsx: null, shouldHidePromptInput: false, clearLocalJSX: true });
           // Use the new locale's bundle so the toast itself reflects the change.
           const newI18n = getUiL2I18n(langResult.locale);
-          addNotification({ key: 'kosmos-lang', text: newI18n.langChanged(langResult.locale), priority: 'immediate' });
+          addNotification({ key: 'ummaya-lang', text: newI18n.langChanged(langResult.locale), priority: 'immediate' });
         } else {
-          addNotification({ key: 'kosmos-lang-error', text: langResult.message, priority: 'immediate' });
+          addNotification({ key: 'ummaya-lang-error', text: langResult.message, priority: 'immediate' });
         }
         return;
       }
@@ -3836,7 +3807,7 @@ export function REPL({
       // and dispatches to the migrateSessions utility. Result is rendered
       // via MigrateSessionsResult overlay so the citizen sees a transient
       // table; the prompt remains active.
-      if (_kosmosCmd === 'migrate-sessions') {
+      if (_ummayaCmd === 'migrate-sessions') {
         setInputValue('');
         helpers.setCursorOffset(0);
         helpers.clearBuffer();
@@ -3847,7 +3818,7 @@ export function REPL({
         let _migConfirmed = false;
         let _migFilterCwd: string | undefined;
         const _migParseError: string[] = [];
-        const _migTokens = _kosmosArgs.split(/\s+/).filter((t) => t.length > 0);
+        const _migTokens = _ummayaArgs.split(/\s+/).filter((t) => t.length > 0);
         for (let i = 0; i < _migTokens.length; i += 1) {
           const tok = _migTokens[i];
           if (tok === '--prune') _migPrune = true;
@@ -3873,7 +3844,7 @@ export function REPL({
         }
         if (_migParseError.length > 0) {
           addNotification({
-            key: 'kosmos-migrate-parse-error',
+            key: 'ummaya-migrate-parse-error',
             text: ['/migrate-sessions: flag parse error(s):',
                    ..._migParseError.map((e) => `  • ${e}`),
                    'Usage: /migrate-sessions [--dry-run] [--filter-cwd <regex>] [--prune]'].join('\n'),
@@ -3884,7 +3855,7 @@ export function REPL({
         // Guard: --prune in non-dry-run mode requires --confirmed.
         if (_migPrune && !_migDryRun && !_migConfirmed) {
           addNotification({
-            key: 'kosmos-migrate-confirm-needed',
+            key: 'ummaya-migrate-confirm-needed',
             text: ['/migrate-sessions --prune: source files will be deleted after copy.',
                    '먼저 /migrate-sessions --prune --dry-run 으로 미리보기를 권장합니다.',
                    '확인 후 /migrate-sessions --prune --confirmed 로 실행하세요.'].join('\n'),
@@ -3916,14 +3887,14 @@ export function REPL({
               ? '미리보기 완료. 적용하려면 /migrate-sessions --prune --confirmed 입력.'
               : '미리보기 완료. 적용하려면 /migrate-sessions 입력.';
             addNotification({
-              key: 'kosmos-migrate-hint',
+              key: 'ummaya-migrate-hint',
               text: hint,
               priority: 'immediate',
             });
           }
         }).catch((err) => {
           addNotification({
-            key: 'kosmos-migrate-error',
+            key: 'ummaya-migrate-error',
             text: `/migrate-sessions failed: ${String(err)}`,
             priority: 'immediate',
           });
@@ -5360,7 +5331,7 @@ export function REPL({
               {toolJSX && !(toolJSX.isLocalJSXCommand && toolJSX.isImmediate) && !toolJsxCentered && <Box flexDirection="column" width="100%">
                     {toolJSX.jsx}
                   </Box>}
-              {/* KOSMOS Spec 1633 / Epic #2293 — TungstenLiveMonitor JSX removed (TungstenTool deleted). */}
+              {/* UMMAYA Spec 1633 / Epic #2293 — TungstenLiveMonitor JSX removed (TungstenTool deleted). */}
               {feature('WEB_BROWSER_TOOL') ? (() => { const m = getWebBrowserPanelModule(); return m && <m.WebBrowserPanel /> })() : null}
               <Box flexGrow={1} />
               {showSpinner && <SpinnerWithVerb mode={streamMode} spinnerTip={spinnerTip} responseLengthRef={responseLengthRef} apiMetricsRef={apiMetricsRef} overrideMessage={spinnerMessage} spinnerSuffix={stopHookSpinnerSuffix} verbose={verbose} loadingStartTimeRef={loadingStartTimeRef} totalPausedMsRef={totalPausedMsRef} pauseStartTimeRef={pauseStartTimeRef} overrideColor={spinnerColor} overrideShimmerColor={spinnerShimmerColor} hasActiveTools={inProgressToolUseIDs.size > 0} leaderIsIdle={!isLoading} />}
@@ -5683,28 +5654,21 @@ export function REPL({
             // Works during isLoading — edit cancels first; uuid selection survives appends.
             feature('MESSAGE_ACTIONS') && isFullscreenEnvEnabled() && !disableMessageActions ? enterMessageActions : undefined} mcpClients={mcpClients} pastedContents={pastedContents} setPastedContents={setPastedContents} vimMode={vimMode} setVimMode={setVimMode} showBashesDialog={showBashesDialog} setShowBashesDialog={setShowBashesDialog} onSubmit={onSubmit} onAgentSubmit={onAgentSubmit} isSearchingHistory={isSearchingHistory} setIsSearchingHistory={setIsSearchingHistory} helpOpen={isHelpOpen} setHelpOpen={setIsHelpOpen} insertTextRef={feature('VOICE_MODE') ? insertTextRef : undefined} voiceInterimRange={voice.interimRange} />
                       <SessionBackgroundHint onBackgroundSession={handleBackgroundSession} isLoading={isLoading} />
-                      {/* KOSMOS P0-2: SlashCommandSuggestions overlay removed — CC useTypeahead
+                      {/* UMMAYA P0-2: SlashCommandSuggestions overlay removed — CC useTypeahead
                           now sources commands from UI_L2_SLASH_COMMANDS catalog (single stack).
-                          See tui/src/utils/suggestions/commandSuggestions.ts:filterToKosmosCommands */}
-                      {/* KOSMOS P4 UI L2 — T022: ErrorEnvelope for network/LLM/tool errors */}
-                      {kosmosCurrentError && (
+                          See tui/src/utils/suggestions/commandSuggestions.ts:filterToUmmayaCommands */}
+                      {/* UMMAYA P4 UI L2 — T022: ErrorEnvelope for network/LLM/tool errors */}
+                      {ummayaCurrentError && (
                         <ErrorEnvelope
-                          error={kosmosCurrentError}
-                          onRetry={() => setKosmosCurrentError(null)}
+                          error={ummayaCurrentError}
+                          onRetry={() => setUmmayaCurrentError(null)}
                         />
                       )}
-                      {/* KOSMOS Spec 1979 — KOSMOS-original permission UI components
+                      {/* UMMAYA Spec 1979 — UMMAYA-original permission UI components
                           (PermissionGauntletModal × 2, BypassReinforcementModal,
-                          KosmosActivePermissionGate) removed.  Permission UX falls
+                          UmmayaActivePermissionGate) removed.  Permission UX falls
                           back to CC's canonical PermissionRequest pipeline mounted
                           in the message stream by the agentic loop. */}
-                      {/* KOSMOS P4 UI L2 — T049: OnboardingFlow overlay triggered by /onboarding command */}
-                      {kosmosOnboardingMode.active && (
-                        <OnboardingFlow
-                          isolatedStep={kosmosOnboardingMode.isolatedStep}
-                          onComplete={() => setKosmosOnboardingMode({ active: false })}
-                        />
-                      )}
                     </>}
                 {cursor &&
           // inputValue is REPL state; typed text survives the round-trip.

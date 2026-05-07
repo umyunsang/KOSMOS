@@ -42,7 +42,7 @@ import zipObject from 'lodash-es/zipObject.js'
 import pMap from 'p-map'
 import { getOriginalCwd, getSessionId } from '../../bootstrap/state.js'
 import type { Command } from '../../commands.js'
-// KOSMOS-original: CC OAuth config not used — FriendliAI uses token auth.
+// UMMAYA-original: CC OAuth config not used — FriendliAI uses token auth.
 const getOauthConfig = (): null => null
 import { PRODUCT_URL } from '../../constants/product.js'
 import type { AppState } from '../../state/AppState.js'
@@ -125,7 +125,7 @@ import { UnauthorizedError } from '@modelcontextprotocol/sdk/client/auth.js'
 import type { AssistantMessage } from 'src/types/message.js'
 /* eslint-enable @typescript-eslint/no-require-imports */
 import { classifyMcpToolForCollapse } from '../../tools/MCPTool/classifyForCollapse.js'
-// KOSMOS-original: CC macOS keychain not used — no-op.
+// UMMAYA-original: CC macOS keychain not used — no-op.
 const clearKeychainCache = (): void => {}
 import { sleep } from '../../utils/sleep.js'
 import {
@@ -133,7 +133,7 @@ import {
   hasMcpDiscoveryButNoToken,
   wrapFetchWithStepUpDetection,
 } from './auth.js'
-// KOSMOS-original: CC claude.ai MCP tracking not used — no-op.
+// UMMAYA-original: CC claude.ai MCP tracking not used — no-op.
 const markClaudeAiMcpConnected = (): void => {}
 import { getAllMcpConfigs, isMcpServerDisabled } from './config.js'
 import { getMcpServerHeaders } from './headersHelper.js'

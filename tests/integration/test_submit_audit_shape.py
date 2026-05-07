@@ -21,9 +21,9 @@ registry (``_ADAPTER_REGISTRY``).  This module tests:
 References
 ----------
 - specs/1634-tool-system-wiring/spec.md FR-026, SC-005
-- src/kosmos/primitives/submit.py (_ADAPTER_REGISTRY, submit)
-- src/kosmos/tools/registry.AdapterRegistration (primitive, tool_id fields)
-- src/kosmos/security/audit.py (ToolCallAuditRecord — existing schema for context)
+- src/ummaya/primitives/submit.py (_ADAPTER_REGISTRY, submit)
+- src/ummaya/tools/registry.AdapterRegistration (primitive, tool_id fields)
+- src/ummaya/security/audit.py (ToolCallAuditRecord — existing schema for context)
 """
 
 from __future__ import annotations
@@ -32,10 +32,10 @@ import pytest
 from pydantic import BaseModel, ConfigDict
 
 # Import adapter modules so they self-register into the submit dispatcher
-import kosmos.tools.mock.data_go_kr.fines_pay  # noqa: F401
-import kosmos.tools.mock.mydata.welfare_application  # noqa: F401
-from kosmos.primitives.submit import _ADAPTER_REGISTRY, SubmitOutput, SubmitStatus, submit
-from kosmos.tools.registry import AdapterPrimitive
+import ummaya.tools.mock.data_go_kr.fines_pay  # noqa: F401
+import ummaya.tools.mock.mydata.welfare_application  # noqa: F401
+from ummaya.primitives.submit import _ADAPTER_REGISTRY, SubmitOutput, SubmitStatus, submit
+from ummaya.tools.registry import AdapterPrimitive
 
 # ---------------------------------------------------------------------------
 # Minimal AuthContext stand-in (pre-US2)
@@ -199,9 +199,9 @@ class TestAuditTransactionIdDerivation:
             auth_context=auth_ctx_fines,
         )
         # welfare adapter has different required params, just test via derive_transaction_id
-        from kosmos.primitives.submit import derive_transaction_id
-        from kosmos.tools.mock.data_go_kr.fines_pay import REGISTRATION as fines_reg  # noqa: N811
-        from kosmos.tools.mock.mydata.welfare_application import (
+        from ummaya.primitives.submit import derive_transaction_id
+        from ummaya.tools.mock.data_go_kr.fines_pay import REGISTRATION as fines_reg  # noqa: N811
+        from ummaya.tools.mock.mydata.welfare_application import (
             REGISTRATION as welfare_reg,  # noqa: N811
         )
 
@@ -232,12 +232,12 @@ class TestAuditTransactionIdDerivation:
         )
         assert isinstance(result, SubmitOutput)
         assert result.status == SubmitStatus.succeeded
-        # transaction_id must carry the urn:kosmos:submit: prefix
-        assert result.transaction_id.startswith("urn:kosmos:submit:"), (
+        # transaction_id must carry the urn:ummaya:submit: prefix
+        assert result.transaction_id.startswith("urn:ummaya:submit:"), (
             f"transaction_id format invalid: {result.transaction_id!r}"
         )
         # The hex digest after the prefix is exactly 64 chars (SHA-256)
-        hex_part = result.transaction_id.removeprefix("urn:kosmos:submit:")
+        hex_part = result.transaction_id.removeprefix("urn:ummaya:submit:")
         assert len(hex_part) == 64, (
             f"SHA-256 digest should be 64 chars, got {len(hex_part)}: {hex_part!r}"
         )

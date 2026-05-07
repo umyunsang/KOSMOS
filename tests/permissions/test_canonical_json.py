@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.permissions.canonical_json import canonicalize
+from ummaya.permissions.canonical_json import canonicalize
 
 # ---------------------------------------------------------------------------
 # Authoritative 13 RFC 8785 test vectors

@@ -22,8 +22,8 @@ import pytest_asyncio
 # ---------------------------------------------------------------------------
 
 _LIVE_ENV_VARS = {
-    "KOSMOS_FRIENDLI_TOKEN": "FriendliAI Serverless API token",
-    "KOSMOS_DATA_GO_KR_API_KEY": "data.go.kr public data portal key (shared by KMA + KOROAD)",
+    "UMMAYA_FRIENDLI_TOKEN": "FriendliAI Serverless API token",
+    "UMMAYA_DATA_GO_KR_API_KEY": "data.go.kr public data portal key (shared by KMA + KOROAD)",
 }
 
 
@@ -46,34 +46,34 @@ def _require_env(var_name: str) -> str:
 @pytest.fixture(scope="session")
 def friendli_token() -> str:
     """Return the FriendliAI API token from the environment."""
-    return _require_env("KOSMOS_FRIENDLI_TOKEN")
+    return _require_env("UMMAYA_FRIENDLI_TOKEN")
 
 
 @pytest.fixture(scope="session")
 def data_go_kr_api_key() -> str:
     """Return the data.go.kr API key from the environment."""
-    return _require_env("KOSMOS_DATA_GO_KR_API_KEY")
+    return _require_env("UMMAYA_DATA_GO_KR_API_KEY")
 
 
 @pytest.fixture(scope="session")
 def koroad_api_key() -> str:
     """Return the KOROAD API key (same as data.go.kr key) from the environment."""
-    return _require_env("KOSMOS_DATA_GO_KR_API_KEY")
+    return _require_env("UMMAYA_DATA_GO_KR_API_KEY")
 
 
 @pytest.fixture(scope="session")
 def kakao_api_key() -> str:
     """Return the Kakao REST API key from the environment.
 
-    Reads ``KOSMOS_KAKAO_API_KEY``.  Hard-fails with an exact message required
+    Reads ``UMMAYA_KAKAO_API_KEY``.  Hard-fails with an exact message required
     by FR-004 / Story 1 AS-8 if the variable is unset or empty.
 
     Prerequisite: The Kakao Developers app must have the Local API activated
     (앱 설정 → 제품 설정 → 카카오맵 → 사용 설정 → 상태 ON).
     """
-    value = os.environ.get("KOSMOS_KAKAO_API_KEY", "").strip()
+    value = os.environ.get("UMMAYA_KAKAO_API_KEY", "").strip()
     if not value:
-        pytest.fail("set KOSMOS_KAKAO_API_KEY to run live geocoding tests")
+        pytest.fail("set UMMAYA_KAKAO_API_KEY to run live geocoding tests")
     return value
 
 

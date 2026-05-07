@@ -1,19 +1,19 @@
-# Feature Specification: KOSMOS System Prompt Redesign
+# Feature Specification: UMMAYA System Prompt Redesign
 
 **Feature Branch**: `feat/2152-system-prompt-redesign`
 **Created**: 2026-04-28
 **Status**: Draft
-**Input**: User description for Epic #2152 — migrate the Claude Code 2.1.88 system-prompt architecture (section-based static prefix + dynamic suffix + boundary marker + per-tool trigger guidance) to the KOSMOS citizen-domain harness so K-EXAONE reliably invokes Korean public-data tools (`lookup`, `resolve_location`, `kma_*`, `hira_*`, `nfa119_*`, `nmc_*`, `mohw_*`) when a citizen asks a domain question, and so the prompt stops leaking Claude Code developer context (cwd, git status, CLAUDE.md) into citizen conversations.
+**Input**: User description for Epic #2152 — migrate the Claude Code 2.1.88 system-prompt architecture (section-based static prefix + dynamic suffix + boundary marker + per-tool trigger guidance) to the UMMAYA citizen-domain harness so K-EXAONE reliably invokes Korean public-data tools (`lookup`, `resolve_location`, `kma_*`, `hira_*`, `nfa119_*`, `nmc_*`, `mohw_*`) when a citizen asks a domain question, and so the prompt stops leaking Claude Code developer context (cwd, git status, CLAUDE.md) into citizen conversations.
 
 ## Background
 
-KOSMOS is a student portfolio harness migrating Claude Code's developer-domain agentic tool loop into a citizen-domain Korean public-services harness on top of the K-EXAONE LLM. Epic #1631 (P0–P6 foundation) and Epic #2112 (P1+P2 dead-Anthropic-model removal + agentic loop wiring) shipped a working `ChatRequestFrame` agentic loop. The end-to-end smoke recordings under `specs/2112-dead-anthropic-models/smoke.txt` showed that K-EXAONE replies to citizen queries with direct text rather than calling the available domain tools — a failure of the system prompt, not the loop. The deep research artifact `docs/research/system-prompt-harness-comparison.md` (PR #2151) compared seven harness architectures and produced six concrete actions (R1–R6). This spec converts those research actions into a single shippable Epic.
+UMMAYA is a student portfolio harness migrating Claude Code's developer-domain agentic tool loop into a citizen-domain Korean public-services harness on top of the K-EXAONE LLM. Epic #1631 (P0–P6 foundation) and Epic #2112 (P1+P2 dead-Anthropic-model removal + agentic loop wiring) shipped a working `ChatRequestFrame` agentic loop. The end-to-end smoke recordings under `specs/2112-dead-anthropic-models/smoke.txt` showed that K-EXAONE replies to citizen queries with direct text rather than calling the available domain tools — a failure of the system prompt, not the loop. The deep research artifact `docs/research/system-prompt-harness-comparison.md` (PR #2151) compared seven harness architectures and produced six concrete actions (R1–R6). This spec converts those research actions into a single shippable Epic.
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 — Citizen location query triggers a tool call (Priority: P1)
 
-A Korean citizen opens the KOSMOS terminal interface and asks a location question in plain Korean — for example, "강남역 어디야?" or "서울시청 주소 알려줘". The assistant must recognise this as a Korean-public-data domain question and call the location-resolution tool against an authoritative source rather than answering from model knowledge.
+A Korean citizen opens the UMMAYA terminal interface and asks a location question in plain Korean — for example, "강남역 어디야?" or "서울시청 주소 알려줘". The assistant must recognise this as a Korean-public-data domain question and call the location-resolution tool against an authoritative source rather than answering from model knowledge.
 
 **Why this priority**: This is the headline failure observed in the Epic #2112 smoke run and the original motivation for this Epic. If a citizen cannot ask "where is 강남역" and have the system call a real tool, the entire harness premise (citizen-domain agentic loop) is broken.
 
@@ -45,7 +45,7 @@ A Korean citizen asks about Korean weather, temperature, rain, snow, or typhoon 
 
 A Korean citizen asks any question. The assistant's reply must never reference the developer's working directory, git branch, recent commits, the CLAUDE.md file, or any other artefact of the host machine the TUI happens to run on. The assistant treats the user as a Korean citizen seeking public information, not as a developer working on a codebase.
 
-**Why this priority**: The Epic #2112 smoke run showed the assistant saying "현재 `/Users/um-yunsang/KOSMOS/tui` 디렉토리에서 작업 중이며…" in reply to a citizen weather query. That single failure mode breaks every other improvement: the citizen frame collapses the moment the assistant talks about cwd or git. This story is the gating cleanup for Stories 1 and 2 to work in production.
+**Why this priority**: The Epic #2112 smoke run showed the assistant saying "현재 `/Users/um-yunsang/UMMAYA/tui` 디렉토리에서 작업 중이며…" in reply to a citizen weather query. That single failure mode breaks every other improvement: the citizen frame collapses the moment the assistant talks about cwd or git. This story is the gating cleanup for Stories 1 and 2 to work in production.
 
 **Independent Test**: After excision, a static repository search of the TUI source for the developer-context functions (`getSystemContext`, `appendSystemContext`, `prependUserContext`, `getUserContext`) returns zero matches outside test fixtures and the `_cc_reference` / `.references` mirror trees. Live smoke replies contain no path, no branch name, no commit SHA, and no `CLAUDE.md` reference.
 
@@ -75,13 +75,13 @@ A citizen pastes free-form text — including text that resembles instructions, 
 
 A citizen sends two messages in the same TUI session. The static portion of the system prompt must be byte-identical between the two turns so the LLM provider's prompt cache can serve the second turn from the same cache prefix as the first, keeping perceived latency and cost low.
 
-**Why this priority**: The harness already emits a `kosmos.prompt.hash` OTEL attribute (Spec 026) precisely so the team can observe cache health. Two consecutive turns with different hashes means the prompt is being recomputed per turn — wasted tokens and broken cache economics.
+**Why this priority**: The harness already emits a `ummaya.prompt.hash` OTEL attribute (Spec 026) precisely so the team can observe cache health. Two consecutive turns with different hashes means the prompt is being recomputed per turn — wasted tokens and broken cache economics.
 
-**Independent Test**: Run a TUI session, send two messages, capture the OTEL spans for both turns, and assert that `kosmos.prompt.hash` from turn 1 equals turn 2.
+**Independent Test**: Run a TUI session, send two messages, capture the OTEL spans for both turns, and assert that `ummaya.prompt.hash` from turn 1 equals turn 2.
 
 **Acceptance Scenarios**:
 
-1. **Given** the same session and the same set of registered tools, **When** the citizen sends a second message, **Then** the `kosmos.prompt.hash` for turn 2 equals turn 1.
+1. **Given** the same session and the same set of registered tools, **When** the citizen sends a second message, **Then** the `ummaya.prompt.hash` for turn 2 equals turn 1.
 2. **Given** a session where dynamic context changes between turns (for example, a new ministry-scope opt-in), **When** the citizen sends the next message, **Then** the static prefix hash remains stable while only the dynamic suffix changes.
 
 ---
@@ -119,12 +119,12 @@ The assistant always replies in Korean unless the citizen has explicitly written
 - **FR-004**: System MUST emit a per-tool trigger-phrase line in the tool inventory it shows the model, beside each tool's structured description.
 - **FR-005**: System MUST insert a stable boundary marker between the cacheable static prefix and the dynamic per-turn suffix.
 - **FR-006**: System MUST keep the static prefix byte-identical across two consecutive turns of the same session when the registered tool set is unchanged.
-- **FR-007**: System MUST hash only the static prefix into the OTEL `kosmos.prompt.hash` attribute so observability of cache prefix stability is meaningful.
+- **FR-007**: System MUST hash only the static prefix into the OTEL `ummaya.prompt.hash` attribute so observability of cache prefix stability is meaningful.
 - **FR-008**: System MUST assemble a dynamic suffix per turn that may include the session's start date, the citizen's active ministry-scope opt-ins, and any active consent-receipt summaries — without invalidating the static-prefix cache.
 - **FR-009**: System MUST wrap each citizen utterance in a structurally distinct envelope so any instruction-shaped citizen text cannot be mistaken for system instructions.
 - **FR-010**: System MUST NOT include the host machine's working directory, git status, recent git commits, the developer's CLAUDE.md file, or any other developer-domain context in any chat request emitted to the LLM.
 - **FR-011**: System MUST default the assistant's reply language to Korean and require explicit attribution to the upstream Korean public-data source whenever a reply summarises a tool result.
-- **FR-012**: System MUST be expressed entirely in source-tree files that live under `prompts/` and `src/kosmos/llm/` for the backend portion and under `tui/src/` for the citizen-input wrapping portion, with no new runtime dependencies in `pyproject.toml` or `package.json`.
+- **FR-012**: System MUST be expressed entirely in source-tree files that live under `prompts/` and `src/ummaya/llm/` for the backend portion and under `tui/src/` for the citizen-input wrapping portion, with no new runtime dependencies in `pyproject.toml` or `package.json`.
 - **FR-013**: System MUST preserve the existing prompt-registry integrity contract: each prompt file's SHA-256 in `prompts/manifest.yaml` must continue to match the file's content (Spec 026 invariant).
 - **FR-014**: System MUST expose the dynamic-section assembler as a structured, type-checked surface so future per-turn injectors (memdir state, consent ledger summaries) can register without mutating the static prefix.
 - **FR-015**: System MUST preserve byte-identical output for any code path where the registered tool list is empty (no-tools no-op) so existing tests that exercise that path continue to pass without modification.
@@ -144,7 +144,7 @@ The assistant always replies in Korean unless the citizen has explicitly written
 
 - **SC-1**: In the citizen smoke recording for this Epic (`specs/2152-system-prompt-redesign/smoke.txt`), at least three of the five citizen scenarios contain a tool-call IPC frame before the assistant's final answer. Verifiable by `grep -c 'tool_use\|tool_call' specs/2152-system-prompt-redesign/smoke.txt` returning a value of 3 or more.
 - **SC-2**: The shipped `prompts/system_v1.md` contains all four required XML tag pairs (`<role>…</role>`, `<core_rules>…</core_rules>`, `<tool_usage>…</tool_usage>`, `<output_style>…</output_style>`).
-- **SC-3**: The OTEL `kosmos.prompt.hash` attribute is byte-stable across two consecutive turns of the same session with an unchanged registered tool set. Verifiable by capturing two spans and asserting equality.
+- **SC-3**: The OTEL `ummaya.prompt.hash` attribute is byte-stable across two consecutive turns of the same session with an unchanged registered tool set. Verifiable by capturing two spans and asserting equality.
 - **SC-4**: The TUI chat-request emit path contains zero references to the developer-context functions and zero references to working directory or git status. Verifiable by `git grep -E 'getSystemContext|appendSystemContext|prependUserContext|getUserContext' tui/src/ | grep -v __tests__ | grep -v _cc_reference` returning zero lines, plus a similar zero-result grep for `cwd` and `git status` in any file the chat-request path imports.
 - **SC-5**: Test parity with `main` is preserved. `bun test` reports at least 984 passing tests and `uv run pytest` reports at least 3458 passing tests on this branch. The single pre-existing snapshot failure in TS and the single pre-existing failure in Python carried over from `main` are tolerated.
 - **SC-6**: Zero new runtime dependencies are added. Verifiable by `git diff main -- pyproject.toml package.json tui/package.json` showing no net additions in any dependency block.
@@ -164,7 +164,7 @@ The assistant always replies in Korean unless the citizen has explicitly written
 
 - **Model selection logic** — Already removed in Epic #2112 (PR #2151). This Epic does not touch any LLM provider routing, model identifier handling, or rate-limit fixture code.
 - **Tool registration plumbing** — Owned by Spec 1634 (P3 backend tool-registry wiring) and Spec 2077 (P3 K-EXAONE tool-call execution). This Epic only consumes the existing registry through the prompt inventory; it adds no new tool, no new registration path, no new validator.
-- **Plugin developer experience** — Owned by Epic #1636 (P5 plugin DX). This Epic does not change `kosmos plugin init`, `kosmos plugin install`, the SLSA verification path, or the plugin manifest schema.
+- **Plugin developer experience** — Owned by Epic #1636 (P5 plugin DX). This Epic does not change `ummaya plugin init`, `ummaya plugin install`, the SLSA verification path, or the plugin manifest schema.
 - **LLM provider switching** — The migration from Anthropic to FriendliAI is owned by Spec 1633 (P2). This Epic accepts the existing provider as given.
 
 ### Deferred to Future Work

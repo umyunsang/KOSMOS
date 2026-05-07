@@ -1,4 +1,4 @@
-# KOSMOS Epic #2640 — slash-autocomplete dropdown PNG keyframes
+# UMMAYA Epic #2640 — slash-autocomplete dropdown PNG keyframes
 # Verifies Stage-1 P0 auto-stub commands (ant-trace, teleport, share, summary,
 # env, etc.) are no longer surfaced in the slash autocomplete dropdown after
 # Epic #2640 cleanup, and that claude-api / verify bundled skills are removed.

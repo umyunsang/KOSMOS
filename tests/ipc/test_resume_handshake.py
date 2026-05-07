@@ -16,16 +16,16 @@ Covers all 9 scenarios from contracts/resume-handshake.contract.md § 7:
 
 from __future__ import annotations
 
-from kosmos.ipc.frame_schema import (
+from tests.ipc.conftest import FakeClock, UUIDv7Factory
+from ummaya.ipc.frame_schema import (
     AssistantChunkFrame,
     ResumeRejectedFrame,
     ResumeRequestFrame,
     ResumeResponseFrame,
 )
-from kosmos.ipc.heartbeat import DeadlineState, HeartbeatSettings, HeartbeatState
-from kosmos.ipc.resume_manager import RejectionReason, ResumeManager
-from kosmos.ipc.ring_buffer import SessionRingBuffer
-from tests.ipc.conftest import FakeClock, UUIDv7Factory
+from ummaya.ipc.heartbeat import DeadlineState, HeartbeatSettings, HeartbeatState
+from ummaya.ipc.resume_manager import RejectionReason, ResumeManager
+from ummaya.ipc.ring_buffer import SessionRingBuffer
 
 # ---------------------------------------------------------------------------
 # Helpers

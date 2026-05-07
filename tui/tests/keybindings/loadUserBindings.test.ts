@@ -6,7 +6,7 @@
 //
 // Strategy: drive `loadUserBindings()` with an injected `readFile` that
 // returns the bytes of each fixture under tests/keybindings/fixtures/
-// override-files/. We never touch `~/.kosmos/keybindings.json` — the
+// override-files/. We never touch `~/.ummaya/keybindings.json` — the
 // loader's path argument is parameterised for exactly this reason.
 
 import { describe, expect, it } from 'bun:test'

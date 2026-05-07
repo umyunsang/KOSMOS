@@ -1,6 +1,6 @@
 # TUI Documentation
 
-This directory contains supplementary documentation for the KOSMOS TUI (Ink + React + Bun).
+This directory contains supplementary documentation for the UMMAYA TUI (Ink + React + Bun).
 
 | File | Content |
 |------|---------|

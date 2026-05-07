@@ -27,11 +27,11 @@ Set Height 720
 Set Theme "TokyoNight"
 
 # Spawn the TUI.
-Type "cd ~/KOSMOS/tui && bun run tui"
+Type "cd ~/UMMAYA/tui && bun run tui"
 Enter
 Sleep 5s
 
-# Keyframe 1: boot + KOSMOS branding rendered.
+# Keyframe 1: boot + UMMAYA branding rendered.
 Screenshot specs/2519-korean-ime-enter-fix/scripts/smoke-keyframe-1-boot.png
 Sleep 1s
 

@@ -29,7 +29,7 @@ description: "Task list for Epic G — Utils 잔존 정리 (sessionTitle PORT + 
 
 **Purpose**: Verify worktree state + dependency installation + baseline test snapshot.
 
-- [X] T001 Verify worktree at `/Users/um-yunsang/KOSMOS-w-2643/` is on `feat/2643-s9-utils-residue` branch with `.specify/feature.json` pointing to `specs/2643-utils-residue`
+- [X] T001 Verify worktree at `/Users/um-yunsang/UMMAYA-w-2643/` is on `feat/2643-s9-utils-residue` branch with `.specify/feature.json` pointing to `specs/2643-utils-residue`
 - [X] T002 Run `bun install` in `tui/` and `uv sync` at repo root; record `bun test` baseline snapshot to `specs/2643-utils-residue/baseline-bun-test.txt` and `uv run pytest --quiet` baseline to `specs/2643-utils-residue/baseline-pytest.txt`
 - [X] T003 [P] Verify `tui/src/services/api/claude.ts:3270` `queryHaiku` exports the signature consumed by CC's sessionTitle.ts and dateTimeParser.ts (grep + line-count gate)
 
@@ -52,7 +52,7 @@ description: "Task list for Epic G — Utils 잔존 정리 (sessionTitle PORT + 
 ### Implementation for User Story 1
 
 - [X] T010 [P] [US1] Create `tui/src/utils/sessionTitle.ts` by byte-copying `.references/claude-code-sourcemap/restored-src/src/utils/sessionTitle.ts` and prepending the SWAP attribution comment line per `specs/2643-utils-residue/contracts/sessionTitle.contract.md`
-- [X] T011 [P] [US1] Verify all 10 imports in the new `sessionTitle.ts` resolve in KOSMOS (`bun typecheck` against the file path) — escalate any unresolved import to research.md (no fallback rewrites)
+- [X] T011 [P] [US1] Verify all 10 imports in the new `sessionTitle.ts` resolve in UMMAYA (`bun typecheck` against the file path) — escalate any unresolved import to research.md (no fallback rewrites)
 - [X] T012 [US1] Create `tui/src/utils/__tests__/sessionTitle.test.ts` with 3 test cases (empty description → null, valid mock response → title, malformed JSON → null) using `bun:test` `mock.module()` per the contract test plan
 - [X] T013 [US1] Run `bun test tui/src/utils/__tests__/sessionTitle.test.ts` and confirm 3/3 PASS; capture output to `specs/2643-utils-residue/us1-test-output.txt`
 - [X] T014 [US1] Run `bun typecheck` end-to-end and confirm `cli/print.ts:156` import resolves with zero new errors; capture to `specs/2643-utils-residue/us1-typecheck.txt`
@@ -71,7 +71,7 @@ description: "Task list for Epic G — Utils 잔존 정리 (sessionTitle PORT + 
 
 - [X] T020 [P] [US2] Create `tui/src/utils/mcp/dateTimeParser.ts` by byte-copying `.references/claude-code-sourcemap/restored-src/src/utils/mcp/dateTimeParser.ts` and prepending the SWAP attribution comment per `specs/2643-utils-residue/contracts/dateTimeParser.contract.md`
 - [X] T021 [P] [US2] Create `tui/src/utils/mcp/__tests__/dateTimeParser.test.ts` with 5 test cases (3 Korean success paths + 1 INVALID failure + 1 looksLikeISO8601) using `bun:test` `mock.module()` per the contract test plan
-- [X] T022 [US2] Edit `tui/src/utils/mcp/elicitationValidation.ts`: remove lines 10-19 inline stub block, add `import { looksLikeISO8601, parseNaturalLanguageDateTime } from './dateTimeParser.js'` near the existing imports; verify the `validateElicitationInputAsync` callsite at lines 323-339 still type-checks (CC signature is `(input, format, signal)`; KOSMOS callsite already passes `schema.format` + signal so signature matches)
+- [X] T022 [US2] Edit `tui/src/utils/mcp/elicitationValidation.ts`: remove lines 10-19 inline stub block, add `import { looksLikeISO8601, parseNaturalLanguageDateTime } from './dateTimeParser.js'` near the existing imports; verify the `validateElicitationInputAsync` callsite at lines 323-339 still type-checks (CC signature is `(input, format, signal)`; UMMAYA callsite already passes `schema.format` + signal so signature matches)
 - [X] T023 [US2] Run `bun test tui/src/utils/mcp/__tests__/dateTimeParser.test.ts` and confirm 5/5 PASS; capture to `specs/2643-utils-residue/us2-test-output.txt`
 - [X] T024 [US2] Run `bun typecheck` end-to-end and confirm `elicitationValidation.ts` typechecks with the new imports; capture to `specs/2643-utils-residue/us2-typecheck.txt`
 
@@ -88,7 +88,7 @@ description: "Task list for Epic G — Utils 잔존 정리 (sessionTitle PORT + 
 ### Implementation for User Story 3
 
 - [X] T030 [P] [US3] Create `tui/src/utils/permissions/yoloClassifier.ts` per `specs/2643-utils-residue/contracts/yoloClassifier.contract.md` — module header + `YoloClassifierResult` type (CC-shape, byte-identical with current inline) + `formatActionForClassifier` stub + `classifyYoloAction` stub returning `{unavailable: true, shouldBlock: false}`
-- [X] T031 [US3] Edit `tui/src/utils/permissions/permissions.ts`: delete lines 102-145 (44-LOC inline stub block including the `// KOSMOS Spec 1633 / Epic #2293` comment); replace with the byte-identical CC import: `import { classifyYoloAction, formatActionForClassifier } from './yoloClassifier.js'`
+- [X] T031 [US3] Edit `tui/src/utils/permissions/permissions.ts`: delete lines 102-145 (44-LOC inline stub block including the `// UMMAYA Spec 1633 / Epic #2293` comment); replace with the byte-identical CC import: `import { classifyYoloAction, formatActionForClassifier } from './yoloClassifier.js'`
 - [X] T032 [US3] Run `wc -l tui/src/utils/permissions/permissions.ts` and verify ≤ 1494 (CC 1486 + max 8 swap-1 lines); run `diff .references/claude-code-sourcemap/restored-src/src/utils/permissions/permissions.ts tui/src/utils/permissions/permissions.ts | grep "^[<>]" | wc -l` and verify ≤ 8; capture both to `specs/2643-utils-residue/us3-diff-audit.txt`
 - [X] T033 [US3] Run `bun test` filtered to permissions suite (`bun test tui/src/utils/permissions/`) and confirm 0 regression vs `baseline-bun-test.txt`; capture to `specs/2643-utils-residue/us3-test-output.txt`
 - [X] T034 [US3] Run `bun typecheck` end-to-end and confirm zero new errors; capture to `specs/2643-utils-residue/us3-typecheck.txt`
@@ -105,7 +105,7 @@ description: "Task list for Epic G — Utils 잔존 정리 (sessionTitle PORT + 
 
 ### Implementation for User Story 4
 
-- [X] T040 [P] [US4] Create `docs/adr/ADR-009-secureStorage-drop.md` with 5 sections (Status: Accepted / Context: KOSMOS .env-only credential surface vs. CC's 6-file Keychain stack / Decision: drop the secureStorage subtree / Consequences: simpler attack surface, unsuitable for multi-tenant per-ministry keys / Future trigger: measurable conditions per FR-019), enumerate all 6 CC files with LOC totals per FR-018
+- [X] T040 [P] [US4] Create `docs/adr/ADR-009-secureStorage-drop.md` with 5 sections (Status: Accepted / Context: UMMAYA .env-only credential surface vs. CC's 6-file Keychain stack / Decision: drop the secureStorage subtree / Consequences: simpler attack surface, unsuitable for multi-tenant per-ministry keys / Future trigger: measurable conditions per FR-019), enumerate all 6 CC files with LOC totals per FR-018
 - [X] T041 [US4] Edit `specs/cc-migration-audit/decisions.md` § S9 Utils row 2 (`utils/secureStorage/ DROP 확정`) to append `(see [ADR-009](../../docs/adr/ADR-009-secureStorage-drop.md))`
 - [X] T042 [US4] Edit `specs/cc-migration-audit/scope-S9-utils.md` § P0-2~6 (line ~60-62) and § 사용자 결정 필요 § D2 (line ~129) to append `→ resolved by [ADR-009](../../docs/adr/ADR-009-secureStorage-drop.md)`
 - [X] T043 [US4] Verify ADR cross-reference round-trip: `grep -l "ADR-009" specs/cc-migration-audit/` returns both `decisions.md` and `scope-S9-utils.md`; capture to `specs/2643-utils-residue/us4-cross-ref.txt`

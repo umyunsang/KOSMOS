@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic FU-4 · IPC permission_request → toolUseConfirmQueue bridge.
+// UMMAYA-original — Epic FU-4 · IPC permission_request → toolUseConfirmQueue bridge.
 //
 // Diagnosis (Lead-FU-1 2026-05-04, refreshed 2026-05-06):
 //   Backend emits permission_request frame → deps.ts bridges it here. The
@@ -18,7 +18,7 @@
 //
 // Spec refs:
 //   specs/2077-kexaone-tool-wiring/contracts/pending-permission-slot.md
-//   docs/requirements/kosmos-migration-tree.md § UI-C
+//   docs/requirements/ummaya-migration-tree.md § UI-C
 
 import type {
   PermissionRequestFrame,
@@ -31,7 +31,7 @@ import { SubmitPrimitive } from '../../tools/SubmitPrimitive/SubmitPrimitive.js'
 import type { IPCFrame } from '../../ipc/frames.generated.js'
 import type { Tool } from '../../Tool.js'
 import { createAssistantMessage } from '../../utils/messages.js'
-import { getOrCreateKosmosBridge } from '../../ipc/bridgeSingleton.js'
+import { getOrCreateUmmayaBridge } from '../../ipc/bridgeSingleton.js'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,7 +48,7 @@ export type SetToolUseConfirmQueueFn = (
 let _registeredSetter: SetToolUseConfirmQueueFn | null = null
 
 // ---------------------------------------------------------------------------
-// Audit-4 P0-5 fix — per-request decision stash so the KOSMOS adapter can
+// Audit-4 P0-5 fix — per-request decision stash so the UMMAYA adapter can
 // communicate `allow_once` vs `allow_session` to onAllow (whose CC-canonical
 // signature is parameter-free). Key: PermissionRequestFrame.request_id.
 // Cleared in onAllow / onReject to bound memory.
@@ -60,7 +60,7 @@ const _pendingPermissionDecisions = new Map<
 >()
 
 /**
- * Adapter-only setter. The KOSMOS PrimitivePermissionRequest adapter calls
+ * Adapter-only setter. The UMMAYA PrimitivePermissionRequest adapter calls
  * this with the citizen's exact decision JUST BEFORE invoking
  * `toolUseConfirm.onAllow(...)` so the wire frame carries the right
  * vocabulary. Keyed by the frame's `request_id` (which is the same string
@@ -103,7 +103,7 @@ function primitiveKindToTool(kind: PrimitiveKind): Tool {
       // Exhaustive fallback — future primitive kinds fall through to verify
       // (Layer 1, safest default per Constitution §II fail-closed).
       const _exhaustive: never = kind
-      console.warn(`[kosmos.ipc.permission] unknown primitive_kind=${String(_exhaustive)}, falling back to VerifyPrimitive`)
+      console.warn(`[ummaya.ipc.permission] unknown primitive_kind=${String(_exhaustive)}, falling back to VerifyPrimitive`)
       return VerifyPrimitive
     }
   }
@@ -119,7 +119,7 @@ function primitiveKindToTool(kind: PrimitiveKind): Tool {
  * then auto-mounts the correct adapter (VerifyPermissionRequestAdapter, etc.).
  *
  * onAllow / onReject forward the citizen's decision as a permission_response
- * frame via the kosmos bridge's write channel (process.stdout NDJSON).
+ * frame via the ummaya bridge's write channel (process.stdout NDJSON).
  *
  * Must be called AFTER registerIpcToolUseConfirmQueue has been called by REPL.
  * If no setter is registered (e.g. REPL unmounted), logs a warning and no-ops.
@@ -128,7 +128,7 @@ export function pushIpcPermissionRequest(frame: PermissionRequestFrame): void {
   const setter = _registeredSetter
   if (setter === null) {
     console.warn(
-      `[kosmos.ipc.permission] no setter registered — cannot present permission modal for request_id=${frame.request_id}. Is REPL mounted?`,
+      `[ummaya.ipc.permission] no setter registered — cannot present permission modal for request_id=${frame.request_id}. Is REPL mounted?`,
     )
     return
   }
@@ -138,7 +138,7 @@ export function pushIpcPermissionRequest(frame: PermissionRequestFrame): void {
   // Synthesize a minimal AssistantMessage stub so permissionComponentForTool
   // has a stable reference (the adapter components read it for display context).
   const assistantMessage = createAssistantMessage({
-    content: `[kosmos permission gate] ${frame.description_en}`,
+    content: `[ummaya permission gate] ${frame.description_en}`,
   })
 
   // Build the description shown in the CC permission banner (English primary,
@@ -152,8 +152,8 @@ export function pushIpcPermissionRequest(frame: PermissionRequestFrame): void {
   // -------------------------------------------------------------------------
   // onAllow — citizen approved.
   // Audit-4 P0-5 fix: read the citizen's exact decision from the
-  // module-level stash (set by KosmosPermissionRequestAdapter just before
-  // it called us). Defaults to 'allow_once' for non-KOSMOS adapters that
+  // module-level stash (set by UmmayaPermissionRequestAdapter just before
+  // it called us). Defaults to 'allow_once' for non-UMMAYA adapters that
   // never set a decision. Without this, the wire collapsed both Y and A
   // to 'granted' → backend's _session_grants cache never activated and
   // citizens were re-prompted on every same-tool call within a session.
@@ -185,7 +185,7 @@ export function pushIpcPermissionRequest(frame: PermissionRequestFrame): void {
       // Audit-4 P0-10 fix — prefer the explicit `tool_id` field (added to
       // PermissionRequestFrame schema in the same audit). Fall back to
       // worker_id (legacy / pre-fix backends used `worker_id="main"`) and
-      // finally to the primitive verb. The KOSMOS adapter feeds this into
+      // finally to the primitive verb. The UMMAYA adapter feeds this into
       // resolveAdapter() to produce the human-readable Korean modal title.
       tool_id:
         (frame as { tool_id?: string | null }).tool_id ||
@@ -223,7 +223,7 @@ export function pushIpcPermissionRequest(frame: PermissionRequestFrame): void {
  * Emit a permission_response frame back to the Python backend.
  *
  * Audit-4 P0-8 fix (2026-05-04): the prior implementation called
- * `process.stdout.write(encodeFrame(...))` directly. In the KOSMOS TUI
+ * `process.stdout.write(encodeFrame(...))` directly. In the UMMAYA TUI
  * architecture (`tui/src/ipc/bridge.ts`) the backend is a CHILD process
  * of the TUI — `process.stdout` is the citizen's terminal, NOT the IPC
  * pipe. The backend reads from its own stdin, which is the TUI's
@@ -261,7 +261,7 @@ function _sendPermissionResponse(
     decision,
     // Audit-4 P0-11 fix — TUI no longer generates a receipt_id. The
     // backend is the single source of truth for the canonical
-    // `rcpt-<hex>` string written to ~/.kosmos/memdir/user/consent/.
+    // `rcpt-<hex>` string written to ~/.ummaya/memdir/user/consent/.
     // Two receipt_ids on the wire (TUI + backend) created an audit-trail
     // discrepancy where the TUI-side ID could leak into OTEL spans
     // while the backend silently overwrote it. Backend echoes back the
@@ -270,13 +270,13 @@ function _sendPermissionResponse(
     receipt_id: null,
   }
 
-  const bridge = getOrCreateKosmosBridge()
+  const bridge = getOrCreateUmmayaBridge()
   const sent = bridge.send(responseFrame as unknown as IPCFrame)
   if (!sent) {
     // Backend already exited — write a diagnostic to stderr so PTY scenarios
     // surface the drop without polluting stdout.
     process.stderr.write(
-      `[KOSMOS permissionBridge WARN] permission_response drop ` +
+      `[UMMAYA permissionBridge WARN] permission_response drop ` +
         `(backend exited) request_id=${frame.request_id} decision=${decision}\n`,
     )
   }

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for kosmos.engine.config.QueryEngineConfig.
+"""Unit tests for ummaya.engine.config.QueryEngineConfig.
 
 Covers:
 - Default field values
@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kosmos.engine.config import QueryEngineConfig
+from ummaya.engine.config import QueryEngineConfig
 
 # ---------------------------------------------------------------------------
 # Default values

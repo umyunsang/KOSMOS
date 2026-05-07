@@ -8,17 +8,17 @@
 # renders the new receipt row.
 #
 # Backed by:
-#   src/kosmos/ipc/stdio.py:1372  _check_permission_gate (verify ∈ GATED_PRIMITIVES)
-#   src/kosmos/primitives/__init__.py:62  GATED_PRIMITIVES = {verify, submit, subscribe}
-#   src/kosmos/tools/mock/verify_gongdong_injeungseo.py  registered Mock adapter
+#   src/ummaya/ipc/stdio.py:1372  _check_permission_gate (verify ∈ GATED_PRIMITIVES)
+#   src/ummaya/primitives/__init__.py:62  GATED_PRIMITIVES = {verify, submit, subscribe}
+#   src/ummaya/tools/mock/verify_gongdong_injeungseo.py  registered Mock adapter
 #   tui/src/query/deps.ts:523-587  IPC permission_request handler
-#   tui/src/components/permissions/KosmosPrimitivePermissionRequest/  modal
+#   tui/src/components/permissions/UmmayaPrimitivePermissionRequest/  modal
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# 0. Boot — wait for KOSMOS branding
+# 0. Boot — wait for UMMAYA branding
 # ---------------------------------------------------------------------------
-wait_for_pane "KOSMOS v0\\.[0-9]" 30
+wait_for_pane "UMMAYA v0\\.[0-9]" 30
 snapshot_pane "00-boot-branding"
 
 # ---------------------------------------------------------------------------

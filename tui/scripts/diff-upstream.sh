@@ -49,7 +49,7 @@ check_file() {
   local first_line
   first_line=$(head -1 "$lifted_path")
 
-  # Skip files without FR-011 header (KOSMOS-original files)
+  # Skip files without FR-011 header (UMMAYA-original files)
   if ! echo "$first_line" | grep -q "Source: .references/claude-code-sourcemap/restored-src/"; then
     return 0
   fi

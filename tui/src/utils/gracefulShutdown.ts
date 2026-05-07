@@ -3,7 +3,7 @@ import { writeSync } from 'fs'
 import memoize from 'lodash-es/memoize.js'
 import { onExit } from 'signal-exit'
 import type { ExitReason } from 'src/entrypoints/agentSdkTypes.js'
-import { formatKosmosResumeCommand } from '../constants/cli.js'
+import { formatUmmayaResumeCommand } from '../constants/cli.js'
 import {
   getIsInteractive,
   getIsScrollDraining,
@@ -30,7 +30,7 @@ import {
   supportsTabStatus,
   wrapForMultiplexer,
 } from '../ink/termio/osc.js'
-// KOSMOS-original: CC analytics/datadog not used — no-ops.
+// UMMAYA-original: CC analytics/datadog not used — no-ops.
 const shutdownDatadog = async (): Promise<void> => {}
 const shutdown1PEventLogging = async (): Promise<void> => {}
 import {
@@ -175,7 +175,7 @@ function printResumeHint(): void {
       writeSync(
         1,
         chalk.dim(
-          `\nResume this session with:\n${formatKosmosResumeCommand(resumeArg)}\n`,
+          `\nResume this session with:\n${formatUmmayaResumeCommand(resumeArg)}\n`,
         ),
       )
       resumeHintPrinted = true

@@ -3,7 +3,7 @@
 
 Spec 031 / AGENTS.md feedback_main_verb_primitive: the six legacy verb names
 listed below MUST NOT appear as registered top-level tool_id values anywhere
-under src/kosmos/primitives/ or src/kosmos/tools/ or in adapter registrations.
+under src/ummaya/primitives/ or src/ummaya/tools/ or in adapter registrations.
 
 The failure criterion is a *registration* call with a matching tool_id:
   - AdapterRegistration(tool_id="pay", ...)
@@ -28,8 +28,8 @@ import pytest
 _REPO_ROOT = Path(__file__).parents[2]
 
 _SCAN_ROOTS: list[Path] = [
-    _REPO_ROOT / "src" / "kosmos" / "primitives",
-    _REPO_ROOT / "src" / "kosmos" / "tools",
+    _REPO_ROOT / "src" / "ummaya" / "primitives",
+    _REPO_ROOT / "src" / "ummaya" / "tools",
 ]
 
 _BANNED_VERBS: frozenset[str] = frozenset(

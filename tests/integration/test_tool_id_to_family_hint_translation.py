@@ -24,7 +24,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kosmos.tools.mvp_surface import _VerifyInputForLLM
+from ummaya.tools.mvp_surface import _VerifyInputForLLM
 
 # ---------------------------------------------------------------------------
 # Parametrised canonical-family cases (I-V1)

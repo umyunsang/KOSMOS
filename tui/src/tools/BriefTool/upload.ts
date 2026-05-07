@@ -23,7 +23,7 @@ import {
   getBridgeAccessToken,
   getBridgeBaseUrlOverride,
 } from '../../bridge/bridgeConfig.js'
-// constants/oauth removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI, not Anthropic OAuth.
+// constants/oauth removed in P1+P2 (Spec 1633); UMMAYA uses FriendliAI, not Anthropic OAuth.
 const getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })
 import { logForDebugging } from '../../utils/debug.js'
 import { lazySchema } from '../../utils/lazySchema.js'

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""T028 + T032 — Tests for kosmos.safety._litellm_callbacks.
+"""T028 + T032 — Tests for ummaya.safety._litellm_callbacks.
 
 Covers:
   - test_block_returns_block_decision: block fixtures → ModerationBlockError
@@ -84,7 +84,7 @@ def _block_flags_for_category(category: str) -> list[str]:
 
 def _make_kwargs(content: str) -> dict[str, Any]:
     return {
-        "model": "kosmos-test",
+        "model": "ummaya-test",
         "messages": [{"role": "user", "content": content}],
     }
 
@@ -117,7 +117,7 @@ def _patch_moderation_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_safety.moderation_enabled = True
     fake_safety.openai_moderation_api_key = SecretStr("sk-test-fake")
 
-    import kosmos.settings as _settings_mod
+    import ummaya.settings as _settings_mod
 
     monkeypatch.setattr(_settings_mod.settings, "safety", fake_safety)
 
@@ -140,7 +140,7 @@ def test_block_returns_block_decision(
     flagged_keys = _block_flags_for_category(fixture["category"])
     mock_response = _make_moderation_response(flagged_keys)
 
-    from kosmos.safety._litellm_callbacks import ModerationBlockError, pre_call
+    from ummaya.safety._litellm_callbacks import ModerationBlockError, pre_call
 
     with respx.mock(base_url="https://api.openai.com") as mock:
         mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
@@ -167,7 +167,7 @@ def test_self_harm_substitutes_crisis_hotline(
     self_harm_fixture = next(f for f in block_fixtures if f["category"] == "self-harm")
     mock_response = _make_moderation_response(["self-harm"])
 
-    from kosmos.safety._litellm_callbacks import ModerationBlockError, pre_call
+    from ummaya.safety._litellm_callbacks import ModerationBlockError, pre_call
 
     with respx.mock(base_url="https://api.openai.com") as mock:
         mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
@@ -198,7 +198,7 @@ def test_pass_returns_allow(
     _patch_moderation_enabled(monkeypatch)
     mock_response = _make_moderation_response([])  # all False
 
-    from kosmos.safety._litellm_callbacks import pre_call
+    from ummaya.safety._litellm_callbacks import pre_call
 
     with respx.mock(base_url="https://api.openai.com") as mock:
         mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
@@ -222,12 +222,12 @@ def test_moderation_outage_fail_open(
     # Track emit_safety_event calls
     emitted_events: list[Any] = []
 
-    import kosmos.safety._litellm_callbacks as _cb_mod
+    import ummaya.safety._litellm_callbacks as _cb_mod
 
     monkeypatch.setattr(_cb_mod, "emit_safety_event", lambda evt: emitted_events.append(evt))
 
-    from kosmos.safety._litellm_callbacks import pre_call
-    from kosmos.safety._models import ModerationWarnedEvent
+    from ummaya.safety._litellm_callbacks import pre_call
+    from ummaya.safety._models import ModerationWarnedEvent
 
     with respx.mock(base_url="https://api.openai.com") as mock:
         mock.post("/v1/moderations").mock(side_effect=httpx.TransportError("simulated outage"))
@@ -253,7 +253,7 @@ def test_post_call_output_moderation_block(
     _patch_moderation_enabled(monkeypatch)
     mock_response = _make_moderation_response(["hate"])
 
-    from kosmos.safety._litellm_callbacks import ModerationBlockError, post_call
+    from ummaya.safety._litellm_callbacks import ModerationBlockError, post_call
 
     with respx.mock(base_url="https://api.openai.com") as mock:
         mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
@@ -269,7 +269,7 @@ def test_post_call_output_moderation_allow(
     _patch_moderation_enabled(monkeypatch)
     mock_response = _make_moderation_response([])
 
-    from kosmos.safety._litellm_callbacks import post_call
+    from ummaya.safety._litellm_callbacks import post_call
 
     with respx.mock(base_url="https://api.openai.com") as mock:
         mock.post("/v1/moderations").mock(return_value=httpx.Response(200, json=mock_response))
@@ -287,12 +287,12 @@ def test_post_call_outage_fail_open(
     _patch_moderation_enabled(monkeypatch)
 
     emitted_events: list[Any] = []
-    import kosmos.safety._litellm_callbacks as _cb_mod
+    import ummaya.safety._litellm_callbacks as _cb_mod
 
     monkeypatch.setattr(_cb_mod, "emit_safety_event", lambda evt: emitted_events.append(evt))
 
-    from kosmos.safety._litellm_callbacks import post_call
-    from kosmos.safety._models import ModerationWarnedEvent
+    from ummaya.safety._litellm_callbacks import post_call
+    from ummaya.safety._models import ModerationWarnedEvent
 
     with respx.mock(base_url="https://api.openai.com") as mock:
         mock.post("/v1/moderations").mock(side_effect=httpx.TransportError("simulated outage"))
@@ -318,12 +318,12 @@ def test_emit_safety_event_called_once_on_block(
     _patch_moderation_enabled(monkeypatch)
 
     emitted_events: list[Any] = []
-    import kosmos.safety._litellm_callbacks as _cb_mod
+    import ummaya.safety._litellm_callbacks as _cb_mod
 
     monkeypatch.setattr(_cb_mod, "emit_safety_event", lambda evt: emitted_events.append(evt))
 
-    from kosmos.safety._litellm_callbacks import ModerationBlockError, pre_call
-    from kosmos.safety._models import ModerationBlockedEvent
+    from ummaya.safety._litellm_callbacks import ModerationBlockError, pre_call
+    from ummaya.safety._models import ModerationBlockedEvent
 
     mock_response = _make_moderation_response(["violence"])
 
@@ -343,11 +343,11 @@ def test_emit_safety_event_called_once_on_outage(
     _patch_moderation_enabled(monkeypatch)
 
     emitted_events: list[Any] = []
-    import kosmos.safety._litellm_callbacks as _cb_mod
+    import ummaya.safety._litellm_callbacks as _cb_mod
 
     monkeypatch.setattr(_cb_mod, "emit_safety_event", lambda evt: emitted_events.append(evt))
 
-    from kosmos.safety._litellm_callbacks import pre_call
+    from ummaya.safety._litellm_callbacks import pre_call
 
     with respx.mock(base_url="https://api.openai.com") as mock:
         mock.post("/v1/moderations").mock(side_effect=httpx.TransportError("outage"))
@@ -363,11 +363,11 @@ def test_emit_safety_event_not_called_on_allow(
     _patch_moderation_enabled(monkeypatch)
 
     emitted_events: list[Any] = []
-    import kosmos.safety._litellm_callbacks as _cb_mod
+    import ummaya.safety._litellm_callbacks as _cb_mod
 
     monkeypatch.setattr(_cb_mod, "emit_safety_event", lambda evt: emitted_events.append(evt))
 
-    from kosmos.safety._litellm_callbacks import pre_call
+    from ummaya.safety._litellm_callbacks import pre_call
 
     mock_response = _make_moderation_response([])
 
@@ -385,12 +385,12 @@ def test_post_call_emit_once_on_block(
     _patch_moderation_enabled(monkeypatch)
 
     emitted_events: list[Any] = []
-    import kosmos.safety._litellm_callbacks as _cb_mod
+    import ummaya.safety._litellm_callbacks as _cb_mod
 
     monkeypatch.setattr(_cb_mod, "emit_safety_event", lambda evt: emitted_events.append(evt))
 
-    from kosmos.safety._litellm_callbacks import ModerationBlockError, post_call
-    from kosmos.safety._models import ModerationBlockedEvent
+    from ummaya.safety._litellm_callbacks import ModerationBlockError, post_call
+    from ummaya.safety._models import ModerationBlockedEvent
 
     mock_response = _make_moderation_response(["sexual/minors"])
 
@@ -410,11 +410,11 @@ def test_post_call_emit_zero_on_allow(
     _patch_moderation_enabled(monkeypatch)
 
     emitted_events: list[Any] = []
-    import kosmos.safety._litellm_callbacks as _cb_mod
+    import ummaya.safety._litellm_callbacks as _cb_mod
 
     monkeypatch.setattr(_cb_mod, "emit_safety_event", lambda evt: emitted_events.append(evt))
 
-    from kosmos.safety._litellm_callbacks import post_call
+    from ummaya.safety._litellm_callbacks import post_call
 
     mock_response = _make_moderation_response([])
 
@@ -437,11 +437,11 @@ def test_pre_call_noop_when_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_safety = MagicMock()
     fake_safety.moderation_enabled = False
 
-    import kosmos.settings as _settings_mod
+    import ummaya.settings as _settings_mod
 
     monkeypatch.setattr(_settings_mod.settings, "safety", fake_safety)
 
-    from kosmos.safety._litellm_callbacks import pre_call
+    from ummaya.safety._litellm_callbacks import pre_call
 
     kwargs = _make_kwargs("anything")
     # No respx mock — if an HTTP call is made, it will error

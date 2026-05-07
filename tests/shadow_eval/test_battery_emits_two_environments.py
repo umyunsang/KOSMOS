@@ -39,11 +39,11 @@ from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanE
 from tests.shadow_eval.battery import run_async as battery_run  # noqa: E402 — RED until T040
 
 # ---------------------------------------------------------------------------
-# Attribute names (KOSMOS extension namespace per Spec 021 / FR-D03)
+# Attribute names (UMMAYA extension namespace per Spec 021 / FR-D03)
 # ---------------------------------------------------------------------------
 
 _ATTR_DEPLOYMENT_ENV = "deployment.environment"
-_ATTR_BATTERY_INPUT_ID = "kosmos.eval.input_id"
+_ATTR_BATTERY_INPUT_ID = "ummaya.eval.input_id"
 
 _ENV_MAIN = "main"
 _ENV_SHADOW = "shadow"
@@ -182,7 +182,7 @@ async def test_both_environments_share_battery_input_ids(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Run battery twice (main + shadow) and assert the set of
-    ``kosmos.eval.input_id`` attribute values is identical across both runs.
+    ``ummaya.eval.input_id`` attribute values is identical across both runs.
 
     This ensures downstream diffing is deterministic — both environments
     exercise the same fixed input cases.

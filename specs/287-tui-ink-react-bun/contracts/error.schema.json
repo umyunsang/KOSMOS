@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosmos.dev/schemas/spec-287/error.schema.json",
+  "$id": "https://ummaya.dev/schemas/spec-287/error.schema.json",
   "title": "ErrorFrame",
   "description": "backend → TUI: a backend error surfaced to the TUI for rendering. Direction: backend → TUI. Rendered via <ErrorBanner /> or appended as a synthetic assistant message (store reducer).",
   "type": "object",
@@ -16,11 +16,11 @@
     },
     "message": {
       "type": "string",
-      "description": "Human-readable short message. MUST NOT contain KOSMOS_*-prefixed env var values (FR-004 redaction rule)."
+      "description": "Human-readable short message. MUST NOT contain UMMAYA_*-prefixed env var values (FR-004 redaction rule)."
     },
     "details": {
       "type": "object",
-      "description": "Structured error details. Any KOSMOS_* env var values MUST be redacted per #468 guard pattern."
+      "description": "Structured error details. Any UMMAYA_* env var values MUST be redacted per #468 guard pattern."
     }
   },
   "additionalProperties": false

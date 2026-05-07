@@ -3,7 +3,7 @@
 # Verifies Lead-F (NMC ER hours strip) + Lead-C (NFA/MOHW fabrication fix).
 set -euo pipefail
 
-wait_for_pane "KOSMOS|❯" 25
+wait_for_pane "UMMAYA|❯" 25
 snapshot_pane 00-boot
 
 run_query() {

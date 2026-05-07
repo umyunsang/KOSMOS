@@ -4,7 +4,7 @@
  ╭────────────────────────────────────────────────────────────────────────────────────────────────╮
  │ ⚠ Trustee Responsibility Notice · PIPA §26                                                     │
  │                                                                                                │
- │ Under PIPA §26, KOSMOS acts as a data trustee. You can revoke consent any time via /consent    │
+ │ Under PIPA §26, UMMAYA acts as a data trustee. You can revoke consent any time via /consent    │
  │ revoke.                                                                                        │
  │                                                                                                │
  │ Data categories processed:                                                                     │

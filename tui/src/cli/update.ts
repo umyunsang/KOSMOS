@@ -294,7 +294,7 @@ export async function update() {
     process.stderr.write('  • Run with --debug flag for more details\n')
     const packageName =
       MACRO.PACKAGE_URL ||
-      '@kosmos/tui'
+      'ummaya'
     process.stderr.write(
       `  • Manually check: npm view ${packageName} version\n`,
     )

@@ -25,10 +25,10 @@ status: draft
 
 **Purpose**: Module skeleton, shared Kakao HTTP client, region mapping, and grid conversion.
 
-- [ ] T001 Create module directory and `__init__.py` at `src/kosmos/tools/geocoding/__init__.py`
-- [ ] T002 [P] Implement Kakao HTTP client with Pydantic models in `src/kosmos/tools/geocoding/kakao_client.py`
-- [ ] T003 [P] Implement region-name-to-code mapping in `src/kosmos/tools/geocoding/region_mapping.py`
-- [ ] T004 [P] Add Lambert Conformal Conic `latlon_to_grid()` to `src/kosmos/tools/kma/grid_coords.py`
+- [ ] T001 Create module directory and `__init__.py` at `src/ummaya/tools/geocoding/__init__.py`
+- [ ] T002 [P] Implement Kakao HTTP client with Pydantic models in `src/ummaya/tools/geocoding/kakao_client.py`
+- [ ] T003 [P] Implement region-name-to-code mapping in `src/ummaya/tools/geocoding/region_mapping.py`
+- [ ] T004 [P] Add Lambert Conformal Conic `latlon_to_grid()` to `src/ummaya/tools/kma/grid_coords.py`
 - [ ] T005 [P] Create test fixture directory and 5 recorded Kakao JSON fixtures under `tests/tools/geocoding/fixtures/`
 - [ ] T006 Create `tests/tools/geocoding/__init__.py` (empty, pytest discovery)
 
@@ -50,7 +50,7 @@ status: draft
 
 ### Implementation for User Story 1
 
-- [ ] T010 [US1] Implement `address_to_region` adapter (Input/Output models, `_resolve`, `_call`, `GovAPITool`, `register()`) in `src/kosmos/tools/geocoding/address_to_region.py`
+- [ ] T010 [US1] Implement `address_to_region` adapter (Input/Output models, `_resolve`, `_call`, `GovAPITool`, `register()`) in `src/ummaya/tools/geocoding/address_to_region.py`
 
 **Checkpoint**: `address_to_region("서울 강남구")` returns `sido=11, gugun=680` using fixture. SC-002, SC-003, SC-005, SC-006 validated.
 
@@ -69,7 +69,7 @@ status: draft
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] Implement `address_to_grid` adapter (Input/Output models, `_resolve_from_kakao`, `_fallback_local_lookup`, `_call`, `GovAPITool`, `register()`) in `src/kosmos/tools/geocoding/address_to_grid.py`
+- [ ] T013 [US2] Implement `address_to_grid` adapter (Input/Output models, `_resolve_from_kakao`, `_fallback_local_lookup`, `_call`, `GovAPITool`, `register()`) in `src/ummaya/tools/geocoding/address_to_grid.py`
 
 **Checkpoint**: `address_to_grid("서초구")` returns `nx=61, ny=124` using fixture. Fallback to `REGION_TO_GRID` tested. SC-004, SC-007 validated.
 
@@ -83,7 +83,7 @@ status: draft
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] Register both tools in `src/kosmos/tools/register_all.py` (import + call, update docstring count to 9)
+- [ ] T014 [US3] Register both tools in `src/ummaya/tools/register_all.py` (import + call, update docstring count to 9)
 - [ ] T015 [US3] Update `tests/tools/test_registration.py` assertions (registry size → 9, add tool IDs to expected sets)
 - [ ] T016 [US3] Verify search integration — run `tests/tools/test_search_integration.py` to confirm geocoding tools surface on Korean address queries
 
@@ -95,7 +95,7 @@ status: draft
 
 **Goal**: All tests pass in CI without any live API keys.
 
-**Independent Test**: `KOSMOS_KAKAO_API_KEY= uv run pytest tests/tools/geocoding/` passes with zero failures.
+**Independent Test**: `UMMAYA_KAKAO_API_KEY= uv run pytest tests/tools/geocoding/` passes with zero failures.
 
 ### Implementation for User Story 4
 
@@ -112,7 +112,7 @@ status: draft
 **Purpose**: ADR, documentation, type safety.
 
 - [ ] T020 [P] Create `docs/adr/` directory and write `docs/adr/ADR-001-geocoding-provider.md`
-- [ ] T021 [P] Update `src/kosmos/tools/geocoding/__init__.py` with re-exports and module docstring
+- [ ] T021 [P] Update `src/ummaya/tools/geocoding/__init__.py` with re-exports and module docstring
 - [ ] T022 Validate all spec acceptance criteria (SC-001 through SC-010) in a final sweep
 
 ---
@@ -150,9 +150,9 @@ status: draft
 
 ```bash
 # All four foundation tasks in parallel (different files):
-Task: "Implement Kakao HTTP client in src/kosmos/tools/geocoding/kakao_client.py"
-Task: "Implement region mapping in src/kosmos/tools/geocoding/region_mapping.py"
-Task: "Add latlon_to_grid() to src/kosmos/tools/kma/grid_coords.py"
+Task: "Implement Kakao HTTP client in src/ummaya/tools/geocoding/kakao_client.py"
+Task: "Implement region mapping in src/ummaya/tools/geocoding/region_mapping.py"
+Task: "Add latlon_to_grid() to src/ummaya/tools/kma/grid_coords.py"
 Task: "Create fixture files under tests/tools/geocoding/fixtures/"
 ```
 

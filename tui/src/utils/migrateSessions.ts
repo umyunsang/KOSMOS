@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
-// KOSMOS-original utility: migrate CC-workspace JSONL sessions to the
-// KOSMOS-native memdir USER-tier sessions directory.
+// UMMAYA-original utility: migrate CC-workspace JSONL sessions to the
+// UMMAYA-native memdir USER-tier sessions directory.
 //
-// Problem (Lead-Diag-3): 374 KOSMOS-TUI workspace sessions (13.6 MB) leaked
-// into `~/.claude/projects/` alongside the 1,762 non-KOSMOS CC sessions.
-// This utility copies them into `~/.kosmos/memdir/user/sessions/` so the
-// KOSMOS session picker can discover them without touching the CC directory.
+// Problem (Lead-Diag-3): 374 UMMAYA-TUI workspace sessions (13.6 MB) leaked
+// into `~/.claude/projects/` alongside the 1,762 non-UMMAYA CC sessions.
+// This utility copies them into `~/.ummaya/memdir/user/sessions/` so the
+// UMMAYA session picker can discover them without touching the CC directory.
 //
-// Algorithm: walk CC dir → filter by cwd regex (default `.*KOSMOS.*`) →
+// Algorithm: walk CC dir → filter by cwd regex (default `.*UMMAYA.*`) →
 // copyFile EXCL + fsync → optional unlink (--prune).
 //
 // Atomicity guarantee:
@@ -24,7 +24,7 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync, unlinkSync 
 import { open, fsync, close } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import { getKosmosSessionsDir } from './kosmosPaths.js'
+import { getUmmayaSessionsDir } from './ummayaPaths.js'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,7 +39,7 @@ export interface MigrateSessionsOpts {
   prune?: boolean
   /**
    * Regex string applied to the CC project-dir name (the sanitized cwd) to
-   * select which sessions to migrate. Defaults to `.*KOSMOS.*`.
+   * select which sessions to migrate. Defaults to `.*UMMAYA.*`.
    */
   filterCwd?: string
   /**
@@ -52,7 +52,7 @@ export interface MigrateSessionsOpts {
    */
   ccProjectsDir?: string
   /**
-   * Override the KOSMOS sessions destination directory.
+   * Override the UMMAYA sessions destination directory.
    * Useful in tests.
    */
   destDir?: string
@@ -147,7 +147,7 @@ const COPYFILE_EXCL = 1
 // ---------------------------------------------------------------------------
 
 /**
- * Migrate CC-workspace JSONL sessions to the KOSMOS memdir USER-tier
+ * Migrate CC-workspace JSONL sessions to the UMMAYA memdir USER-tier
  * sessions directory.
  *
  * @throws {Error} Only when `prune: true` and an unlink fails — in that case
@@ -160,10 +160,10 @@ export async function migrateSessions(
 ): Promise<MigrationSummary> {
   const {
     prune = false,
-    filterCwd = '.*KOSMOS.*',
+    filterCwd = '.*UMMAYA.*',
     dryRun = false,
     ccProjectsDir = defaultCcProjectsDir(),
-    destDir = getKosmosSessionsDir(),
+    destDir = getUmmayaSessionsDir(),
   } = opts
 
   const filterRe = new RegExp(filterCwd)

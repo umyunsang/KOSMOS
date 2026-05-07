@@ -6,7 +6,7 @@
 // `monitor_mcp` tasks observe one MCP (Model Context Protocol) server for
 // tool-call events and surface them in the background tasks indicator.
 // Upstream CC activates this only when the user registers a watch via
-// `MonitorTool`. KOSMOS leaves the shape honest so the BackgroundTasksDialog
+// `MonitorTool`. UMMAYA leaves the shape honest so the BackgroundTasksDialog
 // picker doesn't crash when such tasks are present.
 
 import type { TaskStateBase } from '../../Task.js'

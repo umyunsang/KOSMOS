@@ -28,8 +28,8 @@ from datetime import UTC, datetime
 import pytest
 from pydantic import BaseModel, ConfigDict
 
-from kosmos.tools.models import AdapterRealDomainPolicy
-from kosmos.tools.registry import AdapterPrimitive, AdapterRegistration, AdapterSourceMode
+from ummaya.tools.models import AdapterRealDomainPolicy
+from ummaya.tools.registry import AdapterPrimitive, AdapterRegistration, AdapterSourceMode
 
 # ---------------------------------------------------------------------------
 # Minimal AuthContext stand-in (pre-US2)
@@ -102,7 +102,7 @@ async def test_submit_without_auth_context_returns_rejected(
     the gate logic by directly invoking the tier check helper.
     """
     # Import the tier-gate checker from submit (exposed for testability)
-    from kosmos.primitives.submit import check_tier_gate
+    from ummaya.primitives.submit import check_tier_gate
 
     auth_ctx = None  # no auth context supplied
     result = check_tier_gate(
@@ -124,7 +124,7 @@ async def test_submit_with_insufficient_tier_returns_rejected(
     tier_gated_registration: AdapterRegistration,
 ) -> None:
     """Auth context with a lower tier than required → structured rejection."""
-    from kosmos.primitives.submit import check_tier_gate
+    from ummaya.primitives.submit import check_tier_gate
 
     # digital_onepass_level1_aal1 is AAL1 — below the required AAL2 tier
     auth_ctx = _MinimalAuthContext(published_tier="digital_onepass_level1_aal1")
@@ -146,7 +146,7 @@ async def test_submit_with_matching_tier_passes_gate(
     tier_gated_registration: AdapterRegistration,
 ) -> None:
     """Auth context exactly matching published_tier_minimum → gate passes."""
-    from kosmos.primitives.submit import check_tier_gate
+    from ummaya.primitives.submit import check_tier_gate
 
     # ganpyeon_injeung_kakao_aal2 matches the required minimum exactly
     auth_ctx = _MinimalAuthContext(published_tier="ganpyeon_injeung_kakao_aal2")
@@ -160,7 +160,7 @@ async def test_submit_with_matching_tier_passes_gate(
 @pytest.mark.asyncio
 async def test_submit_with_ax_aal3_tier_satisfies_aal2_requirement() -> None:
     """A recognised AX AAL3 AuthContext satisfies an AAL2 submit gate."""
-    from kosmos.primitives.submit import check_tier_gate
+    from ummaya.primitives.submit import check_tier_gate
 
     registration = AdapterRegistration(
         tool_id="mock_mydata_submit_v1",
@@ -203,11 +203,11 @@ async def test_submit_no_tier_minimum_always_passes(
     Forces ``V12_GA_ACTIVE=False`` so the pre-v1.2 compatibility window
     (FR-028) is in effect; T079 flipped the runtime default to ``True``.
     """
-    import kosmos.security.v12_dual_axis as _mod
+    import ummaya.security.v12_dual_axis as _mod
 
     monkeypatch.setattr(_mod, "V12_GA_ACTIVE", False)
 
-    from kosmos.primitives.submit import check_tier_gate
+    from ummaya.primitives.submit import check_tier_gate
 
     reg_no_tier = AdapterRegistration(
         tool_id="mock_no_tier_v1",
@@ -255,6 +255,6 @@ async def test_submit_full_auth_context_family_validation(
     union from US2 is available. Until then it is an expected failure.
     """
     # This import will fail until US2 ships AuthContext
-    from kosmos.primitives.verify import AuthContext  # type: ignore[import]  # noqa: F401
+    from ummaya.primitives.verify import AuthContext  # type: ignore[import]  # noqa: F401
 
     raise AssertionError("US2 AuthContext not yet implemented — should xfail")

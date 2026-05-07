@@ -21,7 +21,7 @@ from typing import get_args
 import pytest
 from pydantic import TypeAdapter, ValidationError
 
-from kosmos.ipc.frame_schema import (
+from ummaya.ipc.frame_schema import (
     AdapterManifestEntry,
     AdapterManifestSyncFrame,
     IPCFrame,

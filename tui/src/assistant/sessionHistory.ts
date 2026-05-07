@@ -1,12 +1,12 @@
 import axios from 'axios'
-// constants/oauth removed in P1+P2 (Spec 1633); KOSMOS uses FriendliAI, not Anthropic OAuth.
+// constants/oauth removed in P1+P2 (Spec 1633); UMMAYA uses FriendliAI, not Anthropic OAuth.
 const getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })
 import type { SDKMessage } from '../entrypoints/agentSdkTypes.js'
 import { logForDebugging } from '../utils/debug.js'
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — utils/teleport/ deleted; stub.
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport/ deleted; stub.
 const getOAuthHeaders = (_token: string): Record<string, string> => ({})
 const prepareApiRequest = async (): Promise<{ accessToken: string; orgUUID: string }> => {
-  throw new Error('KOSMOS: remote CCR sessions not supported')
+  throw new Error('UMMAYA: remote CCR sessions not supported')
 }
 
 export const HISTORY_PAGE_SIZE = 100

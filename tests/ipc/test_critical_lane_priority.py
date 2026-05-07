@@ -7,7 +7,7 @@ the pause gate regardless of ring/queue state.
 
 Invariants asserted:
 
-* :func:`~kosmos.ipc.backpressure.is_critical_lane` classifies the expected kinds.
+* :func:`~ummaya.ipc.backpressure.is_critical_lane` classifies the expected kinds.
 * :meth:`BackpressureController.check_critical_bypass` raises
   :class:`CriticalLaneBypassError` when the controller is paused **and** the
   frame is critical, and stays silent otherwise.
@@ -28,12 +28,12 @@ from typing import Final
 
 import pytest
 
-from kosmos.ipc.backpressure import (
+from ummaya.ipc.backpressure import (
     BackpressureController,
     CriticalLaneBypassError,
     is_critical_lane,
 )
-from kosmos.ipc.frame_schema import (
+from ummaya.ipc.frame_schema import (
     AssistantChunkFrame,
     ErrorFrame,
     IPCFrame,

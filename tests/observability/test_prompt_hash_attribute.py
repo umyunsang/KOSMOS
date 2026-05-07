@@ -1,48 +1,48 @@
 # SPDX-License-Identifier: Apache-2.0
-"""T012 — RED test for `kosmos.prompt.hash` OTEL span attribute (FR-C07, SC-007).
+"""T012 — RED test for `ummaya.prompt.hash` OTEL span attribute (FR-C07, SC-007).
 
 Strategy
 --------
 Drive a minimal Context Assembly → LLMClient call through an httpx.MockTransport
 (intercepts all outbound HTTP, no live network) and an in-memory OTEL span
-exporter (monkeypatches the module-level _tracer in kosmos.llm.client following
+exporter (monkeypatches the module-level _tracer in ummaya.llm.client following
 the proven pattern from test_llm_chat_span.py).
 
 Two test cases:
 
 T012-A  test_prompt_hash_attribute_emitted_on_llm_call
         Assert that at least one finished span carries the attribute
-        ``kosmos.prompt.hash``.  This test FAILS RED now because T032 has not
+        ``ummaya.prompt.hash``.  This test FAILS RED now because T032 has not
         yet wired the attribute emission.
 
 T012-B  test_prompt_hash_equals_sha256_of_sent_bytes
         Capture the raw JSON body intercepted by MockTransport, extract
         ``messages[0].content`` (the system prompt string), encode as UTF-8,
         compute SHA-256 hex digest, and assert it equals the span's
-        ``kosmos.prompt.hash`` attribute value.  Also FAILs RED now.
+        ``ummaya.prompt.hash`` attribute value.  Also FAILs RED now.
 
 Expected failure modes (RED phase)
 -----------------------------------
 * ``PromptLoader`` import fails (T025 not yet implemented) — test collection
-  error surfaces as ImportError in the ``from kosmos.context.prompt_loader …``
+  error surfaces as ImportError in the ``from ummaya.context.prompt_loader …``
   import inside the test body.
 * Alternatively if import is skipped, the span attribute is simply absent →
-  ``AssertionError: kosmos.prompt.hash not found in span attributes``.
+  ``AssertionError: ummaya.prompt.hash not found in span attributes``.
 
 Both are intentional.  T032 is the implementation task that makes this green.
 
 Architecture
 ------------
-``SystemPromptAssembler.assemble()`` (src/kosmos/context/system_prompt.py)
+``SystemPromptAssembler.assemble()`` (src/ummaya/context/system_prompt.py)
     produces the system prompt string.
-``PromptLoader`` (src/kosmos/context/prompt_loader.py — T025, not yet present)
+``PromptLoader`` (src/ummaya/context/prompt_loader.py — T025, not yet present)
     will expose ``.get_hash(prompt_id) -> str`` and ``.all_hashes()``.
-``LLMClient.complete()`` (src/kosmos/llm/client.py)
+``LLMClient.complete()`` (src/ummaya/llm/client.py)
     sends the OpenAI-compatible JSON body; the ``stream()`` path creates the
     ``chat`` span; ``complete()`` does NOT create its own span (no _tracer call
     in the non-streaming path — see client.py).  The test therefore uses
     ``stream()`` for span coverage, which mirrors the production call path.
-The span emitting ``kosmos.prompt.hash`` is expected on the ``chat`` span
+The span emitting ``ummaya.prompt.hash`` is expected on the ``chat`` span
 created inside ``LLMClient.stream()``.
 """
 
@@ -60,27 +60,27 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
-from kosmos.context.models import SystemPromptConfig
-from kosmos.context.system_prompt import SystemPromptAssembler
-from kosmos.llm.models import ChatMessage, StreamEvent
+from ummaya.context.models import SystemPromptConfig
+from ummaya.context.system_prompt import SystemPromptAssembler
+from ummaya.llm.models import ChatMessage, StreamEvent
 
 # ---------------------------------------------------------------------------
 # Attempt to import PromptLoader — this import will FAIL RED until T025 lands.
 # The ImportError is the primary expected failure mode during Phase 3.2.
 # ---------------------------------------------------------------------------
 try:
-    from kosmos.context.prompt_loader import PromptLoader  # type: ignore[import]
+    from ummaya.context.prompt_loader import PromptLoader  # type: ignore[import]
 
     _PROMPT_LOADER_AVAILABLE = True
 except ImportError:
     _PROMPT_LOADER_AVAILABLE = False
     PromptLoader = None  # type: ignore[assignment,misc]
 
-# OTEL attribute name defined in the KOSMOS extension namespace (FR-C07, Spec 021).
-_KOSMOS_PROMPT_HASH_ATTR = "kosmos.prompt.hash"
+# OTEL attribute name defined in the UMMAYA extension namespace (FR-C07, Spec 021).
+_UMMAYA_PROMPT_HASH_ATTR = "ummaya.prompt.hash"
 
 # Minimal valid env so LLMClientConfig loads without touching the network.
-_FAKE_ENV = {"KOSMOS_FRIENDLI_TOKEN": "test-token-for-t012"}
+_FAKE_ENV = {"UMMAYA_FRIENDLI_TOKEN": "test-token-for-t012"}
 
 # Fixed streaming SSE response that MockTransport returns for every POST.
 _SSE_LINES = [
@@ -126,15 +126,15 @@ class _CapturingTransport(httpx.AsyncBaseTransport):
 
 @pytest.fixture()
 def mem_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
-    """Patch _tracer in kosmos.llm.client with a dedicated test TracerProvider."""
+    """Patch _tracer in ummaya.llm.client with a dedicated test TracerProvider."""
     monkeypatch.delenv("OTEL_SDK_DISABLED", raising=False)
     exporter = InMemorySpanExporter()
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))
 
-    import kosmos.llm.client as client_mod
+    import ummaya.llm.client as client_mod
 
-    monkeypatch.setattr(client_mod, "_tracer", provider.get_tracer("kosmos.llm.client"))
+    monkeypatch.setattr(client_mod, "_tracer", provider.get_tracer("ummaya.llm.client"))
     exporter.clear()
     return exporter
 
@@ -154,8 +154,8 @@ def _make_client_with_transport(
     test transport.  The base_url must match so relative /chat/completions
     resolves correctly.
     """
-    from kosmos.llm.client import LLMClient
-    from kosmos.llm.config import LLMClientConfig
+    from ummaya.llm.client import LLMClient
+    from ummaya.llm.config import LLMClientConfig
 
     with patch.dict(os.environ, _FAKE_ENV):
         config = LLMClientConfig()
@@ -184,7 +184,7 @@ def _assemble_system_prompt() -> str:
 
 
 # ---------------------------------------------------------------------------
-# T012-A: kosmos.prompt.hash attribute is present on the chat span
+# T012-A: ummaya.prompt.hash attribute is present on the chat span
 # ---------------------------------------------------------------------------
 
 
@@ -192,7 +192,7 @@ def _assemble_system_prompt() -> str:
 async def test_prompt_hash_attribute_emitted_on_llm_call(
     mem_exporter: InMemorySpanExporter,
 ) -> None:
-    """Assert that a span from the Context Assembly layer carries kosmos.prompt.hash.
+    """Assert that a span from the Context Assembly layer carries ummaya.prompt.hash.
 
     EXPECTED FAILURE (RED): The attribute is not yet stamped — T032 wires it.
     Additionally, if PromptLoader is not yet importable (T025 not done), this
@@ -204,7 +204,7 @@ async def test_prompt_hash_attribute_emitted_on_llm_call(
     # ImportError surfacing at collection.  Assert here so the failure is
     # explicit even if collection somehow continued.
     assert _PROMPT_LOADER_AVAILABLE, (
-        "PromptLoader not importable — kosmos.context.prompt_loader does not exist yet. "
+        "PromptLoader not importable — ummaya.context.prompt_loader does not exist yet. "
         "T025 must be implemented before T032 can make this test green."
     )
 
@@ -226,17 +226,17 @@ async def test_prompt_hash_attribute_emitted_on_llm_call(
     spans = mem_exporter.get_finished_spans()
     assert spans, "No spans were exported — is the _tracer monkeypatch in effect?"
 
-    # Find all spans from the Context Assembly layer (identified by kosmos.prompt.hash).
+    # Find all spans from the Context Assembly layer (identified by ummaya.prompt.hash).
     # T032 will stamp this attribute on the 'chat' span produced by LLMClient.stream().
     hash_attrs = [
-        dict(s.attributes or {}).get(_KOSMOS_PROMPT_HASH_ATTR)
+        dict(s.attributes or {}).get(_UMMAYA_PROMPT_HASH_ATTR)
         for s in spans
-        if _KOSMOS_PROMPT_HASH_ATTR in (s.attributes or {})
+        if _UMMAYA_PROMPT_HASH_ATTR in (s.attributes or {})
     ]
 
     # PRIMARY ASSERTION — fails RED until T032 is implemented.
     assert hash_attrs, (
-        f"{_KOSMOS_PROMPT_HASH_ATTR!r} not found in any span attribute. "
+        f"{_UMMAYA_PROMPT_HASH_ATTR!r} not found in any span attribute. "
         f"Exported spans: {[(s.name, dict(s.attributes or {})) for s in spans]}. "
         "T032 must stamp this attribute on the 'chat' span before this test goes green."
     )
@@ -251,7 +251,7 @@ async def test_prompt_hash_attribute_emitted_on_llm_call(
 async def test_prompt_hash_equals_sha256_of_sent_bytes(
     mem_exporter: InMemorySpanExporter,
 ) -> None:
-    """Assert kosmos.prompt.hash == sha256(messages[0].content.encode('utf-8')).
+    """Assert ummaya.prompt.hash == sha256(messages[0].content.encode('utf-8')).
 
     The spec says the hash covers the system prompt bytes ACTUALLY SENT — i.e.
     the UTF-8 encoding of the ``messages[0].content`` field in the OpenAI-
@@ -297,20 +297,20 @@ async def test_prompt_hash_equals_sha256_of_sent_bytes(
 
     expected_hash = hashlib.sha256(system_content.encode("utf-8")).hexdigest()
 
-    # --- Find the kosmos.prompt.hash attribute on any exported span ---
+    # --- Find the ummaya.prompt.hash attribute on any exported span ---
     spans = mem_exporter.get_finished_spans()
     assert spans, "No spans were exported."
 
     actual_hash: str | None = None
     for span in spans:
         attrs = dict(span.attributes or {})
-        if _KOSMOS_PROMPT_HASH_ATTR in attrs:
-            actual_hash = str(attrs[_KOSMOS_PROMPT_HASH_ATTR])
+        if _UMMAYA_PROMPT_HASH_ATTR in attrs:
+            actual_hash = str(attrs[_UMMAYA_PROMPT_HASH_ATTR])
             break
 
     # PRIMARY ASSERTION — fails RED until T032 is implemented.
     assert actual_hash is not None, (
-        f"{_KOSMOS_PROMPT_HASH_ATTR!r} not found on any span. "
+        f"{_UMMAYA_PROMPT_HASH_ATTR!r} not found on any span. "
         f"Exported spans: {[(s.name, dict(s.attributes or {})) for s in spans]}. "
         "T032 must stamp this attribute on the 'chat' span."
     )

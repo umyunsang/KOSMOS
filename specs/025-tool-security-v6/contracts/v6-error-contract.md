@@ -35,7 +35,7 @@ V6 violation (FR-048): unknown auth_type=<auth_type!r>; canonical mapping has no
 
 **Trigger**: `ToolRegistry.register(tool)` where `tool` was constructed via `GovAPITool.model_construct(...)` or mutated via `object.__setattr__(...)` post-construction, with `(auth_type, auth_level)` not in the canonical mapping.
 
-**Exception class**: `kosmos.tools.errors.RegistrationError`.
+**Exception class**: `ummaya.tools.errors.RegistrationError`.
 
 **Error message (stable, test-asserted)**:
 
@@ -52,10 +52,10 @@ V6 violation (FR-042): tool '<tool_id>' declares auth_type='<auth_type>' with au
 **Structured log (telemetry contract)**:
 
 ```
-ERROR kosmos.tools.registry: V6 violation at registry.register: tool_id=<id> auth_type=<auth_type> auth_level=<auth_level> allowed=[...]
+ERROR ummaya.tools.registry: V6 violation at registry.register: tool_id=<id> auth_type=<auth_type> auth_level=<auth_level> allowed=[...]
 ```
 
-Emitted before the exception is raised. Log level `ERROR`. Uses `logger.error(...)` with `%s` format strings matching the V3 backstop precedent at `src/kosmos/tools/registry.py:68-74`.
+Emitted before the exception is raised. Log level `ERROR`. Uses `logger.error(...)` with `%s` format strings matching the V3 backstop precedent at `src/ummaya/tools/registry.py:68-74`.
 
 **Fail-closed variant (FR-048)**:
 

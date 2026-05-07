@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Research use — adapted from Claude Code 2.1.88 src/services/awaySummary.ts
 //
-// KOSMOS Epic #2077 — awaySummary restored from CC source. Now that
+// UMMAYA Epic #2077 — awaySummary restored from CC source. Now that
 // services/api/claude.ts is restored with queryModelWithoutStreaming routing
 // through the stdio bridge, this file can call it directly as in CC 2.1.88.
 // Prior stub (Epic #1633) returned null unconditionally.

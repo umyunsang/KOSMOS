@@ -24,7 +24,7 @@ Removed from `ThemeToken` in `tui/src/theme/tokens.ts` AND the corresponding `da
 | 6 | `clawd_background` | `rgb(0,0,0)` | BAN-02. |
 | 7 | `briefLabelClaude` | `rgb(215,119,87)` | BAN-01. |
 
-**Migration note**: any KOSMOS component currently importing one of the 7 DELETE identifiers MUST be updated to reference the equivalent KOSMOS metaphor token in the ADD set. A TypeScript compile failure at a consumer site is the intended safety net — it is the signal that the consumer site has not been renamed.
+**Migration note**: any UMMAYA component currently importing one of the 7 DELETE identifiers MUST be updated to reference the equivalent UMMAYA metaphor token in the ADD set. A TypeScript compile failure at a consumer site is the intended safety net — it is the signal that the consumer site has not been renamed.
 
 ---
 
@@ -34,8 +34,8 @@ Added to `ThemeToken` + `darkTheme`:
 
 | # | Identifier | Primary hex (→ rgb) | Role | Ministry binding |
 |---|---|---|---|---|
-| 1 | `kosmosCore` | `#6366f1` → `rgb(99,102,241)` | structural (metaphor) | — |
-| 2 | `kosmosCoreShimmer` | `#a5b4fc` → `rgb(165,180,252)` | structural (metaphor, shimmer variant) | — |
+| 1 | `ummayaCore` | `#6366f1` → `rgb(99,102,241)` | structural (metaphor) | — |
+| 2 | `ummayaCoreShimmer` | `#a5b4fc` → `rgb(165,180,252)` | structural (metaphor, shimmer variant) | — |
 | 3 | `orbitalRing` | `#60a5fa` → `rgb(96,165,250)` | structural (metaphor) | — |
 | 4 | `orbitalRingShimmer` | `#c7d2fe` → `rgb(199,210,254)` | structural (metaphor, shimmer variant) | — |
 | 5 | `wordmark` | `#e0e7ff` → `rgb(224,231,255)` | structural (metaphor) | — |
@@ -47,8 +47,8 @@ Added to `ThemeToken` + `darkTheme`:
 
 **Notes**:
 
-- `kosmosCore` uses the gradient-end value `#6366f1`. The gradient-start `#818cf8` is applied at rendering time via layered `<Text>` elements in `AnimatedAsterisk.tsx`; it is NOT a separate token.
-- `kosmosCoreShimmer` and `orbitalRingShimmer` values are selected per research R-2 and verified against WCAG contrast in `contracts/contrast-measurements.md`.
+- `ummayaCore` uses the gradient-end value `#6366f1`. The gradient-start `#818cf8` is applied at rendering time via layered `<Text>` elements in `AnimatedAsterisk.tsx`; it is NOT a separate token.
+- `ummayaCoreShimmer` and `orbitalRingShimmer` values are selected per research R-2 and verified against WCAG contrast in `contracts/contrast-measurements.md`.
 - Ministry-to-accent mapping follows the Assumption recorded in `spec.md` (KOROAD → pink, KMA → mint, HIRA → sky, NMC → lavender). Rationale: the ADR-006 A-9 palette values are accepted verbatim; ministry assignment is Epic H's determination per `docs/design/brand-system.md § 1` explicit deferral.
 - Every `agentSatellite*` MinistryCode appears in the `docs/design/brand-system.md § 1` ministry roster. The `Koroad`, `Kma`, `Hira`, `Nmc` entries are required by the grep gate; a PR adding these tokens must either confirm the roster entries exist or include the § 1 edit in the same PR.
 
@@ -59,9 +59,9 @@ Added to `ThemeToken` + `darkTheme`:
 | Field | Before | After |
 |---|---|---|
 | Identifier | `background` | `background` (preserved) |
-| Value in `dark.ts` | `rgb(0,204,204)` (cyan placeholder inherited from CC) | `rgb(10,14,39)` (KOSMOS navy, `#0a0e27`) |
+| Value in `dark.ts` | `rgb(0,204,204)` (cyan placeholder inherited from CC) | `rgb(10,14,39)` (UMMAYA navy, `#0a0e27`) |
 
-**Rationale**: ADR-006 A-9 explicitly flags `rgb(0,204,204)` as a "placeholder inherited from CC that must be replaced with the KOSMOS navy (`#0a0e27`) in the same PR that ports the onboarding splash." The identifier `background` is retained (no grep-gate conflict because `background` is a pre-existing allow-listed token). The gradient endpoint `#1a1040` is NOT a separate token — it is applied at LogoV2 rendering time.
+**Rationale**: ADR-006 A-9 explicitly flags `rgb(0,204,204)` as a "placeholder inherited from CC that must be replaced with the UMMAYA navy (`#0a0e27`) in the same PR that ports the onboarding splash." The identifier `background` is retained (no grep-gate conflict because `background` is a pre-existing allow-listed token). The gradient endpoint `#1a1040` is NOT a separate token — it is applied at LogoV2 rendering time.
 
 ---
 
@@ -95,10 +95,10 @@ Both `tui/src/theme/tokens.ts` and `tui/src/theme/dark.ts` gain an additional he
 
 ```typescript
 // Source: .references/claude-code-sourcemap/restored-src/src/utils/theme.ts (Claude Code 2.1.88, research-use)
-// KOSMOS 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)
+// UMMAYA 브랜드 토큰으로 리네이밍됨 (ADR-006 A-9)
 ```
 
-The second line is literal Korean — acceptable under AGENTS.md "All source text in English. Only exception: Korean domain data" because the line is a brand-identity statement binding to the Korean domain (KOSMOS + ADR-006 A-9).
+The second line is literal Korean — acceptable under AGENTS.md "All source text in English. Only exception: Korean domain data" because the line is a brand-identity statement binding to the Korean domain (UMMAYA + ADR-006 A-9).
 
 ---
 

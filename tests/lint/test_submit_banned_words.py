@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """T017 — SC-002 banned-word lint test for submit.py.
 
-Scans ``src/kosmos/primitives/submit.py`` using stdlib ``re`` (no ripgrep
+Scans ``src/ummaya/primitives/submit.py`` using stdlib ``re`` (no ripgrep
 runtime dep) for the 10 domain-specific strings that are prohibited from
 appearing in the submit primitive module.
 
@@ -27,7 +27,7 @@ import pytest
 _SUBMIT_MODULE = (
     pathlib.Path(__file__).parents[2]  # repo root
     / "src"
-    / "kosmos"
+    / "ummaya"
     / "primitives"
     / "submit.py"
 )
@@ -71,7 +71,7 @@ def test_banned_word_absent(submit_source: str, banned: str) -> None:
     match = pattern.search(submit_source)
     assert match is None, (
         f"SC-002 violation: banned identifier {banned!r} found in "
-        f"src/kosmos/primitives/submit.py at position {match.start() if match else 0}. "
+        f"src/ummaya/primitives/submit.py at position {match.start() if match else 0}. "
         "Domain vocabulary (the 8 old verb names) must live in adapter modules, "
         "not the main primitive surface."
     )

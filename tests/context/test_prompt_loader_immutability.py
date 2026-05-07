@@ -1,12 +1,12 @@
 """T010 — PromptLoader immutability and cache tests (FR-C04).
 
-All tests are intentionally RED until src/kosmos/context/prompt_loader.py exists (T025).
+All tests are intentionally RED until src/ummaya/context/prompt_loader.py exists (T025).
 Uses the shared `valid_prompt_tree` fixture from tests/context/conftest.py.
 """
 
 from __future__ import annotations
 
-from kosmos.context.prompt_loader import (  # noqa: F401 — RED import
+from ummaya.context.prompt_loader import (  # noqa: F401 — RED import
     PromptLoader,
     PromptRegistryError,
 )

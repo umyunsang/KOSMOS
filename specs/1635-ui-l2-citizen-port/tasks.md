@@ -39,8 +39,8 @@
 - [x] T005 [P] Define `AgentVisibilityEntry` Zod schema and `shouldActivateSwarm` predicate in `tui/src/schemas/ui-l2/agent.ts` (data-model §3, FR-025/027) — A+C union semantics
 - [x] T006 [P] Define `SlashCommandCatalogEntry` Zod schema in `tui/src/schemas/ui-l2/slash-command.ts` (data-model §4, FR-014/029) matching `contracts/slash-commands.schema.json`
 - [x] T007 [P] Define `ErrorEnvelope` and `UfoMascotPose` Zod schemas in `tui/src/schemas/ui-l2/error.ts` and `tui/src/schemas/ui-l2/ufo.ts` (data-model §6/7, FR-012/035)
-- [x] T008 [P] Memdir read/write helper with atomic-rename and version-tag fallback in `tui/src/utils/memdir.ts` for `~/.kosmos/memdir/user/onboarding/state.json` and `~/.kosmos/memdir/user/preferences/a11y.json` (memdir-paths.md, FR-002/005)
-- [x] T009 [P] OTEL `kosmos.ui.surface` attribute emitter in `tui/src/observability/surface.ts` wrapping the existing Spec 021 emit path (FR-037, no new collector route per FR-038)
+- [x] T008 [P] Memdir read/write helper with atomic-rename and version-tag fallback in `tui/src/utils/memdir.ts` for `~/.ummaya/memdir/user/onboarding/state.json` and `~/.ummaya/memdir/user/preferences/a11y.json` (memdir-paths.md, FR-002/005)
+- [x] T009 [P] OTEL `ummaya.ui.surface` attribute emitter in `tui/src/observability/surface.ts` wrapping the existing Spec 021 emit path (FR-037, no new collector route per FR-038)
 - [x] T010 Slash command catalog SSOT in `tui/src/commands/catalog.ts` seeded with all 12 commands from data-model §4 (FR-014/029) — depends on T006
 - [x] T011 Keybinding additions in `tui/src/keybindings/defaultBindings.ts` for Ctrl-O / Shift+Tab / `/` / Y/A/N / Space/i/r/a (FR-009/014/017/022/031) matching `contracts/keybindings.schema.json` — IME safety check (`!useKoreanIME().isComposing`) on every input-mutating binding per `vision.md § Keyboard-shortcut migration`
 - [x] T012 [P] Korean i18n keys for onboarding / error / a11y / help / config / plugins / export / history in `tui/src/i18n/ko.ts` (FR-004 primary)
@@ -58,7 +58,7 @@
 
 ### Implementation for User Story 1
 
-- [x] T014 [P] [US1] `StreamingChunk` component with ~20-token chunk batching and `KOSMOS_TUI_STREAM_CHUNK_TOKENS` env override (default 20) in `tui/src/components/messages/StreamingChunk.tsx` (FR-008, ref `cc:components/Messages.tsx`, `cc:components/Message.tsx`, `cc:components/VirtualMessageList.tsx`)
+- [x] T014 [P] [US1] `StreamingChunk` component with ~20-token chunk batching and `UMMAYA_TUI_STREAM_CHUNK_TOKENS` env override (default 20) in `tui/src/components/messages/StreamingChunk.tsx` (FR-008, ref `cc:components/Messages.tsx`, `cc:components/Message.tsx`, `cc:components/VirtualMessageList.tsx`)
 - [x] T015 [P] [US1] Port `CtrlOToExpand` to `tui/src/components/PromptInput/CtrlOToExpand.tsx` with collapsed/expanded toggle (FR-009, ref `cc:components/CtrlOToExpand.tsx`)
 - [x] T016 [P] [US1] `PdfInlineViewer` with Kitty/iTerm2 graphics protocol detection and `pdf-to-img` first-page PNG render in `tui/src/components/messages/PdfInlineViewer.tsx`; fallback to OS `open`; final fallback to text-only (path + size + sha256) for headless terminals (FR-010 + edge case)
 - [x] T017 [P] [US1] Port `MarkdownRenderer` (block-level inline preview) to `tui/src/components/messages/MarkdownRenderer.tsx` (FR-011 partial, ref `cc:components/Markdown.tsx`)
@@ -66,7 +66,7 @@
 - [x] T019 [P] [US1] `ErrorEnvelope` with three differentiated styles (LLM purple+brain / Tool orange+wrench / Network red+signal-broken) in `tui/src/components/messages/ErrorEnvelope.tsx` (FR-012, ref `cc:components/FallbackToolUseErrorMessage.tsx`)
 - [x] T020 [P] [US1] `ContextQuoteBlock` with `⎿` prefix and single-border box in `tui/src/components/messages/ContextQuoteBlock.tsx` (FR-013, ref `cc:components/Message.tsx` quote glyph)
 - [x] T021 [P] [US1] Extend `PromptInputFooterSuggestions` with highlighted match + inline preview dropdown driven by the slash-command catalog in `tui/src/components/PromptInput/SlashCommandSuggestions.tsx` (FR-014, depends on T010)
-- [x] T022 [US1] Wire all UI-B components into `tui/src/screens/REPL.tsx` and emit `kosmos.ui.surface=repl` on render (FR-037, depends on T014–T021, T009)
+- [x] T022 [US1] Wire all UI-B components into `tui/src/screens/REPL.tsx` and emit `ummaya.ui.surface=repl` on render (FR-037, depends on T014–T021, T009)
 - [x] T023 [US1] Network 5-second no-chunk transition handler — switch to `ErrorEnvelope` type=`network` with retry option in `tui/src/screens/REPL.tsx` (edge case "streaming network drop")
 - [x] T024 [P] [US1] `bun:test` units in `tui/tests/components/messages/` covering `StreamingChunk`, `PdfInlineViewer`, `ErrorEnvelope`, `ContextQuoteBlock`, `MarkdownTable`, `MarkdownRenderer` (FR-008/010/011/012/013)
 - [x] T025 [P] [US1] `bun:test` units in `tui/tests/components/PromptInput/` for `CtrlOToExpand` and `SlashCommandSuggestions` (FR-009/014, SC-005 100ms-after-`/` budget)
@@ -96,7 +96,7 @@
 - [x] T036 [US2] Wire Shift+Tab mode cycle to `BypassReinforcementModal` in `tui/src/screens/REPL.tsx` (FR-022, depends on T030, T011)
 - [x] T037 [P] [US2] `bun:test` units in `tui/tests/components/permissions/` for layer header, modal, toast, bypass-reinforcement (FR-015/016/017/018/022)
 - [x] T038 [P] [US2] `bun:test` units in `tui/tests/commands/consent.test.ts` covering list output ordering and revoke idempotency (FR-019/020/021)
-- [x] T039 [US2] Emit `kosmos.ui.surface=permission_gauntlet` on every modal show via T009 helper (FR-037)
+- [x] T039 [US2] Emit `ummaya.ui.surface=permission_gauntlet` on every modal show via T009 helper (FR-037)
 
 **Checkpoint**: Permission Gauntlet works end-to-end. Combined with US1, the REPL is safe for any tool call up to Layer 3.
 
@@ -106,11 +106,11 @@
 
 **Goal**: First-launch onboarding sequence (`preflight → theme → pipa-consent → ministry-scope → terminal-setup`) with `/onboarding [step]` re-entry, Korean primary + English fallback, four accessibility toggles persisted, audit-preserving consent revocation.
 
-**Independent Test**: Wipe `~/.kosmos/memdir/user/onboarding` and `~/.kosmos/memdir/user/preferences` → `bun run tui` → walk through five steps in order → restart mid-flow and verify resume from last completed step → `/onboarding ministry-scope` reruns step 4 only → toggle `large_font` and verify ≤ 500 ms re-render — per spec.md acceptance scenarios 1–7.
+**Independent Test**: Wipe `~/.ummaya/memdir/user/onboarding` and `~/.ummaya/memdir/user/preferences` → `bun run tui` → walk through five steps in order → restart mid-flow and verify resume from last completed step → `/onboarding ministry-scope` reruns step 4 only → toggle `large_font` and verify ≤ 500 ms re-render — per spec.md acceptance scenarios 1–7.
 
 ### Implementation for User Story 3
 
-- [x] T040 [P] [US3] `PreflightStep` with Bun version / graphics-protocol / `KOSMOS_*` env-var ✓-✗ checks in `tui/src/components/onboarding/PreflightStep.tsx` (FR-001 step 1)
+- [x] T040 [P] [US3] `PreflightStep` with Bun version / graphics-protocol / `UMMAYA_*` env-var ✓-✗ checks in `tui/src/components/onboarding/PreflightStep.tsx` (FR-001 step 1)
 - [x] T041 [P] [US3] `ThemeStep` with UFO mascot idle pose preview using purple palette `#a78bfa` over `#4c1d95` in `tui/src/components/onboarding/ThemeStep.tsx` (FR-001 step 2, FR-035)
 - [x] T042 [P] [US3] `PipaConsentStep` with PIPA §26 trustee notice (visual + textual) in `tui/src/components/onboarding/PipaConsentStep.tsx` (FR-001 step 3, FR-006, ref `cc:components/Onboarding.tsx`)
 - [x] T043 [P] [US3] `MinistryScopeStep` with Spec 035 memdir helper write-through in `tui/src/components/onboarding/MinistryScopeStep.tsx` (FR-001 step 4)
@@ -118,11 +118,11 @@
 - [x] T045 [US3] `OnboardingFlow` step driver with persisted `current_step_index` in `tui/src/components/onboarding/OnboardingFlow.tsx` (FR-001/002, depends on T040–T044, ref `cc:components/Onboarding.tsx`)
 - [x] T046 [US3] `/onboarding` command with optional `<step-name>` positional arg in `tui/src/commands/onboarding.ts` (FR-003, depends on T045)
 - [x] T047 [P] [US3] `/lang ko|en` command in `tui/src/commands/lang.ts` flipping the i18n binding at runtime (FR-004)
-- [x] T048 [US3] Wire accessibility toggle persistence in `TerminalSetupStep.tsx` to T008 memdir helper writing `~/.kosmos/memdir/user/preferences/a11y.json` (FR-005, depends on T044, T008)
+- [x] T048 [US3] Wire accessibility toggle persistence in `TerminalSetupStep.tsx` to T008 memdir helper writing `~/.ummaya/memdir/user/preferences/a11y.json` (FR-005, depends on T044, T008)
 - [x] T049 [US3] Onboarding entry gate at startup in `tui/src/main.tsx` — skip when `current_step_index === 5`, resume when `< 5`, replay full sequence on `/onboarding` (FR-001 acceptance §1, depends on T045)
 - [x] T050 [P] [US3] `bun:test` units in `tui/tests/components/onboarding/` covering all five step components and the flow driver (FR-001..006)
 - [x] T051 [P] [US3] `bun:test` units in `tui/tests/commands/{onboarding,lang}.test.ts` (FR-003/004)
-- [x] T052 [US3] Emit `kosmos.ui.surface=onboarding` on each step render via T009 helper (FR-037)
+- [x] T052 [US3] Emit `ummaya.ui.surface=onboarding` on each step render via T009 helper (FR-037)
 
 **Checkpoint**: First-launch onboarding works. Combined with US1+US2, citizens have a complete entry, query, and consent loop.
 
@@ -142,7 +142,7 @@
 - [x] T056 [US4] Wire `shouldActivateSwarm` predicate (T005) into the REPL plan handler in `tui/src/screens/REPL.tsx` (FR-027 A+C union)
 - [x] T057 [US4] Subscribe `AgentVisibilityPanel` to Spec 027 mailbox event channel for live state transitions in `tui/src/components/agents/AgentVisibilityPanel.tsx` — push, no polling (FR-028, SC-007 ≤500 ms p95)
 - [x] T058 [P] [US4] `bun:test` units in `tui/tests/components/agents/` and `tui/tests/commands/agents.test.ts` including swarm-predicate boundary cases (FR-025/026/027/028)
-- [x] T059 [US4] Emit `kosmos.ui.surface=agents` on panel render via T009 helper (FR-037)
+- [x] T059 [US4] Emit `ummaya.ui.surface=agents` on panel render via T009 helper (FR-037)
 
 **Checkpoint**: Citizens can see who is doing what in real time. With US1+US2+US3+US4 the platform is ready for daily citizen use.
 
@@ -168,7 +168,7 @@
 - [x] T069 [P] [US5] Port `HistorySearchDialog` with 3-filter form (`--date FROM..TO`, `--session <id>`, `--layer <n>`) in `tui/src/components/history/HistorySearchDialog.tsx` (FR-033, ref `cc:components/HistorySearchDialog.tsx`)
 - [x] T070 [US5] `/history` command supporting all three filters with AND composition in `tui/src/commands/history.ts` (FR-033, depends on T069)
 - [x] T071 [P] [US5] `bun:test` units in `tui/tests/components/{help,config,plugins,export,history}/` and `tui/tests/commands/{help,config,plugins,export,history}.test.ts` (FR-029..033, SC-012 zero-OTEL-leak assertion in export tests)
-- [x] T072 [US5] Emit `kosmos.ui.surface={help,config,plugins,export,history}` per surface activation via T009 helper (FR-037)
+- [x] T072 [US5] Emit `ummaya.ui.surface={help,config,plugins,export,history}` per surface activation via T009 helper (FR-037)
 
 **Checkpoint**: All five user stories independently functional.
 
@@ -179,7 +179,7 @@
 **Purpose**: Integrated test sweep, manual quickstart smoke, fidelity scoring, success-criteria verification, doc updates, integrated PR.
 
 - [x] T073 [P] Run the full `bun test` suite from `tui/` and confirm all units green
-- [x] T074 Walk through `quickstart.md` steps 1–13 manually with a fresh `~/.kosmos` and capture observations in `specs/1635-ui-l2-citizen-port/quickstart-walkthrough.md`
+- [x] T074 Walk through `quickstart.md` steps 1–13 manually with a fresh `~/.ummaya` and capture observations in `specs/1635-ui-l2-citizen-port/quickstart-walkthrough.md`
 - [x] T075 Score CC 2.1.88 visual + structural fidelity across the 9 surfaces (REPL, onboarding ×5 steps, permission modal, agents panel, help, config, plugins, export, history) and write `docs/visual-fidelity/1635-scoring.md` (FR-034, SC-009 ≥ 90 %)
 - [x] T076 Verify zero new external network egress with `lsof -p $(pgrep -f 'bun.*tui')` during a representative session and append findings to `docs/visual-fidelity/1635-scoring.md` (FR-038, SC-008)
 - [x] T077 Verify `/export` PDF excludes OTEL span IDs and plugin-internal markers via `grep -E 'traceId=|spanId=|pluginInternal:'` over 20 sample export PDFs and append findings to the scoring doc (FR-032, SC-012)

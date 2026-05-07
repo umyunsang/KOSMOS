@@ -5,7 +5,7 @@ Asserts that K-EXAONE's `delta.reasoning_content` channel is forwarded to
 `StreamEvent(type="thinking_delta", thinking=...)` by `LLMClient._stream_response`.
 
 CC reference: services/api/claude.ts:2148 (`thinking_delta` content_block_delta).
-KOSMOS handler: src/kosmos/llm/client.py:788-802.
+UMMAYA handler: src/ummaya/llm/client.py:788-802.
 
 Scaffold (T005): pytest-asyncio + httpx mock skeleton. Full assertions in T019.
 """
@@ -18,9 +18,9 @@ from collections.abc import AsyncIterator
 import httpx
 import pytest
 
-from kosmos.llm.client import LLMClient
-from kosmos.llm.config import LLMClientConfig
-from kosmos.llm.models import ChatMessage, StreamEvent
+from ummaya.llm.client import LLMClient
+from ummaya.llm.config import LLMClientConfig
+from ummaya.llm.models import ChatMessage, StreamEvent
 
 
 class _MockSSEByteStream(httpx.AsyncByteStream):
@@ -49,9 +49,9 @@ def _sse_done() -> bytes:
 @pytest.fixture
 def fake_friendli_token(monkeypatch: pytest.MonkeyPatch) -> None:
     """Provide a synthetic FriendliAI token so LLMClientConfig() succeeds."""
-    monkeypatch.setenv("KOSMOS_FRIENDLI_TOKEN", "test-token-2521")
-    monkeypatch.setenv("KOSMOS_FRIENDLI_BASE_URL", "https://api.test.invalid/v1")
-    monkeypatch.setenv("KOSMOS_FRIENDLI_MODEL", "LGAI-EXAONE/K-EXAONE-236B-A23B")
+    monkeypatch.setenv("UMMAYA_FRIENDLI_TOKEN", "test-token-2521")
+    monkeypatch.setenv("UMMAYA_FRIENDLI_BASE_URL", "https://api.test.invalid/v1")
+    monkeypatch.setenv("UMMAYA_FRIENDLI_MODEL", "LGAI-EXAONE/K-EXAONE-236B-A23B")
 
 
 @pytest.mark.asyncio
@@ -115,7 +115,7 @@ async def test_reasoning_content_forwarded_as_thinking_delta(
 
     thinking_events = [e for e in events if e.type == "thinking_delta"]
     # Spec 2521 (2026-05-01) — backend pacing splits each chunk into
-    # sub-chunks of ``KOSMOS_LLM_STREAM_CHUNK_MAX_CHARS``. The contract is
+    # sub-chunks of ``UMMAYA_LLM_STREAM_CHUNK_MAX_CHARS``. The contract is
     # now "total reasoning text preserved verbatim" rather than "1:1 chunk
     # boundary preservation"; the split is invisible to the LLM-history
     # consumer (which concatenates) and to the TUI thinking renderer

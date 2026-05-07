@@ -35,10 +35,10 @@ REPO_ROOT="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
 REBUILD_BRANCH="feat/2521-llm-swap-cc-rebuild"
 DEFAULT_CC_SOURCE=".references/claude-code-sourcemap/restored-src"
 
-# Procedure-A files: (cc_source_relative, kosmos_target)
+# Procedure-A files: (cc_source_relative, ummaya_target)
 # Only one file is Procedure-A per spec.md FR-001 table.
 PROC_A_CC="src/services/api/claude.ts"
-PROC_A_KOSMOS="tui/src/services/api/claude.ts"
+PROC_A_UMMAYA="tui/src/services/api/claude.ts"
 
 # Expected SHA-256 of CC source (from parity-matrix.md File-level rows)
 EXPECTED_CC_SHA="6d3fd16e608120d502e70ec461ffb66bcbca12fa86862859606c9118f977a999"
@@ -225,13 +225,13 @@ if [[ "$SELF_TEST" -eq 1 ]]; then
       fi
     done <<< "$SWAP_COMMITS"
 
-    # 4. Verify the captured (current) PROC_A_KOSMOS SHA equals the CC SHA
+    # 4. Verify the captured (current) PROC_A_UMMAYA SHA equals the CC SHA
     #    — this is the post-byte-copy + post-swap invariant. swap commits
     #    in this Epic only modify imports + comments, not the underlying
     #    streaming-handler bytes, so the SHA stays equal to the CC SHA.
-    local KOSMOS_FILE_ABS="${REPO_ROOT}/${PROC_A_KOSMOS}"
-    if [[ ! -f "$KOSMOS_FILE_ABS" ]]; then
-      error "Self-test: KOSMOS target file missing: $KOSMOS_FILE_ABS"
+    local UMMAYA_FILE_ABS="${REPO_ROOT}/${PROC_A_UMMAYA}"
+    if [[ ! -f "$UMMAYA_FILE_ABS" ]]; then
+      error "Self-test: UMMAYA target file missing: $UMMAYA_FILE_ABS"
       return 2
     fi
 
@@ -252,7 +252,7 @@ if false; then
   _placeholder_legacy_self_test() {
     # 7. Verify final SHA-256 matches captured value
     local ACTUAL_FINAL_SHA
-    ACTUAL_FINAL_SHA="$(sha256_file "$KOSMOS_FILE_ABS")"
+    ACTUAL_FINAL_SHA="$(sha256_file "$UMMAYA_FILE_ABS")"
     if [[ "$ACTUAL_FINAL_SHA" == "$EXPECTED_FINAL_SHA" ]]; then
       info "Self-test PASS: SHA-256 match confirmed (${ACTUAL_FINAL_SHA:0:16}...)"
       return 0
@@ -277,7 +277,7 @@ main_replay() {
   info "=== Spec 2521 replay_rebuild.sh ==="
   info "Repo root : $REPO_ROOT"
   info "CC source : $CC_SOURCE_ABS"
-  info "PROC-A    : $PROC_A_CC  →  $PROC_A_KOSMOS"
+  info "PROC-A    : $PROC_A_CC  →  $PROC_A_UMMAYA"
 
   # Step 0: Verify CC source SHA-256
   info "Step 0: Verifying CC source SHA-256"
@@ -342,25 +342,25 @@ main_replay() {
   fi
 
   # Step 3: Byte-copy Procedure-A file
-  info "Step 3: Byte-copying $PROC_A_CC → $PROC_A_KOSMOS"
+  info "Step 3: Byte-copying $PROC_A_CC → $PROC_A_UMMAYA"
 
-  local KOSMOS_FILE_ABS="${REPO_ROOT}/${PROC_A_KOSMOS}"
+  local UMMAYA_FILE_ABS="${REPO_ROOT}/${PROC_A_UMMAYA}"
   if [[ "$DRY_RUN" -eq 1 ]]; then
-    info "[DRY-RUN] cp $CC_FILE_ABS $KOSMOS_FILE_ABS"
+    info "[DRY-RUN] cp $CC_FILE_ABS $UMMAYA_FILE_ABS"
   else
-    cp "$CC_FILE_ABS" "$KOSMOS_FILE_ABS"
+    cp "$CC_FILE_ABS" "$UMMAYA_FILE_ABS"
   fi
 
   # Step 4: SHA verify byte-copy
   info "Step 4: Verifying byte-copy SHA-256"
   if [[ "$DRY_RUN" -ne 1 ]]; then
     local POST_COPY_SHA
-    POST_COPY_SHA="$(sha256_file "$KOSMOS_FILE_ABS")"
+    POST_COPY_SHA="$(sha256_file "$UMMAYA_FILE_ABS")"
     if [[ "$POST_COPY_SHA" != "$ACTUAL_CC_SHA" ]]; then
       error "SHA-256 mismatch after byte-copy!"
       error "  CC source : $ACTUAL_CC_SHA"
-      error "  KOSMOS    : $POST_COPY_SHA"
-      diff "$CC_FILE_ABS" "$KOSMOS_FILE_ABS" | head -40 || true
+      error "  UMMAYA    : $POST_COPY_SHA"
+      diff "$CC_FILE_ABS" "$UMMAYA_FILE_ABS" | head -40 || true
       exit 1
     fi
     info "Byte-copy SHA-256 verified: ${POST_COPY_SHA:0:16}..."
@@ -433,7 +433,7 @@ main_replay() {
     info "[DRY-RUN] Replay plan finished — no actual changes made"
   else
     info "Working tree reflects rebuild state."
-    info "Run: git diff ${REBUILD_BRANCH} -- ${PROC_A_KOSMOS}"
+    info "Run: git diff ${REBUILD_BRANCH} -- ${PROC_A_UMMAYA}"
     info "Expected: empty diff (or only justified swap hunks)"
   fi
 }

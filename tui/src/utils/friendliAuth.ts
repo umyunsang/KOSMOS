@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — process-scoped FriendliAI API-key auth.
+// UMMAYA-original — process-scoped FriendliAI API-key auth.
 //
-// Mirrors Claude Code's login/logout lifecycle shape, but KOSMOS does not use
+// Mirrors Claude Code's login/logout lifecycle shape, but UMMAYA does not use
 // OAuth, keychain, or config-file persistence. A /login token lives only in the
 // current TUI process environment and is inherited by the lazily spawned Python
 // backend. /logout clears the process env and closes that backend.
 
-export const FRIENDLI_PRIMARY_ENV = 'KOSMOS_FRIENDLI_TOKEN'
-export const FRIENDLI_SESSION_ENV = 'KOSMOS_FRIENDLI_SESSION_ACTIVE'
+export const FRIENDLI_PRIMARY_ENV = 'UMMAYA_FRIENDLI_TOKEN'
+export const FRIENDLI_SESSION_ENV = 'UMMAYA_FRIENDLI_SESSION_ACTIVE'
 
 export type FriendliCredentialSource =
   | typeof FRIENDLI_PRIMARY_ENV

@@ -7,7 +7,7 @@
 ## Content Quality
 
 - [x] No implementation details (languages, frameworks, APIs)
-  - 메모: spec 내 "bun typecheck / bun test / pytest" 등은 검증 도구 인용 (KOSMOS 기존 stack), 신규 기술 결정 0
+  - 메모: spec 내 "bun typecheck / bun test / pytest" 등은 검증 도구 인용 (UMMAYA 기존 stack), 신규 기술 결정 0
 - [x] Focused on user value and business needs
   - 메모: stakeholder 가 미래 Lead Opus / Codex 리뷰어 / 다음 Sonnet teammate 로 명시. CORE THESIS 정합성 회복 = business need
 - [x] Written for non-technical stakeholders
@@ -24,11 +24,11 @@
 - [x] Success criteria are measurable
   - SC-001 (18 행 분류표) / SC-002~SC-004 (test parity) / SC-006 (diff 라인 매칭) / SC-007 (LOC 0) / SC-008 (deps diff 0) — 전부 정량
 - [x] Success criteria are technology-agnostic (no implementation details)
-  - 부분 PASS: SC-002 (bun typecheck), SC-003 (bun test), SC-004 (pytest) 는 KOSMOS 기존 검증 stack 인용. 본 Epic 이 코드 무변경 hygiene 이라 검증 도구 명시는 오히려 측정 명확성에 기여
+  - 부분 PASS: SC-002 (bun typecheck), SC-003 (bun test), SC-004 (pytest) 는 UMMAYA 기존 검증 stack 인용. 본 Epic 이 코드 무변경 hygiene 이라 검증 도구 명시는 오히려 측정 명확성에 기여
 - [x] All acceptance scenarios are defined
   - US1 (3 시나리오) / US2 (3 시나리오) / US3 (3 시나리오) = 9 acceptance scenarios
 - [x] Edge cases are identified
-  - EC-1 ~ EC-5 (5건) — 미분류 파일 / typecheck 깨짐 / Spec 2522 충돌 / KOSMOS-only / 미래 byte-identical 변경
+  - EC-1 ~ EC-5 (5건) — 미분류 파일 / typecheck 깨짐 / Spec 2522 충돌 / UMMAYA-only / 미래 byte-identical 변경
 - [x] Scope is clearly bounded
   - Out of Scope (5건) + Deferred (5건) 명시
 - [x] Dependencies and assumptions identified

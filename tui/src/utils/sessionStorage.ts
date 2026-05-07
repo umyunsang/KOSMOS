@@ -33,7 +33,7 @@ import {
 import { builtInCommandNames } from '../commands.js'
 import { COMMAND_NAME_TAG, TICK_TAG } from '../constants/xml.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../services/analytics/growthbook.js'
-// KOSMOS: services/api/sessionIngress deleted (claude.ai session backend). Stubs below.
+// UMMAYA: services/api/sessionIngress deleted (claude.ai session backend). Stubs below.
 const sessionIngress = {
   appendSessionLog: async (..._args: unknown[]): Promise<boolean> => false,
   getSessionLogs: async (..._args: unknown[]): Promise<unknown[]> => [],
@@ -75,7 +75,7 @@ import { getCwd } from './cwd.js'
 import { logForDebugging } from './debug.js'
 import { logForDiagnosticsNoPII } from './diagLogs.js'
 import { getClaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
-import { getKosmosSessionsDir } from './kosmosPaths.js'
+import { getUmmayaSessionsDir } from './ummayaPaths.js'
 import { isFsInaccessible } from './errors.js'
 import type { FileHistorySnapshot } from './fileHistory.js'
 import { formatFileSize } from './format.js'
@@ -202,14 +202,14 @@ export function isEphemeralToolProgress(dataType: unknown): boolean {
 }
 
 /**
- * KOSMOS canonical session storage root.
+ * UMMAYA canonical session storage root.
  *
- * Returns `~/.kosmos/memdir/user/sessions/` (or the KOSMOS_MEMDIR_USER
+ * Returns `~/.ummaya/memdir/user/sessions/` (or the UMMAYA_MEMDIR_USER
  * override). This replaces the CC-legacy `~/.claude/projects/` path for
- * all KOSMOS session writes (Spec 027 / Initiative #2290).
+ * all UMMAYA session writes (Spec 027 / Initiative #2290).
  */
 export function getProjectsDir(): string {
-  return getKosmosSessionsDir()
+  return getUmmayaSessionsDir()
 }
 
 /**

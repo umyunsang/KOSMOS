@@ -6,7 +6,7 @@
 
 ## TL;DR
 
-The KOSMOS TUI carried **three actively-mounted** permission UX components and
+The UMMAYA TUI carried **three actively-mounted** permission UX components and
 **three dormant** components that pre-dated the canonical Claude Code reference
 port.  Together they used four different direct alphabetic-key shortcuts
 (`Y/A/N`, `y/n`, `Y/N`, `Y/N + ←/→/Tab`) — patterns Claude Code 2.1.88 abandoned
@@ -14,7 +14,7 @@ in favor of arrow+Enter selection through the `<Select>` component
 (`PermissionPrompt.tsx`, `BypassPermissionsModeDialog.tsx`).
 
 Spec 1979 migrates the three **actively-mounted** components to the CC
-arrow+Enter pattern, preserving every KOSMOS-original semantic that has no CC
+arrow+Enter pattern, preserving every UMMAYA-original semantic that has no CC
 analog (Layer 1/2/3 colors, Layer 3 reinforcement, PIPA §26 trustee
 acknowledgment, 5-min idle timeout, Ctrl-C → `auto_denied_at_cancel`, UI2
 default-cancel invariant).  The three dormant components are documented with
@@ -80,7 +80,7 @@ The same approach is used by `OnboardingFlow/ThemeStep.tsx` (whose tests in
 - **FR-017**: Layer 3 red reinforcement notice (`외부 시스템 …`).
 - **FR-023**: Ctrl-C inside the modal → `auto_denied_at_cancel`.
 - **FR-024**: 5-min idle auto-deny → `timeout_denied`.
-- **FR-037 / T039**: `kosmos.ui.surface=permission_gauntlet` OTEL emission on mount.
+- **FR-037 / T039**: `ummaya.ui.surface=permission_gauntlet` OTEL emission on mount.
 - `decidedRef` idempotence guard (modal only fires `onDecide` once).
 
 ### Spec 2077 invariants (`coordinator/PermissionGauntletModal.tsx`)
@@ -116,7 +116,7 @@ existing `<Select>` inside PluginInstallFlow handles consent. This is
 correct as long as PluginInstallFlow is mounted (`shouldHidePromptInput:
 false`, ensuring stdin raw mode stays active so `useInput` fires).
 
-The `kosmosPendingConsent` state in REPL.tsx (line 860) is dead code —
+The `ummayaPendingConsent` state in REPL.tsx (line 860) is dead code —
 declared but never set. A follow-up cleanup PR could remove it.
 
 ## Test coverage
@@ -148,7 +148,7 @@ specs/1979-plugin-dx-tui-integration/migration-scope-analysis.md    (this file)
 
 Inventory of every permission-pipeline file under
 `tui/src/permissions/` and `tui/src/components/{permissions,coordinator}/`,
-classified by whether it ports a CC original 1:1 or carries pre-CC KOSMOS
+classified by whether it ports a CC original 1:1 or carries pre-CC UMMAYA
 patterns that differ from the upstream design.
 
 ### Class A — byte-identical with CC (no migration needed)
@@ -164,7 +164,7 @@ PermissionRequest.tsx          (2-line SDK import diff)
 PermissionRequestTitle.tsx
 PermissionRuleExplanation.tsx
 PermissionDecisionDebugInfo.tsx
-PermissionLayerHeader.tsx (KOSMOS-only — defensive Layer 1/2/3 glyph; no CC analog needed)
+PermissionLayerHeader.tsx (UMMAYA-only — defensive Layer 1/2/3 glyph; no CC analog needed)
 FallbackPermissionRequest.tsx
 SandboxPermissionRequest.tsx
 WorkerBadge.tsx
@@ -193,15 +193,15 @@ rules/*                         (8 components, all byte-identical)
 **Verdict**: No action.  All keystroke handling already routes through
 CC's canonical `<Select>` / `useKeybindings` pipeline.
 
-### Class B — KOSMOS-only, migrated this spec
+### Class B — UMMAYA-only, migrated this spec
 
 | File | Old pattern | New pattern | Mounted in |
 |---|---|---|---|
-| `permissions/PermissionGauntletModal.tsx` | `Y/A/N` direct | Arrow+Enter | `REPL.tsx:5523` (via `kosmosPendingConsent` — currently dormant slot) |
-| `coordinator/PermissionGauntletModal.tsx` | `y/n` direct | Arrow+Enter | `REPL.tsx:5541` via `KosmosActivePermissionGate` (production path) |
+| `permissions/PermissionGauntletModal.tsx` | `Y/A/N` direct | Arrow+Enter | `REPL.tsx:5523` (via `ummayaPendingConsent` — currently dormant slot) |
+| `coordinator/PermissionGauntletModal.tsx` | `y/n` direct | Arrow+Enter | `REPL.tsx:5541` via `UmmayaActivePermissionGate` (production path) |
 | `components/permissions/BypassReinforcementModal.tsx` | `Y/N` direct | Arrow+Enter + Y/N power-accel | `REPL.tsx:5547` (mode transition reinforcement) |
 
-### Class C — KOSMOS-only, dormant (recommended migration)
+### Class C — UMMAYA-only, dormant (recommended migration)
 
 These components are in the public API (`permissions/index.ts`) but never
 mounted in `REPL.tsx`.  They use the same Y/N + ←/→/Tab focus pattern that
@@ -250,15 +250,15 @@ once they are wired in by future epics.
   artefact pack.  Recommend opening a separate epic with `[PIPA-review]` label
   before merging the migration.
 
-### Class D — KOSMOS-only, no migration applicable
+### Class D — UMMAYA-only, no migration applicable
 
-These components have no Y/N keystroke surface; they implement KOSMOS-specific
+These components have no Y/N keystroke surface; they implement UMMAYA-specific
 mechanics (mode cycling, Layer header, ledger receipt toast, OTEL emission,
 status bar, IPC seam, command router, type definitions).
 
 ```
 permissions/ModeCycle.tsx          ← Shift+Tab mode cycler (different from Y/N)
-permissions/StatusBar.tsx          ← KOSMOS-original status badge
+permissions/StatusBar.tsx          ← UMMAYA-original status badge
 permissions/RuleListView.tsx       ← rule-list scroll view (no keystroke surface)
 permissions/otelEmit.ts            ← OTEL emitter (no UI)
 permissions/consentBridge.ts       ← IPC seam (no UI)
@@ -279,9 +279,9 @@ Y/N keystrokes.
 ## Migration proposal — execution sequence
 
 **Superseded by clean-slate decision (2026-04-28 user direction)**:
-KOSMOS = CC + 2 swaps (model: K-EXAONE, tools: citizen-centric primitives).
+UMMAYA = CC + 2 swaps (model: K-EXAONE, tools: citizen-centric primitives).
 Spec 033 5-mode spectrum / PIPA §15(2) ConsentDecision 4-tuple / NIST AAL hint
-/ Layer 1/2/3 reinforcement / dontAsk mode were KOSMOS-original speculation
+/ Layer 1/2/3 reinforcement / dontAsk mode were UMMAYA-original speculation
 not grounded in concrete Korean public-service regulation.  All Class B + C
 + supporting schema / IPC / OTEL / command-router modules deleted in three
 waves (commits `4a37056` and follow-up).
@@ -293,12 +293,12 @@ pipeline rather than re-deriving Spec 033's premature abstraction.
 
 ## Out of scope (separate epics)
 
-- **kosmosPendingConsent dead-state cleanup** in REPL.tsx — non-functional
+- **ummayaPendingConsent dead-state cleanup** in REPL.tsx — non-functional
   state declaration that can be removed after verifying no third-party
   consumer depends on its presence.
 - **PluginInstallFlow inline-mount migration** — the auxiliary dispatch
   via `setToolJSX` works because `shouldHidePromptInput: false` keeps
-  stdin raw mode hot.  No need to mount inline like `kosmosPendingConsent`
+  stdin raw mode hot.  No need to mount inline like `ummayaPendingConsent`
   unless a runtime regression appears.
 - **Replacing `useInput` with `<Select>`** — would require either patching
   ink-testing-library to drive `useKeybindings`, or making `useKeybindings`

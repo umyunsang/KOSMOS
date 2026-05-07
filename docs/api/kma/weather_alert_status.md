@@ -16,11 +16,11 @@ Retrieves the current list of active weather warnings and watches issued by the 
 | Classification | Live · Permission tier 1 |
 | Source | Korea Meteorological Administration (KMA) / data.go.kr |
 | Primitive | `lookup` |
-| Module | `src/kosmos/tools/kma/kma_weather_alert_status.py` |
+| Module | `src/ummaya/tools/kma/kma_weather_alert_status.py` |
 
 ## Envelope
 
-**Input model**: `KmaWeatherAlertStatusInput` defined at `src/kosmos/tools/kma/kma_weather_alert_status.py:58–71`.
+**Input model**: `KmaWeatherAlertStatusInput` defined at `src/ummaya/tools/kma/kma_weather_alert_status.py:58–71`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -28,7 +28,7 @@ Retrieves the current list of active weather warnings and watches issued by the 
 | `page_no` | `int` (≥1, default 1) | no | Page number, 1-indexed (`pageNo` wire parameter). |
 | `data_type` | `Literal["JSON", "XML"]` (default "JSON") | no | Response format (`dataType` wire parameter). Always leave as "JSON". |
 
-**Output model**: `KmaWeatherAlertStatusOutput` defined at `src/kosmos/tools/kma/kma_weather_alert_status.py:130–140`.
+**Output model**: `KmaWeatherAlertStatusOutput` defined at `src/ummaya/tools/kma/kma_weather_alert_status.py:130–140`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -60,7 +60,7 @@ Each `WeatherWarning` item (defined at lines 73–128) carries:
 
 - **data.go.kr endpoint**: `1360000/WthrWrnInfoService/getWthrWrnList`
 - **Source URL**: https://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrWrnList
-- **Authentication**: API key via `KOSMOS_DATA_GO_KR_API_KEY` (per Constitution IV)
+- **Authentication**: API key via `UMMAYA_DATA_GO_KR_API_KEY` (per Constitution IV)
 
 ## Permission tier rationale
 
@@ -125,7 +125,7 @@ This adapter is classified as Permission tier 1 because it returns entirely non-
 
 ```text
 Citizen: 지금 전국에 기상특보 발효 중인 거 있어요?
-KOSMOS: 현재 2건의 기상특보가 발효 중입니다. 서울 지역에 호우경보(warn_var=2, warn_stress=1)가, 부산 지역에 태풍 주의보(warn_var=6, warn_stress=0)가 발효 중입니다. 외출 시 주의하시기 바랍니다.
+UMMAYA: 현재 2건의 기상특보가 발효 중입니다. 서울 지역에 호우경보(warn_var=2, warn_stress=1)가, 부산 지역에 태풍 주의보(warn_var=6, warn_stress=0)가 발효 중입니다. 외출 시 주의하시기 바랍니다.
 ```
 
 ## Constraints

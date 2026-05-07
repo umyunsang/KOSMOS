@@ -6,7 +6,7 @@ API error — no silent skips on unavailability.  Assertions are limited to
 response *structure*, not specific data values, because weather data changes
 constantly.
 
-Required environment variable: ``KOSMOS_DATA_GO_KR_API_KEY``.
+Required environment variable: ``UMMAYA_DATA_GO_KR_API_KEY``.
 """
 
 from __future__ import annotations
@@ -15,25 +15,25 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from kosmos.tools.kma.kma_pre_warning import (
+from ummaya.tools.kma.kma_pre_warning import (
     KmaPreWarningInput,
     KmaPreWarningOutput,
 )
-from kosmos.tools.kma.kma_pre_warning import (
+from ummaya.tools.kma.kma_pre_warning import (
     _call as _pre_warning_call,
 )
-from kosmos.tools.kma.kma_short_term_forecast import (
+from ummaya.tools.kma.kma_short_term_forecast import (
     KmaShortTermForecastInput,
     KmaShortTermForecastOutput,
 )
-from kosmos.tools.kma.kma_short_term_forecast import (
+from ummaya.tools.kma.kma_short_term_forecast import (
     _call as _short_term_call,
 )
-from kosmos.tools.kma.kma_ultra_short_term_forecast import (
+from ummaya.tools.kma.kma_ultra_short_term_forecast import (
     KmaUltraShortTermForecastInput,
     KmaUltraShortTermForecastOutput,
 )
-from kosmos.tools.kma.kma_ultra_short_term_forecast import (
+from ummaya.tools.kma.kma_ultra_short_term_forecast import (
     _call as _ultra_short_term_call,
 )
 
@@ -99,7 +99,7 @@ async def test_live_kma_short_term_forecast_basic(
     Uses Seoul grid coordinates (nx=61, ny=126) and the most recently published
     base time.  Verifies that total_count is non-negative and items is a list.
     """
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
 
     base_date, base_time = _short_term_datetime()
     inp = KmaShortTermForecastInput(
@@ -135,7 +135,7 @@ async def test_live_kma_short_term_forecast_parses_to_model(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that the raw _call() dict validates cleanly into KmaShortTermForecastOutput."""
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
 
     base_date, base_time = _short_term_datetime()
     inp = KmaShortTermForecastInput(
@@ -169,7 +169,7 @@ async def test_live_kma_ultra_short_term_forecast_basic(
     Uses Seoul grid coordinates (nx=61, ny=126) and the previous half-hour slot.
     Verifies that total_count is non-negative and items is a list.
     """
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
 
     base_date, base_time = _ultra_short_term_datetime()
     inp = KmaUltraShortTermForecastInput(
@@ -204,7 +204,7 @@ async def test_live_kma_ultra_short_term_forecast_parses_to_model(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that the raw _call() dict validates cleanly into KmaUltraShortTermForecastOutput."""
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
 
     base_date, base_time = _ultra_short_term_datetime()
     inp = KmaUltraShortTermForecastInput(
@@ -238,7 +238,7 @@ async def test_live_kma_pre_warning_basic(
     ``items`` (list).  Pre-warnings may not always be active; this test
     accepts an empty result as valid.
     """
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
 
     inp = KmaPreWarningInput()
     result = await _pre_warning_call(inp)
@@ -266,7 +266,7 @@ async def test_live_kma_pre_warning_parses_to_model(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that the raw _call() dict validates cleanly into KmaPreWarningOutput."""
-    monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
 
     inp = KmaPreWarningInput()
     result = await _pre_warning_call(inp)

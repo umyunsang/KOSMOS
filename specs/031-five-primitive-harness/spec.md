@@ -3,7 +3,7 @@
 **Feature Branch**: `031-five-primitive-harness`
 **Created**: 2026-04-19
 **Status**: Draft
-**Input**: User description: KOSMOS 메인 도구 surface를 5개 domain-agnostic primitive(`lookup` / `resolve_location` / `submit` / `subscribe` / `verify`)로 정규화. Claude Code always-loaded 5-tool 셋(Read / Edit / Grep / Bash / Glob)과 대응되는 harness 동사로, 부처·기관 특화 지식은 전부 adapter layer(`src/kosmos/tools/<ministry>/<adapter>.py`)로 격리. 근거 Discussion #1051. 주요 결정사항: (1) `submit`은 구 pay / issue_certificate / submit_application / reserve_slot / check_eligibility 5개 verb를 envelope 하나로 흡수. (2) `verify`는 한국 공표 티어(published_tier) 18종을 primary로, NIST AAL은 advisory hint로 분리 — 6-family discriminated union(gongdong_injeungseo / geumyung_injeungseo / ganpyeon_injeung / digital_onepass / mobile_id / mydata). (3) `subscribe`는 webhook 없이 CBS 방송 + REST pull + RSS 2.0 3계층을 하나의 스트림으로 통합. (4) Mock 설계서는 byte/shape mirror 가능한 6개 시스템(data.go.kr 16 도메인 / K-DIDF OmniOne did:omn / BaroCert / 마이데이터 / NPKI crypto layer / CBS 재난문자)만 포함. 정부24 민원 제출·KEC XML 서명부·NPKI 포털 세션은 시나리오 문서(`docs/scenarios/`)로만 기술. (5) KOSMOS는 CA / HSM / VC issuer 운영 금지 — harness-not-reimplementation 원칙 유지. 기존 Spec 022 `lookup` / `resolve_location` 구현 유지, 신규 추가는 `submit` / `subscribe` / `verify` 3종. `docs/security/tool-template-security-spec-v1.md`는 v1.2로 개정해 TOOL_MIN_AAL 표를 published_tier + nist_aal_hint 스키마로 전환(Spec 024 / 025 shipped 계약은 v1.2 배포 시점까지 유지).
+**Input**: User description: UMMAYA 메인 도구 surface를 5개 domain-agnostic primitive(`lookup` / `resolve_location` / `submit` / `subscribe` / `verify`)로 정규화. Claude Code always-loaded 5-tool 셋(Read / Edit / Grep / Bash / Glob)과 대응되는 harness 동사로, 부처·기관 특화 지식은 전부 adapter layer(`src/ummaya/tools/<ministry>/<adapter>.py`)로 격리. 근거 Discussion #1051. 주요 결정사항: (1) `submit`은 구 pay / issue_certificate / submit_application / reserve_slot / check_eligibility 5개 verb를 envelope 하나로 흡수. (2) `verify`는 한국 공표 티어(published_tier) 18종을 primary로, NIST AAL은 advisory hint로 분리 — 6-family discriminated union(gongdong_injeungseo / geumyung_injeungseo / ganpyeon_injeung / digital_onepass / mobile_id / mydata). (3) `subscribe`는 webhook 없이 CBS 방송 + REST pull + RSS 2.0 3계층을 하나의 스트림으로 통합. (4) Mock 설계서는 byte/shape mirror 가능한 6개 시스템(data.go.kr 16 도메인 / K-DIDF OmniOne did:omn / BaroCert / 마이데이터 / NPKI crypto layer / CBS 재난문자)만 포함. 정부24 민원 제출·KEC XML 서명부·NPKI 포털 세션은 시나리오 문서(`docs/scenarios/`)로만 기술. (5) UMMAYA는 CA / HSM / VC issuer 운영 금지 — harness-not-reimplementation 원칙 유지. 기존 Spec 022 `lookup` / `resolve_location` 구현 유지, 신규 추가는 `submit` / `subscribe` / `verify` 3종. `docs/security/tool-template-security-spec-v1.md`는 v1.2로 개정해 TOOL_MIN_AAL 표를 published_tier + nist_aal_hint 스키마로 전환(Spec 024 / 025 shipped 계약은 v1.2 배포 시점까지 유지).
 
 ---
 
@@ -11,7 +11,7 @@
 
 This feature replaces the previously rejected 8-verb main surface (`check_eligibility` / `reserve_slot` / `subscribe_alert` / `pay` / `issue_certificate` / `submit_application` + 2 resolvers) with 5 domain-agnostic primitives that mirror Claude Code's always-loaded 5-tool philosophy (Grep / Read / Glob / Edit / Bash). The 8-verb design leaked ministry knowledge into the main surface (e.g. `check_eligibility.declared_income_krw`, `pay.search_hint="공과금/세금"`, `issue_certificate.certificate_type` enum) and was rejected on 2026-04-19 alongside the full reset of Spec 031 v1, Epic #994, 55 sub-issues, and Discussion #506 (PR #1050).
 
-This v2 redesign restores primitive-purity: the main surface declares *shape*; adapters own *domain*. The companion public record is Discussion #1051 (https://github.com/umyunsang/KOSMOS/discussions/1051).
+This v2 redesign restores primitive-purity: the main surface declares *shape*; adapters own *domain*. The companion public record is Discussion #1051 (https://github.com/umyunsang/UMMAYA/discussions/1051).
 
 ---
 
@@ -23,7 +23,7 @@ A citizen agent completes a public-sector write action (pay a traffic fine, requ
 
 **Why this priority**: `submit` is the largest surface-area collapse in the redesign (5 verbs → 1) and the primary evidence that ministry knowledge has been removed from the main surface. Without `submit` shipping, the 8-verb regression hasn't actually been reverted. It is also the highest-risk primitive — every failure mode of the old five verbs is inherited here and must be preserved across the adapter boundary.
 
-**Independent Test**: Build one mock adapter (e.g. `src/kosmos/tools/mock/data_go_kr/fines_pay.py`) registered under a `tool_id`, invoke `submit(tool_id=..., params=...)`, and verify the harness returns a `(transaction_id, status, adapter_receipt)` triple without the main-surface schema containing any domain-specific field. Then register a *second* mock adapter under a different domain (e.g. mock welfare application) and prove both succeed through the same envelope.
+**Independent Test**: Build one mock adapter (e.g. `src/ummaya/tools/mock/data_go_kr/fines_pay.py`) registered under a `tool_id`, invoke `submit(tool_id=..., params=...)`, and verify the harness returns a `(transaction_id, status, adapter_receipt)` triple without the main-surface schema containing any domain-specific field. Then register a *second* mock adapter under a different domain (e.g. mock welfare application) and prove both succeed through the same envelope.
 
 **Acceptance Scenarios**:
 
@@ -47,7 +47,7 @@ A citizen agent needs an `AuthContext` that reflects the *Korean* published tier
 1. **Given** a `verify` input with `family_hint="gongdong_injeungseo"` and a valid mock session context, **When** the primitive executes, **Then** the returned `AuthContext` carries `published_tier="gongdong_injeungseo_aal3"` (or the exact label ratified in the published_tier enum) and `nist_aal_hint="AAL3"` as a separate advisory field.
 2. **Given** an `AuthContext` with `published_tier="ganpyeon_injeung_kakao_aal2"` and `nist_aal_hint="AAL2"`, **When** an adapter enforces a minimum-tier policy, **Then** the adapter branches on the `published_tier` value and the `nist_aal_hint` is logged-only.
 3. **Given** the 6-family discriminated union, **When** a caller passes a family_hint that does not match the actual session credentials, **Then** `verify` returns a structured mismatch error rather than silently coercing.
-4. **Given** KOSMOS operates no CA / HSM / VC issuer, **When** `verify` is invoked, **Then** the primitive delegates credential verification to external Korean national infrastructure (금융결제원, PASS providers, 행정안전부 디지털원패스, 모바일 운전면허·주민등록증, 마이데이터 사업자) and never holds signing keys.
+4. **Given** UMMAYA operates no CA / HSM / VC issuer, **When** `verify` is invoked, **Then** the primitive delegates credential verification to external Korean national infrastructure (금융결제원, PASS providers, 행정안전부 디지털원패스, 모바일 운전면허·주민등록증, 마이데이터 사업자) and never holds signing keys.
 
 ---
 
@@ -55,7 +55,7 @@ A citizen agent needs an `AuthContext` that reflects the *Korean* published tier
 
 A citizen agent receives emergency and advisory streams (긴급재난문자, 기상특보, 교통통제, 행정처분 알림) through a single `subscribe` primitive that yields an async iterator. The harness transparently handles the three delivery modalities (3GPP CBS broadcast Message IDs 4370–4385, periodic REST polling, RSS 2.0 feed tailing) without a webhook endpoint.
 
-**Why this priority**: P2 because a Phase-1 citizen flow can survive on explicit `lookup` calls, but `subscribe` is the only primitive that expresses *passive observation* and is the natural home for the emergency-alert path that #287's TUI depends on. The webhook absence is deliberate — KOSMOS is a harness, not a hosted endpoint.
+**Why this priority**: P2 because a Phase-1 citizen flow can survive on explicit `lookup` calls, but `subscribe` is the only primitive that expresses *passive observation* and is the natural home for the emergency-alert path that #287's TUI depends on. The webhook absence is deliberate — UMMAYA is a harness, not a hosted endpoint.
 
 **Independent Test**: Register a mock CBS feed, a mock REST-pull feed, and a mock RSS feed under distinct `tool_id`s. `subscribe` to each and iterate. Confirm that events arrive through the same `AsyncIterator[Event]` interface and that subscription lifetime can be bounded.
 
@@ -140,7 +140,7 @@ Mock design documents under `docs/mock/` include *only* the 6 systems that admit
 
 - **FR-001**: System MUST expose a `submit` primitive with Pydantic v2 input schema `{tool_id: str, params: dict}` and output schema `{transaction_id: str, status: <enum>, adapter_receipt: dict}`.
 - **FR-002**: The `submit` main-surface Pydantic model MUST NOT contain any ministry-specific, service-specific, or transaction-category field.
-- **FR-003**: Ministry / service / category semantics MUST reside exclusively under `src/kosmos/tools/<ministry>/<adapter>.py` trees, each adapter owning its own Pydantic v2 input model, `async def invoke(params)` method, and registration metadata.
+- **FR-003**: Ministry / service / category semantics MUST reside exclusively under `src/ummaya/tools/<ministry>/<adapter>.py` trees, each adapter owning its own Pydantic v2 input model, `async def invoke(params)` method, and registration metadata.
 - **FR-004**: `submit` MUST produce a deterministic `transaction_id` per invocation and MUST emit an audit record per the Spec 024 `ToolCallAuditRecord` contract (preserved under v1.2 cutover rules — see FR-028).
 - **FR-005**: `submit` MUST fail closed when an adapter is missing, misregistered, or raises — never leaking an unhandled exception to the tool loop.
 
@@ -149,7 +149,7 @@ Mock design documents under `docs/mock/` include *only* the 6 systems that admit
 - **FR-006**: System MUST expose a `verify` primitive whose output is a 6-family discriminated union: `gongdong_injeungseo | geumyung_injeungseo | ganpyeon_injeung | digital_onepass | mobile_id | mydata`.
 - **FR-007**: Each family variant MUST carry a `published_tier` field selected from the 18-label enum ratified in the Spec 031 plan (exhaustive enumeration ships in the plan, not in this spec).
 - **FR-008**: Each family variant MUST carry a `nist_aal_hint` field (`AAL1 | AAL2 | AAL3`) as a *secondary advisory* — consumers MUST be able to branch on `published_tier` without reading `nist_aal_hint`.
-- **FR-009**: `verify` MUST delegate credential verification to external Korean national infrastructure (금융결제원·은행·PASS providers·행정안전부 디지털원패스·모바일 신분증·마이데이터 사업자) — KOSMOS MUST NOT operate a CA, HSM, or VC issuer (harness-not-reimplementation).
+- **FR-009**: `verify` MUST delegate credential verification to external Korean national infrastructure (금융결제원·은행·PASS providers·행정안전부 디지털원패스·모바일 신분증·마이데이터 사업자) — UMMAYA MUST NOT operate a CA, HSM, or VC issuer (harness-not-reimplementation).
 - **FR-010**: `verify` MUST return a structured mismatch error when `family_hint` disagrees with session credentials; coercion is prohibited.
 
 **`subscribe` primitive (3 modalities, no webhook)**
@@ -168,17 +168,17 @@ Mock design documents under `docs/mock/` include *only* the 6 systems that admit
 
 **Adapter tree organisation**
 
-- **FR-019**: The `src/kosmos/tools/` layout MUST organise adapters by ministry / institution (`src/kosmos/tools/<ministry>/<adapter>.py`), with a parallel mock tree at `src/kosmos/tools/mock/<ministry>/<adapter>.py`.
+- **FR-019**: The `src/ummaya/tools/` layout MUST organise adapters by ministry / institution (`src/ummaya/tools/<ministry>/<adapter>.py`), with a parallel mock tree at `src/ummaya/tools/mock/<ministry>/<adapter>.py`.
 - **FR-020**: Each adapter MUST declare a globally unique `tool_id` at registration time; collisions MUST be rejected at boot with a structured error (first-wins is the only stable resolution).
 
 **Mock scope separation**
 
 - **FR-021**: `docs/mock/` MUST contain exactly these 6 mirror-able system trees: data.go.kr (16 domains) / omnione (K-DIDF did:omn) / barocert / mydata / npki_crypto / cbs.
-- **FR-022**: Each `docs/mock/<system>/` MUST include a fixture directory, an adapter stub referencing `src/kosmos/tools/mock/<ministry>/<adapter>.py`, and a public-spec URL (OpenAPI / SDK docs / XSD / ECMA / 3GPP / Apache-2.0 reference impl).
+- **FR-022**: Each `docs/mock/<system>/` MUST include a fixture directory, an adapter stub referencing `src/ummaya/tools/mock/<ministry>/<adapter>.py`, and a public-spec URL (OpenAPI / SDK docs / XSD / ECMA / 3GPP / Apache-2.0 reference impl).
 - **FR-023**: `docs/scenarios/` MUST document exactly these 3 OPAQUE user journeys *without* mock adapters: 정부24 민원 제출, KEC XML 서명부, NPKI 포털별 challenge-response.
-- **FR-024**: Each `docs/scenarios/<journey>.md` MUST state the point at which the user transitions out of KOSMOS to the real external system.
+- **FR-024**: Each `docs/scenarios/<journey>.md` MUST state the point at which the user transitions out of UMMAYA to the real external system.
 - **FR-025**: A scenario→mock promotion path MUST be documented: when an institution discloses the previously-opaque contract (e.g. 정부24 submission API becomes public), the scenario entry moves into `docs/mock/` and gains an adapter stub.
-- **FR-026**: Adapters for OPAQUE systems MUST NOT be created in `src/kosmos/tools/mock/` — the harness must not encode fake contracts.
+- **FR-026**: Adapters for OPAQUE systems MUST NOT be created in `src/ummaya/tools/mock/` — the harness must not encode fake contracts.
 
 **Security spec v1.2**
 
@@ -198,7 +198,7 @@ Mock design documents under `docs/mock/` include *only* the 6 systems that admit
 - **`AuthContext`** — discriminated union over 6 families; each variant carries `published_tier` (primary) + `nist_aal_hint` (advisory) + family-specific session metadata.
 - **`SubscriptionEvent`** — discriminated on `kind` (`cbs_broadcast | rest_pull_tick | rss_item`); carries channel-native identifiers (CBS Message ID, REST response payload, RSS `guid`).
 - **`AdapterRegistration`** — per-adapter metadata: `tool_id`, primitive (`submit`|`subscribe`|`verify`|`lookup`|`resolve_location`), source mode (`OPENAPI`|`OOS`|`harness-only`), Pydantic input model, `published_tier_minimum`, `nist_aal_hint`.
-- **`ScenarioEntry`** — a `docs/scenarios/<journey>.md` file documenting an OPAQUE user journey with an explicit "KOSMOS ↔ real system" handoff point.
+- **`ScenarioEntry`** — a `docs/scenarios/<journey>.md` file documenting an OPAQUE user journey with an explicit "UMMAYA ↔ real system" handoff point.
 - **`MockSystemRoot`** — a `docs/mock/<system>/` directory containing fixtures, adapter stub, and public-spec URL.
 
 ---
@@ -212,7 +212,7 @@ Mock design documents under `docs/mock/` include *only* the 6 systems that admit
 - **SC-003**: After merge, every Spec 022 test passes unchanged — verified by the existing `uv run pytest specs/022-*` suite remaining green.
 - **SC-004**: After merge, `docs/mock/` contains exactly 6 system directories and `docs/scenarios/` contains exactly 3 OPAQUE journeys — verified by a `find`-based count in a docs-lint check.
 - **SC-005**: After merge, `verify` callers can branch on `published_tier` without reading `nist_aal_hint` — verified by at least one integration test that exercises a `submit` adapter enforcing a `published_tier` minimum.
-- **SC-006**: KOSMOS holds no private keys, CA certificates, or VC issuer material — verified by a grep of the repo and a `.gitignore` audit for forbidden extensions (`.pem` private halves, `.p12`, etc.) outside test fixtures explicitly scoped to mock NPKI crypto.
+- **SC-006**: UMMAYA holds no private keys, CA certificates, or VC issuer material — verified by a grep of the repo and a `.gitignore` audit for forbidden extensions (`.pem` private halves, `.p12`, etc.) outside test fixtures explicitly scoped to mock NPKI crypto.
 - **SC-007**: After `docs/security/tool-template-security-spec-v1.md` v1.2 lands, every registered 5-primitive tool declares both `published_tier_minimum` and `nist_aal_hint` — verified by a registration-time assertion.
 - **SC-008**: No new runtime dependency is introduced by this spec — verified against `pyproject.toml` diff (AGENTS.md hard rule).
 - **SC-009**: A fresh contributor reading `docs/vision.md § Claude Code` and this spec can map each of the 5 primitives to its Claude Code analogue (Grep / Read / Glob / Bash / Edit plus the two non-Claude-Code-native primitives `subscribe` / `verify`) in under 5 minutes — verified by an onboarding checklist entry.
@@ -236,8 +236,8 @@ Mock design documents under `docs/mock/` include *only* the 6 systems that admit
 
 ### Out of Scope (Permanent)
 
-- **KOSMOS-operated Certificate Authority, HSM, or Verifiable Credential issuer** — violates the harness-not-reimplementation principle (Constitution v1.3.0 Principle VI). `verify` is delegation-only.
-- **Inbound webhooks for `subscribe`** — KOSMOS is a client-side harness, not a hosted endpoint. All `subscribe` delivery is CBS broadcast + REST pull + RSS tail.
+- **UMMAYA-operated Certificate Authority, HSM, or Verifiable Credential issuer** — violates the harness-not-reimplementation principle (Constitution v1.3.0 Principle VI). `verify` is delegation-only.
+- **Inbound webhooks for `subscribe`** — UMMAYA is a client-side harness, not a hosted endpoint. All `subscribe` delivery is CBS broadcast + REST pull + RSS tail.
 - **Reverse-engineered mock adapters for OPAQUE systems** — 정부24 submission API, KEC XML 서명부 signature verification, and NPKI portal challenge-response sessions remain scenario-only. Encoding fake contracts for these would teach the harness to fail in novel ways when institutions contribute.
 - **NIST AAL as primary authorisation axis** — the prior 8-verb design used AAL-only and was rejected. `nist_aal_hint` is advisory-only by permanent design.
 
@@ -250,7 +250,7 @@ Mock design documents under `docs/mock/` include *only* the 6 systems that admit
 | Spec 027 agent-swarm integration of `submit` / `subscribe` / `verify` | Swarm contracts currently assume `lookup`-only; a separate spec amendment is needed to extend coordinator/worker messaging for write, streaming, and auth primitives | Spec 027 amendment (TBD) | #1142 |
 | `docs/mock/` 6-system stub build-out (fixture recording + adapter stubs) | Spec 031 v1 ships only the primitive contracts; per-system mock stubs are shipped incrementally post-v1 | Spec 031 v1.1+ mock rollout | #1143 |
 | `docs/scenarios/` content authoring for 3 OPAQUE journeys | Same as above — content work follows contract freeze | Spec 031 v1.1+ scenario authoring | #1144 |
-| `docs/security/tool-template-security-spec-v1.md` v1.2 documentation revision bump (filename/header/matrix update only — the v1.2 **code** implementation ships in this spec via US6: `src/kosmos/security/v12_dual_axis.py` backstop + `V12_GA_ACTIVE` cutover) | Documentation revision is decoupled from the code freeze; docs PR follows to keep the primitive-contract PR small | Security spec v1.2 documentation PR | #1145 |
-| Scenario→mock promotion automation (CI rule that blocks PR if a journey both exists in `docs/scenarios/` and has an adapter in `src/kosmos/tools/mock/`) | Manual discipline is sufficient for v1; automation needs its own spec | Spec 031 v1.2 automation pass | #1146 |
+| `docs/security/tool-template-security-spec-v1.md` v1.2 documentation revision bump (filename/header/matrix update only — the v1.2 **code** implementation ships in this spec via US6: `src/ummaya/security/v12_dual_axis.py` backstop + `V12_GA_ACTIVE` cutover) | Documentation revision is decoupled from the code freeze; docs PR follows to keep the primitive-contract PR small | Security spec v1.2 documentation PR | #1145 |
+| Scenario→mock promotion automation (CI rule that blocks PR if a journey both exists in `docs/scenarios/` and has an adapter in `src/ummaya/tools/mock/`) | Manual discipline is sufficient for v1; automation needs its own spec | Spec 031 v1.2 automation pass | #1146 |
 | CI lint rule rejecting re-introduction of legacy 8-verb names | Small but requires a separate GitHub Actions workflow definition | Spec 031 v1.1 tooling | #1147 |
 | `published_tier` enum expansion beyond the ratified 18 labels (e.g. new Korean national ID schemes) | v1 closes the enum deliberately; future expansion requires a spec amendment | Future spec amendment | #1148 |

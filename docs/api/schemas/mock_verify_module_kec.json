@@ -7,7 +7,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/mock_verify_module_kec.json",
+  "$id": "https://ummaya.example/api/schemas/mock_verify_module_kec.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": true,
   "description": "LLM-facing verify params — citizen-shape `{scope_list, purpose_ko, purpose_en}`.",

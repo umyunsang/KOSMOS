@@ -17,11 +17,11 @@ from __future__ import annotations
 
 import time
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.hira.hospital_search import register as register_hira
-from kosmos.tools.lookup import lookup
-from kosmos.tools.models import LookupSearchInput, LookupSearchResult
-from kosmos.tools.registry import ToolRegistry
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.hira.hospital_search import register as register_hira
+from ummaya.tools.lookup import lookup
+from ummaya.tools.models import LookupSearchInput, LookupSearchResult
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Helpers — minimal adapter registration without touching register_all.py
@@ -30,7 +30,7 @@ from kosmos.tools.registry import ToolRegistry
 
 def _make_koroad_registry() -> tuple[ToolRegistry, ToolExecutor]:
     """Fresh registry with only koroad_accident_hazard_search registered."""
-    from kosmos.tools.koroad.accident_hazard_search import register as register_koroad
+    from ummaya.tools.koroad.accident_hazard_search import register as register_koroad
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -145,5 +145,5 @@ class TestBm25RebuildSlo:
 # ---------------------------------------------------------------------------
 # T052-D: FR-038 fail-closed PII invariant
 # REMOVED in Epic δ #2295 — is_personal_data / requires_auth fields deleted
-# from GovAPITool as Spec 033 KOSMOS-invented residue (Constitution § II).
+# from GovAPITool as Spec 033 UMMAYA-invented residue (Constitution § II).
 # ---------------------------------------------------------------------------

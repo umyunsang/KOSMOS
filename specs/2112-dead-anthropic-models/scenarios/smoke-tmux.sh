@@ -37,13 +37,13 @@
 #
 # NOTE on "expect >" (original line 28):
 #   The original waited for ">" which matches the REPL prompt character.
-#   wait_for_pane "KOSMOS" or "tool_registry:" is the equivalent predicate here;
+#   wait_for_pane "UMMAYA" or "tool_registry:" is the equivalent predicate here;
 #   the bare ">" is too permissive (would match any shell output) and is NOT
 #   portable across pane content.
 
 # ── 1. Boot ─────────────────────────────────────────────────────────────────
 wait_for_pane "tool_registry: [0-9]+ entries verified" 60
-wait_for_pane "KOSMOS" 15
+wait_for_pane "UMMAYA" 15
 snapshot_pane boot
 
 # ── Scenario 1: Korean greeting ───────────────────────────────────────────────

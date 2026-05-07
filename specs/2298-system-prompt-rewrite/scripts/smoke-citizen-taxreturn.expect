@@ -13,15 +13,15 @@ set timeout 60
 log_file -a "specs/2298-system-prompt-rewrite/smoke-citizen-taxreturn-pty.txt"
 
 # --- Step 1: spawn TUI from tui/ subtree (where the `tui` bun script lives) ---
-spawn bash -c "cd /Users/um-yunsang/KOSMOS-w-2298/tui && bun run tui"
+spawn bash -c "cd /Users/um-yunsang/UMMAYA-w-2298/tui && bun run tui"
 
-# --- Step 2: assert KOSMOS boot banner ---
+# --- Step 2: assert UMMAYA boot banner ---
 expect {
-    -re {KOSMOS} {
-        puts "CHECKPOINTboot KOSMOS banner observed"
+    -re {UMMAYA} {
+        puts "CHECKPOINTboot UMMAYA banner observed"
     }
     timeout {
-        puts "ERROR: KOSMOS banner not observed within timeout"
+        puts "ERROR: UMMAYA banner not observed within timeout"
         exit 1
     }
 }

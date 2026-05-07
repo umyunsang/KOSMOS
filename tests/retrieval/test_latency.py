@@ -148,11 +148,11 @@ def patched_dense(monkeypatch: pytest.MonkeyPatch) -> None:
         _DeterministicEncoder384,
     )
     monkeypatch.setattr(
-        "kosmos.tools.retrieval.dense_backend.DenseBackend._find_weight_file",
+        "ummaya.tools.retrieval.dense_backend.DenseBackend._find_weight_file",
         staticmethod(lambda model_id: _FAKE_WEIGHT_PATH),
     )
     monkeypatch.setattr(
-        "kosmos.tools.retrieval.dense_backend.DenseBackend._sha256_file",
+        "ummaya.tools.retrieval.dense_backend.DenseBackend._sha256_file",
         staticmethod(lambda path: _FAKE_SHA256),
     )
 
@@ -166,19 +166,19 @@ def _build_padded_registry(backend_env: str, monkeypatch: pytest.MonkeyPatch) ->
     every other field are byte-identical to the source.
 
     Args:
-        backend_env: Value to set for KOSMOS_RETRIEVAL_BACKEND.
+        backend_env: Value to set for UMMAYA_RETRIEVAL_BACKEND.
         monkeypatch: pytest MonkeyPatch for env var injection.
 
     Returns:
         Populated ToolRegistry with len == 100.
     """
-    monkeypatch.setenv("KOSMOS_RETRIEVAL_BACKEND", backend_env)
+    monkeypatch.setenv("UMMAYA_RETRIEVAL_BACKEND", backend_env)
 
-    from kosmos.tools.hira.hospital_search import HIRA_HOSPITAL_SEARCH_TOOL
-    from kosmos.tools.kma.forecast_fetch import KMA_FORECAST_FETCH_TOOL
-    from kosmos.tools.koroad.accident_hazard_search import KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL
-    from kosmos.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
-    from kosmos.tools.registry import ToolRegistry
+    from ummaya.tools.hira.hospital_search import HIRA_HOSPITAL_SEARCH_TOOL
+    from ummaya.tools.kma.forecast_fetch import KMA_FORECAST_FETCH_TOOL
+    from ummaya.tools.koroad.accident_hazard_search import KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL
+    from ummaya.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
+    from ummaya.tools.registry import ToolRegistry
 
     seeds = [
         KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL,

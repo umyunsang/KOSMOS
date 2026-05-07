@@ -178,7 +178,7 @@
     },
     "AssistantChunkFrame": {
       "additionalProperties": false,
-      "description": "backend -> TUI: streaming assistant text delta.\n\nMirrors Anthropic's ``content_block_delta`` (CC reference at\n``kosmos/llm/_cc_reference/claude.ts:2053-2169``). The ``delta`` field\ncarries the visible answer text (``text_delta`` in CC nomenclature);\n``thinking`` carries the model's chain-of-thought (``thinking_delta``\non the Anthropic side, K-EXAONE's ``delta.reasoning_content`` on the\nOpenAI-compatible FriendliAI feed). Exactly one of ``delta`` /\n``thinking`` carries content per frame — the empty one is the\nbackward-compatible default. ``done`` terminates the message\nregardless of channel.",
+      "description": "backend -> TUI: streaming assistant text delta.\n\nMirrors Anthropic's ``content_block_delta`` (CC reference at\n``ummaya/llm/_cc_reference/claude.ts:2053-2169``). The ``delta`` field\ncarries the visible answer text (``text_delta`` in CC nomenclature);\n``thinking`` carries the model's chain-of-thought (``thinking_delta``\non the Anthropic side, K-EXAONE's ``delta.reasoning_content`` on the\nOpenAI-compatible FriendliAI feed). Exactly one of ``delta`` /\n``thinking`` carries content per frame — the empty one is the\nbackward-compatible default. ``done`` terminates the message\nregardless of channel.",
       "properties": {
         "session_id": {
           "description": "Opaque session identifier.",
@@ -514,7 +514,7 @@
     },
     "ChatMessageFunctionCall": {
       "additionalProperties": false,
-      "description": "OpenAI-spec ``function`` block carried inside ``ChatMessageToolCall``.\n\nMirrors ``kosmos.llm.models.FunctionCall`` (the LLM-client-internal model)\nbut lives on the *wire* so the TUI can transmit assistant ``tool_use``\nblocks across multi-turn boundaries (Lead-Diag-4, role='tool' wire fix).",
+      "description": "OpenAI-spec ``function`` block carried inside ``ChatMessageToolCall``.\n\nMirrors ``ummaya.llm.models.FunctionCall`` (the LLM-client-internal model)\nbut lives on the *wire* so the TUI can transmit assistant ``tool_use``\nblocks across multi-turn boundaries (Lead-Diag-4, role='tool' wire fix).",
       "properties": {
         "name": {
           "description": "Function/tool name the model requested.",
@@ -708,7 +708,7 @@
     },
     "ConsentRevokeRequestFrame": {
       "additionalProperties": false,
-      "description": "TUI -> backend: citizen requests revocation of a prior consent receipt.\n\narm 22 of the ``IPCFrame`` discriminated union (Epic 2).\n\nFields:\n- ``request_id``: UUIDv4 string; round-trips in the matching\n  ``consent_revoke_response`` frame.\n- ``receipt_id``: The ``rcpt-<id>`` value referencing the receipt file at\n  ``~/.kosmos/memdir/user/consent/<receipt_id>.json``.\n- ``scope``: ``\"once\"`` = revoke this single receipt only;\n  ``\"session-all\"`` = revoke all receipts for the current session.\n- ``reason``: Optional free-text reason logged to the audit ledger.\n\nrole allow-list: tui.",
+      "description": "TUI -> backend: citizen requests revocation of a prior consent receipt.\n\narm 22 of the ``IPCFrame`` discriminated union (Epic 2).\n\nFields:\n- ``request_id``: UUIDv4 string; round-trips in the matching\n  ``consent_revoke_response`` frame.\n- ``receipt_id``: The ``rcpt-<id>`` value referencing the receipt file at\n  ``~/.ummaya/memdir/user/consent/<receipt_id>.json``.\n- ``scope``: ``\"once\"`` = revoke this single receipt only;\n  ``\"session-all\"`` = revoke all receipts for the current session.\n- ``reason``: Optional free-text reason logged to the audit ledger.\n\nrole allow-list: tui.",
       "properties": {
         "session_id": {
           "description": "Opaque session identifier.",
@@ -792,7 +792,7 @@
           "type": "string"
         },
         "receipt_id": {
-          "description": "Target receipt identifier (rcpt-<id>). Must match an existing receipt file at ~/.kosmos/memdir/user/consent/<receipt_id>.json.",
+          "description": "Target receipt identifier (rcpt-<id>). Must match an existing receipt file at ~/.ummaya/memdir/user/consent/<receipt_id>.json.",
           "minLength": 1,
           "title": "Receipt Id",
           "type": "string"
@@ -1164,13 +1164,13 @@
           "type": "string"
         },
         "message": {
-          "description": "Human-readable short message. MUST NOT contain KOSMOS_*-prefixed env var values (FR-004 redaction rule).",
+          "description": "Human-readable short message. MUST NOT contain UMMAYA_*-prefixed env var values (FR-004 redaction rule).",
           "title": "Message",
           "type": "string"
         },
         "details": {
           "additionalProperties": true,
-          "description": "Structured error details. KOSMOS_* env var values MUST be redacted.",
+          "description": "Structured error details. UMMAYA_* env var values MUST be redacted.",
           "title": "Details",
           "type": "object"
         }
@@ -1338,7 +1338,7 @@
     },
     "NotificationPushFrame": {
       "additionalProperties": false,
-      "description": "Push from app/phone notification surfaces.\n\nCarried over the same stdio channel to keep a single correlation plane.\nrole allow-list: notification.\n\nCC parity: NO equivalent — Claude Code's notification surface is\nterminal OSC sequences (iTerm2, Kitty, Ghostty, bell) emitted\nin-process from ``ink/useTerminalNotification.ts``. There is no\npush-based IPC notification arm in CC. KOSMOS adds this arm as a\nswap-2 addition for Korean civic push channels (KMA disaster CBS,\ngovernment newsroom alerts, hospital alerts) carried over the\nsame stdio plane to keep a single correlation plane. Spec 2642\nEpic F · S7 audit recorded this finding (specs/cc-migration-audit/\nscope-S7-ipc-bridge.md § 5 Finding 3 — resolved as orthogonal\nKOSMOS swap-2 add-on, not a CC-divergence regression).",
+      "description": "Push from app/phone notification surfaces.\n\nCarried over the same stdio channel to keep a single correlation plane.\nrole allow-list: notification.\n\nCC parity: NO equivalent — Claude Code's notification surface is\nterminal OSC sequences (iTerm2, Kitty, Ghostty, bell) emitted\nin-process from ``ink/useTerminalNotification.ts``. There is no\npush-based IPC notification arm in CC. UMMAYA adds this arm as a\nswap-2 addition for Korean civic push channels (KMA disaster CBS,\ngovernment newsroom alerts, hospital alerts) carried over the\nsame stdio plane to keep a single correlation plane. Spec 2642\nEpic F · S7 audit recorded this finding (specs/cc-migration-audit/\nscope-S7-ipc-bridge.md § 5 Finding 3 — resolved as orthogonal\nUMMAYA swap-2 add-on, not a CC-divergence regression).",
       "properties": {
         "session_id": {
           "description": "Opaque session identifier.",
@@ -2036,7 +2036,7 @@
             }
           ],
           "default": null,
-          "description": "Consent receipt UUID written to ~/.kosmos/memdir/user/consent/<id>.json on granted decisions. None on deny / timeout.",
+          "description": "Consent receipt UUID written to ~/.ummaya/memdir/user/consent/<id>.json on granted decisions. None on deny / timeout.",
           "title": "Receipt Id"
         },
         "primitive_kind": {

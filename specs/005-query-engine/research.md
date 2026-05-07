@@ -28,13 +28,13 @@
 
 **Decision**: Use a discriminated union `QueryEvent` with Pydantic v2, keyed on a `type` literal field. Event types: `text_delta`, `tool_use`, `tool_result`, `usage_update`, `stop`.
 
-**Rationale**: Discriminated unions are type-safe, serializable, and match the pattern used by both Google ADK (`Event` with `EventActions`) and the existing `StreamEvent` in `kosmos.llm.models`. The `type` field enables pattern matching and downstream routing.
+**Rationale**: Discriminated unions are type-safe, serializable, and match the pattern used by both Google ADK (`Event` with `EventActions`) and the existing `StreamEvent` in `ummaya.llm.models`. The `type` field enables pattern matching and downstream routing.
 
 **Reference analysis**:
 
 - **Google ADK**: `Event` extends `LlmResponse` (Pydantic v2). Carries `EventActions` for side-effects (state_delta, artifact_delta, transfer_to_agent, requested_auth_configs). Each event has `invocation_id` (groups events per turn), `author`, `id` (UUID, refreshed on each yield), `timestamp`. Terminal detection via `is_final_response()`.
 
-- **KOSMOS LLM module**: Existing `StreamEvent` uses `type: Literal["content_delta", "tool_call_delta", "usage", "done", "error"]`. The query engine `QueryEvent` sits one layer above — it wraps LLM stream events into higher-level engine events.
+- **UMMAYA LLM module**: Existing `StreamEvent` uses `type: Literal["content_delta", "tool_call_delta", "usage", "done", "error"]`. The query engine `QueryEvent` sits one layer above — it wraps LLM stream events into higher-level engine events.
 
 **Design**:
 ```
@@ -146,7 +146,7 @@ QueryEvent:
 
 - **Google ADK**: `InvocationCostManager` tracks `max_llm_calls` and raises `LlmCallsLimitExceededError` when exceeded. Simple counter-based approach.
 
-- **Existing KOSMOS**: `UsageTracker` already tracks token budget with `can_afford()` pre-flight and `debit()` post-call. `RateLimiter` tracks per-tool per-minute limits. Both are reusable.
+- **Existing UMMAYA**: `UsageTracker` already tracks token budget with `can_afford()` pre-flight and `debit()` post-call. `RateLimiter` tracks per-tool per-minute limits. Both are reusable.
 
 **Implementation**: Add `max_turns: int` to `QueryEngineConfig`. Check `state.turn_count < config.max_turns` at loop start. Map to `StopReason.api_budget_exceeded` on violation.
 

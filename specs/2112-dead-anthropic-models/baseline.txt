@@ -1,4 +1,4 @@
-=== KOSMOS Epic #2112 Pre-change Baseline ===
+=== UMMAYA Epic #2112 Pre-change Baseline ===
 Date: 2026-04-28T07:16:22+09:00
 Branch: 2112-dead-anthropic-models
 Commit: 692d1c3808d6ea7ea22909ea9e9e02093e579291

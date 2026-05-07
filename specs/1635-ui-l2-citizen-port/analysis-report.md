@@ -60,7 +60,7 @@ Buildable: 8 / 8 covered (5 explicit, 3 implicit). Post-launch: 4 (excluded per 
 
 | Principle | Verdict | Source |
 |---|---|---|
-| I · Reference-Driven Development | PASS | research.md §1 maps every FR to CC restored-src or canonical KOSMOS spec |
+| I · Reference-Driven Development | PASS | research.md §1 maps every FR to CC restored-src or canonical UMMAYA spec |
 | II · Fail-Closed Security | PASS | FR-022/023/024 enforce auto-deny on cancel/timeout + bypass reinforcement |
 | III · Pydantic v2 Strict Typing | PASS (TS analog) | plan.md notes Zod with no `any`; backend untouched |
 | IV · Government API Compliance | N/A | No new tool adapters |

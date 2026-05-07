@@ -19,7 +19,7 @@ Files audited per T125 spec:
 |---|---|
 | Files scanned | 73 |
 | Files with attribution header (Source:) | 60 |
-| Files KOSMOS-original with explicit marker | 11 |
+| Files UMMAYA-original with explicit marker | 11 |
 | Files fixed in this audit | 3 |
 | Discrepancies (bad reference path → fixed) | 2 |
 
@@ -35,7 +35,7 @@ Full list: colorize.ts, dom.ts, focus.ts, frame.ts, get-max-width.ts, instances.
 
 - `dispatcher.ts` — `// Source: .../src/commands.ts` — reference path verified OK.
 
-### tui/src/theme/ (3 lifted + 1 KOSMOS-original)
+### tui/src/theme/ (3 lifted + 1 UMMAYA-original)
 
 - `dark.ts`, `default.ts`, `light.ts` — `// Source: .../src/utils/theme.ts` — reference path verified OK.
 - `tokens.ts` — `// Source: .../src/utils/theme.ts` — reference path verified OK.
@@ -58,11 +58,11 @@ Full list: colorize.ts, dom.ts, focus.ts, frame.ts, get-max-width.ts, instances.
 
 **Issue:** No attribution marker of any kind, despite all peer files in the directory having one.
 
-**Resolution:** This is genuinely KOSMOS-original per git commit `3a40a12` (commit message explicitly states "KOSMOS-original per ADR-004 Section 3"). Prepended:
+**Resolution:** This is genuinely UMMAYA-original per git commit `3a40a12` (commit message explicitly states "UMMAYA-original per ADR-004 Section 3"). Prepended:
 
 ```
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original React context provider for KOSMOS_TUI_THEME resolution.
+// UMMAYA-original React context provider for UMMAYA_TUI_THEME resolution.
 // No upstream analog in Claude Code — CC uses a plain object import, not React context.
 ```
 
@@ -94,21 +94,21 @@ Full list: colorize.ts, dom.ts, focus.ts, frame.ts, get-max-width.ts, instances.
 //       WorkerPendingPermission.tsx is the closest upstream analog for the worker-scoped permission modal pattern.
 ```
 
-## Files Deliberately KOSMOS-Original With No Attribution Header Required (11)
+## Files Deliberately UMMAYA-Original With No Attribution Header Required (11)
 
-These files carry `// KOSMOS-original` or `// SPDX-License-Identifier: Apache-2.0 / KOSMOS-original` as their marker. No `// Source:` header is expected per FR-011 (which only applies to lifted files):
+These files carry `// UMMAYA-original` or `// SPDX-License-Identifier: Apache-2.0 / UMMAYA-original` as their marker. No `// Source:` header is expected per FR-011 (which only applies to lifted files):
 
 | File | Rationale |
 |---|---|
-| `src/commands/help.tsx` | KOSMOS-original help renderer for slash commands |
-| `src/commands/index.ts` | KOSMOS-original command registry builder |
-| `src/commands/new.ts` | KOSMOS-original /new session command |
-| `src/commands/resume.ts` | KOSMOS-original /resume session command |
-| `src/commands/save.ts` | KOSMOS-original /save session command |
-| `src/commands/sessions.ts` | KOSMOS-original /sessions session command |
-| `src/commands/types.ts` | KOSMOS-original command type definitions |
-| `src/theme/provider.tsx` | KOSMOS-original ThemeProvider (fixed in this audit) |
-| `src/hooks/useKoreanIME.ts` | KOSMOS-original Korean IME composition hook |
+| `src/commands/help.tsx` | UMMAYA-original help renderer for slash commands |
+| `src/commands/index.ts` | UMMAYA-original command registry builder |
+| `src/commands/new.ts` | UMMAYA-original /new session command |
+| `src/commands/resume.ts` | UMMAYA-original /resume session command |
+| `src/commands/save.ts` | UMMAYA-original /save session command |
+| `src/commands/sessions.ts` | UMMAYA-original /sessions session command |
+| `src/commands/types.ts` | UMMAYA-original command type definitions |
+| `src/theme/provider.tsx` | UMMAYA-original ThemeProvider (fixed in this audit) |
+| `src/hooks/useKoreanIME.ts` | UMMAYA-original Korean IME composition hook |
 
 ## Discrepancies Where Referenced Path Does Not Resolve (Fixed Above)
 

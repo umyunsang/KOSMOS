@@ -1,5 +1,5 @@
-# SWAP/no-cc-source(2637): KOSMOS-only stub. CC source absent
+# SWAP/no-cc-source(2637): UMMAYA-only stub. CC source absent
 # (find .references/.../src -name "prompt.txt" returns 0 under ultraplan/). decisions.md S9 § Stage-1 cite.
 # CC consumer references imply CC has runtime equivalents but they're not in restored-src —
-# KOSMOS NO-OP is justified until TUI Fidelity Meta-Epic decides on KOSMOS-original implementation.
+# UMMAYA NO-OP is justified until TUI Fidelity Meta-Epic decides on UMMAYA-original implementation.
 # [P0 stub] ultraplan prompt placeholder

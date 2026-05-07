@@ -1,0 +1,72 @@
+name: Package npm
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "bin/ummaya"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "src/ummaya/**"
+      - "prompts/**"
+      - "tui/package.json"
+      - "tui/src/**"
+      - "docs/plugins/security-review.md"
+      - "tests/fixtures/plugin_validation/checklist_manifest.yaml"
+      - "scripts/check-npm-package.mjs"
+      - ".github/workflows/package-npm.yml"
+      - ".github/workflows/publish-npm.yml"
+      - ".github/workflows/publish-homebrew.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  npm-package:
+    name: npm Package Dry Run
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22.14.0"
+          package-manager-cache: false
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.12"
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: false
+          python-version: "3.12"
+
+      - name: Install npm dependencies
+        run: npm ci --ignore-scripts --legacy-peer-deps
+
+      - name: Check package contents
+        run: npm run package:check
+
+      - name: Build npm tarball
+        run: npm pack --json > package-evidence/npm-pack.json
+
+      - name: Clean global CLI smoke
+        run: |
+          prefix="${RUNNER_TEMP}/ummaya-prefix"
+          tarball="$(node -e "const report = require('./package-evidence/npm-pack.json'); const pack = Array.isArray(report) ? report[0] : report; console.log(pack.filename)")"
+          npm install --global --prefix "${prefix}" "./${tarball}"
+          "${prefix}/bin/ummaya" --version
+
+      - name: Upload package evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-package-evidence
+          path: |
+            package-evidence/*
+            *.tgz
+          if-no-files-found: error
+          retention-days: 90

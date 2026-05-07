@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""T015 — Unit tests for emit_safety_event() in kosmos.safety._span.
+"""T015 — Unit tests for emit_safety_event() in ummaya.safety._span.
 
 Tests:
 1. test_emit_redacted_event_sets_attribute
@@ -21,14 +21,14 @@ from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from opentelemetry.trace import INVALID_SPAN
 
-from kosmos.safety._models import (
+from ummaya.safety._models import (
     InjectionBlockedEvent,
     InjectionSignalSet,
     ModerationBlockedEvent,
     ModerationWarnedEvent,
     RedactedEvent,
 )
-from kosmos.safety._span import emit_safety_event
+from ummaya.safety._span import emit_safety_event
 
 # ---------------------------------------------------------------------------
 # Module-level TracerProvider + InMemorySpanExporter (shared across tests).
@@ -45,7 +45,7 @@ try:
     _EXPORTER = InMemorySpanExporter()
     _PROVIDER = TracerProvider()
     _PROVIDER.add_span_processor(SimpleSpanProcessor(_EXPORTER))
-    _TRACER = _PROVIDER.get_tracer("kosmos.safety.test_span")
+    _TRACER = _PROVIDER.get_tracer("ummaya.safety.test_span")
 finally:
     if _prev_otel_disabled is not None:
         _os.environ["OTEL_SDK_DISABLED"] = _prev_otel_disabled

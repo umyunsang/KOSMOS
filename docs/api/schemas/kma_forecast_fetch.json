@@ -13,7 +13,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/kma_forecast_fetch.json",
+  "$id": "https://ummaya.example/api/schemas/kma_forecast_fetch.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "Input parameters for the kma_forecast_fetch adapter.\n\nThe adapter converts (lat, lon) internally to KMA grid (nx, ny) using\nLambert Conformal Conic projection — callers must NOT supply nx/ny.",

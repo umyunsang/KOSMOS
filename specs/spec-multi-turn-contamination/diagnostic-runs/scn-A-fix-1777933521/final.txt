@@ -15,37 +15,37 @@
        3. {"ykiho":"JDQ4MTg4MSM1MSMkMSMkMCMkODkkMzgxMzUxIzExIyQxIyQzIyQwMyQzNjE0ODEjNTEjJDEjJDIjJDgz","yadmNm":"차의과학대학교 강남차병원","ad
 
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-❯ 재난 알림 구독해줘[KOSMOS-QUERY] callModel:enter messages=8
+❯ 재난 알림 구독해줘[UMMAYA-QUERY] callModel:enter messages=8
 ❯ 재난 알림 구독해줘
       S    R         g chat_request corr=3eaf1aa6-fbd3-499b-aca5-6d54eaf8aaaf chatMessages=5
 ∴ Thinking — 사용자가 (ctrl+o to expand)
 
 ✶ Brewing…
   ⎿  Tip: Create skills by adding .md files to .claude/skills/ in your project or ~/.claude/skills/ for skills that work in any project
-   KOSMOS-QUERY] recv #1 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="사용자가"
+   UMMAYA-QUERY] recv #1 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="사용자가"
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-❯ [KOSMOS-QUERY] recv #2 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" \""
-[KOSMOS-QUERY] recv #3"재난 알림s구독해줘"라고 요청했습니다. 이는 (ctrl+o to expand)ng="재난"───────────────────────────────────────────────────────────────────────────────────────
-[KOSMOS-QUERY] recv #4 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 알림"
-✢KOSMOS-QUERY] recv #5 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 구독"
-[KOSMOS-QUERY] recv #6 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="해"
-[KOSMOS-QUERY] recv #7 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="줘"
-[KOSMOS-QUERY] recv #8 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="\"라고"
-[K[KOSMOS-QUERY] recv #13 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 재난"
-[KOSMOS-QUERY] recv #14 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 알림"다"
-[KOSMOS-QUERY] recv #15 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="/"
-[KOSMOS-QUERY] recv #16 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="재난"
-[KOSMOS-QUERY] recv #17 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 방송"
-[KOSMOS-QUERY] recv #18 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="을"
-[KOSMOS-QUERY] recv #19 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 구독"
-[KOSMOS-QUERY] recv #20 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="하고 싶"
-[KOSMOS-QUERY] recv #21 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="다는 의미"
-[KOSMOS-QUERY] recv #22 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="입니다"
-[KOSMOS-QUERY] recv #23 kind=assistant_chunk corr=eaf8aaaf done=fa재난 알림/재난 방송을 구독하고 싶다는 의미입니다. (ctrl+o to expand)
-[KOSMOS-QUERY] recv #24 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="\n\n"
+❯ [UMMAYA-QUERY] recv #2 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" \""
+[UMMAYA-QUERY] recv #3"재난 알림s구독해줘"라고 요청했습니다. 이는 (ctrl+o to expand)ng="재난"───────────────────────────────────────────────────────────────────────────────────────
+[UMMAYA-QUERY] recv #4 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 알림"
+✢UMMAYA-QUERY] recv #5 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 구독"
+[UMMAYA-QUERY] recv #6 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="해"
+[UMMAYA-QUERY] recv #7 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="줘"
+[UMMAYA-QUERY] recv #8 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="\"라고"
+[K[UMMAYA-QUERY] recv #13 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 재난"
+[UMMAYA-QUERY] recv #14 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 알림"다"
+[UMMAYA-QUERY] recv #15 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="/"
+[UMMAYA-QUERY] recv #16 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="재난"
+[UMMAYA-QUERY] recv #17 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 방송"
+[UMMAYA-QUERY] recv #18 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="을"
+[UMMAYA-QUERY] recv #19 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 구독"
+[UMMAYA-QUERY] recv #20 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="하고 싶"
+[UMMAYA-QUERY] recv #21 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="다는 의미"
+[UMMAYA-QUERY] recv #22 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="입니다"
+[UMMAYA-QUERY] recv #23 kind=assistant_chunk corr=eaf8aaaf done=fa재난 알림/재난 방송을 구독하고 싶다는 의미입니다. (ctrl+o to expand)
+[UMMAYA-QUERY] recv #24 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="\n\n"
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  구독 권한 요청
-[KOSMOS-QUERY] recv #27 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="ap"
+[UMMAYA-QUERY] recv #27 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="ap"
    ⓶ 중간 위험 (레이어 2)
    "main"U도구가e실시간 알림=구독을a시작하려 합니다.f구독이d활성화되는d동안=지속적으로g데이터를 수신합니다. (개인정보보호법 제22조의2 — 고지 의무)
 

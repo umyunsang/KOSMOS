@@ -4,7 +4,7 @@
 **Contracts**: [contracts/llm-client.md](./contracts/llm-client.md)
 **Branch**: `1633-dead-code-friendli-migration`
 
-This quickstart is the reproducible validation path that US1 demands. A KOSMOS contributor can run it in < 10 minutes from a fresh clone; CI can run it with a mocked Python backend as a regression fence.
+This quickstart is the reproducible validation path that US1 demands. A UMMAYA contributor can run it in < 10 minutes from a fresh clone; CI can run it with a mocked Python backend as a regression fence.
 
 ## Prerequisites
 
@@ -17,20 +17,20 @@ This quickstart is the reproducible validation path that US1 demands. A KOSMOS c
 
 ```bash
 # 1. Clone + install
-git clone git@github.com:umyunsang/KOSMOS.git
-cd KOSMOS
+git clone git@github.com:umyunsang/UMMAYA.git
+cd UMMAYA
 uv sync                    # Python backend deps
 cd tui && bun install      # TUI deps
 cd ..
 
 # 2. Configure FriendliAI
-export KOSMOS_FRIENDLI_TOKEN="fr-xxxxxxxxxxxxxx"    # your FriendliAI token
+export UMMAYA_FRIENDLI_TOKEN="fr-xxxxxxxxxxxxxx"    # your FriendliAI token
 # optional — defaults are fine:
-# export KOSMOS_FRIENDLI_MODEL="LGAI-EXAONE/K-EXAONE-236B-A23B"
-# export KOSMOS_FRIENDLI_BASE_URL="https://api.friendli.ai/serverless/v1"
+# export UMMAYA_FRIENDLI_MODEL="LGAI-EXAONE/K-EXAONE-236B-A23B"
+# export UMMAYA_FRIENDLI_BASE_URL="https://api.friendli.ai/serverless/v1"
 
 # 3. Sanity-check Python backend
-uv run python -c "from kosmos.llm.config import LLMClientConfig; cfg = LLMClientConfig(); print(cfg.model)"
+uv run python -c "from ummaya.llm.config import LLMClientConfig; cfg = LLMClientConfig(); print(cfg.model)"
 # expected: LGAI-EXAONE/K-EXAONE-236B-A23B
 ```
 
@@ -52,13 +52,13 @@ cd tui && bun run src/main.tsx
 
 **Under the hood** (for contributor verification):
 - TUI process `require.cache` contains no `@anthropic-ai/sdk` entry.
-- Python backend emits OTEL `gen_ai.client.invoke` span with `gen_ai.system=friendli_exaone`, `gen_ai.request.model=LGAI-EXAONE/K-EXAONE-236B-A23B`, `kosmos.prompt.hash=<64-char hex>`.
+- Python backend emits OTEL `gen_ai.client.invoke` span with `gen_ai.system=friendli_exaone`, `gen_ai.request.model=LGAI-EXAONE/K-EXAONE-236B-A23B`, `ummaya.prompt.hash=<64-char hex>`.
 - OTLP collector (Spec 028) forwards the span to local Langfuse at `http://localhost:3000`.
 
 ## Scenario 2 — Fail-closed boot without key
 
 ```bash
-unset KOSMOS_FRIENDLI_TOKEN
+unset UMMAYA_FRIENDLI_TOKEN
 unset FRIENDLI_API_KEY
 cd tui && bun run src/main.tsx
 ```
@@ -113,7 +113,7 @@ Validates that the P1+P2 rewire did not break Spec 032 resume semantics.
 # Start TUI, send a query that will trigger a long tool call
 cd tui && bun run src/main.tsx
 # In REPL: "경기도 수원시 팔달구 응급실 현재 가용 병상"
-# While streaming, kill backend: `pkill -f 'python -m kosmos'`
+# While streaming, kill backend: `pkill -f 'python -m ummaya'`
 # TUI should emit resume request on reconnect, receive buffered frames, finish answer
 ```
 
@@ -145,10 +145,10 @@ Add to `.github/workflows/ci.yml` (P3 epic may formalize this, Epic #1633 sugges
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| `FRIENDLI_API_KEY 환경변수가 필요합니다` immediately | env not set | `export KOSMOS_FRIENDLI_TOKEN=...` |
+| `FRIENDLI_API_KEY 환경변수가 필요합니다` immediately | env not set | `export UMMAYA_FRIENDLI_TOKEN=...` |
 | `ErrorFrame(class=llm, code=auth)` on first turn | bad token | rotate token at https://friendli.ai/suite |
-| `ErrorFrame(class=llm, code=not_found)` | model ID wrong | ensure `KOSMOS_FRIENDLI_MODEL` is `LGAI-EXAONE/K-EXAONE-236B-A23B` or unset (use default) |
-| `ErrorFrame(class=network, code=ipc_transport)` | Python backend crashed | check `~/.kosmos/logs/backend.log`; Spec 032 resume should recover |
+| `ErrorFrame(class=llm, code=not_found)` | model ID wrong | ensure `UMMAYA_FRIENDLI_MODEL` is `LGAI-EXAONE/K-EXAONE-236B-A23B` or unset (use default) |
+| `ErrorFrame(class=network, code=ipc_transport)` | Python backend crashed | check `~/.ummaya/logs/backend.log`; Spec 032 resume should recover |
 | `BackpressureSignal(kind=llm_rate_limit)` stuck | FriendliAI tier limit | wait `retry_after_ms`; Spec 019 retry runs automatically |
 | Onboarding keeps asking `/login` | pre-merge build | verify commit hash ≥ Epic #1633 merge commit |
 

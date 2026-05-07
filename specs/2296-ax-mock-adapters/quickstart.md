@@ -4,55 +4,55 @@
 **Plan**: [plan.md](./plan.md)
 **Date**: 2026-04-29
 
-This document walks through the canonical Epic ε demonstration: a Korean citizen tells KOSMOS "내 종합소득세 신고해줘", and the LLM autonomously chains `verify(modid)` → `lookup(hometax_simplified)` → `submit(hometax_taxreturn)` → returns 접수번호. Every step uses Mock adapters with the six transparency fields fully populated.
+This document walks through the canonical Epic ε demonstration: a Korean citizen tells UMMAYA "내 종합소득세 신고해줘", and the LLM autonomously chains `verify(modid)` → `lookup(hometax_simplified)` → `submit(hometax_taxreturn)` → returns 접수번호. Every step uses Mock adapters with the six transparency fields fully populated.
 
 ---
 
 ## Prerequisites
 
 - macOS or Linux developer machine
-- KOSMOS worktree at `/Users/um-yunsang/KOSMOS-w-2296` checked out on branch `2296-ax-mock-adapters` (Epic ε post-merge)
+- UMMAYA worktree at `/Users/um-yunsang/UMMAYA-w-2296` checked out on branch `2296-ax-mock-adapters` (Epic ε post-merge)
 - Python 3.12+ via `uv`
 - Bun v1.2.x for the TUI
 - `expect` for the Layer 2 PTY scenario
 - `vhs` ≥ 0.11 for the Layer 4 visual scenario
-- `KOSMOS_FRIENDLI_API_KEY` set in `.env` (the LLM must be reachable for the full chain; for offline runs, see § 6 alternative)
+- `UMMAYA_FRIENDLI_API_KEY` set in `.env` (the LLM must be reachable for the full chain; for offline runs, see § 6 alternative)
 
 ## 1. Install + boot the Mock backend
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2296
+cd /Users/um-yunsang/UMMAYA-w-2296
 uv sync
-uv run python -m kosmos.ipc.demo.mock_backend &  # starts the Mock backend listening on stdio
-# (Note: the backend is normally launched by the TUI via KOSMOS_BACKEND_CMD; this manual launch
+uv run python -m ummaya.ipc.demo.mock_backend &  # starts the Mock backend listening on stdio
+# (Note: the backend is normally launched by the TUI via UMMAYA_BACKEND_CMD; this manual launch
 #  is only useful for backend-side smoke. For the full chain, skip to § 2.)
 ```
 
 Expected backend boot output (stderr — stdout is reserved for JSONL frames):
 
 ```text
-INFO  kosmos.tools.register_all  Registered tool: resolve_location
-INFO  kosmos.tools.register_all  Registered tool: lookup
-INFO  kosmos.tools.register_all  Registered tool: koroad_accident_search
+INFO  ummaya.tools.register_all  Registered tool: resolve_location
+INFO  ummaya.tools.register_all  Registered tool: lookup
+INFO  ummaya.tools.register_all  Registered tool: koroad_accident_search
 ... (12 Live tools)
-INFO  kosmos.tools.mock          Registered mock adapter: mock_verify_mobile_id (verify)
+INFO  ummaya.tools.mock          Registered mock adapter: mock_verify_mobile_id (verify)
 ... (5 retrofitted existing verify mocks)
-INFO  kosmos.tools.mock          Registered mock adapter: mock_verify_module_simple_auth (verify)
+INFO  ummaya.tools.mock          Registered mock adapter: mock_verify_module_simple_auth (verify)
 ... (5 new verify mocks)
-INFO  kosmos.tools.mock          Registered mock adapter: mock_submit_module_hometax_taxreturn (submit)
+INFO  ummaya.tools.mock          Registered mock adapter: mock_submit_module_hometax_taxreturn (submit)
 ... (3 new submit mocks)
-INFO  kosmos.tools.mock          Registered mock adapter: mock_lookup_module_hometax_simplified (lookup, GovAPITool)
+INFO  ummaya.tools.mock          Registered mock adapter: mock_lookup_module_hometax_simplified (lookup, GovAPITool)
 ... (2 new lookup mocks)
-INFO  kosmos.ipc.demo.mock_backend  All 20 mock surfaces registered. Emitting AdapterManifestSyncFrame ...
-INFO  kosmos.ipc.adapter_manifest_emitter  Manifest emitted: 16 main-registry entries + 18 sub-registry entries; SHA-256=8a7b6c5d...
-INFO  kosmos.ipc.demo.mock_backend  Listening on stdio.
+INFO  ummaya.ipc.demo.mock_backend  All 20 mock surfaces registered. Emitting AdapterManifestSyncFrame ...
+INFO  ummaya.ipc.adapter_manifest_emitter  Manifest emitted: 16 main-registry entries + 18 sub-registry entries; SHA-256=8a7b6c5d...
+INFO  ummaya.ipc.demo.mock_backend  Listening on stdio.
 ```
 
 ## 2. Launch the TUI against the Mock backend
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2296
-KOSMOS_BACKEND_CMD="uv run python -m kosmos.ipc.demo.mock_backend" \
+cd /Users/um-yunsang/UMMAYA-w-2296
+UMMAYA_BACKEND_CMD="uv run python -m ummaya.ipc.demo.mock_backend" \
   bun run tui
 ```
 
@@ -62,7 +62,7 @@ Expected first frames the TUI processes from the backend:
 2. **`AdapterManifestSyncFrame`** — populates the TS-side adapter cache (NEW — gates `validateInput` from the cold-boot race)
 3. Heartbeat / idle
 
-The TUI shows the KOSMOS branding boot screen → idle prompt.
+The TUI shows the UMMAYA branding boot screen → idle prompt.
 
 ## 3. The citizen turn
 
@@ -99,7 +99,7 @@ The citizen presses `Y`. The verify adapter:
 
 - Simulates the modid biometric ceremony (3-second simulated wait — actually instant in Mock for smoke speed)
 - Constructs a `DelegationToken` with `scope="lookup:hometax.simplified,submit:hometax.tax-return"`, `expires_at=now+24h`, `issuer_did="did:web:mobileid.go.kr"`
-- Appends a `delegation_issued` event to `~/.kosmos/memdir/user/consent/<today>.jsonl`
+- Appends a `delegation_issued` event to `~/.ummaya/memdir/user/consent/<today>.jsonl`
 - Returns the token in a `DelegationContext` to the LLM
 
 The LLM stores the token in tool-call context and emits:
@@ -128,7 +128,7 @@ The TUI renders the LLM's final response:
 ## 4. Verify the audit ledger
 
 ```bash
-tail -3 ~/.kosmos/memdir/user/consent/$(date +%Y-%m-%d).jsonl | jq -c .
+tail -3 ~/.ummaya/memdir/user/consent/$(date +%Y-%m-%d).jsonl | jq -c .
 ```
 
 Expected output (3 lines, all sharing the same `delegation_token` value):
@@ -146,15 +146,15 @@ This satisfies SC-001 (under 30 s wall-clock) + SC-002 (3 ledger entries, matchi
 ### 5.1 Layer 2 — PTY text-log scenario (FR-021)
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2296
+cd /Users/um-yunsang/UMMAYA-w-2296
 expect specs/2296-ax-mock-adapters/scripts/smoke-citizen-taxreturn.expect \
   | tee specs/2296-ax-mock-adapters/smoke-citizen-taxreturn-pty.txt
 ```
 
 The `.expect` script:
 
-1. spawns `bun run tui` with `KOSMOS_BACKEND_CMD` set to the Mock backend
-2. waits for KOSMOS branding to appear
+1. spawns `bun run tui` with `UMMAYA_BACKEND_CMD` set to the Mock backend
+2. waits for UMMAYA branding to appear
 3. sends `내 종합소득세 신고해줘\r`
 4. waits for permission prompt
 5. sends `Y\r`
@@ -167,14 +167,14 @@ The captured `.txt` is committed to the PR for LLM grep-review (auto-memory `fee
 ### 5.2 Layer 4 — vhs visual + Screenshot keyframes (FR-022)
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2296
+cd /Users/um-yunsang/UMMAYA-w-2296
 vhs specs/2296-ax-mock-adapters/scripts/smoke-citizen-taxreturn.tape
 ```
 
 The `.tape` file emits:
 
 - `Output specs/2296-ax-mock-adapters/smoke-citizen-taxreturn.gif` (animated, sharable)
-- `Screenshot specs/2296-ax-mock-adapters/smoke-keyframe-1-boot.png` — boot + KOSMOS branding visible
+- `Screenshot specs/2296-ax-mock-adapters/smoke-keyframe-1-boot.png` — boot + UMMAYA branding visible
 - `Screenshot specs/2296-ax-mock-adapters/smoke-keyframe-2-input.png` — citizen query typed in
 - `Screenshot specs/2296-ax-mock-adapters/smoke-keyframe-3-action.png` — 접수번호 surfaced
 
@@ -182,10 +182,10 @@ Lead Opus uses Read tool on each PNG to verify visual content before push (per A
 
 ## 6. Offline / no-LLM smoke
 
-If `KOSMOS_FRIENDLI_API_KEY` is unavailable, replace step 3's "natural language to LLM" path with a scripted tool-call sequence using the backend RPC harness:
+If `UMMAYA_FRIENDLI_API_KEY` is unavailable, replace step 3's "natural language to LLM" path with a scripted tool-call sequence using the backend RPC harness:
 
 ```bash
-uv run python -m kosmos.ipc.demo.scripted_chain \
+uv run python -m ummaya.ipc.demo.scripted_chain \
   --scenario specs/2296-ax-mock-adapters/scenarios/citizen-taxreturn.json
 ```
 
@@ -196,7 +196,7 @@ The scripted-chain harness reads a JSON file describing the verify → lookup �
 ```bash
 # In a separate terminal while the TUI is running:
 uv run python -c "
-from kosmos.ipc.demo.mock_backend import latest_manifest_emit_log
+from ummaya.ipc.demo.mock_backend import latest_manifest_emit_log
 print(latest_manifest_emit_log())
 "
 ```

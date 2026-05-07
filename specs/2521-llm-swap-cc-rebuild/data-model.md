@@ -18,7 +18,7 @@ Read-only source-of-truth file under `.references/claude-code-sourcemap/restored
 
 **Validation**: `sha256` MUST match `sha256sum <path> | awk '{print $1}'` at audit time. Drift in restored-src triggers a manual re-validation pass (deferred per spec § Future Work).
 
-## E-2 — `KOSMOSTargetFile`
+## E-2 — `UMMAYATargetFile`
 
 A file in the rebuild scope. One of the 4 in-scope files.
 
@@ -43,18 +43,18 @@ A git commit on the rebuild branch that applies a Step B (Procedure-A) or Step C
 |---|---|---|
 | `sha` | string (40 hex) | Git commit SHA |
 | `category` | enum (4 values) | One of: `SWAP/llm-provider`, `SWAP/tool-domain`, `SWAP/anti-anthropic-1p`, `SWAP/identifier-rename` |
-| `target_files` | List[KOSMOSTargetFile.path] | Files the commit modifies |
+| `target_files` | List[UMMAYATargetFile.path] | Files the commit modifies |
 | `cc_reference_lines` | string | Format `<cc-path>:<line-range>` citing the CC source affected |
-| `kosmos_target_lines` | string | Format `<kosmos-path>:<line-range>` showing where the diff lands |
+| `ummaya_target_lines` | string | Format `<ummaya-path>:<line-range>` showing where the diff lands |
 | `justification` | string | Free text explaining why this swap is necessary (≥1 sentence) |
 
 **Validation** (audit script): commit subject MUST start with `swap/<category>:` (case-insensitive). Commit body MUST contain a `Refs:` line citing `cc_reference_lines`. Commits without these are flagged as drift.
 
 **Allowed category contents**:
-- `SWAP/llm-provider`: Anthropic SDK calls → KOSMOS IPC bridge; Anthropic-API endpoint URLs → FriendliAI URLs; OAuth/billing call sites → no-op or removed.
-- `SWAP/tool-domain`: CC dev-tool references (e.g., Bash, Edit, NotebookEdit) → KOSMOS public-API primitive references.
+- `SWAP/llm-provider`: Anthropic SDK calls → UMMAYA IPC bridge; Anthropic-API endpoint URLs → FriendliAI URLs; OAuth/billing call sites → no-op or removed.
+- `SWAP/tool-domain`: CC dev-tool references (e.g., Bash, Edit, NotebookEdit) → UMMAYA public-API primitive references.
 - `SWAP/anti-anthropic-1p`: removal of claude.ai 1P features (sync, billing, telemetry) — only deletions, no replacements.
-- `SWAP/identifier-rename`: Claude/Anthropic/claude.ai brand tokens → KOSMOS/EXAONE/FriendliAI tokens. Pure rename diffs; no functional changes.
+- `SWAP/identifier-rename`: Claude/Anthropic/claude.ai brand tokens → UMMAYA/EXAONE/FriendliAI tokens. Pure rename diffs; no functional changes.
 
 ## E-4 — `ParityAuditOutcome`
 
@@ -73,7 +73,7 @@ Output of `scripts/llm_swap_parity_audit.sh` per audit run.
 
 | Field | Type | Description |
 |---|---|---|
-| `kosmos_path` | string | KOSMOSTargetFile.path |
+| `ummaya_path` | string | UMMAYATargetFile.path |
 | `procedure` | enum {A, B} | inherited |
 | `byte_copy_sha_match` | bool \| null | true/false for A; null for B |
 | `swap_commit_count` | int | Number of swap commits affecting this file |
@@ -91,19 +91,19 @@ Logical streaming channel used in the audit's enumeration step.
 | `cc_event_path` | string | Format `<cc-path>:<line>:<case-name>` (e.g., `services/api/claude.ts:2148:thinking_delta`) |
 | `cc_event_kind` | enum | One of: `message_start`, `content_block_start`, `content_block_delta`, `content_block_stop`, `message_delta`, `message_stop` |
 | `cc_event_subtype` | string \| null | For `content_block_start`: `text`/`thinking`/`tool_use`/`server_tool_use`. For `content_block_delta`: `text_delta`/`thinking_delta`/`signature_delta`/`input_json_delta`/`citations_delta`/`connector_text_delta`. |
-| `kosmos_handler_path` | string \| null | Where KOSMOS handles it; null if explicitly skipped |
-| `kosmos_skip_reason` | string \| null | Required if `kosmos_handler_path` is null |
+| `ummaya_handler_path` | string \| null | Where UMMAYA handles it; null if explicitly skipped |
+| `ummaya_skip_reason` | string \| null | Required if `ummaya_handler_path` is null |
 | `byte_copied` | bool | true if handler is byte-copied from CC; false if behavior-mirrored or skipped |
 
-**Audit enumeration step**: script greps `services/api/claude.ts` for `case '...'` blocks, builds StreamEventChannel records. Verifies each has either a KOSMOS handler (file:line) or a skip-reason in a SwapCommit's justification.
+**Audit enumeration step**: script greps `services/api/claude.ts` for `case '...'` blocks, builds StreamEventChannel records. Verifies each has either a UMMAYA handler (file:line) or a skip-reason in a SwapCommit's justification.
 
 ## Relationships
 
 ```
-CCSourceFile  (1) ──── (0..n)  KOSMOSTargetFile          # via cc_source_path or cc_analog_path
+CCSourceFile  (1) ──── (0..n)  UMMAYATargetFile          # via cc_source_path or cc_analog_path
 CCSourceFile  (1) ──── (0..n)  StreamEventChannel        # CC handler enumeration
-KOSMOSTargetFile (1) ──── (0..n)  SwapCommit             # commits affecting this file
-KOSMOSTargetFile (1) ──── (0..n)  StreamEventChannel     # KOSMOS-side handler binding
+UMMAYATargetFile (1) ──── (0..n)  SwapCommit             # commits affecting this file
+UMMAYATargetFile (1) ──── (0..n)  StreamEventChannel     # UMMAYA-side handler binding
 ParityAuditOutcome (1) ──── (1..n)  FilePartialOutcome   # per-file roll-up
 ParityAuditOutcome (1) ──── (0..n)  DiffHunk             # unjustified diffs
 ParityAuditOutcome (1) ──── (0..n)  Function             # missing citations
@@ -111,7 +111,7 @@ ParityAuditOutcome (1) ──── (0..n)  Function             # missing citat
 
 ## State Transitions
 
-`KOSMOSTargetFile.procedure` is fixed per the spec FR-001 mapping table; never changes.
+`UMMAYATargetFile.procedure` is fixed per the spec FR-001 mapping table; never changes.
 
 `SwapCommit.category` is fixed at commit creation; never changes (rebase that changes a category requires a new commit).
 

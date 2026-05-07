@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # /lang ko after /lang en — verify mounted HelpV2 re-renders to Korean
 set -euo pipefail
-wait_for_pane "KOSMOS v0\\.[0-9]" 30
+wait_for_pane "UMMAYA v0\\.[0-9]" 30
 snapshot_pane "boot-ready"
 send_text_pane "/lang en"
 sleep 1

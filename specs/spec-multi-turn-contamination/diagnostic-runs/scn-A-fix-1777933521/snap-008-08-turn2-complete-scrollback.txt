@@ -1,49 +1,49 @@
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 14 entries verified (4 primitives) in 0ms
-    ▛███▜      KOSMOS v0.1.0-alpha+1978
+    ▛███▜      UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖  K-EXAONE with high effort · API Usage Billing
-   ▘ ▘ ▘ ▘     ~/KOSMOS/tui
+   ▘ ▘ ▘ ▘     ~/UMMAYA/tui
 
 ❯ 강남역 근처 내과 알려줘
 
 ✳ Accomplishing…
 
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-❯ [KOSMOS-QUERY] callModel:enter messages=4
+❯ [UMMAYA-QUERY] callModel:enter messages=4
 ✶KAccomplishing…CHAT_MESSAGES_BUILT] count=1 user_turns=1 tail_role=user tail_first256="강남역 근처 내과 알려줘"────────────────────────────────────────────────────────────────────
 ✢KAccomplishing…ending chat_request corr=cedac607-7d48-46f7-b9d7-5d42cc3e01ca chatMessages=1                                                                      ● high · /effort
 ∴ Thinking — The (ctrl+o to expand) true
-❯ [KOSMOS-QUERY] recv #1 kind=adapter_manifest_sync corr=b98e0d75 done=undefined delta="" thinking=""
+❯ [UMMAYA-QUERY] recv #1 kind=adapter_manifest_sync corr=b98e0d75 done=undefined delta="" thinking=""
 ✢ Accomplishing…
 
 
-❯ [KOSMOS-QUERY] recv #3 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" user is"
-[KOSMOS-QUERY] recv #4 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" asking for"────────────────────────────────────────────────────────────────────────────────
-[KOSMOS-QUERY] recv #5 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" \""                                                                      ● high · /effort
-[KOSMOS-QUERY] reuse# isiasking for "near Gangnam Station internal (ctrl+o to expand)g="near"
-[KOSMOS-QUERY] recv #7 kind=assistant_chunk corr=cc3e01ca done=falsmedicine (ctrl+o to expand)
-✳KOSMOS-QUERY] recv #8 kind=assistant_chunk corr=cc3e01ca done=false delta=" (ctrl+o to expand)
-✶KOSMOS-QiERi] recv #9 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Station"
-[KOSMOS-QUERY] recv #10 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" internal"
-  [KOSMOS-QUERY] recv #11 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" medicine"
-  [KOSMOS-QUERY] recv #12 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="\""
-  [KOSMOS-QUERY] recv #13 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" in"
-[KOSMOS-QUERY] recv #14 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Korean"
-[KOSMOS-QUERY] recv #15 kind=assistant_chunk corr=cc3e01ca done=false delta="in Korean.=(ctrl+o to expand)
-[KOSMOS-QUERY] recv #16 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" They"
-[KOSMOS-QUERY] recv #17 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" want to"
-[KOSMOS-QUERY] recv #18 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" find"
-[KOSMOS-QUERY] recv #19 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" internal"
-  [KOSMOS-QUERY] recv #20 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" medicine"
-[KOSMOS-QUERY] recv #21 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" clinics"
-[KOSMOS-QUERY] recv #22 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" near"
-[KOSMOS-QUERY] recv #23 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Gang"
-[KOSMOS-QUERY] recv #24 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="nam"
-[KOSMOS-QUERY] recv #25 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Station"
+❯ [UMMAYA-QUERY] recv #3 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" user is"
+[UMMAYA-QUERY] recv #4 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" asking for"────────────────────────────────────────────────────────────────────────────────
+[UMMAYA-QUERY] recv #5 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" \""                                                                      ● high · /effort
+[UMMAYA-QUERY] reuse# isiasking for "near Gangnam Station internal (ctrl+o to expand)g="near"
+[UMMAYA-QUERY] recv #7 kind=assistant_chunk corr=cc3e01ca done=falsmedicine (ctrl+o to expand)
+✳UMMAYA-QUERY] recv #8 kind=assistant_chunk corr=cc3e01ca done=false delta=" (ctrl+o to expand)
+✶UMMAYA-QiERi] recv #9 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Station"
+[UMMAYA-QUERY] recv #10 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" internal"
+  [UMMAYA-QUERY] recv #11 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" medicine"
+  [UMMAYA-QUERY] recv #12 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="\""
+  [UMMAYA-QUERY] recv #13 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" in"
+[UMMAYA-QUERY] recv #14 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Korean"
+[UMMAYA-QUERY] recv #15 kind=assistant_chunk corr=cc3e01ca done=false delta="in Korean.=(ctrl+o to expand)
+[UMMAYA-QUERY] recv #16 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" They"
+[UMMAYA-QUERY] recv #17 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" want to"
+[UMMAYA-QUERY] recv #18 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" find"
+[UMMAYA-QUERY] recv #19 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" internal"
+  [UMMAYA-QUERY] recv #20 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" medicine"
+[UMMAYA-QUERY] recv #21 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" clinics"
+[UMMAYA-QUERY] recv #22 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" near"
+[UMMAYA-QUERY] recv #23 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Gang"
+[UMMAYA-QUERY] recv #24 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="nam"
+[UMMAYA-QUERY] recv #25 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Station"
 ⏺ 강남역 근처에서 내과를 진료하는 병원/의원을 찾아드렸습니다. 2km 반경 내에서 검색한 결과입니다:
-[KOSMOS-QUERY] recv #27 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="\n\n"
+[UMMAYA-QUERY] recv #27 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="\n\n"
  K가장 가까운 내과 (병원/의원)                                  false delta="" thinking="To"
-[KOSMOS-QUERY] recv #29 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" fulfill"
+[UMMAYA-QUERY] recv #29 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" fulfill"
 
   1. 선한목자병원 (824m)
 
@@ -92,37 +92,37 @@ tool_registry: 14 entries verified (4 primitives) in 0ms
        3. {"ykiho":"JDQ4MTg4MSM1MSMkMSMkMCMkODkkMzgxMzUxIzExIyQxIyQzIyQwMyQzNjE0ODEjNTEjJDEjJDIjJDgz","yadmNm":"차의과학대학교 강남차병원","ad
 
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-❯ 재난 알림 구독해줘[KOSMOS-QUERY] callModel:enter messages=8
+❯ 재난 알림 구독해줘[UMMAYA-QUERY] callModel:enter messages=8
 ❯ 재난 알림 구독해줘
       S    R         g chat_request corr=3eaf1aa6-fbd3-499b-aca5-6d54eaf8aaaf chatMessages=5
 ∴ Thinking — 사용자가 (ctrl+o to expand)
 
 ✶ Brewing…
   ⎿  Tip: Create skills by adding .md files to .claude/skills/ in your project or ~/.claude/skills/ for skills that work in any project
-   KOSMOS-QUERY] recv #1 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="사용자가"
+   UMMAYA-QUERY] recv #1 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="사용자가"
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-❯ [KOSMOS-QUERY] recv #2 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" \""
-[KOSMOS-QUERY] recv #3"재난 알림s구독해줘"라고 요청했습니다. 이는 (ctrl+o to expand)ng="재난"───────────────────────────────────────────────────────────────────────────────────────
-[KOSMOS-QUERY] recv #4 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 알림"
-✢KOSMOS-QUERY] recv #5 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 구독"
-[KOSMOS-QUERY] recv #6 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="해"
-[KOSMOS-QUERY] recv #7 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="줘"
-[KOSMOS-QUERY] recv #8 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="\"라고"
-[K[KOSMOS-QUERY] recv #13 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 재난"
-[KOSMOS-QUERY] recv #14 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 알림"다"
-[KOSMOS-QUERY] recv #15 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="/"
-[KOSMOS-QUERY] recv #16 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="재난"
-[KOSMOS-QUERY] recv #17 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 방송"
-[KOSMOS-QUERY] recv #18 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="을"
-[KOSMOS-QUERY] recv #19 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 구독"
-[KOSMOS-QUERY] recv #20 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="하고 싶"
-[KOSMOS-QUERY] recv #21 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="다는 의미"
-[KOSMOS-QUERY] recv #22 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="입니다"
-[KOSMOS-QUERY] recv #23 kind=assistant_chunk corr=eaf8aaaf done=fa재난 알림/재난 방송을 구독하고 싶다는 의미입니다. (ctrl+o to expand)
-[KOSMOS-QUERY] recv #24 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="\n\n"
+❯ [UMMAYA-QUERY] recv #2 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" \""
+[UMMAYA-QUERY] recv #3"재난 알림s구독해줘"라고 요청했습니다. 이는 (ctrl+o to expand)ng="재난"───────────────────────────────────────────────────────────────────────────────────────
+[UMMAYA-QUERY] recv #4 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 알림"
+✢UMMAYA-QUERY] recv #5 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 구독"
+[UMMAYA-QUERY] recv #6 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="해"
+[UMMAYA-QUERY] recv #7 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="줘"
+[UMMAYA-QUERY] recv #8 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="\"라고"
+[K[UMMAYA-QUERY] recv #13 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 재난"
+[UMMAYA-QUERY] recv #14 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 알림"다"
+[UMMAYA-QUERY] recv #15 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="/"
+[UMMAYA-QUERY] recv #16 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="재난"
+[UMMAYA-QUERY] recv #17 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 방송"
+[UMMAYA-QUERY] recv #18 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="을"
+[UMMAYA-QUERY] recv #19 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking=" 구독"
+[UMMAYA-QUERY] recv #20 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="하고 싶"
+[UMMAYA-QUERY] recv #21 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="다는 의미"
+[UMMAYA-QUERY] recv #22 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="입니다"
+[UMMAYA-QUERY] recv #23 kind=assistant_chunk corr=eaf8aaaf done=fa재난 알림/재난 방송을 구독하고 싶다는 의미입니다. (ctrl+o to expand)
+[UMMAYA-QUERY] recv #24 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="\n\n"
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
  구독 권한 요청
-[KOSMOS-QUERY] recv #27 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="ap"
+[UMMAYA-QUERY] recv #27 kind=assistant_chunk corr=eaf8aaaf done=false delta="" thinking="ap"
    ⓶ 중간 위험 (레이어 2)
    "main"U도구가e실시간 알림=구독을a시작하려 합니다.f구독이d활성화되는d동안=지속적으로g데이터를 수신합니다. (개인정보보호법 제22조의2 — 고지 의무)
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Epic γ #2294 · T004 · ToolRegistry boot guard.
 //
-// Walks every active registered KOSMOS primitive (lookup / resolve_location /
+// Walks every active registered UMMAYA primitive (lookup / resolve_location /
 // submit / verify) at process boot and asserts that
 // each one exposes the full `Tool<>` 9-member surface from
 // `tui/src/Tool.ts` (byte-identical to CC `Tool.ts`). Fails closed with a
@@ -52,7 +52,7 @@ export type BootResult =
     }
 
 /**
- * Verify that every KOSMOS primitive in the registered tool array exposes the
+ * Verify that every UMMAYA primitive in the registered tool array exposes the
  * full 9-member `Tool<>` contract from `tui/src/Tool.ts`. Returns the
  * structured `BootResult`. Caller decides whether to `process.exit(1)` or
  * throw — the guard itself has no side effects beyond reading the registry.
@@ -79,9 +79,9 @@ export function verifyBootRegistry(registry: readonly Tool[]): BootResult {
       offendingTool: '<reserved-primitive-set>',
       missingMembers: missingNames as unknown as string[],
       diagnostic:
-        `[KOSMOS][bootGuard] 활성 primitive 중 일부가 ToolRegistry에 등록되지 않았습니다. ` +
+        `[UMMAYA][bootGuard] 활성 primitive 중 일부가 ToolRegistry에 등록되지 않았습니다. ` +
         `누락: ${missingNames.join(', ')}.\n` +
-        `KOSMOS는 활성 primitive(lookup/resolve_location/submit/verify) 모두 등록되어야 부팅을 허용합니다.\n` +
+        `UMMAYA는 활성 primitive(lookup/resolve_location/submit/verify) 모두 등록되어야 부팅을 허용합니다.\n` +
         `참조: specs/2294-5-primitive-align/contracts/registry-boot-guard.md`,
     }
   }
@@ -104,9 +104,9 @@ export function verifyBootRegistry(registry: readonly Tool[]): BootResult {
         offendingTool: tool.name,
         missingMembers: missing,
         diagnostic:
-          `[KOSMOS][bootGuard] 도구 '${tool.name}' 등록 검증 실패. ` +
+          `[UMMAYA][bootGuard] 도구 '${tool.name}' 등록 검증 실패. ` +
           `누락 필드: ${missing.join(', ')}.\n` +
-          `KOSMOS는 9-member ToolDef 계약을 준수하는 도구만 부팅 시점에 받아들입니다.\n` +
+          `UMMAYA는 9-member ToolDef 계약을 준수하는 도구만 부팅 시점에 받아들입니다.\n` +
           `참조: specs/2294-5-primitive-align/contracts/primitive-shape.md`,
       }
     }

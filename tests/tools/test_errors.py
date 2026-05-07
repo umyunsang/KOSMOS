@@ -15,9 +15,9 @@ import uuid
 
 import pytest
 
-from kosmos.tools.envelope import make_error_envelope
-from kosmos.tools.errors import LookupErrorReason
-from kosmos.tools.models import LookupError  # noqa: A004
+from ummaya.tools.envelope import make_error_envelope
+from ummaya.tools.errors import LookupErrorReason
+from ummaya.tools.models import LookupError  # noqa: A004
 
 _REQUEST_ID = str(uuid.uuid4())
 

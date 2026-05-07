@@ -15,8 +15,8 @@
 - **Values**: `PORT` | `REWRITE` | `DISCARD` | `DEFER`
 - **Semantics**:
   - `PORT` — lift CC file verbatim; only palette / token rewrite allowed. Logic identical. If CC-specific logic is discovered mid-port, promote to `REWRITE`.
-  - `REWRITE` — KOSMOS mission-specific rebuild. Logic changes allowed. MUST have an owning Epic (non-M) or an M-owned follow-up Task when the logical owner is a closed Epic.
-  - `DISCARD` — not in KOSMOS tree. MUST cite ADR-006 Part D-1 (intentional exclusion) OR D-3 (KOSMOS-original) OR a specific domain-mismatch rationale.
+  - `REWRITE` — UMMAYA mission-specific rebuild. Logic changes allowed. MUST have an owning Epic (non-M) or an M-owned follow-up Task when the logical owner is a closed Epic.
+  - `DISCARD` — not in UMMAYA tree. MUST cite ADR-006 Part D-1 (intentional exclusion) OR D-3 (UMMAYA-original) OR a specific domain-mismatch rationale.
   - `DEFER` — Phase 3+ or unblocked-by-specific-condition. MUST cite target Epic/Phase and unblock condition.
 - **Source FR**: 180 (Key Entities), 002, 004, 005.
 
@@ -57,7 +57,7 @@ One row in `docs/tui/component-catalog.md`.
   - `file_count: int` — 1 for per-file rows; N for aggregated rows.
   - `verdict: Verdict`
   - `owning_epic: Optional[OwningEpic]` — required for PORT/REWRITE/DEFER; forbidden for DISCARD.
-  - `kosmos_target_path: Optional[str]` — absolute under `tui/src/`; required for PORT/REWRITE; forbidden for DISCARD/DEFER.
+  - `ummaya_target_path: Optional[str]` — absolute under `tui/src/`; required for PORT/REWRITE; forbidden for DISCARD/DEFER.
   - `rationale: str` — free-text; required for DISCARD/DEFER (cites ADR-006 Part D-1/D-3 or unblock condition).
   - `evidence: str` — citation column per FR-006 (ADR-006 Part D reference, spec number, etc.).
   - `feature_commit: Optional[str]` — filled post-implementation by downstream Epic; empty at Epic M merge.
@@ -88,7 +88,7 @@ One row in `docs/tui/component-catalog.md`.
 ### 1.7 `MetaphorRole` (enum)
 
 - **Values** (closed set; extensions require an ADR):
-  - `kosmosCore`
+  - `ummayaCore`
   - `orbitalRing`
   - `wordmark`
   - `subtitle`
@@ -137,7 +137,7 @@ One row in `docs/tui/accessibility-gate.md`.
   - `issue_number: int`
   - `parent_epic: OwningEpic`
   - `cc_source_path: str` — FK to CatalogRow
-  - `kosmos_target_path: str`
+  - `ummaya_target_path: str`
   - `catalog_row_anchor: str` — markdown anchor like `#permissions-permissiondialog-tsx`
   - `acceptance_checklist: list[str]` — derived from `AccessibilityGateRow` for the same `cc_source_path`
 - **Invariant I14** (FR-023, SC-004): every REWRITE row has exactly one `TaskSubIssue` linked via `addSubIssue` mutation.

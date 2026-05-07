@@ -6,13 +6,13 @@
 // codec.ts ↔ Python `_BaseFrame` envelope parity gate.
 //
 // `tests/ipc/test_codec_envelope_parity.py` reads this file when the
-// env-var ``KOSMOS_IPC_PARITY_DRIFT_FIXTURE=1`` is set; the parity
+// env-var ``UMMAYA_IPC_PARITY_DRIFT_FIXTURE=1`` is set; the parity
 // check MUST fail on `correlation_id` because this fixture has been
 // intentionally drifted: `correlation_id` is declared optional +
 // nullable here, while the canonical Pydantic `_BaseFrame` requires
 // it (with min_length=1).
 //
-// `tests/ipc/conftest.py` enforces ``KOSMOS_IPC_PARITY_DRIFT_FIXTURE``
+// `tests/ipc/conftest.py` enforces ``UMMAYA_IPC_PARITY_DRIFT_FIXTURE``
 // is unset by default; only the dedicated negative-test opts in via
 // `monkeypatch.setenv`.
 

@@ -2,7 +2,7 @@
 // Spec 1635 P4 UI L2 — T068 /export command (FR-032, US5).
 //
 // Writes a PDF to the platform-default download location.
-// Emits kosmos.ui.surface=export (FR-037).
+// Emits ummaya.ui.surface=export (FR-037).
 //
 // SC-012: sanitizeForExport() in ExportPdfDialog ensures zero OTEL span IDs
 // and zero plugin-internal markers in the output PDF.
@@ -27,7 +27,7 @@ function getDefaultDownloadPath(): string {
 function buildOutputPath(): string {
   const now = new Date();
   const timestamp = now.toISOString().replace(/[:.]/g, '-').replace('T', '_').replace('Z', '');
-  return join(getDefaultDownloadPath(), `kosmos-export_${timestamp}.pdf`);
+  return join(getDefaultDownloadPath(), `ummaya-export_${timestamp}.pdf`);
 }
 
 // ---------------------------------------------------------------------------
@@ -52,7 +52,7 @@ export type ExportCommandResult = {
 /**
  * Execute the /export command.
  *
- * Emits `kosmos.ui.surface=export` (FR-037) and returns the data to render
+ * Emits `ummaya.ui.surface=export` (FR-037) and returns the data to render
  * in ExportPdfDialog.  The actual PDF write happens inside the component
  * via pdf-lib (T067).
  *

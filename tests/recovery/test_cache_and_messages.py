@@ -5,10 +5,10 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.recovery.cache import CacheEntry, ResponseCache
-from kosmos.recovery.classifier import ClassifiedError, ErrorClass
-from kosmos.recovery.messages import build_degradation_message
-from kosmos.tools.models import GovAPITool
+from ummaya.recovery.cache import CacheEntry, ResponseCache
+from ummaya.recovery.classifier import ClassifiedError, ErrorClass
+from ummaya.recovery.messages import build_degradation_message
+from ummaya.tools.models import GovAPITool
 
 # ---------------------------------------------------------------------------
 # ResponseCache

@@ -8,8 +8,8 @@
 
 set -euo pipefail
 
-# Step 1: wait for boot + KOSMOS branding.
-wait_for_pane "KOSMOS" 30 || {
+# Step 1: wait for boot + UMMAYA branding.
+wait_for_pane "UMMAYA" 30 || {
   snapshot_pane "boot-failed"
   exit 1
 }

@@ -44,19 +44,19 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 
-from kosmos.tools.mohw.welfare_eligibility_search import (
+from ummaya.tools.mohw.welfare_eligibility_search import (
     MohwWelfareEligibilitySearchInput,
     _parse_xml_response,
 )
-from kosmos.tools.mohw.welfare_eligibility_search import handle as mohw_handle
-from kosmos.tools.nfa119.emergency_info_service import (
+from ummaya.tools.mohw.welfare_eligibility_search import handle as mohw_handle
+from ummaya.tools.nfa119.emergency_info_service import (
     NfaActivityItem,
     NfaConditionItem,
     NfaEmergencyInfoServiceInput,
     NfaEmgOperation,
     _parse_response,
 )
-from kosmos.tools.nfa119.emergency_info_service import handle as nfa_handle
+from ummaya.tools.nfa119.emergency_info_service import handle as nfa_handle
 
 # ---------------------------------------------------------------------------
 # Fix #1: NFA sptMvmnDtc float drift
@@ -127,7 +127,7 @@ class TestNfaFloatDrift:
         → fabrication. Now corrupt rows are logged + skipped, citizen still
         sees the rest of the data.
         """
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "x")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "x")
         payload = {
             "header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"},
             "pageNo": 1,
@@ -260,7 +260,7 @@ class TestEnvelopeReadyHandlers:
     @pytest.mark.asyncio
     async def test_nfa_handle_emits_kind_collection(self, monkeypatch) -> None:
         """Without ``kind``, envelope.normalize raises and triggers fabrication."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "x")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "x")
         # Mock the http response
         client = AsyncMock(spec=httpx.AsyncClient)
         mock_response = MagicMock()
@@ -303,7 +303,7 @@ class TestEnvelopeReadyHandlers:
     @pytest.mark.asyncio
     async def test_mohw_handle_emits_kind_collection(self, monkeypatch) -> None:
         """Without ``kind``, envelope.normalize raises EnvelopeNormalizationError."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "x")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "x")
         client = AsyncMock(spec=httpx.AsyncClient)
         mock_response = MagicMock()
         mock_response.content = TestMohwEnvelopeDrift.LIVE_WANTEDLIST_XML
@@ -338,14 +338,14 @@ class TestInstructiveErrorMessages:
     @pytest.mark.asyncio
     async def test_adapter_exception_includes_class_and_detail(self, monkeypatch) -> None:
         """envelope.message should name the exception class + first 240 chars."""
-        from kosmos.tools.executor import ToolExecutor
-        from kosmos.tools.registry import ToolRegistry
+        from ummaya.tools.executor import ToolExecutor
+        from ummaya.tools.registry import ToolRegistry
 
         # Use any real registered tool; the Layer-3 gate must allow it.
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
 
-        from kosmos.tools.register_all import register_all_tools
+        from ummaya.tools.register_all import register_all_tools
 
         register_all_tools(registry, executor)
 
@@ -374,13 +374,13 @@ class TestInstructiveErrorMessages:
     @pytest.mark.asyncio
     async def test_envelope_mismatch_includes_detail(self, monkeypatch) -> None:
         """envelope.message for normalization failure also forbids fabrication."""
-        from kosmos.tools.executor import ToolExecutor
-        from kosmos.tools.registry import ToolRegistry
+        from ummaya.tools.executor import ToolExecutor
+        from ummaya.tools.registry import ToolRegistry
 
         registry = ToolRegistry()
         executor = ToolExecutor(registry)
 
-        from kosmos.tools.register_all import register_all_tools
+        from ummaya.tools.register_all import register_all_tools
 
         register_all_tools(registry, executor)
 

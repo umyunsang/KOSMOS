@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Spec 2521 byte-copy bridge stub (no live caller in KOSMOS).
+// UMMAYA-original — Spec 2521 byte-copy bridge stub (no live caller in UMMAYA).
 // SWAP/anti-anthropic-1p(2521): minimal stub for the byte-copied
 // services/api/claude.ts which references CC's per-request telemetry-tracing
-// span helpers. KOSMOS uses Spec 021 OTEL spans emitted from llmClient.ts
+// span helpers. UMMAYA uses Spec 021 OTEL spans emitted from llmClient.ts
 // directly, not from this code path. Stub returns inert no-ops; the byte-copy
-// has zero callers in KOSMOS so no live tracing surface depends on this file.
+// has zero callers in UMMAYA so no live tracing surface depends on this file.
 //
 // Epic #2637: endInteractionSpan + isEnhancedTelemetryEnabled added as no-op
 // exports required by instrumentation.ts byte-copy (R-5). Both are Anthropic 1P
-// session-tracing helpers (swap-1 dependent) — KOSMOS no-op is correct.
+// session-tracing helpers (swap-1 dependent) — UMMAYA no-op is correct.
 
 export function isBetaTracingEnabled(): boolean {
   return false
@@ -28,11 +28,11 @@ export function startLLMRequestSpan(..._args: unknown[]): {
 
 export function endInteractionSpan(..._args: unknown[]): void {
   // Intentional no-op (Epic #2637 stub). Anthropic 1P session span tracking
-  // is swap-1 dependent — KOSMOS uses Spec 021 OTEL span pipeline instead.
+  // is swap-1 dependent — UMMAYA uses Spec 021 OTEL span pipeline instead.
 }
 
 export function isEnhancedTelemetryEnabled(): boolean {
   // Intentional no-op (Epic #2637 stub). Anthropic enhanced telemetry consent
-  // is swap-1 dependent — KOSMOS telemetry consent follows Spec 033 permission model.
+  // is swap-1 dependent — UMMAYA telemetry consent follows Spec 033 permission model.
   return false
 }

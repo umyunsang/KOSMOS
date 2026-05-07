@@ -1,9 +1,9 @@
 import { randomUUID } from 'crypto'
 import type { QuerySource } from '../../constants/querySource.js'
-// Anthropic API removed in P1+P2 (Spec 1633); KOSMOS routes LLM calls
+// Anthropic API removed in P1+P2 (Spec 1633); UMMAYA routes LLM calls
 // through FriendliAI Serverless via the Python backend.
 const queryModelWithoutStreaming = async (..._args: readonly unknown[]): Promise<never> => {
-  throw new Error('Anthropic API not available in KOSMOS — Spec 1633')
+  throw new Error('Anthropic API not available in UMMAYA — Spec 1633')
 }
 import type { Message } from '../../types/message.js'
 import { createAbortController } from '../../utils/abortController.js'

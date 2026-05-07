@@ -1,7 +1,7 @@
-# Contract — `kosmos plugin init <name>` CLI
+# Contract — `ummaya plugin init <name>` CLI
 
 **Surface**: `tui/src/commands/plugin-init.ts` (Ink + React, Spec 287 stack).
-**Trigger**: User types `/plugin init <name>` in the TUI REPL OR runs `kosmos plugin init <name>` from a regular shell (entry-point binary delegates to the same TS module).
+**Trigger**: User types `/plugin init <name>` in the TUI REPL OR runs `ummaya plugin init <name>` from a regular shell (entry-point binary delegates to the same TS module).
 **Purpose**: Scaffold a new plugin in the current working directory with a passing `pytest` green out of the box (FR-002, FR-003).
 
 ## Arguments
@@ -24,7 +24,7 @@
 ## Interactive prompts (Ink)
 
 ```
-✻ KOSMOS Plugin Init
+✻ UMMAYA Plugin Init
 플러그인 이름 (plugin_id):  seoul-subway   ← from arg
  Tier (live/mock):           [Select]
  권한 레이어 (1/2/3):         [Select]
@@ -44,7 +44,7 @@
 
 ```
 <out>/
-├── pyproject.toml                          # uv-compatible, depends on kosmos-plugin-sdk (vendored stub)
+├── pyproject.toml                          # uv-compatible, depends on ummaya-plugin-sdk (vendored stub)
 ├── manifest.yaml                           # PluginManifest.model_dump() encoded as YAML
 ├── plugin_<name>/
 │   ├── __init__.py
@@ -58,7 +58,7 @@
 │       └── <tool_id>.json                  # synthetic fixture so tests pass without real API
 ├── .github/
 │   └── workflows/
-│       ├── plugin-validation.yml           # uses: umyunsang/KOSMOS/.github/workflows/plugin-validation.yml@<sha>
+│       ├── plugin-validation.yml           # uses: umyunsang/UMMAYA/.github/workflows/plugin-validation.yml@<sha>
 │       └── release-with-slsa.yml           # uses: slsa-framework/slsa-github-generator (R-3)
 ├── README.ko.md                            # Korean-primary scaffold (FR-010)
 ├── README.en.md                            # English secondary
@@ -90,11 +90,11 @@
 
 ## Telemetry
 
-Emits OTEL span `kosmos.plugin.init` with attributes:
-- `kosmos.plugin.id` = `<name>`
-- `kosmos.plugin.tier` = `live` | `mock`
-- `kosmos.plugin.layer` = `1` | `2` | `3`
-- `kosmos.plugin.pii` = bool
+Emits OTEL span `ummaya.plugin.init` with attributes:
+- `ummaya.plugin.id` = `<name>`
+- `ummaya.plugin.tier` = `live` | `mock`
+- `ummaya.plugin.layer` = `1` | `2` | `3`
+- `ummaya.plugin.pii` = bool
 
 No PII; safe to ship in default OTEL stream.
 
@@ -108,5 +108,5 @@ No PII; safe to ship in default OTEL stream.
 ## Non-goals
 
 - Not a build tool — does not run `pytest` automatically (the contributor does that).
-- Not a publish tool — `kosmos plugin publish` is a separate command (deferred; not in P5).
+- Not a publish tool — `ummaya plugin publish` is a separate command (deferred; not in P5).
 - Not a marketplace browser — that's #1820 (deferred).

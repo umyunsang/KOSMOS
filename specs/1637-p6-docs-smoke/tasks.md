@@ -22,9 +22,9 @@ description: "Tasks: P6 · Docs/API specs + Integration smoke (Epic #1637)"
 
 ## Path Conventions
 
-KOSMOS monorepo:
+UMMAYA monorepo:
 
-- Backend: `src/kosmos/**`
+- Backend: `src/ummaya/**`
 - TUI: `tui/**`
 - Docs: `docs/**`
 - Scripts: `scripts/**`
@@ -50,7 +50,7 @@ KOSMOS monorepo:
 
 ---
 
-## Phase 3: User Story 1 — Citizen developer discovers and understands every registered KOSMOS adapter from a single index (Priority: P1) 🎯 MVP
+## Phase 3: User Story 1 — Citizen developer discovers and understands every registered UMMAYA adapter from a single index (Priority: P1) 🎯 MVP
 
 **Goal**: produce the canonical `docs/api/` catalog for active adapters, JSON Schema exports, 1 root index, 1 deterministic build script, and absorb the legacy `docs/tools/` directory. Subscribe specs are deferred until an app/push-notification runtime exists.
 
@@ -60,41 +60,41 @@ KOSMOS monorepo:
 
 #### Build script (acceptance gate for SC-002)
 
-- [ ] T002 [US1] Implement `scripts/build_schemas.py` per `specs/1637-p6-docs-smoke/contracts/build-schemas-cli.md`: walks `kosmos.tools.register_all`, calls `Model.model_json_schema(mode='validation', ref_template='#/$defs/{model}')` per envelope, wraps with Draft 2020-12 `$schema` + `$id` + `title` + `$defs`, writes deterministically with `json.dumps(..., sort_keys=True, indent=2, ensure_ascii=False)`, supports `--check` / `--output-dir` / `--quiet` flags. Stdlib + Pydantic v2 only.
+- [ ] T002 [US1] Implement `scripts/build_schemas.py` per `specs/1637-p6-docs-smoke/contracts/build-schemas-cli.md`: walks `ummaya.tools.register_all`, calls `Model.model_json_schema(mode='validation', ref_template='#/$defs/{model}')` per envelope, wraps with Draft 2020-12 `$schema` + `$id` + `title` + `$defs`, writes deterministically with `json.dumps(..., sort_keys=True, indent=2, ensure_ascii=False)`, supports `--check` / `--output-dir` / `--quiet` flags. Stdlib + Pydantic v2 only.
 - [ ] T003 [US1] Run `python scripts/build_schemas.py --output-dir docs/api/schemas` to generate active JSON files; verify `python scripts/build_schemas.py --check` returns exit 0 (idempotency gate per FR-007 / SC-002). Depends on T002.
 
 #### Live tier adapter specs (12 — parallel by file)
 
-- [ ] T004 [P] [US1] Author `docs/api/koroad/accident_search.md` for `koroad_accident_search` per `contracts/adapter-spec-template.md` (7 sections + YAML front matter); cite envelope at `src/kosmos/tools/koroad/koroad_accident_search.py`.
-- [ ] T005 [P] [US1] Author `docs/api/koroad/accident_hazard_search.md` for `koroad_accident_hazard_search`; cite envelope at `src/kosmos/tools/koroad/accident_hazard_search.py`.
-- [ ] T006 [P] [US1] Author `docs/api/kma/current_observation.md` for `kma_current_observation`; cite envelope at `src/kosmos/tools/kma/kma_current_observation.py`.
-- [ ] T007 [P] [US1] Author `docs/api/kma/short_term_forecast.md` for `kma_short_term_forecast`; cite envelope at `src/kosmos/tools/kma/kma_short_term_forecast.py`.
-- [ ] T008 [P] [US1] Author `docs/api/kma/ultra_short_term_forecast.md` for `kma_ultra_short_term_forecast`; cite envelope at `src/kosmos/tools/kma/kma_ultra_short_term_forecast.py`.
-- [ ] T009 [P] [US1] Author `docs/api/kma/weather_alert_status.md` for `kma_weather_alert_status`; cite envelope at `src/kosmos/tools/kma/kma_weather_alert_status.py`.
-- [ ] T010 [P] [US1] Author `docs/api/kma/pre_warning.md` for `kma_pre_warning`; cite envelope at `src/kosmos/tools/kma/kma_pre_warning.py`.
-- [ ] T011 [P] [US1] Author `docs/api/kma/forecast_fetch.md` for `kma_forecast_fetch`; cite envelope at `src/kosmos/tools/kma/forecast_fetch.py`.
-- [ ] T012 [P] [US1] Author `docs/api/hira/hospital_search.md` for `hira_hospital_search`; cite envelope at `src/kosmos/tools/hira/hospital_search.py`.
-- [ ] T013 [P] [US1] Author `docs/api/nmc/emergency_search.md` for `nmc_emergency_search` (Layer 3 gated; document both auth-required and unauthenticated paths) and inline-document the freshness sub-tool from `src/kosmos/tools/nmc/freshness.py`.
-- [ ] T014 [P] [US1] Author `docs/api/nfa119/emergency_info_service.md` for `nfa_emergency_info_service`; cite envelope at `src/kosmos/tools/nfa119/emergency_info_service.py`.
-- [ ] T015 [P] [US1] Author `docs/api/mohw/welfare_eligibility_search.md` for `mohw_welfare_eligibility_search`; cite envelope at `src/kosmos/tools/ssis/welfare_eligibility_search.py`.
+- [ ] T004 [P] [US1] Author `docs/api/koroad/accident_search.md` for `koroad_accident_search` per `contracts/adapter-spec-template.md` (7 sections + YAML front matter); cite envelope at `src/ummaya/tools/koroad/koroad_accident_search.py`.
+- [ ] T005 [P] [US1] Author `docs/api/koroad/accident_hazard_search.md` for `koroad_accident_hazard_search`; cite envelope at `src/ummaya/tools/koroad/accident_hazard_search.py`.
+- [ ] T006 [P] [US1] Author `docs/api/kma/current_observation.md` for `kma_current_observation`; cite envelope at `src/ummaya/tools/kma/kma_current_observation.py`.
+- [ ] T007 [P] [US1] Author `docs/api/kma/short_term_forecast.md` for `kma_short_term_forecast`; cite envelope at `src/ummaya/tools/kma/kma_short_term_forecast.py`.
+- [ ] T008 [P] [US1] Author `docs/api/kma/ultra_short_term_forecast.md` for `kma_ultra_short_term_forecast`; cite envelope at `src/ummaya/tools/kma/kma_ultra_short_term_forecast.py`.
+- [ ] T009 [P] [US1] Author `docs/api/kma/weather_alert_status.md` for `kma_weather_alert_status`; cite envelope at `src/ummaya/tools/kma/kma_weather_alert_status.py`.
+- [ ] T010 [P] [US1] Author `docs/api/kma/pre_warning.md` for `kma_pre_warning`; cite envelope at `src/ummaya/tools/kma/kma_pre_warning.py`.
+- [ ] T011 [P] [US1] Author `docs/api/kma/forecast_fetch.md` for `kma_forecast_fetch`; cite envelope at `src/ummaya/tools/kma/forecast_fetch.py`.
+- [ ] T012 [P] [US1] Author `docs/api/hira/hospital_search.md` for `hira_hospital_search`; cite envelope at `src/ummaya/tools/hira/hospital_search.py`.
+- [ ] T013 [P] [US1] Author `docs/api/nmc/emergency_search.md` for `nmc_emergency_search` (Layer 3 gated; document both auth-required and unauthenticated paths) and inline-document the freshness sub-tool from `src/ummaya/tools/nmc/freshness.py`.
+- [ ] T014 [P] [US1] Author `docs/api/nfa119/emergency_info_service.md` for `nfa_emergency_info_service`; cite envelope at `src/ummaya/tools/nfa119/emergency_info_service.py`.
+- [ ] T015 [P] [US1] Author `docs/api/mohw/welfare_eligibility_search.md` for `mohw_welfare_eligibility_search`; cite envelope at `src/ummaya/tools/ssis/welfare_eligibility_search.py`.
 
 #### Mock verify adapter specs (6 — parallel by file)
 
-- [ ] T016 [P] [US1] Author `docs/api/verify/digital_onepass.md` for `mock_verify_digital_onepass`; cite envelope at `src/kosmos/tools/mock/verify_digital_onepass.py`; declare "Fixture-replay only" + cite public-spec source per memory `feedback_mock_evidence_based`.
-- [ ] T017 [P] [US1] Author `docs/api/verify/mobile_id.md` for `mock_verify_mobile_id`; cite envelope at `src/kosmos/tools/mock/verify_mobile_id.py`; cite public-spec source.
-- [ ] T018 [P] [US1] Author `docs/api/verify/gongdong_injeungseo.md` for `mock_verify_gongdong_injeungseo`; cite envelope at `src/kosmos/tools/mock/verify_gongdong_injeungseo.py`; cite public-spec source.
-- [ ] T019 [P] [US1] Author `docs/api/verify/geumyung_injeungseo.md` for `mock_verify_geumyung_injeungseo`; cite envelope at `src/kosmos/tools/mock/verify_geumyung_injeungseo.py`; cite public-spec source.
-- [ ] T020 [P] [US1] Author `docs/api/verify/ganpyeon_injeung.md` for `mock_verify_ganpyeon_injeung`; cite envelope at `src/kosmos/tools/mock/verify_ganpyeon_injeung.py`; cite public-spec source.
-- [ ] T021 [P] [US1] Author `docs/api/verify/mydata.md` for `mock_verify_mydata`; cite envelope at `src/kosmos/tools/mock/verify_mydata.py`; cite public-spec source.
+- [ ] T016 [P] [US1] Author `docs/api/verify/digital_onepass.md` for `mock_verify_digital_onepass`; cite envelope at `src/ummaya/tools/mock/verify_digital_onepass.py`; declare "Fixture-replay only" + cite public-spec source per memory `feedback_mock_evidence_based`.
+- [ ] T017 [P] [US1] Author `docs/api/verify/mobile_id.md` for `mock_verify_mobile_id`; cite envelope at `src/ummaya/tools/mock/verify_mobile_id.py`; cite public-spec source.
+- [ ] T018 [P] [US1] Author `docs/api/verify/gongdong_injeungseo.md` for `mock_verify_gongdong_injeungseo`; cite envelope at `src/ummaya/tools/mock/verify_gongdong_injeungseo.py`; cite public-spec source.
+- [ ] T019 [P] [US1] Author `docs/api/verify/geumyung_injeungseo.md` for `mock_verify_geumyung_injeungseo`; cite envelope at `src/ummaya/tools/mock/verify_geumyung_injeungseo.py`; cite public-spec source.
+- [ ] T020 [P] [US1] Author `docs/api/verify/ganpyeon_injeung.md` for `mock_verify_ganpyeon_injeung`; cite envelope at `src/ummaya/tools/mock/verify_ganpyeon_injeung.py`; cite public-spec source.
+- [ ] T021 [P] [US1] Author `docs/api/verify/mydata.md` for `mock_verify_mydata`; cite envelope at `src/ummaya/tools/mock/verify_mydata.py`; cite public-spec source.
 
 #### Mock submit adapter specs (2 — parallel by file)
 
-- [ ] T022 [P] [US1] Author `docs/api/submit/traffic_fine_pay.md` for `mock_traffic_fine_pay_v1`; cite envelope at `src/kosmos/tools/mock/data_go_kr/fines_pay.py`; cite public-spec source.
-- [ ] T023 [P] [US1] Author `docs/api/submit/welfare_application.md` for `mock_welfare_application_submit_v1`; cite envelope at `src/kosmos/tools/mock/mydata/welfare_application.py`; cite public-spec source.
+- [ ] T022 [P] [US1] Author `docs/api/submit/traffic_fine_pay.md` for `mock_traffic_fine_pay_v1`; cite envelope at `src/ummaya/tools/mock/data_go_kr/fines_pay.py`; cite public-spec source.
+- [ ] T023 [P] [US1] Author `docs/api/submit/welfare_application.md` for `mock_welfare_application_submit_v1`; cite envelope at `src/ummaya/tools/mock/mydata/welfare_application.py`; cite public-spec source.
 
 #### Meta-tool spec
 
-- [ ] T027 [P] [US1] Author `docs/api/resolve_location/index.md` describing the `resolve_location` meta-tool with juso / sgis / kakao backends as variants; cite `src/kosmos/tools/resolve_location.py` plus the three backend modules under `src/kosmos/tools/geocoding/`.
+- [ ] T027 [P] [US1] Author `docs/api/resolve_location/index.md` describing the `resolve_location` meta-tool with juso / sgis / kakao backends as variants; cite `src/ummaya/tools/resolve_location.py` plus the three backend modules under `src/ummaya/tools/geocoding/`.
 
 #### Index, migration, audit (sequential after specs land)
 
@@ -106,7 +106,7 @@ KOSMOS monorepo:
 
 ---
 
-## Phase 4: User Story 2 — Release validator confirms KOSMOS v0.1-alpha is integration-ready before tagging (Priority: P1)
+## Phase 4: User Story 2 — Release validator confirms UMMAYA v0.1-alpha is integration-ready before tagging (Priority: P1)
 
 **Goal**: recover `bun test` to 0 fail / 0 errors and capture a hand-driven `bun run tui` smoke run with ANSI evidence covering all 18 documented states.
 

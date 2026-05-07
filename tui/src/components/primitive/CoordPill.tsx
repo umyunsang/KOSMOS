@@ -1,5 +1,5 @@
 /**
- * KOSMOS-original — CoordPill renderer.
+ * UMMAYA-original — CoordPill renderer.
  *
  * Compact inline pill showing latitude and longitude from the coords slot
  * of a resolve_location result.  Includes a copy hint in the inactive color.

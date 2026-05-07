@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Shared fixtures for KOSMOS permission receipt ledger tests (Spec 035).
+"""Shared fixtures for UMMAYA permission receipt ledger tests (Spec 035).
 
-Spec 033 KOSMOS-invented residue fixtures removed in Epic δ #2295.
+Spec 033 UMMAYA-invented residue fixtures removed in Epic δ #2295.
 Only Spec 035 receipt-ledger tmp-path fixtures are retained here.
 
 References:

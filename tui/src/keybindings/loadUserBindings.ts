@@ -406,7 +406,7 @@ export function loadKeybindingsSyncWithWarnings(): KeybindingsLoadResult {
   // useKeybindings({ 'select:next': ..., 'select:accept': ... }) but no
   // chord ever resolves to those actions — the permission selector freezes
   // because Enter/Down are unbound. This is the smoking-gun failure for
-  // every gated permission modal in KOSMOS (Audit-4 2026-05-04).
+  // every gated permission modal in UMMAYA (Audit-4 2026-05-04).
   //
   // Tier-1 user remappings still take precedence: chord-clash collisions
   // are resolved in resolveKeyWithChordState by context priority. We only

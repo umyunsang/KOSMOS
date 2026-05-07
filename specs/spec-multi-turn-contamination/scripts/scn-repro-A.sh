@@ -13,9 +13,9 @@
 #
 #   RUN_TS=$(date +%s); OUTDIR="specs/spec-multi-turn-contamination/diagnostic-runs/scn-A-${RUN_TS}"
 #   mkdir -p "$OUTDIR"
-#   KOSMOS_QUERY_TRACE=1 \
-#   KOSMOS_CHAT_REQUEST_DUMP=1 \
-#   KOSMOS_BACKEND_LOG_FILE="$OUTDIR/backend.log" \
+#   UMMAYA_QUERY_TRACE=1 \
+#   UMMAYA_CHAT_REQUEST_DUMP=1 \
+#   UMMAYA_BACKEND_LOG_FILE="$OUTDIR/backend.log" \
 #   scripts/tui-tmux-capture.sh "$OUTDIR" \
 #       specs/spec-multi-turn-contamination/scripts/scn-repro-A.sh
 #
@@ -50,7 +50,7 @@ set -euo pipefail
 wait_for_log() {
   local pattern="${1:?wait_for_log <regex>}"
   local deadline="${2:-180}"
-  local logfile="${KOSMOS_BACKEND_LOG_FILE:-$OUTDIR/backend.log}"
+  local logfile="${UMMAYA_BACKEND_LOG_FILE:-$OUTDIR/backend.log}"
   local start=$(date +%s)
   while true; do
     if [[ -f "$logfile" ]] && grep -qE -- "$pattern" "$logfile" 2>/dev/null; then

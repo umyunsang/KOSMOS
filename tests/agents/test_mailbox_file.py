@@ -3,7 +3,7 @@
 
 Tests:
 (a) Atomic write sequence: temp file + rename
-(b) Overflow at KOSMOS_AGENT_MAILBOX_MAX_MESSAGES raises MailboxOverflowError
+(b) Overflow at UMMAYA_AGENT_MAILBOX_MAX_MESSAGES raises MailboxOverflowError
 (c) Unwritable directory raises MailboxWriteError
 (d) Routing by recipient (FR-025) — only matching messages yielded
 (e) Mode 0o700/0o600 invariant (mailbox-abi.md §1)
@@ -18,15 +18,15 @@ from uuid import uuid4
 
 import pytest
 
-from kosmos.agents.errors import MailboxOverflowError
-from kosmos.agents.mailbox.file_mailbox import FileMailbox
-from kosmos.agents.mailbox.messages import (
+from ummaya.agents.errors import MailboxOverflowError
+from ummaya.agents.mailbox.file_mailbox import FileMailbox
+from ummaya.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     ResultPayload,
     TaskPayload,
 )
-from kosmos.tools.models import LookupMeta, LookupRecord
+from ummaya.tools.models import LookupMeta, LookupRecord
 
 # ---------------------------------------------------------------------------
 # Helpers

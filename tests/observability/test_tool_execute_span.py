@@ -23,9 +23,9 @@ from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanE
 from opentelemetry.trace import StatusCode
 from pydantic import BaseModel
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.models import GovAPITool
-from kosmos.tools.registry import ToolRegistry
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.models import GovAPITool
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Per-test InMemorySpanExporter fixture using _tracer monkeypatching
@@ -40,9 +40,9 @@ def mem_exporter(monkeypatch: pytest.MonkeyPatch) -> InMemorySpanExporter:
     provider = TracerProvider()
     provider.add_span_processor(SimpleSpanProcessor(exporter))
 
-    import kosmos.tools.executor as executor_mod
+    import ummaya.tools.executor as executor_mod
 
-    monkeypatch.setattr(executor_mod, "_tracer", provider.get_tracer("kosmos.tools.executor"))
+    monkeypatch.setattr(executor_mod, "_tracer", provider.get_tracer("ummaya.tools.executor"))
 
     exporter.clear()
     return exporter

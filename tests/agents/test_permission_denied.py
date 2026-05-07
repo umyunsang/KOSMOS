@@ -16,17 +16,17 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from kosmos.agents.consent import ConsentGateway
-from kosmos.agents.context import AgentContext
-from kosmos.agents.coordinator import Coordinator
-from kosmos.agents.mailbox.messages import (
+from tests.agents.conftest import StubLLMClient, build_test_registry
+from ummaya.agents.consent import ConsentGateway
+from ummaya.agents.context import AgentContext
+from ummaya.agents.coordinator import Coordinator
+from ummaya.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     PermissionRequestPayload,
     PermissionResponsePayload,
 )
-from kosmos.agents.worker import Worker
-from tests.agents.conftest import StubLLMClient, build_test_registry
+from ummaya.agents.worker import Worker
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -198,7 +198,7 @@ async def test_permission_denied_response_still_addressed_to_requester() -> None
 @pytest.mark.asyncio
 async def test_always_grant_consent_gateway_returns_true() -> None:
     """AlwaysGrantConsentGateway is the default stub — always returns True."""
-    from kosmos.agents.consent import AlwaysGrantConsentGateway
+    from ummaya.agents.consent import AlwaysGrantConsentGateway
 
     gateway = AlwaysGrantConsentGateway()
     result = await gateway.request_consent("any_tool", uuid4())

@@ -28,12 +28,12 @@ function collectKeys(obj: object): string[] {
  * start with an uppercase ASCII letter followed by ASCII words — that pattern
  * indicates an un-translated English string.
  *
- * Technical identifiers like "KOSMOS", "IPC", "Ctrl-C" are allowed per spec.
+ * Technical identifiers like "UMMAYA", "IPC", "Ctrl-C" are allowed per spec.
  */
 function isLikelyEnglish(value: string): boolean {
   // Allow known technical identifiers that appear in both bundles
   const TECHNICAL_IDENTIFIERS = [
-    'KOSMOS',
+    'UMMAYA',
     'IPC',
     'Ctrl-C',
     // Korean strings may contain ":" and English tool/session IDs embedded

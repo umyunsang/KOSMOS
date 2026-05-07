@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // SWAP/anti-anthropic-1p(2521): minimal stub for the byte-copied
 // services/api/claude.ts which references CC's 529-overload retry harness.
-// KOSMOS handles backpressure via stdio IPC backpressure signals (Spec 032);
+// UMMAYA handles backpressure via stdio IPC backpressure signals (Spec 032);
 // this Anthropic-API-specific retry layer is unused. Stubs preserve the
-// import shape — the byte-copy has zero callers in KOSMOS so the retry
+// import shape — the byte-copy has zero callers in UMMAYA so the retry
 // helper invokes the wrapped function once and forwards its result.
 
 export class CannotRetryError extends Error {}

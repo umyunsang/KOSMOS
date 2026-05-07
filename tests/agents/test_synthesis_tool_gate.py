@@ -13,9 +13,9 @@ from uuid import uuid4
 
 import pytest
 
-from kosmos.agents.coordinator import Coordinator
-from kosmos.agents.mailbox.messages import AgentMessage
 from tests.agents.conftest import StubLLMClient, build_test_registry
+from ummaya.agents.coordinator import Coordinator
+from ummaya.agents.mailbox.messages import AgentMessage
 
 # ---------------------------------------------------------------------------
 # Helpers

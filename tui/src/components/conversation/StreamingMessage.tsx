@@ -1,7 +1,7 @@
 // Source: .references/claude-code-sourcemap/restored-src/src/components/MessageResponse.tsx (Claude Code 2.1.88, research-use)
 // Source: .references/claude-code-sourcemap/restored-src/src/components/Message.tsx (Claude Code 2.1.88, research-use)
-// KOSMOS adaptation: renders streaming assistant messages from the session-store.
-// Replaces Claude Code's Anthropic REST streaming model with KOSMOS IPCFrame
+// UMMAYA adaptation: renders streaming assistant messages from the session-store.
+// Replaces Claude Code's Anthropic REST streaming model with UMMAYA IPCFrame
 // assistant_chunk / message_complete (done: true) frames.
 //
 // FR-050 (only re-renders own slot on new chunks via selector isolation)
@@ -53,7 +53,7 @@ export function StreamingMessage({ messageId }: StreamingMessageProps): React.Re
     <Box flexDirection="column" marginBottom={1}>
       {/* Assistant label */}
       <Box>
-        <Text bold color={theme.kosmosCore}>
+        <Text bold color={theme.ummayaCore}>
           {'  '}⎿{'  '}
         </Text>
       </Box>

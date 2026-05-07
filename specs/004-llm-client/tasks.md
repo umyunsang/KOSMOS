@@ -15,7 +15,7 @@
 
 **Purpose**: Create module structure and add dependencies
 
-- [ ] T001 Create `src/kosmos/llm/` package directory with `__init__.py` and create `tests/llm/` package directory with `__init__.py`
+- [ ] T001 Create `src/ummaya/llm/` package directory with `__init__.py` and create `tests/llm/` package directory with `__init__.py`
 - [ ] T002 Add `pydantic-settings>=2.0` to `dependencies` in `pyproject.toml`
 
 ---
@@ -26,9 +26,9 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 [P] Implement error hierarchy (`KosmosLLMError`, `ConfigurationError`, `BudgetExceededError`, `AuthenticationError`, `LLMConnectionError`, `LLMResponseError`, `StreamInterruptedError`) in `src/kosmos/llm/errors.py`
-- [ ] T004 [P] Implement Pydantic v2 message models (`ChatMessage`, `ToolCall`, `FunctionCall`, `TokenUsage`, `ChatCompletionResponse`, `StreamEvent`) in `src/kosmos/llm/models.py` — include role-based validation (tool role requires tool_call_id, system/user require content)
-- [ ] T005 [P] Implement `LLMClientConfig` using pydantic-settings with `KOSMOS_FRIENDLI_TOKEN` (required SecretStr), `KOSMOS_FRIENDLI_BASE_URL` (default), `KOSMOS_FRIENDLI_MODEL` (default), `KOSMOS_LLM_SESSION_BUDGET` (default 100000), `timeout`, `max_retries` in `src/kosmos/llm/config.py`
+- [ ] T003 [P] Implement error hierarchy (`UmmayaLLMError`, `ConfigurationError`, `BudgetExceededError`, `AuthenticationError`, `LLMConnectionError`, `LLMResponseError`, `StreamInterruptedError`) in `src/ummaya/llm/errors.py`
+- [ ] T004 [P] Implement Pydantic v2 message models (`ChatMessage`, `ToolCall`, `FunctionCall`, `TokenUsage`, `ChatCompletionResponse`, `StreamEvent`) in `src/ummaya/llm/models.py` — include role-based validation (tool role requires tool_call_id, system/user require content)
+- [ ] T005 [P] Implement `LLMClientConfig` using pydantic-settings with `UMMAYA_FRIENDLI_TOKEN` (required SecretStr), `UMMAYA_FRIENDLI_BASE_URL` (default), `UMMAYA_FRIENDLI_MODEL` (default), `UMMAYA_LLM_SESSION_BUDGET` (default 100000), `timeout`, `max_retries` in `src/ummaya/llm/config.py`
 - [ ] T006 [P] Create test infrastructure with shared fixtures (respx mock routes for chat/completions, mock SSE response generator, sample ChatMessage lists) in `tests/llm/conftest.py`
 
 **Checkpoint**: Foundation ready — models, config, and errors are importable and tested
@@ -43,8 +43,8 @@
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Implement `LLMClient.__init__`, `close()`, `__aenter__`/`__aexit__` context manager, and non-streaming `complete()` method using httpx async POST to `/chat/completions` in `src/kosmos/llm/client.py`
-- [ ] T008 [US1] Implement `LLMClient.stream()` async generator method with SSE line parsing (`data:` prefix, `[DONE]` sentinel, JSON chunk → `StreamEvent`) in `src/kosmos/llm/client.py`
+- [ ] T007 [US1] Implement `LLMClient.__init__`, `close()`, `__aenter__`/`__aexit__` context manager, and non-streaming `complete()` method using httpx async POST to `/chat/completions` in `src/ummaya/llm/client.py`
+- [ ] T008 [US1] Implement `LLMClient.stream()` async generator method with SSE line parsing (`data:` prefix, `[DONE]` sentinel, JSON chunk → `StreamEvent`) in `src/ummaya/llm/client.py`
 - [ ] T009 [P] [US1] Write unit tests for Pydantic model validation (ChatMessage role constraints, TokenUsage computed total, StreamEvent types) in `tests/llm/test_models.py`
 - [ ] T010 [P] [US1] Write unit tests for LLMClientConfig loading from env vars (missing token raises ConfigurationError, defaults applied, override via env) in `tests/llm/test_config.py`
 - [ ] T011 [P] [US1] Write unit tests for `LLMClient.complete()` using respx (mock successful response, verify ChatCompletionResponse fields, verify token usage extracted) in `tests/llm/test_client.py`
@@ -62,8 +62,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] Implement `UsageTracker` with `can_afford()`, `debit()`, `remaining` property, `is_exhausted` property, and `call_count` in `src/kosmos/llm/usage.py`
-- [ ] T014 [US2] Integrate `UsageTracker` into `LLMClient`: initialize from config budget, pre-flight check in `complete()`/`stream()`, post-call debit from response usage in `src/kosmos/llm/client.py`
+- [ ] T013 [US2] Implement `UsageTracker` with `can_afford()`, `debit()`, `remaining` property, `is_exhausted` property, and `call_count` in `src/ummaya/llm/usage.py`
+- [ ] T014 [US2] Integrate `UsageTracker` into `LLMClient`: initialize from config budget, pre-flight check in `complete()`/`stream()`, post-call debit from response usage in `src/ummaya/llm/client.py`
 - [ ] T015 [US2] Write unit tests for UsageTracker (budget creation, debit, exhaustion, can_afford pre-flight, call_count increment) in `tests/llm/test_usage.py`
 
 **Checkpoint**: Budget enforcement works. Calls exceeding budget are rejected before sending.
@@ -78,8 +78,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T016 [US3] Implement `RetryPolicy` model and `retry_with_backoff()` async function (exponential backoff, full jitter, base 1s, multiplier 2x, cap 60s, max 3 retries, retryable codes {429, 503}) in `src/kosmos/llm/retry.py`
-- [ ] T017 [US3] Integrate retry logic into `LLMClient.complete()` and `LLMClient.stream()` — wrap HTTP calls with retry, map non-retryable status codes to specific error types (401→AuthenticationError, 400→LLMResponseError) in `src/kosmos/llm/client.py`
+- [ ] T016 [US3] Implement `RetryPolicy` model and `retry_with_backoff()` async function (exponential backoff, full jitter, base 1s, multiplier 2x, cap 60s, max 3 retries, retryable codes {429, 503}) in `src/ummaya/llm/retry.py`
+- [ ] T017 [US3] Integrate retry logic into `LLMClient.complete()` and `LLMClient.stream()` — wrap HTTP calls with retry, map non-retryable status codes to specific error types (401→AuthenticationError, 400→LLMResponseError) in `src/ummaya/llm/client.py`
 - [ ] T018 [US3] Write unit tests for retry logic (429 retries with backoff, 503 retries then succeeds, 401 immediate failure, retry exhaustion raises LLMConnectionError) in `tests/llm/test_retry.py`
 
 **Checkpoint**: Transient failures are recovered automatically. Permanent errors fail immediately.
@@ -94,8 +94,8 @@
 
 ### Implementation for User Story 4
 
-- [ ] T019 [US4] Add `ToolDefinition` and `FunctionSchema` Pydantic v2 models to `src/kosmos/llm/models.py`
-- [ ] T020 [US4] Implement tool_calls support in `LLMClient.complete()` and `LLMClient.stream()` — serialize `tools` parameter, parse `tool_calls` in response/stream events, handle `tool_call_delta` StreamEvent assembly in `src/kosmos/llm/client.py`
+- [ ] T019 [US4] Add `ToolDefinition` and `FunctionSchema` Pydantic v2 models to `src/ummaya/llm/models.py`
+- [ ] T020 [US4] Implement tool_calls support in `LLMClient.complete()` and `LLMClient.stream()` — serialize `tools` parameter, parse `tool_calls` in response/stream events, handle `tool_call_delta` StreamEvent assembly in `src/ummaya/llm/client.py`
 - [ ] T021 [US4] Write unit tests for tool use flow (request with tools parameter, response with tool_calls, streaming tool_call_delta assembly, tool result continuation message) in `tests/llm/test_client.py`
 
 **Checkpoint**: Tool loop messages assemble correctly. Ready for Query Engine (Epic #5) integration.
@@ -106,8 +106,8 @@
 
 **Purpose**: Finalize public API, add logging, validate documentation
 
-- [ ] T022 Finalize public exports in `src/kosmos/llm/__init__.py` — export `LLMClient`, all models, all errors, `UsageTracker`, `RetryPolicy`, `LLMClientConfig`
-- [ ] T023 Add stdlib `logging` calls for all LLM operations (request metadata, token counts, latency, retry attempts, errors) per FR-012 in `src/kosmos/llm/client.py`
+- [ ] T022 Finalize public exports in `src/ummaya/llm/__init__.py` — export `LLMClient`, all models, all errors, `UsageTracker`, `RetryPolicy`, `LLMClientConfig`
+- [ ] T023 Add stdlib `logging` calls for all LLM operations (request metadata, token counts, latency, retry attempts, errors) per FR-012 in `src/ummaya/llm/client.py`
 - [ ] T024 Run `quickstart.md` code examples as validation (verify imports, API surface matches contract)
 
 ---

@@ -6,7 +6,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kosmos.recovery.policies import RetryPolicy, RetryPolicyRegistry
+from ummaya.recovery.policies import RetryPolicy, RetryPolicyRegistry
 
 # ---------------------------------------------------------------------------
 # RetryPolicy defaults

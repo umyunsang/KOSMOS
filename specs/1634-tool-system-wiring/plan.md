@@ -2,25 +2,25 @@
 
 **Branch**: `feat/1634-tool-system-wiring` (`SPECIFY_FEATURE=1634-tool-system-wiring`) | **Date**: 2026-04-24 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/1634-tool-system-wiring/spec.md`
-**Epic**: #1634 | **Phase**: P3 (per `docs/requirements/kosmos-migration-tree.md § Execution phases`)
+**Epic**: #1634 | **Phase**: P3 (per `docs/requirements/ummaya-migration-tree.md § Execution phases`)
 
 ## Summary
 
-Wire `src/kosmos/tools/` Python adapters as the LLM-visible tool surface via a stdio-MCP bridge that reuses the existing `tui/src/ipc/bridge.ts` ↔ `src/kosmos/ipc/stdio.py` transport. Expose exactly four reserved primitives (`lookup`, `submit`, `verify`, `subscribe`) plus a closed auxiliary set (WebFetch, WebSearch, Translate, Calculator, DateParser, ExportPDF, Task via AgentTool, Brief, MCP). Delete the Claude Code developer tool tree (Bash, FileEdit, Glob, Grep, NotebookEdit, PowerShell, LSP, REPL, Config, Plan/Worktree mode tools) from the runtime registration path. Populate the `primitive` field on all 15 currently-registered Python adapters; rename `provider` → typed `ministry`; add `adapter_mode: Literal["live","mock"]`; introduce a `compute_permission_tier()` helper. Add a `build_routing_index()` boot-time validator + CI consistency test that fails closed if any adapter is misconfigured.
+Wire `src/ummaya/tools/` Python adapters as the LLM-visible tool surface via a stdio-MCP bridge that reuses the existing `tui/src/ipc/bridge.ts` ↔ `src/ummaya/ipc/stdio.py` transport. Expose exactly four reserved primitives (`lookup`, `submit`, `verify`, `subscribe`) plus a closed auxiliary set (WebFetch, WebSearch, Translate, Calculator, DateParser, ExportPDF, Task via AgentTool, Brief, MCP). Delete the Claude Code developer tool tree (Bash, FileEdit, Glob, Grep, NotebookEdit, PowerShell, LSP, REPL, Config, Plan/Worktree mode tools) from the runtime registration path. Populate the `primitive` field on all 15 currently-registered Python adapters; rename `provider` → typed `ministry`; add `adapter_mode: Literal["live","mock"]`; introduce a `compute_permission_tier()` helper. Add a `build_routing_index()` boot-time validator + CI consistency test that fails closed if any adapter is misconfigured.
 
 **Approach**: this is a *wiring* epic — the substrate (FriendliAI provider, OTEL, audit ledger, permission v2, IPC stdio, BM25+dense retrieval) already exists from prior specs. Implementation work is mechanical (mass adapter migration, dead-code deletion, CI guard) plus three small new modules (4 primitive wrappers, MCP server stub, MCP client). No new runtime dependencies (AGENTS.md hard rule).
 
 ## Technical Context
 
 **Language/Version**: Python 3.12+ (backend, existing); TypeScript 5.6+ with Bun v1.2.x (TUI, existing Spec 287 stack).
-**Primary Dependencies**: `pydantic >= 2.13` (frozen models + Literal enums, existing); `pydantic-settings >= 2.0` (env catalog `KOSMOS_*`, existing); `httpx >= 0.27` (async HTTP for live adapters, existing); `opentelemetry-sdk` + `opentelemetry-semantic-conventions` (Spec 021 spans, existing); `pytest` + `pytest-asyncio` (existing test stack); `mcp` Python package (already shipped) for the stdio-MCP server stub; `@modelcontextprotocol/sdk` TS (already in `tui/package.json` from Spec 287) for the stdio-MCP client. **Zero new runtime dependencies** (AGENTS.md hard rule; SC of every prior tool-system spec).
+**Primary Dependencies**: `pydantic >= 2.13` (frozen models + Literal enums, existing); `pydantic-settings >= 2.0` (env catalog `UMMAYA_*`, existing); `httpx >= 0.27` (async HTTP for live adapters, existing); `opentelemetry-sdk` + `opentelemetry-semantic-conventions` (Spec 021 spans, existing); `pytest` + `pytest-asyncio` (existing test stack); `mcp` Python package (already shipped) for the stdio-MCP server stub; `@modelcontextprotocol/sdk` TS (already in `tui/package.json` from Spec 287) for the stdio-MCP client. **Zero new runtime dependencies** (AGENTS.md hard rule; SC of every prior tool-system spec).
 **Storage**: N/A. All registry state is in-memory, rebuilt at boot. BM25 index is in-memory (Spec 022). Audit ledger is Spec 024 territory and unchanged. Memdir USER tier (Spec 027) for sessions is unchanged.
 **Testing**: `uv run pytest` for backend; `bun test` for TUI. New CI test `tests/tools/test_routing_consistency.py` runs against the live registry and fails the build if `build_routing_index()` rejects any adapter. Live API calls remain forbidden in CI per Constitution § IV; the integrated PR's `bun run tui` step provides manual E2E verification (per `feedback_integrated_pr_only`).
 **Target Platform**: macOS / Linux developer terminals (Kitty / iTerm2 / xterm). Backend runs as a child process spawned by the TUI over stdio.
-**Project Type**: Multi-package monorepo with backend (Python `src/kosmos/`) + TUI (TypeScript `tui/src/`) connected via stdio JSONL IPC. P3 introduces an MCP protocol layer *on top of* that existing transport — it does not replace `bridge.ts` / `stdio.py`.
+**Project Type**: Multi-package monorepo with backend (Python `src/ummaya/`) + TUI (TypeScript `tui/src/`) connected via stdio JSONL IPC. P3 introduces an MCP protocol layer *on top of* that existing transport — it does not replace `bridge.ts` / `stdio.py`.
 **Performance Goals**: MCP handshake < 500 ms cold / < 100 ms warm (SC-004). `build_routing_index()` < 50 ms for the current 15-adapter set; must scale linearly to 100+ adapters without code changes (P5 plugin DX is the next epic). `lookup(mode="search")` BM25 query latency unchanged from Spec 022 baseline.
 **Constraints**: Constitution § II fail-closed (all new fields default to safer value; `adapter_mode="live"` is the deliberate exception, fail-explicit per Q1 clarification). Constitution § III no `Any` in I/O schemas. Constitution § IV no live API calls in CI. AGENTS.md zero-new-runtime-deps. AGENTS.md English-only source text (Korean only in domain data — search hints, ministry display labels).
-**Scale/Scope**: 15 registered live adapters today (`hira_hospital_search`, `kma_*` x 6, `koroad_*` x 2, `nfa_emergency_info_service`, `mohw_welfare_eligibility_search` (under `ssis/`), `nmc_emergency_search`, `road_risk_score` (composite — deleted in this epic per FR-027), `resolve_location`, `lookup`); after FR-027 composite removal the post-P3 live count is **14**. Plus **11 mock adapters** across `src/kosmos/tools/mock/{verify_*,data_go_kr/{fines_pay,rest_pull_tick,rss_notices},mydata/welfare_application,cbs/disaster_feed}.py`. Net: **26 adapters touched** (15 live + 11 mock) — one of the 15 live (road_risk_score) is deleted. TUI tool tree: 15 directories deleted (14 CC dev tools + `tui/src/tools/AgentTool/built-in` partial strip), 4 new auxiliary directories added, 1 primitive directory added with 4 files, 1 MCP client file added. Backend: 1 new MCP server file, 1 deleted composite directory, edits to `register_all.py` + `models.py` + `registry.py`.
+**Scale/Scope**: 15 registered live adapters today (`hira_hospital_search`, `kma_*` x 6, `koroad_*` x 2, `nfa_emergency_info_service`, `mohw_welfare_eligibility_search` (under `ssis/`), `nmc_emergency_search`, `road_risk_score` (composite — deleted in this epic per FR-027), `resolve_location`, `lookup`); after FR-027 composite removal the post-P3 live count is **14**. Plus **11 mock adapters** across `src/ummaya/tools/mock/{verify_*,data_go_kr/{fines_pay,rest_pull_tick,rss_notices},mydata/welfare_application,cbs/disaster_feed}.py`. Net: **26 adapters touched** (15 live + 11 mock) — one of the 15 live (road_risk_score) is deleted. TUI tool tree: 15 directories deleted (14 CC dev tools + `tui/src/tools/AgentTool/built-in` partial strip), 4 new auxiliary directories added, 1 primitive directory added with 4 files, 1 MCP client file added. Backend: 1 new MCP server file, 1 deleted composite directory, edits to `register_all.py` + `models.py` + `registry.py`.
 
 ## Constitution Check
 
@@ -32,11 +32,11 @@ Wire `src/kosmos/tools/` Python adapters as the LLM-visible tool surface via a s
 |---|---|---|---|
 | Tool registration | `src/services/tools/toolOrchestration.ts`, `src/services/tools/toolExecution.ts` | Spec 031 § 2 (envelope), Pydantic AI registry pattern | `register_all.py` migration + `build_routing_index()` |
 | Primitive wrappers (4) | `src/tools/MCPTool/MCPTool.ts` (envelope dispatch shape), `src/tools/AgentTool/AgentTool.tsx` (Task primitive backing) | Spec 031 research § 1 primitive ↔ CC analog table | `tui/src/tools/primitive/{lookup,submit,verify,subscribe}.ts` |
-| MCP bridge (Python server) | `src/services/tools/StreamingToolExecutor.ts` (back-pressure), Spec 032 stdio hardening | Anthropic `mcp` Python package docs | `src/kosmos/ipc/mcp_server.py` wraps `stdio.py` |
+| MCP bridge (Python server) | `src/services/tools/StreamingToolExecutor.ts` (back-pressure), Spec 032 stdio hardening | Anthropic `mcp` Python package docs | `src/ummaya/ipc/mcp_server.py` wraps `stdio.py` |
 | MCP bridge (TS client) | `src/tools/MCPTool/MCPTool.ts`, `src/tools/MCPTool/prompt.ts` | `@modelcontextprotocol/sdk` TS docs | `tui/src/ipc/mcp.ts` reuses `bridge.ts` |
 | CC dev tool removal | All under `src/tools/{Bash,FileEdit,FileRead,FileWrite,Glob,Grep,NotebookEdit,PowerShell,LSP,REPL,Config,EnterWorktree,ExitWorktree,EnterPlanMode,ExitPlanMode}Tool/` | — (deletions) | `tui/src/tools/*` deletion list per spec FR-012 |
 | Auxiliary tool retention | `src/tools/{WebFetch,WebSearch,Brief,MCP,Agent}Tool/` | — | Keep + rewire AgentTool→Task (strip 4 built-in agents) |
-| Auxiliary tool additions | No CC analog — KOSMOS-original | Pydantic AI tool definitions | New `tui/src/tools/{Translate,Calculator,DateParser,ExportPDF}Tool/` |
+| Auxiliary tool additions | No CC analog — UMMAYA-original | Pydantic AI tool definitions | New `tui/src/tools/{Translate,Calculator,DateParser,ExportPDF}Tool/` |
 
 **PASS** — every major decision maps to a concrete restored-src path or a documented secondary reference per Constitution § I and AGENTS.md "Reference source rule." Detailed mapping in `research.md § 1`.
 
@@ -111,7 +111,7 @@ specs/1634-tool-system-wiring/
 ### Source Code (repository root)
 
 ```text
-src/kosmos/
+src/ummaya/
 ├── tools/
 │   ├── models.py                 # EDIT: provider→ministry rename + Literal enum; add adapter_mode field
 │   ├── registry.py               # EDIT: nothing — AdapterRegistration source_mode stays

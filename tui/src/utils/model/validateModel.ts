@@ -1,4 +1,4 @@
-// KOSMOS Epic #2112: legacy model-validation API call removed. After the
+// UMMAYA Epic #2112: legacy model-validation API call removed. After the
 // Codex P2 fix the validator delegates the accept/reject decision entirely
 // to `isModelAllowed` (which honours `settings.availableModels`). Anything
 // that survives the allowlist gate is shippable to FriendliAI; unknown
@@ -24,11 +24,11 @@ export async function validateModel(
 
   // Codex P2 (PR #2151): once isModelAllowed gates the input, the function
   // must accept it. Previously this branch only honoured the canonical
-  // K-EXAONE id and KOSMOS_CUSTOM_MODEL_OPTION, which contradicted both the
+  // K-EXAONE id and UMMAYA_CUSTOM_MODEL_OPTION, which contradicted both the
   // function's own error message and the docstring intent — making `/model
   // <id>` fail when `<id>` is explicitly listed in `settings.availableModels`.
   // Anything that survives the allowlist gate above is, by definition, valid
-  // for KOSMOS to ship to FriendliAI; runtime resolution is handled by
+  // for UMMAYA to ship to FriendliAI; runtime resolution is handled by
   // parseUserSpecifiedModel which collapses unknown names back to K-EXAONE.
   return { valid: true }
 }

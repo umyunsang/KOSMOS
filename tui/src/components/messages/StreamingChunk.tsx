@@ -3,11 +3,11 @@
 //
 // Batches incoming LLM token stream into ~20-token render frames to prevent
 // per-token re-render thrash.  Chunk size is configurable via
-// KOSMOS_TUI_STREAM_CHUNK_TOKENS (default 20, per research.md D-3).
+// UMMAYA_TUI_STREAM_CHUNK_TOKENS (default 20, per research.md D-3).
 //
 // Source: cc:components/Messages.tsx, cc:components/Message.tsx,
 //         cc:components/VirtualMessageList.tsx (streaming primitive pattern).
-// KOSMOS adaptation: token-budget batching replaces CC's streaming accumulator;
+// UMMAYA adaptation: token-budget batching replaces CC's streaming accumulator;
 // env-var override preserves "approximately" semantics (FR-008).
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -26,7 +26,7 @@ function estimateTokens(text: string): number {
 const DEFAULT_CHUNK_TOKENS = 20;
 
 function getChunkTokens(): number {
-  const raw = process.env['KOSMOS_TUI_STREAM_CHUNK_TOKENS'];
+  const raw = process.env['UMMAYA_TUI_STREAM_CHUNK_TOKENS'];
   if (raw) {
     const n = parseInt(raw, 10);
     if (!isNaN(n) && n > 0) return n;
@@ -54,7 +54,7 @@ export type StreamingChunkProps = {
  *   accumulate, then flushed to rendered output in one React state update.
  * - When `isStreaming` becomes false, the full `streamedText` is shown
  *   immediately (flush remaining buffer).
- * - `KOSMOS_TUI_STREAM_CHUNK_TOKENS` overrides the default chunk size.
+ * - `UMMAYA_TUI_STREAM_CHUNK_TOKENS` overrides the default chunk size.
  */
 export function StreamingChunk({
   streamedText,

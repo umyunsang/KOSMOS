@@ -456,7 +456,7 @@ describe('findToolNameForResult', () => {
       },
     ]
     // Ambiguous case: walking backwards, the SECOND assistant turn (with
-    // the same id) wins. Real KOSMOS turns generate unique UUIDs so this
+    // the same id) wins. Real UMMAYA turns generate unique UUIDs so this
     // is a defensive contract test rather than a real-world scenario.
     expect(findToolNameForResult('dup', messages)).toBe('second')
   })

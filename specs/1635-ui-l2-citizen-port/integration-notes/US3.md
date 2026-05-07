@@ -14,7 +14,7 @@
 
 | File | Task | Description |
 |------|------|-------------|
-| `tui/src/components/onboarding/PreflightStep.tsx` | T040 | Bun version + graphics protocol + KOSMOS_* env-var ✓/✗ checks |
+| `tui/src/components/onboarding/PreflightStep.tsx` | T040 | Bun version + graphics protocol + UMMAYA_* env-var ✓/✗ checks |
 | `tui/src/components/onboarding/ThemeStep.tsx` | T041 | UFO mascot idle pose (violet palette) + theme selector |
 | `tui/src/components/onboarding/PipaConsentStep.tsx` | T042 | PIPA §26 trustee notice box + Y/N consent (FR-006) |
 | `tui/src/components/onboarding/MinistryScopeStep.tsx` | T043 | Existing Spec 035 component; suitable as-is for 5-step flow |
@@ -106,7 +106,7 @@ if (result.mode === 'full') {
 
 ---
 
-## T052 — OTEL kosmos.ui.surface=onboarding emission
+## T052 — OTEL ummaya.ui.surface=onboarding emission
 
 **What Lead needs to add**: `emitSurfaceActivation('onboarding', ...)` is already called
 inside each step component via a `useEffect` at mount time. The Lead should additionally
@@ -130,9 +130,9 @@ skipped (e.g., the user presses Esc during preflight before any step-level span 
 
 ### State persistence
 
-- `OnboardingState` lives at `~/.kosmos/memdir/user/onboarding/state.json`
+- `OnboardingState` lives at `~/.ummaya/memdir/user/onboarding/state.json`
   (atomic-rename writes via `uiL2Memdir.ts`).
-- `AccessibilityPreference` lives at `~/.kosmos/memdir/user/preferences/a11y.json`
+- `AccessibilityPreference` lives at `~/.ummaya/memdir/user/preferences/a11y.json`
   (same atomic-rename path). Written on every toggle AND on Enter (advance).
 - PIPA consent records continue to use the Spec 035 `memdir/io.ts` writers
   (`writeConsentRecord`).
@@ -154,7 +154,7 @@ a lower index are not re-run (they stay in `steps[]` for audit purposes).
 
 ### /lang command integration
 
-`parseLangCommand` mutates `process.env['KOSMOS_TUI_LOCALE']`. Components that call
+`parseLangCommand` mutates `process.env['UMMAYA_TUI_LOCALE']`. Components that call
 `getUiL2I18n(getCurrentLocale())` will pick up the new locale on the next render.
 Components using the module-level `uiL2I18n` constant will NOT hot-swap; they need
 to be unmounted/remounted or refactored to call `getUiL2I18n()` instead.

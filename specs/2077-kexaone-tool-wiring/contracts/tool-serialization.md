@@ -1,6 +1,6 @@
 # Contract — `toolToFunctionSchema()` + `getToolDefinitionsForFrame()` (TS)
 
-> Epic [#2077](https://github.com/umyunsang/KOSMOS/issues/2077) · 2026-04-27
+> Epic [#2077](https://github.com/umyunsang/UMMAYA/issues/2077) · 2026-04-27
 > New TypeScript module that converts the TUI's Zod-defined tool catalog into `ToolDefinition[]` for `ChatRequestFrame.tools`. Uses `zod/v4`'s built-in `z.toJSONSchema()` (verified Draft 2020-12 in research § R-1).
 
 ## Module
@@ -97,8 +97,8 @@ These guarantees are testable — `tui/tests/tools/serialization.test.ts` includ
 
 ## OTEL attributes (TUI side)
 
-- `kosmos.tools.serialized.count` (int) — number of definitions emitted.
-- `kosmos.tools.serialized.duration_ms` (float) — wall-clock for the serialization pass.
+- `ummaya.tools.serialized.count` (int) — number of definitions emitted.
+- `ummaya.tools.serialized.duration_ms` (float) — wall-clock for the serialization pass.
 
 ## Performance budget
 

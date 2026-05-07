@@ -7,7 +7,7 @@
 
 > **Dispatch policy** (`AGENTS.md § Agent Teams`): Lead Opus solo for foundational + smoke (T001-T002, T011-T012). 3 Sonnet teammates parallel for Phase 2-4 (T003-T005, T006-T008, T009-T010). 각 task ≤ 5 file 변경. 각 Sonnet teammate prompt ≤ 30 LOC.
 
-> **Reference baseline rule** (`MEMORY.md feedback_cc_source_migration_pattern`): 모든 task 가 CC restored-src 또는 KOSMOS 기존 모듈을 reference baseline 으로 명시. 새로 작성 X — 포팅 또는 wire 복구.
+> **Reference baseline rule** (`MEMORY.md feedback_cc_source_migration_pattern`): 모든 task 가 CC restored-src 또는 UMMAYA 기존 모듈을 reference baseline 으로 명시. 새로 작성 X — 포팅 또는 wire 복구.
 
 > **Zero new dependency** invariant: 모든 task 는 `tui/package.json` + `pyproject.toml` 변경 없이 완료. `bun add` / `uv add` 금지.
 
@@ -49,7 +49,7 @@
 2. 동일 키의 English fallback 카탈로그.
 3. 각 modalBody 함수는 한국어 primary 본문 (~ 50자) 반환.
 
-**Definition of done**: `bun typecheck` 통과 (KOSMOS narrow `src/stubs/**`) + lint clean. (Smoke 는 본 task 에서 별도 X.)
+**Definition of done**: `bun typecheck` 통과 (UMMAYA narrow `src/stubs/**`) + lint clean. (Smoke 는 본 task 에서 별도 X.)
 
 ---
 
@@ -83,9 +83,9 @@
 
 ---
 
-### T004 — `KosmosPermissionRequest.tsx` dispatcher [sonnet-hook-components]
+### T004 — `UmmayaPermissionRequest.tsx` dispatcher [sonnet-hook-components]
 
-**File**: `tui/src/components/permissions/KosmosPermissionRequest.tsx` (NEW), `tui/test/components/permissions/KosmosPermissionRequest.test.tsx` (NEW)
+**File**: `tui/src/components/permissions/UmmayaPermissionRequest.tsx` (NEW), `tui/test/components/permissions/UmmayaPermissionRequest.test.tsx` (NEW)
 
 **Reference baseline**:
 - `.references/claude-code-sourcemap/restored-src/src/components/permissions/PermissionRequest.tsx:47-80` (`permissionComponentForTool` switch 패턴)
@@ -95,12 +95,12 @@
 - `tui/src/schemas/ui-l2/permission.ts` (`LAYER_VISUAL`, `PermissionReceiptT`)
 
 **Deliverables**:
-1. Functional component `<KosmosPermissionRequest>` (~ 80 LOC).
+1. Functional component `<UmmayaPermissionRequest>` (~ 80 LOC).
 2. Props: `permissionRequest` (Spec 032 IPC frame shape), `onApprove(decision: 'allow_once'|'allow_session')`, `onDeny`, `bypassMode: boolean`.
 3. 4-arm switch on `primitive`:
    - lookup: return `null` (no modal).
    - verify/submit/subscribe: 호출 `aalToLayer` → `LAYER_VISUAL[layer]` → 본문 i18n 호출 → `<PermissionDialog>` mount.
-4. bypassMode=true 시 `<KosmosBypassReinforcement>` (T005) 를 wrapper 로 mount.
+4. bypassMode=true 시 `<UmmayaBypassReinforcement>` (T005) 를 wrapper 로 mount.
 5. Y/A 응답 시 `onApprove(decision)` 호출 — `addReceipt` 호출은 T007 (REPL wire) 에서 수행.
 6. Unit test 4 case: lookup→null, verify→Layer 1 modal, submit (irreversible=false)→Layer 2, submit (irreversible=true)→Layer 3.
 
@@ -108,9 +108,9 @@
 
 ---
 
-### T005 — `KosmosBypassReinforcement.tsx` dual-confirm [sonnet-hook-components]
+### T005 — `UmmayaBypassReinforcement.tsx` dual-confirm [sonnet-hook-components]
 
-**File**: `tui/src/components/permissions/KosmosBypassReinforcement.tsx` (NEW), `tui/test/components/permissions/KosmosBypassReinforcement.test.tsx` (NEW)
+**File**: `tui/src/components/permissions/UmmayaBypassReinforcement.tsx` (NEW), `tui/test/components/permissions/UmmayaBypassReinforcement.test.tsx` (NEW)
 
 **Reference baseline**:
 - `.references/claude-code-sourcemap/restored-src/src/components/permissions/PermissionExplanation.tsx` (CC reinforce 패턴)
@@ -129,7 +129,7 @@
 
 ## Phase 3 — REPL wire + addReceipt (sonnet-repl-wire)
 
-### T006 — REPL.tsx dead placeholder 제거 + KosmosPermissionRequest mount [sonnet-repl-wire]
+### T006 — REPL.tsx dead placeholder 제거 + UmmayaPermissionRequest mount [sonnet-repl-wire]
 
 **File**: `tui/src/screens/REPL.tsx` (MODIFY)
 
@@ -139,11 +139,11 @@
 
 **Deliverables**:
 1. 라인 5534-5536 의 dead 모달 placeholder 주석 제거 (또는 historical-note 한 줄로 축소).
-2. `<KosmosPermissionRequest>` 를 FullscreenLayout `bottom` slot 또는 `toolPermissionOverlay` 위치에 mount.
+2. `<UmmayaPermissionRequest>` 를 FullscreenLayout `bottom` slot 또는 `toolPermissionOverlay` 위치에 mount.
 3. `toolUseConfirmQueue[0]` 가 truthy 일 때만 mount (CC 패턴 보존).
 4. Props 전달: `permissionRequest={toolUseConfirmQueue[0]}`, `onApprove`, `onDeny`, `bypassMode={mode === 'bypassPermissions'}`.
 
-**Definition of done**: `grep "PermissionGauntletModal × 2" tui/src/screens/REPL.tsx` = 0 hit (또는 historical-note 한 줄로) + KosmosPermissionRequest import + mount 라인 alive + `bun test` 회귀 0.
+**Definition of done**: `grep "PermissionGauntletModal × 2" tui/src/screens/REPL.tsx` = 0 hit (또는 historical-note 한 줄로) + UmmayaPermissionRequest import + mount 라인 alive + `bun test` 회귀 0.
 
 ---
 
@@ -158,8 +158,8 @@
 
 **Deliverables**:
 1. IPC frame consumer 추가 — `permission_receipt` (또는 backend 가 응답으로 사용하는 frame) 수신 시 `addReceipt({receipt_id, layer, tool_name, decision, decided_at, session_id, revoked_at: null})` 호출.
-2. Layer 는 `aalToLayer(primitive, auth_level, is_irreversible)` 로 계산 (backend 가 layer 를 직접 보내주면 그것 사용 우선, KOSMOS 측 fallback only).
-3. `KosmosPermissionRequest` 의 `onApprove` 콜백에서 `sendFrame(permission_response, {request_id, decision})` 호출.
+2. Layer 는 `aalToLayer(primitive, auth_level, is_irreversible)` 로 계산 (backend 가 layer 를 직접 보내주면 그것 사용 우선, UMMAYA 측 fallback only).
+3. `UmmayaPermissionRequest` 의 `onApprove` 콜백에서 `sendFrame(permission_response, {request_id, decision})` 호출.
 4. `addReceipt` 호출처 ≥ 3 (verify path / submit path / subscribe path 각 1 — primitive 분기는 frame.primitive 필드로 자동 분기되므로 단일 callsite 가 3 primitive 모두 cover 해도 SC-004 만족).
 
 **Definition of done**: `grep -rn "\.addReceipt(" tui/src/` ≥ 3 (또는 ≥ 1 callsite + comment 명시 "covers verify/submit/subscribe via frame.primitive") + verify scenario smoke (T011) 시 `/consent list` 에 receipt 표시.
@@ -178,7 +178,7 @@
 1. `failClosed.ts` — pure function `detectBypass(toolCall, recentPermissionRequests): boolean` — `tool_call` 이 verify/submit/subscribe primitive 인데 매칭 `permission_request` 가 직전 5초 내에 없으면 true.
 2. REPL.tsx 의 `tool_result` IPC consumer 에서 `detectBypass` 호출 → true 시 ToolResult 를 error envelope 로 교체 + 시민에게 fail-closed 토스트.
 3. Modal mount 후 30초 timeout 핸들러 → `timeout_denied` IPC send + 토스트.
-4. `mode === 'bypassPermissions'` 토글 시 KosmosPermissionRequest 에 prop drilling (T006 이미 wire).
+4. `mode === 'bypassPermissions'` 토글 시 UmmayaPermissionRequest 에 prop drilling (T006 이미 wire).
 
 **Definition of done**: `failClosed.test.ts` (3 case: 정상 / 우회 감지 / lookup 무시) green + 30s timeout test green.
 
@@ -284,7 +284,7 @@ PR description 에 다음 5 항목 cross-reference:
 1. **SC mapping table** — spec.md `## Success Criteria` 의 SC-001 ~ SC-010 모두 deliverable 위치 명시.
 2. **5-layer verification chain** — Layer 1b (T001/T004/T005/T009 unit), Layer 5c (T010 frameSequence), Layer 5 (T011 tmux), Layer 4 (T012 vhs) 모두 captured 확인.
 3. **Hard rule check** — `tui/package.json` + `pyproject.toml` diff 0 line / `grep "behavior: 'allow' as const, updatedInput: {}" tui/src/hooks/useCanUseTool.ts` = 0 hit / `grep -rn "\.addReceipt(" tui/src/` ≥ 3 hit / `grep "Layer 1" snap-002-modal.txt` 1+ hit.
-4. **CC parity statement** — 신규 컴포넌트 3개 (`KosmosPermissionRequest`, `KosmosBypassReinforcement`, `aalToLayer`) 모두 CC reference 명시 + KOSMOS 적응 설명.
+4. **CC parity statement** — 신규 컴포넌트 3개 (`UmmayaPermissionRequest`, `UmmayaBypassReinforcement`, `aalToLayer`) 모두 CC reference 명시 + UMMAYA 적응 설명.
 5. **Closes #EPIC** — Epic 이슈 발행 후 number 채워서 `Closes #N` (Lead Opus 가 PR 직전에 GitHub Epic 발행 — 본 spec 의 첫 PR 직전 단계).
 
 ---

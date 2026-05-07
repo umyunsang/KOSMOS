@@ -5,9 +5,9 @@
 
 ## Summary
 
-Externalise the three LLM-facing prompts currently embedded in `src/kosmos/context/system_prompt.py` and `src/kosmos/context/session_compact.py` into a manifest-backed `prompts/` registry, ship the platform through a reproducible uv-based multi-stage Docker image plus a devcontainer, add a CI shadow-eval lane that runs a fixture-only battery against both merge-base and PR-head prompts on every `prompts/**` change, and emit a tag-triggered release manifest (`docs/release-manifests/<sha>.yaml`) that pins commit sha, lockfile hash, image digest, prompt hashes, LLM model id, and gateway version. All LLM call spans emitted from Layer 5 carry a new `kosmos.prompt.hash` attribute that Epic #501 will consume.
+Externalise the three LLM-facing prompts currently embedded in `src/ummaya/context/system_prompt.py` and `src/ummaya/context/session_compact.py` into a manifest-backed `prompts/` registry, ship the platform through a reproducible uv-based multi-stage Docker image plus a devcontainer, add a CI shadow-eval lane that runs a fixture-only battery against both merge-base and PR-head prompts on every `prompts/**` change, and emit a tag-triggered release manifest (`docs/release-manifests/<sha>.yaml`) that pins commit sha, lockfile hash, image digest, prompt hashes, LLM model id, and gateway version. All LLM call spans emitted from Layer 5 carry a new `ummaya.prompt.hash` attribute that Epic #501 will consume.
 
-Technical approach: the Prompt Registry is a small stdlib-only component (Pydantic v2 frozen models + `hashlib.sha256` integrity verification) backed by a YAML manifest; the Docker image follows the Astral + Hynek two-stage uv pattern with `UV_LINK_MODE=copy` + `UV_COMPILE_BYTECODE=1`; the shadow-eval workflow uses the Eugene Yan shadow-deployment pattern (twin runs against merge-base vs PR head, no live traffic) and tags spans with the existing `deployment.environment` attribute from Spec 021. Langfuse Prompt Management is an opt-in integration gated by `KOSMOS_PROMPT_REGISTRY_LANGFUSE=true` and enters as an optional extras dependency.
+Technical approach: the Prompt Registry is a small stdlib-only component (Pydantic v2 frozen models + `hashlib.sha256` integrity verification) backed by a YAML manifest; the Docker image follows the Astral + Hynek two-stage uv pattern with `UV_LINK_MODE=copy` + `UV_COMPILE_BYTECODE=1`; the shadow-eval workflow uses the Eugene Yan shadow-deployment pattern (twin runs against merge-base vs PR head, no live traffic) and tags spans with the existing `deployment.environment` attribute from Spec 021. Langfuse Prompt Management is an opt-in integration gated by `UMMAYA_PROMPT_REGISTRY_LANGFUSE=true` and enters as an optional extras dependency.
 
 ## Technical Context
 
@@ -70,7 +70,7 @@ prompts/
 ├── system_v1.md                         # System identity + language + tool-use + personal-data reminder
 ├── session_guidance_v1.md               # Session guidance (geocoding-first + no-memory-fill)
 └── compact_v1.md                        # session_compact header + section scaffolding
-src/kosmos/context/
+src/ummaya/context/
 └── prompt_loader.py                     # New — PromptLoader + Pydantic v2 models (FR-C03..C10)
 tests/context/
 ├── test_prompt_loader.py                # Load + SHA-256 + fail-closed (SC-003)
@@ -80,7 +80,7 @@ tests/context/
     ├── system_v1_current_text.md        # Current inline text for golden comparison
     └── session_guidance_v1_fixture.md   # v1 text with resolve_location correction (FR-X03)
 tests/observability/
-└── test_prompt_hash_attribute.py        # SC-007 — kosmos.prompt.hash on every LLM span
+└── test_prompt_hash_attribute.py        # SC-007 — ummaya.prompt.hash on every LLM span
 tests/shadow_eval/
 ├── __init__.py
 ├── battery.py                           # Fixed scenario battery (FR-D02)
@@ -93,15 +93,15 @@ docs/release-manifests/
 
 # Modified files
 .github/workflows/ci.yml                 # Add docker-build job (FR-F02); wire shadow-eval + build-manifest (FR-F03/F04)
-src/kosmos/context/system_prompt.py      # Refactor — read sections from PromptLoader (FR-C05)
-src/kosmos/context/session_compact.py    # Refactor — read header + labels from PromptLoader (FR-C06)
-src/kosmos/engine/*.py                   # Add kosmos.prompt.hash span attribute emission (FR-C07, SC-007)
+src/ummaya/context/system_prompt.py      # Refactor — read sections from PromptLoader (FR-C05)
+src/ummaya/context/session_compact.py    # Refactor — read header + labels from PromptLoader (FR-C06)
+src/ummaya/engine/*.py                   # Add ummaya.prompt.hash span attribute emission (FR-C07, SC-007)
 pyproject.toml                           # Add [project.optional-dependencies] langfuse = ["langfuse>=2.0"]
 .dockerignore                            # Exclude .git/.venv/.pytest_cache/tests/specs/docs from build context
 CLAUDE.md                                # Active Technologies line + Recent Changes entry
 ```
 
-**Structure Decision**: Single-project Python library + workflow tooling. No `backend/` vs `frontend/` split; KOSMOS has no web frontend in Phase 1. Dockerfile lives under `docker/` to keep the build context surface separate from repo documentation. Workflows live under `.github/workflows/`. Prompt assets live under `prompts/` at repo root so they are visible from every sub-tree and are covered by a single path filter (`prompts/**`) for shadow-eval.
+**Structure Decision**: Single-project Python library + workflow tooling. No `backend/` vs `frontend/` split; UMMAYA has no web frontend in Phase 1. Dockerfile lives under `docker/` to keep the build context surface separate from repo documentation. Workflows live under `.github/workflows/`. Prompt assets live under `prompts/` at repo root so they are visible from every sub-tree and are covered by a single path filter (`prompts/**`) for shadow-eval.
 
 ## Complexity Tracking
 

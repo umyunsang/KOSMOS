@@ -1,6 +1,6 @@
-# KOSMOS TUI (Ink + Bun)
+# UMMAYA TUI (Ink + Bun)
 
-The terminal user interface for KOSMOS — a Korean public-service multi-agent harness ported from Claude Code 2.1.88 onto the FriendliAI/K-EXAONE backend.
+The terminal user interface for UMMAYA — a Korean public-service multi-agent harness ported from Claude Code 2.1.88 onto the FriendliAI/K-EXAONE backend.
 
 ## Stack
 
@@ -57,7 +57,7 @@ IME-safety: every input-mutating binding checks `!useKoreanIME().isComposing` be
 
 ## Memdir paths
 
-UI L2 owns two new USER-tier paths under `~/.kosmos/memdir/user/`:
+UI L2 owns two new USER-tier paths under `~/.ummaya/memdir/user/`:
 
 - `onboarding/state.json` — resumable 5-step onboarding state (atomic-rename writes)
 - `preferences/a11y.json` — four accessibility toggles (screen reader / large font / high contrast / reduced motion)

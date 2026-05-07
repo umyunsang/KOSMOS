@@ -1,9 +1,9 @@
-// KOSMOS-2640: claude-api + verify bundled skills removed —
-// Anthropic SDK 7-language docs bundle was out of scope for KOSMOS
+// UMMAYA-2640: claude-api + verify bundled skills removed —
+// Anthropic SDK 7-language docs bundle was out of scope for UMMAYA
 // (FriendliAI K-EXAONE single-provider; AGENTS.md § CORE THESIS).
 // `verify` was already gated `process.env.USER_TYPE !== 'ant'` (effectively dead).
 // `claudeApi` was gated `feature('BUILDING_CLAUDE_APPS')` which always returns
-// false in KOSMOS (`tui/src/stubs/bun-bundle.ts` returns false for all flags).
+// false in UMMAYA (`tui/src/stubs/bun-bundle.ts` returns false for all flags).
 // Tracked under Initiative #2636 / Epic #2640. See
 // `specs/cc-migration-audit/scope-S5-commands-input.md § DROP-CANDIDATE`.
 import { feature } from 'bun:bundle'
@@ -31,7 +31,7 @@ import { registerUpdateConfigSkill } from './updateConfig.js'
 export function initBundledSkills(): void {
   registerUpdateConfigSkill()
   registerKeybindingsSkill()
-  // KOSMOS-2640: registerVerifySkill removed (USER_TYPE-gated, dead in KOSMOS).
+  // UMMAYA-2640: registerVerifySkill removed (USER_TYPE-gated, dead in UMMAYA).
   registerDebugSkill()
   registerLoremIpsumSkill()
   registerSkillifySkill()
@@ -68,7 +68,7 @@ export function initBundledSkills(): void {
     /* eslint-enable @typescript-eslint/no-require-imports */
     registerScheduleRemoteAgentsSkill()
   }
-  // KOSMOS-2640: BUILDING_CLAUDE_APPS / registerClaudeApiSkill block removed
+  // UMMAYA-2640: BUILDING_CLAUDE_APPS / registerClaudeApiSkill block removed
   // (Anthropic SDK 7-language docs out of scope for FriendliAI K-EXAONE).
   if (shouldAutoEnableClaudeInChrome()) {
     registerClaudeInChromeSkill()

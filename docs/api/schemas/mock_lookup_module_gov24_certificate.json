@@ -7,7 +7,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/mock_lookup_module_gov24_certificate.json",
+  "$id": "https://ummaya.example/api/schemas/mock_lookup_module_gov24_certificate.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "Input schema for mock_lookup_module_gov24_certificate.\n\nPydantic v2 strict model (extra='forbid', frozen=True).",

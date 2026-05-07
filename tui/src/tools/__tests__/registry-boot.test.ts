@@ -101,7 +101,7 @@ describe('verifyBootRegistry — missing renderToolResultMessage (Case 2)', () =
     // Diagnostic must name the tool, the 9-member contract, and Korean text
     expect(result.diagnostic).toContain('lookup')
     expect(result.diagnostic).toContain('9-member')
-    expect(result.diagnostic).toContain('KOSMOS는 9-member ToolDef 계약을')
+    expect(result.diagnostic).toContain('UMMAYA는 9-member ToolDef 계약을')
   })
 })
 

@@ -1,8 +1,8 @@
 /**
- * KOSMOS: File persistence stubs.
+ * UMMAYA: File persistence stubs.
  * services/api/filesApi deleted (Anthropic BYOC/Cloud session API).
- * KOSMOS does not use Anthropic session ingress — all persistence uses
- * the KOSMOS memdir (~/.kosmos/memdir/) layer from Spec 027.
+ * UMMAYA does not use Anthropic session ingress — all persistence uses
+ * the UMMAYA memdir (~/.ummaya/memdir/) layer from Spec 027.
  */
 
 import type {

@@ -1,14 +1,14 @@
 # System Prompt Architecture — CC vs Other Harnesses (Deep Research)
 
-> **Authored**: 2026-04-28 · **Trigger**: User direction during Epic #2112 — investigate why K-EXAONE answered citizen queries directly without invoking `lookup` / KMA / HIRA tools, and whether KOSMOS's system-prompt design matches CC's. Research insights drive the next Epic on system-prompt redesign.
+> **Authored**: 2026-04-28 · **Trigger**: User direction during Epic #2112 — investigate why K-EXAONE answered citizen queries directly without invoking `lookup` / KMA / HIRA tools, and whether UMMAYA's system-prompt design matches CC's. Research insights drive the next Epic on system-prompt redesign.
 >
 > **Scope**: 7 reference harness systems compared on system-prompt architecture, dynamic context injection, tool-description placement, identity framing, and prompt-caching strategy.
 
 ## TL;DR
 
-Claude Code (CC) authors its system prompt as **a hierarchically-nested document** of ~20 named sections, splitting STATIC cacheable content from DYNAMIC per-turn content via a `SYSTEM_PROMPT_DYNAMIC_BOUNDARY` marker. KOSMOS today has a single 5-paragraph file (`prompts/system_v1.md`) plus an `## Available tools` augmentation — short, but missing CC-grade structure (identity framing, tone constraints, action protocols, length anchors, dynamic env injection, language override). Other harnesses (Pydantic AI, OpenAI Agents SDK, LangGraph) all converge on the **static-string + dynamic-callable hybrid**: static base prompt + decorator/callback that injects per-request context. **AutoGen** and **Mastra** use a single `system_message` / `instructions` field, simpler but less expressive.
+Claude Code (CC) authors its system prompt as **a hierarchically-nested document** of ~20 named sections, splitting STATIC cacheable content from DYNAMIC per-turn content via a `SYSTEM_PROMPT_DYNAMIC_BOUNDARY` marker. UMMAYA today has a single 5-paragraph file (`prompts/system_v1.md`) plus an `## Available tools` augmentation — short, but missing CC-grade structure (identity framing, tone constraints, action protocols, length anchors, dynamic env injection, language override). Other harnesses (Pydantic AI, OpenAI Agents SDK, LangGraph) all converge on the **static-string + dynamic-callable hybrid**: static base prompt + decorator/callback that injects per-request context. **AutoGen** and **Mastra** use a single `system_message` / `instructions` field, simpler but less expressive.
 
-For KOSMOS to fix the "K-EXAONE doesn't invoke citizen tools" symptom, the prompt needs (1) stronger citizen-domain identity framing, (2) explicit tool-usage examples ("call `lookup` when citizen asks about a location"), (3) language-locked output (always Korean), (4) numeric length anchors, and (5) dynamic injection of memdir state (consent receipts, ministry scope) — all of which CC has and KOSMOS lacks today.
+For UMMAYA to fix the "K-EXAONE doesn't invoke citizen tools" symptom, the prompt needs (1) stronger citizen-domain identity framing, (2) explicit tool-usage examples ("call `lookup` when citizen asks about a location"), (3) language-locked output (always Korean), (4) numeric length anchors, and (5) dynamic injection of memdir state (consent receipts, ministry scope) — all of which CC has and UMMAYA lacks today.
 
 ---
 
@@ -119,7 +119,7 @@ options = ClaudeAgentOptions(
 
 Single string parameter. Delegates to the underlying Claude Code CLI for actual prompt assembly. **Minimal SDK-level structure** — the SDK is a thin wrapper.
 
-**Insight for KOSMOS**: The "official" Anthropic Python SDK pattern is just `system_prompt: str | None`. CC's section-based composition is the *implementation* not the *interface*.
+**Insight for UMMAYA**: The "official" Anthropic Python SDK pattern is just `system_prompt: str | None`. CC's section-based composition is the *implementation* not the *interface*.
 
 ---
 
@@ -141,7 +141,7 @@ class Agent(AgentBase, Generic[TContext]):
 
 `get_system_prompt()` validates callable arity (exactly 2 params), invokes sync or async based on signature.
 
-**Insight for KOSMOS**: Pattern of `str | Callable[..., str]` is the de facto standard. KOSMOS's current `prompts/system_v1.md` is the static half; the dynamic half (lazy callable) is missing.
+**Insight for UMMAYA**: Pattern of `str | Callable[..., str]` is the de facto standard. UMMAYA's current `prompts/system_v1.md` is the static half; the dynamic half (lazy callable) is missing.
 
 ---
 
@@ -180,10 +180,10 @@ def add_the_date() -> str:
 - Functions execute just before each model request (lazy)
 - Optional `RunContext[T]` parameter for dep injection
 
-**Insight for KOSMOS**: This is the cleanest *composable* pattern. KOSMOS could expose:
+**Insight for UMMAYA**: This is the cleanest *composable* pattern. UMMAYA could expose:
 ```python
-@kosmos_agent.system_prompt
-def inject_ministry_scope(ctx: KosmosContext) -> str:
+@ummaya_agent.system_prompt
+def inject_ministry_scope(ctx: UmmayaContext) -> str:
     return f"Active ministry-scope opt-ins: {ctx.memdir.ministry_scope}"
 ```
 …to lazily inject memdir state per turn.
@@ -207,7 +207,7 @@ class AssistantAgent:
 - Pairs with `description` for inter-agent handoffs (other agents see this when deciding to delegate)
 - Composes with `reflect_on_tool_use=True` — triggers extra inference for output formatting
 
-**Insight for KOSMOS**: Multi-agent coordination needs the `description` field — what one agent advertises to another. Spec 027 swarm should formalise this.
+**Insight for UMMAYA**: Multi-agent coordination needs the `description` field — what one agent advertises to another. Spec 027 swarm should formalise this.
 
 ---
 
@@ -228,7 +228,7 @@ Prompt = (
 - **Callable / Runnable**: receives **full graph state**, returns full chat-message list (LanguageModelInput)
 - Pipeline: `prompt_runnable | model` (LCEL composition)
 
-**Insight for KOSMOS**: LangGraph's "callable receives full state" model is the most powerful. KOSMOS's IPC layer already transmits full ChatRequestFrame state — a Python-side prompt assembler can take it and emit the full LLM message stack.
+**Insight for UMMAYA**: LangGraph's "callable receives full state" model is the most powerful. UMMAYA's IPC layer already transmits full ChatRequestFrame state — a Python-side prompt assembler can take it and emit the full LLM message stack.
 
 ---
 
@@ -247,7 +247,7 @@ export const testAgent = new Agent({
 
 Single `instructions` string + dynamic configuration via "request context" (separate doc not fully exposed). Working memory injection mentioned but not in scope here.
 
-**Insight for KOSMOS**: Simplest TS pattern — matches KOSMOS's current `prompts/system_v1.md` baseline.
+**Insight for UMMAYA**: Simplest TS pattern — matches UMMAYA's current `prompts/system_v1.md` baseline.
 
 ---
 
@@ -289,7 +289,7 @@ Best practices:
 
 ---
 
-## 9. KOSMOS current state (`prompts/system_v1.md`)
+## 9. UMMAYA current state (`prompts/system_v1.md`)
 
 ```markdown
 You are {platform_name}, a Korean public service AI assistant. You help citizens
@@ -311,7 +311,7 @@ with all applicable Korean data protection regulations.
 
 ### 9.1 Gaps vs CC
 
-| CC capability | KOSMOS today | Gap |
+| CC capability | UMMAYA today | Gap |
 |---|---|---|
 | Identity framing | ✅ "Korean public service AI assistant" | OK but soft — CC's "You are an interactive agent that helps users…" is more directive |
 | Section-based composition | ❌ single 5-paragraph block | No `# System` / `# Doing tasks` / `# Using your tools` headers |
@@ -329,8 +329,8 @@ with all applicable Korean data protection regulations.
 
 Three compounding factors observed in `specs/2112-dead-anthropic-models/smoke.txt`:
 
-1. **CC dev-context bleed**: The TUI's `getSystemContext()` (cwd + git + claude.md) is still being injected somewhere — K-EXAONE's reply mentioned "현재 `/Users/um-yunsang/KOSMOS/tui` 디렉토리에서 작업 중이며…", treating the user as a developer.
-2. **Generic tool-use prompt**: KOSMOS prompt says "Use available tools when… requires live data lookup" — *non-specific*. K-EXAONE Opus-class models (4.6+) are documented to require *clear, concrete* tool-use examples to fire (Anthropic best-practices §8.4).
+1. **CC dev-context bleed**: The TUI's `getSystemContext()` (cwd + git + claude.md) is still being injected somewhere — K-EXAONE's reply mentioned "현재 `/Users/um-yunsang/UMMAYA/tui` 디렉토리에서 작업 중이며…", treating the user as a developer.
+2. **Generic tool-use prompt**: UMMAYA prompt says "Use available tools when… requires live data lookup" — *non-specific*. K-EXAONE Opus-class models (4.6+) are documented to require *clear, concrete* tool-use examples to fire (Anthropic best-practices §8.4).
 3. **No language-lock guard**: K-EXAONE generated Korean reply but with developer-context vocabulary ("최근 커밋", "브랜치"). The `{language}` placeholder may not be substituted, leaving model freedom.
 
 ---
@@ -345,7 +345,7 @@ Rewrite `prompts/system_v1.md` as composable sections:
 
 ```markdown
 <role>
-You are KOSMOS — a citizen-facing AI assistant for Korean public services.
+You are UMMAYA — a citizen-facing AI assistant for Korean public services.
 Your purpose is to help citizens access government data and services through
 the available tools. You speak Korean by default and act as a public-interest
 intermediary.
@@ -379,7 +379,7 @@ Use plain Korean — avoid technical jargon. Reference tool results explicitly
 
 ### R2 · Dynamic section assembly (Pydantic AI pattern)
 
-Introduce `kosmos.llm.prompt_assembler.assemble(ctx)` that builds:
+Introduce `ummaya.llm.prompt_assembler.assemble(ctx)` that builds:
 - Static prefix (sections above) — cached per session
 - Dynamic suffix:
   - Memdir consent receipts summary
@@ -397,7 +397,7 @@ After all static sections, before dynamic suffix, emit `<!-- DYNAMIC_BOUNDARY --
 
 ### R5 · Citizen-vs-developer disambiguation
 
-Audit the TUI's `getSystemContext()` injection path. CC's git/cwd context is **dead under KOSMOS** (citizen ≠ developer) — should be removed entirely from the chat_request flow, not just the prompt. This belongs to the same Epic.
+Audit the TUI's `getSystemContext()` injection path. CC's git/cwd context is **dead under UMMAYA** (citizen ≠ developer) — should be removed entirely from the chat_request flow, not just the prompt. This belongs to the same Epic.
 
 ### R6 · Tool-aware prompt augmentation strengthening
 
@@ -419,8 +419,8 @@ Audit the TUI's `getSystemContext()` injection path. CC's git/cwd context is **d
 | 8 | `langchain-ai/langgraph` `chat_agent_executor.py` — `create_react_agent` | LangGraph source |
 | 9 | https://mastra.ai/docs/agents/overview | Mastra docs |
 | 10 | https://platform.claude.com/docs/en/docs/build-with-claude/prompt-engineering | Anthropic official |
-| 11 | `prompts/system_v1.md` (KOSMOS current) | KOSMOS canonical |
-| 12 | `src/kosmos/llm/system_prompt_builder.py` | KOSMOS canonical |
+| 11 | `prompts/system_v1.md` (UMMAYA current) | UMMAYA canonical |
+| 12 | `src/ummaya/llm/system_prompt_builder.py` | UMMAYA canonical |
 
 ---
 
@@ -429,5 +429,5 @@ Audit the TUI's `getSystemContext()` injection path. CC's git/cwd context is **d
 Add to `MEMORY.md`:
 
 ```
-- [System prompt design references](docs/research/system-prompt-harness-comparison.md) — CC has 7 static + 12 dynamic sections, boundary marker for prompt cache; KOSMOS uses single 5-paragraph file. R1-R6 actions queued for next Epic.
+- [System prompt design references](docs/research/system-prompt-harness-comparison.md) — CC has 7 static + 12 dynamic sections, boundary marker for prompt cache; UMMAYA uses single 5-paragraph file. R1-R6 actions queued for next Epic.
 ```

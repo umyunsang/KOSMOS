@@ -9,7 +9,7 @@
 
 ### User Story 1 — Correct district returned for a district-named natural-language query (Priority: P1)
 
-A citizen opens the KOSMOS CLI and asks, in natural Korean, about traffic accidents near a well-known Seoul landmark (e.g., "강남역 근처 사고 정보 알려줘"). The assistant must consult an authoritative geocoding source for the administrative region instead of guessing from model memory, and return accident data for the correct district.
+A citizen opens the UMMAYA CLI and asks, in natural Korean, about traffic accidents near a well-known Seoul landmark (e.g., "강남역 근처 사고 정보 알려줘"). The assistant must consult an authoritative geocoding source for the administrative region instead of guessing from model memory, and return accident data for the correct district.
 
 **Why this priority**: The current assistant can confidently return data for the *wrong* district (Jongno instead of Gangnam) while sounding correct. This is a trust-breaking failure mode that makes the whole Phase 1 MVP unsafe to ship: a citizen believes they got accident statistics for Gangnam when the numbers actually describe Jongno. This outranks every other hardening item.
 
@@ -25,7 +25,7 @@ A citizen opens the KOSMOS CLI and asks, in natural Korean, about traffic accide
 
 ### User Story 2 — Live validation suite completes without rate-limit failures (Priority: P1)
 
-A KOSMOS maintainer runs the full live validation suite locally before declaring Phase 1 complete. The suite must complete without any test failing because of upstream rate limiting, and must complete at least as fast as the current suite that relies on a blind 60-second cooldown between multi-turn steps.
+A UMMAYA maintainer runs the full live validation suite locally before declaring Phase 1 complete. The suite must complete without any test failing because of upstream rate limiting, and must complete at least as fast as the current suite that relies on a blind 60-second cooldown between multi-turn steps.
 
 **Why this priority**: Without a dependable suite, the maintainer cannot certify Phase 1 closure, and Phase 2 cannot start. The current mitigation (blind 60-second sleep) is brittle — it has already failed in practice after the upstream free tier ended — and it also inflates suite runtime.
 
@@ -102,7 +102,7 @@ A future reader of the project's public discussion thread about Phase 1 live val
 - **SC-004**: The live multi-turn scenario's wall-clock time is less than or equal to the current baseline (which includes a 60-second blind cooldown).
 - **SC-005**: The existing non-live test suite (LLM client, tools, context) is 100% green after the change, with no assertion rewrites beyond accepting the new default parameter values.
 - **SC-006**: The public discussion thread carries a retraction comment dated on or after the merge, and that comment links to this epic.
-- **SC-007**: The KOSMOS maintainer can declare Phase 1 release-ready — meaning the live suite passes fully and the discussion record is corrected — within one iteration of this feature.
+- **SC-007**: The UMMAYA maintainer can declare Phase 1 release-ready — meaning the live suite passes fully and the discussion record is corrected — within one iteration of this feature.
 
 ## Assumptions
 

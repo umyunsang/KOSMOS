@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.safety._injection import run_detector
+from ummaya.safety._injection import run_detector
 
 FIXTURES_DIR = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "safety"
 INJECTION_SAMPLES_PATH = FIXTURES_DIR / "injection_samples.json"

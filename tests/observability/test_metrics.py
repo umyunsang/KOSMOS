@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.observability.metrics import MetricsCollector
+from ummaya.observability.metrics import MetricsCollector
 
 # ---------------------------------------------------------------------------
 # Counters

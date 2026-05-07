@@ -19,7 +19,7 @@ description: "Task list for Phase 1 Hardening — LLM rate-limit resilience & KO
 
 ## Path Conventions
 
-Single project at repository root: `src/kosmos/`, `tests/`. All paths below are absolute-from-repo-root.
+Single project at repository root: `src/ummaya/`, `tests/`. All paths below are absolute-from-repo-root.
 
 ---
 
@@ -33,8 +33,8 @@ No new dependencies or scaffolding required — this feature edits existing file
 
 **Purpose**: Reusable primitives that every downstream user-story task consumes. US1 and US2 both depend on the retry-policy dataclass (T001) and live-suite rate-limit observation logging (T002); US3 is a governance task independent of code changes.
 
-- [X] T001 [P] Add a `RetryPolicy` dataclass (fields: `max_attempts`, `base_seconds`, `cap_seconds`, `jitter_ratio`, `respect_retry_after`) with the defaults from `data-model.md § Entity 2`, co-located in `src/kosmos/llm/client.py`. No behavior change yet — export only.
-- [X] T002 [P] Add a structured logging line (`logging.getLogger("kosmos.llm")`) in `src/kosmos/llm/client.py` that records category=`rate_limit`, attempt index, chosen delay, and whether `Retry-After` was honored. Used later by US2 tests to assert retry behavior. No behavior change to call sites yet.
+- [X] T001 [P] Add a `RetryPolicy` dataclass (fields: `max_attempts`, `base_seconds`, `cap_seconds`, `jitter_ratio`, `respect_retry_after`) with the defaults from `data-model.md § Entity 2`, co-located in `src/ummaya/llm/client.py`. No behavior change yet — export only.
+- [X] T002 [P] Add a structured logging line (`logging.getLogger("ummaya.llm")`) in `src/ummaya/llm/client.py` that records category=`rate_limit`, attempt index, chosen delay, and whether `Retry-After` was honored. Used later by US2 tests to assert retry behavior. No behavior change to call sites yet.
 
 **Checkpoint**: Foundational primitives exist. US1 and US2 may now start in parallel.
 
@@ -53,8 +53,8 @@ No new dependencies or scaffolding required — this feature edits existing file
 
 ### Implementation for User Story 1
 
-- [X] T005 [US1] In `src/kosmos/tools/koroad/koroad_accident_search.py`, strengthen the Pydantic v2 `Field(description=...)` on `KoroadAccidentSearchInput.si_do` and `KoroadAccidentSearchInput.gu_gun` per `contracts/koroad-tool-schema.md` (must-derive-from-`address_to_region`, never-from-memory with Gangnam counter-example reference, pointer to `SidoCode`/`GugunCode` enumeration). English source text only. T003 must now pass.
-- [X] T006 [US1] In `src/kosmos/context/builder.py` (or the session bootstrap it feeds), append the Session Guidance block at the **end** of the system prompt per `data-model.md § Entity 5`: geocoding-first rule + no-memory-fill rule. Preserve the existing prompt-cache prefix — no mutation of text before the append point.
+- [X] T005 [US1] In `src/ummaya/tools/koroad/koroad_accident_search.py`, strengthen the Pydantic v2 `Field(description=...)` on `KoroadAccidentSearchInput.si_do` and `KoroadAccidentSearchInput.gu_gun` per `contracts/koroad-tool-schema.md` (must-derive-from-`address_to_region`, never-from-memory with Gangnam counter-example reference, pointer to `SidoCode`/`GugunCode` enumeration). English source text only. T003 must now pass.
+- [X] T006 [US1] In `src/ummaya/context/builder.py` (or the session bootstrap it feeds), append the Session Guidance block at the **end** of the system prompt per `data-model.md § Entity 5`: geocoding-first rule + no-memory-fill rule. Preserve the existing prompt-cache prefix — no mutation of text before the append point.
 - [X] T007 [US1] Add a focused unit test covering T006 in `tests/context/` that asserts the system prompt emitted by `builder` contains both rule sentences and that the pre-existing prefix text is byte-identical to the prior output (cache-stability assertion). No new golden file — compute before/after strings in-test.
 
 **Checkpoint**: US1 independently demonstrates that KOROAD admin codes are sourced from geocoding and that LLM-facing schema + system prompt explicitly forbid memory-fill.
@@ -78,10 +78,10 @@ No new dependencies or scaffolding required — this feature edits existing file
 
 ### Implementation for User Story 2
 
-- [X] T014 [US2] In `src/kosmos/llm/client.py`, add `self._semaphore = asyncio.Semaphore(1)` in `__init__`. Wrap the provider-call core of `complete()` and `stream()` with `async with self._semaphore:` (release on both success and failure). T012 must now pass.
-- [X] T015 [US2] In `src/kosmos/llm/client.py`, implement the Retry-After-first backoff loop around the provider call per `contracts/llm-client.md § Behavioral contract` items (2) and (4): parse `Retry-After` header; otherwise sleep `min(cap, base * 2**attempt) * uniform(1-jitter, 1+jitter)`; at most `max_attempts` attempts; on exhaustion raise `LLMResponseError` with rate-limit category. Consume the `RetryPolicy` dataclass from T001. T008–T010 must now pass.
-- [X] T016 [US2] In `src/kosmos/llm/client.py`, extend `stream()` so chunks carrying a rate-limit error envelope abort the iterator, discard any partial text accumulator, and route the retry attempt through the same policy as pre-stream 429. T011 must now pass.
-- [X] T017 [US2] In `src/kosmos/llm/client.py`, change the default values of `temperature` (→ 1.0), `top_p` (→ 0.95), add new parameters `presence_penalty` (default 0.0), `max_tokens` (default 1024), `enable_thinking` (default False) on both `complete()` and `stream()`. Thread all five into the outgoing payload. Keep every parameter overridable by explicit caller argument. T013 must now pass.
+- [X] T014 [US2] In `src/ummaya/llm/client.py`, add `self._semaphore = asyncio.Semaphore(1)` in `__init__`. Wrap the provider-call core of `complete()` and `stream()` with `async with self._semaphore:` (release on both success and failure). T012 must now pass.
+- [X] T015 [US2] In `src/ummaya/llm/client.py`, implement the Retry-After-first backoff loop around the provider call per `contracts/llm-client.md § Behavioral contract` items (2) and (4): parse `Retry-After` header; otherwise sleep `min(cap, base * 2**attempt) * uniform(1-jitter, 1+jitter)`; at most `max_attempts` attempts; on exhaustion raise `LLMResponseError` with rate-limit category. Consume the `RetryPolicy` dataclass from T001. T008–T010 must now pass.
+- [X] T016 [US2] In `src/ummaya/llm/client.py`, extend `stream()` so chunks carrying a rate-limit error envelope abort the iterator, discard any partial text accumulator, and route the retry attempt through the same policy as pre-stream 429. T011 must now pass.
+- [X] T017 [US2] In `src/ummaya/llm/client.py`, change the default values of `temperature` (→ 1.0), `top_p` (→ 0.95), add new parameters `presence_penalty` (default 0.0), `max_tokens` (default 1024), `enable_thinking` (default False) on both `complete()` and `stream()`. Thread all five into the outgoing payload. Keep every parameter overridable by explicit caller argument. T013 must now pass.
 - [X] T018 [US2] In `tests/live/test_live_e2e.py::test_live_e2e_multi_turn_context`, remove the `asyncio.sleep(60)` cooldown between turn 1 and turn 2. No new assertions — success comes from T014+T015+T016 absorbing the burst. Confirms FR-012 + SC-004.
 
 **Checkpoint**: US2 independently demonstrates that retry + semaphore eliminate 429-caused failures and the blind cooldown, while the Korean LLM runs with published recommended parameters by default.
@@ -171,7 +171,7 @@ Per the Agent Teams block above — three Teammates plus Lead review, with the c
 
 ## Notes
 
-- [P] = different files, no dependency. Same-file edits are serialized even when they modify different sections (ours: `src/kosmos/llm/client.py` for US2).
+- [P] = different files, no dependency. Same-file edits are serialized even when they modify different sections (ours: `src/ummaya/llm/client.py` for US2).
 - Every user story is independently testable — US1 via the strengthened scenario-1 live test, US2 via the `tests/llm/` unit suite and the multi-turn live scenario, US3 via opening the public discussion.
 - Commit after each task or logical group; use Conventional Commits (`feat(llm):`, `fix(tools/koroad):`, `test(live):`, `docs:`).
 - Tests MUST fail before implementation lands, per repo convention.

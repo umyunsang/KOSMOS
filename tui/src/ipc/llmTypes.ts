@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1633 P2 · Anthropic→FriendliAI type shim.
+// UMMAYA-original — Epic #1633 P2 · Anthropic→FriendliAI type shim.
 //
 // Structural replacements for the Anthropic SDK types that QueryEngine.ts
 // and query.ts import. These types are in-process only; they never reach the
@@ -14,42 +14,42 @@
 // Message roles and content blocks
 // ---------------------------------------------------------------------------
 
-export type KosmosRole = 'user' | 'assistant'
+export type UmmayaRole = 'user' | 'assistant'
 
-export type KosmosTextBlockParam = {
+export type UmmayaTextBlockParam = {
   type: 'text'
   text: string
 }
 
-export type KosmosToolUseBlockParam = {
+export type UmmayaToolUseBlockParam = {
   type: 'tool_use'
   id: string
   name: string
   input: Record<string, unknown>
 }
 
-export type KosmosToolResultBlockParam = {
+export type UmmayaToolResultBlockParam = {
   type: 'tool_result'
   tool_use_id: string
-  content: string | KosmosContentBlockParam[]
+  content: string | UmmayaContentBlockParam[]
   is_error?: boolean
 }
 
-export type KosmosContentBlockParam =
-  | KosmosTextBlockParam
-  | KosmosToolUseBlockParam
-  | KosmosToolResultBlockParam
+export type UmmayaContentBlockParam =
+  | UmmayaTextBlockParam
+  | UmmayaToolUseBlockParam
+  | UmmayaToolResultBlockParam
 
 // ---------------------------------------------------------------------------
 // Messages + tool definitions
 // ---------------------------------------------------------------------------
 
-export type KosmosMessageParam = {
-  role: KosmosRole
-  content: string | KosmosContentBlockParam[]
+export type UmmayaMessageParam = {
+  role: UmmayaRole
+  content: string | UmmayaContentBlockParam[]
 }
 
-export type KosmosToolDefinition = {
+export type UmmayaToolDefinition = {
   name: string
   description?: string
   input_schema: { type: 'object'; [k: string]: unknown }
@@ -59,17 +59,17 @@ export type KosmosToolDefinition = {
 // Stream parameters + usage
 // ---------------------------------------------------------------------------
 
-export type KosmosMessageStreamParams = {
+export type UmmayaMessageStreamParams = {
   model: string
   system?: string
-  messages: KosmosMessageParam[]
-  tools?: KosmosToolDefinition[]
+  messages: UmmayaMessageParam[]
+  tools?: UmmayaToolDefinition[]
   max_tokens: number
   temperature?: number
   metadata?: Record<string, string>
 }
 
-export type KosmosUsage = {
+export type UmmayaUsage = {
   input_tokens: number
   output_tokens: number
   cache_read_input_tokens?: number
@@ -79,9 +79,9 @@ export type KosmosUsage = {
 // Streaming events (structural compatibility with Anthropic's SDK event shape)
 // ---------------------------------------------------------------------------
 
-export type KosmosStopReason = 'end_turn' | 'max_tokens' | 'tool_use' | 'stop_sequence'
+export type UmmayaStopReason = 'end_turn' | 'max_tokens' | 'tool_use' | 'stop_sequence'
 
-export type KosmosMessageStart = {
+export type UmmayaMessageStart = {
   type: 'message_start'
   message: {
     id: string
@@ -90,77 +90,77 @@ export type KosmosMessageStart = {
   }
 }
 
-export type KosmosContentBlockStart = {
+export type UmmayaContentBlockStart = {
   type: 'content_block_start'
   index: number
-  content_block: KosmosContentBlockParam
+  content_block: UmmayaContentBlockParam
 }
 
-export type KosmosTextDelta = {
+export type UmmayaTextDelta = {
   type: 'text_delta'
   text: string
 }
 
-export type KosmosInputJsonDelta = {
+export type UmmayaInputJsonDelta = {
   type: 'input_json_delta'
   partial_json: string
 }
 
 /**
- * KOSMOS / Anthropic-compat thinking delta. Carries a chunk of the model's
+ * UMMAYA / Anthropic-compat thinking delta. Carries a chunk of the model's
  * chain-of-thought trace. The backend forwards K-EXAONE's
  * ``delta.reasoning_content`` (FriendliAI / vLLM separated reasoning channel)
  * via ``AssistantChunkFrame.thinking``, and llmClient.ts converts those frames
- * into one or more ``content_block_delta { delta: KosmosThinkingDelta }``
+ * into one or more ``content_block_delta { delta: UmmayaThinkingDelta }``
  * events on a dedicated thinking block index. The TUI's ``Message.tsx``
  * picks up ``type: 'thinking'`` content blocks and routes them to
  * ``AssistantThinkingMessage`` (``∴ Thinking`` in dim italic).
  */
-export type KosmosThinkingDelta = {
+export type UmmayaThinkingDelta = {
   type: 'thinking_delta'
   thinking: string
 }
 
-export type KosmosContentBlockDelta = {
+export type UmmayaContentBlockDelta = {
   type: 'content_block_delta'
   index: number
-  delta: KosmosTextDelta | KosmosInputJsonDelta | KosmosThinkingDelta
+  delta: UmmayaTextDelta | UmmayaInputJsonDelta | UmmayaThinkingDelta
 }
 
-export type KosmosContentBlockStop = {
+export type UmmayaContentBlockStop = {
   type: 'content_block_stop'
   index: number
 }
 
-export type KosmosMessageDelta = {
+export type UmmayaMessageDelta = {
   type: 'message_delta'
   delta: {
-    stop_reason?: KosmosStopReason
+    stop_reason?: UmmayaStopReason
   }
-  usage?: KosmosUsage
+  usage?: UmmayaUsage
 }
 
-export type KosmosMessageStop = {
+export type UmmayaMessageStop = {
   type: 'message_stop'
 }
 
-export type KosmosRawMessageStreamEvent =
-  | KosmosMessageStart
-  | KosmosContentBlockStart
-  | KosmosContentBlockDelta
-  | KosmosContentBlockStop
-  | KosmosMessageDelta
-  | KosmosMessageStop
+export type UmmayaRawMessageStreamEvent =
+  | UmmayaMessageStart
+  | UmmayaContentBlockStart
+  | UmmayaContentBlockDelta
+  | UmmayaContentBlockStop
+  | UmmayaMessageDelta
+  | UmmayaMessageStop
 
 // ---------------------------------------------------------------------------
 // Finalized message returned by LLMClient.complete() + LLMClient.stream() return
 // ---------------------------------------------------------------------------
 
-export type KosmosMessageFinal = {
+export type UmmayaMessageFinal = {
   id: string
   role: 'assistant'
   model: string
-  content: KosmosContentBlockParam[]
-  stop_reason: KosmosStopReason
-  usage: KosmosUsage
+  content: UmmayaContentBlockParam[]
+  stop_reason: UmmayaStopReason
+  usage: UmmayaUsage
 }

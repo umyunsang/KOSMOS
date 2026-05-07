@@ -453,9 +453,9 @@
 > sed -n '1,52p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-000-boot.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -494,9 +494,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,52p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-000-boot.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -535,9 +535,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,52p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-000-boot.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -576,9 +576,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,52p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-000-boot.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -740,9 +740,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,70p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-001-input-submitted.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -781,9 +781,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,70p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-001-input-submitted.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -822,9 +822,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,70p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-001-input-submitted.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -863,9 +863,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,70p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-001-input-submitted.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -1027,9 +1027,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,90p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-002-post-tool-flow.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -1068,9 +1068,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,90p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-002-post-tool-flow.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -1109,9 +1109,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,90p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-002-post-tool-flow.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -1150,9 +1150,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,90p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-002-post-tool-flow.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -1314,9 +1314,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,100p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-003-expanded-tool-detail.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -1355,9 +1355,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,100p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-003-expanded-tool-detail.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────
@@ -1396,9 +1396,9 @@ tool_registry: 15 entries verified (5 primitives) in 0ms
 > sed -n '1,100p' specs/2773-rollback-debug-infra/captures/p0-full-final-16-2026-05-07/LOC-ER-HADAN-001/snap-003-expanded-tool-detail.txt
 $ bun run src/entrypoints/cli.tsx
 tool_registry: 15 entries verified (5 primitives) in 0ms
-  ▛███▜ KOSMOS v0.1.0-alpha+1978
+  ▛███▜ UMMAYA v0.1.0-alpha+1978
 ▗▟█████████▙▖ K-EXAONE with high effort · API Usage Billing
-  ▘ ▘ ▘ ▘ ~/KOSMOS/tui
+  ▘ ▘ ▘ ▘ ~/UMMAYA/tui
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ─────────────────────────────────────────

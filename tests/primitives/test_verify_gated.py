@@ -28,15 +28,15 @@ from typing import Any
 
 import pytest
 
-import kosmos.tools.mock  # noqa: F401  — registers all mock adapters
-from kosmos.ipc.frame_schema import (
+import ummaya.tools.mock  # noqa: F401  — registers all mock adapters
+from ummaya.ipc.frame_schema import (
     ChatMessage as IPCChatMessage,
 )
-from kosmos.ipc.frame_schema import (
+from ummaya.ipc.frame_schema import (
     ChatRequestFrame,
 )
-from kosmos.llm.models import StreamEvent
-from kosmos.primitives import (
+from ummaya.llm.models import StreamEvent
+from ummaya.primitives import (
     GATED_PRIMITIVES,
     HEAVY_GATE_PRIMITIVES,
     LIGHT_GATE_PRIMITIVES,
@@ -207,12 +207,12 @@ async def test_verify_call_emits_permission_request_frame(
     The test times out the permission bridge (no TUI responds) and checks
     that a ``permission_request`` frame was emitted before the timeout.
     """
-    from kosmos.ipc import stdio as stdio_mod
-    from kosmos.ipc.frame_schema import SessionEventFrame
+    from ummaya.ipc import stdio as stdio_mod
+    from ummaya.ipc.frame_schema import SessionEventFrame
 
     monkeypatch.setattr(stdio_mod, "_stdout_lock", None)
 
-    # Redirect consent writes to tmp_path so we don't pollute ~/.kosmos
+    # Redirect consent writes to tmp_path so we don't pollute ~/.ummaya
     import pathlib
 
     monkeypatch.setattr(
@@ -239,14 +239,14 @@ async def test_verify_call_emits_permission_request_frame(
     class _FakeLLMConfig:
         pass
 
-    import kosmos.llm.client as llm_client_mod
-    import kosmos.llm.config as llm_config_mod
+    import ummaya.llm.client as llm_client_mod
+    import ummaya.llm.config as llm_config_mod
 
     monkeypatch.setattr(llm_client_mod, "LLMClient", _VerifyOnceLLMClient)
     monkeypatch.setattr(llm_config_mod, "LLMClientConfig", _FakeLLMConfig)
 
     try:
-        import kosmos.context.prompt_loader as pl_mod
+        import ummaya.context.prompt_loader as pl_mod
 
         class _FPL:
             def __init__(self, *, manifest_path: Any) -> None:
@@ -286,7 +286,7 @@ async def test_verify_call_emits_permission_request_frame(
 
     import logging as _logging
 
-    from kosmos.ipc.stdio import run as ipc_run
+    from ummaya.ipc.stdio import run as ipc_run
 
     try:
         await asyncio.wait_for(ipc_run(session_id=session_id), timeout=_RUNNER_TIMEOUT)

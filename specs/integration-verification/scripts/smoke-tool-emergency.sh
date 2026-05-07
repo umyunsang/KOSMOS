@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-wait_for_pane "KOSMOS v0\\.[0-9]" 30
+wait_for_pane "UMMAYA v0\\.[0-9]" 30
 snapshot_pane "boot-ready"
 send_text_pane "서울 응급실 정보 알려줘"
 sleep 1

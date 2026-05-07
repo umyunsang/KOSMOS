@@ -1,29 +1,29 @@
 import { feature } from 'bun:bundle';
 
-// KOSMOS-1978 T003 boot tracer — opt-in via KOSMOS_BOOT_TRACE=1.
+// UMMAYA-1978 T003 boot tracer — opt-in via UMMAYA_BOOT_TRACE=1.
 // Captures every step of the cli.tsx → main.tsx flow plus uncaught
 // rejections / signals / process.exit calls so silent crashes (the symptom
 // of `bun run tui` exiting with code 1 and no error visible to the user)
 // surface to stderr. Drop after T004 (PromptInput.onSubmit guard) lands.
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
 const __kBoot = (label: string): void => {
-  if (process.env.KOSMOS_BOOT_TRACE === '1') {
+  if (process.env.UMMAYA_BOOT_TRACE === '1') {
     try {
-      require('fs').writeSync(2, `[KOSMOS-BOOT-TRACE] ${label}\n`);
+      require('fs').writeSync(2, `[UMMAYA-BOOT-TRACE] ${label}\n`);
     } catch {
       /* stderr torn down */
     }
   }
 };
 __kBoot('cli.tsx:top');
-if (process.env.KOSMOS_BOOT_TRACE === '1') {
+if (process.env.UMMAYA_BOOT_TRACE === '1') {
   // eslint-disable-next-line custom-rules/no-top-level-side-effects, @typescript-eslint/no-explicit-any
   const _origExit = process.exit.bind(process);
   // eslint-disable-next-line custom-rules/no-top-level-side-effects, @typescript-eslint/no-explicit-any
   (process as unknown as { exit: typeof process.exit }).exit = ((code?: number) => {
     try {
       const stk = (new Error('exit-trace').stack ?? '').split('\n').slice(1, 10).join('\n');
-      require('fs').writeSync(2, `[KOSMOS-BOOT-TRACE] process.exit(${code}) called\n${stk}\n`);
+      require('fs').writeSync(2, `[UMMAYA-BOOT-TRACE] process.exit(${code}) called\n${stk}\n`);
     } catch {}
     return _origExit(code);
   }) as typeof process.exit;
@@ -31,13 +31,13 @@ if (process.env.KOSMOS_BOOT_TRACE === '1') {
   process.on('unhandledRejection', (reason: unknown) => {
     try {
       const e = reason as Error;
-      require('fs').writeSync(2, `[KOSMOS-BOOT-TRACE] unhandledRejection: ${e?.stack ?? String(reason)}\n`);
+      require('fs').writeSync(2, `[UMMAYA-BOOT-TRACE] unhandledRejection: ${e?.stack ?? String(reason)}\n`);
     } catch {}
   });
   // eslint-disable-next-line custom-rules/no-top-level-side-effects
   process.on('uncaughtException', (err: Error) => {
     try {
-      require('fs').writeSync(2, `[KOSMOS-BOOT-TRACE] uncaughtException: ${err.stack ?? err.message}\n`);
+      require('fs').writeSync(2, `[UMMAYA-BOOT-TRACE] uncaughtException: ${err.stack ?? err.message}\n`);
     } catch {}
   });
 }
@@ -81,7 +81,7 @@ async function main(): Promise<void> {
   if (args.length === 1 && (args[0] === '--version' || args[0] === '-v' || args[0] === '-V')) {
     // MACRO.VERSION is inlined at build time
     // biome-ignore lint/suspicious/noConsole:: intentional console output
-    console.log(`${MACRO.VERSION} (KOSMOS)`);
+    console.log(`${MACRO.VERSION} (UMMAYA)`);
     return;
   }
 
@@ -192,8 +192,8 @@ async function main(): Promise<void> {
       exitWithError(versionError);
     }
 
-    // policyLimits removed in P1+P2 (Spec 1633); KOSMOS opens features by default via Spec 033 permission gauntlet.
-    // Bridge is a remote control feature - no policy gate in KOSMOS.
+    // policyLimits removed in P1+P2 (Spec 1633); UMMAYA opens features by default via Spec 033 permission gauntlet.
+    // Bridge is a remote control feature - no policy gate in UMMAYA.
     await bridgeMain(args.slice(1));
     return;
   }

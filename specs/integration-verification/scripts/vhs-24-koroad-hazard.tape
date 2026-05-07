@@ -6,7 +6,7 @@ Set Width 1600
 Set Height 900
 Set Theme "TokyoNightStorm"
 Hide
-Type "cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui"
+Type "cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui"
 Enter
 Sleep 5s
 Show

@@ -28,7 +28,7 @@ from pydantic import ValidationError
 def _estimate_tokens(text: str) -> int:
     """Estimate token count for mixed Korean/English text (stdlib-only).
 
-    Mirrors the formula from kosmos.tools._description_template._estimate_tokens:
+    Mirrors the formula from ummaya.tools._description_template._estimate_tokens:
       Korean syllables (가-힣) → 1 token each
       Non-Korean text split on whitespace → 1 token per word
     """
@@ -46,12 +46,12 @@ def _estimate_tokens(text: str) -> int:
 @pytest.fixture(scope="module")
 def kma_tools() -> dict[str, Any]:
     """Return a dict of tool_id → GovAPITool for the 6 KMA tools."""
-    from kosmos.tools.kma.forecast_fetch import KMA_FORECAST_FETCH_TOOL
-    from kosmos.tools.kma.kma_current_observation import KMA_CURRENT_OBSERVATION_TOOL
-    from kosmos.tools.kma.kma_pre_warning import KMA_PRE_WARNING_TOOL
-    from kosmos.tools.kma.kma_short_term_forecast import KMA_SHORT_TERM_FORECAST_TOOL
-    from kosmos.tools.kma.kma_ultra_short_term_forecast import KMA_ULTRA_SHORT_TERM_FORECAST_TOOL
-    from kosmos.tools.kma.kma_weather_alert_status import KMA_WEATHER_ALERT_STATUS_TOOL
+    from ummaya.tools.kma.forecast_fetch import KMA_FORECAST_FETCH_TOOL
+    from ummaya.tools.kma.kma_current_observation import KMA_CURRENT_OBSERVATION_TOOL
+    from ummaya.tools.kma.kma_pre_warning import KMA_PRE_WARNING_TOOL
+    from ummaya.tools.kma.kma_short_term_forecast import KMA_SHORT_TERM_FORECAST_TOOL
+    from ummaya.tools.kma.kma_ultra_short_term_forecast import KMA_ULTRA_SHORT_TERM_FORECAST_TOOL
+    from ummaya.tools.kma.kma_weather_alert_status import KMA_WEATHER_ALERT_STATUS_TOOL
 
     return {
         "kma_current_observation": KMA_CURRENT_OBSERVATION_TOOL,
@@ -198,7 +198,7 @@ class TestGridShortReferenceInline:
 
     def test_kma_grid_short_reference_is_string(self) -> None:
         """kma_grid_short_reference() returns a non-empty string."""
-        from kosmos.tools.kma.grid_coords import kma_grid_short_reference
+        from ummaya.tools.kma.grid_coords import kma_grid_short_reference
 
         ref = kma_grid_short_reference()
         assert isinstance(ref, str)
@@ -206,7 +206,7 @@ class TestGridShortReferenceInline:
 
     def test_kma_grid_short_reference_contains_17_regions(self) -> None:
         """The output must contain all 17 광역시도 short names."""
-        from kosmos.tools.kma.grid_coords import kma_grid_short_reference
+        from ummaya.tools.kma.grid_coords import kma_grid_short_reference
 
         ref = kma_grid_short_reference()
         expected_regions = [
@@ -381,7 +381,7 @@ class TestOrderingBlockAbsence:
 
     def test_weather_alert_status_no_ordering(self) -> None:
         """kma_weather_alert_status lacks nx/ny → ORDERING block must NOT be emitted."""
-        from kosmos.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
+        from ummaya.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
 
         assert not self._needs_ordering(KmaWeatherAlertStatusInput), (
             "kma_weather_alert_status should NOT trigger [ORDERING] block — "
@@ -390,7 +390,7 @@ class TestOrderingBlockAbsence:
 
     def test_pre_warning_no_ordering(self) -> None:
         """kma_pre_warning lacks nx/ny → ORDERING block must NOT be emitted."""
-        from kosmos.tools.kma.kma_pre_warning import KmaPreWarningInput
+        from ummaya.tools.kma.kma_pre_warning import KmaPreWarningInput
 
         assert not self._needs_ordering(KmaPreWarningInput), (
             "kma_pre_warning should NOT trigger [ORDERING] block — "
@@ -399,7 +399,7 @@ class TestOrderingBlockAbsence:
 
     def test_current_observation_triggers_ordering(self) -> None:
         """kma_current_observation has nx+ny required → ORDERING block IS emitted."""
-        from kosmos.tools.kma.kma_current_observation import KmaCurrentObservationInput
+        from ummaya.tools.kma.kma_current_observation import KmaCurrentObservationInput
 
         assert self._needs_ordering(KmaCurrentObservationInput), (
             "kma_current_observation HAS nx/ny required — [ORDERING] block must be "
@@ -408,19 +408,19 @@ class TestOrderingBlockAbsence:
 
     def test_short_term_forecast_triggers_ordering(self) -> None:
         """kma_short_term_forecast has nx+ny required → ORDERING triggers."""
-        from kosmos.tools.kma.kma_short_term_forecast import KmaShortTermForecastInput
+        from ummaya.tools.kma.kma_short_term_forecast import KmaShortTermForecastInput
 
         assert self._needs_ordering(KmaShortTermForecastInput)
 
     def test_ultra_short_forecast_triggers_ordering(self) -> None:
         """kma_ultra_short_term_forecast has nx+ny required → ORDERING triggers."""
-        from kosmos.tools.kma.kma_ultra_short_term_forecast import KmaUltraShortTermForecastInput
+        from ummaya.tools.kma.kma_ultra_short_term_forecast import KmaUltraShortTermForecastInput
 
         assert self._needs_ordering(KmaUltraShortTermForecastInput)
 
     def test_weather_alert_status_schema_lacks_nx_ny(self) -> None:
         """Schema-level: kma_weather_alert_status input does not have nx or ny fields."""
-        from kosmos.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
+        from ummaya.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
 
         schema = KmaWeatherAlertStatusInput.model_json_schema()
         properties = schema.get("properties", {})
@@ -433,7 +433,7 @@ class TestOrderingBlockAbsence:
 
     def test_kma_current_observation_schema_has_nx_ny_required(self) -> None:
         """Schema-level: kma_current_observation input has nx and ny as required fields."""
-        from kosmos.tools.kma.kma_current_observation import KmaCurrentObservationInput
+        from ummaya.tools.kma.kma_current_observation import KmaCurrentObservationInput
 
         schema = KmaCurrentObservationInput.model_json_schema()
         required = set(schema.get("required", []))
@@ -451,21 +451,21 @@ class TestKmaWeatherAlertStatusInputValidator:
     """model_validator(mode='after') requires stn_id or tmFc — not both None."""
 
     def test_stn_id_only_is_valid(self) -> None:
-        from kosmos.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
+        from ummaya.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
 
         inp = KmaWeatherAlertStatusInput(stn_id="108")
         assert inp.stn_id == "108"
         assert inp.tmFc is None
 
     def test_tmfc_only_is_valid(self) -> None:
-        from kosmos.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
+        from ummaya.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
 
         inp = KmaWeatherAlertStatusInput(tmFc="202605031100")
         assert inp.stn_id is None
         assert inp.tmFc == "202605031100"
 
     def test_both_provided_is_valid(self) -> None:
-        from kosmos.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
+        from ummaya.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
 
         inp = KmaWeatherAlertStatusInput(stn_id="184", tmFc="202605031100")
         assert inp.stn_id == "184"
@@ -473,7 +473,7 @@ class TestKmaWeatherAlertStatusInputValidator:
 
     def test_both_none_raises_validation_error(self) -> None:
         """Both stn_id and tmFc = None must raise ValidationError."""
-        from kosmos.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
+        from ummaya.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
 
         with pytest.raises(ValidationError) as exc_info:
             KmaWeatherAlertStatusInput()  # defaults: stn_id=None, tmFc=None
@@ -483,13 +483,13 @@ class TestKmaWeatherAlertStatusInputValidator:
         assert "stn_id" in error_str or "tmFc" in error_str or "mandatory" in error_str.lower()
 
     def test_default_num_of_rows(self) -> None:
-        from kosmos.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
+        from ummaya.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
 
         inp = KmaWeatherAlertStatusInput(stn_id="108")
         assert inp.num_of_rows == 100
 
     def test_num_of_rows_ge1(self) -> None:
-        from kosmos.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
+        from ummaya.tools.kma.kma_weather_alert_status import KmaWeatherAlertStatusInput
 
         with pytest.raises(ValidationError):
             KmaWeatherAlertStatusInput(stn_id="108", num_of_rows=0)

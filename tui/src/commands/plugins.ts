@@ -2,9 +2,9 @@
 // Spec 1635 P4 UI L2 — T066 /plugins command (FR-031, US5).
 // Spec 1979 T023 — replaced env-var stub with IPC round-trip via plugin_op_request:list.
 //
-// Opens the PluginBrowser. Emits kosmos.ui.surface=plugins (FR-037).
+// Opens the PluginBrowser. Emits ummaya.ui.surface=plugins (FR-037).
 // Round-trips a plugin_op_request:list frame to the backend dispatcher
-// (src/kosmos/ipc/plugin_op_dispatcher.py:handle_list) which responds with
+// (src/ummaya/ipc/plugin_op_dispatcher.py:handle_list) which responds with
 // a payload_start + payload_delta + payload_end + plugin_op_complete
 // quadruplet correlated by correlation_id. The payload_delta carries a
 // JSON-encoded {entries: PluginListEntry[]} body that maps onto the
@@ -12,8 +12,8 @@
 
 import { emitSurfaceActivation } from '../observability/surface.js';
 import {
-  getKosmosBridgeSessionId,
-  getOrCreateKosmosBridge,
+  getUmmayaBridgeSessionId,
+  getOrCreateUmmayaBridge,
 } from '../ipc/bridgeSingleton.js';
 import type { PluginEntry } from '../components/plugins/PluginBrowser.js';
 import type { IPCFrame } from '../ipc/frames.generated.js';
@@ -32,7 +32,7 @@ export type PluginsCommandResult = {
 // ---------------------------------------------------------------------------
 // PluginListEntry — backend payload shape (mirrors plugin_op_dispatcher
 // _build_list_payload). Defined here to avoid a runtime import of a Python
-// schema; kept in sync with src/kosmos/ipc/plugin_op_dispatcher.py § list.
+// schema; kept in sync with src/ummaya/ipc/plugin_op_dispatcher.py § list.
 // ---------------------------------------------------------------------------
 
 type PluginListEntry = {
@@ -113,7 +113,7 @@ function _mapToPluginEntry(b: PluginListEntry): PluginEntry {
 async function _roundTripPluginList(
   correlationId: string,
 ): Promise<PluginEntry[]> {
-  const bridge = getOrCreateKosmosBridge();
+  const bridge = getOrCreateUmmayaBridge();
   // Concatenated payload_delta strings (Spec 032 reassembly invariant).
   let payloadBuffer = '';
   let payloadComplete = false;
@@ -187,7 +187,7 @@ async function _roundTripPluginList(
 /**
  * Execute the /plugins command.
  *
- * Emits `kosmos.ui.surface=plugins` (FR-037) and round-trips a
+ * Emits `ummaya.ui.surface=plugins` (FR-037) and round-trips a
  * `plugin_op_request:list` to the backend dispatcher to obtain the live
  * plugin registry snapshot. Returns a PluginEntry[] for rendering in
  * PluginBrowser.
@@ -202,8 +202,8 @@ export async function executePlugins(): Promise<PluginsCommandResult> {
   emitSurfaceActivation('plugins');
 
   const correlationId = _newCorrelationId();
-  const sessionId = getKosmosBridgeSessionId();
-  const bridge = getOrCreateKosmosBridge();
+  const sessionId = getUmmayaBridgeSessionId();
+  const bridge = getOrCreateUmmayaBridge();
 
   const requestFrame = _buildListRequestFrame(sessionId, correlationId);
   const sent = bridge.send(requestFrame);

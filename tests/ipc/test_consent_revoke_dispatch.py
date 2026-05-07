@@ -18,7 +18,7 @@ from typing import Any
 
 import pytest
 
-from kosmos.ipc.frame_schema import (
+from ummaya.ipc.frame_schema import (
     ConsentRevokeRequestFrame,
     ConsentRevokeResponseFrame,
     IPCFrame,
@@ -118,8 +118,8 @@ async def _invoke_handler(  # noqa: C901
     test self-contained and fast.
 
     Audit-4 P0-3: dispatch now appends withdraw records via
-    ``kosmos.permissions.ledger.append`` (HMAC-sealed). Tests pass an isolated
-    ``ledger_paths`` triple to avoid touching ~/.kosmos.
+    ``ummaya.permissions.ledger.append`` (HMAC-sealed). Tests pass an isolated
+    ``ledger_paths`` triple to avoid touching ~/.ummaya.
     """
     import os
     import tempfile
@@ -127,25 +127,25 @@ async def _invoke_handler(  # noqa: C901
 
     from opentelemetry import trace
 
-    from kosmos.ipc.frame_schema import ConsentRevokeResponseFrame as _CRRespFrame
-    from kosmos.permissions.action_digest import (
+    from ummaya.ipc.frame_schema import ConsentRevokeResponseFrame as _CRRespFrame
+    from ummaya.permissions.action_digest import (
         compute_action_digest,
         generate_nonce,
     )
-    from kosmos.permissions.ledger import append as _ledger_append
+    from ummaya.permissions.ledger import append as _ledger_append
 
     sink = _FrameSink()
     tracer = trace.get_tracer(__name__)
 
-    with tracer.start_as_current_span("kosmos.consent.revoke") as revoke_span:
+    with tracer.start_as_current_span("ummaya.consent.revoke") as revoke_span:
         receipt_id: str = frame.receipt_id
         scope: str = frame.scope
         reason: str | None = frame.reason
         session_id: str = frame.session_id
         request_id: str = frame.request_id
 
-        revoke_span.set_attribute("kosmos.consent.receipt_id", receipt_id)
-        revoke_span.set_attribute("kosmos.consent.scope", scope)
+        revoke_span.set_attribute("ummaya.consent.receipt_id", receipt_id)
+        revoke_span.set_attribute("ummaya.consent.scope", scope)
 
         async def _emit_response(
             ok: bool,
@@ -313,7 +313,7 @@ class TestConsentRevokeDispatch:
         legacy_ledger = consent_dir / "ledger.jsonl"
         assert not legacy_ledger.exists(), (
             f"Audit-4 P0-3 regression: legacy ad-hoc ledger {legacy_ledger} "
-            "still being written; revoke must use kosmos.permissions.ledger.append"
+            "still being written; revoke must use ummaya.permissions.ledger.append"
         )
 
     @pytest.mark.asyncio

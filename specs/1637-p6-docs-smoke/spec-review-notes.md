@@ -31,7 +31,7 @@ Sampled three specs (KOROAD live, NMC L3-gated live, mock_verify_gongdong_injeun
 
 - YAML front matter present with all four required keys (`tool_id` · `primitive` · `tier` · `permission_tier`).
 - All seven sections populated; no placeholder TODOs.
-- Pydantic envelope citations include `src/kosmos/tools/...` file path with line range.
+- Pydantic envelope citations include `src/ummaya/tools/...` file path with line range.
 - Search hints contain a Korean line and an English line.
 - Live specs cite `data.go.kr` endpoint identifiers and ministry portal URLs; Mock specs cite "Fixture-replay only" + a public-spec source.
 - Permission tier rationale references Spec 033.

@@ -1,7 +1,7 @@
 # Quickstart: Tool Template Security Spec v1
 
 **Feature**: 024-tool-security-v1
-**Audience**: KOSMOS contributors (human or agent) shipping a tool adapter after this spec lands.
+**Audience**: UMMAYA contributors (human or agent) shipping a tool adapter after this spec lands.
 **Prereq**: Read `spec.md § Requirements` and `data-model.md § 1`.
 
 ## 1. Register a new adapter — all four new fields are mandatory
@@ -9,7 +9,7 @@
 Every `GovAPITool` registration MUST populate all four new fields. Missing or inconsistent fields fail load-time.
 
 ```python
-from kosmos.tools.models import GovAPITool
+from ummaya.tools.models import GovAPITool
 
 tool = GovAPITool(
     id="issue_certificate_resident_registration",
@@ -42,7 +42,7 @@ tool = GovAPITool(
 
 ```python
 from datetime import datetime, timezone
-from kosmos.security.audit import ToolCallAuditRecord
+from ummaya.security.audit import ToolCallAuditRecord
 
 record = ToolCallAuditRecord(
     record_version="v1",
@@ -138,8 +138,8 @@ When opening an adapter PR, verify each:
 | Concern | File | Status after spec 024 |
 |---|---|---|
 | Normative spec (ministry-facing) | `docs/security/tool-template-security-spec-v1.md` | Authored |
-| `GovAPITool` field extensions | `src/kosmos/tools/models.py` | 4 new fields added, validators wired |
-| `ToolCallAuditRecord` model | `src/kosmos/security/audit.py` | New module, schema-only (no storage) |
+| `GovAPITool` field extensions | `src/ummaya/tools/models.py` | 4 new fields added, validators wired |
+| `ToolCallAuditRecord` model | `src/ummaya/security/audit.py` | New module, schema-only (no storage) |
 | JSON Schema artifact | `docs/security/tool-call-audit-record.schema.json` | Published, CI-validated |
 | OpenAPI skeleton | `docs/security/agent-delegation.openapi.yaml` | Skeleton only; server impl deferred (D2) |
 | SBOM workflow | `.github/workflows/sbom.yml` | Scaffolded; full signing deferred |

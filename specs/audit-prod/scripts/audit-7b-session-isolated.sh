@@ -17,7 +17,7 @@
 
 set -uo pipefail
 
-wait_for_pane "KOSMOS|kosmos" 60 || true
+wait_for_pane "UMMAYA|ummaya" 60 || true
 sleep 2
 snapshot_pane 0-boot
 
@@ -31,12 +31,12 @@ sleep 3
 # Stage 2 — /export PDF
 send_text_pane '/export'
 send_enter_pane
-wait_for_pane "내보내기|export|PDF|Downloads|kosmos-export|영수증" 30 || true
+wait_for_pane "내보내기|export|PDF|Downloads|ummaya-export|영수증" 30 || true
 snapshot_pane 2-export-dialog-open
 sleep 2
 # Confirm with Enter (writes the PDF)
 send_keys_pane Enter
-wait_for_pane "saved|wrote|성공|완료|kosmos-export.*\.pdf|error|fail" 90 || true
+wait_for_pane "saved|wrote|성공|완료|ummaya-export.*\.pdf|error|fail" 90 || true
 snapshot_pane 2b-export-after-enter
 sleep 2
 send_keys_pane Escape

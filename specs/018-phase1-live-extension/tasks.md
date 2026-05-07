@@ -21,7 +21,7 @@ description: "Task list for Phase 1 Live Validation Coverage Extension — Post 
 
 ## Path Conventions
 
-- Repo root: `/Users/um-yunsang/KOSMOS/`
+- Repo root: `/Users/um-yunsang/UMMAYA/`
 - Live tests: `tests/live/`
 - No new source files anywhere under `src/`
 
@@ -32,7 +32,7 @@ description: "Task list for Phase 1 Live Validation Coverage Extension — Post 
 **Purpose**: Create new test module files with live/asyncio markers and required imports. No test bodies yet — stubs only.
 
 - [ ] T001 [P] Create new test module `tests/live/test_live_geocoding.py` with SPDX header, module docstring noting Kakao Local API prerequisite (console: 제품 설정 → 카카오맵 → 상태 ON), and `pytest` + `pytest_asyncio` imports. File ends with no test functions yet.
-- [ ] T002 [P] Create new test module `tests/live/test_live_observability.py` with SPDX header, module docstring noting required env vars (`KOSMOS_FRIENDLI_TOKEN`, `KOSMOS_DATA_GO_KR_API_KEY`), and pytest imports. File ends with no test functions yet.
+- [ ] T002 [P] Create new test module `tests/live/test_live_observability.py` with SPDX header, module docstring noting required env vars (`UMMAYA_FRIENDLI_TOKEN`, `UMMAYA_DATA_GO_KR_API_KEY`), and pytest imports. File ends with no test functions yet.
 
 ---
 
@@ -42,7 +42,7 @@ description: "Task list for Phase 1 Live Validation Coverage Extension — Post 
 
 **⚠️ CRITICAL**: T003 and T004 must land before any US1/US3 test can be written or run.
 
-- [ ] T003 Add `kakao_api_key` session-scoped fixture to `tests/live/conftest.py`. Reads `KOSMOS_KAKAO_API_KEY`; on unset/whitespace-only, calls `pytest.fail("set KOSMOS_KAKAO_API_KEY to run live geocoding tests")` — exact string per FR-004/contracts/fixtures.md. No silent skip, no xfail, no formatting variation.
+- [ ] T003 Add `kakao_api_key` session-scoped fixture to `tests/live/conftest.py`. Reads `UMMAYA_KAKAO_API_KEY`; on unset/whitespace-only, calls `pytest.fail("set UMMAYA_KAKAO_API_KEY to run live geocoding tests")` — exact string per FR-004/contracts/fixtures.md. No silent skip, no xfail, no formatting variation.
 - [ ] T004 Add `kakao_rate_limit_delay` function-scoped async fixture to `tests/live/conftest.py`. Yields an awaitable callable (or async helper) that sleeps a private module-level constant default of 200 ms. NOT autouse. Must not interfere with the existing autouse `_live_rate_limit_pause` cooldown.
 
 **Checkpoint**: Foundation ready — US1, US2, US3 implementation can begin (US2 has no dependency on T003/T004).
@@ -53,7 +53,7 @@ description: "Task list for Phase 1 Live Validation Coverage Extension — Post 
 
 **Goal**: Seven live tests in `tests/live/test_live_geocoding.py` that exercise the Kakao Local API through the three geocoding adapters (`search_address`, `address_to_grid`, `address_to_region`) and verify structural contracts per `data-model.md § Validation Rules — Geocoding (Story 1)` and `contracts/test-interfaces.md § test_live_geocoding.py`.
 
-**Independent Test**: `uv run pytest -m live -v tests/live/test_live_geocoding.py` — all 7 pass with valid `KOSMOS_KAKAO_API_KEY` and Kakao Local API activated. Verifies SC-001.
+**Independent Test**: `uv run pytest -m live -v tests/live/test_live_geocoding.py` — all 7 pass with valid `UMMAYA_KAKAO_API_KEY` and Kakao Local API activated. Verifies SC-001.
 
 - [ ] T005 [P] [US1] Implement `test_live_kakao_search_address_happy` in `tests/live/test_live_geocoding.py`. Calls real `search_address("서울특별시 강남구 테헤란로 152")`. Asserts `len(documents) >= 1`, each of `{"address_name","x","y"}` present, `float(x) ∈ [124.0, 132.0]` and `float(y) ∈ [33.0, 39.0]`. Decorators: `@pytest.mark.live`, `@pytest.mark.asyncio`. Consumes `kakao_api_key`, `kakao_rate_limit_delay`.
 - [ ] T006 [P] [US1] Implement `test_live_kakao_search_address_nonsense` in `tests/live/test_live_geocoding.py`. Calls `search_address` with a nonsense string (e.g., `"zzzxxx999notarealplace"`). Asserts `documents == []` and no exception raised. Decorators: `@pytest.mark.live`, `@pytest.mark.asyncio`.
@@ -100,7 +100,7 @@ description: "Task list for Phase 1 Live Validation Coverage Extension — Post 
 
 **Purpose**: Verify the acceptance criteria that span all stories (SC-004 hard-fail, SC-005 CI safety, SC-006 rate-limit envelope) and run the full extended live suite.
 
-- [ ] T017 [P] Verify SC-004 (hard-fail contract). Run `unset KOSMOS_KAKAO_API_KEY && uv run pytest -m live -v tests/live/test_live_geocoding.py 2>&1 | grep -F "set KOSMOS_KAKAO_API_KEY to run live geocoding tests"`. Expect: exact string in failure output; exit code non-zero; no `SKIPPED` or `XFAIL` lines for geocoding tests. Document the command output in the PR body.
+- [ ] T017 [P] Verify SC-004 (hard-fail contract). Run `unset UMMAYA_KAKAO_API_KEY && uv run pytest -m live -v tests/live/test_live_geocoding.py 2>&1 | grep -F "set UMMAYA_KAKAO_API_KEY to run live geocoding tests"`. Expect: exact string in failure output; exit code non-zero; no `SKIPPED` or `XFAIL` lines for geocoding tests. Document the command output in the PR body.
 - [ ] T018 [P] Verify SC-005 (CI safety). Run `uv run pytest` (no `-m live`) in a clean checkout and confirm runtime matches pre-PR baseline; run `uv run pytest tests/live/ -v` and confirm all 12 new live tests report `SKIPPED` (not collected-and-run). No new CI minutes required.
 - [ ] T019 Verify SC-006 (rate-limit envelope). Run `uv run pytest -m live -v tests/live/test_live_geocoding.py` and measure real Kakao call count (≤~15 per full run under the 200 ms delay). Confirm KOROAD call count in `test_live_observability.py` stays ≤2 per run. Document in PR body.
 - [ ] T020 Run the full extended live suite end-to-end: `uv run pytest -m live -v tests/live/test_live_geocoding.py tests/live/test_live_observability.py tests/live/test_live_e2e.py::test_live_scenario1_from_natural_address`. All 12 tests green. Capture log for PR body.
@@ -186,6 +186,6 @@ Preferred path per `AGENTS.md § Agent Teams` — 3 independent task groups (US1
 - **No production source changes** — if any task touches `src/`, it is a constitution violation per plan.md Constitution Check and must be rejected.
 - **No mocks** — these tests exist precisely because mocked coverage already exists under `tests/tools/geocoding/` and `tests/observability/`. Adding mock-based assertions to the live suite defeats its purpose (FR-010).
 - **No specific-value assertions** — contracts/test-interfaces.md § "Non-assertions" is a hard policy.
-- **Exact hard-fail string** — `set KOSMOS_KAKAO_API_KEY to run live geocoding tests` (no period, no prefix). SC-004 greps for this literal.
+- **Exact hard-fail string** — `set UMMAYA_KAKAO_API_KEY to run live geocoding tests` (no period, no prefix). SC-004 greps for this literal.
 - **Task ordering for PR commits**: group T001+T002 as `test: scaffold live geocoding+observability modules`, T003+T004 as `test(live): add Kakao fixtures`, T005–T011 as `test(live): geocoding coverage`, T012–T015 as `test(live): observability coverage`, T016 as `test(live): E2E natural-address Scenario 1`, T017–T020 as `test(live): acceptance verification`.
 - **Live suite never runs in CI** — FR-007, SC-005. Inherited skip logic from root `tests/conftest.py` (#291).

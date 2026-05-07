@@ -31,7 +31,7 @@
 | 19 | HelpV2 4-group | FR-029 | Four sections rendered exactly: `─── 세션 ───`, `─── 권한 ───`, `─── 도구 ───`, `─── 저장 ───` with all 10 commands placed correctly |
 | 20 | Plugin browser | FR-031 | `⏺/○` toggles + `Space 활성 토글 · i 상세 · r 제거 · a 스토어` keybinding hint |
 | 21 | History search | FR-033 | `--date YYYY-MM-DD..YYYY-MM-DD  --session <id>  --layer <1|2|3>` 3-filter hint + session rows |
-| 22 | Onboarding step 1 (preflight) | FR-001 step 1 | `◉ ○ ○ ○ ○  1/5` progress + 4 environment checks (Bun 1.3.12 ✓ / graphics protocol ✗ / FRIENDLI_API_KEY ✗ / KOSMOS_DATA_GO_KR_KEY ✓) |
+| 22 | Onboarding step 1 (preflight) | FR-001 step 1 | `◉ ○ ○ ○ ○  1/5` progress + 4 environment checks (Bun 1.3.12 ✓ / graphics protocol ✗ / FRIENDLI_API_KEY ✗ / UMMAYA_DATA_GO_KR_KEY ✓) |
 | 23 | Onboarding step 2 (theme) | FR-001/035 | UFO mascot rendered with purple palette (note: hex `#a78bfa` / `#4c1d95` color cannot be confirmed in ANSI-strip capture; structural rendering OK) |
 | 24 | Onboarding step 3 (PIPA) | FR-001/006 | `⚠ 수탁자 책임 안내 · 개인정보 보호법 §26` heading + 처리 정보 list + 수신 부처 list + audit-preservation notice (`동의 철회 후에도 audit ledger와 OTEL span은 삭제되지 않습니다 (FR-007)`) |
 | 25 | Onboarding step 5 (terminal-setup) | FR-001/005 | 4 a11y toggles (스크린리더 / 큰 글씨 / 고대비 / 애니메이션 줄이기) + `Shift+Tab / Ctrl+C / Ctrl-O` keybinding hint |

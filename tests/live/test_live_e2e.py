@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Live E2E validation tests for the full KOSMOS Scenario 1 pipeline.
+"""Live E2E validation tests for the full UMMAYA Scenario 1 pipeline.
 
 These tests hit REAL APIs — FriendliAI K-EXAONE, data.go.kr, and KOROAD.
 No mocks. Tests hard-fail on API unavailability.
@@ -9,9 +9,9 @@ Marked ``@pytest.mark.live`` and skipped by default. Run with::
     uv run pytest -m live tests/live/test_live_e2e.py
 
 Required environment variables (validated by conftest fixtures):
-    KOSMOS_FRIENDLI_TOKEN     — FriendliAI Serverless API token
-    KOSMOS_DATA_GO_KR_API_KEY — data.go.kr public data portal key
-    KOSMOS_DATA_GO_KR_API_KEY — data.go.kr public data portal key (shared by KMA + KOROAD)
+    UMMAYA_FRIENDLI_TOKEN     — FriendliAI Serverless API token
+    UMMAYA_DATA_GO_KR_API_KEY — data.go.kr public data portal key
+    UMMAYA_DATA_GO_KR_API_KEY — data.go.kr public data portal key (shared by KMA + KOROAD)
 """
 
 from __future__ import annotations
@@ -22,15 +22,15 @@ from typing import Any
 
 import pytest
 
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.engine import QueryEngine
-from kosmos.engine.events import QueryEvent, StopReason
-from kosmos.llm.client import LLMClient
-from kosmos.observability.event_logger import ObservabilityEventLogger
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.koroad.code_tables import GugunCode, SidoCode
-from kosmos.tools.register_all import register_all_tools
-from kosmos.tools.registry import ToolRegistry
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.engine import QueryEngine
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.llm.client import LLMClient
+from ummaya.observability.event_logger import ObservabilityEventLogger
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.koroad.code_tables import GugunCode, SidoCode
+from ummaya.tools.register_all import register_all_tools
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Scenario 1 user messages
@@ -52,7 +52,7 @@ _LIVE_ENGINE_CONFIG = QueryEngineConfig(max_iterations=5)
 def _build_live_engine() -> tuple[QueryEngine, LLMClient]:
     """Create a fully-wired QueryEngine backed by real APIs.
 
-    Reads KOSMOS_FRIENDLI_TOKEN from the environment (already validated by the
+    Reads UMMAYA_FRIENDLI_TOKEN from the environment (already validated by the
     session-scoped ``friendli_token`` / ``data_go_kr_api_key`` / ``koroad_api_key``
     fixtures before any test function runs).
 
@@ -286,7 +286,7 @@ _KOROAD_TOOL_ID = "koroad_accident_search"
 _GEOCODING_TOOL_ID = "address_to_region"
 _HANGUL_RANGE = range(0xAC00, 0xD7B0)
 # KOROAD admin codes expected for a 강남역 (Gangnam Station, Seoul) query.
-# Source: src/kosmos/tools/koroad/code_tables.py — SidoCode.SEOUL / GugunCode.SEOUL_GANGNAM.
+# Source: src/ummaya/tools/koroad/code_tables.py — SidoCode.SEOUL / GugunCode.SEOUL_GANGNAM.
 _SEOUL_SIDO_CODE = SidoCode.SEOUL  # 11
 _GANGNAM_GUGUN_CODE = GugunCode.SEOUL_GANGNAM  # 680
 
@@ -352,7 +352,7 @@ async def test_live_scenario1_from_natural_address(
     validation documented in Epic #404.
     """
     event_logger = ObservabilityEventLogger()
-    log_target = logging.getLogger("kosmos.events")
+    log_target = logging.getLogger("ummaya.events")
     handler = _InMemoryEventHandler()
     prior_level = log_target.level
     log_target.addHandler(handler)

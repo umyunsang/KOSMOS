@@ -3,7 +3,7 @@
 //
 // Background: tui/src/services/api/claude.ts is a byte-copy of CC 2.1.88's
 // streaming handler (Spec 2521) which imports `getAnthropicClient` from this
-// module. KOSMOS routes all LLM traffic through the Spec 1978 stdio IPC
+// module. UMMAYA routes all LLM traffic through the Spec 1978 stdio IPC
 // bridge — no Anthropic SDK client is ever instantiated. Two prior stubs
 // landed in this file (Spec 2077 async-throw + Spec 2521 sync-null) and
 // coexisted as a duplicate symbol declaration. CC migration audit
@@ -16,7 +16,7 @@
 // value is never dereferenced at runtime.
 //
 // SWAP/anti-anthropic-1p(2521): byte-copied tui/src/services/api/claude.ts
-// imports `getAnthropicClient`. KOSMOS routes LLM calls via the Spec 1978
+// imports `getAnthropicClient`. UMMAYA routes LLM calls via the Spec 1978
 // stdio IPC bridge and never instantiates an Anthropic client directly. The
 // stub returns null so the byte-copy's import resolves at link time; the
 // zero-callers status (verified by callgraph audit Spec 2293) guarantees

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.context.models import (
+from ummaya.context.models import (
     AssembledContext,
     ContextBudget,
     ContextLayer,
@@ -27,7 +27,7 @@ from kosmos.context.models import (
 class TestSystemPromptConfig:
     def test_defaults(self) -> None:
         cfg = SystemPromptConfig()
-        assert cfg.platform_name == "KOSMOS"
+        assert cfg.platform_name == "UMMAYA"
         assert cfg.language == "ko"
         assert cfg.reminder_cadence == 5
         assert cfg.personal_data_warning is True
@@ -149,7 +149,7 @@ class TestContextBudget:
 
 class TestAssembledContext:
     def _system_layer(self) -> ContextLayer:
-        return ContextLayer(role="system", layer_name="system_prompt", content="You are KOSMOS.")
+        return ContextLayer(role="system", layer_name="system_prompt", content="You are UMMAYA.")
 
     def test_minimal_construction(self) -> None:
         ctx = AssembledContext(system_layer=self._system_layer())

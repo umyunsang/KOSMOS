@@ -20,8 +20,8 @@ from typing import Any
 
 import pytest
 
-from kosmos.ipc.frame_schema import IPCFrame, PermissionRequestFrame
-from kosmos.plugins.consent_bridge import IPCConsentBridge
+from ummaya.ipc.frame_schema import IPCFrame, PermissionRequestFrame
+from ummaya.plugins.consent_bridge import IPCConsentBridge
 
 
 @dataclass

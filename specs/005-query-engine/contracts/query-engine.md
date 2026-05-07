@@ -227,12 +227,12 @@ Internal functions may raise for programming errors (assertion failures, type er
 ## Module Exports
 
 ```python
-# src/kosmos/engine/__init__.py
+# src/ummaya/engine/__init__.py
 
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.engine import QueryEngine
-from kosmos.engine.events import QueryEvent, StopReason
-from kosmos.engine.models import QueryContext, QueryState, SessionBudget
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.engine import QueryEngine
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.engine.models import QueryContext, QueryState, SessionBudget
 
 __all__ = [
     "QueryEngine",

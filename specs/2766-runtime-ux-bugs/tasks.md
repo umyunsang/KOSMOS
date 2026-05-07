@@ -20,13 +20,13 @@
 - [P] **T011** — Apply KST patch to lookup.py (already in working-dir).
 - [P] **T012** — Apply KST patch to worker.py (already in working-dir).
 - [P] **T013** — Apply KST patch to 5 mock adapters (already in working-dir).
-- [P] **T014** — Patch `src/kosmos/tools/kma/forecast_fetch.py` so that `meta.fetched_at`
+- [P] **T014** — Patch `src/ummaya/tools/kma/forecast_fetch.py` so that `meta.fetched_at`
       uses KST. Keep `t_start = datetime.now(tz=UTC)` for elapsed math but
       construct `LookupMeta(fetched_at=datetime.now(tz=_SEOUL_TZ))` (or
       `t_start.astimezone(_SEOUL_TZ)`).
 - [P] **T015** — Add unit test asserting `envelope.normalize()` returns
       `meta.fetched_at.tzinfo == ZoneInfo("Asia/Seoul")`.
-- [ ] **T016** — Run `uv run pytest src/kosmos/tools/` — zero regression.
+- [ ] **T016** — Run `uv run pytest src/ummaya/tools/` — zero regression.
 
 ## Phase 4 — User Story 2: StreamGate render order (sonnet-B)
 
@@ -47,7 +47,7 @@
 - [P] **T030** — Reproduce: run hospital scenario via Bun PTY; capture stderr
       + OTLP trace; identify which stage exceeds budget. Document in
       `specs/2766-runtime-ux-bugs/research-hira.md`.
-- [P] **T031** — Add `kosmos.tool.stage` span attribute (thinking/fetch/parse).
+- [P] **T031** — Add `ummaya.tool.stage` span attribute (thinking/fetch/parse).
 - [P] **T032** — Bump per-tool timeout for HIRA (or generic per-adapter
       `timeout_ms` in GovAPITool with adapter override).
 - [P] **T033** — Add 1 transient retry on `httpx.ReadTimeout` only.

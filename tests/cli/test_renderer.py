@@ -9,10 +9,10 @@ from unittest.mock import MagicMock
 
 from rich.console import Console
 
-from kosmos.cli.renderer import EventRenderer
-from kosmos.engine.events import QueryEvent, StopReason
-from kosmos.llm.models import TokenUsage
-from kosmos.tools.models import ToolResult
+from ummaya.cli.renderer import EventRenderer
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.llm.models import TokenUsage
+from ummaya.tools.models import ToolResult
 
 
 def _make_console() -> Console:

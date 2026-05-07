@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original (no upstream analog — Claude Code is not a child process).
+// UMMAYA-original (no upstream analog — Claude Code is not a child process).
 //
 // CrashNotice component: displays a localized crash message from the i18n
 // bundle with the redacted stderr tail and a restart hint (US1 scenario 4,
 // FR-004).
 //
-// All KOSMOS_*_KEY/SECRET/TOKEN/PASSWORD values are already redacted by
+// All UMMAYA_*_KEY/SECRET/TOKEN/PASSWORD values are already redacted by
 // crash-detector.ts before they reach this component; this component renders
 // the already-redacted tail verbatim.
 
@@ -24,14 +24,14 @@ import { useSessionStore } from '../store/session-store'
  *
  * Layout:
  *  ┌──────────────────────────────────────────────┐
- *  │ [!] KOSMOS backend crashed                   │
+ *  │ [!] UMMAYA backend crashed                   │
  *  │ Code: backend_crash                          │
  *  │ backend_crash message text                   │
  *  │ ────────────────────────────────────────────  │
  *  │ (stderr tail — redacted)                     │
  *  │ ────────────────────────────────────────────  │
  *  │ Press Ctrl-C to exit or restart with:        │
- *  │   uv run kosmos                              │
+ *  │   uv run ummaya                              │
  *  └──────────────────────────────────────────────┘
  */
 export function CrashNotice(): React.ReactElement | null {

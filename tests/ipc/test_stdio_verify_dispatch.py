@@ -14,7 +14,7 @@ Bug (Spec 2521 / Spec 2297 / Issue #C1, citizen smoke 2026-05-04):
 
 Fix:
     ``stdio.py`` verify branch now calls
-    ``kosmos.tools.verify_canonical_map.resolve_family(tool_id)`` first,
+    ``ummaya.tools.verify_canonical_map.resolve_family(tool_id)`` first,
     falling back to ``args_obj["family_hint"]`` / ``args_obj["family"]``
     when the tool_id lookup misses (legacy compatibility).
 
@@ -47,13 +47,13 @@ import pytest
 
 # Importing the mock package registers all 10 mock_verify_* adapters via
 # register_verify_adapter() at module-import time (side effect).
-import kosmos.tools.mock  # noqa: F401
-from kosmos.ipc.frame_schema import (
+import ummaya.tools.mock  # noqa: F401
+from ummaya.ipc.frame_schema import (
     ChatMessage as IPCChatMessage,
 )
-from kosmos.ipc.frame_schema import ChatRequestFrame
-from kosmos.llm.models import StreamEvent
-from kosmos.tools.verify_canonical_map import (
+from ummaya.ipc.frame_schema import ChatRequestFrame
+from ummaya.llm.models import StreamEvent
+from ummaya.tools.verify_canonical_map import (
     get_canonical_map,
     resolve_family,
 )
@@ -225,8 +225,8 @@ async def _run_verify_dispatch(
 
     Returns the captured NDJSON frame buffer.
     """
-    from kosmos.ipc import stdio as stdio_mod
-    from kosmos.ipc.frame_schema import SessionEventFrame
+    from ummaya.ipc import stdio as stdio_mod
+    from ummaya.ipc.frame_schema import SessionEventFrame
 
     monkeypatch.setattr(stdio_mod, "_stdout_lock", None)
 
@@ -235,7 +235,7 @@ async def _run_verify_dispatch(
     # NOT the permission gating logic. Bypass the gate by patching
     # GATED_PRIMITIVES to submit only so
     # verify auto-allows and the IPC loop doesn't wait 60 s for citizen input.
-    import kosmos.primitives as _prims_mod
+    import ummaya.primitives as _prims_mod
 
     monkeypatch.setattr(
         _prims_mod,
@@ -252,15 +252,15 @@ async def _run_verify_dispatch(
     class _FakeLLMConfig:
         pass
 
-    import kosmos.llm.client as llm_client_mod
-    import kosmos.llm.config as llm_config_mod
+    import ummaya.llm.client as llm_client_mod
+    import ummaya.llm.config as llm_config_mod
 
     monkeypatch.setattr(llm_client_mod, "LLMClient", _VerifyOnceLLMClient)
     monkeypatch.setattr(llm_config_mod, "LLMClientConfig", _FakeLLMConfig)
 
     # Stub the prompt loader so the test doesn't hit the manifest on disk.
     try:
-        import kosmos.context.prompt_loader as pl_mod
+        import ummaya.context.prompt_loader as pl_mod
 
         class _FPL:
             def __init__(self, *, manifest_path: Any) -> None:
@@ -299,7 +299,7 @@ async def _run_verify_dispatch(
 
     import logging as _logging
 
-    from kosmos.ipc.stdio import run as ipc_run
+    from ummaya.ipc.stdio import run as ipc_run
 
     try:
         await asyncio.wait_for(ipc_run(session_id=session_id), timeout=_RUNNER_TIMEOUT)

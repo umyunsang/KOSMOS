@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for the kosmos.prompt.hash boundary-marker slicing (Epic #2152 R4).
+"""Tests for the ummaya.prompt.hash boundary-marker slicing (Epic #2152 R4).
 
 Contract: ``specs/2152-system-prompt-redesign/contracts/chat-request-envelope.md``
 invariants I-C1, I-C2, I-C5.
@@ -16,7 +16,7 @@ _BOUNDARY = "\nSYSTEM_PROMPT_DYNAMIC_BOUNDARY\n"
 
 
 def _hash_static_prefix(system_text: str) -> str:
-    """Re-implementation mirroring kosmos.llm.client._compute_prompt_hash logic.
+    """Re-implementation mirroring ummaya.llm.client._compute_prompt_hash logic.
 
     Kept here as a documentation anchor for the contract rather than imported
     from the production code so the test pins the *behaviour* even if the
@@ -90,7 +90,7 @@ def test_production_client_uses_same_logic() -> None:
     """Anti-drift guard — the production client.py emits the same hash as the
     documentation re-implementation for an identical input. Imported lazily so
     the test file stays runnable without spinning up an LLMClient."""
-    from kosmos.llm import client as _client_module
+    from ummaya.llm import client as _client_module
 
     src = _client_module.__file__ or ""
     if not src:
@@ -100,4 +100,4 @@ def test_production_client_uses_same_logic() -> None:
     assert "SYSTEM_PROMPT_DYNAMIC_BOUNDARY" in text, (
         "client.py must reference SYSTEM_PROMPT_DYNAMIC_BOUNDARY for R4 hash slicing"
     )
-    assert "kosmos.prompt.hash" in text
+    assert "ummaya.prompt.hash" in text

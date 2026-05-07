@@ -4,7 +4,7 @@
 Implements FR-D01..FR-D06:
 - FR-D01: CLI entry point via ``python -m tests.shadow_eval.battery``.
 - FR-D02: Module-level ``_tracer`` attribute for monkeypatching in tests.
-- FR-D03: Spans stamped with ``deployment.environment`` + ``kosmos.eval.input_id``.
+- FR-D03: Spans stamped with ``deployment.environment`` + ``ummaya.eval.input_id``.
 - FR-D04: Twin-run principle — identical battery inputs across both environments.
 - FR-D05: Network isolation — only the injected ``httpx.MockTransport`` is used.
 - FR-D06: JSON artifact written to ``--out`` path with ``spans`` key.
@@ -89,14 +89,14 @@ def run(
     for case in _BATTERY_INPUTS:
         with _tracer.start_as_current_span("battery.case") as span:
             span.set_attribute("deployment.environment", environment)
-            span.set_attribute("kosmos.eval.input_id", case["id"])
+            span.set_attribute("ummaya.eval.input_id", case["id"])
 
             # All HTTP MUST go through the injected transport (FR-D05).
             with httpx.Client(transport=transport) as client:
                 resp = client.post(
                     "https://mock.local/v1/chat/completions",
                     json={
-                        "model": "kosmos-eval",
+                        "model": "ummaya-eval",
                         "messages": [{"role": "user", "content": case["prompt"]}],
                     },
                 )
@@ -110,7 +110,7 @@ def run(
                     "name": "battery.case",
                     "attributes": {
                         "deployment.environment": environment,
-                        "kosmos.eval.input_id": case["id"],
+                        "ummaya.eval.input_id": case["id"],
                     },
                 }
             )

@@ -13,7 +13,7 @@ set -euo pipefail
 # emits lookup(mode='fetch', tool_id='kma_current_observation', ...)
 # before any answer reaches the citizen.
 
-wait_for_pane "KOSMOS|❯" 25
+wait_for_pane "UMMAYA|❯" 25
 snapshot_pane 01-boot
 
 send_text_pane "지금 부산 사하구 다대1동 날씨 어때"

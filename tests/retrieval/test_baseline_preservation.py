@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """Baseline preservation test — T025 (spec 026, US2 P1).
 
-Programmatic invocation of ``kosmos.eval.retrieval._build_registry()`` and
+Programmatic invocation of ``ummaya.eval.retrieval._build_registry()`` and
 ``_evaluate()`` against the committed 30-query set with
-``KOSMOS_RETRIEVAL_BACKEND`` unset (pure BM25 default path).
+``UMMAYA_RETRIEVAL_BACKEND`` unset (pure BM25 default path).
 
 Asserts the SC-004 / Appendix A contract:
     - recall@5 == 1.0  (all 30 queries hit in top-5)
@@ -37,11 +37,11 @@ def test_recall_at_5_is_perfect(monkeypatch: pytest.MonkeyPatch) -> None:
     SC-004 / Appendix A evidence: BM25 default path is byte-identical to
     pre-#585 main branch behaviour.
     """
-    monkeypatch.delenv("KOSMOS_RETRIEVAL_BACKEND", raising=False)
+    monkeypatch.delenv("UMMAYA_RETRIEVAL_BACKEND", raising=False)
 
     import yaml
 
-    from kosmos.eval.retrieval import _build_registry, _evaluate
+    from ummaya.eval.retrieval import _build_registry, _evaluate
 
     registry, _ = _build_registry()
     with _QUERIES_PATH.open(encoding="utf-8") as fh:
@@ -62,11 +62,11 @@ def test_recall_at_1_matches_baseline(monkeypatch: pytest.MonkeyPatch) -> None:
     BM25Index tokenisation, score formula, or adapter search_hint that
     shifts a rank-1 result will break this assertion.
     """
-    monkeypatch.delenv("KOSMOS_RETRIEVAL_BACKEND", raising=False)
+    monkeypatch.delenv("UMMAYA_RETRIEVAL_BACKEND", raising=False)
 
     import yaml
 
-    from kosmos.eval.retrieval import _build_registry, _evaluate
+    from ummaya.eval.retrieval import _build_registry, _evaluate
 
     registry, _ = _build_registry()
     with _QUERIES_PATH.open(encoding="utf-8") as fh:
@@ -82,11 +82,11 @@ def test_recall_at_1_matches_baseline(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 def test_total_query_count(monkeypatch: pytest.MonkeyPatch) -> None:
     """Eval MUST run against exactly 30 committed queries."""
-    monkeypatch.delenv("KOSMOS_RETRIEVAL_BACKEND", raising=False)
+    monkeypatch.delenv("UMMAYA_RETRIEVAL_BACKEND", raising=False)
 
     import yaml
 
-    from kosmos.eval.retrieval import _build_registry, _evaluate
+    from ummaya.eval.retrieval import _build_registry, _evaluate
 
     registry, _ = _build_registry()
     with _QUERIES_PATH.open(encoding="utf-8") as fh:
@@ -100,9 +100,9 @@ def test_total_query_count(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 def test_registry_has_all_four_seed_adapters(monkeypatch: pytest.MonkeyPatch) -> None:
     """All 4 seed adapters must be registered for a valid baseline run."""
-    monkeypatch.delenv("KOSMOS_RETRIEVAL_BACKEND", raising=False)
+    monkeypatch.delenv("UMMAYA_RETRIEVAL_BACKEND", raising=False)
 
-    from kosmos.eval.retrieval import _build_registry
+    from ummaya.eval.retrieval import _build_registry
 
     registry, _ = _build_registry()
     registered = frozenset(t.id for t in registry.all_tools())

@@ -7,7 +7,7 @@
 #
 # Verification targets:
 #   1. Boot: "tool_registry: N entries verified"
-#   2. Branding: "KOSMOS"
+#   2. Branding: "UMMAYA"
 #   3. Input "강남소방서 1월 구급통계" accepted
 #   4. LLM dispatches lookup(mode=fetch, tool_id=nfa_emergency_info_service)
 #      with correct params:
@@ -41,7 +41,7 @@ wait_for_pane "tool_registry: [0-9]+ entries verified" 45
 snapshot_pane "boot"
 
 # ── Stage B: Branding ─────────────────────────────────────────────────────────
-wait_for_pane "KOSMOS" 20
+wait_for_pane "UMMAYA" 20
 snapshot_pane "branding"
 
 # ── Stage C: Submit query ─────────────────────────────────────────────────────

@@ -36,7 +36,7 @@ import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '../tools/ExitPlanModeTool/constants
 import { TASK_OUTPUT_TOOL_NAME } from '../tools/TaskOutputTool/constants.js'
 import type { Message } from '../types/message.js'
 import { isAgentSwarmsEnabled } from './agentSwarmsEnabled.js'
-// KOSMOS: betas.js deleted by Spec 1633 P1.
+// UMMAYA: betas.js deleted by Spec 1633 P1.
 // modelSupportsStructuredOutputs → false literal (no beta headers with FriendliAI).
 // shouldUseGlobalCacheScope → false literal (no Anthropic global cache).
 const modelSupportsStructuredOutputs = (_model: string): false => false
@@ -47,7 +47,7 @@ import { isEnvTruthy } from './envUtils.js'
 import { createUserMessage } from './messages.js'
 import {
   getAPIProvider,
-  isFirstPartyKosmosBaseUrl,
+  isFirstPartyUmmayaBaseUrl,
 } from './model/providers.js'
 import {
   getFileReadIgnorePatterns,
@@ -199,7 +199,7 @@ export async function toolToAPISchema(
     // with Claude 4.5 reject this field with 400. See GH#32742, PR #21729.
     if (
       getAPIProvider() === 'firstParty' &&
-      isFirstPartyKosmosBaseUrl() &&
+      isFirstPartyUmmayaBaseUrl() &&
       (getFeatureValue_CACHED_MAY_BE_STALE('tengu_fgts', false) ||
         isEnvTruthy(process.env.CLAUDE_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING))
     ) {

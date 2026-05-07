@@ -1,10 +1,10 @@
-[KOSMOS-QUERY] recv #23 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Gang"
-[KOSMOS-QUERY] recv #24 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="nam"
-[KOSMOS-QUERY] recv #25 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Station"
+[UMMAYA-QUERY] recv #23 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Gang"
+[UMMAYA-QUERY] recv #24 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="nam"
+[UMMAYA-QUERY] recv #25 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" Station"
 ⏺ 강남역 근처에서 내과를 진료하는 병원/의원을 찾아드렸습니다. 2km 반경 내에서 검색한 결과입니다:
-[KOSMOS-QUERY] recv #27 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="\n\n"
+[UMMAYA-QUERY] recv #27 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking="\n\n"
  K가장 가까운 내과 (병원/의원)                                  false delta="" thinking="To"
-[KOSMOS-QUERY] recv #29 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" fulfill"
+[UMMAYA-QUERY] recv #29 kind=assistant_chunk corr=cc3e01ca done=false delta="" thinking=" fulfill"
 
   1. 선한목자병원 (824m)
 
@@ -53,8 +53,8 @@
        3. {"ykiho":"JDQ4MTg4MSM1MSMkMSMkMCMkODkkMzgxMzUxIzExIyQxIyQzIyQwMyQzNjE0ODEjNTEjJDEjJDIjJDgz","yadmNm":"차의과학대학교 강남차병원","ad
 
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-❯ 재난 알림 구독해줘[KOSMOS-QUERY] callModel:enter messages=8
-[KOSMOS-QUERY] [CHAT_MESSAGES_BUILT] count=5 user_turns=2 tail_role=user tail_first256="재난 알림 구독해줘"─────────────────────────────────────────────────────────────────────────
-[KOSMOS-QUERY] sending chat_request corr=3eaf1aa6-fbd3-499b-aca5-6d54eaf8aaaf chatMessages=5
-[KOSMOS-QUERY] bridge.send returned true
+❯ 재난 알림 구독해줘[UMMAYA-QUERY] callModel:enter messages=8
+[UMMAYA-QUERY] [CHAT_MESSAGES_BUILT] count=5 user_turns=2 tail_role=user tail_first256="재난 알림 구독해줘"─────────────────────────────────────────────────────────────────────────
+[UMMAYA-QUERY] sending chat_request corr=3eaf1aa6-fbd3-499b-aca5-6d54eaf8aaaf chatMessages=5
+[UMMAYA-QUERY] bridge.send returned true
 

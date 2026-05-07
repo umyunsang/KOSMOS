@@ -14,8 +14,8 @@ Spec 2521 follow-up PR completing the remaining 36 tasks left open after PR #257
 |---|---|---|
 | `3175862` | byte-copy | T010 — overwrite 1101 LOC → CC 3419 LOC; SHA-256 `6d3fd16e…f977a999` verified |
 | `4d6b9a1` | swap/llm-provider | T011 — 5× `@anthropic-ai/sdk` imports → `'../../sdk-compat.js'` re-exports |
-| `3139e4c` | swap/anti-anthropic-1p | T012 — file-header documentation of 1P call-graph deadening (KOSMOS support modules already inert via Spec 1633 stubs) |
-| `07d23f8` | swap/identifier-rename | T013 — 2 doc-comment brand tokens (Anthropic/Claude Code → upstream/KOSMOS) |
+| `3139e4c` | swap/anti-anthropic-1p | T012 — file-header documentation of 1P call-graph deadening (UMMAYA support modules already inert via Spec 1633 stubs) |
+| `07d23f8` | swap/identifier-rename | T013 — 2 doc-comment brand tokens (Anthropic/Claude Code → upstream/UMMAYA) |
 | (verified) | n/a | T014 — `bun typecheck` clean, `bun test tests/ipc` 98 pass / 0 fail |
 
 ### Audit script — `scripts/llm_swap_parity_audit.sh` (9 tasks · sonnet teammate)
@@ -70,22 +70,22 @@ T041 `## 10. Follow-up cleanup tracking (post-Spec-2521)` section appended to th
 
 ## Channel coverage (parity-matrix.md verification)
 
-| CC stream-event | KOSMOS handler | Status |
+| CC stream-event | UMMAYA handler | Status |
 |---|---|---|
 | `message_start` (1980) | `tui/src/services/api/claude.ts:1980` (byte-copy) + `tui/src/ipc/llmClient.ts:344-358` (live) | byte-copied + live |
 | `content_block_start` text (2019) | byte-copy + `tui/src/ipc/llmClient.ts:371-378` | byte-copied + live |
 | `content_block_start` thinking (2030) | byte-copy + `tui/src/ipc/llmClient.ts:387-395` | byte-copied + live |
 | `content_block_start` tool_use (1997) | byte-copy + `tui/src/ipc/llmClient.ts:491-521` | byte-copied + live |
-| `content_block_delta` text_delta (2113) | byte-copy + `tui/src/ipc/llmClient.ts:411-415` + `src/kosmos/llm/client.py:786` | byte-copied + live |
-| `content_block_delta` thinking_delta (2148) | byte-copy + `tui/src/ipc/llmClient.ts:398-407` + `src/kosmos/llm/client.py:802` | byte-copied + live |
-| `content_block_delta` input_json_delta (2087) | byte-copy + `src/kosmos/llm/client.py:805` | byte-copied (collapsed at IPC) |
+| `content_block_delta` text_delta (2113) | byte-copy + `tui/src/ipc/llmClient.ts:411-415` + `src/ummaya/llm/client.py:786` | byte-copied + live |
+| `content_block_delta` thinking_delta (2148) | byte-copy + `tui/src/ipc/llmClient.ts:398-407` + `src/ummaya/llm/client.py:802` | byte-copied + live |
+| `content_block_delta` input_json_delta (2087) | byte-copy + `src/ummaya/llm/client.py:805` | byte-copied (collapsed at IPC) |
 | `content_block_stop` (2171) | byte-copy + `tui/src/ipc/llmClient.ts:466,511-513` | byte-copied + live |
 | `message_delta` (2213) | byte-copy + `tui/src/ipc/llmClient.ts:469-474` | byte-copied + live |
 | `message_stop` (2295) | byte-copy + `tui/src/ipc/llmClient.ts:476-477` | byte-copied + live |
-| `server_tool_use` (2003) | (skipped) | KOSMOS-N/A |
-| `signature_delta` (2127) | (skipped) | KOSMOS-N/A |
-| `citations_delta` (2084) | (skipped) | KOSMOS-N/A |
-| `connector_text_delta` (2068) | (skipped) | KOSMOS-N/A |
+| `server_tool_use` (2003) | (skipped) | UMMAYA-N/A |
+| `signature_delta` (2127) | (skipped) | UMMAYA-N/A |
+| `citations_delta` (2084) | (skipped) | UMMAYA-N/A |
+| `connector_text_delta` (2068) | (skipped) | UMMAYA-N/A |
 
 ## Test plan
 

@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """T063 — Verify Mock adapter registration test.
 
-Asserts that importing kosmos.tools.mock registers all 6 verify family adapters
-into kosmos.primitives.verify._VERIFY_ADAPTERS, that each adapter is callable,
+Asserts that importing ummaya.tools.mock registers all 6 verify family adapters
+into ummaya.primitives.verify._VERIFY_ADAPTERS, that each adapter is callable,
 and that invoking each with a minimal VerifyInput-compatible session_context
 returns an AuthContext-shaped object with the required fields.
 """
@@ -33,11 +33,11 @@ _REQUIRED_AT_LEAST = 2
 
 
 class TestVerifyMockRegistration:
-    """After importing kosmos.tools.mock, _VERIFY_ADAPTERS must be populated."""
+    """After importing ummaya.tools.mock, _VERIFY_ADAPTERS must be populated."""
 
     def test_at_least_two_families_registered(self) -> None:
-        import kosmos.tools.mock  # noqa: F401 — side-effect: registers adapters
-        from kosmos.primitives.verify import _VERIFY_ADAPTERS
+        import ummaya.tools.mock  # noqa: F401 — side-effect: registers adapters
+        from ummaya.primitives.verify import _VERIFY_ADAPTERS
 
         registered = set(_VERIFY_ADAPTERS.keys()) & set(_ALL_FAMILIES)
         assert len(registered) >= _REQUIRED_AT_LEAST, (
@@ -47,8 +47,8 @@ class TestVerifyMockRegistration:
 
     def test_all_remaining_families_registered(self) -> None:
         """After digital_onepass deletion (FR-004, Epic ε T021), 5 families remain."""
-        import kosmos.tools.mock  # noqa: F401
-        from kosmos.primitives.verify import _VERIFY_ADAPTERS
+        import ummaya.tools.mock  # noqa: F401
+        from ummaya.primitives.verify import _VERIFY_ADAPTERS
 
         for family in _ALL_FAMILIES:
             assert family in _VERIFY_ADAPTERS, (
@@ -56,8 +56,8 @@ class TestVerifyMockRegistration:
             )
 
     def test_each_adapter_is_callable(self) -> None:
-        import kosmos.tools.mock  # noqa: F401
-        from kosmos.primitives.verify import _VERIFY_ADAPTERS
+        import ummaya.tools.mock  # noqa: F401
+        from ummaya.primitives.verify import _VERIFY_ADAPTERS
 
         for family in _ALL_FAMILIES:
             adapter = _VERIFY_ADAPTERS.get(family)
@@ -73,8 +73,8 @@ class TestVerifyMockRegistration:
 @pytest.mark.parametrize("family", _ALL_FAMILIES)
 def test_adapter_returns_auth_context_shape(family: str) -> None:
     """Each adapter must return an object with published_tier and nist_aal_hint."""
-    import kosmos.tools.mock  # noqa: F401
-    from kosmos.primitives.verify import (
+    import ummaya.tools.mock  # noqa: F401
+    from ummaya.primitives.verify import (
         _VERIFY_ADAPTERS,
         GanpyeonInjeungContext,
         GeumyungInjeungseoContext,

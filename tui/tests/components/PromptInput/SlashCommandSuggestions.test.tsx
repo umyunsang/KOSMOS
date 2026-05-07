@@ -64,7 +64,6 @@ describe('SlashCommandSuggestions (FR-014)', () => {
 
   test('catalog contains all required commands', () => {
     const names = UI_L2_SLASH_COMMANDS.map((e) => e.name);
-    expect(names).toContain('/onboarding');
     expect(names).toContain('/consent list');
     expect(names).toContain('/consent revoke');
     expect(names).toContain('/agents');

@@ -10,7 +10,7 @@
 
 ✅ **Layer 1** — `prompts/system_v1.md` 4-paragraph + 4 nested XML tag (`<primitives>` / `<verify_families>` / `<verify_chain_pattern>` / `<scope_grammar>`), 10 mock_verify_* tool_id 매핑, TRIGGER + canonical 매핑. Manifest SHA `bda67fb…`.
 
-✅ **Layer 2** — `src/kosmos/tools/mvp_surface.py` active GovAPITool surface (resolve_location + lookup + verify + submit) `is_core=True`. `_VerifyInputForLLM` / `_SubmitInputForLLM` envelope.
+✅ **Layer 2** — `src/ummaya/tools/mvp_surface.py` active GovAPITool surface (resolve_location + lookup + verify + submit) `is_core=True`. `_VerifyInputForLLM` / `_SubmitInputForLLM` envelope.
 
 ❌ **Layer 5** — Epic ζ 의 책임. TUI 4 primitive `call()` 가 stub.
 
@@ -24,14 +24,14 @@
 
 stub 교체 + IPC `tool_call`/`tool_result` frame backend emit:
 - `tui/src/tools/{Lookup,Verify,Submit,Subscribe}Primitive/*.ts:248-263` — stub `call()` 4개 교체
-- `src/kosmos/ipc/stdio.py:_handle_user_input_llm` — K-EXAONE function_call → IPC `tool_call` frame → primitive sub-dispatcher → `tool_result` frame 흐름 구축
+- `src/ummaya/ipc/stdio.py:_handle_user_input_llm` — K-EXAONE function_call → IPC `tool_call` frame → primitive sub-dispatcher → `tool_result` frame 흐름 구축
 - **#2481** "verify dispatcher tool_id↔family_hint translation" 해결: TUI는 `verify(tool_id, params)` 받음, backend dispatcher는 `verify(family_hint, session_context)` — bridge 가 변환 (Option A: TUI-side tool_id→family 추출) 또는 dispatcher 확장 (Option B: tool_id 직접 받기). spec.md 에서 둘 중 선택.
 
 ### Phase 1 — E2E smoke + policy mapping doc (carry forward)
 
 - **PTY scenario**: 시민 "종합소득세 신고해줘" → `verify(modid)` → `lookup(simplified)` → `submit(taxreturn)` → 접수번호 표시. `specs/2298-system-prompt-rewrite/smoke-citizen-taxreturn-pty.txt` 참조 (η 의 stub-blocker 증거).
 - **Layer 4 vhs**: keyframe 3 PNG 에 `접수번호: hometax-2026-MM-DD-RX-XXXXX` 시각 검증 (η T012 deferred to ζ).
-- **policy-mapping.md**: KOSMOS adapter ↔ Singapore APEX / Estonia X-Road / EU EUDI / Japan マイナポータル.
+- **policy-mapping.md**: UMMAYA adapter ↔ Singapore APEX / Estonia X-Road / EU EUDI / Japan マイナポータル.
 - **5 OPAQUE scenario doc**: `docs/scenarios/{hometax-tax-filing,gov24-minwon-submit,mobile-id-issuance,kec-yessign-signing,mydata-live}.md`.
 
 ---
@@ -39,9 +39,9 @@ stub 교체 + IPC `tool_call`/`tool_result` frame backend emit:
 ## 다음 세션 진입
 
 ```bash
-cd /Users/um-yunsang/KOSMOS && git pull --ff-only
-git worktree add ../KOSMOS-w-2297 -b 2297-zeta-e2e-smoke
-cd ../KOSMOS-w-2297
+cd /Users/um-yunsang/UMMAYA && git pull --ff-only
+git worktree add ../UMMAYA-w-2297 -b 2297-zeta-e2e-smoke
+cd ../UMMAYA-w-2297
 
 # Lead Opus 첫 명령:
 # /clear → 새 conversation

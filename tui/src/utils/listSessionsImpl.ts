@@ -404,23 +404,23 @@ async function gatherProjectCandidates(
 /**
  * Gathers candidate session files across all project directories.
  *
- * Walks both KOSMOS-native path (`~/.kosmos/memdir/user/sessions/`) and
+ * Walks both UMMAYA-native path (`~/.ummaya/memdir/user/sessions/`) and
  * CC-legacy path (`~/.claude/projects/`). Results are deduped by sessionId
- * with KOSMOS sessions taking priority over CC-legacy sessions for the same
- * sessionId (last-active-at ordering within KOSMOS is preserved).
+ * with UMMAYA sessions taking priority over CC-legacy sessions for the same
+ * sessionId (last-active-at ordering within UMMAYA is preserved).
  */
 async function gatherAllCandidates(doStat: boolean): Promise<Candidate[]> {
-  // Walk KOSMOS-native sessions root first (higher priority).
-  const kosmosCandidates = await gatherFromRoot(getProjectsDir(), doStat)
+  // Walk UMMAYA-native sessions root first (higher priority).
+  const ummayaCandidates = await gatherFromRoot(getProjectsDir(), doStat)
   // Walk CC-legacy projects root, excluding any sessionId already seen.
-  const kosmosIds = new Set(kosmosCandidates.map(c => c.sessionId))
+  const ummayaIds = new Set(ummayaCandidates.map(c => c.sessionId))
   const legacyCandidates = await gatherFromRoot(
     getCCLegacyProjectsDir(),
     doStat,
   )
-  const deduped = legacyCandidates.filter(c => !kosmosIds.has(c.sessionId))
+  const deduped = legacyCandidates.filter(c => !ummayaIds.has(c.sessionId))
 
-  return [...kosmosCandidates, ...deduped]
+  return [...ummayaCandidates, ...deduped]
 }
 
 /**

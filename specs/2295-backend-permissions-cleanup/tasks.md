@@ -4,7 +4,7 @@ description: "Task list for Epic δ — Backend Permissions Cleanup + AdapterRea
 
 # Tasks: Backend Permissions Cleanup + AdapterRealDomainPolicy (Epic δ · #2295)
 
-**Input**: Design documents from `/specs/2295-backend-permissions-cleanup/` (worktree at `/Users/um-yunsang/KOSMOS-w-2295/`)
+**Input**: Design documents from `/specs/2295-backend-permissions-cleanup/` (worktree at `/Users/um-yunsang/UMMAYA-w-2295/`)
 **Prerequisites**: spec.md, plan.md, research.md, data-model.md, quickstart.md
 **Tests**: 본 Epic 은 신규 unit test 5 개 추가 (`tests/tools/test_adapter_real_domain_policy.py`). 기존 pytest baseline 비교로 NEW failure 0 검증.
 
@@ -15,9 +15,9 @@ description: "Task list for Epic δ — Backend Permissions Cleanup + AdapterRea
 
 ## Path Convention
 
-- Worktree: `/Users/um-yunsang/KOSMOS-w-2295/`
+- Worktree: `/Users/um-yunsang/UMMAYA-w-2295/`
 - Spec dir: `specs/2295-backend-permissions-cleanup/`
-- Source: `src/kosmos/permissions/` + `src/kosmos/tools/`
+- Source: `src/ummaya/permissions/` + `src/ummaya/tools/`
 
 ---
 
@@ -30,8 +30,8 @@ description: "Task list for Epic δ — Backend Permissions Cleanup + AdapterRea
 
 ## Phase 2: Foundational — importer 추적
 
-- [ ] T003 `src/kosmos/permissions/` ~20 잔재 importer 추적 — `grep -rE "from\s+kosmos\.permissions\.(aal_backstop|adapter_metadata|...)" src/ tests/` 결과를 `adapter-migration-log.md § Residue Deletions` 표에 박제 (per quickstart § 2.1)
-- [ ] T004 18 어댑터 metadata 위치 확인 — `find src/kosmos/tools -maxdepth 3 -name "*.py" | xargs grep -lE 'auth_level|pipa_class|is_personal_data'` 결과 list 작성
+- [ ] T003 `src/ummaya/permissions/` ~20 잔재 importer 추적 — `grep -rE "from\s+ummaya\.permissions\.(aal_backstop|adapter_metadata|...)" src/ tests/` 결과를 `adapter-migration-log.md § Residue Deletions` 표에 박제 (per quickstart § 2.1)
+- [ ] T004 18 어댑터 metadata 위치 확인 — `find src/ummaya/tools -maxdepth 3 -name "*.py" | xargs grep -lE 'auth_level|pipa_class|is_personal_data'` 결과 list 작성
 
 **Checkpoint**: importer 그래프 + 어댑터 metadata 위치 박제 완료.
 
@@ -41,12 +41,12 @@ description: "Task list for Epic δ — Backend Permissions Cleanup + AdapterRea
 
 **Goal**: ~20 잔재 파일 deletion + `__init__.py` 정정 → Spec 035 receipt set 8 파일만 보존.
 
-**Independent Test**: `git ls-files src/kosmos/permissions/` 가 8 파일 + `__init__.py` 만 출력 + Constitution II 토큰 grep 0 행.
+**Independent Test**: `git ls-files src/ummaya/permissions/` 가 8 파일 + `__init__.py` 만 출력 + Constitution II 토큰 grep 0 행.
 
-- [ ] T005 [US1] importer cleanup — T003 산출 importer 의 caller block 삭제 또는 KOSMOS 등가 호출 교체 (Constitution II 강제 — caller 도 함께 cleanup). KEEP: `src/kosmos/recovery/auth_refresh.py` (uses `kosmos.permissions.credentials`), `src/kosmos/engine/models.py` (uses `kosmos.permissions.models.SessionContext` only — remove `PermissionPipeline` import + use), `src/kosmos/cli/{app,repl}.py` (SessionContext path), `tests/permissions/test_canonical_json.py` + `test_ledger_verify_cli.py` + `test_us2_tamper_detect.py` (Spec 035 receipt tests), `tests/observability/test_query_parent_span.py` (SessionContext only). DELETE: `tests/safety/test_patterns.py`, `tests/e2e/test_observability_wiring.py`, `tests/e2e/test_route_safety_permission.py`, `tests/ipc/test_permission_bridge.py` (uses 잔재 permission models heavily).
-- [ ] T006 [US1] 잔재 14 source file + `steps/` 디렉토리 deletion — `git rm src/kosmos/permissions/{aal_backstop,adapter_metadata,bypass,cli,killswitch,mode_bypass,mode_default,modes,pipeline,pipeline_v2,prompt,rules,session_boot,synthesis_guard}.py && git rm -r src/kosmos/permissions/steps/`. KEEP: (a) `models.py` — trim to receipt-schema set: `SessionContext` + `ConsentDecision` + `ConsentLedgerRecord` + `LedgerVerifyReport` + `ToolPermissionContext` + `AdapterPermissionMetadata` + inline `PermissionMode` Literal (since modes.py is deleted). DELETE classes: `AccessTier`, `PermissionDecision`, `PermissionCheckRequest`, `PermissionStepResult`, `AuditLogEntry`, `PermissionRule`. Update `models.py` docstring to "Spec 035 receipt set + harness session schema". (b) `credentials.py` — auth_refresh dependency, KEEP unchanged.
-- [ ] T007 [US1] `src/kosmos/permissions/__init__.py` 재작성 — Spec 035 receipt 8 모듈 + `SessionContext` (models.py) + credentials helpers (`candidate_env_vars` / `resolve_credential` / `has_credential`) 만 export. KOSMOS-invented 잔재 모듈 export 0.
-- [ ] T008 [US1] FR-006 narrowed grep gate — `grep -rE 'pipa_class|auth_level|permission_tier|is_personal_data|is_irreversible|requires_auth|dpa_reference' src/kosmos/tools/koroad/ src/kosmos/tools/kma/ src/kosmos/tools/hira/ src/kosmos/tools/nmc/ src/kosmos/tools/nfa119/ src/kosmos/tools/ssis/ src/kosmos/tools/mock/ src/kosmos/permissions/` 결과 0 행. (FR-006 명시 제외 영역은 검사 대상 아님 — `src/kosmos/security/audit.py` / `src/kosmos/tools/permissions.py` / `src/kosmos/tools/register_all.py` / `src/kosmos/plugins/` / `src/kosmos/ipc/` / `src/kosmos/recovery/auth_refresh.py`).
+- [ ] T005 [US1] importer cleanup — T003 산출 importer 의 caller block 삭제 또는 UMMAYA 등가 호출 교체 (Constitution II 강제 — caller 도 함께 cleanup). KEEP: `src/ummaya/recovery/auth_refresh.py` (uses `ummaya.permissions.credentials`), `src/ummaya/engine/models.py` (uses `ummaya.permissions.models.SessionContext` only — remove `PermissionPipeline` import + use), `src/ummaya/cli/{app,repl}.py` (SessionContext path), `tests/permissions/test_canonical_json.py` + `test_ledger_verify_cli.py` + `test_us2_tamper_detect.py` (Spec 035 receipt tests), `tests/observability/test_query_parent_span.py` (SessionContext only). DELETE: `tests/safety/test_patterns.py`, `tests/e2e/test_observability_wiring.py`, `tests/e2e/test_route_safety_permission.py`, `tests/ipc/test_permission_bridge.py` (uses 잔재 permission models heavily).
+- [ ] T006 [US1] 잔재 14 source file + `steps/` 디렉토리 deletion — `git rm src/ummaya/permissions/{aal_backstop,adapter_metadata,bypass,cli,killswitch,mode_bypass,mode_default,modes,pipeline,pipeline_v2,prompt,rules,session_boot,synthesis_guard}.py && git rm -r src/ummaya/permissions/steps/`. KEEP: (a) `models.py` — trim to receipt-schema set: `SessionContext` + `ConsentDecision` + `ConsentLedgerRecord` + `LedgerVerifyReport` + `ToolPermissionContext` + `AdapterPermissionMetadata` + inline `PermissionMode` Literal (since modes.py is deleted). DELETE classes: `AccessTier`, `PermissionDecision`, `PermissionCheckRequest`, `PermissionStepResult`, `AuditLogEntry`, `PermissionRule`. Update `models.py` docstring to "Spec 035 receipt set + harness session schema". (b) `credentials.py` — auth_refresh dependency, KEEP unchanged.
+- [ ] T007 [US1] `src/ummaya/permissions/__init__.py` 재작성 — Spec 035 receipt 8 모듈 + `SessionContext` (models.py) + credentials helpers (`candidate_env_vars` / `resolve_credential` / `has_credential`) 만 export. UMMAYA-invented 잔재 모듈 export 0.
+- [ ] T008 [US1] FR-006 narrowed grep gate — `grep -rE 'pipa_class|auth_level|permission_tier|is_personal_data|is_irreversible|requires_auth|dpa_reference' src/ummaya/tools/koroad/ src/ummaya/tools/kma/ src/ummaya/tools/hira/ src/ummaya/tools/nmc/ src/ummaya/tools/nfa119/ src/ummaya/tools/ssis/ src/ummaya/tools/mock/ src/ummaya/permissions/` 결과 0 행. (FR-006 명시 제외 영역은 검사 대상 아님 — `src/ummaya/security/audit.py` / `src/ummaya/tools/permissions.py` / `src/ummaya/tools/register_all.py` / `src/ummaya/plugins/` / `src/ummaya/ipc/` / `src/ummaya/recovery/auth_refresh.py`).
 
 **Checkpoint**: US1 단독으로 잔재 deletion 완료, Spec 035 receipt 보존 확인.
 
@@ -58,7 +58,7 @@ description: "Task list for Epic δ — Backend Permissions Cleanup + AdapterRea
 
 **Independent Test**: `uv run pytest tests/tools/test_adapter_real_domain_policy.py -v` 5 test pass.
 
-- [ ] T009 [P] [US2] `src/kosmos/tools/models.py` 에 `AdapterRealDomainPolicy` Pydantic v2 모델 추가 (data-model.md § 1 + research.md § R-3 정의 그대로)
+- [ ] T009 [P] [US2] `src/ummaya/tools/models.py` 에 `AdapterRealDomainPolicy` Pydantic v2 모델 추가 (data-model.md § 1 + research.md § R-3 정의 그대로)
 - [ ] T010 [P] [US2] 단위 테스트 추가 — `tests/tools/test_adapter_real_domain_policy.py` 5 test (test_model_frozen / test_extra_forbid / test_url_non_empty / test_gate_literal / test_18_adapters_have_policy)
 - [ ] T011 [US2] 모델 + 테스트 검증 — `uv run pytest tests/tools/test_adapter_real_domain_policy.py -v` 5 test pass (test_18_adapters_have_policy 는 US3 완료 후 통과)
 
@@ -70,14 +70,14 @@ description: "Task list for Epic δ — Backend Permissions Cleanup + AdapterRea
 
 **Goal**: 18 어댑터 metadata 에 `policy: AdapterRealDomainPolicy` 추가 + 금지 필드 제거.
 
-**Independent Test**: `uv run python -c "from kosmos.tools.registry import ToolRegistry; ..."` 18 어댑터 모두 `policy` 보유 검증 + test_18_adapters_have_policy 통과.
+**Independent Test**: `uv run python -c "from ummaya.tools.registry import ToolRegistry; ..."` 18 어댑터 모두 `policy` 보유 검증 + test_18_adapters_have_policy 통과.
 
-- [ ] T012 [P] [US3] KOROAD 어댑터 ×2 마이그레이션 — `src/kosmos/tools/koroad/*.py` 의 metadata 에서 금지 필드 제거 + `policy=AdapterRealDomainPolicy(real_classification_url="https://www.koroad.or.kr/main/web/policy/data_use.do", ...)` 추가; `adapter-migration-log.md` 표 박제
-- [ ] T013 [P] [US3] KMA 어댑터 ×6 마이그레이션 — `src/kosmos/tools/kma/*.py` (`real_classification_url="https://www.kma.go.kr/data/policy.html"`)
-- [ ] T014 [P] [US3] HIRA 어댑터 ×1 마이그레이션 — `src/kosmos/tools/hira/*.py`
+- [ ] T012 [P] [US3] KOROAD 어댑터 ×2 마이그레이션 — `src/ummaya/tools/koroad/*.py` 의 metadata 에서 금지 필드 제거 + `policy=AdapterRealDomainPolicy(real_classification_url="https://www.koroad.or.kr/main/web/policy/data_use.do", ...)` 추가; `adapter-migration-log.md` 표 박제
+- [ ] T013 [P] [US3] KMA 어댑터 ×6 마이그레이션 — `src/ummaya/tools/kma/*.py` (`real_classification_url="https://www.kma.go.kr/data/policy.html"`)
+- [ ] T014 [P] [US3] HIRA 어댑터 ×1 마이그레이션 — `src/ummaya/tools/hira/*.py`
 - [ ] T015 [P] [US3] NMC + NFA119 + MOHW 어댑터 ×3 마이그레이션
 - [ ] T016 [P] [US3] Mock 어댑터 ×6 마이그레이션 — barocert / cbs / data_go_kr / mydata / npki_crypto / omnione (placeholder URL + `# TODO: verify URL` 마커, Deferred Items 추적)
-- [ ] T017 [US3] Registry boot 검증 — `uv run python -c "from kosmos.tools.registry import ToolRegistry; r = ToolRegistry(); ..."` 18 어댑터 모두 `policy` 보유
+- [ ] T017 [US3] Registry boot 검증 — `uv run python -c "from ummaya.tools.registry import ToolRegistry; r = ToolRegistry(); ..."` 18 어댑터 모두 `policy` 보유
 
 **Checkpoint**: US3 단독으로 18 어댑터 마이그레이션 완료, test_18_adapters_have_policy 통과.
 

@@ -10,7 +10,7 @@ import { init } from './entrypoints/init.js';
 import { addToHistory } from './history.js';
 import type { Root } from './ink.js';
 import { launchRepl } from './replLauncher.js';
-// KOSMOS: services/api/filesApi deleted (Anthropic session API). File download via --file flag is unsupported.
+// UMMAYA: services/api/filesApi deleted (Anthropic session API). File download via --file flag is unsupported.
 import { prefetchOfficialMcpUrls } from './services/mcp/officialRegistry.js';
 import type { McpSdkServerConfig, McpServerConfig, ScopedMcpServerConfig } from './services/mcp/types.js';
 import type { ToolInputJSONSchema } from './Tool.js';
@@ -28,7 +28,7 @@ import { applyConfigEnvironmentVariables } from './utils/managedEnv.js';
 import { createSystemMessage, createUserMessage } from './utils/messages.js';
 import { getPlatform } from './utils/platform.js';
 import { getBaseRenderOptions } from './utils/renderOptions.js';
-// KOSMOS: services/api/sessionIngress deleted. sessionIngressAuth stub kept for build compatibility.
+// UMMAYA: services/api/sessionIngress deleted. sessionIngressAuth stub kept for build compatibility.
 import { settingsChangeDetector } from './utils/settings/changeDetector.js';
 import { skillChangeDetector } from './utils/skills/skillChangeDetector.js';
 import { jsonParse, writeFileSync_DEPRECATED } from './utils/slowOperations.js';
@@ -91,7 +91,7 @@ import { validateUuid } from './utils/uuid.js';
 
 import { registerMcpAddCommand } from 'src/commands/mcp/addCommand.js';
 import { registerMcpXaaIdpCommand } from 'src/commands/mcp/xaaIdpCommand.js';
-// claude.ai MCP proxy removed in P1+P2 (Spec 1633); KOSMOS does not consume
+// claude.ai MCP proxy removed in P1+P2 (Spec 1633); UMMAYA does not consume
 // Anthropic's enterprise MCP configs. The eligibility check is now a no-op.
 const fetchClaudeAIMcpConfigsIfEligible = async (): Promise<Record<string, never>> => ({});
 import { clearServerCache } from 'src/services/mcp/client.js';
@@ -178,11 +178,11 @@ if ("external" !== 'ant' && isBeingDebugged()) {
 }
 
 // TODO(1633): migrations removed — migration files deleted in Wave A-C.
-// If model-alias migrations are needed for KOSMOS, add them here.
+// If model-alias migrations are needed for UMMAYA, add them here.
 const CURRENT_MIGRATION_VERSION = 11;
 function runMigrations(): void {
   // No-op: all Anthropic-internal migration modules deleted in Epic #1633 Wave A-C.
-  // Update CURRENT_MIGRATION_VERSION and add KOSMOS-specific migrations here when needed.
+  // Update CURRENT_MIGRATION_VERSION and add UMMAYA-specific migrations here when needed.
 }
 
 /**
@@ -362,7 +362,7 @@ export async function main() {
   // See: https://docs.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-searchpathw
   process.env.NoDefaultCurrentDirectoryInExePath = '1';
 
-  // KOSMOS boots without a key so /login can collect one. The first
+  // UMMAYA boots without a key so /login can collect one. The first
   // model/backend use still fails closed if the user has not logged in.
   warnIfMissingFriendliCredential();
 
@@ -387,17 +387,17 @@ export async function main() {
   const hasPrintFlag = cliArgs.includes('-p') || cliArgs.includes('--print');
   const hasInitOnlyFlag = cliArgs.includes('--init-only');
   const hasSdkUrl = cliArgs.some(arg => arg.startsWith('--sdk-url'));
-  // KOSMOS-1978 T003b: Bun's `process.stdout.isTTY` is `undefined` (not `true`)
+  // UMMAYA-1978 T003b: Bun's `process.stdout.isTTY` is `undefined` (not `true`)
   // when invoked through wrappers like `bun run ...` or under PTY harnesses
   // where the parent shell already wrapped fd1. The CC original assumed Node's
   // strict-boolean isTTY (true under TTY, false under pipes). To preserve the
   // PTY-driven verification path required by memory `feedback_runtime_verification`,
-  // KOSMOS adds an explicit `KOSMOS_FORCE_INTERACTIVE` env override that the
+  // UMMAYA adds an explicit `UMMAYA_FORCE_INTERACTIVE` env override that the
   // PTY scenario harness sets when it knows fd1 is a real TTY slave. The
   // override must NEVER be set in a citizen's environment — it is a test-harness
   // signal, not a runtime configuration.
-  const kosmosForceInteractive = process.env.KOSMOS_FORCE_INTERACTIVE === '1';
-  const isNonInteractive = hasPrintFlag || hasInitOnlyFlag || hasSdkUrl || (!kosmosForceInteractive && !process.stdout.isTTY);
+  const ummayaForceInteractive = process.env.UMMAYA_FORCE_INTERACTIVE === '1';
+  const isNonInteractive = hasPrintFlag || hasInitOnlyFlag || hasSdkUrl || (!ummayaForceInteractive && !process.stdout.isTTY);
 
   // Stop capturing early input for non-interactive modes
   if (isNonInteractive) {
@@ -503,7 +503,7 @@ async function run(): Promise<CommanderCommand> {
     // terminal shell integration may mirror the process name to the tab.
     // After init() so settings.json env can also gate this (gh-4765).
     if (!isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_TERMINAL_TITLE)) {
-      process.title = 'kosmos';
+      process.title = 'ummaya';
     }
 
     // Attach logging sinks so subcommand handlers can use logEvent/logError.
@@ -628,7 +628,7 @@ async function run(): Promise<CommanderCommand> {
       seedEarlyInput(options.prefill);
     }
 
-    // KOSMOS: filesApi deleted — file download via --file flag is unsupported.
+    // UMMAYA: filesApi deleted — file download via --file flag is unsupported.
     const agentsJson = options.agents;
     const agentCli = options.agent;
 
@@ -808,7 +808,7 @@ async function run(): Promise<CommanderCommand> {
       }
     }
 
-    // KOSMOS: --file flag / session file download removed (Anthropic Files API dead code).
+    // UMMAYA: --file flag / session file download removed (Anthropic Files API dead code).
 
     // Get isNonInteractiveSession from state (was set before init())
     const isNonInteractiveSession = getIsNonInteractiveSession();
@@ -1237,7 +1237,7 @@ async function run(): Promise<CommanderCommand> {
       initBundledSkills();
     }
     // UDS_INBOX feature removed in Epic #1633 — CC wired this through the
-    // Unix-domain inbox path, which KOSMOS does not use. Preserve the
+    // Unix-domain inbox path, which UMMAYA does not use. Preserve the
     // `setup()` signature by passing `undefined`.
     const messagingSocketPath: string | undefined = undefined;
     const setupPromise = setup(preSetupCwd, permissionMode, allowDangerouslySkipPermissions, worktreeEnabled, worktreeName, tmuxEnabled, sessionId ? validateUuid(sessionId) : undefined, worktreePRNumber, messagingSocketPath);
@@ -1276,7 +1276,7 @@ async function run(): Promise<CommanderCommand> {
       // getSystemContext / getUserContext (cwd / gitStatus / CLAUDE.md are
       // developer-domain). The original CC warm-ups here pre-spawned git
       // subprocess + CLAUDE.md fs.readFile during the ~280ms config-init
-      // window; both are dead under KOSMOS.
+      // window; both are dead under UMMAYA.
       // Kick ensureModelStringsInitialized now — for Bedrock this triggers
       // a 100-200ms profile fetch that was awaited serially at
       // print.ts:739. updateBedrockModelStrings is sequential()-wrapped so
@@ -1465,10 +1465,10 @@ async function run(): Promise<CommanderCommand> {
 
       logForDebugging('[STARTUP] Running showSetupScreens()...');
       const setupScreensStart = Date.now();
-      // KOSMOS — `devChannels` was lost during CC sourcemap reconstruction
+      // UMMAYA — `devChannels` was lost during CC sourcemap reconstruction
       // (Spec 1632 baseline drop). Upstream Claude Code uses it for the
       // ``--dangerously-load-development-channels`` private-plugin path,
-      // which KOSMOS does not ship (Spec 1633 P1 dead-code clause). Pass
+      // which UMMAYA does not ship (Spec 1633 P1 dead-code clause). Pass
       // ``undefined`` so showSetupScreens routes to the citizen flow.
       const devChannels = undefined;
       const onboardingShown = await showSetupScreens(root, permissionMode, allowDangerouslySkipPermissions, commands, enableClaudeInChrome, devChannels);
@@ -1490,37 +1490,6 @@ async function run(): Promise<CommanderCommand> {
         // — enrollTrustedDevice() via checkGate_CACHED_OR_BLOCKING (awaits
         // the GrowthBook reinit above), clearTrustedDeviceToken() via the
         // sync cached check (acceptable since clear is idempotent).
-      }
-
-      // KOSMOS P4 UI L2 — T049/T052: KOSMOS 5-step onboarding gate
-      // Runs after the CC trust/login setup screen so auth is established first.
-      // If the citizen has never completed the 5-step sequence
-      // (~/.kosmos/memdir/user/onboarding/state.json is absent or incomplete),
-      // render OnboardingFlow and block until all 5 steps are done.
-      {
-        const { loadOnboardingState } = await import('./utils/uiL2Memdir.js');
-        const { isOnboardingComplete } = await import('./schemas/ui-l2/onboarding.js');
-        const { emitSurfaceActivation } = await import('./observability/surface.js');
-        const { getCurrentLocale } = await import('./commands/lang.js');
-        const { getKosmosBridgeSessionId } = await import('./ipc/bridgeSingleton.js');
-        const onboardingState = await loadOnboardingState();
-        if (!isOnboardingComplete(onboardingState)) {
-          // T052: emit surface activation before mounting the flow
-          emitSurfaceActivation('onboarding', { 'onboarding.mode': 'initial' });
-          logForDebugging('[KOSMOS] Onboarding incomplete — launching 5-step flow');
-          // SWAP: KOSMOS-integration-verification — `require()` of OnboardingFlow.tsx
-          // fails on Bun because the module's transitive deps include top-level
-          // await; switch to dynamic `await import()` (already async-safe context).
-          const { OnboardingFlow } = await import('./components/onboarding/OnboardingFlow.js');
-          await showDialog(root, (done) => {
-            return React.createElement(OnboardingFlow, {
-              sessionId: getKosmosBridgeSessionId(),
-              onComplete: () => done(),
-              locale: getCurrentLocale(),
-            });
-          });
-          logForDebugging('[KOSMOS] Onboarding complete — proceeding to REPL');
-        }
       }
 
     }
@@ -1773,8 +1742,8 @@ async function run(): Promise<CommanderCommand> {
       // but print mode is considered trusted (as documented in help text)
       applyConfigEnvironmentVariables();
 
-      // TODO(1633-T012): invoke Spec 021 KOSMOS OTEL init here
-      // once initKosmosOtel() exists (separate commit).
+      // TODO(1633-T012): invoke Spec 021 UMMAYA OTEL init here
+      // once initUmmayaOtel() exists (separate commit).
 
       // Kick SessionStart hooks now so the subprocess spawn overlaps with
       // MCP connect + plugin init + print.ts import below. loadInitialMessages
@@ -1961,7 +1930,7 @@ async function run(): Promise<CommanderCommand> {
         startDeferredPrefetches();
         void import('./utils/backgroundHousekeeping.js').then(m => m.startBackgroundHousekeeping());
       }
-      // KOSMOS Epic #2637 — cli/print.ts PORT (FR-003, FR-016).
+      // UMMAYA Epic #2637 — cli/print.ts PORT (FR-003, FR-016).
       // CC-original: dynamic import of print.ts + runHeadless invocation.
       // Replaces the Spec 1633/2293 "not supported" block.
       const {
@@ -2167,8 +2136,8 @@ async function run(): Promise<CommanderCommand> {
     // adding a new top-level await in main.tsx (performance-critical path).
     // The per-turn auth logic in sessionDataUploader.ts handles unauthenticated
     // state gracefully (re-checks each turn, so auth recovery mid-session works).
-    // KOSMOS — sessionDataUploader is upstream-only (Anthropic claude.ai
-    // session sync); KOSMOS does not exfiltrate sessions. Set the promise to
+    // UMMAYA — sessionDataUploader is upstream-only (Anthropic claude.ai
+    // session sync); UMMAYA does not exfiltrate sessions. Set the promise to
     // null so the lazy-resolve path becomes a no-op (Spec 1633 dead-code
     // policy + ReferenceError fix from Spec 1632 sourcemap reconstruction).
     const sessionUploaderPromise: Promise<{ createSessionTurnUploader: () => unknown }> | null = null;
@@ -2322,7 +2291,7 @@ async function run(): Promise<CommanderCommand> {
         }
       }
 
-      // KOSMOS: fileDownloadPromise block removed (filesApi dead code).
+      // UMMAYA: fileDownloadPromise block removed (filesApi dead code).
 
       // If we have a processed resume or teleport messages, render the REPL
       const resumeData = processedResume ?? (Array.isArray(messages) ? {
@@ -2392,7 +2361,7 @@ async function run(): Promise<CommanderCommand> {
         pendingHookMessages
       }, renderAndRun);
     }
-  }).version(`${MACRO.VERSION} (KOSMOS)`, '-v, --version', 'Output the version number');
+  }).version(`${MACRO.VERSION} (UMMAYA)`, '-v, --version', 'Output the version number');
 
   // Worktree flags
   program.option('-w, --worktree [name]', 'Create a new git worktree for this session (optionally specify a name)');
@@ -2503,8 +2472,8 @@ async function run(): Promise<CommanderCommand> {
   });
 
 
-  const auth = program.command('auth').description('Show KOSMOS FriendliAI session-auth status').configureHelp(createSortedHelpConfig());
-  auth.command('login').description('Show how to log in with /login inside the TUI').option('--email <email>', 'Ignored in KOSMOS').option('--sso', 'Ignored in KOSMOS').option('--console', 'Ignored in KOSMOS').option('--claudeai', 'Ignored in KOSMOS').action(async ({
+  const auth = program.command('auth').description('Show UMMAYA FriendliAI session-auth status').configureHelp(createSortedHelpConfig());
+  auth.command('login').description('Show how to log in with /login inside the TUI').option('--email <email>', 'Ignored in UMMAYA').option('--sso', 'Ignored in UMMAYA').option('--console', 'Ignored in UMMAYA').option('--claudeai', 'Ignored in UMMAYA').action(async ({
     email,
     sso,
     console: useConsole,
@@ -2793,4 +2762,4 @@ function extractTeammateOptions(options: unknown): TeammateOptions {
 // been redundant since that import-then-await pattern was finalised. The
 // rich debug-on-rejection wrapper that lived here has been moved to cli.tsx
 // where the single canonical await happens, preserving the
-// "[KOSMOS/CC] fatal: ..." failure-mode telemetry.
+// "[UMMAYA/CC] fatal: ..." failure-mode telemetry.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# KOSMOS Epic #2112 — P1 Dead Anthropic Model Matrix Removal · Audit Script
+# UMMAYA Epic #2112 — P1 Dead Anthropic Model Matrix Removal · Audit Script
 # Implements C1-C11 contracts from contracts/audit-contract.md.
 # Usage: bash specs/2112-dead-anthropic-models/audit.sh [Cn ...]
 #        (no args = run all C1-C11)
@@ -43,7 +43,7 @@ c2() {
 c3() {
   # FR-012: "MUST NOT INTRODUCE A NEW K-EXAONE literal at any other location."
   # Prod sites (excluding tests/ which legitimately hardcode wire fixtures):
-  #   src/kosmos/llm/config.py:37          (FR-012 anchor)
+  #   src/ummaya/llm/config.py:37          (FR-012 anchor)
   #   tui/src/utils/model/model.ts:179,187 (FR-012 anchor)
   #   tui/src/ipc/llmClient.ts:31          (pre-existing — Spec 1633 query engine)
   #   tui/src/tools/TranslateTool/TranslateTool.ts:64 (pre-existing — Spec 022 main-tool)
@@ -59,7 +59,7 @@ c3() {
 
 c4() {
   local hits
-  hits=$(rg -n 'temperature: float = 1\.0|top_p: float = 0\.95|presence_penalty: float = 0\.0|max_tokens: int = 1024' src/kosmos/llm/client.py 2>/dev/null | wc -l | tr -d ' ')
+  hits=$(rg -n 'temperature: float = 1\.0|top_p: float = 0\.95|presence_penalty: float = 0\.0|max_tokens: int = 1024' src/ummaya/llm/client.py 2>/dev/null | wc -l | tr -d ' ')
   if [[ "$hits" -ge "8" ]]; then
     emit C4 PASS "$hits sampling-default matches (≥8 expected)"
   else
@@ -69,7 +69,7 @@ c4() {
 
 c5() {
   local hits
-  hits=$(rg -n 'class RetryPolicy|_compute_rate_limit_delay|_is_rate_limit_envelope|_complete_with_retry|_stream_with_retry' src/kosmos/llm/client.py 2>/dev/null | wc -l | tr -d ' ')
+  hits=$(rg -n 'class RetryPolicy|_compute_rate_limit_delay|_is_rate_limit_envelope|_complete_with_retry|_stream_with_retry' src/ummaya/llm/client.py 2>/dev/null | wc -l | tr -d ' ')
   if [[ "$hits" -ge "5" ]]; then
     emit C5 PASS "$hits retry-machinery declarations (≥5 expected)"
   else
@@ -79,7 +79,7 @@ c5() {
 
 c6() {
   local hits
-  hits=$(rg -n 'KOSMOS_K_EXAONE_THINKING|chat_template_kwargs' src/kosmos/llm/client.py 2>/dev/null | wc -l | tr -d ' ')
+  hits=$(rg -n 'UMMAYA_K_EXAONE_THINKING|chat_template_kwargs' src/ummaya/llm/client.py 2>/dev/null | wc -l | tr -d ' ')
   if [[ "$hits" -ge "2" ]]; then
     emit C6 PASS "$hits enable_thinking ref(s) (≥2 expected)"
   else
@@ -156,7 +156,7 @@ else
   done
 fi
 
-echo "===== KOSMOS #2112 Audit Results ====="
+echo "===== UMMAYA #2112 Audit Results ====="
 printf '%s\n' "${results[@]}"
 echo "----- Summary: $PASS pass / $FAIL fail -----"
 [[ "$FAIL" == "0" ]] && exit 0 || exit 1

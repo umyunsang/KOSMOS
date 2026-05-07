@@ -1,6 +1,6 @@
 # CJK Width Known Issues
 
-**Spec**: Spec 287 (KOSMOS TUI — Ink + React + Bun)
+**Spec**: Spec 287 (UMMAYA TUI — Ink + React + Bun)
 **Affects**: `tui/src/components/primitive/TimeseriesTable.tsx`, `tui/src/components/primitive/CollectionList.tsx`, and all other primitive renderers that emit padded columns.
 **Cross-reference**: Spec 287 § Assumptions, Assumption #3; Spec 287 § Edge Cases, R5.
 
@@ -10,7 +10,7 @@
 
 East Asian characters (CJK — Chinese, Japanese, Korean) occupy two terminal columns visually but are counted as one column by JavaScript's `String.prototype.length` and by many early or naive width-calculation libraries. When a renderer computes column padding by counting characters rather than visual columns, CJK text causes columns to misalign, table borders to drift, and row overflow to trigger at the wrong glyph boundary.
 
-This document catalogs the two upstream Ink issues that affect KOSMOS TUI rendering, the mitigation applied in every primitive renderer, and the residual known defect deferred to a future release.
+This document catalogs the two upstream Ink issues that affect UMMAYA TUI rendering, the mitigation applied in every primitive renderer, and the residual known defect deferred to a future release.
 
 ---
 
@@ -22,7 +22,7 @@ This document catalogs the two upstream Ink issues that affect KOSMOS TUI render
 
 Ink's internal text-layout pass calls `str.length` to calculate the printable width of a rendered string. For any CJK Unified Ideograph or Hangul syllable block character (U+1100–U+11FF, U+3000–U+9FFF, U+AC00–U+D7A3, U+F900–U+FAFF, and CJK Compatibility ranges), `str.length` returns 1 even though the glyph renders as 2 columns in every conforming terminal emulator (kitty, alacritty, iTerm2, Konsole, GNOME Terminal).
 
-**Reproduction context in KOSMOS TUI**
+**Reproduction context in UMMAYA TUI**
 
 The defect is most visible in `TimeseriesTable.tsx` (FR-018) and `CollectionList.tsx` (FR-019) because both components construct fixed-width padded columns from backend `tool_result` data that routinely contains Korean text (hospital names, district names, road segment labels). A typical failing row:
 
@@ -44,7 +44,7 @@ With a table of 40 Korean-label rows the border misalignment accumulates into un
 
 Zero-width joiner sequences (U+200D, e.g., family emoji ZWJ sequences) and variation selectors (U+FE0E / U+FE0F — text vs. emoji presentation) are assigned a character length of 1 by `str.length` but should contribute 0 to the printable column count. Combined with the ink#688 problem, a single ZWJ emoji in a header label can cause all downstream columns to shift by 1–3 positions.
 
-**Reproduction context in KOSMOS TUI**
+**Reproduction context in UMMAYA TUI**
 
 `CollectionList.tsx` displays emergency-facility and hospital records from `nmc_emergency_search` and `hira_hospital_search` adapters. Some upstream records include emoji variation selectors in facility-type labels (e.g., status indicators). The variation selector is invisible to the user but counted as 1 by Ink, shifting the following column header.
 
@@ -77,7 +77,7 @@ function padEnd(text: string, targetWidth: number, fillChar = ' '): string {
 
 Every renderer that hard-codes column widths or calls `.padEnd()` / `.padStart()` on user-visible strings is a defect. Use `padEnd()` / a `padStart()` wrapper above in all such call sites.
 
-**Log contract**: When the computed `stringWidth` result differs from `text.length` by more than 0, the renderer MUST emit a `debug`-level log entry via `stdlib logging` (Python side) or the TUI's `KOSMOS_TUI_LOG_LEVEL` channel (TypeScript side) — it MUST NOT throw. This satisfies Spec 287 § Edge Cases R5: "Log a warning on overflow but do not crash."
+**Log contract**: When the computed `stringWidth` result differs from `text.length` by more than 0, the renderer MUST emit a `debug`-level log entry via `stdlib logging` (Python side) or the TUI's `UMMAYA_TUI_LOG_LEVEL` channel (TypeScript side) — it MUST NOT throw. This satisfies Spec 287 § Edge Cases R5: "Log a warning on overflow but do not crash."
 
 **Affected files** (to be created in Phase 1–3):
 
@@ -96,7 +96,7 @@ Every renderer that hard-codes column widths or calls `.padEnd()` / `.padStart()
 
 `string-width@^7` correctly returns 0 for most variation-selector code points in isolation, but certain ZWJ sequences used in multi-codepoint emoji (e.g., family group emoji, professions with skin tone modifiers) return an incorrect width of 2 even when rendered as a single 2-col glyph. The result is 0 extra columns rather than the expected 0, producing 2 extra padding characters.
 
-This defect is **accepted as-is for v1** per Spec 287 § Edge Cases R5 (impact: Medium; probability: Low). The practical frequency in KOSMOS backend data is low because `data.go.kr` API responses do not systematically use multi-codepoint emoji in structured fields.
+This defect is **accepted as-is for v1** per Spec 287 § Edge Cases R5 (impact: Medium; probability: Low). The practical frequency in UMMAYA backend data is low because `data.go.kr` API responses do not systematically use multi-codepoint emoji in structured fields.
 
 Tracking: no standalone issue at time of writing. If the defect affects more than 1% of rendered rows in soak testing (`bun test:soak`), open a dedicated issue and evaluate either a custom ZWJ-strip pre-pass or upgrading to a future `string-width` version that resolves the edge case.
 

@@ -63,8 +63,8 @@ export function PluginRemoveConfirm({
       <Box flexDirection="column" paddingLeft={2} marginBottom={1}>
         <Text>{`${plugin.name} v${plugin.version} 을 제거하시겠습니까?`}</Text>
         <Box marginTop={1} flexDirection="column">
-          <Text color={theme.subtle}>{'⏺ 설치 디렉터리: ~/.kosmos/memdir/user/plugins/<id>/'}</Text>
-          <Text color={theme.subtle}>{'⏺ 영수증 (uninstall) 이 ~/.kosmos/memdir/user/consent/ 에 추가됩니다.'}</Text>
+          <Text color={theme.subtle}>{'⏺ 설치 디렉터리: ~/.ummaya/memdir/user/plugins/<id>/'}</Text>
+          <Text color={theme.subtle}>{'⏺ 영수증 (uninstall) 이 ~/.ummaya/memdir/user/consent/ 에 추가됩니다.'}</Text>
         </Box>
       </Box>
 

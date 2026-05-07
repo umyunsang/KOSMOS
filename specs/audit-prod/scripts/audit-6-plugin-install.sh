@@ -4,7 +4,7 @@
 # BEFORE /plugins so the stuck-overlay (P0 #1) does not swallow input.
 set -uo pipefail
 
-wait_for_pane "KOSMOS|kosmos" 60 || true
+wait_for_pane "UMMAYA|ummaya" 60 || true
 snapshot_pane 0-boot
 
 # /plugin install <bad-name> → catalog miss

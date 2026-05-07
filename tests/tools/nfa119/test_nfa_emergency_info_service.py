@@ -17,15 +17,15 @@ import pytest
 import respx
 from pydantic import ValidationError
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.lookup import lookup
-from kosmos.tools.models import (
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.lookup import lookup
+from ummaya.tools.models import (
     LookupError,  # noqa: A004
     LookupFetchInput,
     LookupSearchInput,
     LookupSearchResult,
 )
-from kosmos.tools.nfa119.emergency_info_service import (
+from ummaya.tools.nfa119.emergency_info_service import (
     NFA_EMERGENCY_INFO_SERVICE_TOOL,
     NfaActivityItem,
     NfaEmergencyInfoServiceInput,
@@ -33,7 +33,7 @@ from kosmos.tools.nfa119.emergency_info_service import (
     handle,
     register,
 )
-from kosmos.tools.registry import ToolRegistry
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -248,17 +248,17 @@ class TestNfaLayer3Gate:
 
     handle() is now a live HTTP handler. The defence-in-depth backstop is no
     longer Layer3GateViolation — instead, handle() raises ConfigurationError
-    when KOSMOS_DATA_GO_KR_API_KEY is absent (which is the CI equivalent).
+    when UMMAYA_DATA_GO_KR_API_KEY is absent (which is the CI equivalent).
     Layer3GateViolation is still raised by the executor auth gate *before*
     handle() is ever called (FR-025, FR-026, SC-006 via executor.invoke()).
     """
 
     @pytest.mark.asyncio
     async def test_handle_raises_config_error_without_api_key(self, monkeypatch) -> None:
-        """handle() raises ConfigurationError if KOSMOS_DATA_GO_KR_API_KEY is not set."""
-        from kosmos.tools.errors import ConfigurationError
+        """handle() raises ConfigurationError if UMMAYA_DATA_GO_KR_API_KEY is not set."""
+        from ummaya.tools.errors import ConfigurationError
 
-        monkeypatch.delenv("KOSMOS_DATA_GO_KR_API_KEY", raising=False)
+        monkeypatch.delenv("UMMAYA_DATA_GO_KR_API_KEY", raising=False)
 
         inp = NfaEmergencyInfoServiceInput.model_validate(
             {
@@ -396,7 +396,7 @@ class TestNfaToolMetadata:
     """Verify NFA_EMERGENCY_INFO_SERVICE_TOOL metadata matches spec 029 §4.1."""
 
     def test_tool_constants(self) -> None:
-        # KOSMOS-invented Spec 033/024/025 fields removed in Epic δ #2295:
+        # UMMAYA-invented Spec 033/024/025 fields removed in Epic δ #2295:
         # requires_auth, is_personal_data, auth_level, pipa_class, is_irreversible,
         # dpa_reference — deleted from GovAPITool (Constitution § II).
         assert NFA_EMERGENCY_INFO_SERVICE_TOOL.id == "nfa_emergency_info_service"
@@ -446,7 +446,7 @@ class TestNfaVariantCFlatResponse:
 
     def test_parse_items_variant_c_flat_with_data(self) -> None:
         """_parse_items handles flat NFA shape with item records."""
-        from kosmos.tools.nfa119.emergency_info_service import _parse_items
+        from ummaya.tools.nfa119.emergency_info_service import _parse_items
 
         flat_payload = {
             "header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"},
@@ -475,7 +475,7 @@ class TestNfaVariantCFlatResponse:
 
     def test_parse_items_variant_c_empty_items(self) -> None:
         """_parse_items handles flat NFA shape with totalCount=0."""
-        from kosmos.tools.nfa119.emergency_info_service import _parse_items
+        from ummaya.tools.nfa119.emergency_info_service import _parse_items
 
         flat_payload = {
             "header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"},
@@ -490,7 +490,7 @@ class TestNfaVariantCFlatResponse:
 
     def test_parse_response_variant_c_flat_empty(self) -> None:
         """_parse_response handles flat NFA shape: resultCode 00, empty items."""
-        from kosmos.tools.nfa119.emergency_info_service import _parse_response
+        from ummaya.tools.nfa119.emergency_info_service import _parse_response
 
         flat_payload = {
             "header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"},
@@ -510,7 +510,7 @@ class TestNfaVariantCFlatResponse:
 
     def test_parse_response_variant_c_flat_with_item(self) -> None:
         """_parse_response handles flat NFA shape with one activity record."""
-        from kosmos.tools.nfa119.emergency_info_service import (
+        from ummaya.tools.nfa119.emergency_info_service import (
             NfaActivityItem,
             _parse_response,
         )
@@ -548,7 +548,7 @@ class TestNfaVariantCFlatResponse:
 
     def test_parse_response_variant_a_wrapped_still_works(self) -> None:
         """Variant A (response-wrapped) still parses correctly after Variant C fix."""
-        from kosmos.tools.nfa119.emergency_info_service import (
+        from ummaya.tools.nfa119.emergency_info_service import (
             NfaActivityItem,
             _parse_response,
         )

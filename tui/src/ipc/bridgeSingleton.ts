@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — Epic #1633 FR-007/FR-017 bootstrap helper.
+// UMMAYA-original — Epic #1633 FR-007/FR-017 bootstrap helper.
 //
 // Holds the lazily-spawned, process-wide IPCBridge instance. This is the
 // single place `query/deps.ts::callModel` reads from to construct an
 // `LLMClient` — it guarantees one Python backend per TUI process, started on
 // first use, shared across every turn.
 //
-// The bridge is spawned lazily because cold-starting `uv run kosmos --ipc
+// The bridge is spawned lazily because cold-starting `uv run ummaya --ipc
 // stdio` adds ~1–2 s to TUI boot; we don't pay that cost unless the first
 // prompt is actually typed. Subsequent turns reuse the running child.
 
@@ -26,7 +26,7 @@ let _sessionId: string | null = null
 // — citizen authority remains the default for the rest of the session).
 let _pluginsModifiedThisSession = false
 
-export function getOrCreateKosmosBridge(): IPCBridge {
+export function getOrCreateUmmayaBridge(): IPCBridge {
   if (_bridge !== null) return _bridge
   _bridge = createBridge({
     // Epic ε #2296 T010 — route adapter_manifest_sync frames to the TS-side
@@ -42,7 +42,7 @@ export function getOrCreateKosmosBridge(): IPCBridge {
   return _bridge
 }
 
-export function getKosmosBridgeSessionId(): string {
+export function getUmmayaBridgeSessionId(): string {
   if (_sessionId === null) {
     _sessionId = crypto.randomUUID()
   }
@@ -72,7 +72,7 @@ export function consumePluginsModifiedFlag(): boolean {
   return wasSet
 }
 
-export async function closeKosmosBridge(): Promise<void> {
+export async function closeUmmayaBridge(): Promise<void> {
   if (_bridge !== null) {
     const b = _bridge
     _bridge = null

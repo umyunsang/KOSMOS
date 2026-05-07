@@ -21,7 +21,7 @@ import {
   getSettingsForSource,
   updateSettingsForSource,
 } from '../settings/settings.js'
-// KOSMOS: utils/telemetry/pluginTelemetry.js deleted by Spec 1633 P1. buildPluginTelemetryFields → empty object.
+// UMMAYA: utils/telemetry/pluginTelemetry.js deleted by Spec 1633 P1. buildPluginTelemetryFields → empty object.
 const buildPluginTelemetryFields = (_name: unknown, _marketplace: unknown, _managed: unknown): Record<string, unknown> => ({})
 import { clearAllCaches } from './cacheUtils.js'
 import {

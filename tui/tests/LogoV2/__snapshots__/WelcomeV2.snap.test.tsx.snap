@@ -1,29 +1,27 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`WelcomeV2 renders the Korean welcome header + kosmosCore cluster (shimmer on) 1`] = `
-"Welcome to KOSMOS v0.1.0
-…………………………………………………………………………………………………………………………………………………………
-*                                       █████▓▓░
-*         ███▓░     ░░               ░░░░░░
-███▓░               ░░░   ░░░░░░░░░░
-███▓░            *                                 ░░░░
-░░░░░░░░
-░░░░░░░░░░░░░░░░
-*         ▗ ▗     ▖ ▖                       *
-*                                   …………………
-………………………………………………………………………………………………………………"
+exports[`WelcomeV2 renders the UMMAYA welcome header + mascot mark 1`] = `
+"Welcome to UMMAYA v0.1.0
+Unified Multi-Ministry Agent for Your Administration
+………………………………………………………………………………………………………………
+
+                           ▟▀▀▀▙
+                          ▟▛███▜▙
+                         ▟███████▙
+                        ▝▜██▟█▙██▛▘
+                           ▘▘ ▝▝
+"
 `;
 
 exports[`WelcomeV2 renders identically under reduced-motion 1`] = `
-"Welcome to KOSMOS v0.1.0
-…………………………………………………………………………………………………………………………………………………………
-*                                       █████▓▓░
-*         ███▓░     ░░               ░░░░░░
-███▓░               ░░░   ░░░░░░░░░░
-███▓░            *                                 ░░░░
-░░░░░░░░
-░░░░░░░░░░░░░░░░
-*         ▗ ▗     ▖ ▖                       *
-*                                   …………………
-………………………………………………………………………………………………………………"
+"Welcome to UMMAYA v0.1.0
+Unified Multi-Ministry Agent for Your Administration
+………………………………………………………………………………………………………………
+
+                           ▟▀▀▀▙
+                          ▟▛███▜▙
+                         ▟███████▙
+                        ▝▜██▟█▙██▛▘
+                           ▘▘ ▝▝
+"
 `;

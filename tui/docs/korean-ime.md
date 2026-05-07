@@ -1,10 +1,10 @@
 # Korean IME Strategy
 
-Korean IME strategy for the KOSMOS TUI. See ADR-005 for the full decision rationale.
+Korean IME strategy for the UMMAYA TUI. See ADR-005 for the full decision rationale.
 
 ## Strategy Selector
 
-The active IME strategy is controlled by the `KOSMOS_TUI_IME_STRATEGY` environment variable.
+The active IME strategy is controlled by the `UMMAYA_TUI_IME_STRATEGY` environment variable.
 
 | Value | Behaviour |
 |-------|-----------|
@@ -15,21 +15,21 @@ Set the variable in your shell before launching the TUI:
 
 ```sh
 # Explicitly select the fork strategy (this is also the default)
-export KOSMOS_TUI_IME_STRATEGY=fork
+export UMMAYA_TUI_IME_STRATEGY=fork
 bun run tui
 ```
 
 Or add it to a `.env` file in the project root (loaded by Bun automatically):
 
 ```
-KOSMOS_TUI_IME_STRATEGY=fork
+UMMAYA_TUI_IME_STRATEGY=fork
 ```
 
 The strategy is read once at module load time and remains fixed for the lifetime of the process.
 
 ## Fork Path (Default)
 
-When `KOSMOS_TUI_IME_STRATEGY=fork` (or the variable is unset), the TUI uses
+When `UMMAYA_TUI_IME_STRATEGY=fork` (or the variable is unset), the TUI uses
 `@jrichman/ink@6.6.9` in place of `ink@^7`. This fork patches Ink's `useInput`
 hook to honour the system IME composition buffer, so that multi-step jamo
 keystrokes (e.g., `ㅎ`, `ㅏ`, `ㄴ`) are assembled into a single precomposed
@@ -40,7 +40,7 @@ The fork is the same package that Gemini CLI ships in production (see
 from upstream Ink 6.6.9, making its maintenance surface small and auditable.
 
 The fork requires React 18 rather than React 19.2. This is an accepted
-trade-off documented in ADR-005 — the KOSMOS TUI does not use any Ink 7-only
+trade-off documented in ADR-005 — the UMMAYA TUI does not use any Ink 7-only
 APIs or React 19-specific features that would be lost on the fork.
 
 For more detail on the fork's input event handling, see
@@ -51,11 +51,11 @@ For more detail on the fork's input event handling, see
 The `readline` strategy path is reserved for a future ADR revisit if the fork
 diverges from Ink 7 upstream or becomes incompatible with a future Bun release.
 
-At present, selecting `KOSMOS_TUI_IME_STRATEGY=readline` causes the
+At present, selecting `UMMAYA_TUI_IME_STRATEGY=readline` causes the
 `useKoreanIME` hook to throw immediately at invocation time with the message:
 
 ```
-KOSMOS_TUI_IME_STRATEGY=readline not yet implemented;
+UMMAYA_TUI_IME_STRATEGY=readline not yet implemented;
 see docs/adr/ADR-005-korean-ime-strategy.md
 ```
 
@@ -114,9 +114,9 @@ is confirmed.
 
 If Korean input fails on your terminal and none of the above steps help:
 
-1. Set `KOSMOS_TUI_IME_STRATEGY=readline` to confirm you get the stub error
+1. Set `UMMAYA_TUI_IME_STRATEGY=readline` to confirm you get the stub error
    message (this verifies the env var is being read correctly).
-2. File a bug at the KOSMOS issue tracker with the terminal name and OS version.
+2. File a bug at the UMMAYA issue tracker with the terminal name and OS version.
 
 ## References
 

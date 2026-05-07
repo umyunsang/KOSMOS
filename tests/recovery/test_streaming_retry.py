@@ -5,16 +5,16 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.events import QueryEvent, StopReason
-from kosmos.engine.models import QueryContext, QueryState
-from kosmos.engine.query import query
-from kosmos.llm.client import LLMClient  # noqa: F401 — needed for model_rebuild
-from kosmos.llm.errors import StreamInterruptedError
-from kosmos.llm.models import ChatMessage, StreamEvent, TokenUsage
-from kosmos.llm.usage import UsageTracker
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.registry import ToolRegistry
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.engine.models import QueryContext, QueryState
+from ummaya.engine.query import query
+from ummaya.llm.client import LLMClient  # noqa: F401 — needed for model_rebuild
+from ummaya.llm.errors import StreamInterruptedError
+from ummaya.llm.models import ChatMessage, StreamEvent, TokenUsage
+from ummaya.llm.usage import UsageTracker
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.registry import ToolRegistry
 
 # Rebuild QueryContext so model_construct() works with mock llm_client objects
 QueryContext.model_rebuild()

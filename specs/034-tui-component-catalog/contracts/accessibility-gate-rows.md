@@ -58,9 +58,9 @@ Families whose rows MUST include non-empty `KWCAG notes`:
 - `Settings` — language/theme/permission-mode labels; immediate error message announcement
 - `Onboarding` (root-level family bin `root.onboarding`, i.e., `Onboarding.tsx`) — galaxy splash alt text; keyboard focus order
 - `HelpV2` — searchable single-pane help; focus return on close
-- Any row whose KOSMOS target lives under `tui/src/components/conversation/` or `tui/src/components/input/`
+- Any row whose UMMAYA target lives under `tui/src/components/conversation/` or `tui/src/components/input/`
 - Any row from subdirectories `Passes`, `permissions`, `Spinner` when surfaced in citizen-visible flows
-- `LogoV2` rows that are REWRITE — splash-screen brand metaphor surfaces require alt text for the kosmosCore glyph
+- `LogoV2` rows that are REWRITE — splash-screen brand metaphor surfaces require alt text for the ummayaCore glyph
 - `TrustDialog` — consent flow must be keyboard-accessible and screen-reader narrated
 - `ManagedSettingsSecurityDialog` — citizen-visible dangerous-settings warning
 - Shortcut surfaces (`root.shortcuts/*`, `KeybindingWarnings.tsx`) — keyboard conflict warnings and IME-mode-switch guidance

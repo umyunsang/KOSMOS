@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""T017 / T019 / T020 — Tests for run_redactor() in kosmos.safety._redactor.
+"""T017 / T019 / T020 — Tests for run_redactor() in ummaya.safety._redactor.
 
 Validates:
   T017/T019: 10 pii_samples.json fixtures (2 RRN, 2 phone, 2 email,
@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.safety._redactor import run_redactor
+from ummaya.safety._redactor import run_redactor
 
 # ---------------------------------------------------------------------------
 # Fixture loading
@@ -94,7 +94,7 @@ def test_redactor_fixture(fixture: dict) -> None:
         )
         # Raw PII value must NOT appear in redacted text.
         # Extract the PII value: find it in input_text using the pattern.
-        from kosmos.safety._patterns import _PII_PATTERNS  # noqa: PLC0415
+        from ummaya.safety._patterns import _PII_PATTERNS  # noqa: PLC0415
 
         pattern = _PII_PATTERNS[category]
         pii_match = pattern.search(input_text)
@@ -139,8 +139,8 @@ def test_passport_redactor_does_not_match_welfare_service_ids() -> None:
 
 @pytest.mark.performance
 @pytest.mark.skipif(
-    os.environ.get("KOSMOS_SKIP_PERF") == "1",
-    reason="KOSMOS_SKIP_PERF=1 — performance gates disabled on constrained runners",
+    os.environ.get("UMMAYA_SKIP_PERF") == "1",
+    reason="UMMAYA_SKIP_PERF=1 — performance gates disabled on constrained runners",
 )
 def test_redactor_latency_p95_100kb() -> None:  # SC-003
     """SC-003: p95 latency of run_redactor() must be ≤ 50 ms on a 100 KB payload.

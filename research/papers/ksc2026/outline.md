@@ -2,9 +2,9 @@
 
 ## Title
 
-**KOSMOS: A Conversational Agent Platform for Cross-Ministry Public Service Orchestration via LLM Tool Calling**
+**UMMAYA: A Conversational Agent Platform for Cross-Ministry Public Service Orchestration via LLM Tool Calling**
 
-KOSMOS: LLM 도구 호출 기반 범부처 공공서비스 대화형 오케스트레이션 플랫폼
+UMMAYA: LLM 도구 호출 기반 범부처 공공서비스 대화형 오케스트레이션 플랫폼
 
 ## Authors
 
@@ -34,7 +34,7 @@ KOSMOS: LLM 도구 호출 기반 범부처 공공서비스 대화형 오케스�
 - LLM agent frameworks (ReAct, tool-use agents, multi-agent systems)
 - Government digital services and API orchestration
 - Conversational AI for public services
-- Position KOSMOS: domain-specific agent platform, not general framework
+- Position UMMAYA: domain-specific agent platform, not general framework
 
 ### 3. System Architecture (2 pages)
 - Six-layer overview (architecture diagram in figures/)

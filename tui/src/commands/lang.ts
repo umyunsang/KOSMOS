@@ -2,12 +2,12 @@
 // Spec 1635 P4 UI L2 — /lang ko|en command (FR-004, T047).
 //
 // Flips the i18n locale binding at runtime without restart. The command
-// updates the process.env['KOSMOS_TUI_LOCALE'] key (visible to all getUiL2I18n
+// updates the process.env['UMMAYA_TUI_LOCALE'] key (visible to all getUiL2I18n
 // callers) and returns the new locale so the REPL dispatcher can trigger a
 // re-render.
 //
 // Design: locale is process-level state, not a React context, because
-// tui/src/i18n/uiL2.ts evaluates KOSMOS_TUI_LOCALE at module-load time via
+// tui/src/i18n/uiL2.ts evaluates UMMAYA_TUI_LOCALE at module-load time via
 // the `uiL2I18n` constant. Callers that need reactive locale changes should
 // call getUiL2I18n(locale) directly with the locale returned by this command.
 //
@@ -34,7 +34,7 @@ const SUPPORTED_LOCALES = new Set<string>(['ko', 'en'])
 /**
  * Parse the argument string from `/lang <code>`.
  *
- * Side-effect: sets `process.env['KOSMOS_TUI_LOCALE']` to the new locale so
+ * Side-effect: sets `process.env['UMMAYA_TUI_LOCALE']` to the new locale so
  * that subsequent `getUiL2I18n()` calls pick it up. This is intentionally a
  * process-level mutation — locale is a singleton per TUI session.
  */
@@ -58,7 +58,7 @@ export function parseLangCommand(argStr: string): LangCommandResult {
   const locale = arg as SupportedLocale
 
   // Mutate process environment so module-level i18n lookups pick up the change
-  process.env['KOSMOS_TUI_LOCALE'] = locale
+  process.env['UMMAYA_TUI_LOCALE'] = locale
 
   return { ok: true, locale }
 }
@@ -68,7 +68,7 @@ export function parseLangCommand(argStr: string): LangCommandResult {
  * Falls back to 'ko' (Korean primary per FR-004).
  */
 export function getCurrentLocale(): SupportedLocale {
-  const env = process.env['KOSMOS_TUI_LOCALE']
+  const env = process.env['UMMAYA_TUI_LOCALE']
   return env === 'en' ? 'en' : 'ko'
 }
 

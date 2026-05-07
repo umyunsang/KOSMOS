@@ -1,11 +1,11 @@
 #!/usr/bin/env bun
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS KSC 2026 presentation — Live-only scenario frame dump.
+// UMMAYA KSC 2026 presentation — Live-only scenario frame dump.
 //
 // Captures 2 additional Live-adapter scenarios (도로 안전 / 병원 검색) to
 // complement the existing 응급 capture. All three scenarios use only Live
 // adapters (KOROAD / KMA / HIRA / NMC / NFA119 / resolve_location) — no Mock.
-// Each scenario fans out across 4 ministries to demonstrate KOSMOS's
+// Each scenario fans out across 4 ministries to demonstrate UMMAYA's
 // 부처 횡단 차별점 directly.
 
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -50,7 +50,7 @@ function CitizenMessage({ text }: { text: string }): React.ReactElement {
   )
 }
 
-function KosmosResponse({
+function UmmayaResponse({
   title,
   lines,
 }: {
@@ -60,7 +60,7 @@ function KosmosResponse({
   return (
     <Box flexDirection="column" borderStyle="round" borderColor="#7c3aed" paddingX={2} paddingY={1}>
       <Text color="#a78bfa" bold>
-        ✻ KOSMOS · {title}
+        ✻ UMMAYA · {title}
       </Text>
       {lines.map((line, idx) => (
         <Text key={idx} color="#e9d5ff">
@@ -163,10 +163,10 @@ const SCENARIO_ROAD: readonly ScenarioStep[] = [
     ),
   },
   {
-    slug: '도로안전/05-kosmos-response',
-    description: '도로 안전 — KOSMOS 통합 응답 (부처 횡단)',
+    slug: '도로안전/05-ummaya-response',
+    description: '도로 안전 — UMMAYA 통합 응답 (부처 횡단)',
     element: withTheme(
-      <KosmosResponse
+      <UmmayaResponse
         title="응답 (4 부처 통합)"
         lines={[
           '',
@@ -259,10 +259,10 @@ const SCENARIO_HOSPITAL: readonly ScenarioStep[] = [
     ),
   },
   {
-    slug: '병원검색/05-kosmos-response',
-    description: '병원 검색 — KOSMOS 통합 응답',
+    slug: '병원검색/05-ummaya-response',
+    description: '병원 검색 — UMMAYA 통합 응답',
     element: withTheme(
-      <KosmosResponse
+      <UmmayaResponse
         title="응답 (3 부처 통합)"
         lines={[
           '',
@@ -294,7 +294,7 @@ function dump(step: ScenarioStep): DumpOutcome {
   try {
     const { lastFrame, unmount } = render(step.element)
     const frame = lastFrame() ?? '(empty frame)'
-    const header = `# Citizen scenario frame — ${step.slug}\n# ${step.description}\n# Captured ${new Date().toISOString()} via ink-testing-library render()\n# KOSMOS v0.1-alpha · K-EXAONE-236B-A23B + FriendliAI Serverless\n\n`
+    const header = `# Citizen scenario frame — ${step.slug}\n# ${step.description}\n# Captured ${new Date().toISOString()} via ink-testing-library render()\n# UMMAYA v0.1-alpha · K-EXAONE-236B-A23B + FriendliAI Serverless\n\n`
     const txtPath = join(OUT_DIR, `${step.slug}.txt`)
     mkdirSync(join(OUT_DIR, step.slug.split('/')[0] ?? ''), { recursive: true })
     writeFileSync(txtPath, header + frame + '\n', 'utf-8')

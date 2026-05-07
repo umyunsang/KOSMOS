@@ -1,6 +1,6 @@
 # Contract — `ChatRequestFrame.tools` (TUI → backend)
 
-> Epic [#2077](https://github.com/umyunsang/KOSMOS/issues/2077) · 2026-04-27
+> Epic [#2077](https://github.com/umyunsang/UMMAYA/issues/2077) · 2026-04-27
 > The TUI publishes the active tool inventory on every conversation turn via the existing `ChatRequestFrame` arm. No new IPC frame arm is introduced.
 
 ## Direction
@@ -42,7 +42,7 @@ const frame: ChatRequestFrame = {
 
 ## Consumer (backend)
 
-`src/kosmos/ipc/stdio.py:_handle_chat_request` consumes at line ~1099-1101 (existing) plus Step 4 fallback:
+`src/ummaya/ipc/stdio.py:_handle_chat_request` consumes at line ~1099-1101 (existing) plus Step 4 fallback:
 
 ```python
 llm_tools: list[LLMToolDefinition] = []
@@ -57,7 +57,7 @@ if not llm_tools:
 ## Validation contract
 
 - Each `ToolDefinition` MUST round-trip cleanly through Pydantic (`LLMToolDefinition.model_validate`).
-- `function.name` MUST match an entry in the backend's `_ensure_tool_registry()` — backend silently drops unknown entries and logs a `kosmos.tool.unknown_in_frame` OTEL span event.
+- `function.name` MUST match an entry in the backend's `_ensure_tool_registry()` — backend silently drops unknown entries and logs a `ummaya.tool.unknown_in_frame` OTEL span event.
 - `function.parameters` MUST be a valid JSON Schema 2020-12 document (verified by `$schema` field presence; validated by FriendliAI when invoking).
 - `tools` MAY be empty — this triggers fallback to registry-default inventory.
 
@@ -74,6 +74,6 @@ if not llm_tools:
 
 ## OTEL attributes
 
-- `kosmos.tools.frame.count` (int, gauge) — number of entries received in `frame.tools`.
-- `kosmos.tools.frame.fallback_used` (bool) — true when fallback to registry was triggered.
-- `kosmos.tools.frame.unknown_dropped` (int) — number of unknown entries silently dropped.
+- `ummaya.tools.frame.count` (int, gauge) — number of entries received in `frame.tools`.
+- `ummaya.tools.frame.fallback_used` (bool) — true when fallback to registry was triggered.
+- `ummaya.tools.frame.unknown_dropped` (int) — number of unknown entries silently dropped.

@@ -1,4 +1,4 @@
-# Tasks: TUI Component Catalog — CC → KOSMOS Verdict Matrix + Brand-System Doctrine
+# Tasks: TUI Component Catalog — CC → UMMAYA Verdict Matrix + Brand-System Doctrine
 
 **Input**: Design documents from `/specs/034-tui-component-catalog/`
 **Prerequisites**: `plan.md` (required), `spec.md` (required for user stories), `research.md`, `data-model.md`, `contracts/` (5 files), `quickstart.md`
@@ -10,7 +10,7 @@
 
 - **[P]**: Can run in parallel (different files / different subdirectory partitions, no shared-write conflicts)
 - **[Story]**: Maps task to spec.md user story (US1–US6)
-- All file paths are repository-root-relative; KOSMOS repo root is the working directory
+- All file paths are repository-root-relative; UMMAYA repo root is the working directory
 
 ## Path Conventions
 
@@ -38,9 +38,9 @@
 **⚠️ CRITICAL**: US1 catalog authoring (Phase 3) requires T005 + T006; US4 accessibility rows (Phase 6) require T005; US6 DISCARD evidence audit (Phase 8) requires T006.
 
 - [X] T005 Partition the 389-file list into 31 subdirectory families + root-level semantic bins (`root.logo-wordmark`, `root.dialogs`, `root.shortcuts`, `root.dev-ui`, `root.onboarding`, `root.misc`) per catalog-row-schema.md §2.1; write partition map to `specs/034-tui-component-catalog/artifacts/family-partition.md` (scratch) with per-family file counts summing to 389
-- [X] T006 Build the ADR-006 Part D reference index: enumerate every Part D-1 exclusion category (dev-only slash commands, Anthropic-platform surfaces, migration helpers, domain-mismatch modules) and every Part D-3 KOSMOS-original carve-out into `specs/034-tui-component-catalog/artifacts/adr-006-evidence-index.md` (scratch) — drives DISCARD rationale citations per FR-004
+- [X] T006 Build the ADR-006 Part D reference index: enumerate every Part D-1 exclusion category (dev-only slash commands, Anthropic-platform surfaces, migration helpers, domain-mismatch modules) and every Part D-3 UMMAYA-original carve-out into `specs/034-tui-component-catalog/artifacts/adr-006-evidence-index.md` (scratch) — drives DISCARD rationale citations per FR-004
 - [X] T007 Build the owning-Epic lookup table from `data-model.md § 1.4` + research.md § 2.3 into `specs/034-tui-component-catalog/artifacts/owning-epic-map.md` (scratch) — columns: id, issue, state, closure_delegate; drives FR-003 + FR-026 + research §R3 compliance
-- [X] T008 Build the KOSMOS current-tree index at `tui/src/components/` (26 files across 4 subdirs per research §2.2) into `specs/034-tui-component-catalog/artifacts/kosmos-tree-map.md` (scratch) — drives `KOSMOS target` column for PORT/REWRITE rows
+- [X] T008 Build the UMMAYA current-tree index at `tui/src/components/` (26 files across 4 subdirs per research §2.2) into `specs/034-tui-component-catalog/artifacts/ummaya-tree-map.md` (scratch) — drives `UMMAYA target` column for PORT/REWRITE rows
 
 **Checkpoint**: Foundation ready — US1/US2/US3 authoring may start in parallel; US4 waits on US1 row list; US5/US6 wait on US1 completion.
 
@@ -50,12 +50,12 @@
 
 **Goal**: Deliver `docs/tui/component-catalog.md` — the 389-row authoritative verdict matrix consumed by every downstream Epic (B/C/D/E/H/I/J/K/L) spec input.
 
-**Independent Test**: A reviewer opens `docs/tui/component-catalog.md`, picks any of the 389 CC component files at random, and finds exactly one row with verdict, owning Epic (if not DISCARD), CC source path, KOSMOS target path (if PORT/REWRITE), and evidence citation. No file yields zero or multiple verdicts (SC-001).
+**Independent Test**: A reviewer opens `docs/tui/component-catalog.md`, picks any of the 389 CC component files at random, and finds exactly one row with verdict, owning Epic (if not DISCARD), CC source path, UMMAYA target path (if PORT/REWRITE), and evidence citation. No file yields zero or multiple verdicts (SC-001).
 
 ### Implementation for User Story 1
 
 - [X] T009 [US1] Author `docs/tui/component-catalog.md` header per catalog-row-schema.md §1 (Epic, branch, commit, CC sourcemap commit `a8a678c`, file count 389, subdirectory count 31, recount command evidence, 389-vs-286 discrepancy note FR-007, downstream-Epic contract line FR-028)
-- [X] T010 [P] [US1] Classify the 8 design-system / chrome families (`design-system/`, `ui/`, `Spinner/`, `LogoV2/`, `HighlightedCode/`, `StructuredDiff/`, `diff/`, `CustomSelect/`) and emit catalog rows to `docs/tui/component-catalog.md` — verdict + owning Epic + KOSMOS target + rationale + evidence per FR-002/003/006
+- [X] T010 [P] [US1] Classify the 8 design-system / chrome families (`design-system/`, `ui/`, `Spinner/`, `LogoV2/`, `HighlightedCode/`, `StructuredDiff/`, `diff/`, `CustomSelect/`) and emit catalog rows to `docs/tui/component-catalog.md` — verdict + owning Epic + UMMAYA target + rationale + evidence per FR-002/003/006
 - [X] T011 [P] [US1] Classify the 7 conversation / IO families (`messages/`, `PromptInput/`, `HelpV2/`, `hooks/`, `memory/`, `shell/`, `ClaudeCodeHint/`) and emit catalog rows — apply Epic E #1300 (IME) and Epic D #1299 (context assembly) owning where applicable per FR-003
 - [X] T012 [P] [US1] Classify the 8 permission / safety / trust families (`permissions/`, `TrustDialog/`, `ManagedSettingsSecurityDialog/`, `sandbox/`, `Passes/`, `agents/`, `teams/`, `grove/`) and emit catalog rows — apply closed-Epic rule for `permissions/*` owned by B #1297 per research §R3 (some → PORT "implementation complete via #1441"; remaining TUI rewrites → REWRITE with `closure_delegate = M #1310`)
 - [X] T013 [P] [US1] Classify the 8 tooling / integration families (`mcp/`, `skills/`, `tasks/`, `wizard/`, `DesktopUpsell/`, `FeedbackSurvey/`, `LspRecommendation/`, `Settings/`) and emit catalog rows — Settings family flags Epic K #1308 ownership
@@ -73,7 +73,7 @@
 
 **Goal**: Deliver the machine-checkable token naming doctrine + type-surface compliance so a Brand Guardian can reject bad tokens by citing a single §2 subsection (SC-012).
 
-**Independent Test**: Brand Guardian runs the grep rules from `docs/design/brand-system.md` §2 on the proposed KOSMOS tree and finds zero matches in production source. Every token name in `tui/src/theme/tokens.ts` type surface matches the `{metaphorRole}{Variant}?` pattern or is on the CC-legacy allow-list (SC-002).
+**Independent Test**: Brand Guardian runs the grep rules from `docs/design/brand-system.md` §2 on the proposed UMMAYA tree and finds zero matches in production source. Every token name in `tui/src/theme/tokens.ts` type surface matches the `{metaphorRole}{Variant}?` pattern or is on the CC-legacy allow-list (SC-002).
 
 ### Implementation for User Story 2
 
@@ -92,10 +92,10 @@
 
 ### Implementation for User Story 3
 
-- [X] T021 [US3] Scaffold `docs/design/brand-system.md` with 10 H2 section headings (`## §1` … `## §10`) in order per BSS-01 + brand-system-sections.md §1, and include the document title `# KOSMOS Brand System` with no preamble text (BSS-09)
-- [X] T022 [US3] Author §1 Brand metaphor (≥ 500 words per SC-003 / BSS-02) covering the five required content areas from brand-system-sections.md §2: KOSMOS 은하계 integration metaphor (BSS-07 includes literal strings `KOSMOS` + `은하계` + ministry roster header), visual element vocabulary, ministry satellite roster (KOROAD/KMA/HIRA/NMC/119/Geocoding), why metaphor matters for text UI, cross-references to ADR-006 A-9 + assets/kosmos-*.svg + Korea AI Action Plan Principle 8/9
+- [X] T021 [US3] Scaffold `docs/design/brand-system.md` with 10 H2 section headings (`## §1` … `## §10`) in order per BSS-01 + brand-system-sections.md §1, and include the document title `# UMMAYA Brand System` with no preamble text (BSS-09)
+- [X] T022 [US3] Author §1 Brand metaphor (≥ 500 words per SC-003 / BSS-02) covering the five required content areas from brand-system-sections.md §2: UMMAYA 은하계 integration metaphor (BSS-07 includes literal strings `UMMAYA` + `은하계` + ministry roster header), visual element vocabulary, ministry satellite roster (KOROAD/KMA/HIRA/NMC/119/Geocoding), why metaphor matters for text UI, cross-references to ADR-006 A-9 + assets/ummaya-*.svg + Korea AI Action Plan Principle 8/9
 - [X] T023 [US3] Populate §3–§10 placeholders (≤ 50 words each per BSS-04/BSS-05) using the exact template from brand-system-sections.md §4 — owner pointer per BSS-06: §3–§7 + §9 → `Owner: Epic H #1302`; §8 → `Owners: Epic H #1302 + Epic K #1308`; §10 → `Owners: all design-concerned Epics (B/C/D/E/H/I/J/K/L/M)` with the dated-H3-subheading append convention note
-- [X] T024 [US3] Validate `docs/design/brand-system.md` against BSS-01..BSS-09 (ten H2 sections in order, §1 ≥ 500 words, §2 ≥ 500 words, §3–§10 each ≤ 50 words, §3–§10 each contain `Owner:` line, §1 contains `KOSMOS` + `은하계`, §2 contains `BAN-01`..`BAN-07`, no preamble between title and §1) — fix any violations in place
+- [X] T024 [US3] Validate `docs/design/brand-system.md` against BSS-01..BSS-09 (ten H2 sections in order, §1 ≥ 500 words, §2 ≥ 500 words, §3–§10 each ≤ 50 words, §3–§10 each contain `Owner:` line, §1 contains `UMMAYA` + `은하계`, §2 contains `BAN-01`..`BAN-07`, no preamble between title and §1) — fix any violations in place
 
 **Checkpoint**: Brand system doctrine ships. §3–§10 scope-violation trap armed for `/speckit-analyze` (FR-034).
 
@@ -285,6 +285,6 @@ Hard cap: Epic M Task sub-issues ≤ 90 (excluding `[Deferred]`-prefixed).
 - **Validation is embedded in each story's final Task** (T018 for US1, T024 for US3, T029 for US4, T033+T034 for US6) — no separate Phase-9 validation task needed because `/speckit-analyze` runs against the full tree at T034.
 - **No pytest additions** — this Epic is documentation-only (plan.md §Technical Context confirms); `/speckit-analyze` consumes `contracts/*.md` invariants as lint rules.
 - **Commit discipline**: commit after each Task or logical Task group (e.g., all four parallel classification Tasks in Phase 3 commit together once Lead merges fragments). Every commit message references the Task ID and the invariant it advances (e.g., `docs(034): T010 classify chrome families (I3 toward 389)`).
-- **Avoid**: filling §3–§10 brand-system content (FR-034 scope violation), renaming CC-legacy tokens (Deferred row 10), modifying `tui/src/components/` source files (FR-030), touching `src/kosmos/**` (FR-031 + FR-033).
+- **Avoid**: filling §3–§10 brand-system content (FR-034 scope violation), renaming CC-legacy tokens (Deferred row 10), modifying `tui/src/components/` source files (FR-030), touching `src/ummaya/**` (FR-031 + FR-033).
 - **`[Deferred]` prefix rule**: Tasks registered at T030 (rows 8, 10, 11, 12, 13, 16 from spec.md) MUST use the literal `[Deferred]` prefix in their GitHub issue title so FR-025 exclusion logic works. Non-`[Deferred]` Tasks count against the 90-cap.
 - **Closed-Epic handling**: B #1297 and A #1298 are CLOSED (research §2.3). Any REWRITE verdict whose logical owner is B or A is re-parented to Epic M at T031 per research §R3; the catalog owner column still cites `B #1297 (closed)` / `A #1298 (closed)` for traceability.

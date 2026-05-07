@@ -8,21 +8,21 @@
 //   submit (irr=true)→ 3     (red ⓷, high risk)
 //
 // Previously scattered across:
-//   src/kosmos/tools/policy_derivation.py:57
-//   src/kosmos/cli/cli_init.py:95
-//   src/kosmos/ipc/stdio.py:1378
+//   src/ummaya/tools/policy_derivation.py:57
+//   src/ummaya/cli/cli_init.py:95
+//   src/ummaya/ipc/stdio.py:1378
 //   tui/src/schemas/ui-l2/permission.ts:43 (LAYER_VISUAL reused, not duplicated)
 
 import type { PermissionLayerT } from '../../schemas/ui-l2/permission.js'
 
 /**
- * KOSMOS active primitive verb identifiers. Aligns with L1-C C1 reserved
- * primitives declared in docs/requirements/kosmos-migration-tree.md.
+ * UMMAYA active primitive verb identifiers. Aligns with L1-C C1 reserved
+ * primitives declared in docs/requirements/ummaya-migration-tree.md.
  */
-export type KosmosPrimitive = 'lookup' | 'verify' | 'submit'
+export type UmmayaPrimitive = 'lookup' | 'verify' | 'submit'
 
 /**
- * Map a KOSMOS primitive verb + optional irreversibility flag to a permission
+ * Map a UMMAYA primitive verb + optional irreversibility flag to a permission
  * layer number (1 = low risk / green, 2 = medium / orange, 3 = high / red),
  * or `null` for primitives that bypass the gauntlet entirely.
  *
@@ -33,7 +33,7 @@ export type KosmosPrimitive = 'lookup' | 'verify' | 'submit'
  * @returns The permission layer number, or `null` for bypass (lookup).
  */
 export function aalToLayer(
-  primitive: KosmosPrimitive,
+  primitive: UmmayaPrimitive,
   isIrreversible = false,
 ): PermissionLayerT | null {
   switch (primitive) {

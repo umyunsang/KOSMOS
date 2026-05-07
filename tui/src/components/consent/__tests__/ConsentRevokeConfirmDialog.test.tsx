@@ -58,7 +58,7 @@ describe('ConsentRevokeConfirmDialog', () => {
     const frame = lastFrame()
     expect(frame).toBeTruthy()
     // Title must be present.
-    expect(frame).toContain('KOSMOS')
+    expect(frame).toContain('UMMAYA')
     unmount()
   })
 

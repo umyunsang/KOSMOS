@@ -189,10 +189,10 @@ export function validateSettingsFileContent(content: string):
     // Parse the JSON first
     const jsonData = jsonParse(content)
 
-    // [P0 · KOSMOS fidelity] Use passthrough instead of strict so settings
+    // [P0 · UMMAYA fidelity] Use passthrough instead of strict so settings
     // from newer CC versions (2.1.119+) don't trigger rejection dialogs in
     // our bundled 2.1.88 source. Unrecognized keys are silently ignored —
-    // they may be newer CC options or KOSMOS-specific extensions.
+    // they may be newer CC options or UMMAYA-specific extensions.
     const result = SettingsSchema().passthrough().safeParse(jsonData)
 
     if (result.success) {

@@ -5,9 +5,9 @@
 
 ## Summary
 
-Port the Claude Code 2.1.88 Ink + React terminal UI onto the KOSMOS Python backend by keeping the upstream rendering spine (Ink reconciler, `useSyncExternalStore` store, virtualized list, permission-gauntlet modal, command dispatcher, theme engine) and replacing only the transport boundary. Claude Code's `services/api/` Anthropic REST client is swapped for a JSONL-over-stdio bridge that spawns `uv run kosmos-backend --ipc stdio` via `Bun.spawn`; Claude Code's `tools/*` developer-domain renderers are replaced by 14 Ink components that render the 5-primitive return variants (`lookup`, `resolve_location`, `submit`, `subscribe`, `verify`) defined by Spec 031 / #1052 and Spec 022 / #507.
+Port the Claude Code 2.1.88 Ink + React terminal UI onto the UMMAYA Python backend by keeping the upstream rendering spine (Ink reconciler, `useSyncExternalStore` store, virtualized list, permission-gauntlet modal, command dispatcher, theme engine) and replacing only the transport boundary. Claude Code's `services/api/` Anthropic REST client is swapped for a JSONL-over-stdio bridge that spawns `uv run ummaya-backend --ipc stdio` via `Bun.spawn`; Claude Code's `tools/*` developer-domain renderers are replaced by 14 Ink components that render the 5-primitive return variants (`lookup`, `resolve_location`, `submit`, `subscribe`, `verify`) defined by Spec 031 / #1052 and Spec 022 / #507.
 
-Technical approach: TypeScript + Ink v7.0.0 + React 19.2 + Bun v1.2.x in a new `tui/` workspace. IPC frames are discriminated unions generated from the Python Pydantic v2 models via a code-gen step (`tui/scripts/gen-ipc-types.ts`) — no hand-duplicated schemas. Every file lifted from `.references/claude-code-sourcemap/restored-src/` carries a research-use attribution header (FR-011, SC-9). The Korean IME blocker (R1) is resolved ahead of any IME code by an ADR choosing between the `@jrichman/ink@6.6.9` fork (Gemini CLI's path) and a Node `readline` hybrid (FR-014, FR-057). The Python backend receives a thin new entrypoint `kosmos-backend --ipc stdio` that multiplexes the existing 5-primitive registry + Spec 027 coordinator mailbox over JSONL; no new Python runtime dependencies are added (AGENTS.md hard rule).
+Technical approach: TypeScript + Ink v7.0.0 + React 19.2 + Bun v1.2.x in a new `tui/` workspace. IPC frames are discriminated unions generated from the Python Pydantic v2 models via a code-gen step (`tui/scripts/gen-ipc-types.ts`) — no hand-duplicated schemas. Every file lifted from `.references/claude-code-sourcemap/restored-src/` carries a research-use attribution header (FR-011, SC-9). The Korean IME blocker (R1) is resolved ahead of any IME code by an ADR choosing between the `@jrichman/ink@6.6.9` fork (Gemini CLI's path) and a Node `readline` hybrid (FR-014, FR-057). The Python backend receives a thin new entrypoint `ummaya-backend --ipc stdio` that multiplexes the existing 5-primitive registry + Spec 027 coordinator mailbox over JSONL; no new Python runtime dependencies are added (AGENTS.md hard rule).
 
 ## Technical Context
 
@@ -33,7 +33,7 @@ Technical approach: TypeScript + Ink v7.0.0 + React 19.2 + Bun v1.2.x in a new `
 **Testing**:
 
 - TypeScript: `bun test` + `ink-testing-library` (component unit), fixture JSON per discriminated-union arm (FR-034, FR-035).
-- Python (new adapter only): `pytest` + `pytest-asyncio` for `kosmos-backend --ipc stdio` round-trip.
+- Python (new adapter only): `pytest` + `pytest-asyncio` for `ummaya-backend --ipc stdio` round-trip.
 - Soak test: 10-minute fixture replay at 100+ ev/s via `bun test:soak` (FR-007, SC-2).
 - Korean IME: headless stdin injection via `node --experimental-permission` harness on macOS + Linux (FR-015, FR-016, SC-4).
 
@@ -63,8 +63,8 @@ Technical approach: TypeScript + Ink v7.0.0 + React 19.2 + Bun v1.2.x in a new `
 **Scale/Scope**:
 
 - Code lifted from `restored-src/`: ~1,884 files available; expected lift ≤ 120 files (reconciler, 14 renderer components, 20 permission-gauntlet components, command dispatcher, theme engine, virtualized list, coordinator status surface).
-- KOSMOS-original TypeScript: ≤ 40 files (5-primitive renderers, IPC bridge, env config, entrypoint).
-- Python additions: 1 entrypoint module (`src/kosmos/ipc/stdio.py`) + 1 CLI flag (`--ipc stdio`) on existing `kosmos-backend` command.
+- UMMAYA-original TypeScript: ≤ 40 files (5-primitive renderers, IPC bridge, env config, entrypoint).
+- Python additions: 1 entrypoint module (`src/ummaya/ipc/stdio.py`) + 1 CLI flag (`--ipc stdio`) on existing `ummaya-backend` command.
 
 ## Constitution Check
 
@@ -85,7 +85,7 @@ Every design decision in this plan maps to a concrete reference. Mapping capture
 
 ### II. Fail-Closed Security — PASS
 
-TUI does not introduce any new tool adapters; it is a presentation layer over existing primitives. The permission-gauntlet modal (User Story 4, FR-045) enforces the upstream `requires_auth=True` invariant — the TUI's role is to present, gather consent, and relay `permission_response` IPC frames. The TUI itself performs no permission relaxation. Crash-notice redaction of `KOSMOS_`-prefixed env vars (FR-004) matches the #468 secrets guard pattern.
+TUI does not introduce any new tool adapters; it is a presentation layer over existing primitives. The permission-gauntlet modal (User Story 4, FR-045) enforces the upstream `requires_auth=True` invariant — the TUI's role is to present, gather consent, and relay `permission_response` IPC frames. The TUI itself performs no permission relaxation. Crash-notice redaction of `UMMAYA_`-prefixed env vars (FR-004) matches the #468 secrets guard pattern.
 
 ### III. Pydantic v2 Strict Typing — PASS
 
@@ -149,12 +149,12 @@ tui/
 │   ├── diff-upstream.sh                # Compare lifted files to restored-src (FR-013)
 │   └── soak.ts                         # 10-min 100 ev/s replay (FR-007)
 ├── src/
-│   ├── main.tsx                        # Entrypoint — spawns kosmos-backend --ipc stdio
+│   ├── main.tsx                        # Entrypoint — spawns ummaya-backend --ipc stdio
 │   ├── ipc/
 │   │   ├── bridge.ts                   # Bun.spawn wrapper; framing; FIFO queue (FR-001/005/009)
 │   │   ├── frames.generated.ts         # Generated IPC frame types (do-not-edit)
 │   │   ├── codec.ts                    # JSONL encode/decode; zod runtime validation
-│   │   └── crash-detector.ts           # ≤5 s crash detection + KOSMOS_* redaction (FR-004)
+│   │   └── crash-detector.ts           # ≤5 s crash detection + UMMAYA_* redaction (FR-004)
 │   ├── commands/                       # Lifted from restored-src/src/commands/ (FR-036)
 │   │   ├── registry.ts
 │   │   ├── save.ts / sessions.ts / resume.ts / new.ts  # /save /sessions /resume /new (FR-038)
@@ -165,9 +165,9 @@ tui/
 │   ├── theme/                          # Lifted from restored-src/src/theme.ts etc (FR-039/040)
 │   │   ├── tokens.ts                   # ThemeToken named set (FR-040)
 │   │   ├── default.ts / dark.ts / light.ts
-│   │   └── provider.tsx                # KOSMOS_TUI_THEME env var reader (FR-041)
+│   │   └── provider.tsx                # UMMAYA_TUI_THEME env var reader (FR-041)
 │   ├── components/
-│   │   ├── primitive/                  # KOSMOS-original renderers (Spec 031 envelopes)
+│   │   ├── primitive/                  # UMMAYA-original renderers (Spec 031 envelopes)
 │   │   │   ├── PointCard.tsx           # FR-017
 │   │   │   ├── TimeseriesTable.tsx     # FR-018
 │   │   │   ├── CollectionList.tsx      # FR-019
@@ -222,13 +222,13 @@ tui/
         └── coordinator/                # Scripted #13/#14 scenarios (FR-043–FR-047)
 
 # Python backend — new minimal adapter only (no new runtime deps)
-src/kosmos/ipc/
+src/ummaya/ipc/
 ├── __init__.py
 ├── stdio.py                            # async stdin/stdout JSONL multiplexer
 └── frame_schema.py                     # Pydantic IPCFrame discriminated union (source of FR-003 code-gen)
 
-src/kosmos/cli/
-└── __main__.py                         # Add --ipc stdio flag routing to kosmos.ipc.stdio
+src/ummaya/cli/
+└── __main__.py                         # Add --ipc stdio flag routing to ummaya.ipc.stdio
 
 tests/ipc/
 ├── test_stdio_roundtrip.py             # Python side round-trip + frame schema
@@ -244,11 +244,11 @@ docs/adr/
 tui/NOTICE                              # Research-use + Anthropic attribution (FR-012)
 
 # Env registry (extend existing)
-src/kosmos/config/env_registry.py       # Register KOSMOS_TUI_THEME, KOSMOS_TUI_LOG_LEVEL,
-                                        # KOSMOS_TUI_SUBSCRIBE_TIMEOUT_S (FR-041, #468)
+src/ummaya/config/env_registry.py       # Register UMMAYA_TUI_THEME, UMMAYA_TUI_LOG_LEVEL,
+                                        # UMMAYA_TUI_SUBSCRIBE_TIMEOUT_S (FR-041, #468)
 ```
 
-**Structure Decision**: Dual-language workspace. `tui/` is the **only** TypeScript directory — AGENTS.md hard rule permits TypeScript exclusively for the TUI layer. Python backend keeps its existing `src/kosmos/` layout; a single new `src/kosmos/ipc/` subpackage adds the stdio multiplexer without touching any existing module. TUI tests live inside `tui/tests/`; Python IPC tests live in the existing `tests/` root. No monorepo tooling (no Turborepo/Nx/pnpm workspaces) — `bun install` is invoked from `tui/` and `uv sync` from the repo root. Top-level `Makefile` / `package.json` at repo root remain untouched; a future ADR can add a top-level orchestrator if needed.
+**Structure Decision**: Dual-language workspace. `tui/` is the **only** TypeScript directory — AGENTS.md hard rule permits TypeScript exclusively for the TUI layer. Python backend keeps its existing `src/ummaya/` layout; a single new `src/ummaya/ipc/` subpackage adds the stdio multiplexer without touching any existing module. TUI tests live inside `tui/tests/`; Python IPC tests live in the existing `tests/` root. No monorepo tooling (no Turborepo/Nx/pnpm workspaces) — `bun install` is invoked from `tui/` and `uv sync` from the repo root. Top-level `Makefile` / `package.json` at repo root remain untouched; a future ADR can add a top-level orchestrator if needed.
 
 ## Complexity Tracking
 

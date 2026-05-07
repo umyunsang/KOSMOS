@@ -8,8 +8,8 @@ set -euo pipefail
 wait_for_pane "tool_registry: [0-9]+ entries verified" 60
 snapshot_pane "boot-tool-registry"
 
-# Stage 1: KOSMOS branding visible
-wait_for_pane "KOSMOS v0\\.[0-9]" 30
+# Stage 1: UMMAYA branding visible
+wait_for_pane "UMMAYA v0\\.[0-9]" 30
 snapshot_pane "branding-visible"
 
 # Stage 2: type / to open slash command dropdown

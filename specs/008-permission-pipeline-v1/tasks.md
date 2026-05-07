@@ -18,12 +18,12 @@
 
 **Purpose**: Create the package skeleton so all subsequent tasks have a valid import tree.
 
-- [ ] T001 Create `src/kosmos/permissions/__init__.py` (empty module marker)
-- [ ] T002 Create `src/kosmos/permissions/steps/__init__.py` (empty module marker)
+- [ ] T001 Create `src/ummaya/permissions/__init__.py` (empty module marker)
+- [ ] T002 Create `src/ummaya/permissions/steps/__init__.py` (empty module marker)
 - [ ] T003 Create `tests/permissions/__init__.py` (empty module marker)
 - [ ] T004 Create `tests/permissions/conftest.py` with shared fixtures: `make_session_context()`, `make_permission_request()`, `caplog` re-export helper
 
-**Checkpoint**: `python -c "import kosmos.permissions"` succeeds; `uv run pytest tests/permissions/` reports 0 collected (no tests yet, no errors).
+**Checkpoint**: `python -c "import ummaya.permissions"` succeeds; `uv run pytest tests/permissions/` reports 0 collected (no tests yet, no errors).
 
 ---
 
@@ -33,7 +33,7 @@
 
 **Warning**: No user story work can begin until T005 is done.
 
-- [ ] T005 Implement `src/kosmos/permissions/models.py` — `AccessTier` enum, `PermissionDecision` enum, `SessionContext`, `PermissionCheckRequest`, `PermissionStepResult`, `AuditLogEntry` (frozen Pydantic v2 models, no `Any`, FR-001–FR-007)
+- [ ] T005 Implement `src/ummaya/permissions/models.py` — `AccessTier` enum, `PermissionDecision` enum, `SessionContext`, `PermissionCheckRequest`, `PermissionStepResult`, `AuditLogEntry` (frozen Pydantic v2 models, no `Any`, FR-001–FR-007)
 - [ ] T006 [P] Write `tests/permissions/test_models.py` — validate all model fields, frozen enforcement, `AuditLogEntry` has no `arguments_json`, no `Any`, import-time env isolation (SC-010)
 
 **Checkpoint**: `uv run pytest tests/permissions/test_models.py` passes.
@@ -42,13 +42,13 @@
 
 ## Phase 3: User Story 1 — Configuration-based access tier enforcement (P1)
 
-**Goal**: Step 1 checks `AccessTier` against `KOSMOS_DATA_GO_KR_API_KEY` env var; all four tier branches return correct decisions.
+**Goal**: Step 1 checks `AccessTier` against `UMMAYA_DATA_GO_KR_API_KEY` env var; all four tier branches return correct decisions.
 
 **Spec reference**: US-001, US-002 (stub contract), FR-009, FR-010, FR-017, FR-018, FR-019
 
 **Independent test**: `uv run pytest tests/permissions/test_step1_config.py` with env var patched.
 
-- [ ] T007 [P] [US1] Implement `src/kosmos/permissions/steps/step1_config.py` — `check_config(request: PermissionCheckRequest) -> PermissionStepResult` covering all four `AccessTier` branches; reads `KOSMOS_DATA_GO_KR_API_KEY` at call time, strips whitespace, never logs the key value (FR-009, FR-017, FR-018, FR-019)
+- [ ] T007 [P] [US1] Implement `src/ummaya/permissions/steps/step1_config.py` — `check_config(request: PermissionCheckRequest) -> PermissionStepResult` covering all four `AccessTier` branches; reads `UMMAYA_DATA_GO_KR_API_KEY` at call time, strips whitespace, never logs the key value (FR-009, FR-017, FR-018, FR-019)
 - [ ] T008 [P] [US1] Write `tests/permissions/test_step1_config.py` — five acceptance scenarios: `public` allows with no env var, `api_key` denies when unset, `api_key` allows when set (key not in log records), `authenticated` denies with correct reason, `restricted` denies with correct reason (SC-001, SC-002, SC-003)
 
 **Checkpoint**: `uv run pytest tests/permissions/test_step1_config.py` passes.
@@ -63,10 +63,10 @@
 
 **Independent test**: `uv run pytest` with log capture asserting one DEBUG line per stub step.
 
-- [ ] T009 [P] [US2] Implement `src/kosmos/permissions/steps/step2_intent.py` — `check_intent(request: PermissionCheckRequest) -> PermissionStepResult` returning `allow` at step 2 with one DEBUG log line (FR-010)
-- [ ] T010 [P] [US2] Implement `src/kosmos/permissions/steps/step3_params.py` — `check_params(request: PermissionCheckRequest) -> PermissionStepResult` returning `allow` at step 3 with one DEBUG log line (FR-010)
-- [ ] T011 [P] [US2] Implement `src/kosmos/permissions/steps/step4_authn.py` — `check_authn(request: PermissionCheckRequest) -> PermissionStepResult` returning `allow` at step 4 with one DEBUG log line (FR-010)
-- [ ] T012 [P] [US2] Implement `src/kosmos/permissions/steps/step5_terms.py` — `check_terms(request: PermissionCheckRequest) -> PermissionStepResult` returning `allow` at step 5 with one DEBUG log line (FR-010)
+- [ ] T009 [P] [US2] Implement `src/ummaya/permissions/steps/step2_intent.py` — `check_intent(request: PermissionCheckRequest) -> PermissionStepResult` returning `allow` at step 2 with one DEBUG log line (FR-010)
+- [ ] T010 [P] [US2] Implement `src/ummaya/permissions/steps/step3_params.py` — `check_params(request: PermissionCheckRequest) -> PermissionStepResult` returning `allow` at step 3 with one DEBUG log line (FR-010)
+- [ ] T011 [P] [US2] Implement `src/ummaya/permissions/steps/step4_authn.py` — `check_authn(request: PermissionCheckRequest) -> PermissionStepResult` returning `allow` at step 4 with one DEBUG log line (FR-010)
+- [ ] T012 [P] [US2] Implement `src/ummaya/permissions/steps/step5_terms.py` — `check_terms(request: PermissionCheckRequest) -> PermissionStepResult` returning `allow` at step 5 with one DEBUG log line (FR-010)
 - [ ] T013 [P] [US2] Write stub test coverage inside `tests/permissions/test_models.py` (or a dedicated `test_stubs.py`) — assert each stub returns `PermissionDecision.allow`, correct `step` field, and exactly one DEBUG record for any tool call (SC-004)
 
 **Checkpoint**: All four stubs callable; log capture confirms exactly one DEBUG line per stub; `uv run pytest` for these tests passes.
@@ -81,8 +81,8 @@
 
 **Independent test**: `uv run pytest tests/permissions/test_step6_sandbox.py` with mock executor.
 
-- [ ] T014 [P] [US3] Implement `src/kosmos/permissions/steps/step6_sandbox.py` — `run_sandboxed(request: PermissionCheckRequest, executor: ToolExecutor) -> ToolResult` coroutine; `_credential_scope(access_tier)` context manager that removes all `KOSMOS_*` vars from `os.environ`, yields credentials dict with only the tool's key, restores env in `finally`; catches all adapter exceptions as `PermissionDecision.deny` with `reason="execution_error"` (FR-011)
-- [ ] T015 [P] [US3] Write `tests/permissions/test_step6_sandbox.py` — three scenarios: credential isolation (no other `KOSMOS_*` visible), exception capture returns deny (SC-005), env fully restored after call (no leakage between calls)
+- [ ] T014 [P] [US3] Implement `src/ummaya/permissions/steps/step6_sandbox.py` — `run_sandboxed(request: PermissionCheckRequest, executor: ToolExecutor) -> ToolResult` coroutine; `_credential_scope(access_tier)` context manager that removes all `UMMAYA_*` vars from `os.environ`, yields credentials dict with only the tool's key, restores env in `finally`; catches all adapter exceptions as `PermissionDecision.deny` with `reason="execution_error"` (FR-011)
+- [ ] T015 [P] [US3] Write `tests/permissions/test_step6_sandbox.py` — three scenarios: credential isolation (no other `UMMAYA_*` visible), exception capture returns deny (SC-005), env fully restored after call (no leakage between calls)
 
 **Checkpoint**: `uv run pytest tests/permissions/test_step6_sandbox.py` passes.
 
@@ -96,8 +96,8 @@
 
 **Independent test**: `uv run pytest tests/permissions/test_step7_audit.py` with `caplog`.
 
-- [ ] T016 [P] [US4] Implement `src/kosmos/permissions/audit.py` — `AuditLogger` class with `log(entry: AuditLogEntry) -> None`; uses `getLogger("kosmos.permissions.audit")`; `INFO` for `outcome in ("success", "failure")`, `WARNING` for `outcome == "denied"`; swallows own exceptions with fallback `logging.error()` to root logger (FR-012, NFR-004, US-004 edge case)
-- [ ] T017 [P] [US4] Implement `src/kosmos/permissions/steps/step7_audit.py` — `write_audit(request: PermissionCheckRequest, deciding_step: PermissionStepResult, outcome: Literal["success", "failure", "denied"], tool_result: ToolResult | None) -> None`; constructs `AuditLogEntry` from inputs and delegates to `AuditLogger.log()` (FR-012)
+- [ ] T016 [P] [US4] Implement `src/ummaya/permissions/audit.py` — `AuditLogger` class with `log(entry: AuditLogEntry) -> None`; uses `getLogger("ummaya.permissions.audit")`; `INFO` for `outcome in ("success", "failure")`, `WARNING` for `outcome == "denied"`; swallows own exceptions with fallback `logging.error()` to root logger (FR-012, NFR-004, US-004 edge case)
+- [ ] T017 [P] [US4] Implement `src/ummaya/permissions/steps/step7_audit.py` — `write_audit(request: PermissionCheckRequest, deciding_step: PermissionStepResult, outcome: Literal["success", "failure", "denied"], tool_result: ToolResult | None) -> None`; constructs `AuditLogEntry` from inputs and delegates to `AuditLogger.log()` (FR-012)
 - [ ] T018 [P] [US4] Write `tests/permissions/test_step7_audit.py` — assert all required fields present, `arguments_json` absent, correct log levels for approved vs denied calls, fallback behavior when logger raises (SC-006)
 
 **Checkpoint**: `uv run pytest tests/permissions/test_step7_audit.py` passes.
@@ -112,7 +112,7 @@
 
 **Independent test**: `uv run pytest tests/permissions/test_bypass.py`.
 
-- [ ] T019 [P] [US5] Implement `src/kosmos/permissions/bypass.py` — `BYPASS_IMMUNE_RULES: frozenset[str]` module constant (not configurable); `check_bypass_immune(request: PermissionCheckRequest) -> PermissionStepResult | None` returning a deny result if `is_personal_data=True` and `citizen_id` in `arguments_json` does not match `session_context.citizen_id`; emits WARNING when `is_bypass_mode=True` before the check (FR-014, FR-015, FR-016)
+- [ ] T019 [P] [US5] Implement `src/ummaya/permissions/bypass.py` — `BYPASS_IMMUNE_RULES: frozenset[str]` module constant (not configurable); `check_bypass_immune(request: PermissionCheckRequest) -> PermissionStepResult | None` returning a deny result if `is_personal_data=True` and `citizen_id` in `arguments_json` does not match `session_context.citizen_id`; emits WARNING when `is_bypass_mode=True` before the check (FR-014, FR-015, FR-016)
 - [ ] T020 [P] [US5] Write `tests/permissions/test_bypass.py` — three scenarios: citizen_id mismatch denies even with `is_bypass_mode=True` (SC-008), `BYPASS_IMMUNE_RULES` is a frozenset and raises `AttributeError` on mutation attempt, bypass attempt emits WARNING log
 
 **Checkpoint**: `uv run pytest tests/permissions/test_bypass.py` passes.
@@ -139,9 +139,9 @@ Note: This story is tested as part of `test_pipeline.py` in Phase 9. No isolated
 
 **Independent test**: `uv run pytest tests/permissions/test_pipeline.py`.
 
-- [ ] T024 Extend `ToolResult.error_type` Literal in `src/kosmos/tools/models.py` — add `"permission_denied"` to the existing `Literal["validation", "rate_limit", "not_found", "execution", "schema_mismatch"]` union (Decision 4 from plan.md; additive, no existing tests broken). **Must complete before T021/T023 which construct ToolResult with this value.**
-- [ ] T021 Implement `src/kosmos/permissions/pipeline.py` — `PermissionPipeline(executor: ToolExecutor, registry: ToolRegistry)` class; `_AUTH_TYPE_TO_ACCESS_TIER` lookup dict; `_PRE_EXECUTION_STEPS` list `[step1_config, step2_intent, step3_params, step4_authn, step5_terms]`; `run(tool_id, arguments_json, session_context) -> ToolResult` coroutine that: checks bypass immune first, runs steps 1–5 stopping at first deny/escalate (treating escalate as deny), wraps each step in try/except for fail-closed (FR-013), calls `run_sandboxed` for step 6, always calls `write_audit` for step 7, uses `inspect.isawaitable()` dispatch so sync/async steps are both supported (FR-008, FR-020, FR-021, FR-022)
-- [ ] T022 [P] Update `src/kosmos/permissions/__init__.py` — export `PermissionPipeline`, `AccessTier`, `PermissionDecision`, `SessionContext` at package level
+- [ ] T024 Extend `ToolResult.error_type` Literal in `src/ummaya/tools/models.py` — add `"permission_denied"` to the existing `Literal["validation", "rate_limit", "not_found", "execution", "schema_mismatch"]` union (Decision 4 from plan.md; additive, no existing tests broken). **Must complete before T021/T023 which construct ToolResult with this value.**
+- [ ] T021 Implement `src/ummaya/permissions/pipeline.py` — `PermissionPipeline(executor: ToolExecutor, registry: ToolRegistry)` class; `_AUTH_TYPE_TO_ACCESS_TIER` lookup dict; `_PRE_EXECUTION_STEPS` list `[step1_config, step2_intent, step3_params, step4_authn, step5_terms]`; `run(tool_id, arguments_json, session_context) -> ToolResult` coroutine that: checks bypass immune first, runs steps 1–5 stopping at first deny/escalate (treating escalate as deny), wraps each step in try/except for fail-closed (FR-013), calls `run_sandboxed` for step 6, always calls `write_audit` for step 7, uses `inspect.isawaitable()` dispatch so sync/async steps are both supported (FR-008, FR-020, FR-021, FR-022)
+- [ ] T022 [P] Update `src/ummaya/permissions/__init__.py` — export `PermissionPipeline`, `AccessTier`, `PermissionDecision`, `SessionContext` at package level
 - [ ] T023 [P] Write `tests/permissions/test_pipeline.py` — end-to-end gauntlet: allow path returns `ToolResult(success=True)`, deny at step 1 returns `ToolResult(error_type="permission_denied")` and skips steps 2–6 (SC-002), step 7 always fires (SC-009 audit always fires variant), step 1 exception returns deny (SC-007), `is_bypass_mode=True` still enforces immune rules (SC-008), import-time env isolation confirmed (SC-010)
 
 **Checkpoint**: `uv run pytest tests/permissions/test_pipeline.py` passes.
@@ -154,8 +154,8 @@ Note: This story is tested as part of `test_pipeline.py` in Phase 9. No isolated
 
 **Dependencies**: Phase 9 must be complete (T024 already done in Phase 9).
 
-- [ ] T025 Add optional fields to `QueryContext` in `src/kosmos/engine/models.py` — `permission_pipeline: PermissionPipeline | None = None` and `session_context: SessionContext | None = None` (additive; no existing callers break because fields default to `None`)
-- [ ] T026 Update `dispatch_tool_calls()` in `src/kosmos/engine/query.py` — when `ctx.permission_pipeline` is not `None` and `ctx.session_context` is not `None`, replace `tool_executor.dispatch(tc.function.name, tc.function.arguments)` with `permission_pipeline.run(tc.function.name, tc.function.arguments, session_context)`; fall back to existing executor path when pipeline is absent (additive; backward-compatible)
+- [ ] T025 Add optional fields to `QueryContext` in `src/ummaya/engine/models.py` — `permission_pipeline: PermissionPipeline | None = None` and `session_context: SessionContext | None = None` (additive; no existing callers break because fields default to `None`)
+- [ ] T026 Update `dispatch_tool_calls()` in `src/ummaya/engine/query.py` — when `ctx.permission_pipeline` is not `None` and `ctx.session_context` is not `None`, replace `tool_executor.dispatch(tc.function.name, tc.function.arguments)` with `permission_pipeline.run(tc.function.name, tc.function.arguments, session_context)`; fall back to existing executor path when pipeline is absent (additive; backward-compatible)
 - [ ] T027 [P] Run full test suite to confirm no regressions — `uv run pytest` (all existing tests for engine, tools, LLM layers must still pass; zero `@pytest.mark.live` tests in `tests/permissions/`)
 
 **Checkpoint**: `uv run pytest` (full suite) passes. `uv run pytest tests/permissions/` reports all green with zero live API calls.
@@ -195,15 +195,15 @@ T001 → T002 → T003 → T004   (Phase 1 — sequential setup)
 
 ```
 Agent A (Backend — step implementation):
-  T007  src/kosmos/permissions/steps/step1_config.py
-  T009  src/kosmos/permissions/steps/step2_intent.py
-  T010  src/kosmos/permissions/steps/step3_params.py
-  T011  src/kosmos/permissions/steps/step4_authn.py
-  T012  src/kosmos/permissions/steps/step5_terms.py
-  T014  src/kosmos/permissions/steps/step6_sandbox.py
-  T016  src/kosmos/permissions/audit.py
-  T017  src/kosmos/permissions/steps/step7_audit.py
-  T019  src/kosmos/permissions/bypass.py
+  T007  src/ummaya/permissions/steps/step1_config.py
+  T009  src/ummaya/permissions/steps/step2_intent.py
+  T010  src/ummaya/permissions/steps/step3_params.py
+  T011  src/ummaya/permissions/steps/step4_authn.py
+  T012  src/ummaya/permissions/steps/step5_terms.py
+  T014  src/ummaya/permissions/steps/step6_sandbox.py
+  T016  src/ummaya/permissions/audit.py
+  T017  src/ummaya/permissions/steps/step7_audit.py
+  T019  src/ummaya/permissions/bypass.py
 
 Agent B (Tests):
   T006  tests/permissions/test_models.py
@@ -218,12 +218,12 @@ After both agents complete Phases 3–7:
 
 ```
 Lead (Phase 9 + 10):
-  T024  src/kosmos/tools/models.py  (Literal extension — FIRST, before T021/T023)
-  T021  src/kosmos/permissions/pipeline.py
-  T022  src/kosmos/permissions/__init__.py
+  T024  src/ummaya/tools/models.py  (Literal extension — FIRST, before T021/T023)
+  T021  src/ummaya/permissions/pipeline.py
+  T022  src/ummaya/permissions/__init__.py
   T023  tests/permissions/test_pipeline.py
-  T025  src/kosmos/engine/models.py (QueryContext optional fields)
-  T026  src/kosmos/engine/query.py  (dispatch_tool_calls wiring)
+  T025  src/ummaya/engine/models.py (QueryContext optional fields)
+  T026  src/ummaya/engine/query.py  (dispatch_tool_calls wiring)
   T027  full uv run pytest
 ```
 

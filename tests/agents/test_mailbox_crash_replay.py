@@ -19,13 +19,13 @@ from uuid import uuid4
 
 import pytest
 
-from kosmos.agents.mailbox.file_mailbox import FileMailbox
-from kosmos.agents.mailbox.messages import (
+from ummaya.agents.mailbox.file_mailbox import FileMailbox
+from ummaya.agents.mailbox.messages import (
     AgentMessage,
     MessageType,
     ResultPayload,
 )
-from kosmos.tools.models import LookupMeta, LookupRecord
+from ummaya.tools.models import LookupMeta, LookupRecord
 
 # ---------------------------------------------------------------------------
 # Helpers

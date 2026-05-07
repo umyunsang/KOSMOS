@@ -1,5 +1,5 @@
 /**
- * KOSMOS-original — primitive renderer prop interfaces.
+ * UMMAYA-original — primitive renderer prop interfaces.
  *
  * All interfaces are derived from the Spec 031 PrimitiveEnvelope taxonomy
  * documented in data-model.md § 2.  No `any` types are used.

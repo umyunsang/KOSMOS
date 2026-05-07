@@ -68,7 +68,7 @@ The `BypassReinforcementModal` is ready to render. Lead must:
 6. `applyBypass()` calls `setMode('bypassPermissions')` then `setShowBypassConfirm(false)`.
 7. `cancelBypass()` just calls `setShowBypassConfirm(false)` — mode reverts to previous.
 
-### T039 — Emit `kosmos.ui.surface=permission_gauntlet` on every modal show
+### T039 — Emit `ummaya.ui.surface=permission_gauntlet` on every modal show
 
 `PermissionGauntletModal` already emits the OTEL attribute in its `useEffect` on mount:
 

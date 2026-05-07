@@ -17,25 +17,25 @@ with ``-m live``.  CI MUST NOT run live tests (AGENTS.md § Hard rules).
 References
 ----------
 - specs/1634-tool-system-wiring/contracts/primitive-envelope.md § 2
-- src/kosmos/tools/lookup.py
-- src/kosmos/tools/register_all.py
+- src/ummaya/tools/lookup.py
+- src/ummaya/tools/register_all.py
 """
 
 from __future__ import annotations
 
 import pytest
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.lookup import lookup
-from kosmos.tools.models import (
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.lookup import lookup
+from ummaya.tools.models import (
     AdapterCandidate,
-    LookupError,  # noqa: A004 — intentional: `LookupError` is KOSMOS domain model; shadowing is scoped.
+    LookupError,  # noqa: A004 — intentional: `LookupError` is UMMAYA domain model; shadowing is scoped.
     LookupFetchInput,
     LookupSearchInput,
     LookupSearchResult,
 )
-from kosmos.tools.register_all import register_all_tools
-from kosmos.tools.registry import ToolRegistry
+from ummaya.tools.register_all import register_all_tools
+from ummaya.tools.registry import ToolRegistry
 
 # ---------------------------------------------------------------------------
 # Module-scoped registry + executor (built once, shared across all tests)
@@ -170,8 +170,8 @@ class TestLookupFetchMocked:
 
         import httpx
 
-        from kosmos.tools.hira.hospital_search import register
-        from kosmos.tools.models import LookupCollection
+        from ummaya.tools.hira.hospital_search import register
+        from ummaya.tools.models import LookupCollection
 
         # Build a test-local registry + executor with only hira registered
         registry = ToolRegistry()
@@ -196,7 +196,7 @@ class TestLookupFetchMocked:
         mock_client = AsyncMock(spec=httpx.AsyncClient)
         mock_client.get.return_value = mock_response
 
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-e2e")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-e2e")
 
         with patch("httpx.AsyncClient", return_value=mock_client):
             inp = LookupFetchInput(
@@ -223,7 +223,7 @@ class TestLookupFetchLive:
     """Live integration tests — skipped unless '-m live' is passed explicitly.
 
     These tests call the real data.go.kr HIRA API.  They MUST NOT run in CI.
-    Requires KOSMOS_DATA_GO_KR_API_KEY to be set in the environment.
+    Requires UMMAYA_DATA_GO_KR_API_KEY to be set in the environment.
 
     CI contract (AGENTS.md § Hard rules):
         Never call live data.go.kr APIs from CI tests.
@@ -236,8 +236,8 @@ class TestLookupFetchLive:
         """Live: lookup(fetch, hira_hospital_search) against real HIRA API."""
         import os
 
-        if not os.environ.get("KOSMOS_DATA_GO_KR_API_KEY"):
-            pytest.skip("KOSMOS_DATA_GO_KR_API_KEY not set — skipping live fetch test")
+        if not os.environ.get("UMMAYA_DATA_GO_KR_API_KEY"):
+            pytest.skip("UMMAYA_DATA_GO_KR_API_KEY not set — skipping live fetch test")
 
         inp = LookupFetchInput(
             mode="fetch",

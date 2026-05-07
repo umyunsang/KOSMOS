@@ -57,7 +57,7 @@ def test_as02_friendli_token_is_forbidden(tmp_path: Path) -> None:
     """T-AS02: FRIENDLI_TOKEN matches DENY-TOKEN and DENY-FRIENDLI; exit 1."""
     _write_workflow(
         tmp_path,
-        "env:\n  KOSMOS_FRIENDLI_TOKEN: ${{ secrets.FRIENDLI_TOKEN }}\n",
+        "env:\n  UMMAYA_FRIENDLI_TOKEN: ${{ secrets.FRIENDLI_TOKEN }}\n",
     )
     result = _run(tmp_path)
     assert result.returncode == 1, f"stderr: {result.stderr}"
@@ -67,13 +67,13 @@ def test_as02_friendli_token_is_forbidden(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# T-AS03: ${{ secrets.KOSMOS_KAKAO_API_KEY }} → exit 1
+# T-AS03: ${{ secrets.UMMAYA_KAKAO_API_KEY }} → exit 1
 # ---------------------------------------------------------------------------
-def test_as03_kosmos_api_key_is_forbidden(tmp_path: Path) -> None:
-    """T-AS03: Any KOSMOS_* secret reference triggers DENY-KOSMOS; exit 1."""
+def test_as03_ummaya_api_key_is_forbidden(tmp_path: Path) -> None:
+    """T-AS03: Any UMMAYA_* secret reference triggers DENY-UMMAYA; exit 1."""
     _write_workflow(
         tmp_path,
-        "env:\n  KEY: ${{ secrets.KOSMOS_KAKAO_API_KEY }}\n",
+        "env:\n  KEY: ${{ secrets.UMMAYA_KAKAO_API_KEY }}\n",
     )
     result = _run(tmp_path)
     assert result.returncode == 1, f"stderr: {result.stderr}"
@@ -87,7 +87,7 @@ def test_as04_comment_line_suppressed(tmp_path: Path) -> None:
     """T-AS04: Lines starting with # are suppressed; comment does not trigger."""
     _write_workflow(
         tmp_path,
-        "# rotate this token: ${{ secrets.KOSMOS_FRIENDLI_TOKEN }} quarterly\n",
+        "# rotate this token: ${{ secrets.UMMAYA_FRIENDLI_TOKEN }} quarterly\n",
     )
     result = _run(tmp_path)
     assert result.returncode == 0, f"stderr: {result.stderr}"

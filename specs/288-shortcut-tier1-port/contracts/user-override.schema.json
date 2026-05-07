@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosmos.dev/schemas/keybindings-override-v1.json",
-  "title": "KOSMOS User Keybinding Overrides (Spec 288)",
-  "description": "Citizen-editable override file at ~/.kosmos/keybindings.json. Maps chord strings to TierOneAction names, or null to disable a binding. Missing or invalid file degrades silently to defaults (FR-023, FR-024).",
+  "$id": "https://ummaya.dev/schemas/keybindings-override-v1.json",
+  "title": "UMMAYA User Keybinding Overrides (Spec 288)",
+  "description": "Citizen-editable override file at ~/.ummaya/keybindings.json. Maps chord strings to TierOneAction names, or null to disable a binding. Missing or invalid file degrades silently to defaults (FR-023, FR-024).",
   "type": "object",
   "patternProperties": {
     "^((ctrl|shift|alt|meta)\\+)*(tab|enter|escape|up|down|left|right|pageup|pagedown|home|end|space|backspace|delete|f([1-9]|1[0-2])|[a-z]|[0-9])$": {

@@ -7,12 +7,12 @@ import {
 } from '../../commands.js'
 import type { SuggestionItem } from '../../components/PromptInput/PromptInputFooterSuggestions.js'
 import { getSkillUsageScore } from './skillUsageTracking.js'
-// KOSMOS P0-2: single-stack slash suggestions — only catalog commands are shown.
+// UMMAYA P0-2: single-stack slash suggestions — only catalog commands are shown.
 // The CC Fuse infrastructure is preserved for directory / @ / resume completions.
 import { UI_L2_SLASH_COMMANDS } from '../../commands/catalog.js'
 
 /** Set of command names that citizens are allowed to discover via the dropdown. */
-const KOSMOS_CITIZEN_COMMAND_NAMES: ReadonlySet<string> = new Set(
+const UMMAYA_CITIZEN_COMMAND_NAMES: ReadonlySet<string> = new Set(
   UI_L2_SLASH_COMMANDS.filter(e => !e.hidden).map(e =>
     // catalog entries are prefixed with '/' but Command.name is not.
     e.name.startsWith('/') ? e.name.slice(1) : e.name,
@@ -20,16 +20,16 @@ const KOSMOS_CITIZEN_COMMAND_NAMES: ReadonlySet<string> = new Set(
 )
 
 /**
- * Filter a commands array to only those in the KOSMOS citizen catalog.
+ * Filter a commands array to only those in the UMMAYA citizen catalog.
  * Used by generateCommandSuggestions so that the CC Fuse dropdown never
  * surfaces dev-only commands like /speckit-*, /add-dir, /doctor, /review.
  */
-function filterToKosmosCommands(commands: Command[]): Command[] {
+function filterToUmmayaCommands(commands: Command[]): Command[] {
   return commands.filter(cmd => {
     const name = getCommandName(cmd)
     // Catalog contains multi-word entries like "consent list" (normalized below)
     const base = name.split(' ')[0]!
-    return KOSMOS_CITIZEN_COMMAND_NAMES.has(name) || KOSMOS_CITIZEN_COMMAND_NAMES.has(base)
+    return UMMAYA_CITIZEN_COMMAND_NAMES.has(name) || UMMAYA_CITIZEN_COMMAND_NAMES.has(base)
   })
 }
 
@@ -328,10 +328,10 @@ export function generateCommandSuggestions(
     return []
   }
 
-  // KOSMOS P0-2: restrict dropdown to citizen-facing catalog entries only.
+  // UMMAYA P0-2: restrict dropdown to citizen-facing catalog entries only.
   // This prevents CC dev commands (/speckit-*, /add-dir, /doctor, /review …)
   // from appearing in the autocomplete dropdown.
-  const citizenCommands = filterToKosmosCommands(commands)
+  const citizenCommands = filterToUmmayaCommands(commands)
 
   const query = input.slice(1).toLowerCase().trim()
 

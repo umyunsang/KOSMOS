@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Epic 2 — consentBridge.ts unit tests (4 cases).
 //
-// The bridge is tested in isolation by mocking getOrCreateKosmosBridge
+// The bridge is tested in isolation by mocking getOrCreateUmmayaBridge
 // and directly driving _handleConsentRevokeResponse to simulate backend
 // responses.
 //

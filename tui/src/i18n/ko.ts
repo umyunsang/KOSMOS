@@ -1,7 +1,7 @@
 import type { I18nBundle } from './keys';
 
 const ko: I18nBundle = {
-  sessionStarting: 'KOSMOS \uc138\uc158\uc744 \uc2dc\uc791\ud569\ub2c8\ub2e4\u2026',
+  sessionStarting: 'UMMAYA \uc138\uc158\uc744 \uc2dc\uc791\ud569\ub2c8\ub2e4\u2026',
   sessionReady: '\uc900\ube44 \uc644\ub8cc',
   sessionEnded: '\uc138\uc158\uc774 \uc885\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4',
   commandNotFound: (name) => `\uc54c \uc218 \uc5c6\ub294 \uba85\ub839: /${name}`,
@@ -12,7 +12,7 @@ const ko: I18nBundle = {
   cmdResumeMissingId: '\uc0ac\uc6a9\ubc95: /resume <\uc138\uc158-ID>',
   cmdNewAck: '\uc0c8 \uc138\uc158\uc744 \uc2dc\uc791\ud558\ub294 \uc911\u2026',
   cmdHandlerFailed: (name, message) => `/${name} \uc2e4\ud589 \uc2e4\ud328: ${message}`,
-  helpTitle: 'KOSMOS \uc2ac\ub798\uc2dc \uba85\ub839',
+  helpTitle: 'UMMAYA \uc2ac\ub798\uc2dc \uba85\ub839',
   helpUsage: '/<\uba85\ub839> [\uc778\uc218]\ub97c \uc785\ub825\ud558\uc138\uc694',
   permissionPromptTitle: '\uad8c\ud55c\uc774 \ud544\uc694\ud569\ub2c8\ub2e4',
   permissionPromptBody: (toolName) =>

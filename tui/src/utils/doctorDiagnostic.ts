@@ -215,8 +215,8 @@ async function detectMultipleInstallations(): Promise<
   }
 
   // Check for global npm installation
-  const packagesToCheck = ['@kosmos/tui']
-  if (MACRO.PACKAGE_URL && MACRO.PACKAGE_URL !== '@kosmos/tui') {
+  const packagesToCheck = ['ummaya']
+  if (MACRO.PACKAGE_URL && MACRO.PACKAGE_URL !== 'ummaya') {
     packagesToCheck.push(MACRO.PACKAGE_URL)
   }
   const npmResult = await execFileNoThrow('npm', [
@@ -536,10 +536,10 @@ export async function getDoctorDiagnostic(): Promise<DiagnosticInfo> {
 
     for (const install of npmInstalls) {
       if (install.type === 'npm-global') {
-        let uninstallCmd = 'npm -g uninstall @kosmos/tui'
+        let uninstallCmd = 'npm -g uninstall ummaya'
         if (
           MACRO.PACKAGE_URL &&
-          MACRO.PACKAGE_URL !== '@kosmos/tui'
+          MACRO.PACKAGE_URL !== 'ummaya'
         ) {
           uninstallCmd += ` && npm -g uninstall ${MACRO.PACKAGE_URL}`
         }

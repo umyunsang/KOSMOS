@@ -1,5 +1,5 @@
-// KOSMOS-original command type definitions.
-// These are NOT lifted from .references/ — they are purpose-built for KOSMOS.
+// UMMAYA-original command type definitions.
+// These are NOT lifted from .references/ — they are purpose-built for UMMAYA.
 
 import type { PluginOpFrame, SessionEventFrame } from '../ipc/frames.generated'
 

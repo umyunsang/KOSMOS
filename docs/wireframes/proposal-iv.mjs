@@ -49,7 +49,7 @@ function EmptyState() {
         h(Box, { marginTop: 1 },
           h(Text, { color: C.subtle }, '   K-EXAONE · FriendliAI')
         ),
-        h(Box, null, h(Text, { color: C.dim }, '   ~/KOSMOS/tui')),
+        h(Box, null, h(Text, { color: C.dim }, '   ~/UMMAYA/tui')),
       ),
       h(Box, { flexDirection: 'column', width: 38 },
         h(FeedColumn, { title: '새 소식',      rows: whatsNewFeed }),
@@ -195,7 +195,7 @@ function PluginsCommand() {
         ),
         h(Box, { marginTop: 1 },
           h(Text, { color: C.dim, dimColor: true },
-            '기여: docs/plugins/quickstart.ko.md  ·  kosmos plugin init <name>')
+            '기여: docs/plugins/quickstart.ko.md  ·  ummaya plugin init <name>')
         ),
       )
     ),

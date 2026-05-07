@@ -16,7 +16,7 @@ import memoize from 'lodash-es/memoize.js'
 import type { LoadedPlugin } from '../../types/plugin.js'
 import { logForDebugging } from '../debug.js'
 import { logError } from '../log.js'
-// KOSMOS: secureStorage deleted by Spec 1633 P1. KOSMOS uses .env-backed secrets, not OS keychain.
+// UMMAYA: secureStorage deleted by Spec 1633 P1. UMMAYA uses .env-backed secrets, not OS keychain.
 // Provide a no-op stub so all getSecureStorage() call sites compile without the deleted module.
 const getSecureStorage = (): {
   read: () => null
@@ -29,8 +29,8 @@ import {
   getSettings_DEPRECATED,
   updateSettingsForSource,
 } from '../settings/settings.js'
-// KOSMOS Spec 1633 / Epic #2293 — utils/plugins/mcpbHandler deleted (Anthropic
-// .mcpb plugin bundle handler; KOSMOS plugin DX Spec 1636 uses different format).
+// UMMAYA Spec 1633 / Epic #2293 — utils/plugins/mcpbHandler deleted (Anthropic
+// .mcpb plugin bundle handler; UMMAYA plugin DX Spec 1636 uses different format).
 // User-config schema/value types are inlined as `unknown` since plugin-side
 // validation no longer flows through the .mcpb pipeline.
 type UserConfigSchema = unknown

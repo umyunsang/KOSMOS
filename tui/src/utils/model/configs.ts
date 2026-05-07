@@ -1,25 +1,25 @@
-// KOSMOS Epic #2112: legacy per-provider model configs removed; single-fixed
+// UMMAYA Epic #2112: legacy per-provider model configs removed; single-fixed
 // K-EXAONE replaces the entire CLAUDE_*_CONFIG matrix. Type and registry
 // signatures preserved (ModelConfig, ALL_MODEL_CONFIGS, ModelKey, CanonicalModelId,
 // CANONICAL_MODEL_IDS, CANONICAL_ID_TO_KEY) for caller import-graph.
 
-import { KOSMOS_K_EXAONE_MODEL } from './constants.js'
+import { UMMAYA_K_EXAONE_MODEL } from './constants.js'
 import type { ModelName } from './model.js'
 import type { APIProvider } from './providers.js'
 
 export type ModelConfig = Record<APIProvider, ModelName>
 
-const KOSMOS_K_EXAONE_ID = KOSMOS_K_EXAONE_MODEL
+const UMMAYA_K_EXAONE_ID = UMMAYA_K_EXAONE_MODEL
 
-export const KOSMOS_K_EXAONE_CONFIG = {
-  firstParty: KOSMOS_K_EXAONE_ID,
-  bedrock: KOSMOS_K_EXAONE_ID,
-  vertex: KOSMOS_K_EXAONE_ID,
-  foundry: KOSMOS_K_EXAONE_ID,
+export const UMMAYA_K_EXAONE_CONFIG = {
+  firstParty: UMMAYA_K_EXAONE_ID,
+  bedrock: UMMAYA_K_EXAONE_ID,
+  vertex: UMMAYA_K_EXAONE_ID,
+  foundry: UMMAYA_K_EXAONE_ID,
 } as const satisfies ModelConfig
 
 export const ALL_MODEL_CONFIGS = {
-  kexaone: KOSMOS_K_EXAONE_CONFIG,
+  kexaone: UMMAYA_K_EXAONE_CONFIG,
 } as const satisfies Record<string, ModelConfig>
 
 export type ModelKey = keyof typeof ALL_MODEL_CONFIGS

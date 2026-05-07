@@ -1,8 +1,8 @@
-# Contract — `kosmos.llm.prompt_assembler`
+# Contract — `ummaya.llm.prompt_assembler`
 
 **Spec**: [../spec.md](../spec.md) · **Plan**: [../plan.md](../plan.md) · **Research**: [../research.md](../research.md) (R2 + R4)
 
-Defines the public Python surface introduced by Epic #2152 for citizen-domain system-prompt assembly. The module is consumed by `src/kosmos/ipc/stdio.py:_handle_chat_request` exactly once per chat request, immediately after the active tool inventory is computed.
+Defines the public Python surface introduced by Epic #2152 for citizen-domain system-prompt assembly. The module is consumed by `src/ummaya/ipc/stdio.py:_handle_chat_request` exactly once per chat request, immediately after the active tool inventory is computed.
 
 ---
 
@@ -11,7 +11,7 @@ Defines the public Python surface introduced by Epic #2152 for citizen-domain sy
 ### `PromptAssembler`
 
 ```python
-from kosmos.llm.prompt_assembler import (
+from ummaya.llm.prompt_assembler import (
     PromptAssembler,
     PromptAssemblyContext,
     SystemPromptManifest,
@@ -88,4 +88,4 @@ The exception is fail-closed: if assembly fails the chat request does not procee
 
 - Memoization of decorator returns (CC `getSystemPromptSectionCache`). Sugar to add when a future injector legitimately benefits from session-scoped caching. Keep the surface minimal in this Epic.
 - `DANGEROUS_uncached_system_prompt` decorator (CC parity). Not added until the first uncached use case lands.
-- Override hierarchy (CC `restored-src/.../utils/systemPrompt.ts:30-123`). KOSMOS does not yet expose `--system-prompt` / coordinator / agent overrides.
+- Override hierarchy (CC `restored-src/.../utils/systemPrompt.ts:30-123`). UMMAYA does not yet expose `--system-prompt` / coordinator / agent overrides.

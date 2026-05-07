@@ -5,10 +5,10 @@
  테마 미리보기
  ● ◉ ○ ○ ○     2 / 5
 
-     ▛███▜                    KOSMOS
+     ▛███▜                    UMMAYA
  ▗▟█████████▙▖                K-EXAONE · FriendliAI
     ▘ ▘ ▘ ▘
- KOSMOS UFO 마스코트 (대기)   ✻ 보라 팔레트 · purple palette
+ UMMAYA UFO 마스코트 (대기)   ✻ 보라 팔레트 · purple palette
                               body #a78bfa · bg #4c1d95
 
    [선택] ▸ dark    어두운 배경 (기본)

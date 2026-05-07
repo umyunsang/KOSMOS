@@ -19,9 +19,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // We use the real Python backend in --ipc stdio mode (echo handler).
 // This avoids a separate stub script while still testing the bridge end-to-end.
-// The echo handler in kosmos.ipc.stdio mirrors every user_input with an
+// The echo handler in ummaya.ipc.stdio mirrors every user_input with an
 // assistant_chunk, making it ideal as a test fixture.
-const BACKEND_CMD = ['uv', 'run', '--directory', join(__dirname, '../../../'), 'python', '-m', 'kosmos.cli', '--ipc', 'stdio']
+const BACKEND_CMD = ['uv', 'run', '--directory', join(__dirname, '../../../'), 'python', '-m', 'ummaya.cli', '--ipc', 'stdio']
 
 function makeUserInputFrame(sid: string, text: string): IPCFrame {
   return {
@@ -38,10 +38,15 @@ function makeUserInputFrame(sid: string, text: string): IPCFrame {
 // Tests
 // ---------------------------------------------------------------------------
 
-// KOSMOS_IPC_HANDLER=echo selects the test-friendly echo handler in
-// src/kosmos/ipc/stdio.py — matches these tests' FIFO / lifecycle assertions
+// UMMAYA_IPC_HANDLER=echo selects the test-friendly echo handler in
+// src/ummaya/ipc/stdio.py — matches these tests' FIFO / lifecycle assertions
 // without requiring a FriendliAI session on the CI runner.
-const ECHO_ENV = { KOSMOS_IPC_HANDLER: 'echo' }
+const ECHO_ENV = {
+  UMMAYA_IPC_HANDLER: 'echo',
+  UMMAYA_DATA_GO_KR_API_KEY: 'test-dummy',
+  UMMAYA_FRIENDLI_TOKEN: 'test-dummy',
+  UMMAYA_KAKAO_API_KEY: 'test-dummy',
+}
 
 describe('bridge: process lifecycle', () => {
   test('backend spawns and starts within 5 s', async () => {

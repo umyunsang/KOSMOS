@@ -1,10 +1,10 @@
 # Contract — Mode Spectrum + Shift+Tab Cycle + Killswitch
 
 **Feature**: 033-permission-v2-spectrum
-**Artifact**: Behavioral contract for `src/kosmos/permissions/modes.py` + TUI `tui/src/permissions/ModeCycle.tsx`
+**Artifact**: Behavioral contract for `src/ummaya/permissions/modes.py` + TUI `tui/src/permissions/ModeCycle.tsx`
 **Date**: 2026-04-20
 
-> References: Claude Code 2.1.88 `PermissionMode.ts` / `getNextPermissionMode.ts` (mirrored with the `dontAsk` KOSMOS addition). Constitution §II (fail-closed, NON-NEGOTIABLE).
+> References: Claude Code 2.1.88 `PermissionMode.ts` / `getNextPermissionMode.ts` (mirrored with the `dontAsk` UMMAYA addition). Constitution §II (fail-closed, NON-NEGOTIABLE).
 
 ## 1. Mode Set
 
@@ -107,8 +107,8 @@ Default: N
 | State | Persisted? | Storage |
 |-------|------------|---------|
 | Current mode | ✗ No | In-memory session state. Restart → `default`. |
-| Persistent rules | ✓ Yes | `~/.kosmos/permissions.json` |
-| Consent ledger | ✓ Yes | `~/.kosmos/consent_ledger.jsonl` |
+| Persistent rules | ✓ Yes | `~/.ummaya/permissions.json` |
+| Consent ledger | ✓ Yes | `~/.ummaya/consent_ledger.jsonl` |
 
 **Invariant PR1 — `bypassPermissions` cannot be sticky.** Every session starts at `default`, requiring citizen to explicitly re-enable bypass. No "remember" checkbox.
 

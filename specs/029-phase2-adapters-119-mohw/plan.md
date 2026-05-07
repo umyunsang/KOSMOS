@@ -5,7 +5,7 @@
 
 ## Summary
 
-Register two new `GovAPITool` adapters in the KOSMOS Tool System (Layer 2) under
+Register two new `GovAPITool` adapters in the UMMAYA Tool System (Layer 2) under
 the interface-only pattern established by `nmc_emergency_search`:
 
 1. **`nfa_emergency_info_service`** — NFA (소방청) `EmergencyInformationService`
@@ -36,8 +36,8 @@ lands.
 No persistent state introduced by this spec.
 **Testing**: `pytest` + `pytest-asyncio`. Live-upstream tests deferred with
 Layer 3 ship and will be marked `@pytest.mark.live` (excluded from CI).
-**Target Platform**: Linux server (KOSMOS backend). CLI TUI unaffected.
-**Project Type**: library/backend — extends `src/kosmos/tools/` with two new
+**Target Platform**: Linux server (UMMAYA backend). CLI TUI unaffected.
+**Project Type**: library/backend — extends `src/ummaya/tools/` with two new
 provider packages (`nfa119/`, `ssis/`).
 **Performance Goals**: No new perf budget introduced. Registry boot time MUST
 remain within the existing spec 022 envelope (< 200 ms for `lookup(mode=search)`
@@ -47,7 +47,7 @@ BM25 build). Two new tools add ~O(k) to BM25 index; immaterial.
 (Korean + English) `search_hint` required (Constitution §III). No live
 `data.go.kr` calls from CI (Constitution §IV).
 **Scale/Scope**: Two adapters, one shared SSIS code-table module
-(`src/kosmos/tools/ssis/codes.py`), two `TOOL_MIN_AAL` additions, one DPA
+(`src/ummaya/tools/ssis/codes.py`), two `TOOL_MIN_AAL` additions, one DPA
 placeholder stub, two documentation entries. 8 new source files, 7 new test
 files, 2 modified source files. No net dependency change.
 
@@ -60,7 +60,7 @@ files, 2 modified source files. No net dependency change.
 | I. Reference-Driven Development | PASS | `research.md §2` maps every decision to a concrete reference (NMC adapter, HIRA adapter, `GovAPITool` validators, `TOOL_MIN_AAL`, `docs/vision.md § Reference materials`). No ADR required. |
 | II. Fail-Closed Security | PASS | Both adapters default `requires_auth=True`; MOHW `is_personal_data=True`; MOHW `cache_ttl_seconds=0`; `is_concurrency_safe` set to `True` only on read-only endpoints. Missing `serviceKey` returns `upstream_unavailable, retryable=False`. |
 | III. Pydantic v2 Strict Typing | PASS | All input models use `ConfigDict(extra="forbid", frozen=True)`. Output models use `extra="allow"` only on upstream item schemas (forward-compat with NFA sparse fields) — the envelope itself is `extra="forbid"`. No `Any` in schema field types. Bilingual `search_hint` on both adapters. |
-| IV. Government API Compliance | PASS | `research.md §7` prescribes recorded fixtures only; `rate_limit_per_minute=10` on both; `KOSMOS_DATA_GO_KR_API_KEY` reused, no hardcoded keys; happy-path + error-path tests required per spec §4. |
+| IV. Government API Compliance | PASS | `research.md §7` prescribes recorded fixtures only; `rate_limit_per_minute=10` on both; `UMMAYA_DATA_GO_KR_API_KEY` reused, no hardcoded keys; happy-path + error-path tests required per spec §4. |
 | V. Policy Alignment | PASS | Both adapters serve Principle 8 (single conversational window) by being discoverable through `lookup(mode=search)`. Principle 9 (Open API) is satisfied — these are data.go.kr endpoints. MOHW PII gate (PIPA §26 처리위탁 + `dpa_reference`) documented in `research.md §3 C3`. |
 | VI. Deferred Work Accountability | PASS | `research.md §1` validates 8 deferred items against Epic issues. Item #8 (`nfa_safety_center_lookup`) flagged `NEEDS TRACKING` for `/speckit-taskstoissues` back-fill. §9.2–§9.4 extension-path items are future adapters, not deferrals of in-scope work (constitutional interpretation documented). |
 
@@ -86,13 +86,13 @@ specs/029-phase2-adapters-119-mohw/
 └── tasks.md             # /speckit-tasks output — NOT created here
 ```
 
-### Source Code (repository root — KOSMOS single-project layout)
+### Source Code (repository root — UMMAYA single-project layout)
 
 The project is a **single-project Python library + backend** (no `backend/` +
 `frontend/` split; TUI lives in its own repo). Source tree touched by this spec:
 
 ```text
-src/kosmos/
+src/ummaya/
 ├── tools/
 │   ├── nfa119/                              # NEW package
 │   │   ├── __init__.py                      # NEW
@@ -131,10 +131,10 @@ tests/
         └── mohw_welfare_eligibility_search.json  # NEW — synthetic (WLF0000001188 / 출산가정 방문서비스 / 보건복지부)
 ```
 
-**Structure Decision**: KOSMOS single-project Python backend with the existing
-`src/kosmos/tools/<provider>/` convention (same shape as `nmc/`, `hira/`,
+**Structure Decision**: UMMAYA single-project Python backend with the existing
+`src/ummaya/tools/<provider>/` convention (same shape as `nmc/`, `hira/`,
 `kma/`, `koroad/`). No new top-level layout. No new module naming pattern.
-The shared SSIS codes module (`src/kosmos/tools/ssis/codes.py`) anticipates the
+The shared SSIS codes module (`src/ummaya/tools/ssis/codes.py`) anticipates the
 future `ssis_welfare_detail_fetch` adapter (spec §9.2) and prevents enum
 duplication from day one.
 

@@ -16,7 +16,7 @@ set -euo pipefail
 wait_for_log() {
   local pattern="${1:?wait_for_log <regex>}"
   local deadline="${2:-180}"
-  local logfile="${KOSMOS_BACKEND_LOG_FILE:-$OUTDIR/backend.log}"
+  local logfile="${UMMAYA_BACKEND_LOG_FILE:-$OUTDIR/backend.log}"
   local start=$(date +%s)
   while true; do
     if [[ -f "$logfile" ]] && grep -qE -- "$pattern" "$logfile" 2>/dev/null; then

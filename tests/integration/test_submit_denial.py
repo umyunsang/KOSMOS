@@ -16,8 +16,8 @@ No live network calls are made.
 References
 ----------
 - specs/1634-tool-system-wiring/contracts/primitive-envelope.md § 3
-- src/kosmos/primitives/submit.py (check_tier_gate + submit dispatcher)
-- src/kosmos/tools/mock/data_go_kr/fines_pay.py
+- src/ummaya/primitives/submit.py (check_tier_gate + submit dispatcher)
+- src/ummaya/tools/mock/data_go_kr/fines_pay.py
 """
 
 from __future__ import annotations
@@ -27,8 +27,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 # Ensure adapter is registered in the dispatcher before tests run
-import kosmos.tools.mock.data_go_kr.fines_pay  # noqa: F401
-from kosmos.primitives.submit import SubmitOutput, SubmitStatus, submit
+import ummaya.tools.mock.data_go_kr.fines_pay  # noqa: F401
+from ummaya.primitives.submit import SubmitOutput, SubmitStatus, submit
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -63,14 +63,14 @@ class TestSubmitDenialNoAdapterCall:
 
         with (
             patch(
-                "kosmos.primitives.submit.check_tier_gate",
+                "ummaya.primitives.submit.check_tier_gate",
                 return_value=_FORCED_REJECTION,
             ),
             patch.dict(
-                "kosmos.primitives.submit._ADAPTER_REGISTRY",
+                "ummaya.primitives.submit._ADAPTER_REGISTRY",
                 {
                     TOOL_ID: (
-                        kosmos.tools.mock.data_go_kr.fines_pay.REGISTRATION,
+                        ummaya.tools.mock.data_go_kr.fines_pay.REGISTRATION,
                         spy_invoke,
                     )
                 },
@@ -92,7 +92,7 @@ class TestSubmitDenialNoAdapterCall:
     async def test_denial_returns_structured_reject_not_exception(self) -> None:
         """Denied submit must surface as SubmitOutput(status=rejected), not raise."""
         with patch(
-            "kosmos.primitives.submit.check_tier_gate",
+            "ummaya.primitives.submit.check_tier_gate",
             return_value=_FORCED_REJECTION,
         ):
             result = await submit(
@@ -110,7 +110,7 @@ class TestSubmitDenialNoAdapterCall:
     async def test_denial_carries_reason_in_adapter_receipt(self) -> None:
         """Rejected SubmitOutput must include 'reason' in adapter_receipt."""
         with patch(
-            "kosmos.primitives.submit.check_tier_gate",
+            "ummaya.primitives.submit.check_tier_gate",
             return_value=_FORCED_REJECTION,
         ):
             result = await submit(
@@ -130,7 +130,7 @@ class TestSubmitDenialNoAdapterCall:
     async def test_denial_transaction_id_is_deterministic(self) -> None:
         """Even rejected calls must produce a deterministic transaction_id (FR-004)."""
         with patch(
-            "kosmos.primitives.submit.check_tier_gate",
+            "ummaya.primitives.submit.check_tier_gate",
             return_value=_FORCED_REJECTION,
         ):
             result1 = await submit(
@@ -173,10 +173,10 @@ class TestSubmitDenialRealTierGate:
 
         spy_invoke = AsyncMock(name="spy_invoke")
         with patch.dict(
-            "kosmos.primitives.submit._ADAPTER_REGISTRY",
+            "ummaya.primitives.submit._ADAPTER_REGISTRY",
             {
                 TOOL_ID: (
-                    kosmos.tools.mock.data_go_kr.fines_pay.REGISTRATION,
+                    ummaya.tools.mock.data_go_kr.fines_pay.REGISTRATION,
                     spy_invoke,
                 )
             },
@@ -196,10 +196,10 @@ class TestSubmitDenialRealTierGate:
         """No auth context must be denied for a tier-gated adapter (fail-closed)."""
         spy_invoke = AsyncMock(name="spy_invoke")
         with patch.dict(
-            "kosmos.primitives.submit._ADAPTER_REGISTRY",
+            "ummaya.primitives.submit._ADAPTER_REGISTRY",
             {
                 TOOL_ID: (
-                    kosmos.tools.mock.data_go_kr.fines_pay.REGISTRATION,
+                    ummaya.tools.mock.data_go_kr.fines_pay.REGISTRATION,
                     spy_invoke,
                 )
             },

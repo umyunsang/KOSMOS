@@ -1,8 +1,8 @@
-# Quickstart — KOSMOS System Prompt Redesign (Epic #2152)
+# Quickstart — UMMAYA System Prompt Redesign (Epic #2152)
 
 **Spec**: [spec.md](./spec.md) · **Plan**: [plan.md](./plan.md) · **Research**: [research.md](./research.md) · **Data model**: [data-model.md](./data-model.md) · **Contracts**: [contracts/](./contracts/)
 
-How a developer working on KOSMOS would touch the new prompt-assembly surface, after Epic #2152 ships.
+How a developer working on UMMAYA would touch the new prompt-assembly surface, after Epic #2152 ships.
 
 ---
 
@@ -13,7 +13,7 @@ After the Epic ships, `prompts/system_v1.md` is the four-XML-section Korean-publ
 ```bash
 cat prompts/system_v1.md
 # <role>
-# 당신은 KOSMOS, 한국 공공 서비스 AI 어시스턴트입니다 ...
+# 당신은 UMMAYA, 한국 공공 서비스 AI 어시스턴트입니다 ...
 # </role>
 #
 # <core_rules>
@@ -35,8 +35,8 @@ cat prompts/system_v1.md
 
 ```python
 from pathlib import Path
-from kosmos.context.prompt_loader import PromptLoader
-from kosmos.llm.prompt_assembler import (
+from ummaya.context.prompt_loader import PromptLoader
+from ummaya.llm.prompt_assembler import (
     PromptAssembler,
     PromptAssemblyContext,
     system_prompt,
@@ -152,11 +152,11 @@ git diff main -- pyproject.toml package.json tui/package.json
 ## 8. References
 
 - Static prompt source-of-truth: `prompts/system_v1.md` + `prompts/manifest.yaml` (Spec 026)
-- Assembler module: `src/kosmos/llm/prompt_assembler.py` (new)
-- Tool inventory augmentation: `src/kosmos/llm/system_prompt_builder.py` (R6 extension)
-- IPC wiring: `src/kosmos/ipc/stdio.py:_handle_chat_request` (R3 + R4 wiring)
+- Assembler module: `src/ummaya/llm/prompt_assembler.py` (new)
+- Tool inventory augmentation: `src/ummaya/llm/system_prompt_builder.py` (R6 extension)
+- IPC wiring: `src/ummaya/ipc/stdio.py:_handle_chat_request` (R3 + R4 wiring)
 - TUI excision callsites: `tui/src/utils/api.ts`, `tui/src/utils/queryContext.ts`, `tui/src/query.ts`, `tui/src/screens/REPL.tsx`, `tui/src/main.tsx` (R5)
 - CC reference: `.references/claude-code-sourcemap/restored-src/src/constants/prompts.ts:175-590`, `:30-123` `systemPrompt.ts`, `systemPromptSections.ts:1-68`
-- Anthropic prompt-engineering guide (cached): `~/.claude/projects/-Users-um-yunsang-KOSMOS/d2a7266a-45dc-478b-9a8c-7c21f2257281/tool-results/toolu_01AxMFGJ4MYWLbPLWbRt9qju.txt`
+- Anthropic prompt-engineering guide (cached): `~/.claude/projects/-Users-um-yunsang-UMMAYA/d2a7266a-45dc-478b-9a8c-7c21f2257281/tool-results/toolu_01AxMFGJ4MYWLbPLWbRt9qju.txt`
 - Pydantic AI core concepts: https://pydantic.dev/docs/ai/core-concepts/agent/
 - Deep research synthesis: `docs/research/system-prompt-harness-comparison.md`

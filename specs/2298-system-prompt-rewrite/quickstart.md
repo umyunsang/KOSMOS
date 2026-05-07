@@ -24,7 +24,7 @@ Rewrite `prompts/system_v1.md` to teach the LLM the 4 reserved primitives + 10 a
 ## Step 0 — Worktree confirmation
 
 ```bash
-cd /Users/um-yunsang/KOSMOS-w-2298
+cd /Users/um-yunsang/UMMAYA-w-2298
 git status                    # On branch 2298-system-prompt-rewrite, clean
 git log --oneline -3          # Spec / plan commits visible
 ```
@@ -32,9 +32,9 @@ git log --oneline -3          # Spec / plan commits visible
 If you are NOT in the worktree, set it up:
 
 ```bash
-cd /Users/um-yunsang/KOSMOS && git pull --ff-only
-git worktree add ../KOSMOS-w-2298 2298-system-prompt-rewrite
-cd ../KOSMOS-w-2298
+cd /Users/um-yunsang/UMMAYA && git pull --ff-only
+git worktree add ../UMMAYA-w-2298 2298-system-prompt-rewrite
+cd ../UMMAYA-w-2298
 uv sync --quiet
 uv run pytest -q --tb=no      # Baseline expected: clean
 ```
@@ -53,11 +53,11 @@ uv run pytest tests/integration/test_verify_module_dispatch.py -q
 uv run pytest tests/integration/test_e2e_citizen_taxreturn_chain.py::test_happy_chain_verify_lookup_submit -q
 
 # 5 Epic ε families exist in PublishedTier
-grep -E '"(simple_auth_module|modid|kec|geumyung_module|any_id_sso)' src/kosmos/tools/registry.py | wc -l
+grep -E '"(simple_auth_module|modid|kec|geumyung_module|any_id_sso)' src/ummaya/tools/registry.py | wc -l
 # Expected: 5
 
 # 11-arm AuthContext union present
-grep -A12 'AuthContext = Annotated\[' src/kosmos/primitives/verify.py | grep -cE 'Context\b'
+grep -A12 'AuthContext = Annotated\[' src/ummaya/primitives/verify.py | grep -cE 'Context\b'
 # Expected: 11
 
 # Current manifest SHA matches file
@@ -139,7 +139,7 @@ test "$(yq '.entries[] | select(.prompt_id == "system_v1") | .sha256' prompts/ma
 Verify boot validation passes:
 
 ```bash
-uv run python -c "from pathlib import Path; from kosmos.context.prompt_loader import PromptLoader; PromptLoader(manifest_path=Path('prompts/manifest.yaml')); print('OK')"
+uv run python -c "from pathlib import Path; from ummaya.context.prompt_loader import PromptLoader; PromptLoader(manifest_path=Path('prompts/manifest.yaml')); print('OK')"
 # Expected: OK (no PromptRegistryError)
 ```
 
@@ -212,7 +212,7 @@ ls specs/2298-system-prompt-rewrite/smoke-citizen-taxreturn.gif
 **Lead Opus visual verification step** (mandatory per AGENTS.md):
 
 For each PNG, use the Read tool to inspect the rendered TUI:
-1. Keyframe 1 — must show `KOSMOS` brand text.
+1. Keyframe 1 — must show `UMMAYA` brand text.
 2. Keyframe 2 — must show citizen Korean prompt typed in input field.
 3. Keyframe 3 — must show `접수번호: hometax-2026-MM-DD-RX-XXXXX` text.
 
@@ -285,7 +285,7 @@ gh pr checks --watch --interval 10
 |---|---|---|
 | Forgot to recompute manifest SHA | `PromptRegistryError: digest mismatch` at boot | Re-run Step 3 |
 | Authored 11-row family table including `digital_onepass` | `lint-prompt.sh` exits 1 on FR-002 negative invariant | Remove the `digital_onepass` row |
-| `<verify_chain_pattern>` chain example uses non-existing tool_id | LLM emits the wrong tool_id → IPC `unknown_tool_id` error | Use `mock_lookup_module_hometax_simplified` and `mock_submit_module_hometax_taxreturn` exactly (verify via `grep -r mock_lookup_module_hometax_simplified src/kosmos/tools/`) |
+| `<verify_chain_pattern>` chain example uses non-existing tool_id | LLM emits the wrong tool_id → IPC `unknown_tool_id` error | Use `mock_lookup_module_hometax_simplified` and `mock_submit_module_hometax_taxreturn` exactly (verify via `grep -r mock_lookup_module_hometax_simplified src/ummaya/tools/`) |
 | vhs Sleep too short | Keyframe 3 shows spinner | Extend Sleep at line "Sleep 12s" to 18s |
 | Forgot the `any_id_sso` exception note | Shadow-eval fails for `any_id_sso.json` because LLM chains submit | Add the FR-008 sentence to `<verify_chain_pattern>` |
 | Adding new top-level XML tag | XML well-formedness or section-count check fails | Spec 2152 invariant — nest inside existing tags |

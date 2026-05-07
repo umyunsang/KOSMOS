@@ -10,10 +10,10 @@
 
 ## I. Reference-Driven Development — PASS
 
-Every ported file carries a `// Source: .references/claude-code-sourcemap/restored-src/...` attribution header (FR-011). Every KOSMOS-original file carries a `// SPDX-License-Identifier: Apache-2.0\n// KOSMOS-original: ...` header.
+Every ported file carries a `// Source: .references/claude-code-sourcemap/restored-src/...` attribution header (FR-011). Every UMMAYA-original file carries a `// SPDX-License-Identifier: Apache-2.0\n// UMMAYA-original: ...` header.
 
 - [X] 64 files under `tui/src/` bear `// Source:` headers — lifted from Claude Code 2.1.88 restored-src, research-use only
-- [X] 37 files under `tui/src/` bear `KOSMOS-original` headers — plain TS skeletons with no upstream analog
+- [X] 37 files under `tui/src/` bear `UMMAYA-original` headers — plain TS skeletons with no upstream analog
 - [X] Phase 10 attribution audit (`tui/docs/attribution-audit-phase10.md`, T125) scanned 73 files; 3 header defects fixed in `theme/provider.tsx`, `components/coordinator/PhaseIndicator.tsx`, `components/coordinator/PermissionGauntletModal.tsx`
 - [X] `tui/scripts/diff-upstream.sh` documents the comparison procedure against `.references/claude-code-sourcemap/restored-src/` for R2 (upstream-diff drift) mitigation
 - [X] `VirtualizedList` (T119) cites Gemini CLI (Apache-2.0) `overflowToBackbuffer` as the inspiration per Constitution Principle I table row "TUI → Gemini CLI"
@@ -25,7 +25,7 @@ Every ported file carries a `// Source: .references/claude-code-sourcemap/restor
 
 ## II. Fail-Closed Security (NON-NEGOTIABLE) — PASS
 
-TUI layer is a front-end to the Python backend; fail-closed defaults for tool adapters live in `src/kosmos/tools/` (Spec 024/025 territory, unchanged). What the TUI must uphold:
+TUI layer is a front-end to the Python backend; fail-closed defaults for tool adapters live in `src/ummaya/tools/` (Spec 024/025 territory, unchanged). What the TUI must uphold:
 
 - [X] **Permission gauntlet is fail-closed by default**: `PermissionGauntletModal` (`tui/src/components/coordinator/PermissionGauntletModal.tsx`) renders on any `permission_request` IPC frame; `useCanUseTool` starts every decision at "denied" until the user explicitly presses `y`. Pressing `n` or `Escape` emits `{decision: "denied"}`.
 - [X] **Input suppressed while modal is active**: `AppInner` passes `disabled={pendingPermission !== null}` to `<InputBar>`; the outer `useInput` in `tui.tsx:259` returns early for any non-Ctrl-C key when a modal is open. Workers cannot execute while a request is outstanding.
@@ -39,13 +39,13 @@ TUI layer is a front-end to the Python backend; fail-closed defaults for tool ad
 
 ## III. Pydantic v2 Strict Typing (NON-NEGOTIABLE) — PASS
 
-- [X] **Every IPC frame is a Pydantic v2 `BaseModel`** — `src/kosmos/ipc/frame_schema.py` defines `_BaseFrame`, `UserInputFrame`, `AssistantChunkFrame`, `ToolCallFrame`, `ToolResultFrame`, `ToolResultEnvelope`, `CoordinatorPhaseFrame`, `WorkerStatusFrame`, `PermissionRequestFrame`, `PermissionResponseFrame`, `SessionEventFrame`, `ErrorFrame` — all using `Literal["..."]` discriminators.
-- [X] **No `Any` in IPC schemas** — `grep -n ": Any\b" src/kosmos/ipc/frame_schema.py` returns no matches in field declarations (Pydantic `extra="forbid"` via `ConfigDict`).
+- [X] **Every IPC frame is a Pydantic v2 `BaseModel`** — `src/ummaya/ipc/frame_schema.py` defines `_BaseFrame`, `UserInputFrame`, `AssistantChunkFrame`, `ToolCallFrame`, `ToolResultFrame`, `ToolResultEnvelope`, `CoordinatorPhaseFrame`, `WorkerStatusFrame`, `PermissionRequestFrame`, `PermissionResponseFrame`, `SessionEventFrame`, `ErrorFrame` — all using `Literal["..."]` discriminators.
+- [X] **No `Any` in IPC schemas** — `grep -n ": Any\b" src/ummaya/ipc/frame_schema.py` returns no matches in field declarations (Pydantic `extra="forbid"` via `ConfigDict`).
 - [X] **TypeScript side is generated, not hand-coded** — `tui/src/ipc/frames.generated.ts` is produced by `bun run gen:ipc` from the Pydantic schema (T005 quickstart step 1c). A single source of truth prevents TS/Py drift.
 - [X] **Tool primitive names are closed sets**: `ToolCallFrame.name: Literal["lookup", "resolve_location", "submit", "subscribe", "verify"]` matches the Spec 031 five-primitive surface exactly (FR-017–FR-033).
 - [X] **Phase IDs are closed**: `CoordinatorPhaseFrame.phase: Literal["Research", "Synthesis", "Implementation", "Verification"]` — no free-text phase strings possible.
 
-**Evidence**: `src/kosmos/ipc/frame_schema.py:23-148`, `tui/src/ipc/frames.generated.ts` (auto-generated).
+**Evidence**: `src/ummaya/ipc/frame_schema.py:23-148`, `tui/src/ipc/frames.generated.ts` (auto-generated).
 
 ---
 
@@ -54,7 +54,7 @@ TUI layer is a front-end to the Python backend; fail-closed defaults for tool ad
 - [X] **Zero live `data.go.kr` calls in CI**: T128 + T129 smoke tests (`tests/integration/test_tui_backend_smoke.py`, `tests/integration/test_tui_multi_ministry_smoke.py`) use `MockLLMClient` with `build_happy_script()` and `_build_httpx_mock` AsyncMock fixtures. `grep '@pytest.mark.live' tests/integration/` shows no live marker — these are pure fixture tests.
 - [X] **Live-path escape hatch documented**: `test_tui_backend_smoke.py:30-34` comment explicitly notes "a `@pytest.mark.live` variant would be required" to exercise real APIs, preserving the default-skip contract.
 - [X] **Adapter compliance unchanged**: Spec 287 is a TUI layer — does not add, modify, or relax any `rate_limit_per_minute` / `usage_tracker` / `requires_auth` field on any adapter. The five-primitive surface (FR-017–FR-033) receives but does not originate tool calls.
-- [X] **No hardcoded keys anywhere in the TUI layer**: `grep -rn "data.go.kr\|serviceKey=" tui/src/` returns zero matches. All credentials remain behind `KOSMOS_*` env vars resolved by the Python backend.
+- [X] **No hardcoded keys anywhere in the TUI layer**: `grep -rn "data.go.kr\|serviceKey=" tui/src/` returns zero matches. All credentials remain behind `UMMAYA_*` env vars resolved by the Python backend.
 - [X] **Happy-path + error-path tests for the IPC bridge**: `tui/tests/ipc/bridge-exit.test.ts` (crash/teardown), `tui/tests/ipc/bridge-hook.test.ts` (fire-and-forget async), `tests/ipc/test_otel_span.py` (inbound + outbound) — covers both success and degraded paths per adapter-test spirit.
 
 **Evidence**: `tests/integration/test_tui_backend_smoke.py`, `tests/integration/test_tui_multi_ministry_smoke.py`, zero live-API markers.
@@ -88,7 +88,7 @@ TUI layer is a front-end to the Python backend; fail-closed defaults for tool ad
 
 | Principle | Status | Key Evidence |
 |-----------|--------|--------------|
-| I. Reference-Driven Development | PASS | 64 `// Source:` + 37 `KOSMOS-original` headers, `attribution-audit-phase10.md` |
+| I. Reference-Driven Development | PASS | 64 `// Source:` + 37 `UMMAYA-original` headers, `attribution-audit-phase10.md` |
 | II. Fail-Closed Security | PASS | Permission modal defaults to denied; input suppressed while open; SIGTERM→SIGKILL teardown |
 | III. Pydantic v2 Strict Typing | PASS | All 12 IPC frame classes use `Literal` discriminators; TS side generated from Py |
 | IV. Government API Compliance | PASS | Zero live `data.go.kr` calls in CI; T128/T129 are fixture-only |

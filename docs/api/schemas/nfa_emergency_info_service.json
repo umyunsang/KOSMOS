@@ -20,7 +20,7 @@
       "type": "object"
     }
   },
-  "$id": "https://kosmos.example/api/schemas/nfa_emergency_info_service.json",
+  "$id": "https://ummaya.example/api/schemas/nfa_emergency_info_service.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {

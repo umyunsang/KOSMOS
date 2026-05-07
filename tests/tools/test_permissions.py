@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.tools.permissions import compute_permission_tier
+from ummaya.tools.permissions import compute_permission_tier
 
 
 class TestComputePermissionTierTotality:

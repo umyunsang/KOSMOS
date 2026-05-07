@@ -2,9 +2,9 @@
 
 ## Objective
 
-`docs/requirements/kosmos-migration-tree.md § UI L2 결정사항` 의 승인된 UI
+`docs/requirements/ummaya-migration-tree.md § UI L2 결정사항` 의 승인된 UI
 결정들을 실제 TUI 컴포넌트에 반영. 와이어프레임 mjs 파일들의 시각적 결정을
-포팅된 CC 컴포넌트 + KOSMOS hook에 와이어링.
+포팅된 CC 컴포넌트 + UMMAYA hook에 와이어링.
 
 ## Acceptance criteria
 
@@ -65,7 +65,7 @@
 - `history.ts` · 세션 검색 (E.5)
 
 ### `tui/src/components/LogoV2/Clawd.tsx` + `AnimatedClawd.tsx`
-- 이미 UFO 보라 버전으로 교체 완료 (이 Epic 착수 전 선행됨)
+- UMMAYA 홈 시그널 마스코트로 교체 완료 (지붕 + 출입구 + 호출 신호)
 
 ### `tui/src/i18n/`
 - `ko.ts` / `en.ts` · 온보딩 · 에러 문구 추가 (A.3)
@@ -83,5 +83,5 @@ Tool system 재배선 (P3) · 실 Plugin 어댑터 (P5) · docs/api 작성 (P6)
 Requires P0, P1+P2, P3 complete.
 
 ### Related decisions
-`docs/requirements/kosmos-migration-tree.md § UI L2 결정사항`
+`docs/requirements/ummaya-migration-tree.md § UI L2 결정사항`
 `docs/wireframes/` (proposal-iv · ui-{a,b,c,d,e}.mjs)

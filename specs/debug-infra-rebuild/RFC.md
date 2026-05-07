@@ -1,4 +1,4 @@
-# RFC — KOSMOS 디버깅 인프라 재구축
+# RFC — UMMAYA 디버깅 인프라 재구축
 
 > **Status**: Draft / 2026-05-02 작성
 > **Trigger**: Spec 2521 의 4시간 디버깅 시 자동화 PTY smoke (asciinema + expect + pyte) 가 K-EXAONE on FriendliAI 의 reasoning latency (30-90s) 를 hang 으로 오판 → 잘못된 결론 누적
@@ -31,7 +31,7 @@
 
 ### 2.1 LLM call replay / VCR-style cassettes
 
-| 도구 | 평가 | KOSMOS 적합도 |
+| 도구 | 평가 | UMMAYA 적합도 |
 |---|---|---|
 | [vcr-langchain](https://github.com/amosjyng/vcr-langchain) | 모ngkeypatch 기반, adapter 가 patched scope 밖에서 HTTP 하면 leak | 🟡 부분 |
 | [llmock / aimock](https://aimock.copilotkit.dev/) | **HTTP server 형태 + `ttft`/`tps`/`jitter` knob** | 🟢 정확히 우리 문제 |
@@ -40,7 +40,7 @@
 
 ### 2.2 TUI testing — Ink + 친척
 
-| 도구 | 평가 | KOSMOS 적합도 |
+| 도구 | 평가 | UMMAYA 적합도 |
 |---|---|---|
 | [ink-testing-library](https://github.com/vadimdemedes/ink-testing-library) | 이미 사용 중. `.frames` 배열은 underused (per-render snapshot stream) | 🟢 underused |
 | [react-render-stream-testing-library](https://github.com/testing-library/react-render-stream-testing-library) | "createSnapshots after every render + iterate via takeSnapshot" 패턴. React-DOM 전용이지만 Ink 로 포팅 가능 | 🟢 패턴 차용 |
@@ -56,7 +56,7 @@
 | Langfuse (이미 사용) | 🟡 chunk 별 timestamp 없이 flat list | 🔴 |
 | [Phoenix (Arize)](https://arize.com/docs/phoenix/tracing/how-to-tracing/importing-and-exporting-traces/retrieve-traces-via-cli) | 🟢 traces.json export + replay | 🟡 (지원하지만 직접 instrument 필요) |
 | OpenLLMetry | 🟢 (instrumentation only — Langfuse 로 수집) | 🔴 |
-| OTEL GenAI semconv | 🟢 (`gen_ai.request.streaming` + chunk events) | 🟡 (`kosmos.tui.*` 우리가 추가) |
+| OTEL GenAI semconv | 🟢 (`gen_ai.request.streaming` + chunk events) | 🟡 (`ummaya.tui.*` 우리가 추가) |
 | **공통 gap** | 모든 tracing 이 LLM 만 본다 — UI 와 동기 안 됨 ([dev.to The Missing Layer](https://dev.to/custodiaadmin/the-missing-layer-in-langsmith-langfuse-and-helicone-visual-replay-21gk)) |
 
 ### 2.4 결정적 anti-pattern
@@ -70,11 +70,11 @@
 
 ### P0 — `aimock` 로 FriendliAI 를 CI 에서 분리 (🔥 단일 최고 leverage)
 
-**무엇**: [aimock.copilotkit.dev](https://aimock.copilotkit.dev/) 를 Docker 컨테이너로 CI 에서 띄우고 `KOSMOS_FRIENDLI_BASE_URL=http://localhost:4010` 로 가리킴.
+**무엇**: [aimock.copilotkit.dev](https://aimock.copilotkit.dev/) 를 Docker 컨테이너로 CI 에서 띄우고 `UMMAYA_FRIENDLI_BASE_URL=http://localhost:4010` 로 가리킴.
 
 **왜**: K-EXAONE 의 30-90s reasoning_content 길이가 자동화 smoke 의 timeout 비결정성의 root cause. aimock 의 `ttft`/`tps`/`jitter` knob 으로 *real-feeling* streaming 을 *bounded* 시간에 재현. fixture 는 `match: userMessage`, `response: { content, tool_calls }`, `opts: { ttft, tps, chunkSize }` 로 정의. 한 fixture = 한 시나리오 = 한 결정론적 smoke.
 
-**KOSMOS 적용**:
+**UMMAYA 적용**:
 ```
 # CI Docker compose
 services:
@@ -87,8 +87,8 @@ services:
 
 # Test env
 env:
-  KOSMOS_FRIENDLI_BASE_URL: http://localhost:4010/v1
-  KOSMOS_FRIENDLI_TOKEN: aimock-fake-token
+  UMMAYA_FRIENDLI_BASE_URL: http://localhost:4010/v1
+  UMMAYA_FRIENDLI_TOKEN: aimock-fake-token
 ```
 
 Fixture 예시 (`tests/fixtures/llm/busan-weather.json`):
@@ -117,7 +117,7 @@ Fixture 예시 (`tests/fixtures/llm/busan-weather.json`):
 
 **무엇**: ink-testing-library 의 `render()` 가 반환하는 `frames` 배열을 polled-with-deadline 으로 wait. 모든 `Sleep 6` 같은 hardcoded sleep 제거.
 
-**왜**: teatest 의 `WaitFor` 패턴이 Bubble Tea 진영의 표준 ([Pattern Matched playbook](https://patternmatched.substack.com/p/testing-bubble-tea-interfaces)). KOSMOS 의 `.expect` script 의 모든 `Sleep <wallclock>` 는 K-EXAONE latency 변동에 민감해서 무용지물.
+**왜**: teatest 의 `WaitFor` 패턴이 Bubble Tea 진영의 표준 ([Pattern Matched playbook](https://patternmatched.substack.com/p/testing-bubble-tea-interfaces)). UMMAYA 의 `.expect` script 의 모든 `Sleep <wallclock>` 는 K-EXAONE latency 변동에 민감해서 무용지물.
 
 **구현**: `tui/src/test-utils/waitForFrame.ts` (코드 § 4 참조).
 
@@ -127,11 +127,11 @@ Fixture 예시 (`tests/fixtures/llm/busan-weather.json`):
 
 **무엇**: `scripts/tui-tmux-capture.sh` 신설:
 ```bash
-tmux new-session -d -s kosmos 'bun run tui'
-tmux send-keys -t kosmos '부산 날씨 알려줘' Enter
+tmux new-session -d -s ummaya 'bun run tui'
+tmux send-keys -t ummaya '부산 날씨 알려줘' Enter
 # polled wait until predicate
-until tmux capture-pane -t kosmos -p | grep -q "● lookup"; do sleep 0.3; done
-tmux capture-pane -t kosmos -p > frame_lookup.txt
+until tmux capture-pane -t ummaya -p | grep -q "● lookup"; do sleep 0.3; done
+tmux capture-pane -t ummaya -p > frame_lookup.txt
 ```
 
 **왜**: asciinema 의 PTY-nesting 제약 ([issue #250](https://github.com/asciinema/asciinema/issues/250)) 회피. 출력은 plain UTF-8 (ANSI 해석 없음) → grep 가능.
@@ -155,17 +155,17 @@ expect(frames.map(hash)).toEqual([
 ])
 ```
 
-### P4 — OTEL `kosmos.llm.chunk` + `kosmos.tui.frame_commit` span events
+### P4 — OTEL `ummaya.llm.chunk` + `ummaya.tui.frame_commit` span events
 
 **무엇**: 두 새 OTEL span event:
-- `kosmos.llm.chunk` — backend 가 stream 받을 때마다 emit. attributes: `correlation_id`, `bytes`, `delta_ms_since_first_token`, `channel: content|reasoning|tool_call`
-- `kosmos.tui.frame_commit` — frontend Ink reconcile 마다 emit. attributes: `correlation_id`, `frame_hash`, `frame_seq`
+- `ummaya.llm.chunk` — backend 가 stream 받을 때마다 emit. attributes: `correlation_id`, `bytes`, `delta_ms_since_first_token`, `channel: content|reasoning|tool_call`
+- `ummaya.tui.frame_commit` — frontend Ink reconcile 마다 emit. attributes: `correlation_id`, `frame_hash`, `frame_seq`
 
 **왜**: Spec 028 의 OTLP collector → Langfuse 흐름이 이미 깔려 있음. 이 두 event 로 *"X bytes 가 T 에 도착했고 UI 가 K frame 에서 paint 했다"* 의 진실 재구성 가능. [Phoenix 의 traces.json export](https://arize.com/docs/phoenix/tracing/how-to-tracing/importing-and-exporting-traces/retrieve-traces-via-cli) 와 호환.
 
 **효과**: bug report = "Langfuse trace 링크 + frame_commit sequence". CC 의 anti-pattern #2 (grep-as-proof) 영구 폐지.
 
-### P5 — `KosmosCassette` (vcr-langchain 스타일, optional)
+### P5 — `UmmayaCassette` (vcr-langchain 스타일, optional)
 
 **무엇**: aimock 보다 더 가벼운 unit-test layer. `httpx.AsyncClient.send` monkey-patch 로 cassette JSONL 기록/replay.
 
@@ -238,7 +238,7 @@ export async function waitForFrame(
 # Replaces scripts/tui-text-debug.sh's asciinema-in-asciinema PTY nesting.
 
 set -euo pipefail
-SESSION="kosmos-debug-$$"
+SESSION="ummaya-debug-$$"
 OUTDIR="${1:?usage: $0 <output-dir>}"
 SCENARIO="${2:?usage: $0 <output-dir> <scenario.sh>}"
 mkdir -p "$OUTDIR"
@@ -246,7 +246,7 @@ mkdir -p "$OUTDIR"
 cleanup() { tmux kill-session -t "$SESSION" 2>/dev/null || true; }
 trap cleanup EXIT
 
-# 1. Detached session running KOSMOS TUI
+# 1. Detached session running UMMAYA TUI
 tmux new-session -d -s "$SESSION" -x 200 -y 60 'bun run tui'
 
 # 2. Run the scenario script in a sub-shell with helpers
@@ -303,25 +303,25 @@ tests/fixtures/llm/
 
 ### 4.4 OTEL span events (P4)
 
-`src/kosmos/llm/client.py`:
+`src/ummaya/llm/client.py`:
 ```python
 # Each chunk arriving from FriendliAI
-span.add_event("kosmos.llm.chunk", attributes={
-    "kosmos.correlation_id": correlation_id,
-    "kosmos.llm.bytes": len(chunk_bytes),
-    "kosmos.llm.delta_ms": elapsed_ms_since_first_chunk,
-    "kosmos.llm.channel": channel_name,  # content|reasoning|tool_call
+span.add_event("ummaya.llm.chunk", attributes={
+    "ummaya.correlation_id": correlation_id,
+    "ummaya.llm.bytes": len(chunk_bytes),
+    "ummaya.llm.delta_ms": elapsed_ms_since_first_chunk,
+    "ummaya.llm.channel": channel_name,  # content|reasoning|tool_call
 })
 ```
 
 `tui/src/components/Messages.tsx` (or 적절한 곳에서):
 ```typescript
 // Each Ink reconcile
-tracer.startSpan('kosmos.tui.frame_commit', {
+tracer.startSpan('ummaya.tui.frame_commit', {
   attributes: {
-    'kosmos.correlation_id': correlationId,
-    'kosmos.tui.frame_hash': hashFrame(latestFrame),
-    'kosmos.tui.frame_seq': frameSeqCounter,
+    'ummaya.correlation_id': correlationId,
+    'ummaya.tui.frame_hash': hashFrame(latestFrame),
+    'ummaya.tui.frame_seq': frameSeqCounter,
   },
 }).end()
 ```
@@ -373,11 +373,11 @@ tracer.startSpan('kosmos.tui.frame_commit', {
 
 - [x] Ink-side `frames` 배열을 hash sequence 로 assert 하는 helper (`tui/src/test-utils/frameStreamSnapshot.ts` — `assertFrameSequence` + `takeStreamSnapshot`)
 - [ ] Spec 1635 / 287 의 핵심 component test 마이그레이션 (future work)
-- [x] `kosmos.tui.frame_commit` OTEL event 추가 (`tui/src/utils/frameCommitOtel.ts` — `useFrameCommitTracker` hook wired into `MessagesImpl`)
+- [x] `ummaya.tui.frame_commit` OTEL event 추가 (`tui/src/utils/frameCommitOtel.ts` — `useFrameCommitTracker` hook wired into `MessagesImpl`)
 
 ### Phase 5 — OTEL chunk events (Optional, 1 Epic)
 
-- [ ] `kosmos.llm.chunk` event 추가 (`src/kosmos/llm/client.py`)
+- [ ] `ummaya.llm.chunk` event 추가 (`src/ummaya/llm/client.py`)
 - [ ] Phoenix `traces.json` export 통합
 - [ ] AGENTS.md "5 mandatory probe points" 의 IPC frame boundary probe 와 통합
 

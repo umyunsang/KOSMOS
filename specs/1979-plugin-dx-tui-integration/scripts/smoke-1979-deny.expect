@@ -12,7 +12,7 @@ set log_path "$spec_dir/smoke-1979-deny.txt"
 spawn script -q $log_path bash -c "cd tui && bun run tui"
 
 expect {
-  -re ".*KOSMOS.*" {}
+  -re ".*UMMAYA.*" {}
   timeout { exit 1 }
 }
 

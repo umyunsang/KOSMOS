@@ -159,7 +159,7 @@ def test_no_host_env_vars_beyond_env_example(config: dict) -> None:
     if not _ENV_EXAMPLE_PATH.exists():
         pytest.skip(
             ".env.example not present — cannot validate FR-B04 env var constraint. "
-            "Create .env.example listing all required KOSMOS_* variables before "
+            "Create .env.example listing all required UMMAYA_* variables before "
             "enabling this assertion."
         )
 

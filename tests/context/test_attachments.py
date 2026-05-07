@@ -18,11 +18,11 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from kosmos.context.attachments import AttachmentCollector
-from kosmos.context.models import SystemPromptConfig
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.models import QueryState
-from kosmos.llm.usage import UsageTracker
+from ummaya.context.attachments import AttachmentCollector
+from ummaya.context.models import SystemPromptConfig
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.models import QueryState
+from ummaya.llm.usage import UsageTracker
 
 # ---------------------------------------------------------------------------
 # Helpers

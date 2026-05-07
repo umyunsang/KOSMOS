@@ -6,7 +6,7 @@ on:
       - 'v*.*.*'
 
 permissions:
-  contents: write  # to commit the manifest back to main
+  contents: read
   packages: read   # to read GHCR digests if needed
 
 jobs:
@@ -43,8 +43,8 @@ jobs:
         # bytes produced from this commit — swapping GHCR push in later does not
         # change the schema contract.
         run: |
-          docker build -f docker/Dockerfile -t kosmos:release .
-          DOCKER_DIGEST=$(docker image inspect kosmos:release --format '{{.Id}}')
+          docker build -f docker/Dockerfile -t ummaya:release .
+          DOCKER_DIGEST=$(docker image inspect ummaya:release --format '{{.Id}}')
           echo "DOCKER_DIGEST=$DOCKER_DIGEST" >> "$GITHUB_ENV"
 
       - name: Resolve Friendli model id
@@ -60,7 +60,7 @@ jobs:
       - name: Emit prompt hashes
         run: |
           mkdir -p docs/release-manifests
-          uv run python -m kosmos.context.prompt_loader --emit-hashes > /tmp/prompt_hashes.json
+          uv run python -m ummaya.context.prompt_loader --emit-hashes > /tmp/prompt_hashes.json
 
       - name: Verify required release inputs
         run: |
@@ -78,12 +78,10 @@ jobs:
             --litellm-proxy-version unknown \
             --out "docs/release-manifests/${GITHUB_SHA}.yaml"
 
-      - name: Commit manifest to main
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/release-manifests/
-          git commit -m "chore(release): add release manifest for ${GITHUB_REF_NAME}" || echo "no changes"
-          git push origin HEAD:main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload release manifest
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-manifest-${{ github.ref_name }}-${{ github.sha }}
+          path: docs/release-manifests/${{ github.sha }}.yaml
+          if-no-files-found: error
+          retention-days: 90

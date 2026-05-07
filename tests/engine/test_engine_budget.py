@@ -14,15 +14,15 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from kosmos.engine.config import QueryEngineConfig
-from kosmos.engine.engine import QueryEngine
-from kosmos.engine.events import QueryEvent, StopReason
-from kosmos.engine.models import QueryContext, SessionBudget
-from kosmos.llm.client import LLMClient  # noqa: F401 — needed for QueryContext.model_rebuild()
-from kosmos.llm.models import ChatMessage, StreamEvent, TokenUsage
-from kosmos.llm.usage import UsageTracker
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.registry import ToolRegistry
+from ummaya.engine.config import QueryEngineConfig
+from ummaya.engine.engine import QueryEngine
+from ummaya.engine.events import QueryEvent, StopReason
+from ummaya.engine.models import QueryContext, SessionBudget
+from ummaya.llm.client import LLMClient  # noqa: F401 — needed for QueryContext.model_rebuild()
+from ummaya.llm.models import ChatMessage, StreamEvent, TokenUsage
+from ummaya.llm.usage import UsageTracker
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.registry import ToolRegistry
 
 # Re-resolve forward references in QueryContext so mock objects are accepted.
 QueryContext.model_rebuild()
@@ -53,7 +53,7 @@ def _stop_event(events: list[QueryEvent]) -> QueryEvent:
 # ---------------------------------------------------------------------------
 
 _SIMPLE_TEXT_RESPONSE: list[StreamEvent] = [
-    StreamEvent(type="content_delta", content="Hello, I am KOSMOS."),
+    StreamEvent(type="content_delta", content="Hello, I am UMMAYA."),
     StreamEvent(type="usage", usage=TokenUsage(input_tokens=10, output_tokens=5)),
     StreamEvent(type="done"),
 ]

@@ -12,7 +12,7 @@ All models use pydantic v2 with `ConfigDict(frozen=True)` unless otherwise noted
 
 ## 1. `GovAPITool` — extended registry entry
 
-**Location**: `src/kosmos/tools/models.py` (existing model; extended in this spec).
+**Location**: `src/ummaya/tools/models.py` (existing model; extended in this spec).
 
 **Existing fields** (unchanged): `id`, `name_ko`, `provider`, `category`, `endpoint`, `auth_type`, `input_schema`, `output_schema`, `search_hint`, `requires_auth` (default `True`), `is_concurrency_safe` (default `False`), `is_personal_data` (default `True`), `cache_ttl_seconds` (default `0`), `rate_limit_per_minute`, `is_core`, `llm_description`.
 
@@ -38,7 +38,7 @@ Violations raise `ValueError` at registration time — no silent defaults, no re
 
 ## 2. `TOOL_MIN_AAL` — static lookup table
 
-**Location**: `src/kosmos/security/audit.py` (new module) as a `Final[dict[str, str]]` plus a dataclass for `public_path` metadata.
+**Location**: `src/ummaya/security/audit.py` (new module) as a `Final[dict[str, str]]` plus a dataclass for `public_path` metadata.
 
 | Tool ID | Min AAL | `public_path` | Rationale |
 |---|---|---|---|
@@ -55,7 +55,7 @@ Violations raise `ValueError` at registration time — no silent defaults, no re
 
 ## 3. `ToolCallAuditRecord` — immutable evidence artifact
 
-**Location**: `src/kosmos/security/audit.py` (new module).
+**Location**: `src/ummaya/security/audit.py` (new module).
 
 **Model shape** (pydantic v2, `frozen=True`):
 
@@ -105,8 +105,8 @@ Violations raise `ValueError` at registration time — no silent defaults, no re
 | `expires_at` | `datetime` | Yes | RFC 3339 timezone-aware. |
 | `introspection_endpoint` | `str (URI)` | Yes | Per RFC 7662. |
 | `revocation_endpoint` | `str (URI)` | Yes | Per RFC 7009. |
-| `issuer` | `str` | Yes | Ministry or KOSMOS-as-broker identifier. |
-| `audience` | `str` | Yes | `kosmos-agent` for the default agent audience. |
+| `issuer` | `str` | Yes | Ministry or UMMAYA-as-broker identifier. |
+| `audience` | `str` | Yes | `ummaya-agent` for the default agent audience. |
 | `dpa_reference` | `Optional[str]` | Conditional | Non-null when any scope entry is PII-bound. |
 
 ## 5. `ConsentRecord` — citizen consent artifact

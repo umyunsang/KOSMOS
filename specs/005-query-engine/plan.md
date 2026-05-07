@@ -5,7 +5,7 @@
 
 ## Summary
 
-Implement the async generator tool loop (Layer 1) that is the heartbeat of a KOSMOS session. The engine cycles through `preprocess -> LLM call -> tool dispatch -> decide` until the citizen's request is resolved or unrecoverably blocked. Core patterns adapted from Claude Code reconstructed architecture (mutable history + immutable snapshots), Google ADK (event-driven runner loop), and Claude Agent SDK (async generator protocol). Full research in [research.md](./research.md).
+Implement the async generator tool loop (Layer 1) that is the heartbeat of a UMMAYA session. The engine cycles through `preprocess -> LLM call -> tool dispatch -> decide` until the citizen's request is resolved or unrecoverably blocked. Core patterns adapted from Claude Code reconstructed architecture (mutable history + immutable snapshots), Google ADK (event-driven runner loop), and Claude Agent SDK (async generator protocol). Full research in [research.md](./research.md).
 
 ## Technical Context
 
@@ -14,7 +14,7 @@ Implement the async generator tool loop (Layer 1) that is the heartbeat of a KOS
 **Storage**: N/A (in-memory session state only)
 **Testing**: pytest >=8.0, pytest-asyncio >=0.24, respx >=0.23.1
 **Target Platform**: Linux/macOS server (CLI interface for Phase 1)
-**Project Type**: Library (query engine module within the KOSMOS monorepo)
+**Project Type**: Library (query engine module within the UMMAYA monorepo)
 **Performance Goals**: SC-004 — concurrent tool dispatch reduces turn latency by 30%+
 **Constraints**: 128K context window (FriendliAI K-EXAONE), <100K token session budget default
 **Scale/Scope**: Single-session conversational agent, 50+ turns, 5,000+ potential tools
@@ -51,7 +51,7 @@ specs/005-query-engine/
 ### Source Code (repository root)
 
 ```text
-src/kosmos/engine/
+src/ummaya/engine/
 ├── __init__.py          # Module exports: QueryEngine, QueryEvent, StopReason, etc.
 ├── config.py            # QueryEngineConfig (pydantic-settings)
 ├── engine.py            # QueryEngine class (per-session orchestrator)
@@ -72,12 +72,12 @@ tests/engine/
 └── test_tokens.py       # estimate_tokens() heuristic accuracy
 ```
 
-**Structure Decision**: New `src/kosmos/engine/` package following the same pattern as existing `src/kosmos/llm/` and `src/kosmos/tools/`. The engine module depends on both `llm` and `tools` modules but does not modify them. Test directory mirrors source layout.
+**Structure Decision**: New `src/ummaya/engine/` package following the same pattern as existing `src/ummaya/llm/` and `src/ummaya/tools/`. The engine module depends on both `llm` and `tools` modules but does not modify them. Test directory mirrors source layout.
 
 **Dependency Graph**:
 ```
-kosmos.engine  --->  kosmos.llm    (LLMClient, ChatMessage, TokenUsage, UsageTracker)
-               --->  kosmos.tools  (ToolRegistry, ToolExecutor, ToolResult, GovAPITool)
+ummaya.engine  --->  ummaya.llm    (LLMClient, ChatMessage, TokenUsage, UsageTracker)
+               --->  ummaya.tools  (ToolRegistry, ToolExecutor, ToolResult, GovAPITool)
 ```
 
 ## Reference Analysis
@@ -87,12 +87,12 @@ Each design decision traces to concrete reference sources per Constitution § I:
 | Decision | Primary Reference | Secondary Reference |
 |---|---|---|
 | R-001: Async generator loop | Claude Agent SDK (`BaseAsyncToolRunner.__run__()`) | Google ADK (`Runner._run_one_step_async()`) |
-| R-002: QueryEvent discriminated union | Google ADK (`Event` + `EventActions`) | KOSMOS `StreamEvent` (existing) |
+| R-002: QueryEvent discriminated union | Google ADK (`Event` + `EventActions`) | UMMAYA `StreamEvent` (existing) |
 | R-003: Mutable history + immutable snapshots | Claude Code reconstructed (`QueryEngine.ts`) | "Don't Break the Cache" (arxiv 2601.06007) |
 | R-004: Concurrent tool dispatch | Google ADK (`asyncio.gather()` + `ThreadPoolExecutor`) | Python 3.11+ `asyncio.TaskGroup` |
 | R-005: Multi-stage preprocessing | Claude Code reconstructed (5-stage pipeline) | "Don't Break the Cache" paper |
 | R-006: Token estimation heuristic | K-EXAONE Korean token density research | No public tokenizer available |
-| R-007: Three-dimensional budget | Google ADK (`InvocationCostManager`) | KOSMOS `UsageTracker` (existing) |
+| R-007: Three-dimensional budget | Google ADK (`InvocationCostManager`) | UMMAYA `UsageTracker` (existing) |
 | R-008: State isolation pattern | Google ADK (`InvocationContext`) | Claude Code reconstructed (`QueryState`) |
 
 ## Key Design Decisions
@@ -118,4 +118,4 @@ Partition-sort algorithm groups consecutive `is_concurrency_safe=True` tools for
 
 ## Complexity Tracking
 
-No constitution violations requiring justification. All design decisions use existing patterns from the codebase (`kosmos.llm`, `kosmos.tools`) and reference implementations.
+No constitution violations requiring justification. All design decisions use existing patterns from the codebase (`ummaya.llm`, `ummaya.tools`) and reference implementations.

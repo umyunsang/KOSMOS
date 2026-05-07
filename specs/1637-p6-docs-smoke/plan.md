@@ -5,7 +5,7 @@
 
 ## Summary
 
-P6 is the migration's terminal Epic. It produces (a) a single canonical `docs/api/` catalog covering active registry-bundled adapters with seven mandatory fields each, (b) deterministic JSON Schema Draft 2020-12 exports under `docs/api/schemas/` driven by a stdlib + Pydantic v2 build script, (c) absorption of the legacy `docs/tools/` directory and cleanup of nine stale `road_risk_score` (composite) references, (d) `bun test` recovery to 0 fail / 0 errors with the TUI L2 regression at `useVirtualScroll.ts:273` resolved, (e) a hand-driven `bun run tui` visual smoke checklist with ANSI evidence capture mirroring the Spec 1636 convention, and (f) the closing migration deliverables — `docs/vision.md` post-merge prose, `CLAUDE.md § Recent Changes` entry, and the KOSMOS v0.1-alpha CHANGELOG. The integrated PR uses `Closes #1637` and unlocks Initiative #1631 closure once merged.
+P6 is the migration's terminal Epic. It produces (a) a single canonical `docs/api/` catalog covering active registry-bundled adapters with seven mandatory fields each, (b) deterministic JSON Schema Draft 2020-12 exports under `docs/api/schemas/` driven by a stdlib + Pydantic v2 build script, (c) absorption of the legacy `docs/tools/` directory and cleanup of nine stale `road_risk_score` (composite) references, (d) `bun test` recovery to 0 fail / 0 errors with the TUI L2 regression at `useVirtualScroll.ts:273` resolved, (e) a hand-driven `bun run tui` visual smoke checklist with ANSI evidence capture mirroring the Spec 1636 convention, and (f) the closing migration deliverables — `docs/vision.md` post-merge prose, `CLAUDE.md § Recent Changes` entry, and the UMMAYA v0.1-alpha CHANGELOG. The integrated PR uses `Closes #1637` and unlocks Initiative #1631 closure once merged.
 
 The technical approach is documentation-first plus minimal code: a single new Python script (`scripts/build_schemas.py`, stdlib + Pydantic v2 only), one TUI hook fix (`tui/src/hooks/useVirtualScroll.ts:273`), and an exhaustive doc authoring pass that follows the seven-field template established here. No new runtime dependencies on either the Python or TS side.
 
@@ -15,8 +15,8 @@ The technical approach is documentation-first plus minimal code: a single new Py
 **Primary Dependencies**: existing only — `pydantic >= 2.13` (envelope discovery + JSON Schema export), `pydantic-settings >= 2.0`, `httpx >= 0.27` (referenced in adapter docs, not invoked at build time), `opentelemetry-sdk` + `opentelemetry-semantic-conventions` (referenced in span-attribute documentation, not invoked here), `ink` + `react` (TUI fix scope only), Bun stdlib. **Zero new runtime dependencies** (AGENTS.md hard rule satisfied; spec FR-022).
 **Storage**: filesystem only — `docs/api/` (Markdown specs + nested directories), `docs/api/schemas/` (JSON files), `specs/1637-p6-docs-smoke/visual-evidence/` (ANSI captures). No database, no external store.
 **Testing**: `bun test` (TUI side, target 0 fail / 0 errors over ≥ 830 tests), `uv run pytest` (backend side, regression-free), `python scripts/build_schemas.py` (idempotency self-check via re-run diff).
-**Target Platform**: KOSMOS developer terminal (Bun + uv) and KOSMOS citizen terminal (Bun-built TUI). PDF inline-render path conditional on Kitty / iTerm2 graphics protocol.
-**Project Type**: monorepo — Python backend (`src/kosmos/**`), TypeScript TUI (`tui/**`), shared docs (`docs/**`), shared scripts (`scripts/**`). Single repo, no microservices.
+**Target Platform**: UMMAYA developer terminal (Bun + uv) and UMMAYA citizen terminal (Bun-built TUI). PDF inline-render path conditional on Kitty / iTerm2 graphics protocol.
+**Project Type**: monorepo — Python backend (`src/ummaya/**`), TypeScript TUI (`tui/**`), shared docs (`docs/**`), shared scripts (`scripts/**`). Single repo, no microservices.
 **Performance Goals**: `python scripts/build_schemas.py` runs in under 5 seconds on a clean checkout; `bun test` total wall time stays at or under the current 12-second baseline; `bun run tui` cold start under 2 seconds.
 **Constraints**: source text English only (search hints bilingual ko/en allowed per FR-021); no `Any` in any new Python code; visual-evidence ANSI capture follows Spec 1636 convention; PR `Closes #1637` only (Task sub-issues closed after merge per docs/conventions.md).
 **Scale/Scope**: active adapter Markdown specs · active JSON Schema exports · 9 doc cleanup locations · 1 new Python script (~150 LOC budget) · 1 TUI hook fix (~5 LOC delta) · 5 cross-cutting doc updates (vision, CLAUDE.md, CHANGELOG.md, plus existing references rewritten) · 1 smoke checklist with active ANSI captures.
@@ -31,7 +31,7 @@ The technical approach is documentation-first plus minimal code: a single new Py
 | II. Fail-Closed Security (NON-NEGOTIABLE) | PASS | Documentation-only change to existing fail-closed defaults. Adapter specs **describe** the per-adapter `requires_auth=True` / `is_personal_data=True` settings; no defaults are loosened. The single TUI fix (useVirtualScroll Set error) does not touch permission code. |
 | III. Pydantic v2 Strict Typing (NON-NEGOTIABLE) | PASS | `scripts/build_schemas.py` consumes existing Pydantic v2 envelopes via `model_json_schema()`. No new schemas introduced. No `Any` anywhere. JSON Schema dialect explicitly Draft 2020-12 (set on output via `$schema` URI). |
 | IV. Government API Compliance | PASS | No live `data.go.kr` calls in plan or implementation. Adapter docs reference recorded fixtures only. `@pytest.mark.live` tests remain skipped per existing convention. No hardcoded keys; no key handling at this layer. |
-| V. Policy Alignment | PASS | Adapter spec seven-field template explicitly carries permission-tier rationale citing Spec 033 (PIPA permission gauntlet). KOSMOS v0.1-alpha CHANGELOG references AI Action Plan Principles 8/9/5 alignment as the migration outcome. |
+| V. Policy Alignment | PASS | Adapter spec seven-field template explicitly carries permission-tier rationale citing Spec 033 (PIPA permission gauntlet). UMMAYA v0.1-alpha CHANGELOG references AI Action Plan Principles 8/9/5 alignment as the migration outcome. |
 | VI. Deferred Work Accountability | PASS | Spec contains 5 deferred items, all marked `NEEDS TRACKING`; `/speckit-taskstoissues` will resolve to issue numbers. Spec.md already scanned for unregistered deferral patterns; "future epic", "v2", "post-v0.1-alpha" references all map to deferred-table rows. |
 
 **Result**: all gates PASS. No Complexity Tracking entries required.
@@ -110,7 +110,7 @@ docs/
 scripts/
 └── build_schemas.py             # NEW Pydantic→JSON Schema Draft 2020-12 builder
 
-src/kosmos/                      # Read-only at this Epic — schema source of truth
+src/ummaya/                      # Read-only at this Epic — schema source of truth
 └── tools/
     └── register_all.py          # walked by build_schemas.py for registry traversal
 
@@ -123,7 +123,7 @@ CLAUDE.md                        # § Active Technologies + § Recent Changes up
 CHANGELOG.md                     # NEW v0.1-alpha entry
 ```
 
-**Structure Decision**: KOSMOS is a single monorepo with a Python backend (`src/kosmos/`), TypeScript TUI (`tui/`), shared docs (`docs/`), and shared scripts (`scripts/`). This Epic touches docs (extensively), one Python script, one TS hook, and three top-level Markdown files (CLAUDE.md, CHANGELOG.md, vision.md). No new directories at the repo root; `docs/api/` is the only new directory under `docs/`. The structure follows the precedent set by Spec 1636 (which placed `docs/plugins/` as a sibling under `docs/`).
+**Structure Decision**: UMMAYA is a single monorepo with a Python backend (`src/ummaya/`), TypeScript TUI (`tui/`), shared docs (`docs/`), and shared scripts (`scripts/`). This Epic touches docs (extensively), one Python script, one TS hook, and three top-level Markdown files (CLAUDE.md, CHANGELOG.md, vision.md). No new directories at the repo root; `docs/api/` is the only new directory under `docs/`. The structure follows the precedent set by Spec 1636 (which placed `docs/plugins/` as a sibling under `docs/`).
 
 ## Complexity Tracking
 

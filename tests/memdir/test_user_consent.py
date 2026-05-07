@@ -16,7 +16,7 @@ from uuid import UUID, uuid4
 import pytest
 from pydantic import ValidationError
 
-from kosmos.memdir.user_consent import (
+from ummaya.memdir.user_consent import (
     CURRENT_CONSENT_VERSION,
     PIPAConsentRecord,
     latest_consent,

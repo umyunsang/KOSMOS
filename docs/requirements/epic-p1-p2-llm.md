@@ -92,7 +92,7 @@ Remove all Anthropic-specific bootstrap, telemetry, auth, and migration cruft. R
 - `tui/src/services/services/mcp/claudeai.ts`
 
 ### Entrypoint rewire
-- `tui/src/entrypoints/init.ts` — replace `initializeTelemetryAfterTrust` with KOSMOS OTEL init (Spec 021)
+- `tui/src/entrypoints/init.ts` — replace `initializeTelemetryAfterTrust` with UMMAYA OTEL init (Spec 021)
 - `tui/src/query.ts`, `tui/src/QueryEngine.ts` — rewire `@anthropic-ai/sdk` client instantiation to FriendliAI `LLMClient`
 
 ### Keep (but rewire)
@@ -112,4 +112,4 @@ Requires Epic P0 complete (repo scaffold, `FRIENDLI_API_KEY` secret wiring).
 
 ## Related decisions
 
-`docs/requirements/kosmos-migration-tree.md` § L1-A + § P1/P2
+`docs/requirements/ummaya-migration-tree.md` § L1-A + § P1/P2

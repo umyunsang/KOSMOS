@@ -6,7 +6,7 @@
 
 ## Content Quality
 
-- [x] No implementation details (languages, frameworks, APIs) — _Note: Spec references CC source paths (`.references/.../src/`) and KOSMOS target paths (`tui/src/`) for traceability; these are not implementation prescriptions but byte-identical migration targets, which is the work itself per AGENTS.md CORE THESIS. File paths and LOC counts are factual artefact references, not implementation hints._
+- [x] No implementation details (languages, frameworks, APIs) — _Note: Spec references CC source paths (`.references/.../src/`) and UMMAYA target paths (`tui/src/`) for traceability; these are not implementation prescriptions but byte-identical migration targets, which is the work itself per AGENTS.md CORE THESIS. File paths and LOC counts are factual artefact references, not implementation hints._
 - [x] Focused on user value and business needs — User Stories cite OTEL trace integrity (US1), constant correctness (US2), headless mode automation (US3), audit closure (US4).
 - [x] Written for non-technical stakeholders — Audit findings table is concrete; user stories use plain language; "Why this priority" articulates business value.
 - [x] All mandatory sections completed — User Scenarios, Requirements, Success Criteria, Assumptions, Scope Boundaries all present.

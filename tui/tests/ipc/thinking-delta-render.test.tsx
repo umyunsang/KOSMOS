@@ -9,7 +9,7 @@
 // implemented in T024 after Phase 3 US1 byte-copy + thinking handler verified.
 //
 // CC reference: components/messages/AssistantThinkingMessage.tsx (the rendering
-// target in CC's restored-src — KOSMOS port at tui/src/components/messages/
+// target in CC's restored-src — UMMAYA port at tui/src/components/messages/
 // AssistantThinkingMessage.tsx is byte-equivalent per Spec 2292 audit).
 
 import { describe, it, expect } from 'bun:test'

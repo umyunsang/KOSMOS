@@ -5,7 +5,7 @@
 
 ## Summary
 
-Implement the schema-driven tool registry for KOSMOS Layer 2 with fail-closed defaults, bilingual keyword search, prompt cache partitioning (core vs. situational), sliding-window rate limiting, and tool execution dispatch with Pydantic v2 input/output validation. The registry exports tool definitions in OpenAI function-calling format for consumption by the LLM client (Epic #4).
+Implement the schema-driven tool registry for UMMAYA Layer 2 with fail-closed defaults, bilingual keyword search, prompt cache partitioning (core vs. situational), sliding-window rate limiting, and tool execution dispatch with Pydantic v2 input/output validation. The registry exports tool definitions in OpenAI function-calling format for consumption by the LLM client (Epic #4).
 
 ## Technical Context
 
@@ -14,7 +14,7 @@ Implement the schema-driven tool registry for KOSMOS Layer 2 with fail-closed de
 **Storage**: N/A (in-memory registry)
 **Testing**: pytest + pytest-asyncio
 **Target Platform**: Cross-platform (macOS, Linux) CLI
-**Project Type**: Library module within KOSMOS (`src/kosmos/tools/`)
+**Project Type**: Library module within UMMAYA (`src/ummaya/tools/`)
 **Performance Goals**: Tool search < 10ms for 100 tools; registry export deterministic (byte-for-byte identical)
 **Constraints**: Fail-closed defaults (Constitution § II); Pydantic v2 for all I/O; no `Any` in I/O schemas; bilingual search_hint
 **Scale/Scope**: ~10 tools in Phase 1; design for hundreds
@@ -31,7 +31,7 @@ Implement the schema-driven tool registry for KOSMOS Layer 2 with fail-closed de
 | IV. Government API Compliance | PASS | Registry does not call APIs directly. Rate limiter enforces per-tool limits. |
 | V. Policy Alignment | PASS | Fail-closed defaults protect citizen PII by default. |
 
-**Post-Phase 1 re-check**: PASS. `GovAPITool.input_schema` and `output_schema` fields hold `type[BaseModel]` references (not `Any`). The `to_openai_tool()` method generates JSON Schema via Pydantic's `model_json_schema()`, which internally uses `Any` in the generated schema dict — this is acceptable because it's an export format, not KOSMOS I/O.
+**Post-Phase 1 re-check**: PASS. `GovAPITool.input_schema` and `output_schema` fields hold `type[BaseModel]` references (not `Any`). The `to_openai_tool()` method generates JSON Schema via Pydantic's `model_json_schema()`, which internally uses `Any` in the generated schema dict — this is acceptable because it's an export format, not UMMAYA I/O.
 
 ## Project Structure
 
@@ -51,7 +51,7 @@ specs/006-tool-system/
 ### Source Code (repository root)
 
 ```text
-src/kosmos/
+src/ummaya/
 ├── __init__.py           # Existing
 └── tools/
     ├── __init__.py       # Public exports
@@ -73,7 +73,7 @@ tests/
     └── test_search.py    # Bilingual search, ranking, edge cases
 ```
 
-**Structure Decision**: Single project layout. The tool system is a library module (`kosmos.tools`) within the KOSMOS package, parallel to `kosmos.llm` (Epic #4).
+**Structure Decision**: Single project layout. The tool system is a library module (`ummaya.tools`) within the UMMAYA package, parallel to `ummaya.llm` (Epic #4).
 
 ## Reference Mapping
 

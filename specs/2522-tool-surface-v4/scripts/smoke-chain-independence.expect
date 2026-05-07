@@ -9,11 +9,11 @@
 #
 #   Scenario A: "lat 37.5 lon 127.0 병원"
 #     1. Boot: "tool_registry: N entries verified"
-#     2. Branding: "KOSMOS"
+#     2. Branding: "UMMAYA"
 #     3. Input accepted
 #     4. LLM calls hira_hospital_search DIRECTLY (single turn, ≤120s)
 #        Gate pattern: "● lookup(hira" — TUI dispatch bullet from actual tool call
-#     5. No resolve_location call before hira — KOSMOS does NOT force cross-domain chain
+#     5. No resolve_location call before hira — UMMAYA does NOT force cross-domain chain
 #     6. shortcuts footer reappears (turn complete)
 #
 #   Scenario B: "강남구 병원"
@@ -22,7 +22,7 @@
 #        Gate pattern: "● resolve_location" — TUI dispatch bullet
 #     3. LLM autonomously calls hira_hospital_search (turn 2)
 #        Gate pattern: "● lookup(hira" — TUI dispatch bullet
-#     4. KOSMOS did NOT hardcode this chain — LLM decided from tool descriptions
+#     4. UMMAYA did NOT hardcode this chain — LLM decided from tool descriptions
 #     5. shortcuts footer reappears (turn complete)
 #
 # Pattern design notes:
@@ -42,7 +42,7 @@
 wait_for_pane "tool_registry: [0-9]+ entries verified" 45
 snapshot_pane "A-boot"
 
-# Stage A2: Wait for KOSMOS branding / REPL ready
+# Stage A2: Wait for UMMAYA branding / REPL ready
 wait_for_pane "shortcuts" 20
 snapshot_pane "A-branding"
 

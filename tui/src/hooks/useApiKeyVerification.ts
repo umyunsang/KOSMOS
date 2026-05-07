@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-1633 P2 / KOSMOS-1978 T005 — Anthropic API key verification removed.
+// UMMAYA-1633 P2 / UMMAYA-1978 T005 — Anthropic API key verification removed.
 //
 // Original CC module: .references/claude-code-sourcemap/restored-src/src/hooks/useApiKeyVerification.ts
 // CC version: 2.1.88
-// KOSMOS deviation: KOSMOS uses a single fixed provider (FriendliAI Serverless
-// + K-EXAONE per kosmos-migration-tree.md § L1-A A1). Authentication is the
-// `/login` session key, exported as `KOSMOS_FRIENDLI_TOKEN` only inside the
+// UMMAYA deviation: UMMAYA uses a single fixed provider (FriendliAI Serverless
+// + K-EXAONE per ummaya-migration-tree.md § L1-A A1). Authentication is the
+// `/login` session key, exported as `UMMAYA_FRIENDLI_TOKEN` only inside the
 // running TUI process for the Python backend. The TUI never authenticates
 // with Anthropic — every Anthropic credential lookup path (Keychain, OAuth,
 // apiKeyHelper, Console subscription) is intentionally severed.
@@ -36,7 +36,7 @@ export function useApiKeyVerification(): ApiKeyVerificationResult {
   const [status, setStatus] = useState<VerificationStatus>(() =>
     hasFriendliCredential() ? 'valid' : 'missing',
   )
-  // KOSMOS deviation: error is always null — no network failure path here.
+  // UMMAYA deviation: error is always null — no network failure path here.
   const [error] = useState<Error | null>(null)
 
   const verify = useCallback(async (): Promise<void> => {

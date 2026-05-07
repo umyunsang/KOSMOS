@@ -13,8 +13,8 @@
 
 - macOS 또는 Linux dev 환경 (Bash + GNU/BSD coreutils 모두 호환).
 - Python 3.12+ (stdlib 만 사용).
-- repo root = `/Users/um-yunsang/KOSMOS` 또는 동등.
-- `tui/src/` (KOSMOS 입력) 와 `.references/claude-code-sourcemap/restored-src/src/` (CC 입력) 양쪽 존재 확인:
+- repo root = `/Users/um-yunsang/UMMAYA` 또는 동등.
+- `tui/src/` (UMMAYA 입력) 와 `.references/claude-code-sourcemap/restored-src/src/` (CC 입력) 양쪽 존재 확인:
   ```bash
   test -d tui/src && test -d .references/claude-code-sourcemap/restored-src/src && echo OK
   ```
@@ -25,7 +25,7 @@
 
 ## 1. R1 단계 — 파일 list 산출 (`enumerate-files.sh`)
 
-**목표**: 1,531 byte-identical / 73 SDK-import-only-diff / 212 modified / 274 KOSMOS-only / 68 CC-only 5 카테고리 list 를 deterministic 산출.
+**목표**: 1,531 byte-identical / 73 SDK-import-only-diff / 212 modified / 274 UMMAYA-only / 68 CC-only 5 카테고리 list 를 deterministic 산출.
 
 ### 명령
 
@@ -35,11 +35,11 @@ specs/2292-cc-parity-audit/scripts/enumerate-files.sh
 
 ### 내부 동작
 
-1. `find tui/src -type f \( -name '*.ts' -o -name '*.tsx' \)` → KOSMOS 파일 set.
+1. `find tui/src -type f \( -name '*.ts' -o -name '*.tsx' \)` → UMMAYA 파일 set.
 2. `find .references/claude-code-sourcemap/restored-src/src -type f \( -name '*.ts' -o -name '*.tsx' \)` → CC 파일 set.
 3. `comm` + `diff -rq` 로 매칭/비매칭 분리.
 4. `LC_ALL=C sort` 로 환경 비의존 정렬.
-5. 5 카테고리 결과를 `data/enumerated-{keep-byte-identical|import-candidate|modified|kosmos-only|cc-only}.txt` 에 박제.
+5. 5 카테고리 결과를 `data/enumerated-{keep-byte-identical|import-candidate|modified|ummaya-only|cc-only}.txt` 에 박제.
 
 ### 검증
 
@@ -72,7 +72,7 @@ python3 specs/2292-cc-parity-audit/scripts/spot-check-50.py
 
 ### 산출물
 
-- `data/spot-check-results.json` — 50 entry, 각 `{kosmos_path, cc_source_path, kosmos_sha256, cc_sha256, hash_match, sampling_seed: 2292, sampling_index: 0..49}`.
+- `data/spot-check-results.json` — 50 entry, 각 `{ummaya_path, cc_source_path, ummaya_sha256, cc_sha256, hash_match, sampling_seed: 2292, sampling_index: 0..49}`.
 - markdown 표는 `cc-parity-audit.md § Spot-Check (50)` 에 self-contained 박제 (시드 유실 방어).
 
 ### 검증
@@ -141,7 +141,7 @@ python3 specs/2292-cc-parity-audit/scripts/classify-modified.py
 
 ### 내부 동작
 
-[research.md § R-4](./research.md#r-4--212-modified-파일-분류-휴리스틱-legitimate--cleanup-needed--suspicious) 의 휴리스틱 표 그대로 구현. KOSMOS-known 잔재 path / 토큰 list (Spec 1633 영향 영역, `claude.ts`, `verifyApiKey`, `@anthropic-ai/`) 는 스크립트 상단 상수.
+[research.md § R-4](./research.md#r-4--212-modified-파일-분류-휴리스틱-legitimate--cleanup-needed--suspicious) 의 휴리스틱 표 그대로 구현. UMMAYA-known 잔재 path / 토큰 list (Spec 1633 영향 영역, `claude.ts`, `verifyApiKey`, `@anthropic-ai/`) 는 스크립트 상단 상수.
 
 ### 산출물
 
@@ -199,7 +199,7 @@ grep -c '^| ' specs/2292-cc-parity-audit/cc-parity-audit.md   # 표 행 수, 212
 ## 6. 한 번에 재실행
 
 ```bash
-cd /Users/um-yunsang/KOSMOS
+cd /Users/um-yunsang/UMMAYA
 specs/2292-cc-parity-audit/scripts/enumerate-files.sh           # R1
 python3 specs/2292-cc-parity-audit/scripts/spot-check-50.py     # R2
 specs/2292-cc-parity-audit/scripts/verify-import-diff.sh        # R3
@@ -216,7 +216,7 @@ python3 specs/2292-cc-parity-audit/scripts/compose-audit-md.py  # R5
 R1–R5 실행 후:
 
 ```bash
-git -C /Users/um-yunsang/KOSMOS status --short -- ':!specs/2292-cc-parity-audit'
+git -C /Users/um-yunsang/UMMAYA status --short -- ':!specs/2292-cc-parity-audit'
 # → 어떤 출력도 없어야 함 (FR-007 / SC-006)
 ```
 

@@ -19,16 +19,16 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.hira.hospital_search import (
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.hira.hospital_search import (
     HIRA_HOSPITAL_SEARCH_TOOL,
     HiraHospitalSearchInput,
     handle,
     register,
 )
-from kosmos.tools.lookup import lookup
-from kosmos.tools.models import LookupCollection, LookupError, LookupFetchInput  # noqa: A004
-from kosmos.tools.registry import ToolRegistry
+from ummaya.tools.lookup import lookup
+from ummaya.tools.models import LookupCollection, LookupError, LookupFetchInput  # noqa: A004
+from ummaya.tools.registry import ToolRegistry
 
 _FIXTURES_DIR = Path(__file__).parent.parent.parent / "fixtures" / "hira"
 
@@ -81,7 +81,7 @@ class TestHiraHospitalSearchHappy:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """handle() with happy fixture returns a collection-shaped dict."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
         fixture = _load_fixture("hospital_search_happy.json")
         mock_client = _make_mock_client(fixture)
 
@@ -97,7 +97,7 @@ class TestHiraHospitalSearchHappy:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Items from the happy fixture contain yadmNm, addr, telno, clCd, clCdNm, ykiho."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
         fixture = _load_fixture("hospital_search_happy.json")
         mock_client = _make_mock_client(fixture)
 
@@ -123,7 +123,7 @@ class TestHiraHospitalSearchHappy:
             patch("httpx.AsyncClient", return_value=mock_client),
             pytest.MonkeyPatch.context() as mp,
         ):
-            mp.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+            mp.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
             inp = LookupFetchInput(
                 mode="fetch",
                 tool_id="hira_hospital_search",
@@ -153,7 +153,7 @@ class TestHiraHospitalSearchHappy:
             patch("httpx.AsyncClient", return_value=mock_client),
             pytest.MonkeyPatch.context() as mp,
         ):
-            mp.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+            mp.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
             inp = LookupFetchInput(
                 mode="fetch",
                 tool_id="hira_hospital_search",
@@ -189,7 +189,7 @@ class TestHiraHospitalSearchErrorPath:
             patch("httpx.AsyncClient", return_value=mock_client),
             pytest.MonkeyPatch.context() as mp,
         ):
-            mp.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+            mp.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
             inp = LookupFetchInput(
                 mode="fetch",
                 tool_id="hira_hospital_search",
@@ -216,7 +216,7 @@ class TestHiraHospitalSearchErrorPath:
             patch("httpx.AsyncClient", return_value=mock_client),
             pytest.MonkeyPatch.context() as mp,
         ):
-            mp.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+            mp.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
             inp = LookupFetchInput(
                 mode="fetch",
                 tool_id="hira_hospital_search",
@@ -346,7 +346,7 @@ class TestHiraHospitalSearchRegister:
 
 
 class TestHiraHospitalSearchDistanceSort:
-    """D-fix: HIRA does not sort server-side; KOSMOS sorts by distance ASC.
+    """D-fix: HIRA does not sort server-side; UMMAYA sorts by distance ASC.
 
     Verified live 2026-05-04: baseline call near 강남역 (37.498, 127.028)
     returned d=829, 760, 479, 610, 757 (registration order). Citizens expect
@@ -441,7 +441,7 @@ class TestHiraHospitalSearchDistanceSort:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """handle() sorts the response items by distance ASC (closest first)."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
         mock_client = _make_mock_client(self._unsorted_fixture())
 
         inp = HiraHospitalSearchInput(xPos=127.028, yPos=37.498, radius=2000)
@@ -462,7 +462,7 @@ class TestHiraHospitalSearchDistanceSort:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """High-precision decimal-string distances (HIRA's actual format) sort correctly."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
         # Use HIRA's actual response format — long decimal strings.
         fixture = {
             "response": {
@@ -524,7 +524,7 @@ class TestHiraHospitalSearchSpecialtyFilter:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """dgsbjt='내과' → params['dgsbjtCd']='01' on the outbound HIRA call."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
         fixture = _load_fixture("hospital_search_happy.json")
         mock_client = _make_mock_client(fixture)
 
@@ -543,7 +543,7 @@ class TestHiraHospitalSearchSpecialtyFilter:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """dgsbjt='pediatrics' → 11 (English alias mapping)."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
         fixture = _load_fixture("hospital_search_happy.json")
         mock_client = _make_mock_client(fixture)
 
@@ -558,7 +558,7 @@ class TestHiraHospitalSearchSpecialtyFilter:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """dgsbjt='13' (already a 2-digit code) → passes through unchanged."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
         fixture = _load_fixture("hospital_search_happy.json")
         mock_client = _make_mock_client(fixture)
 
@@ -578,7 +578,7 @@ class TestHiraHospitalSearchSpecialtyFilter:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """When dgsbjt is None the outbound params do NOT include dgsbjtCd."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
         fixture = _load_fixture("hospital_search_happy.json")
         mock_client = _make_mock_client(fixture)
 
@@ -597,7 +597,7 @@ class TestHiraHospitalSearchClcdFilter:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """clCd='의원' → '31', clCd='상급종합' → '11'."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
         fixture = _load_fixture("hospital_search_happy.json")
         mock_client = _make_mock_client(fixture)
 
@@ -610,7 +610,7 @@ class TestHiraHospitalSearchClcdFilter:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Both filters together: 내과 + 의원 = '내과의원' (server-side AND)."""
-        monkeypatch.setenv("KOSMOS_DATA_GO_KR_API_KEY", "test-key-hira")
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-hira")
         fixture = _load_fixture("hospital_search_happy.json")
         mock_client = _make_mock_client(fixture)
 

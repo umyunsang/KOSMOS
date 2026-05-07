@@ -1,6 +1,6 @@
 # Testing Guide
 
-KOSMOS testing conventions and expectations. `AGENTS.md` summarizes the rules; this file is the long form.
+UMMAYA testing conventions and expectations. `AGENTS.md` summarizes the rules; this file is the long form.
 
 ## Stack
 
@@ -23,7 +23,7 @@ tests/
 └── agents/
 ```
 
-Every source module under `src/kosmos/<area>/<module>.py` gets a parallel `tests/<area>/test_<module>.py`.
+Every source module under `src/ummaya/<area>/<module>.py` gets a parallel `tests/<area>/test_<module>.py`.
 
 ## Running tests
 
@@ -32,7 +32,7 @@ uv run pytest                    # default — fast, fixture-only
 uv run pytest -m live            # include live API calls (local only)
 uv run pytest tests/tools        # scope to one area
 uv run pytest -k koroad          # filter by keyword
-uv run pytest --cov=src/kosmos   # with coverage
+uv run pytest --cov=src/ummaya   # with coverage
 ```
 
 Run `uv run pytest` before every commit. Once CI is configured, CI must be green before merging a PR.
@@ -57,7 +57,7 @@ Rules:
 
 ## Fixture recording
 
-1. Set the API key: `export KOSMOS_DATA_GO_KR_KEY=...`
+1. Set the API key: `export UMMAYA_DATA_GO_KR_KEY=...`
 2. Run the recording script: `scripts/record_fixture.py <tool_id>`
 3. Review the captured JSON for personal data, redact anything sensitive
 4. Commit under `tests/fixtures/<provider>/<tool_id>.json`
@@ -130,7 +130,7 @@ Run **all four layers** for any change that touches the chat-request emit path, 
 |-------|----------------|------|--------|---------------|
 | 1a. Python unit / fixture | "Does each backend module's contract hold?" | `pytest` + `pytest-asyncio` + `respx` | text | ✓ grep |
 | 1b. **TUI Ink snapshot** | "Does each Ink component render the expected `frames` array on prop / state transitions?" — fastest TUI-side regression net (no terminal spawn, ms-fast) | `bun test` with `ink-testing-library` v4 — `render()` → `lastFrame()` / `frames[]` | text snapshots | ✓ grep |
-| 2. **stdio JSONL probe** | "Does the backend invoke tools when given a citizen prompt?" — bypasses the TUI render entirely | `subprocess.Popen(['uv','run','kosmos','--ipc','stdio'])` + line-based JSONL frames | `*.jsonl` | ✓ grep |
+| 2. **stdio JSONL probe** | "Does the backend invoke tools when given a citizen prompt?" — bypasses the TUI render entirely | `subprocess.Popen(['uv','run','ummaya','--ipc','stdio'])` + line-based JSONL frames | `*.jsonl` | ✓ grep |
 | 3. **Text-log smoke** | "Does the full TUI session render the expected text?" | `expect(1)` / `script(1)` / `asciinema rec` (asciicast v3) | `*.txt` / `*.cast` (JSON-Lines) | ✓ grep |
 | 4. **vhs visual + PNG keyframes** | "Does the rendered UI render the expected pixels at each scenario stage?" | `vhs file.tape` (Charm vhs ≥ 0.11.0) with `Output ...gif` + 3+ `Screenshot ...png` directives | `*.gif` (animated) + `*.png` (keyframes) | ✓ multimodal vision (Claude / Codex Read tool on each PNG) |
 | 5. **Per-frame cell-grid text capture** | "What did the user *actually* see at every distinct frame, in order?" — only layer that catches transient repaint flashes (~80 ms) | `scripts/tui-text-debug.sh` = `asciinema rec --output-format asciicast-v3` → `scripts/cast_to_frames.py` (pyte VT-100 emulator) | `frame_NNNN_t<sec>_<sha>.txt` (one per distinct cell-grid state) + `timeline.txt` + `raw.cast` | ✓ grep + Read |
@@ -145,7 +145,7 @@ Use `ink-testing-library` v4 (`tui/package.json` `^4.0.0`) for **component-level
 import { render } from 'ink-testing-library'
 
 const { stdout, rerender, stdin, unmount } = render(<MyTUI />)
-expect(stdout.lastFrame()).toContain('KOSMOS')
+expect(stdout.lastFrame()).toContain('UMMAYA')
 stdin.write('/help\r')
 expect(stdout.frames.at(-1)).toMatch(/Help/)
 unmount()
@@ -174,7 +174,7 @@ specs/<spec>/scripts/smoke-stdio.py
 # → grep -c '"kind":"tool_call"' smoke-stdio-*.jsonl
 ```
 
-Frame schema is `kosmos.ipc.frame_schema.ChatRequestFrame` (extra fields rejected — `version: "1.0"` not `1`). Required fields: `version`, `kind`, `role`, `session_id`, `correlation_id`, `frame_seq`, `ts`, `messages`. The backend's first reply is a `session_event{event:"exit"}` only when stdin closes — there is no boot-ready signal; just send the request immediately after spawn.
+Frame schema is `ummaya.ipc.frame_schema.ChatRequestFrame` (extra fields rejected — `version: "1.0"` not `1`). Required fields: `version`, `kind`, `role`, `session_id`, `correlation_id`, `frame_seq`, `ts`, `messages`. The backend's first reply is a `session_event{event:"exit"}` only when stdin closes — there is no boot-ready signal; just send the request immediately after spawn.
 
 When this layer fails the bug is in the prompt / registry / agentic loop (server side). When it passes but Layer 3 fails, the bug is in the TUI render or the IPC bridge (TS side).
 
@@ -222,7 +222,7 @@ When this layer fails but Layer 2 passes, the regression is in the TUI render pa
 
 | Keyframe | Stage | What it proves |
 |---|---|---|
-| `smoke-keyframe-1-boot.png` | After `bun run tui` settles | KOSMOS branding, boot-guard line (`tool_registry: N entries verified ...`), prompt rendered |
+| `smoke-keyframe-1-boot.png` | After `bun run tui` settles | UMMAYA branding, boot-guard line (`tool_registry: N entries verified ...`), prompt rendered |
 | `smoke-keyframe-2-input.png` | After citizen Korean input + Enter | Input was accepted (text echoed in REPL prompt area, ANSI not garbled) |
 | `smoke-keyframe-3-action.png` | After scenario action settles (permission prompt, tool call, agentic-loop indicator) | The change being landed actually fires — primitive call, permission render, error envelope, etc. |
 
@@ -239,7 +239,7 @@ Set FontSize 14
 Set TypingSpeed 50ms
 
 # Backend mock so the TUI boots without a live FriendliAI key
-Env KOSMOS_BACKEND_CMD "sleep 60"
+Env UMMAYA_BACKEND_CMD "sleep 60"
 
 Type "cd tui && bun run tui"
 Enter
@@ -268,7 +268,7 @@ Lead Opus then runs `Read` on each `*.png` and asserts the visible elements matc
 **vhs 0.11.0 (March 2026) capabilities** to use when the scenario needs them — none of these supersede the canonical 3-keyframe rule, they extend it:
 
 - `ScrollUp <n>` / `ScrollDown <n>` — exercise the REPL's scrollback (e.g. assert that compaction-marker glyphs survive scrollback, or that long tool_result envelopes do not get truncated visually).
-- `Ctrl+Left` / `Ctrl+Up` / `Ctrl+Right` / `Ctrl+Down` chord support — required for KOSMOS keybinding tier-1 smoke (Spec 287 / 1979 keybinding wiring) where word-jump and history-navigation chords need a tape capture.
+- `Ctrl+Left` / `Ctrl+Up` / `Ctrl+Right` / `Ctrl+Down` chord support — required for UMMAYA keybinding tier-1 smoke (Spec 287 / 1979 keybinding wiring) where word-jump and history-navigation chords need a tape capture.
 
 #### Frame-timing methodology — `Wait` over `Sleep` (Spec 2521 — added 2026-05-01)
 
@@ -374,29 +374,29 @@ Each maps to a memory entry the agent has been corrected on. Catching yourself d
 3. **Snapshot blindness** — green `bun test` ≠ green TUI. Component snapshots can't prove REPL.tsx dynamic-import path even compiled. **Countermeasure**: Layers 2-5 are non-negotiable.
 4. **Tool-substitution for methodology** — adding more tools (vhs, asciinema) without anchoring them to a probe point. **Countermeasure**: every captured artefact must answer one of the 5 probe points above.
 5. **Skim-and-summarize** — reading first 200 lines of a 10k-line PTY log, hallucinating the middle. **Countermeasure**: cast→pyte de-dups consecutive identical states; agent reads the deduped frame set in full.
-6. **Trusting one's own expect run** — same machine, warm cache; a flash humans see on cold start may not reproduce. **Countermeasure**: vary `KOSMOS_*` startup env between runs, diff frame sets.
+6. **Trusting one's own expect run** — same machine, warm cache; a flash humans see on cold start may not reproduce. **Countermeasure**: vary `UMMAYA_*` startup env between runs, diff frame sets.
 7. **Fix-the-symptom spiral** — three+ failed fixes without questioning architecture. (`superpowers:systematic-debugging` Phase 4.5). **Countermeasure**: STOP at fix #3, capture frames, post timeline.txt to user before attempting fix #4.
 
 ### Architectural limit — paragraph-batch streaming on K-EXAONE + Bun + Ink
 
 Spec 2521 (2026-05-01, expanded after byte-copy relax 2026-05-01) — verified via *seven* mitigation attempts that Layer 5 frame-by-frame capture cannot dilate further. Each attempt was instrumented with the captured-cast inspection tool the user mandated; the outcome is the same paragraph-batch ANSI write across all combinations.
 
-1. **Backend SSE chunk pacing** (`kosmos.llm.client._pace_text_chunk`, `KOSMOS_LLM_STREAM_PACE_MS`). K-EXAONE on FriendliAI Serverless emits SSE deltas. Splitting them server-side into 8-char sub-chunks with 80–150 ms sleep extends the *gap between paragraphs* but Ink's React reconciler folds the setStates back into a single commit at paint time. (`/tmp/tdb-md-fix/raw.cast` frame_0294, `/tmp/tdb-final/raw.cast` frame_0572.)
+1. **Backend SSE chunk pacing** (`ummaya.llm.client._pace_text_chunk`, `UMMAYA_LLM_STREAM_PACE_MS`). K-EXAONE on FriendliAI Serverless emits SSE deltas. Splitting them server-side into 8-char sub-chunks with 80–150 ms sleep extends the *gap between paragraphs* but Ink's React reconciler folds the setStates back into a single commit at paint time. (`/tmp/tdb-md-fix/raw.cast` frame_0294, `/tmp/tdb-final/raw.cast` frame_0572.)
 2. **Frontend deps.ts char-by-char yield** (`_typewriter()`). Trace verifies `_typewriter` entered 221 times per turn but PTY still emits a single 605-byte ANSI write at t=26.327 of `/tmp/tdb-typewriter/raw.cast`.
-3. **Frontend wrapper component `KosmosTypewriterStreamingMarkdown`** with `useState(displayedLen)` + mount-time `setInterval`. visibleLen advances 1→2→…→8 (trace verified) while target grows to ≥190; PTY emits a 657-byte write at t=7.005 of `/tmp/tdb-tw-interval/raw.cast`. Single Ink redraw fold containing the entire paragraph.
+3. **Frontend wrapper component `UmmayaTypewriterStreamingMarkdown`** with `useState(displayedLen)` + mount-time `setInterval`. visibleLen advances 1→2→…→8 (trace verified) while target grows to ≥190; PTY emits a 657-byte write at t=7.005 of `/tmp/tdb-tw-interval/raw.cast`. Single Ink redraw fold containing the entire paragraph.
 4. **`StreamingMarkdown` direct modification** with the same `useState/useInterval` reveal hoisted into the byte-copied component. visibleLen progression visible in `frame_0170…0176` (`● 안 → 안녕 → 안녕하…`) but second-paragraph still paints atomically as a 602-byte chunk at t=12.058 (`/tmp/tdb-final2/raw.cast`).
 5. **Ink throttle relax** (`tui/src/ink/constants.ts`: `FRAME_INTERVAL_MS = 16 → 4`). Token-level streaming achieved for the *first* paragraph (74-byte chunk at t=7.048 of `/tmp/tdb-throttle/raw.cast` containing only `● 안녕하세요! 😊`); subsequent paragraphs still paint as single ~600-byte writes. Confirms Ink throttle was a contributing factor but not the dominant one.
 6. **`bridge.ts` per-frame `setImmediate` yield** between `assistant_chunk` frames so React's automatic batching can't fold a Bun-pipe-chunk's worth of setStates into one commit. `frame_0067` of `/tmp/tdb-yield/raw.cast` still paints the 143-char paragraph in a 210-byte ANSI write at t=10.551 (Δ=223 ms gap from previous chunk; the chunk arrives as a single `data:` line carrying the whole paragraph).
-7. **`KOSMOS_K_EXAONE_THINKING=false`** to force K-EXAONE's content channel instead of `reasoning_content`. Inter-paragraph cadence improved (5 s gap between two answer paragraphs in `/tmp/tdb-thinking-off/raw.cast`) but each paragraph still arrives as a single 117-/617-byte SSE chunk. **This identifies the dominant root cause**: K-EXAONE on FriendliAI Serverless emits paragraph-granularity SSE deltas, not Anthropic-style per-token deltas. No frontend or pacing layer can dilate a single SSE delta — the chunk is paragraph-shaped on the wire.
+7. **`UMMAYA_K_EXAONE_THINKING=false`** to force K-EXAONE's content channel instead of `reasoning_content`. Inter-paragraph cadence improved (5 s gap between two answer paragraphs in `/tmp/tdb-thinking-off/raw.cast`) but each paragraph still arrives as a single 117-/617-byte SSE chunk. **This identifies the dominant root cause**: K-EXAONE on FriendliAI Serverless emits paragraph-granularity SSE deltas, not Anthropic-style per-token deltas. No frontend or pacing layer can dilate a single SSE delta — the chunk is paragraph-shaped on the wire.
 
-**Honest UX claim**: KOSMOS gets the citizen visible streaming **between paragraphs** (5 s cadence on `enable_thinking=False`, longer on `True` because the reasoning channel buffers first); paragraph-internal token-by-token reveal **is not achievable** at the LLM-provider tier we run on. CC against Anthropic doesn't see the same fold because Anthropic's token-stream API delivers ~5-30-byte deltas at 50-100 ms intervals — comfortably outside Ink's throttle and aligned with React's commit cadence.
+**Honest UX claim**: UMMAYA gets the citizen visible streaming **between paragraphs** (5 s cadence on `enable_thinking=False`, longer on `True` because the reasoning channel buffers first); paragraph-internal token-by-token reveal **is not achievable** at the LLM-provider tier we run on. CC against Anthropic doesn't see the same fold because Anthropic's token-stream API delivers ~5-30-byte deltas at 50-100 ms intervals — comfortably outside Ink's throttle and aligned with React's commit cadence.
 
 **Mitigations the citizen can opt into**:
-- `KOSMOS_LLM_STREAM_PACE_MS=80` — backend pacing on, paragraph-cadence streaming made more deliberate.
-- `KOSMOS_K_EXAONE_THINKING=false` — first-token latency drops to <10 s and the answer arrives on the content channel, but the agentic loop loses the model's CoT signal (multi-step tool chaining degrades).
+- `UMMAYA_LLM_STREAM_PACE_MS=80` — backend pacing on, paragraph-cadence streaming made more deliberate.
+- `UMMAYA_K_EXAONE_THINKING=false` — first-token latency drops to <10 s and the answer arrives on the content channel, but the agentic loop loses the model's CoT signal (multi-step tool chaining degrades).
 - The `FRAME_INTERVAL_MS=4` byte-copy relax in `ink/constants.ts` is kept regardless because it makes spinner cycling feel responsive without measurable CPU cost.
 
-**Future work** (logged for post-2521 spec): a) negotiate a token-stream surface from FriendliAI for K-EXAONE; b) bypass Bun-pipe-batching by switching the IPC bridge to a length-prefixed framed protocol with reader-side flushes per frame; c) emit a synthetic per-codepoint stream from the backend's _stream_response under an explicit `KOSMOS_LLM_FAKE_TOKEN_STREAM=1` flag (UX-only, no provider change). Each option is a separate spec — not in 2521 scope.
+**Future work** (logged for post-2521 spec): a) negotiate a token-stream surface from FriendliAI for K-EXAONE; b) bypass Bun-pipe-batching by switching the IPC bridge to a length-prefixed framed protocol with reader-side flushes per frame; c) emit a synthetic per-codepoint stream from the backend's _stream_response under an explicit `UMMAYA_LLM_FAKE_TOKEN_STREAM=1` flag (UX-only, no provider change). Each option is a separate spec — not in 2521 scope.
 
 ### Cross-layer debugging heuristics
 
@@ -410,7 +410,7 @@ Spec 2521 (2026-05-01, expanded after byte-copy relax 2026-05-01) — verified v
 
 ### Forward-looking — agent-driven autonomous smoke (not yet gating)
 
-Terminal-Bench / Terminus 2 (Harbor framework, 2026) and Krafton's Terminus-KIRA define an emerging pattern: the LLM agent itself drives the terminal via tmux ("send command → read buffer → think → repeat"), and the smoke artefact is the agent's tmux pane buffer. KOSMOS does not adopt this today — our backend ships as a single Bun.spawn child of the TUI, not a tmux-multiplexed environment, and our scenarios are deterministic enough that scripted `expect(1)` is preferable to autonomous LLM driving. We track this approach as a candidate for **multi-agent visual smoke** (the day a Lead Opus needs to watch four parallel Sonnet teammates each running their own TUI scenario), but it is not part of the gating ladder.
+Terminal-Bench / Terminus 2 (Harbor framework, 2026) and Krafton's Terminus-KIRA define an emerging pattern: the LLM agent itself drives the terminal via tmux ("send command → read buffer → think → repeat"), and the smoke artefact is the agent's tmux pane buffer. UMMAYA does not adopt this today — our backend ships as a single Bun.spawn child of the TUI, not a tmux-multiplexed environment, and our scenarios are deterministic enough that scripted `expect(1)` is preferable to autonomous LLM driving. We track this approach as a candidate for **multi-agent visual smoke** (the day a Lead Opus needs to watch four parallel Sonnet teammates each running their own TUI scenario), but it is not part of the gating ladder.
 
 If you choose to pilot it on a future Epic, capture the pane buffer to a `*.tmux-buffer.txt` file alongside the existing Layer 3 / Layer 4 artefacts so the LLM-grep + LLM-vision invariants are preserved.
 

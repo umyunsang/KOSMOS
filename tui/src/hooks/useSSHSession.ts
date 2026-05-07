@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
-// KOSMOS-1633 P1+P2 / KOSMOS-1978 T011 — useSSHSession stubbed.
+// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — useSSHSession stubbed.
 //
 // Original CC module: `tui/src/hooks/useSSHSession.ts` (CC 2.1.88) drives
 // `claude ssh` sessions where the TUI front-ends an SSH child process
-// running the agent on a remote host. KOSMOS citizen TUI is local-only and
+// running the agent on a remote host. UMMAYA citizen TUI is local-only and
 // does not ship the `ssh` subcommand. Stub returns `isRemoteMode: false` so
 // REPL.tsx skips the SSH branch.
 

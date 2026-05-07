@@ -56,7 +56,7 @@ import httpx
 import pytest
 from pydantic import TypeAdapter
 
-from kosmos.ipc.frame_schema import (
+from ummaya.ipc.frame_schema import (
     AssistantChunkFrame,
     IPCFrame,
     ToolCallFrame,
@@ -189,8 +189,8 @@ def _build_multi_ministry_script():  # type: ignore[no-untyped-def]
     event_sequences: list of per-turn StreamEvent lists consumed by MockLLMClient.
     expected_tool_order: ordered list of tool names for assertion.
     """
-    from kosmos.llm.models import TokenUsage
     from tests.e2e.conftest import _make_text_events, _tce
+    from ummaya.llm.models import TokenUsage
 
     _u = TokenUsage(input_tokens=200, output_tokens=50)
     _u_synth = TokenUsage(input_tokens=900, output_tokens=180)
@@ -237,16 +237,16 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:  # noqa: 
     """
     import uuid
 
-    from kosmos.context.builder import ContextBuilder
-    from kosmos.engine.config import QueryEngineConfig
-    from kosmos.engine.engine import QueryEngine
-    from kosmos.engine.events import QueryEvent, StopReason
-    from kosmos.llm.client import LLMClient
-    from kosmos.llm.models import ChatMessage, StreamEvent
-    from kosmos.llm.usage import UsageTracker
-    from kosmos.tools.hira.hospital_search import register as reg_hira
     from tests.e2e.conftest import _build_registry_and_executor
     from tests.engine.conftest import MockLLMClient
+    from ummaya.context.builder import ContextBuilder
+    from ummaya.engine.config import QueryEngineConfig
+    from ummaya.engine.engine import QueryEngine
+    from ummaya.engine.events import QueryEvent, StopReason
+    from ummaya.llm.client import LLMClient
+    from ummaya.llm.models import ChatMessage, StreamEvent
+    from ummaya.llm.usage import UsageTracker
+    from ummaya.tools.hira.hospital_search import register as reg_hira
 
     # Build mock LLM event sequences
     event_sequences, expected_tool_order = _build_multi_ministry_script()

@@ -11,14 +11,14 @@
 
 한 운영자가 Phase 2 시나리오 실행 중 "경로 안전" 질의가 실패했다고 보고한다. 개발자는 Langfuse UI를 열어 해당 세션 ID로 trace 하나를 조회한다. 사용자 질의 → LLM 호출(스트리밍) → 도구 실행(KOROAD 어댑터) → LLM 재호출 → 최종 응답까지 **하나의 부모-자식 span 트리**로 연결되어, 어느 단계에서 실패가 발생했는지, 각 단계가 몇 ms 걸렸는지, LLM이 몇 토큰을 사용했는지, 도구가 어떤 오류 클래스를 반환했는지 한 화면에서 파악할 수 있다.
 
-**Why this priority**: KOSMOS는 멀티턴·멀티도구 루프라 blackbox 로그만으로는 장애 원인을 찾을 수 없다. Phase 2 시나리오가 본격화되기 전 "최소 1개 trace로 전체 흐름을 볼 수 있는" 관측성이 선행 조건이다 (Infrastructure Initiative SC-7).
+**Why this priority**: UMMAYA는 멀티턴·멀티도구 루프라 blackbox 로그만으로는 장애 원인을 찾을 수 없다. Phase 2 시나리오가 본격화되기 전 "최소 1개 trace로 전체 흐름을 볼 수 있는" 관측성이 선행 조건이다 (Infrastructure Initiative SC-7).
 
 **Independent Test**: 테스트용 에이전트 세션을 로컬에서 1회 실행하고, 구동된 Langfuse 인스턴스의 trace 탐색 화면에서 해당 `session_id` 가 달린 trace를 열어 (a) 부모 `invoke_agent` span (b) 자식 `chat` span (c) 자식 `execute_tool` span 세 종류가 모두 계층 구조로 나타나는지 확인.
 
 **Acceptance Scenarios**:
 
 1. **Given** 한 사용자 세션이 LLM 호출 1회와 도구 호출 1회를 포함한다, **When** 세션이 정상 완료되면, **Then** Langfuse는 1개의 parent span(`invoke_agent`)과 그 아래 2개의 자식 span(`chat`, `execute_tool <tool_id>`)을 동일한 trace ID로 수신한다.
-2. **Given** LLM 스트리밍 호출 중 FriendliAI가 `429` 응답을 반환해 재시도가 발생한다, **When** 재시도가 성공한다, **Then** 해당 `chat` span은 하나로 유지되고 재시도는 `kosmos_llm_rate_limit_retries_total` counter에 1회 증가되며 span 상태는 `UNSET`으로 마감된다.
+2. **Given** LLM 스트리밍 호출 중 FriendliAI가 `429` 응답을 반환해 재시도가 발생한다, **When** 재시도가 성공한다, **Then** 해당 `chat` span은 하나로 유지되고 재시도는 `ummaya_llm_rate_limit_retries_total` counter에 1회 증가되며 span 상태는 `UNSET`으로 마감된다.
 3. **Given** 도구 실행이 Pydantic 검증 실패로 에러를 던진다, **When** 에이전트 루프가 이를 캐치한다, **Then** `execute_tool` span의 상태는 `ERROR`로 기록되고, `error.type` 속성에 에러 클래스가 달린다.
 
 ---
@@ -72,7 +72,7 @@
 ### Edge Cases
 
 - Langfuse 엔드포인트가 **HTTP/protobuf만** 수신하고 gRPC는 받지 않을 때: export가 gRPC로 시도되면 연결 실패하되, 애플리케이션 흐름은 중단되지 않아야 한다. 기본 설정은 반드시 HTTP/protobuf.
-- OTel semantic conventions가 "Development" 안정성이라 향후 breaking rename 가능: 발생 시 KOSMOS는 최신 rename을 반영하되, 이전 속성명은 유지하지 않는다(수동 span이라 매핑이 명확하므로).
+- OTel semantic conventions가 "Development" 안정성이라 향후 breaking rename 가능: 발생 시 UMMAYA는 최신 rename을 반영하되, 이전 속성명은 유지하지 않는다(수동 span이라 매핑이 명확하므로).
 - `event.metadata`에 실수로 PII 키(예: `user_email`)가 포함된 경우: 기존 `ObservabilityEventLogger`의 whitelist가 키를 제거하는 기존 동작을 유지하면서, OTel span 속성으로도 **동일 whitelist 이후의 값만** 전파.
 - FriendliAI `429` + `Retry-After` 헤더가 온 경우: 재시도 카운터 metric은 증가하되, LLM chat span 하나 안에서 재시도가 일어난 것으로 기록(재시도마다 별개 span을 만들지 않는다).
 - 스트리밍 응답 중간에 연결이 끊긴 경우: 그때까지 누적된 사용량(usage)만 span에 기록하고, span 상태는 `ERROR`로 마감.
@@ -84,7 +84,7 @@
 
 #### Spans (what operations are traced)
 
-- **FR-001**: 사용자의 한 질의가 에이전트 루프에 진입하면 시스템은 `invoke_agent kosmos-query` 이름의 부모 span을 생성한다. 이 span은 `gen_ai.conversation.id` 속성으로 세션 식별자를 달고, 자식 span들이 모두 이 부모 아래에 묶인다.
+- **FR-001**: 사용자의 한 질의가 에이전트 루프에 진입하면 시스템은 `invoke_agent ummaya-query` 이름의 부모 span을 생성한다. 이 span은 `gen_ai.conversation.id` 속성으로 세션 식별자를 달고, 자식 span들이 모두 이 부모 아래에 묶인다.
 - **FR-002**: LLM 스트리밍 호출이 발생하면 시스템은 `chat` 이름의 자식 span을 생성하고, 호출이 끝나면(또는 에러로 마감되면) 입력/출력 토큰 수, 모델명, provider 이름, 마감 사유(finish reason)를 span 속성으로 남긴다.
 - **FR-003**: 도구 실행이 발생하면 시스템은 `execute_tool <tool_id>` 이름의 자식 span을 생성하고, 도구 ID와 실행 성공 여부를 span 속성으로 남긴다. 도구가 예외를 던지면 span 상태는 `ERROR`로 마감되고 에러 클래스가 속성에 기록된다.
 - **FR-004**: 세 종류의 span(`invoke_agent`, `chat`, `execute_tool`)은 OpenTelemetry GenAI Semantic Conventions v1.40을 따르며, GenAI 관련 속성은 `gen_ai.*` 네임스페이스를 사용한다. 구체적으로 provider 식별은 `gen_ai.provider.name`을 사용한다(과거 `gen_ai.system`은 사용하지 않는다).
@@ -147,7 +147,7 @@
 
 ### Out of Scope (Permanent)
 
-- **Auto-instrumentors (`opentelemetry-instrumentation-*`, OpenLLMetry/Traceloop 등)**: KOSMOS의 LLM 호출은 `httpx` 기반 수동 프로토콜이며 auto-instrumentor가 훅 걸 대상이 없다. AGENTS.md 외부 의존성 최소 원칙과도 상충.
+- **Auto-instrumentors (`opentelemetry-instrumentation-*`, OpenLLMetry/Traceloop 등)**: UMMAYA의 LLM 호출은 `httpx` 기반 수동 프로토콜이며 auto-instrumentor가 훅 걸 대상이 없다. AGENTS.md 외부 의존성 최소 원칙과도 상충.
 - **gRPC OTLP export**: Langfuse는 gRPC를 수신하지 않는다. 프로토콜은 HTTP/protobuf만 지원한다.
 - **Log signal(OTel Logs)**: 기존 `logging` + `ObservabilityEventLogger`가 로그 영역을 담당한다. OTel Logs 연계는 이 epic에 포함하지 않는다(trace와 metric만 취급).
 - **Langfuse Cloud 계약**: 자체 호스팅 전제. Cloud 계정 연동은 범위 밖.

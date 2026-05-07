@@ -18,8 +18,8 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.ipc.backpressure import BackpressureController
-from kosmos.ipc.frame_schema import BackpressureSignalFrame
+from ummaya.ipc.backpressure import BackpressureController
+from ummaya.ipc.frame_schema import BackpressureSignalFrame
 
 # ---------------------------------------------------------------------------
 # Fixtures

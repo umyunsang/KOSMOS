@@ -7,10 +7,10 @@ This document gives a reviewer (or a Lead-Opus session resuming work) the minimu
 ## 0 — Worktree
 
 ```bash
-cd /Users/um-yunsang/KOSMOS                # main worktree
+cd /Users/um-yunsang/UMMAYA                # main worktree
 git pull --ff-only
-git worktree list                          # confirm KOSMOS-w-2294 exists
-cd ../KOSMOS-w-2294                        # branch 2294-5-primitive-align
+git worktree list                          # confirm UMMAYA-w-2294 exists
+cd ../UMMAYA-w-2294                        # branch 2294-5-primitive-align
 git status                                 # expect clean working tree on a fresh review
 ```
 
@@ -75,12 +75,12 @@ expect specs/2294-5-primitive-align/scripts/smoke-emergency-lookup.expect \
 Inspect the captured text log:
 
 ```bash
-grep -E "KOSMOS|의정부|응급실|nmc_emergency_search|real_classification_url" \
+grep -E "UMMAYA|의정부|응급실|nmc_emergency_search|real_classification_url" \
   specs/2294-5-primitive-align/smoke-emergency-lookup-pty.txt
 ```
 
 Expected lines, in order:
-1. `KOSMOS` branding banner.
+1. `UMMAYA` branding banner.
 2. The `lookup` tool-use announcement (Korean).
 3. The `<PermissionRequest>` body containing the NMC `real_classification_url` literal.
 4. After the `y` keypress is sent, the adapter result block in Korean.
@@ -92,7 +92,7 @@ If the smoke fails, do NOT push. Investigate before re-running. The text log is 
 
 ## 6 — Citation correctness (Spec SC-003)
 
-The `permission-citation.test.ts` suite walks every adapter and asserts the rendered prompt body contains the citation strings byte-for-byte. The blocklist of forbidden KOSMOS-invented phrases is enumerated at the top of the test file. If any new adapter is added to the registry without a citation, this test fails before the boot guard does — it provides earlier feedback.
+The `permission-citation.test.ts` suite walks every adapter and asserts the rendered prompt body contains the citation strings byte-for-byte. The blocklist of forbidden UMMAYA-invented phrases is enumerated at the top of the test file. If any new adapter is added to the registry without a citation, this test fails before the boot guard does — it provides earlier feedback.
 
 ```bash
 cd tui && bun test src/tools/__tests__/permission-citation.test.ts && cd ..
@@ -114,7 +114,7 @@ Expected: total inserted-lines + deleted-lines ≤ 1500 net. Anything over indic
 cd tui && bun test src/tools/__tests__/span-attribute-parity.test.ts && cd ..
 ```
 
-Expected: all snapshots match pre-refactor baseline. The only **allowed** new attribute is `kosmos.adapter.real_classification_url` (introduced by Epic δ commit `c6747dd`). Any other drift is a regression.
+Expected: all snapshots match pre-refactor baseline. The only **allowed** new attribute is `ummaya.adapter.real_classification_url` (introduced by Epic δ commit `c6747dd`). Any other drift is a regression.
 
 ## Citizen verification checklist (5 minutes)
 
@@ -130,6 +130,6 @@ Aside from the automated checks above, a human reviewer should:
 | Symptom | First action |
 |---|---|
 | `bun typecheck` fails | Inspect error — likely a primitive's `validateInput` / `renderToolResultMessage` signature mismatch with `ToolDef<In, Out>`. |
-| `verifyBootRegistry` fails on adapter | Check `src/kosmos/tools/<adapter>/manifest.py` for missing `real_classification_url`. May indicate Epic δ deferred #2362 work surfaced — file as a sub-issue. |
-| PTY smoke times out | Check FriendliAI Tier 1 quota + `KOSMOS_LLM_API_KEY` env var. Memory `feedback_env_check_first` applies. |
+| `verifyBootRegistry` fails on adapter | Check `src/ummaya/tools/<adapter>/manifest.py` for missing `real_classification_url`. May indicate Epic δ deferred #2362 work surfaced — file as a sub-issue. |
+| PTY smoke times out | Check FriendliAI Tier 1 quota + `UMMAYA_LLM_API_KEY` env var. Memory `feedback_env_check_first` applies. |
 | Snapshot test diverges | Verify the OTEL span schema didn't drift — check Spec 021's attribute list before assuming a regression. |

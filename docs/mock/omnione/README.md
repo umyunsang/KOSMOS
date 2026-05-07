@@ -3,7 +3,7 @@
 **Mirror axis**: byte
 **Source reference**: W3C DID Core 1.0 (https://www.w3.org/TR/did-core/) + OmniOne OpenDID reference implementation (https://github.com/OmniOneID) — Apache-2.0
 **License**: Apache-2.0
-**Scope**: Reproduces the DID Document resolution and Verifiable Presentation exchange wire format defined by the OmniOne OpenDID SDK, covering the subset used by KOSMOS for citizen identity attestation; does not reproduce OmniOne's proprietary trust registry or blockchain anchor calls.
+**Scope**: Reproduces the DID Document resolution and Verifiable Presentation exchange wire format defined by the OmniOne OpenDID SDK, covering the subset used by UMMAYA for citizen identity attestation; does not reproduce OmniOne's proprietary trust registry or blockchain anchor calls.
 
 ## What this mock reproduces
 
@@ -25,7 +25,7 @@
 Because the OmniOne reference server (https://github.com/OmniOneID/did-doc-architecture) can be run locally via Docker Compose, fixtures are recorded against the local reference stack rather than a live production endpoint. Steps:
 
 1. Clone the OmniOneID/did-doc-architecture repo and run `docker compose up`.
-2. Run `uv run python tests/fixtures/record_omnione.py` with `KOSMOS_OMNIONE_BASE_URL=http://localhost:8080`.
+2. Run `uv run python tests/fixtures/record_omnione.py` with `UMMAYA_OMNIONE_BASE_URL=http://localhost:8080`.
 3. Commit the updated fixture JSON files under `tests/fixtures/omnione/`.
 
 ## Upstream divergence policy

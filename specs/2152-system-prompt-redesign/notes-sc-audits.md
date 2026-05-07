@@ -14,7 +14,7 @@ records its observed output, and the verdict.
 
 **How verified**: Two-layer smoke (per `docs/testing.md § TUI verification methodology`):
 
-- **Layer 2 — stdio JSONL probe** (`scripts/smoke-stdio.sh`) drives 5 citizen scenarios through the backend stdio bridge, captures every assistant_chunk / tool_call frame as `smoke-stdio-<slug>.jsonl`, aggregates into `smoke.txt`. Run: `KOSMOS_FRIENDLI_TOKEN=… scripts/smoke-stdio.sh`.
+- **Layer 2 — stdio JSONL probe** (`scripts/smoke-stdio.sh`) drives 5 citizen scenarios through the backend stdio bridge, captures every assistant_chunk / tool_call frame as `smoke-stdio-<slug>.jsonl`, aggregates into `smoke.txt`. Run: `UMMAYA_FRIENDLI_TOKEN=… scripts/smoke-stdio.sh`.
 - **Layer 4 — vhs visual** (`scripts/smoke.tape` → `smoke.gif`) drives the same 5 scenarios through the live TUI for human-eye review. Run: `vhs scripts/smoke.tape`.
 
 **Per-scenario audit** (Layer 2 — `scripts/smoke-stdio.sh` 2026-04-28, after the primitive-only prompt fix + textual-marker fallback parser landed):
@@ -32,7 +32,7 @@ Total 14 structured `ToolCallFrame`s emitted in one session. 4 of 5 scenarios no
 **First-run note (kept for the historical record)**: the very first P5 smoke run — before the prompt was tightened to the 5-primitive surface — surfaced the regression as textual `<tool_call>{...}</tool_call>` markers (4/5 scenarios) instead of structured tool_calls. Two changes turned that around:
 
 1. `prompts/system_v1.md` `<tool_usage>` section rewritten to teach only the two LLM-visible primitives (`resolve_location` and `lookup(search → fetch)`) and explicitly forbid the textual marker shape. K-EXAONE switched to OpenAI-structured emissions immediately.
-2. `src/kosmos/llm/tool_call_parser.py` — defensive fallback that recognises four empirical K-EXAONE textual marker formats (well-formed JSON, XML-attribute pseudo-JSON, single-key `name_X` dict, mixed-XML body) and synthesises `tool_call_buf` entries inside `_handle_chat_request` so degraded paths still dispatch instead of leaking the raw marker to the citizen.
+2. `src/ummaya/llm/tool_call_parser.py` — defensive fallback that recognises four empirical K-EXAONE textual marker formats (well-formed JSON, XML-attribute pseudo-JSON, single-key `name_X` dict, mixed-XML body) and synthesises `tool_call_buf` entries inside `_handle_chat_request` so degraded paths still dispatch instead of leaking the raw marker to the citizen.
 
 **Verification** (latest run, post-StreamGate fix):
 
@@ -63,7 +63,7 @@ The third smoke iteration (`commit a81769f`) verifies the full chain:
 2. When K-EXAONE additionally emits a textual `<tool_call>` marker in the same turn (degraded path), the `StreamGate` strips it character-accurately from the streaming `assistant_chunk` content channel.
 3. The citizen sees natural Korean prose only — concrete sample from the live run:
 
-   > "현재 KOSMOS가 다루는 공공 데이터로는 '강남역'의 위치를 정확히 확인할 수 없습니다. 다만 일반적으로 '강남역'은 서울 지하철 2호선과 분당선의 환승역으로, **서울특별시 강남구 역삼동**에 위치해 있습니다. 정확한 위치, 좌표, 도로명 주소는 아래와 같은 공식 채널에서 확인할 수 있습니다: …"
+   > "현재 UMMAYA가 다루는 공공 데이터로는 '강남역'의 위치를 정확히 확인할 수 없습니다. 다만 일반적으로 '강남역'은 서울 지하철 2호선과 분당선의 환승역으로, **서울특별시 강남구 역삼동**에 위치해 있습니다. 정확한 위치, 좌표, 도로명 주소는 아래와 같은 공식 채널에서 확인할 수 있습니다: …"
 
 4. The post-stream `extract_textual_tool_calls` parser fallback remains in place for the rare case where K-EXAONE emits ONLY a textual marker (no structured form) — defensive belt-and-braces for future model-version drift.
 
@@ -92,7 +92,7 @@ CI run.
 
 ---
 
-## SC-3 — `kosmos.prompt.hash` byte-stable across two consecutive turns
+## SC-3 — `ummaya.prompt.hash` byte-stable across two consecutive turns
 
 **Status**: `PASS (unit-level)`
 
@@ -105,9 +105,9 @@ sliced hash is constant regardless of dynamic-suffix content. End-to-end
 verification (two real TUI turns) is gated on the SC-1 smoke run above.
 
 The R4 implementation:
-- `src/kosmos/llm/prompt_assembler.py` — `SystemPromptManifest` validator
+- `src/ummaya/llm/prompt_assembler.py` — `SystemPromptManifest` validator
   enforces `prefix_hash == sha256(static_prefix)` at construction.
-- `src/kosmos/llm/client.py:355-380` — slices the system message at
+- `src/ummaya/llm/client.py:355-380` — slices the system message at
   `\nSYSTEM_PROMPT_DYNAMIC_BOUNDARY\n` before hashing.
 
 ---

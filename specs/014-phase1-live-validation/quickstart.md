@@ -4,9 +4,9 @@
 
 1. Python 3.12+ with `uv` installed
 2. Valid API credentials:
-   - `KOSMOS_FRIENDLI_TOKEN` — FriendliAI Serverless API token
-   - `KOSMOS_DATA_GO_KR_API_KEY` — data.go.kr public data portal key
-   - `KOSMOS_KOROAD_API_KEY` — KOROAD open data portal key
+   - `UMMAYA_FRIENDLI_TOKEN` — FriendliAI Serverless API token
+   - `UMMAYA_DATA_GO_KR_API_KEY` — data.go.kr public data portal key
+   - `UMMAYA_KOROAD_API_KEY` — KOROAD open data portal key
 
 ## Setup
 
@@ -48,8 +48,8 @@ uv run pytest tests/live/test_live_e2e.py -v
 ## Manual CLI Validation
 
 ```bash
-# Start KOSMOS CLI
-uv run kosmos
+# Start UMMAYA CLI
+uv run ummaya
 
 # Scenario 1 happy path:
 # > 내일 부산에서 서울 가는데, 안전한 경로 추천해줘
@@ -74,5 +74,5 @@ uv run pytest -v --tb=long
 | `tests/live/conftest.py` | Shared live test fixtures and credential validation |
 | `tests/live/test_live_*.py` | Individual adapter and E2E live tests |
 | `tests/conftest.py` | Root conftest — skips live tests unless `-m live` |
-| `src/kosmos/engine/engine.py` | PermissionPipeline wiring fix |
+| `src/ummaya/engine/engine.py` | PermissionPipeline wiring fix |
 | `.env.example` | Environment variable reference (corrected naming) |

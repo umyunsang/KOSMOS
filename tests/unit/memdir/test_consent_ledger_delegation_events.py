@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.memdir.consent_ledger import (
+from ummaya.memdir.consent_ledger import (
     DelegationIssuedEvent,
     DelegationRevokedEvent,
     DelegationUsedEvent,
@@ -198,7 +198,7 @@ async def test_file_ledger_reader_finds_session(ledger_root: Path) -> None:
     """FileLedgerReader.find_issuance_session returns the correct session_id.
 
     Note: ``find_issuance_session`` scans **today's** ledger file only (per
-    ``src/kosmos/memdir/consent_ledger.py:288`` docstring — full multi-day
+    ``src/ummaya/memdir/consent_ledger.py:288`` docstring — full multi-day
     scan is deferred per data-model.md § 9.1 footnote). The fixture event's
     ``ts`` MUST therefore be today's date or the read will return None when
     the calendar rolls over (Epic ζ #2297 2026-04-30 CI fix).

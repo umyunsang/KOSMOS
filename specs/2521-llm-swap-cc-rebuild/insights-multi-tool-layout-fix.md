@@ -90,11 +90,11 @@ reorderedContent.push(..._thinking, ..._text, ..._tools, ..._other)
 
 ### L1: LLM API parameter — 가장 근본
 
-`src/kosmos/llm/client.py`:
+`src/ummaya/llm/client.py`:
 
 ```python
 if tool_payloads:
-    # KOSMOS citizen flows require one observed tool result before
+    # UMMAYA citizen flows require one observed tool result before
     # the model may request the next tool. FriendliAI's
     # OpenAI-compatible default permits parallel tool calls.
     payload["parallel_tool_calls"] = False
@@ -106,7 +106,7 @@ if tool_payloads:
 
 ### L2: Backend dispatcher safety net
 
-`src/kosmos/ipc/stdio.py:1661`:
+`src/ummaya/ipc/stdio.py:1661`:
 
 ```python
 tool_call_indices = sorted(tool_call_buf.keys())
@@ -278,7 +278,7 @@ function isStreamingThinkingLayoutMessage(msg): msg is StreamingThinking {
 
 ### H6. 같은 turn 의 sibling 검출 패턴
 
-다른 LLM 들도 비슷한 multi-tool 케이스 가질 수 있음. KOSMOS 의 `isSameAssistantToolStack` 패턴 재사용:
+다른 LLM 들도 비슷한 multi-tool 케이스 가질 수 있음. UMMAYA 의 `isSameAssistantToolStack` 패턴 재사용:
 
 ```typescript
 // 두 가지 신호
@@ -306,15 +306,15 @@ function isSameAssistantToolStack(prev, current, streamingToolUseIDs) {
 
 2. **"LLM 이 search_hint 로 추측 가능" 같은 가정은 fragile**. 같은 모델이라도 provider / temperature / context 길이 / 최근 학습 데이터에 따라 추측 정확도 다름. K-EXAONE on FriendliAI 가 `location: "부산"` 으로 추측한 것처럼 — Anthropic Claude 라면 정답이었을 수 있는 케이스도 fail.
 
-3. **Token budget worry 의 진짜 답은 prompt cache + dynamic suffix**. KOSMOS 가 이미 `prompts/system_v1.md` 의 static prefix 를 cache 하고 dynamic suffix 만 매 turn 새로 생성 — suffix 길이 늘어도 재계산 비용은 BM25 lookup + render 만. cache 효과는 prefix 가 보존되므로 그대로.
+3. **Token budget worry 의 진짜 답은 prompt cache + dynamic suffix**. UMMAYA 가 이미 `prompts/system_v1.md` 의 static prefix 를 cache 하고 dynamic suffix 만 매 turn 새로 생성 — suffix 길이 늘어도 재계산 비용은 BM25 lookup + render 만. cache 효과는 prefix 가 보존되므로 그대로.
 
 4. **회귀 발견 시점**: invalid_params 가 *모든* 도구에서 일관되게 나오면 schema 정보가 LLM 에 안 도달한 것. 도구 1개에서만 fail 이면 그 도구의 schema 버그. 일관된 fail 패턴이 진단 신호.
 
-5. **반대 케이스 — 진짜 token bloat 위험**: response body / 큰 enum (>20) / nested object 의 모든 필드 dump 는 LLM 이 안 보고 token 만 먹음. Top-level required + optional 만 + 80자 description 이 sweet spot. KOSMOS 의 fix 가 정확히 이 균형.
+5. **반대 케이스 — 진짜 token bloat 위험**: response body / 큰 enum (>20) / nested object 의 모든 필드 dump 는 LLM 이 안 보고 token 만 먹음. Top-level required + optional 만 + 80자 description 이 sweet spot. UMMAYA 의 fix 가 정확히 이 균형.
 
 **비유**: schema 노출은 docs/manual 같음. 짧게 만들려고 함수 시그니처 빼버리면 사용자 (LLM) 가 함수 호출 못함. token 아끼려다 retry × N 번에 결국 더 비싸짐.
 
-## 6. KOSMOS 프로젝트 특이사항
+## 6. UMMAYA 프로젝트 특이사항
 
 ### LLM provider swap 의 hidden cost
 
@@ -340,7 +340,7 @@ K-EXAONE 의 reasoning_content + parallel_tool_calls 가 둘 다 visible 됐을 
 4. Tool call structure (id 형식, function name encoding, arguments schema)
 5. Token budget 계산 차이 (cache_read_input_tokens 등)
 
-### KOSMOS 의 ReAct flow invariant
+### UMMAYA 의 ReAct flow invariant
 
 `prompts/system_v1.md` `<turn_order>` 섹션:
 > **One tool per turn** — 한 turn 안에서 도구는 정확히 한 개만 호출.
@@ -353,14 +353,14 @@ K-EXAONE 의 reasoning_content + parallel_tool_calls 가 둘 다 visible 됐을 
 
 **Layout (회귀 #1)**:
 - [ ] `bun test tests/components/multiToolStacking.test.ts` 통과 (Codex 가 추가)
-- [ ] `src/kosmos/llm/client.py` 의 `parallel_tool_calls = False` 보존 (LLM swap 시 재확인)
-- [ ] `src/kosmos/ipc/stdio.py` 의 multi-tool drop guard 보존
+- [ ] `src/ummaya/llm/client.py` 의 `parallel_tool_calls = False` 보존 (LLM swap 시 재확인)
+- [ ] `src/ummaya/ipc/stdio.py` 의 multi-tool drop guard 보존
 - [ ] `tui/src/utils/multiToolLayout.ts` 의 `isSameAssistantToolStack` 보존
 - [ ] Layer 5 PTY 캡처에서 multi-tool 시나리오 (`부산 사하구 날씨`) 5 줄 stack 빈 줄 0
 - [ ] Streaming 중에도 `∴ Thinking` preview 가 last user 와 first tool_use 사이에 위치
 
 **Schema visibility (회귀 #2)**:
-- [ ] `src/kosmos/ipc/stdio.py:_build_available_adapters_suffix` 가 input_schema_json 의 properties 를 per-field signature 로 dump (`· name (type, 필수|선택 pattern=... enum=...) — desc`)
+- [ ] `src/ummaya/ipc/stdio.py:_build_available_adapters_suffix` 가 input_schema_json 의 properties 를 per-field signature 로 dump (`· name (type, 필수|선택 pattern=... enum=...) — desc`)
 - [ ] Live 검증: `uv run python -c "..."` 로 BM25 후보 top-3 의 schema signature 가 `lat`/`lon`/`base_date pattern='^\d{8}$'` 등 정확한 필드 노출 확인
 - [ ] LLM swap 시 dynamic suffix 길이 증가가 prompt cache 깨지 않는지 확인 (static prefix 분리 보존)
 - [ ] 어떤 LLM provider 에서도 모든 도구가 invalid_params 를 일관되게 emit 하지 않는지 모니터링 — 그렇다면 schema 정보가 LLM 에 안 도달한 것
@@ -369,8 +369,8 @@ K-EXAONE 의 reasoning_content + parallel_tool_calls 가 둘 다 visible 됐을 
 
 - 핸드오프 문서: `multi-tool-layout-handoff.md` (해결 전 작성)
 - 변경 파일들 (working tree, 미커밋):
-  - `src/kosmos/llm/client.py:989` — parallel_tool_calls=False
-  - `src/kosmos/ipc/stdio.py:1661` — multi-tool drop guard
+  - `src/ummaya/llm/client.py:989` — parallel_tool_calls=False
+  - `src/ummaya/ipc/stdio.py:1661` — multi-tool drop guard
   - `tui/src/utils/multiToolLayout.ts` (NEW)
   - `tui/src/utils/messageReorder.ts` (NEW, extracted)
   - `tui/src/components/MessageRow.tsx` — suppressTopMargin prop

@@ -53,9 +53,9 @@
 ## boot prefix (모든 시나리오 공통)
 
 ```
-cd /Users/um-yunsang/KOSMOS/tui && KOSMOS_ONBOARDING_AUTO_COMPLETE=1 bun run tui
+cd /Users/um-yunsang/UMMAYA/tui && UMMAYA_ONBOARDING_AUTO_COMPLETE=1 bun run tui
 ```
-- 예외: vhs-08 onboarding 은 `rm -rf ~/.kosmos/memdir/user/onboarding && cd … && bun run tui` (env 변수 없이)
+- 예외: vhs-08 onboarding 은 `rm -rf ~/.ummaya/memdir/user/onboarding && cd … && bun run tui` (env 변수 없이)
 
 ## 시나리오별 산출물 (4종 박제)
 

@@ -2,14 +2,14 @@
 # aimock fake-LLM HTTP server for deterministic CI smoke tests.
 # Spec: specs/debug-infra-rebuild/RFC.md § P0
 #
-# This compose file is OPT-IN only. The default KOSMOS path (real FriendliAI)
+# This compose file is OPT-IN only. The default UMMAYA path (real FriendliAI)
 # is unchanged. Start aimock ONLY when you need deterministic LLM responses
 # for local development or CI smoke runs.
 #
 # Usage:
 #   docker compose -f docker-compose.aimock.yml up -d
-#   KOSMOS_FRIENDLI_BASE_URL=http://localhost:4010/v1 \
-#   KOSMOS_FRIENDLI_TOKEN=aimock-test \
+#   UMMAYA_FRIENDLI_BASE_URL=http://localhost:4010/v1 \
+#   UMMAYA_FRIENDLI_TOKEN=aimock-test \
 #   bun run tui
 #
 # Stop:
@@ -28,7 +28,7 @@ services:
     image: ghcr.io/copilotkit/aimock:latest
     restart: unless-stopped
     ports:
-      - "${KOSMOS_AIMOCK_PORT:-4010}:4010"
+      - "${UMMAYA_AIMOCK_PORT:-4010}:4010"
     volumes:
       # Mount the fixture directory so aimock can load scenario JSON files.
       # Each *.json file in tests/fixtures/llm/ is a fixture bundle.
@@ -61,8 +61,8 @@ services:
   #
   # Usage (no Docker):
   #   bun scripts/aimock-bun.ts --port 4010
-  #   KOSMOS_FRIENDLI_BASE_URL=http://localhost:4010/v1 \
-  #   KOSMOS_FRIENDLI_TOKEN=aimock-test \
+  #   UMMAYA_FRIENDLI_BASE_URL=http://localhost:4010/v1 \
+  #   UMMAYA_FRIENDLI_TOKEN=aimock-test \
   #   bun run tui
   #
   # This service is defined here for documentation purposes; it cannot be
@@ -72,4 +72,4 @@ services:
   # ---------------------------------------------------------------------------
   # aimock-bun:
   #   (no image — run as host process: bun scripts/aimock-bun.ts --port 4011)
-  #   # Use KOSMOS_AIMOCK_PORT=4011 if running alongside the Docker service.
+  #   # Use UMMAYA_AIMOCK_PORT=4011 if running alongside the Docker service.

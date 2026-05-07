@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // SPDX-License-Identifier: Apache-2.0
 //
-// KOSMOS-original — Bun-native PTY harness for end-to-end TUI verification.
+// UMMAYA-original — Bun-native PTY harness for end-to-end TUI verification.
 //
 // Replaces the tmux send-keys path for scenarios where keystroke delivery
 // timing is critical. The tmux harness suffers from two unfixable
@@ -137,10 +137,10 @@ async function run(): Promise<void> {
     process.exit(2);
   }
 
-  const cols = Number(process.env.KOSMOS_DEBUG_COLS ?? 180);
-  const rows = Number(process.env.KOSMOS_DEBUG_ROWS ?? 60);
-  const sampleFrames = process.env.KOSMOS_PTY_SAMPLE_FRAMES !== '0';
-  const maxFrames = Number(process.env.KOSMOS_PTY_MAX_FRAMES ?? 500);
+  const cols = Number(process.env.UMMAYA_DEBUG_COLS ?? 180);
+  const rows = Number(process.env.UMMAYA_DEBUG_ROWS ?? 60);
+  const sampleFrames = process.env.UMMAYA_PTY_SAMPLE_FRAMES !== '0';
+  const maxFrames = Number(process.env.UMMAYA_PTY_MAX_FRAMES ?? 500);
 
   mkdirSync(outDir, { recursive: true });
   const absOut = pathResolve(outDir);

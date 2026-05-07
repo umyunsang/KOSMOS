@@ -1,4 +1,4 @@
-# Target-state citizen demand dataset for KOSMOS national infrastructure AX.
+# Target-state citizen demand dataset for UMMAYA national infrastructure AX.
 #
 # This is intentionally not derived from the current ToolRegistry, current adapter IDs,
 # or current fixture inventory. It models what citizens would naturally ask if tax,
@@ -13,9 +13,9 @@ created_at: "2026-05-04"
 source_basis: citizen_demand_target_state
 target_system: "One LLM interface for citizen-facing national infrastructure AX"
 scope_note: >
-  The dataset targets end-state KOSMOS: a citizen should not need to know which
+  The dataset targets end-state UMMAYA: a citizen should not need to know which
   ministry, portal, certificate, payment rail, or public-infrastructure operator owns
-  a task. KOSMOS should decompose, verify, route, ask for consent, submit, pay,
+  a task. UMMAYA should decompose, verify, route, ask for consent, submit, pay,
   subscribe, or hand off with citations and audit evidence.
 allowed_primitives:
   - lookup

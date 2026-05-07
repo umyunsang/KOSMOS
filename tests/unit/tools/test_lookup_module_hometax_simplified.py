@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 import pytest_asyncio  # noqa: F401 — ensures pytest-asyncio plugin is present
 
-from kosmos.tools.mock.lookup_module_hometax_simplified import (
+from ummaya.tools.mock.lookup_module_hometax_simplified import (
     MOCK_LOOKUP_MODULE_HOMETAX_SIMPLIFIED_TOOL,
     HometaxSimplifiedInput,
     handle,
@@ -43,7 +43,7 @@ def _make_delegation_context(scope: str) -> object:
     """Build a minimal DelegationContext for scope-validation testing."""
     from datetime import UTC, datetime, timedelta
 
-    from kosmos.primitives.delegation import DelegationContext, DelegationToken
+    from ummaya.primitives.delegation import DelegationContext, DelegationToken
 
     token = DelegationToken(
         vp_jwt="eyJhbGciOiJub25lIiwidHlwIjoidnArand0In0.eyJzdWIiOiJtb2NrIn0.mock-signature-not-cryptographic",
@@ -127,8 +127,8 @@ async def test_handle_happy_path_domain_payload() -> None:
 
 def test_bm25_discovery_korean_keyword() -> None:
     """BM25 search for '홈택스 간소화' surfaces mock_lookup_module_hometax_simplified."""
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -143,8 +143,8 @@ def test_bm25_discovery_korean_keyword() -> None:
 
 def test_bm25_discovery_english_keyword() -> None:
     """BM25 search for 'hometax simplified' surfaces mock_lookup_module_hometax_simplified."""
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -159,8 +159,8 @@ def test_bm25_discovery_english_keyword() -> None:
 
 def test_bm25_discovery_year_end_tax_keyword() -> None:
     """BM25 search for '연말정산' surfaces mock_lookup_module_hometax_simplified."""
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -250,8 +250,8 @@ async def test_handle_without_delegation_context_proceeds() -> None:
 
 def test_registration_adds_tool_to_registry() -> None:
     """register() adds mock_lookup_module_hometax_simplified to the ToolRegistry."""
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -262,8 +262,8 @@ def test_registration_adds_tool_to_registry() -> None:
 
 def test_registration_adds_adapter_to_executor() -> None:
     """register() binds the adapter function in the ToolExecutor."""
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)
@@ -323,9 +323,9 @@ async def test_input_schema_accepts_backend_injected_delegation_context() -> Non
 
 def test_registration_duplicate_raises_error() -> None:
     """Registering the same tool twice raises AdapterIdCollisionError (FR-020)."""
-    from kosmos.tools.errors import AdapterIdCollisionError
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from ummaya.tools.errors import AdapterIdCollisionError
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.registry import ToolRegistry
 
     registry = ToolRegistry()
     executor = ToolExecutor(registry)

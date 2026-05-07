@@ -2,7 +2,7 @@
 
 **Source**: `find .references/claude-code-sourcemap/restored-src/src/components -type f \( -name "*.tsx" -o -name "*.ts" \) | sort`
 **Sourcemap commit**: `a8a678c`
-**Enumerated at**: 2026-04-20 (KOSMOS HEAD `34c48f4`)
+**Enumerated at**: 2026-04-20 (UMMAYA HEAD `34c48f4`)
 **Invariant I3**: sum of per-family counts == 389.
 
 ## 1 · Subdirectory families (31 families, 276 files)

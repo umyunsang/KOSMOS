@@ -17,8 +17,8 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.permissions.ledger import append
-from kosmos.permissions.models import ConsentLedgerRecord
+from ummaya.permissions.ledger import append
+from ummaya.permissions.models import ConsentLedgerRecord
 
 # Deterministic sentinel digest (64 hex zeros) used for action_digest in tests.
 _ZERO_DIGEST = "0" * 64

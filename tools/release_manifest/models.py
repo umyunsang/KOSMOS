@@ -2,7 +2,7 @@
 """ReleaseManifest Pydantic v2 model for docs/release-manifests/<sha>.yaml.
 
 Implements the data-model.md § 3 contract and enforces invariants RM1–RM4.
-Intentionally decoupled from the kosmos namespace so the tools/ package
+Intentionally decoupled from the ummaya namespace so the tools/ package
 has no runtime dependency on src/.
 """
 
@@ -51,7 +51,7 @@ LiteLlmProxyVersion = Annotated[
     ),
 ]
 
-# Locally redeclared aliases mirroring kosmos.context.prompt_models.
+# Locally redeclared aliases mirroring ummaya.context.prompt_models.
 # 64-char lowercase hex SHA-256 digest.
 Sha256Hex = Annotated[
     str,

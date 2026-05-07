@@ -1,12 +1,12 @@
 ---
-description: "Task list for Epic #468 — Secrets & Config: Infisical OIDC + 12-Factor + KOSMOS_* registry"
+description: "Task list for Epic #468 — Secrets & Config: Infisical OIDC + 12-Factor + UMMAYA_* registry"
 ---
 
-# Tasks: Secrets & Config — Infisical OIDC + 12-Factor + KOSMOS_* Registry
+# Tasks: Secrets & Config — Infisical OIDC + 12-Factor + UMMAYA_* Registry
 
 **Input**: Design documents from `/specs/026-secrets-infisical-oidc/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
-**Epic**: #468 · **Branch**: `feat/468-secrets-config` · **Worktree**: `/Users/um-yunsang/KOSMOS-468`
+**Epic**: #468 · **Branch**: `feat/468-secrets-config` · **Worktree**: `/Users/um-yunsang/UMMAYA-468`
 
 **Tests**: TDD requested. Guard tests are written BEFORE guard implementation (spec §FR-001..008 + NFR-001, SC-006).
 
@@ -20,19 +20,19 @@ description: "Task list for Epic #468 — Secrets & Config: Infisical OIDC + 12-
 
 ## Path Conventions
 
-- Single-project layout (Python package under `src/kosmos/`)
-- New files in this Epic: `src/kosmos/config/`, `tests/config/`, `docs/configuration.md`, `scripts/audit-env-registry.py`, `scripts/audit-secrets.sh`
-- Edits: `src/kosmos/cli/app.py`, `.env.example`, `.github/workflows/ci.yml`, `docs/design/mvp-tools.md:642`
+- Single-project layout (Python package under `src/ummaya/`)
+- New files in this Epic: `src/ummaya/config/`, `tests/config/`, `docs/configuration.md`, `scripts/audit-env-registry.py`, `scripts/audit-secrets.sh`
+- Edits: `src/ummaya/cli/app.py`, `.env.example`, `.github/workflows/ci.yml`, `docs/design/mvp-tools.md:642`
 
 ---
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-**Purpose**: Create the new `kosmos.config` Python package and matching test package — minimal scaffolding that unblocks all user stories.
+**Purpose**: Create the new `ummaya.config` Python package and matching test package — minimal scaffolding that unblocks all user stories.
 
-- [X] T001 [P] Create `src/kosmos/config/__init__.py` (empty module init) and `tests/config/__init__.py` (empty test-package init) per plan.md §Project Structure. No logic — these are package markers so subsequent tasks can import `from kosmos.config import guard` and pytest can collect `tests/config/test_guard.py`. Confirm the two files exist with `ls -la src/kosmos/config/ tests/config/`.
+- [X] T001 [P] Create `src/ummaya/config/__init__.py` (empty module init) and `tests/config/__init__.py` (empty test-package init) per plan.md §Project Structure. No logic — these are package markers so subsequent tasks can import `from ummaya.config import guard` and pytest can collect `tests/config/test_guard.py`. Confirm the two files exist with `ls -la src/ummaya/config/ tests/config/`.
 
-**Checkpoint**: `kosmos.config` package importable; `tests/config` is a valid pytest collection root.
+**Checkpoint**: `ummaya.config` package importable; `tests/config` is a valid pytest collection root.
 
 ---
 
@@ -55,22 +55,22 @@ description: "Task list for Epic #468 — Secrets & Config: Infisical OIDC + 12-
 - [X] T002 [P] [US1] Write failing unit tests in `tests/config/test_guard.py` covering the 10-scenario matrix from `contracts/guard.md §Test matrix`:
   - T-G01: empty env → exit 78, all `required_in ⊇ {dev}` vars listed, `env=dev` tag
   - T-G02: all required set → returns `None`, no stderr
-  - T-G03: `KOSMOS_ENV=prod` + `LANGFUSE_PUBLIC_KEY` missing → `LANGFUSE_PUBLIC_KEY` in list
-  - T-G04: flip `KOSMOS_ENV=dev` on same missing-langfuse state → passes
-  - T-G05: whitespace-only `KOSMOS_KAKAO_API_KEY` → treated as missing
-  - T-G06: unknown `KOSMOS_ENV=staging` → dev fall-through (no prod-only vars demanded)
+  - T-G03: `UMMAYA_ENV=prod` + `LANGFUSE_PUBLIC_KEY` missing → `LANGFUSE_PUBLIC_KEY` in list
+  - T-G04: flip `UMMAYA_ENV=dev` on same missing-langfuse state → passes
+  - T-G05: whitespace-only `UMMAYA_KAKAO_API_KEY` → treated as missing
+  - T-G06: unknown `UMMAYA_ENV=staging` → dev fall-through (no prod-only vars demanded)
   - T-G07: 100 ms budget on all-missing path (`time.monotonic()` assertion < 0.1 s)
   - T-G08: missing-list ordering determinism (same input twice → identical message)
   - T-G09: guard does NOT write `.env` (post-call mtime unchanged if file present)
   - T-G10: guard emits no OTel spans
   
-  Use `monkeypatch.setenv` / `monkeypatch.delenv` + `capsys` for stderr capture. Import from `kosmos.config.guard` (module does not yet exist — tests MUST fail at collection or first call). Stderr grammar assertions use exact string from `contracts/guard.md §stderr grammar`. No stub `guard.py` — the package init from T001 is enough for the import to fail with `AttributeError` or `ImportError`, which is the expected TDD signal.
+  Use `monkeypatch.setenv` / `monkeypatch.delenv` + `capsys` for stderr capture. Import from `ummaya.config.guard` (module does not yet exist — tests MUST fail at collection or first call). Stderr grammar assertions use exact string from `contracts/guard.md §stderr grammar`. No stub `guard.py` — the package init from T001 is enough for the import to fail with `AttributeError` or `ImportError`, which is the expected TDD signal.
 
 ### Implementation for User Story 1
 
-- [X] T003 [US1] Implement `src/kosmos/config/guard.py` per `contracts/guard.md §Public surface`. Create: `Env = Literal["dev", "ci", "prod"]`; dataclasses `RequiredVar`, `GuardDiagnostic` (both `frozen=True, slots=True`); module-level `_REQUIRED_VARS: Final[tuple[RequiredVar, ...]]` seeded from `data-model.md §Registry table` — at minimum the dev-required `KOSMOS_FRIENDLI_TOKEN`, `KOSMOS_KAKAO_API_KEY`, `KOSMOS_DATA_GO_KR_API_KEY`, plus prod-conditional `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `KOSMOS_OTEL_ENDPOINT`; functions `current_env()`, `check_required()` (pure, no I/O), `verify_startup()` (CLI wrapper; writes single stderr line via `print(..., file=sys.stderr)`, then `sys.exit(78)`). Stdlib-only: `os`, `sys`, `dataclasses`, `typing`. No logging, no OTel, no file I/O. Hard-code `doc_url = "https://github.com/umyunsang/KOSMOS/blob/main/docs/configuration.md"`. All 10 T002 tests MUST pass after this task.
+- [X] T003 [US1] Implement `src/ummaya/config/guard.py` per `contracts/guard.md §Public surface`. Create: `Env = Literal["dev", "ci", "prod"]`; dataclasses `RequiredVar`, `GuardDiagnostic` (both `frozen=True, slots=True`); module-level `_REQUIRED_VARS: Final[tuple[RequiredVar, ...]]` seeded from `data-model.md §Registry table` — at minimum the dev-required `UMMAYA_FRIENDLI_TOKEN`, `UMMAYA_KAKAO_API_KEY`, `UMMAYA_DATA_GO_KR_API_KEY`, plus prod-conditional `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `UMMAYA_OTEL_ENDPOINT`; functions `current_env()`, `check_required()` (pure, no I/O), `verify_startup()` (CLI wrapper; writes single stderr line via `print(..., file=sys.stderr)`, then `sys.exit(78)`). Stdlib-only: `os`, `sys`, `dataclasses`, `typing`. No logging, no OTel, no file I/O. Hard-code `doc_url = "https://github.com/umyunsang/UMMAYA/blob/main/docs/configuration.md"`. All 10 T002 tests MUST pass after this task.
 
-- [X] T004 [US1] Wire `verify_startup()` into `src/kosmos/cli/app.py:main()` between `load_repo_dotenv()` and `setup_tracing()` per `research.md §R1`. Import `from kosmos.config.guard import verify_startup` and insert a single call `verify_startup()` after the `.env` merge and before any tracing/LLM-client/tool-loop code. Add one integration test `tests/config/test_cli_wiring.py::test_guard_runs_before_tracing` using `monkeypatch` to assert call-order invariant (stub `setup_tracing` and `verify_startup`, assert guard invoked first). Do NOT edit `kosmos.cli.config.CLIConfig` or `_dotenv.py` — guard is additive.
+- [X] T004 [US1] Wire `verify_startup()` into `src/ummaya/cli/app.py:main()` between `load_repo_dotenv()` and `setup_tracing()` per `research.md §R1`. Import `from ummaya.config.guard import verify_startup` and insert a single call `verify_startup()` after the `.env` merge and before any tracing/LLM-client/tool-loop code. Add one integration test `tests/config/test_cli_wiring.py::test_guard_runs_before_tracing` using `monkeypatch` to assert call-order invariant (stub `setup_tracing` and `verify_startup`, assert guard invoked first). Do NOT edit `ummaya.cli.config.CLIConfig` or `_dotenv.py` — guard is additive.
 
 **Checkpoint**: User Story 1 fully functional. `uv run pytest tests/config/` green. Empty-env CLI invocation exits 78 < 100 ms with the mandated single-line stderr message. SC-006 met.
 
@@ -78,21 +78,21 @@ description: "Task list for Epic #468 — Secrets & Config: Infisical OIDC + 12-
 
 ## Phase 4: User Story 2 — Canonical env-var registry + drift audits (Priority: P2)
 
-**Goal**: `docs/configuration.md` becomes the single human-facing truth for every `KOSMOS_*` variable; `scripts/audit-env-registry.py` + `scripts/audit-secrets.sh` lock the registry to the code so drift fails CI.
+**Goal**: `docs/configuration.md` becomes the single human-facing truth for every `UMMAYA_*` variable; `scripts/audit-env-registry.py` + `scripts/audit-secrets.sh` lock the registry to the code so drift fails CI.
 
-**Independent Test**: `uv run python scripts/audit-env-registry.py | jq .verdict` prints `"clean"`; `./scripts/audit-secrets.sh` exits 0 on current `ci.yml`. Adding an undocumented `KOSMOS_FOO` to any `src/*.py` flips audit to `drift`/exit 1.
+**Independent Test**: `uv run python scripts/audit-env-registry.py | jq .verdict` prints `"clean"`; `./scripts/audit-secrets.sh` exits 0 on current `ci.yml`. Adding an undocumented `UMMAYA_FOO` to any `src/*.py` flips audit to `drift`/exit 1.
 
 ### Implementation for User Story 2
 
 *All four tasks below are parallelisable — they touch disjoint files and share only the registry schema (finalised in `data-model.md`).*
 
-- [ ] T005 [P] [US2] Write `docs/configuration.md` per `data-model.md §Registry table schema` + `§Full registry surface`. Sections: (1) Overview — 12-Factor rationale + `KOSMOS_` prefix rule + `LANGFUSE_*` sole exception, (2) Quick reference table with exact 6-column header `| Variable | Required | Default | Range | Consumed by | Source doc |`, populated with all 17 `KOSMOS_*` vars from `spec.md §FR-012` + 2 `LANGFUSE_*` + `KOSMOS_OTEL_ENDPOINT` + the `KOSMOS_<TOOL_ID>_API_KEY` override-family row + deprecated `KOSMOS_API_KEY` row, (3) "How to add a variable" runbook (3-file change: registry + `.env.example` + consumer module; optionally `_REQUIRED_VARS` in guard) per FR-017, (4) Infisical migration operator runbook per FR-033 (project creation, OIDC identity registration, GH repo trust binding, env-slug mapping, rotation flow) — no real token values, all placeholders `<redacted>`, (5) Rollback procedure per FR-036 (`git revert <ci.yml commit>`, restore GH Secrets from Infisical export, 15-min SLO). Use `<redacted>` placeholders throughout. Anchor `#infisical-rate-limit` referenced by `contracts/ci-workflow.md §Failure handling`.
+- [ ] T005 [P] [US2] Write `docs/configuration.md` per `data-model.md §Registry table schema` + `§Full registry surface`. Sections: (1) Overview — 12-Factor rationale + `UMMAYA_` prefix rule + `LANGFUSE_*` sole exception, (2) Quick reference table with exact 6-column header `| Variable | Required | Default | Range | Consumed by | Source doc |`, populated with all 17 `UMMAYA_*` vars from `spec.md §FR-012` + 2 `LANGFUSE_*` + `UMMAYA_OTEL_ENDPOINT` + the `UMMAYA_<TOOL_ID>_API_KEY` override-family row + deprecated `UMMAYA_API_KEY` row, (3) "How to add a variable" runbook (3-file change: registry + `.env.example` + consumer module; optionally `_REQUIRED_VARS` in guard) per FR-017, (4) Infisical migration operator runbook per FR-033 (project creation, OIDC identity registration, GH repo trust binding, env-slug mapping, rotation flow) — no real token values, all placeholders `<redacted>`, (5) Rollback procedure per FR-036 (`git revert <ci.yml commit>`, restore GH Secrets from Infisical export, 15-min SLO). Use `<redacted>` placeholders throughout. Anchor `#infisical-rate-limit` referenced by `contracts/ci-workflow.md §Failure handling`.
 
-- [ ] T006 [P] [US2] Write `scripts/audit-env-registry.py` per `contracts/audit-env-registry.md`. CLI flags `--json`, `--repo-root`, `--registry`. Stdlib-only (`argparse`, `re`, `pathlib`, `json`, `sys`). Scan `src/**/*.py` + `.github/workflows/ci.yml` + `.env.example` with `_NAME_RE = re.compile(r"\bKOSMOS_[A-Z][A-Z0-9_]*\b")` + `_LANGFUSE_RE`. Parse `docs/configuration.md` table via the literal-header approach from the contract §Parsing contract. Detect 4 finding classes: `in_code_not_in_registry`, `in_registry_not_in_code`, `prefix_violations`, `override_family_unmatched`. Emit JSON matching `contracts/audit-env-registry.md §Drift report shape` (`schema_version`, `verdict`, `scan_stats`, `findings`). Exit codes 0/1/2. Add self-test fixtures `tests/scripts/test_audit_env_registry.py` covering matrix T-AR01..T-AR07 (7 cases) including performance budget (10 s wall-clock on full repo, NFR-006). Make the script executable (`chmod +x`) and add the `# SPDX-License-Identifier: Apache-2.0` header.
+- [ ] T006 [P] [US2] Write `scripts/audit-env-registry.py` per `contracts/audit-env-registry.md`. CLI flags `--json`, `--repo-root`, `--registry`. Stdlib-only (`argparse`, `re`, `pathlib`, `json`, `sys`). Scan `src/**/*.py` + `.github/workflows/ci.yml` + `.env.example` with `_NAME_RE = re.compile(r"\bUMMAYA_[A-Z][A-Z0-9_]*\b")` + `_LANGFUSE_RE`. Parse `docs/configuration.md` table via the literal-header approach from the contract §Parsing contract. Detect 4 finding classes: `in_code_not_in_registry`, `in_registry_not_in_code`, `prefix_violations`, `override_family_unmatched`. Emit JSON matching `contracts/audit-env-registry.md §Drift report shape` (`schema_version`, `verdict`, `scan_stats`, `findings`). Exit codes 0/1/2. Add self-test fixtures `tests/scripts/test_audit_env_registry.py` covering matrix T-AR01..T-AR07 (7 cases) including performance budget (10 s wall-clock on full repo, NFR-006). Make the script executable (`chmod +x`) and add the `# SPDX-License-Identifier: Apache-2.0` header.
 
 - [ ] T007 [P] [US2] Write `scripts/audit-secrets.sh` per `contracts/audit-secrets.md`. POSIX-portable bash (shellcheck clean, `shellcheck -x` zero warnings). `_SCANNED_FILES=('.github/workflows/ci.yml')` — out-of-scope `docker.yml` / `shadow-eval.yml` / `build-manifest.yml` MUST NOT be scanned (owned by #467). Encode 6 denylist regexes from §Forbidden patterns. Allowlist `${{ secrets.GITHUB_TOKEN }}` and `${{ secrets.INFISICAL_CLIENT_ID }}` (only if no paired `INFISICAL_CLIENT_SECRET`). Suppress comment lines (`^\s*#`) and `uses:` action-reference lines. Emit stderr violations sorted by `(file, line_number)`. Exit 0/1/2. Add `tests/scripts/test_audit_secrets.sh.bats` or `.py` harness covering matrix T-AS01..T-AS08 (8 cases) using fixture workflow files. Header line: `# SPDX-License-Identifier: Apache-2.0`. Make executable (`chmod +x`).
 
-- [ ] T008 [P] [US2] Regenerate `.env.example` (overwrite) per `spec.md §FR-018..019` + `research.md §R6`. Format: dotenv (`KOSMOS_X=<redacted>`, no `export` prefix) — matches `src/kosmos/_dotenv.py` parser. Every required + conditional-required variable from the registry (T005) MUST appear with `<redacted>` value and a single trailing comment `# consumed by <module path>`. No real secret formats (no hex-looking placeholders). Preserve file header comment block explaining `<redacted>` convention + pointer to `docs/configuration.md`. Do NOT write to `.env` (symlink — AGENTS.md hard rule + spec FR-042).
+- [ ] T008 [P] [US2] Regenerate `.env.example` (overwrite) per `spec.md §FR-018..019` + `research.md §R6`. Format: dotenv (`UMMAYA_X=<redacted>`, no `export` prefix) — matches `src/ummaya/_dotenv.py` parser. Every required + conditional-required variable from the registry (T005) MUST appear with `<redacted>` value and a single trailing comment `# consumed by <module path>`. No real secret formats (no hex-looking placeholders). Preserve file header comment block explaining `<redacted>` convention + pointer to `docs/configuration.md`. Do NOT write to `.env` (symlink — AGENTS.md hard rule + spec FR-042).
 
 **Checkpoint**: US2 fully functional. `./scripts/audit-secrets.sh && uv run python scripts/audit-env-registry.py | jq -e '.verdict == "clean"'` exits 0. SC-003, SC-005, SC-007 met.
 
@@ -100,13 +100,13 @@ description: "Task list for Epic #468 — Secrets & Config: Infisical OIDC + 12-
 
 ## Phase 5: User Story 3 — OIDC-federated CI replaces long-lived GitHub Secrets (Priority: P3)
 
-**Goal**: No long-lived `KOSMOS_*` secret lives in `.github/workflows/ci.yml` or GitHub Settings → Secrets. Rotating any token = one-click Infisical operation, zero code change.
+**Goal**: No long-lived `UMMAYA_*` secret lives in `.github/workflows/ci.yml` or GitHub Settings → Secrets. Rotating any token = one-click Infisical operation, zero code change.
 
-**Independent Test**: Grep of `ci.yml` for `tokens|api_key|secret` (excluding `infisical`) returns zero matches; rotate `KOSMOS_FRIENDLI_TOKEN` in Infisical dashboard → next CI run green with no commit (SC-001, SC-002, SC-004).
+**Independent Test**: Grep of `ci.yml` for `tokens|api_key|secret` (excluding `infisical`) returns zero matches; rotate `UMMAYA_FRIENDLI_TOKEN` in Infisical dashboard → next CI run green with no commit (SC-001, SC-002, SC-004).
 
 ### Implementation for User Story 3
 
-- [ ] T009 [US3] Edit `.github/workflows/ci.yml` per `contracts/ci-workflow.md`. (a) Add job-level `permissions: { id-token: write, contents: read }` to every job that needs `KOSMOS_*` secrets. (b) Insert the Infisical step from §Required workflow block: `uses: Infisical/secrets-action@v1` with `method: oidc`, `client-id: ${{ vars.INFISICAL_CLIENT_ID }}`, hard-coded `project-id: <KOSMOS project UUID>` (placeholder `<redacted>` — real UUID injected by operator during setup per T005 runbook), `env-slug: dev` (default Infisical env for new projects), `secret-path: '/'`, `export-type: env`. Step positioned BEFORE any `uv run pytest` / application-import step. (c) **FR-050 typo fix**: replace every occurrence of `KOSMOS_DATA_GO_KR_KEY` with `KOSMOS_DATA_GO_KR_API_KEY` (line 53 at time of spec; verify final location). Remove the hard-coded `test-placeholder` fallback for that variable — Infisical now injects the real test-env value. (d) Remove any remaining long-lived `${{ secrets.KOSMOS_* }}` / `${{ secrets.FRIENDLI_* }}` / `${{ secrets.LANGFUSE_* }}` references. Keep `${{ secrets.GITHUB_TOKEN }}` (short-lived, scoped) where needed. Preserve existing triggers, concurrency, and matrix config.
+- [ ] T009 [US3] Edit `.github/workflows/ci.yml` per `contracts/ci-workflow.md`. (a) Add job-level `permissions: { id-token: write, contents: read }` to every job that needs `UMMAYA_*` secrets. (b) Insert the Infisical step from §Required workflow block: `uses: Infisical/secrets-action@v1` with `method: oidc`, `client-id: ${{ vars.INFISICAL_CLIENT_ID }}`, hard-coded `project-id: <UMMAYA project UUID>` (placeholder `<redacted>` — real UUID injected by operator during setup per T005 runbook), `env-slug: dev` (default Infisical env for new projects), `secret-path: '/'`, `export-type: env`. Step positioned BEFORE any `uv run pytest` / application-import step. (c) **FR-050 typo fix**: replace every occurrence of `UMMAYA_DATA_GO_KR_KEY` with `UMMAYA_DATA_GO_KR_API_KEY` (line 53 at time of spec; verify final location). Remove the hard-coded `test-placeholder` fallback for that variable — Infisical now injects the real test-env value. (d) Remove any remaining long-lived `${{ secrets.UMMAYA_* }}` / `${{ secrets.FRIENDLI_* }}` / `${{ secrets.LANGFUSE_* }}` references. Keep `${{ secrets.GITHUB_TOKEN }}` (short-lived, scoped) where needed. Preserve existing triggers, concurrency, and matrix config.
 
 - [ ] T010 [US3] Wire both audit scripts into `.github/workflows/ci.yml` as pre-test gates per `contracts/ci-workflow.md §Pre-test gates`. Insert two steps BEFORE the Infisical step (they must run even if Infisical is misconfigured): (1) `- name: Secrets audit / run: ./scripts/audit-secrets.sh`, (2) `- name: Env registry drift check / run: uv run python scripts/audit-env-registry.py --json`. Non-zero exit from either step fails the job. Ensure `actions/checkout@v4` runs before these steps (scripts need repo contents) but no Python/uv setup needed for the bash script; `audit-env-registry.py` runs via `uv run` so `astral-sh/setup-uv@v3` must precede it.
 
@@ -118,11 +118,11 @@ description: "Task list for Epic #468 — Secrets & Config: Infisical OIDC + 12-
 
 **Purpose**: One-line typo defect fix (FR-051) and end-to-end Epic validation.
 
-- [ ] T011 [P] Fix `docs/design/mvp-tools.md:642` per `spec.md §FR-051` + Defects Fixed table. Replace the stale `KOSMOS_KAKAO_REST_KEY` reference with the canonical `KOSMOS_KAKAO_API_KEY`. Use `Grep` to verify no other `KOSMOS_KAKAO_REST_KEY` occurrence survives anywhere under `docs/` (FR-052); if any additional hits surface, include them in the same commit as a single atomic find-and-replace. Do NOT touch `docs/tool-adapters.md` unless the grep surfaces a stale hit there (per Lead constraint — typo-fix-only access to that file).
+- [ ] T011 [P] Fix `docs/design/mvp-tools.md:642` per `spec.md §FR-051` + Defects Fixed table. Replace the stale `UMMAYA_KAKAO_REST_KEY` reference with the canonical `UMMAYA_KAKAO_API_KEY`. Use `Grep` to verify no other `UMMAYA_KAKAO_REST_KEY` occurrence survives anywhere under `docs/` (FR-052); if any additional hits surface, include them in the same commit as a single atomic find-and-replace. Do NOT touch `docs/tool-adapters.md` unless the grep surfaces a stale hit there (per Lead constraint — typo-fix-only access to that file).
 
 - [ ] T012 End-to-end Epic validation per `quickstart.md` + `spec.md §Success Criteria`. Execute locally and record results:
-  - **SC-006**: Empty `.env` smoke — temporarily rename `.env` (it's a symlink — use `mv .env .env.tmp` NOT rewrite), invoke `uv run kosmos --help`, confirm exit 78 < 100 ms + single-line stderr matching guard grammar, restore `.env.tmp → .env`.
-  - **SC-002**: Rotation dry-run — document in PR description that operator must (1) edit `KOSMOS_FRIENDLI_TOKEN` in Infisical dashboard, (2) `gh run rerun <last-CI-id>`, (3) verify green. Cannot fully automate without Infisical write access during CI.
+  - **SC-006**: Empty `.env` smoke — temporarily rename `.env` (it's a symlink — use `mv .env .env.tmp` NOT rewrite), invoke `uv run ummaya --help`, confirm exit 78 < 100 ms + single-line stderr matching guard grammar, restore `.env.tmp → .env`.
+  - **SC-002**: Rotation dry-run — document in PR description that operator must (1) edit `UMMAYA_FRIENDLI_TOKEN` in Infisical dashboard, (2) `gh run rerun <last-CI-id>`, (3) verify green. Cannot fully automate without Infisical write access during CI.
   - **SC-004**: Live-suite via OIDC — confirm `.github/workflows/ci.yml` CI run invokes `@pytest.mark.live` tests and they pass with Infisical-injected tokens (verified post-merge; pre-merge just confirms the Infisical step is correctly positioned).
   - **SC-001**: `grep -r "tokens\|api_key\|secret" .github/workflows/ci.yml | grep -v -i infisical` returns zero matches.
   - **SC-003**: Both audit scripts exit 0 locally. 
@@ -132,7 +132,7 @@ description: "Task list for Epic #468 — Secrets & Config: Infisical OIDC + 12-
   
   Report all results in a single section at the top of the PR body below `Closes #468`.
 
-- [ ] T013 Final Epic completion report per `/remote-control` Lead format. Produce a single structured message covering: (a) spec/plan/tasks paths, (b) Task issue numbers created by `/speckit-taskstoissues`, (c) cross-Epic contract summary (#458 / #507 / #501 / #467 / #465), (d) registry variable count (expected ~20 rows: 17 `KOSMOS_*` + 2 `LANGFUSE_*` + override-family + deprecated), (e) manual operator-side steps the user must execute (create Infisical project, register OIDC identity, populate `INFISICAL_CLIENT_ID` as repo variable, seed Infisical `test` env with tokens), (f) deferred-items ledger status. This task closes the Epic's Spec Kit cycle; implementation proceeds via `/speckit-implement` after user approval.
+- [ ] T013 Final Epic completion report per `/remote-control` Lead format. Produce a single structured message covering: (a) spec/plan/tasks paths, (b) Task issue numbers created by `/speckit-taskstoissues`, (c) cross-Epic contract summary (#458 / #507 / #501 / #467 / #465), (d) registry variable count (expected ~20 rows: 17 `UMMAYA_*` + 2 `LANGFUSE_*` + override-family + deprecated), (e) manual operator-side steps the user must execute (create Infisical project, register OIDC identity, populate `INFISICAL_CLIENT_ID` as repo variable, seed Infisical `test` env with tokens), (f) deferred-items ledger status. This task closes the Epic's Spec Kit cycle; implementation proceeds via `/speckit-implement` after user approval.
 
 ---
 
@@ -226,7 +226,7 @@ With 4 Sonnet Teammates active at `/speckit-implement`:
 - **TDD discipline**: T002 MUST fail before T003 begins. Enforced by running `uv run pytest tests/config/test_guard.py` between tasks and verifying `ImportError` / `AttributeError` / assertion failures.
 - **Sonnet-sized**: every task ≤ `size/M`. T005 (registry doc) is the largest single-file artefact; if it exceeds `size/M` during authoring, split the runbook subsections into a sibling task — but do NOT split the 6-column table.
 - **Constitution compliance**: Principles I (reference-driven), II (fail-closed guard), III (stdlib logging), V (Pydantic v2 preserved), VI (deferred items ledger) all verified during `/speckit-plan`. No new violations introduced by the task list.
-- **AGENTS.md hard-rule reminders**: (1) no new dependency, (2) no `.env` write, (3) `KOSMOS_` prefix + `LANGFUSE_*` sole exception, (4) `Closes #468` only in PR body (never Task sub-issues), (5) no token values anywhere — `<redacted>` only.
-- **Forbidden file surface** (must not touch): `.env` symlink, `docker/`, `.devcontainer/`, `prompts/`, `src/kosmos/safety/`, `.github/workflows/docker.yml`, `.github/workflows/shadow-eval.yml`, sibling worktrees `KOSMOS-467`, `KOSMOS-585`, `KOSMOS-466`.
+- **AGENTS.md hard-rule reminders**: (1) no new dependency, (2) no `.env` write, (3) `UMMAYA_` prefix + `LANGFUSE_*` sole exception, (4) `Closes #468` only in PR body (never Task sub-issues), (5) no token values anywhere — `<redacted>` only.
+- **Forbidden file surface** (must not touch): `.env` symlink, `docker/`, `.devcontainer/`, `prompts/`, `src/ummaya/safety/`, `.github/workflows/docker.yml`, `.github/workflows/shadow-eval.yml`, sibling worktrees `UMMAYA-467`, `UMMAYA-585`, `UMMAYA-466`.
 - **Commit after each task or logical group**. Conventional Commits; no `--no-verify`.
 - **PR close rule**: body uses `Closes #468` only. Task sub-issues closed after merge via `gh api`.

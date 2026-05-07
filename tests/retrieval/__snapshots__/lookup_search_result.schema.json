@@ -52,7 +52,7 @@
             }
           ],
           "default": null,
-          "description": "Agency-published policy URL the adapter cites (KOSMOS does not invent permission classifications).",
+          "description": "Agency-published policy URL the adapter cites (UMMAYA does not invent permission classifications).",
           "title": "Real Classification Url"
         },
         "required_params": {

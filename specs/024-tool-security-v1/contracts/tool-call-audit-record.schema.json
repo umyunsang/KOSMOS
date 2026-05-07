@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kosmos.ai/schemas/tool-call-audit-record/v1.json",
+  "$id": "https://ummaya.ai/schemas/tool-call-audit-record/v1.json",
   "title": "ToolCallAuditRecord",
-  "description": "Immutable per-call evidence artifact for KOSMOS tool invocations. Schema version v1. See specs/024-tool-security-v1/data-model.md § 3.",
+  "description": "Immutable per-call evidence artifact for UMMAYA tool invocations. Schema version v1. See specs/024-tool-security-v1/data-model.md § 3.",
   "type": "object",
   "additionalProperties": false,
   "required": [

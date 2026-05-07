@@ -10,7 +10,7 @@ import { logForDebugging } from '../debug.js'
 import { errorMessage, isENOENT } from '../errors.js'
 import { getFsImplementation } from '../fsOperations.js'
 import { jsonParse } from '../slowOperations.js'
-// KOSMOS Spec 1633 / Epic #2293 — utils/plugins/mcpbHandler deleted (Anthropic .mcpb plugin bundle handler); inline no-op stubs.
+// UMMAYA Spec 1633 / Epic #2293 — utils/plugins/mcpbHandler deleted (Anthropic .mcpb plugin bundle handler); inline no-op stubs.
 type McpbLoadResult = { manifest?: unknown; serverConfig?: unknown }
 type UserConfigSchema = unknown
 type UserConfigValues = unknown

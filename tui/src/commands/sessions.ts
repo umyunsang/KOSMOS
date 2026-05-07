@@ -1,4 +1,4 @@
-// KOSMOS-original session command: /sessions
+// UMMAYA-original session command: /sessions
 // Emits session_event IPC frame with event="list".
 // Backend streams back session metadata in a matching session_event list payload.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # S6: 모바일 인증 5종 — mobile_id + mydata + module_simple_auth + module_geumyung + module_any_id_sso
 set -euo pipefail
-wait_for_pane "KOSMOS|❯" 30
+wait_for_pane "UMMAYA|❯" 30
 snapshot_pane 00-boot
 
 send_text_pane "모바일ID 로 인증"; sleep 1; send_enter_pane; sleep 60

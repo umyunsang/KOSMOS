@@ -7,7 +7,7 @@
 #
 # Verification targets (autonomous 2-turn chain):
 #   1. Boot: "tool_registry: N entries verified"
-#   2. Branding: "KOSMOS" — idle state confirmed
+#   2. Branding: "UMMAYA" — idle state confirmed
 #   3. Input accepted
 #   4. Active LLM processing: "esc to interrupt" footer (NOT "? for shortcuts")
 #      This uniquely identifies the TUI is actively processing — cannot appear in idle state.
@@ -33,9 +33,9 @@
 wait_for_pane "tool_registry: [0-9]+ entries verified" 45
 snapshot_pane "boot"
 
-# Stage A2: Wait for KOSMOS branding / REPL ready (idle state confirmed)
+# Stage A2: Wait for UMMAYA branding / REPL ready (idle state confirmed)
 # "? for shortcuts" only appears in idle state
-wait_for_pane "KOSMOS" 20
+wait_for_pane "UMMAYA" 20
 snapshot_pane "branding"
 
 # Stage B: Submit the query

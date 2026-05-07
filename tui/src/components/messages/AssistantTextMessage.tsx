@@ -25,7 +25,7 @@ const startsWithApiErrorPrefix = (msg: string): boolean => msg.startsWith(API_ER
 import { isEmptyMessageText, NO_RESPONSE_REQUESTED } from '../../utils/messages.js';
 import { getUpgradeMessage } from '../../utils/model/contextWindowUpgradeCheck.js';
 import { getDefaultSonnetModel, renderModelName } from '../../utils/model/model.js';
-// KOSMOS: secureStorage deleted by Spec 1633 P1. isMacOsKeychainLocked → false (no OS keychain in KOSMOS).
+// UMMAYA: secureStorage deleted by Spec 1633 P1. isMacOsKeychainLocked → false (no OS keychain in UMMAYA).
 const isMacOsKeychainLocked = (): false => false
 import { CtrlOToExpand } from '../CtrlOToExpand.js';
 import { InterruptedByUser } from '../InterruptedByUser.js';

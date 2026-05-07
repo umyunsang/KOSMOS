@@ -10,7 +10,7 @@
 uv sync
 
 # Set environment variable (for integration tests only; unit tests use mocks)
-export KOSMOS_FRIENDLI_TOKEN="your-token-here"
+export UMMAYA_FRIENDLI_TOKEN="your-token-here"
 ```
 
 ## Running Tests
@@ -20,7 +20,7 @@ export KOSMOS_FRIENDLI_TOKEN="your-token-here"
 uv run pytest tests/engine/ -v
 
 # With coverage
-uv run pytest tests/engine/ --cov=kosmos.engine --cov-report=term-missing
+uv run pytest tests/engine/ --cov=ummaya.engine --cov-report=term-missing
 ```
 
 ---
@@ -31,7 +31,7 @@ Validates the fundamental preprocess -> LLM call -> tool dispatch -> answer pipe
 
 ```python
 import pytest
-from kosmos.engine import QueryEngine, QueryEngineConfig, QueryEvent, StopReason
+from ummaya.engine import QueryEngine, QueryEngineConfig, QueryEvent, StopReason
 
 @pytest.mark.asyncio
 async def test_single_turn_one_tool_call(

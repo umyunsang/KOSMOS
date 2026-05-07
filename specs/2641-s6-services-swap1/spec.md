@@ -5,7 +5,7 @@
 
 ## Why
 
-S6 services 감사 (`scope-S6-services.md`) 가 swap-1 (Anthropic SDK → KOSMOS IPC)
+S6 services 감사 (`scope-S6-services.md`) 가 swap-1 (Anthropic SDK → UMMAYA IPC)
 마이그레이션 상태를 "양호" 로 판정했지만 **3 개의 잔존 risk** 가 남았다:
 
 1. `tui/src/services/api/client.ts` 에 `getAnthropicClient` 함수가 **두 번 정의됨**
@@ -78,7 +78,7 @@ S6 services 감사 (`scope-S6-services.md`) 가 swap-1 (Anthropic SDK → KOSMOS
 4-항 박제 헤더를 추가한다:
 - SPDX 라인
 - "Spec 2641 — byte-copy(2641) baseline … `services/teamMemorySync/index.ts`"
-- swap/llm-provider(2641): constants/oauth → KOSMOS-1633 inline stub (이미 적용
+- swap/llm-provider(2641): constants/oauth → UMMAYA-1633 inline stub (이미 적용
   된 상태를 헤더로 명시)
 - swap/anti-anthropic-1p(2641): `feature('TEAMMEM')=false` (`tui/src/stubs/bun-bundle.ts`)
   + `setup.ts:358` 게이트로 watcher 시작 자체가 dead → 모든 export 의 axios
@@ -92,10 +92,10 @@ S6 services 감사 (`scope-S6-services.md`) 가 swap-1 (Anthropic SDK → KOSMOS
 — 의 함수 본문 첫 줄에 dead-call gate 를 삽입한다:
 
 ```ts
-if (!process.env.KOSMOS_ENABLE_DEAD_TEAM_MEM_SYNC) {
+if (!process.env.UMMAYA_ENABLE_DEAD_TEAM_MEM_SYNC) {
   throw new Error(
-    '[KOSMOS] services/teamMemorySync: dead in KOSMOS — claude.ai team memory ' +
-    'is not part of L1-A K-EXAONE harness. Set KOSMOS_ENABLE_DEAD_TEAM_MEM_SYNC=1 ' +
+    '[UMMAYA] services/teamMemorySync: dead in UMMAYA — claude.ai team memory ' +
+    'is not part of L1-A K-EXAONE harness. Set UMMAYA_ENABLE_DEAD_TEAM_MEM_SYNC=1 ' +
     'only when intentionally exercising the byte-copy reference (Spec 2641).',
   )
 }
@@ -104,7 +104,7 @@ if (!process.env.KOSMOS_ENABLE_DEAD_TEAM_MEM_SYNC) {
 이로써 `feature('TEAMMEM')` 이 미래에 (실수로 또는 다른 구현 변경으로) 켜진
 경우라도 axios 호출이 발생하기 전에 실패하여 callgraph 안전이 코드로 enforce
 된다. `createSyncState` / `hashContent` / `batchDeltaByBytes` 는 순수 함수
-이므로 gate 미적용 (외부 다른 KOSMOS 코드가 import 가능하므로 — 단, 현재 그런
+이므로 gate 미적용 (외부 다른 UMMAYA 코드가 import 가능하므로 — 단, 현재 그런
 caller 는 0).
 
 ### FR-004 (settingsSync 박제 header)
@@ -129,7 +129,7 @@ assert 를 삽입한다. 단, **에러 throw 가 아닌 explicit early-return + 
 실패 위험). 형태:
 
 ```ts
-if (!process.env.KOSMOS_ENABLE_DEAD_SETTINGS_SYNC) {
+if (!process.env.UMMAYA_ENABLE_DEAD_SETTINGS_SYNC) {
   // Dead-call gate (Spec 2641): claude.ai settings sync is not part of L1-A
   // K-EXAONE harness. Surface preserved for CC parity; runtime is no-op.
   return /* false | void as appropriate */
@@ -137,7 +137,7 @@ if (!process.env.KOSMOS_ENABLE_DEAD_SETTINGS_SYNC) {
 ```
 
 `feature(...)` early-return 보다 더 안쪽 — 즉 만약 누가 `tui/src/stubs/bun-bundle.ts`
-의 `feature()` 를 변경해도 KOSMOS_ENABLE_DEAD_SETTINGS_SYNC 가 명시 set 되지
+의 `feature()` 를 변경해도 UMMAYA_ENABLE_DEAD_SETTINGS_SYNC 가 명시 set 되지
 않으면 axios 가 발신되지 않는다. 다층 방어.
 
 ### FR-006 (test coverage)
@@ -158,7 +158,7 @@ if (!process.env.KOSMOS_ENABLE_DEAD_SETTINGS_SYNC) {
 | SC-004 | 신규 dead-call-gate 테스트 2 개 모두 PASS |
 | SC-005 | `tui/src/services/teamMemorySync/index.ts` head 30 lines 에 SPDX + Spec 2641 + 3 swap labels + "zero live callers" 단언 모두 포함 |
 | SC-006 | `tui/src/services/settingsSync/index.ts` head 30 lines 에 SPDX + Spec 2641 + 3 swap labels + 2-callers 명시 + early-skip 단언 포함 |
-| SC-007 | Layer 5 tmux capture-pane boot smoke (`scripts/tui-tmux-capture.sh`) 가 boot 완료 후 services 초기화 path 무손상 캡처 + KOSMOS branding 출력 + tool_registry 메시지 출력 |
+| SC-007 | Layer 5 tmux capture-pane boot smoke (`scripts/tui-tmux-capture.sh`) 가 boot 완료 후 services 초기화 path 무손상 캡처 + UMMAYA branding 출력 + tool_registry 메시지 출력 |
 | SC-008 | 0 new runtime dependencies (AGENTS.md hard rule). |
 | SC-009 | 변경 파일 3 개 + test 파일 2 개 + spec dir = 총 6 paths 이내 (≤ 10 file changes / 1 teammate dispatch budget) |
 
@@ -201,4 +201,4 @@ if (!process.env.KOSMOS_ENABLE_DEAD_SETTINGS_SYNC) {
 - `tui/src/cli/print.ts:516,1715,3073` + `tui/src/commands/reload-plugins/reload-plugins.ts:25` — settingsSync 외부 caller
 - AGENTS.md § CORE THESIS · § Hard rules · § TUI verification (Layer 5)
 - `docs/vision.md § Reference materials`
-- `docs/requirements/kosmos-migration-tree.md` § L1-A LLM Harness (services 가 swap-1 의 일부)
+- `docs/requirements/ummaya-migration-tree.md` § L1-A LLM Harness (services 가 swap-1 의 일부)

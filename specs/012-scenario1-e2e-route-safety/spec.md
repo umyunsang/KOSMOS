@@ -9,7 +9,7 @@
 
 ## Overview & Context
 
-This epic is the Phase 1 capstone — an end-to-end integration test that validates the complete KOSMOS pipeline for the route safety citizen scenario. A citizen asks a natural-language question about travel safety, and the system fuses data from three government API sources (KOROAD accident hotspots, KMA weather alerts, KMA current observation) via the composite road risk score tool to produce an actionable Korean-language safety recommendation.
+This epic is the Phase 1 capstone — an end-to-end integration test that validates the complete UMMAYA pipeline for the route safety citizen scenario. A citizen asks a natural-language question about travel safety, and the system fuses data from three government API sources (KOROAD accident hotspots, KMA weather alerts, KMA current observation) via the composite road risk score tool to produce an actionable Korean-language safety recommendation.
 
 All upstream dependencies (Epics #4–#11) are completed: LLM client, query engine, tool system, API adapters, permission pipeline, context assembly, error recovery, and CLI. This epic proves that all layers work together as an integrated whole.
 
@@ -19,7 +19,7 @@ All upstream dependencies (Epics #4–#11) are completed: LLM client, query engi
 
 ### User Story 1 - Happy-Path Route Safety Query (Priority: P1)
 
-A citizen types a natural-language question about route safety. KOSMOS discovers and invokes the relevant tools (KOROAD accident search, KMA weather alert, KMA current observation), fuses results through the road risk composite adapter, and returns a coherent Korean-language safety recommendation.
+A citizen types a natural-language question about route safety. UMMAYA discovers and invokes the relevant tools (KOROAD accident search, KMA weather alert, KMA current observation), fuses results through the road risk composite adapter, and returns a coherent Korean-language safety recommendation.
 
 **Why this priority**: This is the fundamental proof that the entire Phase 1 pipeline works end-to-end. Without this, Phase 1 cannot be considered complete.
 

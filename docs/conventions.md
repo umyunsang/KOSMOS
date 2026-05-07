@@ -1,6 +1,6 @@
 # Conventions
 
-Detailed development conventions for KOSMOS. `AGENTS.md` summarizes the cross-cutting rules; this file is the long form.
+Detailed development conventions for UMMAYA. `AGENTS.md` summarizes the cross-cutting rules; this file is the long form.
 
 ## Source code language
 
@@ -12,13 +12,13 @@ Rationale: keeps the project legible to international contributors while respect
 
 ## Environment variables
 
-All environment variables must be prefixed `KOSMOS_`.
+All environment variables must be prefixed `UMMAYA_`.
 
 | Variable | Purpose |
 |---|---|
-| `KOSMOS_FRIENDLI_TOKEN` | FriendliAI Serverless API token |
-| `KOSMOS_DATA_GO_KR_KEY` | data.go.kr API key |
-| `KOSMOS_LOG_LEVEL` | stdlib logging level (default `INFO`) |
+| `UMMAYA_FRIENDLI_TOKEN` | FriendliAI Serverless API token |
+| `UMMAYA_DATA_GO_KR_KEY` | data.go.kr API key |
+| `UMMAYA_LOG_LEVEL` | stdlib logging level (default `INFO`) |
 
 - Document every required variable in `.env.example`
 - Never commit `.env` or any file under `secrets/`
@@ -27,13 +27,13 @@ All environment variables must be prefixed `KOSMOS_`.
 ## Logging
 
 - Use stdlib `logging` with module-level loggers: `logger = logging.getLogger(__name__)`
-- Default level `INFO`, configurable via `KOSMOS_LOG_LEVEL`
+- Default level `INFO`, configurable via `UMMAYA_LOG_LEVEL`
 - No `print()` outside the CLI output layer (which uses `rich`)
 - Never log personal data, API keys, or full citizen profiles — log IDs and categories only
 
 ## Commit messages
 
-KOSMOS uses [Conventional Commits](https://www.conventionalcommits.org/).
+UMMAYA uses [Conventional Commits](https://www.conventionalcommits.org/).
 
 Format: `<type>(<scope>): <subject>`
 
@@ -126,8 +126,8 @@ The **Copilot Review Gate** is a custom GitHub App (Cloudflare Worker) that brid
 Task issues come **only** from reviewed `tasks.md` via `/speckit-taskstoissues`. After creation, link each as a sub-issue of its Epic:
 
 ```bash
-TASK_ID=$(gh api graphql -f query='query{repository(owner:"umyunsang",name:"KOSMOS"){issue(number:TASK_NUM){id}}}' --jq '.data.repository.issue.id')
-gh api repos/umyunsang/KOSMOS/issues/EPIC_NUM/sub_issues --method POST -f sub_issue_id="$TASK_ID"
+TASK_ID=$(gh api graphql -f query='query{repository(owner:"umyunsang",name:"UMMAYA"){issue(number:TASK_NUM){id}}}' --jq '.data.repository.issue.id')
+gh api repos/umyunsang/UMMAYA/issues/EPIC_NUM/sub_issues --method POST -f sub_issue_id="$TASK_ID"
 ```
 
 ## PR closing
@@ -142,7 +142,7 @@ Closes #EPIC_2
 After merge, verify Epics are closed and manually close any remaining Task sub-issues:
 
 ```bash
-gh api repos/umyunsang/KOSMOS/issues/EPIC_NUM/sub_issues --jq '.[].number' | while read num; do
+gh api repos/umyunsang/UMMAYA/issues/EPIC_NUM/sub_issues --jq '.[].number' | while read num; do
   gh issue close "$num" --comment "Completed in PR #NNN"
 done
 ```
@@ -170,7 +170,7 @@ Runtime prompts live under `prompts/` and are addressed by a SHA-256-integrity m
 
 Every prompt change follows this loop:
 1. Edit or add a file under `prompts/` (e.g., `prompts/system_v2.md`).
-2. Regenerate `prompts/manifest.yaml` via `uv run python -m kosmos.context.prompt_loader --regenerate-manifest`.
+2. Regenerate `prompts/manifest.yaml` via `uv run python -m ummaya.context.prompt_loader --regenerate-manifest`.
 3. Open the PR — the `shadow-eval` workflow fires automatically on any PR touching `prompts/**` and emits twin `deployment.environment=main` / `deployment.environment=shadow` OTEL span batches for diff review.
 4. The `lint` lane validates `prompts/manifest.yaml` against `specs/026-cicd-prompt-registry/contracts/prompts-manifest.schema.json`; schema drift fails the PR.
 

@@ -1,14 +1,14 @@
 # 플러그인 아키텍처 (Plugin Architecture)
 
-> KOSMOS 플러그인이 host 와 어떻게 결합되는지 설명합니다. 기여자는 빠른 시작 직후 이 문서를 읽고 본격 작성에 들어가야 합니다 (quickstart.ko.md § 단계 3).
+> UMMAYA 플러그인이 host 와 어떻게 결합되는지 설명합니다. 기여자는 빠른 시작 직후 이 문서를 읽고 본격 작성에 들어가야 합니다 (quickstart.ko.md § 단계 3).
 >
-> 참고: [`docs/vision.md § Layer 2`](../vision.md), [Spec 022 BM25 retrieval](../../specs/022-mvp-main-tool/spec.md), active primitive harness notes in [`docs/onboarding/five-primitive-harness.md`](../onboarding/five-primitive-harness.md), [Migration tree § L1-B](../requirements/kosmos-migration-tree.md), [`AGENTS.md § New tool adapter`](../../AGENTS.md), [ADR-007 plugin namespace](../adr/ADR-007-plugin-tool-id-namespace.md).
+> 참고: [`docs/vision.md § Layer 2`](../vision.md), [Spec 022 BM25 retrieval](../../specs/022-mvp-main-tool/spec.md), active primitive harness notes in [`docs/onboarding/five-primitive-harness.md`](../onboarding/five-primitive-harness.md), [Migration tree § L1-B](../requirements/ummaya-migration-tree.md), [`AGENTS.md § New tool adapter`](../../AGENTS.md), [ADR-007 plugin namespace](../adr/ADR-007-plugin-tool-id-namespace.md).
 
 ---
 
 ## 큰 그림
 
-KOSMOS 는 6-layer harness 입니다 (`docs/vision.md`). 플러그인은 **Layer 2 (Tool System)** 의 외부 진입점이며, host 는 본질적으로 다음 5개 책임을 가집니다:
+UMMAYA 는 6-layer harness 입니다 (`docs/vision.md`). 플러그인은 **Layer 2 (Tool System)** 의 외부 진입점이며, host 는 본질적으로 다음 5개 책임을 가집니다:
 
 1. **Manifest 검증** — `PluginManifest` Pydantic 스키마 + 5 cross-field validator (Spec 1636 T006).
 2. **SLSA 서명 검증** — `slsa-verifier verify-artifact` 호출, exit 0 만 통과 (Spec 1636 T011 + R-3).
@@ -55,12 +55,12 @@ Host 는 플러그인 모듈에서 정확히 두 개의 심볼을 찾습니다:
 
 | 심볼 | 타입 | 책임 |
 |---|---|---|
-| `TOOL` | `kosmos.tools.models.GovAPITool` | 레지스트리 메타데이터. `id` 가 manifest 의 `adapter.tool_id` 와 byte-equal. |
+| `TOOL` | `ummaya.tools.models.GovAPITool` | 레지스트리 메타데이터. `id` 가 manifest 의 `adapter.tool_id` 와 byte-equal. |
 | `adapter` 또는 `ADAPTER` | `async (validated_input) -> dict` | 실제 실행 로직. 입력은 `input_schema.model_validate()` 통과 후 전달, 반환 dict 는 `output_schema` 로 재검증. |
 
 ```python
 # plugin_busan_bike/adapter.py
-from kosmos.tools.models import GovAPITool
+from ummaya.tools.models import GovAPITool
 from .schema import LookupInput, LookupOutput
 
 TOOL = GovAPITool(
@@ -104,37 +104,37 @@ manifest.yaml ──parse─▶ PluginManifest (Pydantic v2 frozen)
                               │   ├─ V3 / V6 backstop (model_construct bypass 방어)
                               │   └─ retriever.rebuild(corpus) ── BM25 재색인
                               ├─ executor.register_adapter(tool_id, adapter_fn)
-                              └─ OTEL span "kosmos.plugin.install"
-                                  └─ kosmos.plugin.id = manifest.plugin_id
+                              └─ OTEL span "ummaya.plugin.install"
+                                  └─ ummaya.plugin.id = manifest.plugin_id
 ```
 
 이 흐름은 다음 파일에 구현되어 있습니다:
-- `src/kosmos/plugins/manifest_schema.py` — PluginManifest + PIPATrusteeAcknowledgment.
-- `src/kosmos/plugins/registry.py` — `register_plugin_adapter` + `auto_discover` + `_rebuild_bm25_index_for`.
-- `src/kosmos/plugins/installer.py` — 8-phase install (catalog → bundle → SLSA → manifest → consent → register → receipt).
-- `src/kosmos/tools/registry.py` — Spec 022 ToolRegistry + Spec 1636 T010 shim.
+- `src/ummaya/plugins/manifest_schema.py` — PluginManifest + PIPATrusteeAcknowledgment.
+- `src/ummaya/plugins/registry.py` — `register_plugin_adapter` + `auto_discover` + `_rebuild_bm25_index_for`.
+- `src/ummaya/plugins/installer.py` — 8-phase install (catalog → bundle → SLSA → manifest → consent → register → receipt).
+- `src/ummaya/tools/registry.py` — Spec 022 ToolRegistry + Spec 1636 T010 shim.
 
 ---
 
 ## OTEL 발산 계약
 
-플러그인 install/invoke 시 다음 span 이 자동 발산됩니다 (Spec 021 KOSMOS extension):
+플러그인 install/invoke 시 다음 span 이 자동 발산됩니다 (Spec 021 UMMAYA extension):
 
 | Span | Trigger | 핵심 attribute |
 |---|---|---|
-| `kosmos.plugin.install` | `register_plugin_adapter` 진입 | `kosmos.plugin.id`, `kosmos.plugin.version`, `kosmos.plugin.tier`, `kosmos.plugin.tool_id`, `kosmos.plugin.permission_layer` |
-| `execute_tool <tool_id>` | 어댑터 호출 | `gen_ai.tool.name`, `gen_ai.tool.type`, `kosmos.tool.adapter` |
+| `ummaya.plugin.install` | `register_plugin_adapter` 진입 | `ummaya.plugin.id`, `ummaya.plugin.version`, `ummaya.plugin.tier`, `ummaya.plugin.tool_id`, `ummaya.plugin.permission_layer` |
+| `execute_tool <tool_id>` | 어댑터 호출 | `gen_ai.tool.name`, `gen_ai.tool.type`, `ummaya.tool.adapter` |
 
-manifest.yaml 의 `otel_attributes["kosmos.plugin.id"]` 는 **반드시 `plugin_id` 와 일치** 해야 합니다 (`_v_otel_attribute` validator 가 enforce). 이는 Langfuse / OTLP collector 가 plugin-별 trace 를 정확히 묶도록 보장합니다.
+manifest.yaml 의 `otel_attributes["ummaya.plugin.id"]` 는 **반드시 `plugin_id` 와 일치** 해야 합니다 (`_v_otel_attribute` validator 가 enforce). 이는 Langfuse / OTLP collector 가 plugin-별 trace 를 정확히 묶도록 보장합니다.
 
 ---
 
 ## 디렉토리 레이아웃
 
-설치 후 host 는 플러그인을 다음 경로에 보관합니다 (`KOSMOS_PLUGIN_INSTALL_ROOT` 기본값):
+설치 후 host 는 플러그인을 다음 경로에 보관합니다 (`UMMAYA_PLUGIN_INSTALL_ROOT` 기본값):
 
 ```
-~/.kosmos/memdir/user/plugins/
+~/.ummaya/memdir/user/plugins/
 ├── index.json                                   # 오프라인 카탈로그 캐시
 └── <plugin_id>/                                 # 플러그인 1개당 디렉토리
     ├── manifest.yaml                            # 검증된 매니페스트 사본
@@ -150,7 +150,7 @@ manifest.yaml 의 `otel_attributes["kosmos.plugin.id"]` 는 **반드시 `plugin_
         └── verify-result.json
 ```
 
-번들 다운로드 캐시 (`KOSMOS_PLUGIN_BUNDLE_CACHE` 기본 `~/.kosmos/cache/plugin-bundles/`) 와 vendored slsa-verifier (`KOSMOS_PLUGIN_VENDOR_ROOT` 기본 `~/.kosmos/vendor/`) 는 별도 경로 — install 실패 시에도 forensic 분석을 위해 번들이 보존됩니다.
+번들 다운로드 캐시 (`UMMAYA_PLUGIN_BUNDLE_CACHE` 기본 `~/.ummaya/cache/plugin-bundles/`) 와 vendored slsa-verifier (`UMMAYA_PLUGIN_VENDOR_ROOT` 기본 `~/.ummaya/vendor/`) 는 별도 경로 — install 실패 시에도 forensic 분석을 위해 번들이 보존됩니다.
 
 ---
 
@@ -158,14 +158,14 @@ manifest.yaml 의 `otel_attributes["kosmos.plugin.id"]` 는 **반드시 `plugin_
 
 | Repo | 역할 | 비고 |
 |---|---|---|
-| `kosmos-plugin-store/kosmos-plugin-template` | scaffold 템플릿 | "Use this template" 진입점 |
-| `kosmos-plugin-store/index` | 카탈로그 인덱스 | `KOSMOS_PLUGIN_CATALOG_URL` 기본값 |
-| `kosmos-plugin-store/kosmos-plugin-seoul-subway` | Live 예제 1 | 서울 지하철 도착 정보 |
-| `kosmos-plugin-store/kosmos-plugin-post-office` | Live 예제 2 | 우정사업본부 택배 추적 |
-| `kosmos-plugin-store/kosmos-plugin-nts-homtax` | Mock 예제 1 | 국세청 홈택스 (mock — 정부 partnership 부재) |
-| `kosmos-plugin-store/kosmos-plugin-nhis-check` | Mock 예제 2 | 국민건강보험공단 건강검진 (mock) |
+| `ummaya-plugin-store/ummaya-plugin-template` | scaffold 템플릿 | "Use this template" 진입점 |
+| `ummaya-plugin-store/index` | 카탈로그 인덱스 | `UMMAYA_PLUGIN_CATALOG_URL` 기본값 |
+| `ummaya-plugin-store/ummaya-plugin-seoul-subway` | Live 예제 1 | 서울 지하철 도착 정보 |
+| `ummaya-plugin-store/ummaya-plugin-post-office` | Live 예제 2 | 우정사업본부 택배 추적 |
+| `ummaya-plugin-store/ummaya-plugin-nts-homtax` | Mock 예제 1 | 국세청 홈택스 (mock — 정부 partnership 부재) |
+| `ummaya-plugin-store/ummaya-plugin-nhis-check` | Mock 예제 2 | 국민건강보험공단 건강검진 (mock) |
 
-`kosmos-plugin-store` org 는 SLSA-provenance attribution 을 위한 canonical source URI prefix 입니다 (R-3). 외부 fork 도 가능하나 그 경우 `slsa_provenance_url` 이 fork 의 GitHub Releases 를 가리켜야 합니다.
+`ummaya-plugin-store` org 는 SLSA-provenance attribution 을 위한 canonical source URI prefix 입니다 (R-3). 외부 fork 도 가능하나 그 경우 `slsa_provenance_url` 이 fork 의 GitHub Releases 를 가리켜야 합니다.
 
 ---
 
@@ -198,7 +198,7 @@ manifest.yaml 의 `otel_attributes["kosmos.plugin.id"]` 는 **반드시 `plugin_
 | 매니페스트 | manifest | `manifest.yaml`; `PluginManifest` Pydantic 스키마. |
 | 권한 레이어 | permission layer | 1/2/3 — 시민 동의 강도. Spec 033 enforce. |
 | 검색 힌트 | search hint | BM25 인덱스 토큰 (`search_hint_ko` / `_en`). Spec 022. |
-| 카탈로그 | catalog | `kosmos-plugin-store/index/index.json`. |
+| 카탈로그 | catalog | `ummaya-plugin-store/index/index.json`. |
 | 수탁자 | trustee | PIPA §26 수탁 측. |
 | 동의 영수증 | consent receipt | Spec 035 ledger 확장 (`plugin_install` / `plugin_uninstall`). |
 | 프리미티브 | primitive | active plugin 동사 (`lookup`, `submit`, `verify`). `subscribe` 는 앱/푸시 런타임 전까지 비활성. |

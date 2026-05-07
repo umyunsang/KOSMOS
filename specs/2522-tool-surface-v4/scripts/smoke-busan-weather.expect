@@ -7,7 +7,7 @@
 #
 # Verification targets:
 #   1. Boot: "tool_registry: N entries verified"
-#   2. Branding: "KOSMOS"
+#   2. Branding: "UMMAYA"
 #   3. Input accepted (query text visible in pane)
 #   4. Tool dispatched: kma_short_term_forecast or kma_current_observation single call
 #   5. Tool result visible: "⎿" prefix (CC result line pattern) + actual data
@@ -21,8 +21,8 @@
 wait_for_pane "tool_registry: [0-9]+ entries verified" 45
 snapshot_pane "boot"
 
-# Stage A2: Wait for KOSMOS branding / REPL idle
-wait_for_pane "KOSMOS" 20
+# Stage A2: Wait for UMMAYA branding / REPL idle
+wait_for_pane "UMMAYA" 20
 snapshot_pane "branding"
 
 # Stage B: Submit the query — small sleep to let pane refresh before snapshot

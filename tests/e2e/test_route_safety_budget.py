@@ -14,8 +14,8 @@ from __future__ import annotations
 
 import pytest
 
-from kosmos.engine.events import StopReason
 from tests.e2e.conftest import run_scenario
+from ummaya.engine.events import StopReason
 
 # ---------------------------------------------------------------------------
 # T013 [P] [US3] Token usage tracking
@@ -63,10 +63,6 @@ async def test_t014_api_budget_exceeded_scenario() -> None:
 
     import httpx
 
-    from kosmos.context.builder import ContextBuilder
-    from kosmos.engine.config import QueryEngineConfig
-    from kosmos.engine.engine import QueryEngine
-    from kosmos.llm.models import StreamEvent, TokenUsage
     from tests.e2e.conftest import (
         TRIGGER_QUERY,
         _build_httpx_mock,
@@ -74,6 +70,10 @@ async def test_t014_api_budget_exceeded_scenario() -> None:
         _MockLLMClientAdapter,
     )
     from tests.engine.conftest import MockLLMClient
+    from ummaya.context.builder import ContextBuilder
+    from ummaya.engine.config import QueryEngineConfig
+    from ummaya.engine.engine import QueryEngine
+    from ummaya.llm.models import StreamEvent, TokenUsage
 
     # A single turn that emits tool_call followed immediately by done — engine
     # will exhaust iterations if max_iterations=1 is set.

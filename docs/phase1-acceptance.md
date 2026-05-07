@@ -48,12 +48,12 @@
 
 | 레이어 | 역할 | 구현 파일 | 상태 |
 |--------|------|-----------|------|
-| **L1 — Query Engine** | `while(True)` 도구 루프, 상태 기계, 비동기 이벤트 스트림 | `src/kosmos/engine/` (`engine.py`, `query.py`, `preprocessing.py`, `events.py`, `tokens.py`) | ✅ 완료 (PR #117) |
-| **L2 — Tool System** | 도구 레지스트리, 스키마 검증, 어댑터 팩토리 | `src/kosmos/tools/` (`registry.py`, `executor.py`, `models.py`, `search.py`, `rate_limiter.py`) | ✅ 완료 (PR #82, #221) |
-| **L3 — Permission Pipeline** | 7단계 권한 gauntlet, fail-closed 기본값, 감사 로그 | `src/kosmos/permissions/` (`pipeline.py`, `steps/`, `models.py`, `bypass.py`, `credentials.py`) | ✅ 완료 (PR #221, #402) |
+| **L1 — Query Engine** | `while(True)` 도구 루프, 상태 기계, 비동기 이벤트 스트림 | `src/ummaya/engine/` (`engine.py`, `query.py`, `preprocessing.py`, `events.py`, `tokens.py`) | ✅ 완료 (PR #117) |
+| **L2 — Tool System** | 도구 레지스트리, 스키마 검증, 어댑터 팩토리 | `src/ummaya/tools/` (`registry.py`, `executor.py`, `models.py`, `search.py`, `rate_limiter.py`) | ✅ 완료 (PR #82, #221) |
+| **L3 — Permission Pipeline** | 7단계 권한 gauntlet, fail-closed 기본값, 감사 로그 | `src/ummaya/permissions/` (`pipeline.py`, `steps/`, `models.py`, `bypass.py`, `credentials.py`) | ✅ 완료 (PR #221, #402) |
 | **L4 — Agent Swarms** | 코디네이터-워커 패턴, 메일박스 IPC | 해당 없음 — Phase 2 대상 | ⚠️ Phase 2 이월 |
-| **L5 — Context Assembly** | 3-tier 컨텍스트, 캐시 파티셔닝, 예산 가드 | `src/kosmos/context/` (`builder.py`, `system_prompt.py`, `attachments.py`, `budget.py`, 컴팩션 모듈) | ✅ 완료 (PR #221) |
-| **L6 — Error Recovery** | 재시도 매트릭스, 서킷 브레이커, 오류 분류기, 캐시 폴백 | `src/kosmos/recovery/` (`executor.py`, `classifier.py`, `circuit_breaker.py`, `retry.py`, `cache.py`, `policies.py`) | ✅ 완료 (PR #284) |
+| **L5 — Context Assembly** | 3-tier 컨텍스트, 캐시 파티셔닝, 예산 가드 | `src/ummaya/context/` (`builder.py`, `system_prompt.py`, `attachments.py`, `budget.py`, 컴팩션 모듈) | ✅ 완료 (PR #221) |
+| **L6 — Error Recovery** | 재시도 매트릭스, 서킷 브레이커, 오류 분류기, 캐시 폴백 | `src/ummaya/recovery/` (`executor.py`, `classifier.py`, `circuit_breaker.py`, `retry.py`, `cache.py`, `policies.py`) | ✅ 완료 (PR #284) |
 
 **판정**: L4 (Agent Swarms)는 Phase 2 설계 대상으로 Phase 1 스코프 외. 나머지 5개 레이어 ✅.
 
@@ -68,9 +68,9 @@ LLM → Tool → Permission → Recovery → Response의 완전한 E2E 파이프
 | User message → QueryEngine → LLM 스트리밍 | `tests/e2e/test_route_safety_permission.py` (PR #318) | ✅ |
 | LLM tool_call → ToolExecutor.dispatch() | `tests/tools/test_executor.py` | ✅ |
 | ToolExecutor → PermissionPipeline 배선 | PR #402 (`fix(review): wire permission pipeline`) | ✅ |
-| ToolExecutor → RecoveryExecutor 배선 | PR #402, `src/kosmos/tools/executor.py` | ✅ |
+| ToolExecutor → RecoveryExecutor 배선 | PR #402, `src/ummaya/tools/executor.py` | ✅ |
 | RecoveryExecutor → 재시도 / 서킷 브레이커 | `tests/recovery/test_retry.py`, `test_classifier.py` | ✅ |
-| 최종 assistant 메시지 → CLI 스트리밍 렌더링 | `src/kosmos/cli/repl.py`, `renderer.py` | ✅ |
+| 최종 assistant 메시지 → CLI 스트리밍 렌더링 | `src/ummaya/cli/repl.py`, `renderer.py` | ✅ |
 | 다중 턴 컨텍스트 유지 | Spec 014 SC-03, Live CLI 세션 수동 검증 | ✅ |
 
 **판정**: 전체 파이프라인이 자동화 테스트와 live 검증으로 확인됨. ✅
@@ -83,15 +83,15 @@ Phase 1 스코프의 모든 도구 어댑터 구현 완료 및 테스트 통과.
 
 | Tool ID | 소스 API | 구현 파일 | 테스트 | 문서 | 상태 |
 |---------|---------|-----------|--------|------|------|
-| `koroad_accident_search` | KOROAD `getRestFrequentzoneLg` | `src/kosmos/tools/koroad/koroad_accident_search.py` | `tests/tools/koroad/test_koroad_accident_search.py` | `docs/tools/koroad.md` | ✅ |
-| `kma_weather_alert_status` | KMA `getPwnStatus` | `src/kosmos/tools/kma/kma_weather_alert_status.py` | `tests/tools/kma/test_kma_weather_alert_status.py` | `docs/tools/kma.md` | ✅ |
-| `kma_current_observation` | KMA `getUltraSrtNcst` | `src/kosmos/tools/kma/kma_current_observation.py` | `tests/tools/kma/test_kma_current_observation.py` | `docs/tools/kma.md` | ✅ |
-| `kma_short_term_forecast` | KMA `getVilageFcst` | `src/kosmos/tools/kma/kma_short_term_forecast.py` | `tests/tools/kma/test_kma_short_term_forecast.py` | `docs/tools/kma.md` | ✅ |
-| `kma_ultra_short_term_forecast` | KMA `getUltraSrtFcst` | `src/kosmos/tools/kma/kma_ultra_short_term_forecast.py` | `tests/tools/kma/test_kma_ultra_short_term_forecast.py` | `docs/tools/kma.md` | ✅ |
-| `kma_pre_warning` | KMA `getWthrPwnList` | `src/kosmos/tools/kma/kma_pre_warning.py` | `tests/tools/kma/test_kma_pre_warning.py` | `docs/api/kma/pre_warning.md` | ✅ |
-| `address_to_region` | Kakao Local API | `src/kosmos/tools/geocoding/address_to_region.py` | `tests/tools/geocoding/test_address_to_region.py` | — | ✅ |
-| `address_to_grid` | Kakao Local API | `src/kosmos/tools/geocoding/address_to_grid.py` | `tests/tools/geocoding/test_grid_conversion.py` | — | ✅ |
-| `search_address` (Kakao client) | Kakao Local API | `src/kosmos/tools/geocoding/kakao_client.py` | `tests/tools/geocoding/test_kakao_client.py` | — | ✅ |
+| `koroad_accident_search` | KOROAD `getRestFrequentzoneLg` | `src/ummaya/tools/koroad/koroad_accident_search.py` | `tests/tools/koroad/test_koroad_accident_search.py` | `docs/tools/koroad.md` | ✅ |
+| `kma_weather_alert_status` | KMA `getPwnStatus` | `src/ummaya/tools/kma/kma_weather_alert_status.py` | `tests/tools/kma/test_kma_weather_alert_status.py` | `docs/tools/kma.md` | ✅ |
+| `kma_current_observation` | KMA `getUltraSrtNcst` | `src/ummaya/tools/kma/kma_current_observation.py` | `tests/tools/kma/test_kma_current_observation.py` | `docs/tools/kma.md` | ✅ |
+| `kma_short_term_forecast` | KMA `getVilageFcst` | `src/ummaya/tools/kma/kma_short_term_forecast.py` | `tests/tools/kma/test_kma_short_term_forecast.py` | `docs/tools/kma.md` | ✅ |
+| `kma_ultra_short_term_forecast` | KMA `getUltraSrtFcst` | `src/ummaya/tools/kma/kma_ultra_short_term_forecast.py` | `tests/tools/kma/test_kma_ultra_short_term_forecast.py` | `docs/tools/kma.md` | ✅ |
+| `kma_pre_warning` | KMA `getWthrPwnList` | `src/ummaya/tools/kma/kma_pre_warning.py` | `tests/tools/kma/test_kma_pre_warning.py` | `docs/api/kma/pre_warning.md` | ✅ |
+| `address_to_region` | Kakao Local API | `src/ummaya/tools/geocoding/address_to_region.py` | `tests/tools/geocoding/test_address_to_region.py` | — | ✅ |
+| `address_to_grid` | Kakao Local API | `src/ummaya/tools/geocoding/address_to_grid.py` | `tests/tools/geocoding/test_grid_conversion.py` | — | ✅ |
+| `search_address` (Kakao client) | Kakao Local API | `src/ummaya/tools/geocoding/kakao_client.py` | `tests/tools/geocoding/test_kakao_client.py` | — | ✅ |
 
 **판정**: Phase 1 스코프 내 모든 어댑터 구현 완료. Geocoding 어댑터 문서는 미작성이나 코드 수준 완료. ✅
 
@@ -122,7 +122,7 @@ Phase 1 스코프의 모든 도구 어댑터 구현 완료 및 테스트 통과.
 **Live 테스트 정책**:
 - `@pytest.mark.live` 마커, CI에서 기본 제외 (`uv run pytest -m live`로만 실행)
 - 누락 env var는 `pytest.fail()` (skip/xfail 금지)
-- 모든 secrets: `KOSMOS_*` 접두사 환경 변수에서만 로드
+- 모든 secrets: `UMMAYA_*` 접두사 환경 변수에서만 로드
 
 **판정**: 10개 live 테스트 파일, 전체 외부 API 커버. 수동 CLI 세션을 통한 주관적 응답 품질 검증도 spec 014 SC-02에서 요구하는 hybrid 방식으로 완료. ✅
 
@@ -134,12 +134,12 @@ Metrics, Event Logger 동작 검증.
 
 | 컴포넌트 | 구현 파일 | 기능 | 상태 |
 |---------|-----------|------|------|
-| `MetricsCollector` | `src/kosmos/observability/metrics.py` | 카운터, 게이지, 히스토그램 (p50/p95/p99) | ✅ |
-| `EventLogger` | `src/kosmos/observability/event_logger.py` | 구조화된 JSON 이벤트 로그 | ✅ |
-| `ObservabilityEvent` | `src/kosmos/observability/events.py` | 이벤트 스키마 정의 | ✅ |
-| `/metrics` REPL 명령어 | `src/kosmos/cli/repl.py` | 인프로세스 메트릭 스냅샷 렌더링 | ✅ |
-| LLMClient 계측 | `src/kosmos/llm/client.py` | `llm.requests.total`, `llm.tokens.prompt/completion` | ✅ |
-| PermissionPipeline 계측 | `src/kosmos/permissions/pipeline.py` | 단계별 deny rate, 레이턴시 | ✅ |
+| `MetricsCollector` | `src/ummaya/observability/metrics.py` | 카운터, 게이지, 히스토그램 (p50/p95/p99) | ✅ |
+| `EventLogger` | `src/ummaya/observability/event_logger.py` | 구조화된 JSON 이벤트 로그 | ✅ |
+| `ObservabilityEvent` | `src/ummaya/observability/events.py` | 이벤트 스키마 정의 | ✅ |
+| `/metrics` REPL 명령어 | `src/ummaya/cli/repl.py` | 인프로세스 메트릭 스냅샷 렌더링 | ✅ |
+| LLMClient 계측 | `src/ummaya/llm/client.py` | `llm.requests.total`, `llm.tokens.prompt/completion` | ✅ |
+| PermissionPipeline 계측 | `src/ummaya/permissions/pipeline.py` | 단계별 deny rate, 레이턴시 | ✅ |
 
 **Live 검증**: `tests/live/test_live_observability.py`에서 실제 KOROAD + FriendliAI 트래픽 하에 카운터 증가 및 이벤트 방출 확인 (Epic #380, PR #401).
 
@@ -234,7 +234,7 @@ Metrics, Event Logger 동작 검증.
 
 ### Phase 1 완료 판정 근거
 
-KOSMOS Phase 1 목표는 `docs/vision.md` §Roadmap에서 다음과 같이 정의됨:
+UMMAYA Phase 1 목표는 `docs/vision.md` §Roadmap에서 다음과 같이 정의됨:
 
 > *"Phase 1 — Prototype — FriendliAI Serverless + 10 high-value APIs + single query engine + CLI. **Scenario 1 working end-to-end.**"*
 

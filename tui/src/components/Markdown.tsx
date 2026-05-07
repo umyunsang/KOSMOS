@@ -76,7 +76,7 @@ function cachedLexer(content: string): Token[] {
  */
 export function Markdown(props) {
   const $ = _c(2);
-  // KOSMOS-1633: cli-highlight is intentionally not bundled (syntax highlighting
+  // UMMAYA-1633: cli-highlight is intentionally not bundled (syntax highlighting
   // is a code-review surface that doesn't apply to citizen public-service
   // workflows). CC's Suspense + use(promise) lazy-load path stalls in the ink
   // react runtime when the dynamic import resolves to null synchronously,

@@ -16,18 +16,18 @@ Verifies a citizen's Digital Onepass (디지털원패스) identity session at Le
 | Classification | Mock · Permission tier 2 |
 | Source | 행정안전부 디지털원패스 (OmniOne OpenDID shape-mirror, OOS) |
 | Primitive | `verify` |
-| Module | `src/kosmos/tools/mock/verify_digital_onepass.py` |
+| Module | `src/ummaya/tools/mock/verify_digital_onepass.py` |
 
 ## Envelope
 
-**Input model**: `VerifyInput` defined at `src/kosmos/primitives/verify.py:44–51`.
+**Input model**: `VerifyInput` defined at `src/ummaya/primitives/verify.py:44–51`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `family_hint` | `Literal["digital_onepass"]` | yes | Must be `"digital_onepass"` for this adapter; dispatcher rejects any other value (FR-010). |
 | `session_context` | `dict[str, object]` | no | Opaque external evidence passed to the adapter. Pass `{"_fixture_override": {...}}` in tests to override fixture fields. |
 
-**Output model**: `DigitalOnepassContext` defined at `src/kosmos/primitives/verify.py:170–183`.
+**Output model**: `DigitalOnepassContext` defined at `src/ummaya/primitives/verify.py:170–183`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -51,7 +51,7 @@ Verifies a citizen's Digital Onepass (디지털원패스) identity session at Le
 
 ## Permission tier rationale
 
-This adapter carries `auth_level="AAL2"` and `is_irreversible=False`. Per `src/kosmos/tools/permissions.py` `compute_permission_tier()` (Spec 033 FR-011), AAL2 maps to **permission tier 2** (orange ⓶ in UI-C). Identity-binding at AAL2 presents personally identifiable data (`is_personal_data=True`, `pipa_class="personal_standard"`), which means the TUI permission gauntlet must surface an explicit citizen consent prompt and record an audit receipt before the adapter executes. A tier-2 session consent is sufficient for repeated calls within the same session without re-prompting, unless the citizen revokes consent via `/consent revoke`.
+This adapter carries `auth_level="AAL2"` and `is_irreversible=False`. Per `src/ummaya/tools/permissions.py` `compute_permission_tier()` (Spec 033 FR-011), AAL2 maps to **permission tier 2** (orange ⓶ in UI-C). Identity-binding at AAL2 presents personally identifiable data (`is_personal_data=True`, `pipa_class="personal_standard"`), which means the TUI permission gauntlet must surface an explicit citizen consent prompt and record an audit receipt before the adapter executes. A tier-2 session consent is sufficient for repeated calls within the same session without re-prompting, unless the citizen revokes consent via `/consent revoke`.
 
 ## Worked example
 
@@ -88,7 +88,7 @@ This adapter carries `auth_level="AAL2"` and `is_irreversible=False`. Per `src/k
 
 ```text
 시민: 디지털원패스로 본인인증 해줘.
-KOSMOS: 디지털원패스 Level 2 (AAL2) 인증이 확인되었습니다. 인증 시각: 2026-04-19 09:00 UTC, 세션 참조: mock-onepass-ref-001.
+UMMAYA: 디지털원패스 Level 2 (AAL2) 인증이 확인되었습니다. 인증 시각: 2026-04-19 09:00 UTC, 세션 참조: mock-onepass-ref-001.
 ```
 
 ## Constraints

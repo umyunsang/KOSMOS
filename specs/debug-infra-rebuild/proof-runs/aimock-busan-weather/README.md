@@ -58,7 +58,7 @@ Tool call returned: `lookup(kma_forecast_fetch)` with:
 
 | File | Description |
 |---|---|
-| `snap-000-boot.txt` | TUI boot — `tool_registry: 14 entries verified`, KOSMOS branding |
+| `snap-000-boot.txt` | TUI boot — `tool_registry: 14 entries verified`, UMMAYA branding |
 | `snap-001-input-submitted.txt` | User input `부산 사하구 날씨 알려줘` submitted, TUI waiting |
 | `snap-002-first-tool-call.txt` | `● lookup(kma_forecast_fetch)` painted, `✽ Moseying…` spinner |
 | `snap-003-after-result.txt` | `⎿ timeseries — 25건` with temperature data rendered |
@@ -83,7 +83,7 @@ docker compose -f docker-compose.aimock.yml up -d
 ### KI-2: Agentic loop is infinite with tool_call-only fixtures
 
 The `busan-weather.json` fixture always returns a `lookup` tool call. The
-KOSMOS agentic loop dispatches the mock adapter, gets a result, then calls
+UMMAYA agentic loop dispatches the mock adapter, gets a result, then calls
 the LLM again — but the conversation history still contains `부산`, so the
 fixture matches again and emits another tool call. The loop cycles until
 `/quit` terminates the session.
@@ -110,8 +110,8 @@ Documented in `tests/fixtures/llm/README.md § Known Issues`.
 bun scripts/aimock-bun.ts --port 4010 &
 
 # Run the smoke scenario
-export KOSMOS_FRIENDLI_BASE_URL=http://localhost:4010/v1
-export KOSMOS_FRIENDLI_TOKEN=aimock-test
+export UMMAYA_FRIENDLI_BASE_URL=http://localhost:4010/v1
+export UMMAYA_FRIENDLI_TOKEN=aimock-test
 bash scripts/tui-tmux-capture.sh /tmp/aimock-smoke \
      specs/debug-infra-rebuild/scenarios/busan-weather.sh
 

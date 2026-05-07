@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests for kosmos.session.manager — turn saving, session resume, auto_title."""
+"""Tests for ummaya.session.manager — turn saving, session resume, auto_title."""
 
 from __future__ import annotations
 
@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from kosmos.llm.models import ChatMessage, FunctionCall, ToolCall
-from kosmos.session.manager import SessionManager, auto_title
+from ummaya.llm.models import ChatMessage, FunctionCall, ToolCall
+from ummaya.session.manager import SessionManager, auto_title
 
 # ---------------------------------------------------------------------------
 # auto_title
@@ -178,8 +178,8 @@ class TestSessionManagerSetTitle:
     async def test_set_title_noop_when_already_set(self, tmp_path: Path) -> None:
         from datetime import datetime  # noqa: PLC0415
 
-        from kosmos.session.models import SessionMetadata  # noqa: PLC0415
-        from kosmos.session.store import update_session_metadata  # noqa: PLC0415
+        from ummaya.session.models import SessionMetadata  # noqa: PLC0415
+        from ummaya.session.store import update_session_metadata  # noqa: PLC0415
 
         manager = SessionManager(session_dir=tmp_path)
         meta = await manager.new_session()

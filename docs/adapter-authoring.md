@@ -1,6 +1,6 @@
 # Adapter Authoring Guide
 
-How to add a new government API adapter to KOSMOS. This guide covers everything from directory layout to fixture capture. See `docs/design/mvp-tools.md` for the canonical architectural decisions.
+How to add a new government API adapter to UMMAYA. This guide covers everything from directory layout to fixture capture. See `docs/design/mvp-tools.md` for the canonical architectural decisions.
 
 ## Design authority
 
@@ -11,7 +11,7 @@ All architectural decisions (D1–D7, Q1–Q5) are frozen in `docs/design/mvp-to
 ## 1. Directory structure
 
 ```
-src/kosmos/tools/<provider>/
+src/ummaya/tools/<provider>/
     __init__.py           # empty — namespace package marker
     <noun>_<verb>.py      # adapter module (e.g. hospital_search.py)
 
@@ -26,8 +26,8 @@ tests/fixtures/<provider>/
 ```
 
 Canonical examples:
-- KOROAD: `src/kosmos/tools/koroad/accident_hazard_search.py`
-- HIRA: `src/kosmos/tools/hira/hospital_search.py`
+- KOROAD: `src/ummaya/tools/koroad/accident_hazard_search.py`
+- HIRA: `src/ummaya/tools/hira/hospital_search.py`
 
 ---
 
@@ -105,7 +105,7 @@ Every adapter module exposes a `register(registry, executor)` function:
 from __future__ import annotations
 from typing import Any
 from pydantic import BaseModel
-from kosmos.tools.models import GovAPITool
+from ummaya.tools.models import GovAPITool
 
 MY_TOOL = GovAPITool(
     id="provider_noun_verb",
@@ -117,8 +117,8 @@ def register(registry: object, executor: object) -> None:
 
     Called from register_all.py. Do NOT call from this module directly.
     """
-    from kosmos.tools.executor import ToolExecutor
-    from kosmos.tools.registry import ToolRegistry
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.registry import ToolRegistry
     import logging
 
     logger = logging.getLogger(__name__)
@@ -196,10 +196,10 @@ If live capture is not possible (e.g., missing env keys in CI), synthesize from 
 
 Fixture format mirrors the raw API response exactly — the adapter's `handle()` function parses it. Do not pre-process fixtures.
 
-To capture a live fixture (only when `KOSMOS_DATA_GO_KR_API_KEY` is set):
+To capture a live fixture (only when `UMMAYA_DATA_GO_KR_API_KEY` is set):
 
 ```bash
-KOSMOS_DATA_GO_KR_API_KEY=<key> uv run pytest -m live tests/tools/<provider>/
+UMMAYA_DATA_GO_KR_API_KEY=<key> uv run pytest -m live tests/tools/<provider>/
 ```
 
 Live tests are marked `@pytest.mark.live` and skipped in CI (never call live endpoints in CI per constitution §IV).
@@ -228,9 +228,9 @@ All tests must use mocked httpx or recorded fixtures. No live `data.go.kr` calls
 Once the adapter, fixtures, and tests are green:
 
 ```python
-# src/kosmos/tools/register_all.py
+# src/ummaya/tools/register_all.py
 
-from kosmos.tools.hira.hospital_search import register as register_hira_hospital_search
+from ummaya.tools.hira.hospital_search import register as register_hira_hospital_search
 
 def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> None:
     ...

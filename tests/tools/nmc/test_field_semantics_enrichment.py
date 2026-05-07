@@ -30,13 +30,13 @@ from zoneinfo import ZoneInfo
 import pytest
 import respx
 
-from kosmos.tools.executor import ToolExecutor
-from kosmos.tools.nmc.emergency_search import (
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.nmc.emergency_search import (
     _enrich_item,
     _format_hhmm,
     register,
 )
-from kosmos.tools.registry import ToolRegistry
+from ummaya.tools.registry import ToolRegistry
 
 _KST = ZoneInfo("Asia/Seoul")
 FIXED_NOW = datetime(2026, 5, 4, 14, 30, 0, tzinfo=_KST)
@@ -107,7 +107,7 @@ class TestEnrichItem:
     """Verify ``_enrich_item`` rewrites raw fields into safety-clear semantics.
 
     The 5 records below are byte-for-byte from a real Jongno-gu API call
-    (2026-05-04, KOSMOS_DATA_GO_KR_API_KEY) — these are NOT a mock fixture
+    (2026-05-04, UMMAYA_DATA_GO_KR_API_KEY) — these are NOT a mock fixture
     but the live wire shape that the LLM is currently rendering as
     "운영시간: 08:30~17:00".
     """
@@ -240,8 +240,8 @@ class TestEnrichmentEndToEnd:
 
     @pytest.mark.asyncio
     @respx.mock
-    @patch("kosmos.tools.nmc.freshness.datetime")
-    @patch("kosmos.settings.settings")
+    @patch("ummaya.tools.nmc.freshness.datetime")
+    @patch("ummaya.settings.settings")
     async def test_live_jongno_response_enriched(
         self, mock_settings, mock_dt, nmc_reg_exec
     ) -> None:
@@ -293,7 +293,7 @@ class TestEnrichmentEndToEnd:
         }
         respx.get(url__regex=r".*apis\.data\.go\.kr.*").respond(200, json=live_payload)
 
-        from kosmos.tools.models import LookupCollection
+        from ummaya.tools.models import LookupCollection
 
         result = await executor.invoke(
             "nmc_emergency_search",

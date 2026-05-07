@@ -3,7 +3,7 @@
 
 Required test scenarios per tasks.md T047:
 - test_double_submit_hits_cache
-- test_cache_state_span_attribute  (asserts kosmos.ipc.tx.cache_state="hit")
+- test_cache_state_span_attribute  (asserts ummaya.ipc.tx.cache_state="hit")
 - test_distinct_tx_id_no_dedup
 - test_reversible_tool_bypasses_cache
 
@@ -24,7 +24,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from kosmos.ipc.tx_cache import (
+from ummaya.ipc.tx_cache import (
     DispatchResult,
     ToolCallResponse,
     ToolExecutorDispatch,
@@ -129,20 +129,20 @@ class TestDoubleSubmitHitsCache:
 
 
 class TestCacheStateSpanAttribute:
-    """test_cache_state_span_attribute — kosmos.ipc.tx.cache_state is set on OTEL span."""
+    """test_cache_state_span_attribute — ummaya.ipc.tx.cache_state is set on OTEL span."""
 
     def test_miss_sets_span_attribute(self) -> None:
         from unittest.mock import patch
 
         mock_span = MagicMock()
-        with patch("kosmos.ipc.tx_cache.trace") as mock_trace:
+        with patch("ummaya.ipc.tx_cache.trace") as mock_trace:
             mock_trace.get_current_span.return_value = mock_span
 
             _dispatch(_make_executor(_success_response()), transaction_id="tx-span-miss")
 
         # Extract all set_attribute calls
         calls = {call.args[0]: call.args[1] for call in mock_span.set_attribute.call_args_list}
-        assert calls.get("kosmos.ipc.tx.cache_state") == "miss"
+        assert calls.get("ummaya.ipc.tx.cache_state") == "miss"
 
     def test_hit_sets_span_attribute(self) -> None:
         from unittest.mock import patch
@@ -163,7 +163,7 @@ class TestCacheStateSpanAttribute:
 
         # Second call: cache hit — check span attribute
         mock_span = MagicMock()
-        with patch("kosmos.ipc.tx_cache.trace") as mock_trace:
+        with patch("ummaya.ipc.tx_cache.trace") as mock_trace:
             mock_trace.get_current_span.return_value = mock_span
 
             dispatcher.dispatch(
@@ -176,13 +176,13 @@ class TestCacheStateSpanAttribute:
             )
 
         calls = {call.args[0]: call.args[1] for call in mock_span.set_attribute.call_args_list}
-        assert calls.get("kosmos.ipc.tx.cache_state") == "hit"
+        assert calls.get("ummaya.ipc.tx.cache_state") == "hit"
 
     def test_bypass_sets_span_attribute(self) -> None:
         from unittest.mock import patch
 
         mock_span = MagicMock()
-        with patch("kosmos.ipc.tx_cache.trace") as mock_trace:
+        with patch("ummaya.ipc.tx_cache.trace") as mock_trace:
             mock_trace.get_current_span.return_value = mock_span
 
             _dispatch(
@@ -193,7 +193,7 @@ class TestCacheStateSpanAttribute:
             )
 
         calls = {call.args[0]: call.args[1] for call in mock_span.set_attribute.call_args_list}
-        assert calls.get("kosmos.ipc.tx.cache_state") == "bypass"
+        assert calls.get("ummaya.ipc.tx.cache_state") == "bypass"
 
 
 class TestDistinctTxIdNoDedup:

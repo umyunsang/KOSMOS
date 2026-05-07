@@ -5,22 +5,22 @@ import fs from 'node:fs'
 import path from 'node:path'
 import readline from 'node:readline'
 
-const repoRoot = path.resolve('/Users/um-yunsang/KOSMOS')
+const repoRoot = path.resolve('/Users/um-yunsang/UMMAYA')
 const promptPath = process.argv[2] ?? path.join(repoRoot, 'specs/2773-rollback-debug-infra/codex-goal-final-packaging.md')
 const logPath = process.argv[3] ?? path.join(
   repoRoot,
   'specs/2773-rollback-debug-infra/captures/codex-goal-final-packaging.jsonl',
 )
-const kosmosReferenceSkillPath = path.join(repoRoot, '.agents/skills/kosmos-reference-first/SKILL.md')
+const ummayaReferenceSkillPath = path.join(repoRoot, '.agents/skills/ummaya-reference-first/SKILL.md')
 
 const fullPrompt = fs.readFileSync(promptPath, 'utf8')
 const objective = [
-  'Make KOSMOS packaging-ready as the client-side reference implementation for Korea national AX infrastructure.',
+  'Make UMMAYA packaging-ready as the client-side reference implementation for Korea national AX infrastructure.',
   'Preserve the thesis: Claude Code original harness plus two swaps only: FriendliAI/K-EXAONE and Korean public-service tools.',
   'Verify and repair the whole harness abstraction across query engine, tool system, permission pipeline, TUI, IPC, reasoning, observability, docs, and packaging gates.',
   'Treat non-exception abnormal UI/UX, interaction, backend, reasoning, tool-call, visualization, painting, and debug-inspection flows as failures that must be debugged.',
-  'Use the KOSMOS LLMOps rendering-flow infrastructure: join LLM chunks, IPC frames, tool dispatch, permission events, render commits, PTY/frame artifacts, expanded logs, and scenario audits by trace/correlation ids.',
-  'Use the kosmos-reference-first skill for research material discovery before implementation decisions.',
+  'Use the UMMAYA LLMOps rendering-flow infrastructure: join LLM chunks, IPC frames, tool dispatch, permission events, render commits, PTY/frame artifacts, expanded logs, and scenario audits by trace/correlation ids.',
+  'Use the ummaya-reference-first skill for research material discovery before implementation decisions.',
   'Use reference-first research, CC restored source parity, official adapter/API evidence, direct curl for live public APIs, and real-use TUI/PTY verification.',
   'No hallucinated behavior, hardcoded routing, static fallbacks, symptom-only fixes, or unverified success claims.',
   `Full goal prompt and acceptance criteria are in ${promptPath}.`,
@@ -64,8 +64,8 @@ function fail(message) {
 
 const initializeId = request('initialize', {
   clientInfo: {
-    name: 'kosmos_goal_runner',
-    title: 'KOSMOS Goal Runner',
+    name: 'ummaya_goal_runner',
+    title: 'UMMAYA Goal Runner',
     version: '0.1.0',
   },
   capabilities: {
@@ -96,7 +96,7 @@ rl.on('line', (line) => {
       approvalPolicy: 'never',
       sandbox: 'danger-full-access',
       personality: 'pragmatic',
-      serviceName: 'kosmos_goal_runner',
+      serviceName: 'ummaya_goal_runner',
       persistExtendedHistory: true,
     })
     return
@@ -106,7 +106,7 @@ rl.on('line', (line) => {
     threadId = msg.result.thread.id
     request('thread/name/set', {
       threadId,
-      name: 'KOSMOS final packaging readiness loop',
+      name: 'UMMAYA final packaging readiness loop',
     })
     request('thread/goal/set', {
       threadId,
@@ -126,12 +126,12 @@ rl.on('line', (line) => {
       input: [
         {
           type: 'text',
-          text: `$kosmos-reference-first\n\n${fullPrompt}\n\nExecute this active goal now. Continue the RALF loop until the acceptance criteria pass or a blocker is proven with exact evidence.`,
+          text: `$ummaya-reference-first\n\n${fullPrompt}\n\nExecute this active goal now. Continue the RALF loop until the acceptance criteria pass or a blocker is proven with exact evidence.`,
         },
         {
           type: 'skill',
-          name: 'kosmos-reference-first',
-          path: kosmosReferenceSkillPath,
+          name: 'ummaya-reference-first',
+          path: ummayaReferenceSkillPath,
         },
       ],
     })

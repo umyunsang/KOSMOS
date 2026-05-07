@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// KOSMOS-original — [H1] mismatch_error mis-info guard test (2026-05-04)
+// UMMAYA-original — [H1] mismatch_error mis-info guard test (2026-05-04)
 //
 // Citizen-safety-critical regression test: ensure that a verify primitive
 // payload carrying ``family: "mismatch_error"`` (e.g. when no auth adapter

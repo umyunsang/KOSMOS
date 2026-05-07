@@ -4,7 +4,7 @@
 #
 # Scenario:
 #   1. Boot TUI (bun run tui with aimock)
-#   2. Wait for KOSMOS branding prompt
+#   2. Wait for UMMAYA branding prompt
 #   3. Type '/' and wait for dropdown to appear
 #   4. Assert /help appears in dropdown
 #   5. Assert /speckit-* does NOT appear
@@ -14,7 +14,7 @@
 #   OUTDIR and TMUX_SESSION are set by the harness.
 
 # Wait for initial prompt
-wait_for_pane "KOSMOS\|tool_registry\|>" 45
+wait_for_pane "UMMAYA\|tool_registry\|>" 45
 
 snapshot_pane "01-boot"
 

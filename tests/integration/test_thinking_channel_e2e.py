@@ -40,7 +40,7 @@ def _make_thinking_only_llm_client():
 
     Extracted to module level to keep the test function under C901 complexity.
     """
-    from kosmos.llm.models import StreamEvent  # noqa: PLC0415
+    from ummaya.llm.models import StreamEvent  # noqa: PLC0415
 
     class _ThinkingOnlyLLMClient:
         _class_turn = 0
@@ -61,7 +61,7 @@ def _make_thinking_only_llm_client():
 def _stub_prompt_loader(monkeypatch: pytest.MonkeyPatch) -> None:
     """Stub PromptLoader to avoid manifest disk I/O during the test."""
     with contextlib.suppress(ImportError):
-        import kosmos.context.prompt_loader as pl_mod  # noqa: PLC0415
+        import ummaya.context.prompt_loader as pl_mod  # noqa: PLC0415
 
         class _FPL:
             def __init__(self, *, manifest_path: object) -> None:
@@ -109,10 +109,10 @@ async def test_thinking_channel_e2e_plumbing(
 
     Full assertions populated in T023 once Procedure-A byte-copy is complete.
     """
-    from kosmos.ipc.frame_schema import (
+    from ummaya.ipc.frame_schema import (
         ChatMessage as IPCChatMessage,
     )
-    from kosmos.ipc.frame_schema import (  # noqa: PLC0415
+    from ummaya.ipc.frame_schema import (  # noqa: PLC0415
         ChatRequestFrame,
     )
 
@@ -120,8 +120,8 @@ async def test_thinking_channel_e2e_plumbing(
     class _FakeLLMConfig:
         pass
 
-    import kosmos.llm.client as llm_client_mod  # noqa: PLC0415
-    import kosmos.llm.config as llm_config_mod  # noqa: PLC0415
+    import ummaya.llm.client as llm_client_mod  # noqa: PLC0415
+    import ummaya.llm.config as llm_config_mod  # noqa: PLC0415
 
     monkeypatch.setattr(llm_client_mod, "LLMClient", _make_thinking_only_llm_client())
     monkeypatch.setattr(llm_config_mod, "LLMClientConfig", _FakeLLMConfig)
@@ -158,7 +158,7 @@ async def test_thinking_channel_e2e_plumbing(
 
     monkeypatch.setattr(sys, "stdout", fake_stdout)
 
-    from kosmos.ipc import stdio as stdio_mod  # noqa: PLC0415
+    from ummaya.ipc import stdio as stdio_mod  # noqa: PLC0415
 
     monkeypatch.setattr(stdio_mod, "_stdout_lock", None)
 
@@ -176,7 +176,7 @@ async def test_thinking_channel_e2e_plumbing(
 
     monkeypatch.setattr(sys, "stdin", _FakeStdinWrapper())
 
-    from kosmos.ipc.stdio import run as ipc_run  # noqa: PLC0415
+    from ummaya.ipc.stdio import run as ipc_run  # noqa: PLC0415
 
     # Backend may exit early on stdin EOF — suppress so the assertion phase
     # can run on whatever frames were emitted before exit.

@@ -1,8 +1,8 @@
 /**
- * KOSMOS Path B stub for utils/permissions/yoloClassifier
+ * UMMAYA Path B stub for utils/permissions/yoloClassifier
  *
  * CC reference: utils/permissions/yoloClassifier.ts (CC 2.1.88) — Anthropic +
- * GrowthBook-driven auto-mode classifier. KOSMOS does not re-introduce the
+ * GrowthBook-driven auto-mode classifier. UMMAYA does not re-introduce the
  * classifier (Spec 1633 / Epic #2293 deletion stands; auto-mode = no-op via
  * cli/handlers/autoMode stub).
  *
@@ -14,7 +14,7 @@
  * the standard prompt path with zero behavior change.
  *
  * SWAP/path-b(2643): module restored to CC import shape; interior remains the
- * KOSMOS no-op contract introduced by Spec 1633.
+ * UMMAYA no-op contract introduced by Spec 1633.
  *
  * Spec source: specs/2643-utils-residue/contracts/yoloClassifier.contract.md
  */
