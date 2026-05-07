@@ -1,5 +1,4 @@
 import { Command as CommanderCommand, InvalidArgumentError, Option } from '@commander-js/extra-typings';
-import { warnIfMissingFriendliCredential } from './entrypoints/envGuard.js';
 import chalk from 'chalk';
 import { readFileSync } from 'fs';
 import mapValues from 'lodash-es/mapValues.js';
@@ -361,10 +360,6 @@ export async function main() {
   // This must be set before ANY command execution to prevent PATH hijacking attacks
   // See: https://docs.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-searchpathw
   process.env.NoDefaultCurrentDirectoryInExePath = '1';
-
-  // UMMAYA boots without a key so /login can collect one. The first
-  // model/backend use still fails closed if the user has not logged in.
-  warnIfMissingFriendliCredential();
 
   // Initialize warning handler early to catch warnings
   initializeWarningHandler();
