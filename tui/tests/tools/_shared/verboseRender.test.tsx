@@ -8,16 +8,34 @@
 //   2. renderVerboseOutputJson surfaces the envelope JSON
 //      ("응답 envelope:") AND, when traces are present at either the
 //      top level or inside ``result``, renders the cyan
-//      "외부 API 요청 #N — METHOD URL → STATUS (Nms)" section with
-//      request/response body blocks.
+//      "외부 API 요청 #N — METHOD URL-SUMMARY → STATUS (Nms)" section
+//      with request/response body blocks. The full URL remains in the
+//      envelope JSON; the heading is bounded to avoid terminal corruption.
 
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it, mock } from 'bun:test'
+import { Box as InkBox, Text as InkText } from 'ink'
 import { render } from 'ink-testing-library'
+import { join } from 'node:path'
 import React from 'react'
-import {
-  renderVerboseInputJson,
-  renderVerboseOutputJson,
-} from '../../../src/tools/_shared/verboseRender.js'
+
+const TUI_ROOT = join(import.meta.dir, '../../..')
+
+// Keep this test scoped to verboseRender itself. The real MessageResponse
+// and ink facade pull the full theme stack, including bun:bundle-only modules
+// that Bun's test runner does not reliably resolve.
+await mock.module(join(TUI_ROOT, 'src/ink.js'), () => ({
+  Box: InkBox,
+  Text: InkText,
+}))
+
+await mock.module(join(TUI_ROOT, 'src/components/MessageResponse.js'), () => ({
+  MessageResponse: ({ children }: { children?: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children),
+}))
+
+const { renderVerboseInputJson, renderVerboseOutputJson } = await import(
+  '../../../src/tools/_shared/verboseRender.js'
+)
 
 describe('renderVerboseInputJson', () => {
   it('returns multi-line JSON for primitive input', () => {
@@ -76,7 +94,7 @@ describe('renderVerboseOutputJson', () => {
     const { lastFrame } = render(<>{ui}</>)
     const out = lastFrame() ?? ''
     expect(out).toContain('외부 API 요청 #1')
-    expect(out).toContain('GET https://apis.data.go.kr/.../getVilageFcst?serviceKey=***')
+    expect(out).toContain('GET https://apis.data.go.kr/getVilageFcst?serviceKey')
     expect(out).toContain('→ 200')
     expect(out).toContain('842ms')
     expect(out).toContain('응답 body')
@@ -104,7 +122,7 @@ describe('renderVerboseOutputJson', () => {
     const { lastFrame } = render(<>{ui}</>)
     const out = lastFrame() ?? ''
     expect(out).toContain('외부 API 요청 #1')
-    expect(out).toContain('POST https://example.kr/api/submit')
+    expect(out).toContain('POST https://example.kr/submit')
     expect(out).toContain('→ 202')
     expect(out).toContain('117ms')
     expect(out).toContain('요청 body')

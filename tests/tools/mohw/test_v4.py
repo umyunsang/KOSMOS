@@ -14,6 +14,7 @@ import textwrap
 
 import pytest
 import respx
+from pydantic import ValidationError
 
 from kosmos.tools.mohw.welfare_eligibility_search import (
     _MOHW_DESCRIPTION,
@@ -144,6 +145,38 @@ class TestBuildParamsSnakeToCamel:
         assert "trgterIndvdlArray" in params
         assert params["trgterIndvdlArray"] == "020"
 
+    def test_single_parent_code_mapped_camel_case(self) -> None:
+        """trgter_indvdl_array='060' → official SSIS 한부모·조손 filter."""
+        inp = MohwWelfareEligibilitySearchInput.model_validate(
+            {"search_wrd": "아동양육비", "trgter_indvdl_array": "060"}
+        )
+        params = _build_params(inp, _FAKE_API_KEY)
+        assert params["searchWrd"] == "아동양육비"
+        assert params["trgterIndvdlArray"] == "060"
+        assert "lifeArray" not in params
+
+    def test_single_parent_child_support_alias_uses_canonical_service_term(self) -> None:
+        """Common shorthand maps to the SSIS search term proven by live evidence."""
+        inp = MohwWelfareEligibilitySearchInput.model_validate(
+            {"search_wrd": "한부모 아동양육비", "trgter_indvdl_array": "060"}
+        )
+        params = _build_params(inp, _FAKE_API_KEY)
+        assert params["searchWrd"] == "한부모가족 아동양육비"
+        assert params["trgterIndvdlArray"] == "060"
+        assert "lifeArray" not in params
+
+    def test_single_parent_child_support_rejects_life_array_collision(self) -> None:
+        """lifeArray=002 + target=060 suppresses valid SSIS records; fail closed."""
+        with pytest.raises(ValidationError, match="omit life_array"):
+            MohwWelfareEligibilitySearchInput.model_validate(
+                {
+                    "search_wrd": "한부모가족 아동양육비",
+                    "life_array": "002",
+                    "trgter_indvdl_array": "060",
+                    "onap_psblt_yn": "Y",
+                }
+            )
+
     def test_intrs_thema_array_mapped_camel_case(self) -> None:
         """intrs_thema_array='080' → intrsThemaArray='080'."""
         inp = MohwWelfareEligibilitySearchInput.model_validate({"intrs_thema_array": "080"})
@@ -259,6 +292,29 @@ class TestParseXmlResponse:
         assert item["jurMnofNm"] == "보건복지부"
         assert item["onapPsbltYn"] == "Y"
         assert item["lifeArray"] == "임신 · 출산"
+
+    def test_replacement_character_is_removed_from_text_fields(self) -> None:
+        """Malformed live text must not leak U+FFFD into TUI captures."""
+        xml = textwrap.dedent("""\
+            <?xml version="1.0" encoding="UTF-8"?>
+            <wantedList>
+              <resultCode>0</resultCode>
+              <resultMessage>SUCCESS</resultMessage>
+              <totalCount>1</totalCount>
+              <pageNo>1</pageNo>
+              <numOfRows>1</numOfRows>
+              <servList>
+                <servId>WLF00009999</servId>
+                <servNm>서민금융진흥원 소액보험(한부모가�)</servNm>
+                <jurMnofNm>보건복지부</jurMnofNm>
+              </servList>
+            </wantedList>
+        """)
+
+        parsed = _parse_xml_response(xml.encode())
+
+        assert "\ufffd" not in parsed["items"][0]["servNm"]
+        assert parsed["items"][0]["servNm"] == "서민금융진흥원 소액보험(한부모가)"
 
     def test_minimal_xml_pydantic_roundtrip(self) -> None:
         """Parsed dict validates through MohwWelfareEligibilitySearchOutput."""
@@ -426,6 +482,13 @@ class TestMohwV4Description:
         """Section 3 short_reference: contains MOHW_LIFE_STAGE_SHORT_REFERENCE inline."""
         assert "007" in _MOHW_DESCRIPTION
         assert "임신" in _MOHW_DESCRIPTION
+
+    def test_description_mentions_single_parent_target_code(self) -> None:
+        """Section 3/5 tells the LLM to use target code 060, not life_array."""
+        assert "060" in _MOHW_DESCRIPTION
+        assert "한부모" in _MOHW_DESCRIPTION
+        assert "trgter_indvdl_array='060'" in _MOHW_DESCRIPTION
+        assert "not life_array" in _MOHW_DESCRIPTION
 
     def test_description_mentions_calltP_auto_inject(self) -> None:
         """Section 2 input_quirk: callTp auto-injection noted."""

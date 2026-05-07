@@ -158,18 +158,35 @@ async def test_submit_with_matching_tier_passes_gate(
 
 
 @pytest.mark.asyncio
-async def test_submit_with_ax_module_aal3_tier_satisfies_aal2_gate(
-    tier_gated_registration: AdapterRegistration,
-) -> None:
-    """AX-channel AAL3 verify tiers are recognised and satisfy lower AAL2 gates."""
+async def test_submit_with_ax_aal3_tier_satisfies_aal2_requirement() -> None:
+    """A recognised AX AAL3 AuthContext satisfies an AAL2 submit gate."""
     from kosmos.primitives.submit import check_tier_gate
 
-    auth_ctx = _MinimalAuthContext(published_tier="modid_aal3")
-    result = check_tier_gate(
-        registration=tier_gated_registration,
-        auth_context=auth_ctx,
+    registration = AdapterRegistration(
+        tool_id="mock_mydata_submit_v1",
+        primitive=AdapterPrimitive.submit,
+        module_path="tests.integration.test_submit_published_tier_gate",
+        input_model_ref="tests.integration.test_submit_published_tier_gate:_MinimalAuthContext",
+        source_mode=AdapterSourceMode.HARNESS_ONLY,
+        published_tier_minimum="mydata_individual_aal2",
+        nist_aal_hint="AAL2",
+        is_concurrency_safe=False,
+        cache_ttl_seconds=0,
+        rate_limit_per_minute=10,
+        search_hint={},
+        auth_type="oauth",
+        policy=AdapterRealDomainPolicy(
+            real_classification_url="https://example.gov.kr/policy/submit",
+            real_classification_text="테스트 mydata submit 정책",
+            citizen_facing_gate="submit",
+            last_verified=datetime(2026, 4, 29, tzinfo=UTC),
+        ),
     )
-    assert result is None, "A recognised AAL3 module tier must satisfy an AAL2 gate"
+
+    auth_ctx = _MinimalAuthContext(published_tier="modid_aal3")
+    result = check_tier_gate(registration=registration, auth_context=auth_ctx)
+
+    assert result is None, "Recognised AAL3 tier must satisfy an AAL2 requirement"
 
 
 # ---------------------------------------------------------------------------

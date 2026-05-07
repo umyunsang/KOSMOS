@@ -6,8 +6,8 @@
 
 import { describe, test, expect } from 'bun:test'
 import { LookupPrimitive } from '../../src/tools/LookupPrimitive/LookupPrimitive.js'
+import { ResolveLocationPrimitive } from '../../src/tools/ResolveLocationPrimitive/ResolveLocationPrimitive.js'
 import { SubmitPrimitive } from '../../src/tools/SubmitPrimitive/SubmitPrimitive.js'
-import { VerifyPrimitive } from '../../src/tools/VerifyPrimitive/VerifyPrimitive.js'
 import {
   toolToFunctionSchema,
   getToolDefinitionsForFrame,
@@ -77,39 +77,32 @@ describe('toolToFunctionSchema - LookupPrimitive required fields', () => {
   })
 })
 
-describe('toolToFunctionSchema - VerifyPrimitive strict schema', () => {
-  test('verify requires scope-bound params and emits strict=true', async () => {
-    const def = await toolToFunctionSchema(VerifyPrimitive)
+// ---------------------------------------------------------------------------
+// Test 4 — resolve_location emits the canonical geocoding schema
+// ---------------------------------------------------------------------------
+describe('toolToFunctionSchema - ResolveLocationPrimitive', () => {
+  test('resolve_location emits query/want/near schema', async () => {
+    const def = await toolToFunctionSchema(ResolveLocationPrimitive)
 
-    expect(def.function.name).toBe('verify')
-    expect(def.function.strict).toBe(true)
-
+    expect(def.function.name).toBe('resolve_location')
     const params = def.function.parameters as Record<string, unknown>
-    expect(params['additionalProperties']).toBe(false)
-    expect(params['required']).toEqual(['tool_id', 'params'])
-
     const properties = params['properties'] as Record<string, unknown>
-    const verifyParams = properties['params'] as Record<string, unknown>
-    expect(verifyParams['additionalProperties']).toBe(false)
-    expect(verifyParams['required']).toEqual([
-      'scope_list',
-      'purpose_ko',
-      'purpose_en',
-    ])
+    const required = params['required'] as string[]
+
+    expect(properties['query']).toBeDefined()
+    expect(properties['want']).toBeDefined()
+    expect(properties['near']).toBeDefined()
+    expect(required).toContain('query')
   })
 })
 
 // ---------------------------------------------------------------------------
-// Test 4 — getToolDefinitionsForFrame returns >= 5 entries
+// Test 5 — getToolDefinitionsForFrame returns exactly 5 primitives
 // ---------------------------------------------------------------------------
 describe('getToolDefinitionsForFrame', () => {
-  test('returns at least 5 entries (minimum: 4 primitives present in registry)', async () => {
+  test('returns exactly 5 published primitive entries', async () => {
     const defs = await getToolDefinitionsForFrame()
-    // At minimum the 4 primitives in getAllBaseTools() must be present.
-    // resolve_location is not in the registry yet (Epic #2077) so >= 4; the
-    // spec requires >= 5 when all primitives are present. We assert >= 4 as the
-    // conservative floor and also check named primitives are included.
-    expect(defs.length).toBeGreaterThanOrEqual(4)
+    expect(defs.length).toBe(5)
   })
 
   test('includes the expected primitive tool names', async () => {
@@ -117,6 +110,7 @@ describe('getToolDefinitionsForFrame', () => {
     const names = new Set(defs.map(d => d.function.name))
 
     expect(names.has('lookup')).toBe(true)
+    expect(names.has('resolve_location')).toBe(true)
     expect(names.has('submit')).toBe(true)
     expect(names.has('verify')).toBe(true)
     expect(names.has('subscribe')).toBe(true)
@@ -124,7 +118,7 @@ describe('getToolDefinitionsForFrame', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Test 5 — output is alphabetically sorted by function.name
+// Test 6 — output is alphabetically sorted by function.name
 // ---------------------------------------------------------------------------
 describe('getToolDefinitionsForFrame - alphabetical sort', () => {
   test('definitions are sorted alphabetically by function.name', async () => {
@@ -136,7 +130,7 @@ describe('getToolDefinitionsForFrame - alphabetical sort', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Test 6 — output excludes CC-developer tools (Read, Bash, Glob)
+// Test 7 — output excludes CC-developer tools (Read, Bash, Glob)
 // ---------------------------------------------------------------------------
 describe('getToolDefinitionsForFrame - exclusions', () => {
   test('excludes Read, Bash, Glob and other CC-developer tools', async () => {
@@ -151,7 +145,7 @@ describe('getToolDefinitionsForFrame - exclusions', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Test 7 — serialization is deterministic
+// Test 8 — serialization is deterministic
 // ---------------------------------------------------------------------------
 describe('getToolDefinitionsForFrame - determinism', () => {
   test('two consecutive calls produce structurally equal output', async () => {

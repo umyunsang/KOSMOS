@@ -9,6 +9,17 @@
 // Referenced from `bunfig.toml` `preload = ["./src/stubs/macro-preload.ts"]`.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+if (process.env.NODE_ENV === 'test') {
+  try {
+    const { mock } = await import('bun:test')
+    mock.module('bundle', () => ({
+      feature: () => false,
+    }))
+  } catch {
+    /* bun:test is only available in the test runner */
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // bun:bundle virtual module plugin
 // Bun's default resolver treats `bun:` as a reserved built-in namespace and

@@ -287,7 +287,7 @@ class TestFreshnessIntegration:
 
         result = await executor.invoke(
             "nmc_emergency_search",
-            {"lat": 37.5, "lon": 127.0, "limit": 5},
+            {"mode": "coordinate", "lat": 37.5, "lon": 127.0, "limit": 5},
             request_id="test-req-001",
             session_identity=object(),  # bypass Layer 3 auth gate
         )
@@ -317,7 +317,7 @@ class TestFreshnessIntegration:
 
         result = await executor.invoke(
             "nmc_emergency_search",
-            {"lat": 37.5, "lon": 127.0, "limit": 5},
+            {"mode": "coordinate", "lat": 37.5, "lon": 127.0, "limit": 5},
             request_id="test-req-002",
             session_identity=object(),
         )
@@ -370,7 +370,7 @@ class TestFreshnessIntegration:
 
         result = await executor.invoke(
             "nmc_emergency_search",
-            {"lat": 37.5, "lon": 127.0, "limit": 5},
+            {"mode": "coordinate", "lat": 37.5, "lon": 127.0, "limit": 5},
             request_id="test-req-003",
             session_identity=object(),
         )
@@ -404,7 +404,7 @@ class TestFreshnessIntegration:
 
         result = await executor.invoke(
             "nmc_emergency_search",
-            {"lat": 37.5, "lon": 127.0, "limit": 5},
+            {"mode": "coordinate", "lat": 37.5, "lon": 127.0, "limit": 5},
             request_id="test-req-rc-err",
             session_identity=object(),
         )
@@ -434,7 +434,7 @@ class TestFreshnessIntegration:
 
         result = await executor.invoke(
             "nmc_emergency_search",
-            {"lat": 37.5, "lon": 127.0, "limit": 5},
+            {"mode": "coordinate", "lat": 37.5, "lon": 127.0, "limit": 5},
             request_id="test-req-html",
             session_identity=object(),
         )
@@ -464,7 +464,7 @@ class TestFreshnessIntegration:
 
         result = await executor.invoke(
             "nmc_emergency_search",
-            {"lat": 37.5, "lon": 127.0, "limit": 5},
+            {"mode": "coordinate", "lat": 37.5, "lon": 127.0, "limit": 5},
             request_id="test-req-empty",
             session_identity=object(),
         )
@@ -511,7 +511,7 @@ class TestThresholdIntegration:
 
         result = await executor.invoke(
             "nmc_emergency_search",
-            {"lat": 37.5, "lon": 127.0, "limit": 5},
+            {"mode": "coordinate", "lat": 37.5, "lon": 127.0, "limit": 5},
             request_id="test-req-010",
             session_identity=object(),
         )

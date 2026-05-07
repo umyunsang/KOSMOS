@@ -2,7 +2,7 @@
 import { toolMatchesName, type Tool, type Tools } from './Tool.js'
 import { AgentTool } from './tools/AgentTool/AgentTool.js'
 import { SkillTool } from './tools/SkillTool/SkillTool.js'
-// Epic #1634 P3 FR-001: five reserved primitives exposed as top-level tools.
+// Epic #1634 P3 FR-001 / Spec 031: five reserved primitives exposed as top-level tools.
 import { LookupPrimitive } from './tools/LookupPrimitive/LookupPrimitive.js'
 import { ResolveLocationPrimitive } from './tools/ResolveLocationPrimitive/ResolveLocationPrimitive.js'
 import { SubmitPrimitive } from './tools/SubmitPrimitive/SubmitPrimitive.js'
@@ -248,7 +248,7 @@ export function getToolsForDefaultPreset(): string[] {
  */
 export function getAllBaseTools(): Tools {
   return [
-    // Five reserved primitives — FR-001
+    // Five reserved primitives — FR-001 / Spec 031
     LookupPrimitive,
     ResolveLocationPrimitive,
     SubmitPrimitive,

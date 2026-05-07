@@ -11,12 +11,15 @@ import os
 import random
 import time
 from collections.abc import AsyncIterator
+from contextvars import Token
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
 import httpx
+from opentelemetry import context as _otel_context
 from opentelemetry import trace
-from opentelemetry.trace import Status, StatusCode
+from opentelemetry.context.context import Context
+from opentelemetry.trace import Span, Status, StatusCode
 from pydantic import ValidationError
 
 from kosmos.llm.config import LLMClientConfig
@@ -81,10 +84,6 @@ _LLM_STREAM_CHUNK_MAX_CHARS = max(
     1, int(os.environ.get("KOSMOS_LLM_STREAM_CHUNK_MAX_CHARS", "999"))
 )
 _LLM_STREAM_PACE_S = max(0.0, float(os.environ.get("KOSMOS_LLM_STREAM_PACE_MS", "0")) / 1000.0)
-_LLM_STREAM_IDLE_TIMEOUT_S = max(
-    1.0,
-    float(os.environ.get("KOSMOS_LLM_STREAM_IDLE_TIMEOUT_SECONDS", "90")),
-)
 
 
 if TYPE_CHECKING:
@@ -95,6 +94,23 @@ logger = logging.getLogger(__name__)
 rate_limit_logger = logging.getLogger("kosmos.llm")
 
 _tracer = trace.get_tracer(__name__)
+
+
+class _YieldSafeActiveSpan:
+    """Manage an active OTel span without crossing async-generator yield boundaries."""
+
+    def __init__(self, span: Span) -> None:
+        self._span_context = trace.set_span_in_context(span)
+        self._active_token: Token[Context] | None = _otel_context.attach(self._span_context)
+
+    def detach(self) -> None:
+        if self._active_token is not None:
+            _otel_context.detach(self._active_token)
+            self._active_token = None
+
+    def attach(self) -> None:
+        if self._active_token is None:
+            self._active_token = _otel_context.attach(self._span_context)
 
 
 @dataclass(frozen=True)
@@ -419,10 +435,11 @@ class LLMClient:
                 _compute_prompt_hash(messages[0].content),
             )
 
-        # Attach span as the active context for child spans (execute_tool, etc.)
-        # while preserving the caller's context on generator close.
-        ctx = trace.use_span(span, end_on_exit=False)
-        ctx.__enter__()
+        # Keep the chat span active while provider streaming code runs, but
+        # detach before yielding to the caller. Async generators can be closed
+        # from a different context/task after a yield boundary; carrying the
+        # OpenTelemetry context manager across that boundary logs detach errors.
+        active_span = _YieldSafeActiveSpan(span)
 
         # T019: mutable container to collect finalize info from _stream_with_retry().
         # Populated on the success path only; remains empty if an exception is raised.
@@ -430,7 +447,9 @@ class LLMClient:
 
         try:
             async for event in self._stream_with_retry(payload, _finalize):
+                active_span.detach()
                 yield event
+                active_span.attach()
         except Exception as exc:
             span.set_status(Status(StatusCode.ERROR))
             span.record_exception(exc)
@@ -463,7 +482,7 @@ class LLMClient:
                     }
                 )
         finally:
-            ctx.__exit__(None, None, None)
+            active_span.detach()
             span.end()
 
     async def _stream_with_retry(  # noqa: C901
@@ -542,30 +561,9 @@ class LLMClient:
 
                         await self._raise_for_status(response)
 
-                        # Yield events; watch for mid-stream 429 envelopes (T016).
-                        #
-                        # CC reference parity: claude.ts uses a streaming idle
-                        # watchdog because provider request timeouts often cover
-                        # only headers / initial fetch, not a silently stalled
-                        # SSE body. FriendliAI can keep the stream open after a
-                        # reasoning chunk without sending another line, which
-                        # leaves the TUI spinner alive indefinitely. Bound the
-                        # inter-line wait and surface a typed stream error.
+                        # Yield events; watch for mid-stream 429 envelopes (T016)
                         rate_limited_mid_stream = False
-                        line_iter = response.aiter_lines().__aiter__()
-                        while True:
-                            try:
-                                line = await asyncio.wait_for(
-                                    line_iter.__anext__(),
-                                    timeout=_LLM_STREAM_IDLE_TIMEOUT_S,
-                                )
-                            except StopAsyncIteration:
-                                break
-                            except TimeoutError as exc:
-                                raise StreamInterruptedError(
-                                    "Streaming idle timeout: no SSE line received "
-                                    f"for {_LLM_STREAM_IDLE_TIMEOUT_S:.0f}s"
-                                ) from exc
+                        async for line in response.aiter_lines():
                             if self._is_rate_limit_envelope(line):
                                 rate_limited_mid_stream = True
                                 delay = self._compute_rate_limit_delay(response, attempt, policy)

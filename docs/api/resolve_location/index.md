@@ -12,7 +12,7 @@ output_standard: v4
 
 ## Overview
 
-Converts a free-text Korean place reference (address, neighborhood, administrative region, or landmark) into structured location identifiers — coordinates, 10-digit 행정동 code, road/jibun address, or a point of interest — by dispatching across geocoding backends.
+Converts a free-text Korean place reference (address, neighborhood, administrative region, or landmark) into structured location identifiers — coordinates, legal/admin region names, 10-digit 행정동 code, road/jibun address, or a point of interest — by dispatching across geocoding backends.
 
 **Kakao Local API is sufficient as the sole backend** for the v4 standard output (4-field guarantee). JUSO and SGIS are optional fallbacks; if their environment keys are not set, those backends are silently skipped. All 4 evidence scenarios confirmed with Kakao-only (see `/tmp/kosmos-evidence/geocoding-evidence.md`).
 
@@ -60,7 +60,7 @@ JUSO (`KOSMOS_JUSO_CONFM_KEY`) and SGIS (`KOSMOS_SGIS_KEY`) were not set during 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `query` | `str` (1–200 chars) | yes | Free-text Korean or English place query, e.g. `"서울 강남구"` or `"Gwangwhamun"` |
-| `want` | `Literal["coords", "adm_cd", "coords_and_admcd", "road_address", "jibun_address", "poi", "all"]` | no | Which identifier to resolve. Default `"coords_and_admcd"` returns a `ResolveBundle` |
+| `want` | `Literal["coords", "adm_cd", "coords_and_admcd", "road_address", "jibun_address", "poi", "region", "all"]` | no | Which identifier to resolve. Default `"coords_and_admcd"` returns a `ResolveBundle`. Use `"region"` or `"all"` when a downstream adapter needs 시도/시군구 names such as NMC `Q0`/`Q1`. |
 | `near` | `tuple[float, float] | None` | no | Optional `[lat, lon]` tiebreaker for ambiguous queries |
 
 **Output model (legacy)**: `ResolveLocationOutputUnion` — a 6-variant discriminated union on `kind`.
@@ -71,7 +71,8 @@ JUSO (`KOSMOS_JUSO_CONFM_KEY`) and SGIS (`KOSMOS_SGIS_KEY`) were not set during 
 | `"adm_cd"` | `AdmCodeResult` | 10-digit 법정동 code + administrative name + level (`sido`/`sigungu`/`eupmyeondong`) |
 | `"address"` | `AddressResult` | Structured road address (도로명) and/or jibun address (지번) + postal code |
 | `"poi"` | `POIResult` | Point of interest with name, category, and lat/lon |
-| `"bundle"` | `ResolveBundle` | Composite result: coords + adm_cd + optional address + optional poi |
+| `"region"` | `RegionResult` | Kakao coord2regioncode legal/admin region row: `region_1depth_name`, `region_2depth_name`, `region_3depth_name`, 10-digit code, region type `B`/`H` |
+| `"bundle"` | `ResolveBundle` | Composite result: coords + adm_cd + optional address + optional poi + optional region |
 | `"error"` | `ResolveError` | Structured failure with reason code (`not_found`, `ambiguous`, `upstream_unavailable`, `invalid_query`, `empty_query`, `out_of_domain`) |
 
 ### Backend dispatch: three variants of a single tool
@@ -80,10 +81,13 @@ JUSO (`KOSMOS_JUSO_CONFM_KEY`) and SGIS (`KOSMOS_SGIS_KEY`) were not set during 
 
 #### Variant A — Kakao Local API (`source: "kakao"`)
 
-- **Endpoint**: `GET https://dapi.kakao.com/v2/local/search/address.json`
+- **Endpoints**:
+  - `GET https://dapi.kakao.com/v2/local/search/address.json`
+  - `GET https://dapi.kakao.com/v2/local/search/keyword.json`
+  - `GET https://dapi.kakao.com/v2/local/geo/coord2regioncode.json`
 - **Source URL**: https://developers.kakao.com/docs/latest/ko/local/dev-guide
 - **Authentication**: REST API key via `Authorization: KakaoAK {key}` header. Key source: `KOSMOS_KAKAO_API_KEY` environment variable.
-- **Used for**: `coords`, `road_address`, `jibun_address`, `poi`, and the coords component of `coords_and_admcd` / `all`.
+- **Used for**: `coords`, `road_address`, `jibun_address`, `poi`, `region`, and the coords/region components of `coords_and_admcd` / `all`.
 - **Timeout**: 5 seconds (`_DEFAULT_TIMEOUT`).
 - **Pydantic models**: `KakaoSearchResult`, `KakaoAddressDocument`, `KakaoRoadAddressResult`, `KakaoAddressResult`, `KakaoSearchMeta` defined at `src/kosmos/tools/geocoding/kakao_client.py:39–168`.
 
@@ -112,11 +116,12 @@ JUSO (`KOSMOS_JUSO_CONFM_KEY`) and SGIS (`KOSMOS_SGIS_KEY`) were not set during 
 | `want` | Resolver chain |
 |---|---|
 | `"coords"` | Kakao only → error on miss |
-| `"adm_cd"` | JUSO → Kakao (coords) + SGIS → error on miss |
+| `"adm_cd"` | JUSO → Kakao address `b_code` → Kakao coord2regioncode from resolved coords → SGIS → error on miss |
 | `"road_address"` / `"jibun_address"` | Kakao → JUSO (adm_cd name only) → error if specific address not found |
 | `"poi"` | Kakao only → error on miss |
-| `"coords_and_admcd"` | Kakao (coords) + JUSO → SGIS fallback → `ResolveBundle` |
-| `"all"` | Single Kakao call for coords + address + poi; JUSO / SGIS for adm_cd → `ResolveBundle` |
+| `"region"` | Kakao coords → Kakao coord2regioncode → error on miss |
+| `"coords_and_admcd"` | Kakao (coords + KMA nx/ny) + JUSO → Kakao address `b_code` → Kakao coord2regioncode → SGIS → `ResolveBundle` |
+| `"all"` | Kakao address+keyword fanout for coords/address/poi, KMA nx/ny from coords, Kakao coord2regioncode for region and coordinate-derived adm_cd, JUSO / SGIS for adm_cd → `ResolveBundle` |
 
 ## Search hints
 

@@ -633,7 +633,8 @@ NFA_EMERGENCY_INFO_SERVICE_TOOL = GovAPITool(
             "wire URL = base/operation(suffix필수). "
             "activity는 gutYm, 나머지는 stmtYm. "
             "vehicle_info는 ym파라미터 없음(차량 registry). "
-            "resultType=json 고정."
+            "resultType=json 고정. "
+            "가스 안전수칙/AED 위치/실시간 신고 전 안내는 이 통계 도구 대상 아님."
         ),
         self_contained_decl=(
             "이 도구는 자립적(self-contained). 다른 도구 호출 불필요. "
@@ -656,8 +657,8 @@ NFA_EMERGENCY_INFO_SERVICE_TOOL = GovAPITool(
     is_core=False,
     primitive="lookup",
     trigger_examples=[
-        "심정지 응급 처치",
-        "AED 위치 알려줘",
+        "천안동남소방서 2021년 12월 구급활동 통계 조회",
+        "파주소방서 2021년 7월 구급환자상태 통계 조회",
     ],
 )
 

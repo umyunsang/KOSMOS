@@ -3,6 +3,7 @@ import { writeSync } from 'fs'
 import memoize from 'lodash-es/memoize.js'
 import { onExit } from 'signal-exit'
 import type { ExitReason } from 'src/entrypoints/agentSdkTypes.js'
+import { formatKosmosResumeCommand } from '../constants/cli.js'
 import {
   getIsInteractive,
   getIsScrollDraining,
@@ -174,7 +175,7 @@ function printResumeHint(): void {
       writeSync(
         1,
         chalk.dim(
-          `\nResume this session with:\nclaude --resume ${resumeArg}\n`,
+          `\nResume this session with:\n${formatKosmosResumeCommand(resumeArg)}\n`,
         ),
       )
       resumeHintPrinted = true

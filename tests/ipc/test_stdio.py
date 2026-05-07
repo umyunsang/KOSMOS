@@ -194,7 +194,7 @@ class _FakeStdout:
         return len(data)
 
     def flush(self) -> None:
-        pass
+        self.buffer.flush()
 
 
 # ---------------------------------------------------------------------------
@@ -262,11 +262,10 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
     - An OS pipe for stdin so loop.connect_read_pipe() works.
     - A _FakeStdout capturing stdout.
     - A fake LLMClient recording its stream() invocations.
-    - A session_event{event=exit} frame appended after the chat_request to
-      trigger graceful shutdown of the agentic loop.
+    - EOF after the chat_request so the reader drains background
+      chat_request handlers before the IPC loop exits.
     """
     from kosmos.ipc import stdio as stdio_mod
-    from kosmos.ipc.frame_schema import SessionEventFrame
 
     # --- Patch stdout ---
     fake_stdout = _FakeStdout()
@@ -379,17 +378,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
 
     # --- Build stdin payload ---
     session_id = frame.session_id
-    exit_frame = SessionEventFrame(
-        session_id=session_id,
-        correlation_id=str(uuid.uuid4()),
-        role="tui",
-        ts=_ts(),
-        kind="session_event",
-        event="exit",
-        payload={},
-    )
-
-    payload = _encode_frame(frame) + (exit_frame.model_dump_json() + "\n").encode("utf-8")
+    payload = _encode_frame(frame)
 
     # Create an OS pipe. r_fd is the read end (stdin), w_fd is the write end.
     r_fd, w_fd = os.pipe()
@@ -617,7 +606,9 @@ class _EternalToolCallLLMClient(_BaseFakeLLMClient):
             tool_call_index=0,
             tool_call_id=str(uuid.uuid4()),
             function_name="lookup",
-            function_args_delta='{"mode":"search","query":"응급실"}',
+            function_args_delta=(
+                '{"mode":"fetch","tool_id":"nmc_emergency_search","params":{"query":"응급실"}}'
+            ),
         )
         yield StreamEvent(type="done")
 
@@ -719,12 +710,95 @@ class _SingleLookupLLMClient(_BaseFakeLLMClient):
                 tool_call_index=0,
                 tool_call_id=f"call-{uuid.uuid4().hex[:8]}",
                 function_name="lookup",
-                function_args_delta='{"mode":"fetch","tool_id":"kma_pre_warning","params":{}}',
+                function_args_delta=(
+                    '{"mode":"fetch","tool_id":"nfa_emergency_info_service",'
+                    '"params":{"query":"응급실"}}'
+                ),
             )
             yield StreamEvent(type="done")
         else:
             yield StreamEvent(type="content_delta", content="가까운 응급실 안내드립니다.")
             yield StreamEvent(type="done")
+
+
+class _SingleSubmitPermissionTimeoutLLMClient(_BaseFakeLLMClient):
+    """LLM that requests one gated submit call.
+
+    The test harness does not send a permission_response frame, so the backend
+    permission bridge emits a synthetic permission_timeout tool result.
+    """
+
+    recorded_calls: list[dict[str, Any]] = []
+    _class_turn: int = 0
+
+    def __init__(self, config: Any) -> None:
+        super().__init__(config)
+
+    async def stream(
+        self,
+        messages: list[Any],
+        *,
+        tools: list[Any] | None = None,
+        tool_choice: Any = None,
+        temperature: float = 1.0,
+        top_p: float = 0.95,
+        presence_penalty: float = 0.0,
+        max_tokens: int = 1024,
+        stop: Any = None,
+    ) -> AsyncIterator[StreamEvent]:
+        type(self)._class_turn += 1
+        type(self).recorded_calls.append({"messages": messages, "tools": tools})
+        yield StreamEvent(
+            type="tool_call_delta",
+            tool_call_index=0,
+            tool_call_id=f"call-{uuid.uuid4().hex[:8]}",
+            function_name="submit",
+            function_args_delta=(
+                '{"tool_id":"mock_submit_module_gov24_minwon",'
+                '"params":{"applicant_name":"홍길동","service_code":"resident_register",'
+                '"delivery_method":"online"}}'
+            ),
+        )
+        yield StreamEvent(type="done")
+
+
+@pytest.mark.asyncio
+async def test_terminal_permission_denial_does_not_reinvoke_llm(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A terminal permission denial/timeout must end the current agentic turn.
+
+    CC rejects interactive user-deny through the cancellation path; KOSMOS
+    should not feed permission_denied back to the model as a recoverable tool
+    error that invites another verify/submit attempt.
+    """
+    frame = _make_chat_request(tools=[])
+
+    buf, fake_client = await _run_with_frame(
+        frame,
+        _SingleSubmitPermissionTimeoutLLMClient,
+        monkeypatch=monkeypatch,
+        env_overrides={
+            "KOSMOS_PERMISSION_TIMEOUT_SECONDS": "0.1",
+            "KOSMOS_TOOL_RESULT_TIMEOUT_SECONDS": "2",
+        },
+    )
+
+    emitted = buf.as_frames()
+    assert len(fake_client.recorded_calls) == 1, (
+        "Permission denial/timeout was reinjected into the agentic loop; "
+        f"LLM stream calls: {len(fake_client.recorded_calls)}"
+    )
+    assert any(
+        f.get("kind") == "tool_result"
+        and f.get("envelope", {}).get("error") == "permission_timeout"
+        and f.get("envelope", {}).get("denied") is True
+        for f in emitted
+    ), f"No synthetic permission_timeout tool_result found: {emitted}"
+    assert any(
+        f.get("kind") == "assistant_chunk" and "permission_timeout" in str(f.get("delta", ""))
+        for f in emitted
+    ), f"No terminal permission_timeout assistant message found: {emitted}"
 
 
 @pytest.mark.asyncio
@@ -831,7 +905,9 @@ class _PreambleThenToolCallLLMClient(_BaseFakeLLMClient):
                 tool_call_index=0,
                 tool_call_id=f"call-{uuid.uuid4().hex[:8]}",
                 function_name="lookup",
-                function_args_delta='{"mode":"search","query":"내과"}',
+                function_args_delta=(
+                    '{"mode":"fetch","tool_id":"hira_hospital_search","params":{"query":"내과"}}'
+                ),
             )
             yield StreamEvent(type="done")
         else:

@@ -32,7 +32,8 @@
 // The scenario.ts module must export a default async function:
 //   export default async (h: Harness) => { await h.waitForPane(...); ... }
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { resolve as pathResolve } from 'node:path';
 
 type SpecialKey =
@@ -51,6 +52,7 @@ type SpecialKey =
   | 'PageDown'
   | 'C-c'
   | 'C-d'
+  | 'C-o'
   | 'C-q'
   | 'C-z';
 
@@ -70,6 +72,7 @@ const SPECIAL_KEY_MAP: Record<SpecialKey, string> = {
   PageDown: '\x1b[6~',
   'C-c': '\x03',
   'C-d': '\x04',
+  'C-o': '\x0f',
   'C-q': '\x11',
   'C-z': '\x1a',
 };
@@ -103,6 +106,8 @@ export interface Harness {
   outDir: string;
   buffer: string; // raw stream (with ANSI)
   plain: () => string; // ANSI-stripped buffer
+  mark(): number; // raw-stream offset for event-scoped assertions
+  plainSince(mark: number): string; // ANSI-stripped buffer after mark
   write(data: string): void;
   sendText(s: string): void;
   sendEnter(): void;
@@ -110,6 +115,11 @@ export interface Harness {
   sendCtrlC(): void;
   sendKey(name: SpecialKey): void;
   waitForPane(pattern: RegExp | string, deadlineSec?: number): Promise<void>;
+  waitForPaneSince(
+    mark: number,
+    pattern: RegExp | string,
+    deadlineSec?: number,
+  ): Promise<void>;
   snapshot(label: string): string;
   resize(cols: number, rows: number): void;
 }
@@ -129,15 +139,53 @@ async function run(): Promise<void> {
 
   const cols = Number(process.env.KOSMOS_DEBUG_COLS ?? 180);
   const rows = Number(process.env.KOSMOS_DEBUG_ROWS ?? 60);
+  const sampleFrames = process.env.KOSMOS_PTY_SAMPLE_FRAMES !== '0';
+  const maxFrames = Number(process.env.KOSMOS_PTY_MAX_FRAMES ?? 500);
 
   mkdirSync(outDir, { recursive: true });
   const absOut = pathResolve(outDir);
+  const frameDir = pathResolve(absOut, 'frames');
+  const frameTimeline = pathResolve(frameDir, 'timeline.tsv');
+  if (sampleFrames) {
+    mkdirSync(frameDir, { recursive: true });
+    writeFileSync(frameTimeline, 'seq\tts_ms\thash\tlabel\tfile\n');
+  }
 
   const repoRoot = pathResolve(import.meta.dir, '..');
   const tuiDir = pathResolve(repoRoot, 'tui');
 
   const harnessBuf = { value: '' };
   const snapSeqRef = { value: 0 };
+  const frameSeqRef = { value: 0 };
+  const lastFrameHashRef = { value: '' };
+  const startMs = Date.now();
+  const terminalDecoder = new TextDecoder();
+
+  const appendTerminalText = (text: string): void => {
+    harnessBuf.value += text;
+    // Mirror to stderr so a developer running the harness interactively
+    // can see what the TUI is doing without polluting our snapshot files
+    // (which only contain stripped plain text).
+    process.stderr.write(text);
+    recordFrame('pty-data');
+  };
+
+  const recordFrame = (label: string): void => {
+    if (!sampleFrames || frameSeqRef.value >= maxFrames) return;
+    const plain = stripAnsi(harnessBuf.value);
+    const hash = createHash('sha256').update(plain).digest('hex').slice(0, 12);
+    if (hash === lastFrameHashRef.value) return;
+
+    const seq = String(frameSeqRef.value++).padStart(4, '0');
+    const fileName = `frame_${seq}_${hash}.txt`;
+    const file = pathResolve(frameDir, fileName);
+    writeFileSync(file, plain);
+    appendFileSync(
+      frameTimeline,
+      `${seq}\t${Date.now() - startMs}\t${hash}\t${label}\t${fileName}\n`,
+    );
+    lastFrameHashRef.value = hash;
+  };
 
   const proc = Bun.spawn(['bun', 'run', 'tui'], {
     cwd: tuiDir,
@@ -147,12 +195,10 @@ async function run(): Promise<void> {
       rows,
       data(_terminal: unknown, data: Uint8Array | string) {
         const text =
-          typeof data === 'string' ? data : new TextDecoder().decode(data);
-        harnessBuf.value += text;
-        // Mirror to stderr so a developer running the harness interactively
-        // can see what the TUI is doing without polluting our snapshot files
-        // (which only contain stripped plain text).
-        process.stderr.write(text);
+          typeof data === 'string'
+            ? data
+            : terminalDecoder.decode(data, { stream: true });
+        appendTerminalText(text);
       },
     },
   } as any);
@@ -170,6 +216,12 @@ async function run(): Promise<void> {
     },
     plain() {
       return stripAnsi(harnessBuf.value);
+    },
+    mark() {
+      return harnessBuf.value.length;
+    },
+    plainSince(mark: number) {
+      return stripAnsi(harnessBuf.value.slice(mark));
     },
     write: writeRaw,
     sendText(s: string) {
@@ -195,6 +247,7 @@ async function run(): Promise<void> {
       const deadline = start + deadlineSec * 1000;
       while (Date.now() < deadline) {
         const stripped = stripAnsi(harnessBuf.value);
+        re.lastIndex = 0;
         if (re.test(stripped)) {
           const elapsed = ((Date.now() - start) / 1000).toFixed(1);
           process.stderr.write(
@@ -212,10 +265,39 @@ async function run(): Promise<void> {
       writeFileSync(file, stripAnsi(harnessBuf.value));
       throw new Error(`waitForPane timeout: ${re}`);
     },
+    async waitForPaneSince(
+      mark: number,
+      pattern: RegExp | string,
+      deadlineSec = 30,
+    ) {
+      const re = typeof pattern === 'string' ? new RegExp(pattern) : pattern;
+      const start = Date.now();
+      const deadline = start + deadlineSec * 1000;
+      while (Date.now() < deadline) {
+        const stripped = stripAnsi(harnessBuf.value.slice(mark));
+        re.lastIndex = 0;
+        if (re.test(stripped)) {
+          const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+          process.stderr.write(
+            `\n[waitForPaneSince MATCH ${re} after ${elapsed}s]\n`,
+          );
+          return;
+        }
+        await sleep(120);
+      }
+      const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+      process.stderr.write(
+        `\n[waitForPaneSince TIMEOUT ${re} after ${elapsed}s]\n`,
+      );
+      const file = pathResolve(absOut, `timeout-since-${Date.now()}.txt`);
+      writeFileSync(file, stripAnsi(harnessBuf.value.slice(mark)));
+      throw new Error(`waitForPaneSince timeout: ${re}`);
+    },
     snapshot(label: string) {
       const seq = String(snapSeqRef.value++).padStart(3, '0');
       const file = pathResolve(absOut, `snap-${seq}-${label}.txt`);
       writeFileSync(file, stripAnsi(harnessBuf.value));
+      recordFrame(`snapshot:${label}`);
       process.stderr.write(`[snapshot ${file}]\n`);
       return file;
     },
@@ -242,11 +324,14 @@ async function run(): Promise<void> {
     scenarioErr = err as Error;
     process.stderr.write(`\n[scenario ERROR] ${(err as Error).message}\n`);
   } finally {
+    const decoderTail = terminalDecoder.decode();
+    if (decoderTail) appendTerminalText(decoderTail);
     // Always write final state for postmortem.
     const finalFile = pathResolve(absOut, 'final.txt');
     writeFileSync(finalFile, stripAnsi(harnessBuf.value));
     const rawFile = pathResolve(absOut, 'final.raw.txt');
     writeFileSync(rawFile, harnessBuf.value);
+    recordFrame('final');
     try {
       (proc as any).terminal.close();
     } catch {

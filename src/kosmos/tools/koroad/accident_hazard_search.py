@@ -65,6 +65,19 @@ class AccidentHazardSearchInput(BaseModel):
             "Example: 2024."
         ),
     )
+    num_of_rows: int = Field(
+        default=10,
+        ge=1,
+        le=100,
+        description=(
+            "Rows per page. Maps to the official data.go.kr numOfRows wire parameter. Example: 20."
+        ),
+    )
+    page_no: int = Field(
+        default=1,
+        ge=1,
+        description="1-indexed result page. Maps to the official data.go.kr pageNo wire parameter.",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -793,8 +806,8 @@ async def handle(
         "searchYearCd": search_year_cd,
         "siDo": sido,
         "guGun": gugun,
-        "numOfRows": 10,
-        "pageNo": 1,
+        "numOfRows": inp.num_of_rows,
+        "pageNo": inp.page_no,
         "type": "json",
     }
 
@@ -909,9 +922,10 @@ KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL = GovAPITool(
         "ORDERING RULE: call resolve_location(want='adm_cd') FIRST to obtain the 10-digit "
         "adm_cd before invoking this tool — never guess or construct adm_cd from memory. "
         # Section 3 — wire format notes
-        "[WIRE FORMAT] Input accepts a 10-digit adm_cd (e.g. '1168000000' for 강남구) and "
-        "an integer year. The adapter internally maps year → searchYearCd and adm_cd → "
-        "2-digit siDo + 3-digit guGun codes (including 2023+ 강원/전북 quirks). "
+        "[WIRE FORMAT] Input accepts a 10-digit adm_cd (e.g. '1168000000' for 강남구), "
+        "an integer year, and optional num_of_rows/page_no pagination. The adapter internally "
+        "maps year → searchYearCd and adm_cd → 2-digit siDo + 3-digit guGun codes "
+        "(including 2023+ 강원/전북 quirks). "
         "geom_json fields (~500 char Polygon strings) are stripped from all output items "
         "to reduce context window usage. "
         # Section 4 — when to use this tool vs koroad_accident_search
@@ -924,7 +938,7 @@ KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL = GovAPITool(
         "location in Korea."
     ),
     search_hint=(
-        "교통사고 위험지점 안전취약지점 사고다발구역 행정동코드 연도별 사고지점 "
+        "교통사고 위험지점 사고다발구역 행정동코드 연도별 위험지역 "
         "accident hazard spot dangerous zone adm_cd year traffic safety Korea"
     ),
     policy=AdapterRealDomainPolicy(

@@ -109,7 +109,7 @@ class ParseError(Exception):
         super().__init__(message)
 
 
-def _parse_registry(
+def _parse_registry(  # noqa: C901
     registry_path: Path,
 ) -> tuple[dict[str, int], set[str], bool]:
     """Parse the registry Markdown table.
@@ -125,9 +125,9 @@ def _parse_registry(
     try:
         text = registry_path.read_text(encoding="utf-8")
     except FileNotFoundError:
-        raise ParseError(f"Registry file not found: {registry_path}")
+        raise ParseError(f"Registry file not found: {registry_path}") from None
     except OSError as exc:
-        raise ParseError(f"Cannot read registry: {exc}")
+        raise ParseError(f"Cannot read registry: {exc}") from exc
 
     lines = text.splitlines()
 
@@ -249,7 +249,7 @@ def _classify_file(path: Path) -> str:
     return "other"
 
 
-def _scan_file(
+def _scan_file(  # noqa: C901
     path: Path,
     repo_root: Path,
     kosmos_findings: dict[str, list[str]],
@@ -378,7 +378,7 @@ def _discover_repo_root(start: Path) -> Path:
 # ---------------------------------------------------------------------------
 
 
-def audit(
+def audit(  # noqa: C901
     repo_root: Path,
     registry_path: Path,
 ) -> tuple[int, dict[str, object]]:
@@ -492,14 +492,16 @@ def audit(
         if name not in _GITHUB_BUILTINS:
             prefix_violations_out[name] = locs
 
+    def _location_sort_key(location: str) -> tuple[str, int]:
+        file_path, _, line_no = location.rpartition(":")
+        return file_path, int(line_no) if line_no.isdigit() else 0
+
     # --- Build findings ---
     findings: dict[str, list[object]] = {
         "in_code_not_in_registry": [
             {
                 "name": name,
-                "source_files": sorted(
-                    set(locs), key=lambda s: (s.rsplit(":", 1)[0], int(s.rsplit(":", 1)[1]) if s.rsplit(":", 1)[1].isdigit() else 0)
-                ),
+                "source_files": sorted(set(locs), key=_location_sort_key),
             }
             for name, locs in sorted(in_code_not_in_registry.items())
         ],
@@ -510,9 +512,7 @@ def audit(
         "prefix_violations": [
             {
                 "name": name,
-                "source_files": sorted(
-                    set(locs), key=lambda s: (s.rsplit(":", 1)[0], int(s.rsplit(":", 1)[1]) if s.rsplit(":", 1)[1].isdigit() else 0)
-                ),
+                "source_files": sorted(set(locs), key=_location_sort_key),
                 "reason": "not KOSMOS_-prefixed and not in LANGFUSE_ allowlist",
             }
             for name, locs in sorted(prefix_violations_out.items())
@@ -520,9 +520,7 @@ def audit(
         "override_family_unmatched": [
             {
                 "name": name,
-                "source_files": sorted(
-                    set(locs), key=lambda s: (s.rsplit(":", 1)[0], int(s.rsplit(":", 1)[1]) if s.rsplit(":", 1)[1].isdigit() else 0)
-                ),
+                "source_files": sorted(set(locs), key=_location_sort_key),
             }
             for name, locs in sorted(override_family_unmatched.items())
         ],
@@ -593,9 +591,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.repo_root is not None:
         repo_root = Path(args.repo_root).resolve()
         if not repo_root.is_dir():
-            print(
-                f"audit-env-registry: error: --repo-root is not a directory: {repo_root}",
-                file=sys.stderr,
+            sys.stderr.write(
+                f"audit-env-registry: error: --repo-root is not a directory: {repo_root}\n"
             )
             return 2
     else:
@@ -608,12 +605,11 @@ def main(argv: list[str] | None = None) -> int:
 
     exit_code, report = audit(repo_root, registry_path)
 
-    print(json.dumps(report, indent=2, ensure_ascii=False))
+    sys.stdout.write(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
 
     if exit_code == 2:
-        print(
-            f"audit-env-registry: error: {report.get('error', 'parse error')}",
-            file=sys.stderr,
+        sys.stderr.write(
+            f"audit-env-registry: error: {report.get('error', 'parse error')}\n"
         )
 
     return exit_code

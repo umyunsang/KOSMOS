@@ -146,6 +146,7 @@ import reject from 'lodash-es/reject.js'
 const isPolicyAllowed = (_feature: string): boolean => true
 import type { ReplBridgeHandle } from 'src/bridge/replBridge.js'
 import { getRemoteSessionUrl } from 'src/constants/product.js'
+import { KOSMOS_PRINT_RESUME_USAGE } from 'src/constants/cli.js'
 import { buildBridgeConnectUrl } from 'src/bridge/bridgeStatusUtil.js'
 import { extractInboundMessageFields } from 'src/bridge/inboundMessages.js'
 import { resolveAndPrepend } from 'src/bridge/inboundAttachments.js'
@@ -4997,41 +4998,13 @@ async function loadInitialMessages(
 
   // Handle teleport in print mode
   if (options.teleport) {
-    try {
-      if (!isPolicyAllowed('allow_remote_sessions')) {
-        throw new Error(
-          "Remote sessions are disabled by your organization's policy.",
-        )
-      }
-
-      logEvent('tengu_teleport_print', {})
-
-      if (typeof options.teleport !== 'string') {
-        throw new Error('No session ID provided for teleport')
-      }
-
-      const {
-        checkOutTeleportedSessionBranch,
-        processMessagesForTeleportResume,
-        teleportResumeCodeSession,
-        validateGitState,
-      } = await import('src/utils/teleport.js')
-      await validateGitState()
-      const teleportResult = await teleportResumeCodeSession(options.teleport)
-      const { branchError } = await checkOutTeleportedSessionBranch(
-        teleportResult.branch,
-      )
-      return {
-        messages: processMessagesForTeleportResume(
-          teleportResult.log,
-          branchError,
-        ),
-      }
-    } catch (error) {
-      logError(error)
-      gracefulShutdownSync(1)
-      return { messages: [] }
-    }
+    logEvent('tengu_teleport_print_disabled', {})
+    emitLoadError(
+      'Error: --teleport is not supported in KOSMOS. Claude.ai remote sessions were removed by Spec 1633 P1+P2.',
+      options.outputFormat,
+    )
+    gracefulShutdownSync(1)
+    return { messages: [] }
   }
 
   // Handle resume in print mode (accepts session ID or URL)
@@ -5046,7 +5019,7 @@ async function loadInitialMessages(
       )
       if (!parsedSessionId) {
         let errorMessage =
-          'Error: --resume requires a valid session ID when used with --print. Usage: claude -p --resume <session-id>'
+          `Error: --resume requires a valid session ID when used with --print. Usage: ${KOSMOS_PRINT_RESUME_USAGE}`
         if (typeof options.resume === 'string') {
           errorMessage += `. Session IDs must be in UUID format (e.g., 550e8400-e29b-41d4-a716-446655440000). Provided value "${options.resume}" is not a valid UUID`
         }

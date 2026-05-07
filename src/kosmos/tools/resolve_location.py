@@ -16,15 +16,18 @@ FR-036: ``ResolveBundle`` carries per-backend provenance.
 from __future__ import annotations
 
 import logging
+import re
 from typing import Literal
 
 import httpx
 
+from kosmos.tools.kma.projection import KMADomainError, latlon_to_lcc
 from kosmos.tools.models import (
     AddressResult,
     AdmCodeResult,
     CoordResult,
     POIResult,
+    RegionResult,
     ResolveBundle,
     ResolveError,
     ResolveLocationInput,
@@ -33,51 +36,33 @@ from kosmos.tools.models import (
 
 logger = logging.getLogger(__name__)
 
-_NON_LOCATION_SERVICE_TERMS: tuple[str, ...] = (
-    "홈택스",
-    "hometax",
-    "정부24",
-    "government24",
-    "gov24",
-    "위택스",
-    "wetax",
-    "워크넷",
-    "worknet",
-    "모바일신분증",
-    "mobileid",
-    "인증서",
-    "간편인증",
-    "개인정보",
-    "내정보",
-    "정보이용",
-    "정보제공",
-    "연락처",
-    "주소정정",
-    "주소변경",
-)
 
-_PHYSICAL_LOCATION_TERMS: tuple[str, ...] = (
-    "세무서",
-    "주민센터",
-    "행정복지센터",
-    "고용센터",
-    "센터 위치",
-    "청사",
-    "사무소",
-    "지점",
-    "위치",
-    "가는 길",
-    "주소",
-)
+def _compact_match_text(value: str) -> str:
+    """Normalize Korean/English location text for conservative relevance checks."""
+    compact = re.sub(r"[^0-9a-zA-Z가-힣]+", "", value).lower()
+    return compact.replace("특별", "").replace("광역", "")
 
 
-def _is_non_location_service_query(query: str) -> bool:
-    normalized = "".join(query.lower().split())
-    if not normalized:
+def _keyword_doc_matches_query(query: str, doc: object) -> bool:
+    """Guard Kakao keyword hits against unrelated top-result drift.
+
+    Kakao keyword search is intentionally broad. For nonsense strings such as
+    "존재하지않는주소" it may still return a popular POI; KOSMOS must surface
+    not_found instead of treating that as a resolved citizen location.
+    """
+    normalized_query = _compact_match_text(query)
+    if len(normalized_query) < 2:
         return False
-    if not any(term in normalized for term in _NON_LOCATION_SERVICE_TERMS):
-        return False
-    return not any(term in query for term in _PHYSICAL_LOCATION_TERMS)
+    for attr in ("place_name", "address_name", "road_address_name"):
+        value = getattr(doc, attr, None)
+        if not isinstance(value, str):
+            continue
+        normalized_value = _compact_match_text(value)
+        if len(normalized_value) < 2:
+            continue
+        if normalized_query in normalized_value or normalized_value in normalized_query:
+            return True
+    return False
 
 
 async def _kakao_geocode(
@@ -132,12 +117,14 @@ async def _kakao_geocode(
                     postal_code=(doc.road_address.zone_no if doc.road_address else None),
                     source="kakao",
                 )
-            return CoordResult(
-                kind="coords",
-                lat=lat,
-                lon=lon,
-                confidence=_confidence_from_total(result.meta.total_count),
-                source="kakao",
+            return _with_kma_grid(
+                CoordResult(
+                    kind="coords",
+                    lat=lat,
+                    lon=lon,
+                    confidence=_confidence_from_total(result.meta.total_count),
+                    source="kakao",
+                )
             )
         except Exception as exc:  # noqa: BLE001
             logger.debug("kakao address geocode failed for %r: %s", query, exc)
@@ -149,6 +136,14 @@ async def _kakao_geocode(
             if not result.documents:
                 return None
             doc = result.documents[0]
+            if not _keyword_doc_matches_query(query, doc):
+                logger.info(
+                    "kakao keyword geocode rejected unrelated top result for query=%r "
+                    "place_name=%r",
+                    query,
+                    getattr(doc, "place_name", None),
+                )
+                return None
             try:
                 lat = float(doc.y) if doc.y else None
                 lon = float(doc.x) if doc.x else None
@@ -163,6 +158,10 @@ async def _kakao_geocode(
                 lat=lat,
                 lon=lon,
                 source="kakao",
+                address_name=doc.address_name if isinstance(doc.address_name, str) else None,
+                road_address_name=(
+                    doc.road_address_name if isinstance(doc.road_address_name, str) else None
+                ),
             )
         except Exception as exc:  # noqa: BLE001
             logger.debug("kakao keyword geocode failed for %r: %s", query, exc)
@@ -186,6 +185,96 @@ def _confidence_from_total(total: int) -> Literal["high", "medium", "low"]:
     if total <= 3:
         return "medium"
     return "low"
+
+
+def _with_kma_grid(coords: CoordResult) -> CoordResult:
+    """Attach official KMA nx/ny grid coordinates when WGS-84 point is in domain."""
+    try:
+        nx, ny = latlon_to_lcc(coords.lat, coords.lon)
+    except KMADomainError as exc:
+        logger.debug("kma grid projection skipped: %s", exc)
+        return coords
+    return coords.model_copy(update={"nx": nx, "ny": ny})
+
+
+def _adm_level_from_code(code: str) -> Literal["sido", "sigungu", "eupmyeondong"]:
+    if code[2:].rstrip("0") == "":
+        return "sido"
+    if code[5:].rstrip("0") == "":
+        return "sigungu"
+    return "eupmyeondong"
+
+
+async def _kakao_adm_cd_from_coords(
+    coords: CoordResult,
+    *,
+    client: httpx.AsyncClient | None = None,
+) -> AdmCodeResult | None:
+    """Resolve a 10-digit legal/admin code from official Kakao coord2regioncode rows."""
+    from kosmos.tools.geocoding.kakao_client import coord_to_region_code  # noqa: PLC0415
+
+    try:
+        result = await coord_to_region_code(lon=coords.lon, lat=coords.lat, client=client)
+    except (httpx.HTTPError, ValueError) as exc:
+        logger.debug("kakao coord2region adm_cd failed for %s,%s: %s", coords.lat, coords.lon, exc)
+        return None
+
+    if not result.documents:
+        return None
+
+    ordered = sorted(result.documents, key=lambda doc: 0 if doc.region_type == "B" else 1)
+    doc = ordered[0]
+    code = doc.code.strip()
+    if len(code) != 10 or not code.isdigit():
+        return None
+
+    name = doc.address_name.strip() or " ".join(
+        part
+        for part in (
+            doc.region_1depth_name,
+            doc.region_2depth_name,
+            doc.region_3depth_name,
+            doc.region_4depth_name,
+        )
+        if part
+    )
+    return AdmCodeResult(
+        kind="adm_cd",
+        code=code,
+        name=name,
+        level=_adm_level_from_code(code),
+        source="kakao",
+    )
+
+
+async def _kakao_region_from_coords(
+    *,
+    lat: float,
+    lon: float,
+    client: httpx.AsyncClient | None = None,
+) -> RegionResult | None:
+    """Resolve legal/admin region names from coordinates via Kakao coord2regioncode."""
+    from kosmos.tools.geocoding.kakao_client import coord_to_region_code  # noqa: PLC0415
+
+    result = await coord_to_region_code(lon=lon, lat=lat, client=client)
+    if not result.documents:
+        return None
+    ordered = sorted(result.documents, key=lambda doc: 0 if doc.region_type == "B" else 1)
+    doc = ordered[0]
+    region_type: Literal["B", "H"] = "B" if doc.region_type == "B" else "H"
+    return RegionResult(
+        kind="region",
+        region_type=region_type,
+        address_name=doc.address_name,
+        region_1depth_name=doc.region_1depth_name,
+        region_2depth_name=doc.region_2depth_name,
+        region_3depth_name=doc.region_3depth_name,
+        region_4depth_name=doc.region_4depth_name,
+        code=doc.code,
+        x=doc.x,
+        y=doc.y,
+        source="kakao",
+    )
 
 
 async def _kakao_address_coords(
@@ -213,12 +302,14 @@ async def _kakao_address_coords(
             lat = lon = None
         if lat is None or lon is None:
             return None
-        return CoordResult(
-            kind="coords",
-            lat=lat,
-            lon=lon,
-            confidence=_confidence_from_total(result.meta.total_count),
-            source="kakao",
+        return _with_kma_grid(
+            CoordResult(
+                kind="coords",
+                lat=lat,
+                lon=lon,
+                confidence=_confidence_from_total(result.meta.total_count),
+                source="kakao",
+            )
         )
     except Exception as exc:  # noqa: BLE001
         logger.debug("kakao address coords failed for %r: %s", query, exc)
@@ -244,6 +335,13 @@ async def _kakao_keyword_coords(
         if not result.documents:
             return None
         doc = result.documents[0]
+        if not _keyword_doc_matches_query(query, doc):
+            logger.info(
+                "kakao keyword coords rejected unrelated top result for query=%r place_name=%r",
+                query,
+                getattr(doc, "place_name", None),
+            )
+            return None
         try:
             lat = float(doc.y) if doc.y else None
             lon = float(doc.x) if doc.x else None
@@ -251,12 +349,14 @@ async def _kakao_keyword_coords(
             lat = lon = None
         if lat is None or lon is None:
             return None
-        return CoordResult(
-            kind="coords",
-            lat=lat,
-            lon=lon,
-            confidence=_confidence_from_total(result.meta.total_count),
-            source="kakao",
+        return _with_kma_grid(
+            CoordResult(
+                kind="coords",
+                lat=lat,
+                lon=lon,
+                confidence=_confidence_from_total(result.meta.total_count),
+                source="kakao",
+            )
         )
     except Exception as exc:  # noqa: BLE001
         logger.debug("kakao keyword coords failed for %r: %s", query, exc)
@@ -334,14 +434,6 @@ async def _kakao_adm_cd(
         b_code = (doc.address.b_code or "").strip() if doc.address else ""
         if not b_code or len(b_code) != 10:
             return None
-        # 행정 단위 추정: 시도 (XX0000000) / 시군구 (XXYY00000) / 동
-        level: Literal["sido", "sigungu", "eupmyeondong"]
-        if b_code[2:].rstrip("0") == "":
-            level = "sido"
-        elif b_code[5:].rstrip("0") == "":
-            level = "sigungu"
-        else:
-            level = "eupmyeondong"
         # doc.address 는 위에서 falsy guard 통과한 상태 — mypy narrowing 위해 assert
         assert doc.address is not None  # noqa: S101 — type narrowing for mypy
         name = (doc.address.address_name or query).strip()
@@ -349,7 +441,7 @@ async def _kakao_adm_cd(
             kind="adm_cd",
             code=b_code,
             name=name,
-            level=level,
+            level=_adm_level_from_code(b_code),
             source="kakao",
         )
     except (httpx.HTTPError, httpx.HTTPStatusError, ValueError) as exc:
@@ -440,7 +532,15 @@ async def resolve_location(  # noqa: C901
     inp: ResolveLocationInput,
     *,
     client: httpx.AsyncClient | None = None,
-) -> CoordResult | AdmCodeResult | AddressResult | POIResult | ResolveBundle | ResolveError:
+) -> (
+    CoordResult
+    | AdmCodeResult
+    | AddressResult
+    | POIResult
+    | RegionResult
+    | ResolveBundle
+    | ResolveError
+):
     """Resolve a natural-language place reference to structured location data.
 
     Deterministic resolver chain: kakao → juso → sgis.
@@ -462,16 +562,6 @@ async def resolve_location(  # noqa: C901
             reason="empty_query",
             message="Query must not be empty.",
         )
-    if _is_non_location_service_query(query):
-        return ResolveError(
-            kind="error",
-            reason="invalid_query",
-            message=(
-                f"{query!r} is an online public-service channel, not a physical "
-                "location query. Use the matching verify/lookup/submit chain "
-                "unless the citizen explicitly asks for a physical office or branch."
-            ),
-        )
 
     logger.debug("resolve_location: query=%r want=%s", query, want)
 
@@ -479,20 +569,51 @@ async def resolve_location(  # noqa: C901
     if want == "coords":
         coords = await _kakao_coords(query, client=client)
         if coords:
-            return coords
+            return _with_kma_grid(coords)
         return ResolveError(
             kind="error",
             reason="not_found",
             message=f"Could not resolve coordinates for query {query!r}.",
         )
 
+    # --- region path ---
+    if want == "region":
+        coords = await _kakao_coords(query, client=client)
+        if coords is None:
+            return ResolveError(
+                kind="error",
+                reason="not_found",
+                message=f"Could not resolve coordinates for region query {query!r}.",
+            )
+        try:
+            region = await _kakao_region_from_coords(
+                lat=coords.lat,
+                lon=coords.lon,
+                client=client,
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("kakao region resolution failed for %r: %s", query, exc)
+            return ResolveError(
+                kind="error",
+                reason="upstream_unavailable",
+                message=f"Kakao coord2regioncode backend unavailable: {exc}",
+            )
+        if region is not None:
+            return region
+        return ResolveError(
+            kind="error",
+            reason="not_found",
+            message=f"Could not resolve region metadata for query {query!r}.",
+        )
+
     # --- adm_cd path ---
     if want == "adm_cd":
-        # Spec 2522 T047 — chain reordered.
-        # JUSO (KOSMOS_JUSO_CONFM_KEY) → Kakao b_code fallback (always available
-        # via KOSMOS_KAKAO_API_KEY) → SGIS (KOSMOS_SGIS_KEY).
-        # Kakao 의 address.b_code 가 10-digit 법정동 코드 (geocoding-evidence.md
-        # 검증) 이므로 JUSO/SGIS 키 없어도 시도/시군구/동 단위 모두 동작.
+        # Spec 2522 T047 — ordered resolver chain.
+        # JUSO (KOSMOS_JUSO_CONFM_KEY) → Kakao address.b_code →
+        # Kakao coord2regioncode → SGIS (KOSMOS_SGIS_KEY).
+        # The coord2regioncode leg covers POI/station queries where Kakao
+        # search/address is intentionally empty but search/keyword returned
+        # a WGS-84 point.
         adm = await _juso_adm_cd(query, client=client)
         if adm:
             return adm
@@ -501,8 +622,12 @@ async def resolve_location(  # noqa: C901
         if adm:
             return adm
 
-        # Last fallback: SGIS via kakao coords
         coords = await _kakao_coords(query, client=client)
+        if coords:
+            adm = await _kakao_adm_cd_from_coords(coords, client=client)
+            if adm:
+                return adm
+
         adm = await _sgis_adm_cd(query, coords=coords, client=client)
         if adm:
             return adm
@@ -553,6 +678,17 @@ async def resolve_location(  # noqa: C901
             result = await search_keyword(query, client=client)
             if result.documents:
                 doc = result.documents[0]
+                if not _keyword_doc_matches_query(query, doc):
+                    logger.info(
+                        "poi resolution rejected unrelated top result for query=%r place_name=%r",
+                        query,
+                        getattr(doc, "place_name", None),
+                    )
+                    return ResolveError(
+                        kind="error",
+                        reason="not_found",
+                        message=f"Could not resolve POI for query {query!r}.",
+                    )
                 try:
                     lat = float(doc.y) if doc.y else None
                     lon = float(doc.x) if doc.x else None
@@ -566,6 +702,14 @@ async def resolve_location(  # noqa: C901
                         lat=lat,
                         lon=lon,
                         source="kakao",
+                        address_name=(
+                            doc.address_name if isinstance(doc.address_name, str) else None
+                        ),
+                        road_address_name=(
+                            doc.road_address_name
+                            if isinstance(doc.road_address_name, str)
+                            else None
+                        ),
                     )
         except Exception as exc:  # noqa: BLE001
             logger.debug("poi resolution failed for %r: %s", query, exc)
@@ -582,6 +726,7 @@ async def resolve_location(  # noqa: C901
         adm_bundle: AdmCodeResult | None = None
         address_result: AddressResult | None = None
         poi_result: POIResult | None = None
+        region_result: RegionResult | None = None
 
         if want == "all":
             # Parallel fanout across Kakao's two location-semantic
@@ -625,12 +770,14 @@ async def resolve_location(  # noqa: C901
                 except (ValueError, TypeError):
                     lat = lon = None
                 if lat is not None and lon is not None:
-                    coords_bundle = CoordResult(
-                        kind="coords",
-                        lat=lat,
-                        lon=lon,
-                        confidence=_confidence_from_total(kakao_addr.meta.total_count),
-                        source="kakao",
+                    coords_bundle = _with_kma_grid(
+                        CoordResult(
+                            kind="coords",
+                            lat=lat,
+                            lon=lon,
+                            confidence=_confidence_from_total(kakao_addr.meta.total_count),
+                            source="kakao",
+                        )
                     )
                 if addr_doc.road_address or addr_doc.address:
                     address_result = AddressResult(
@@ -651,19 +798,30 @@ async def resolve_location(  # noqa: C901
             # because structured-address matches are more specific.
             if kakao_kw is not None and getattr(kakao_kw, "documents", None):
                 doc_kw = kakao_kw.documents[0]
-                try:
-                    lat_kw = float(doc_kw.y) if doc_kw.y else None
-                    lon_kw = float(doc_kw.x) if doc_kw.x else None
-                except (ValueError, TypeError):
+                if not _keyword_doc_matches_query(query, doc_kw):
+                    logger.info(
+                        "kakao keyword (all) rejected unrelated top result for query=%r "
+                        "place_name=%r",
+                        query,
+                        getattr(doc_kw, "place_name", None),
+                    )
                     lat_kw = lon_kw = None
+                else:
+                    try:
+                        lat_kw = float(doc_kw.y) if doc_kw.y else None
+                        lon_kw = float(doc_kw.x) if doc_kw.x else None
+                    except (ValueError, TypeError):
+                        lat_kw = lon_kw = None
                 if lat_kw is not None and lon_kw is not None:
                     if coords_bundle is None:
-                        coords_bundle = CoordResult(
-                            kind="coords",
-                            lat=lat_kw,
-                            lon=lon_kw,
-                            confidence=_confidence_from_total(kakao_kw.meta.total_count),
-                            source="kakao",
+                        coords_bundle = _with_kma_grid(
+                            CoordResult(
+                                kind="coords",
+                                lat=lat_kw,
+                                lon=lon_kw,
+                                confidence=_confidence_from_total(kakao_kw.meta.total_count),
+                                source="kakao",
+                            )
                         )
                     poi_result = POIResult(
                         kind="poi",
@@ -672,14 +830,26 @@ async def resolve_location(  # noqa: C901
                         lat=lat_kw,
                         lon=lon_kw,
                         source="kakao",
+                        address_name=(
+                            doc_kw.address_name if isinstance(doc_kw.address_name, str) else None
+                        ),
+                        road_address_name=(
+                            doc_kw.road_address_name
+                            if isinstance(doc_kw.road_address_name, str)
+                            else None
+                        ),
                     )
         else:
             coords_bundle = await _kakao_coords(query, client=client)
+            if coords_bundle is not None:
+                coords_bundle = _with_kma_grid(coords_bundle)
 
-        # Resolve adm_cd via juso (preferred) or sgis (fallback)
+        # Resolve adm_cd through authoritative backends in declared order.
         adm_bundle = await _juso_adm_cd(query, client=client)
         if adm_bundle is None:
             adm_bundle = await _kakao_adm_cd(query, client=client)
+        if adm_bundle is None and coords_bundle is not None:
+            adm_bundle = await _kakao_adm_cd_from_coords(coords_bundle, client=client)
         if adm_bundle is None:
             adm_bundle = await _sgis_adm_cd(query, coords=coords_bundle, client=client)
 
@@ -690,6 +860,21 @@ async def resolve_location(  # noqa: C901
                 message=f"Could not resolve location for query {query!r}.",
             )
 
+        if want == "all" and coords_bundle is not None:
+            try:
+                region_result = await _kakao_region_from_coords(
+                    lat=coords_bundle.lat,
+                    lon=coords_bundle.lon,
+                    client=client,
+                )
+            except Exception as exc:  # noqa: BLE001
+                logger.debug("kakao region (all) failed for %r: %s", query, exc)
+                return ResolveError(
+                    kind="error",
+                    reason="upstream_unavailable",
+                    message=f"Kakao coord2regioncode backend unavailable: {exc}",
+                )
+
         return ResolveBundle(
             kind="bundle",
             source="bundle",
@@ -697,6 +882,7 @@ async def resolve_location(  # noqa: C901
             adm_cd=adm_bundle,
             address=address_result if want == "all" else None,
             poi=poi_result if want == "all" else None,
+            region=region_result if want == "all" else None,
         )
 
     # Fallback for unrecognized want values (shouldn't reach here due to Pydantic)
@@ -733,16 +919,6 @@ async def resolve_location_v4(
             kind="error",
             reason="empty_query",
             message="Query must not be empty.",
-        )
-    if _is_non_location_service_query(query):
-        return ResolveError(
-            kind="error",
-            reason="invalid_query",
-            message=(
-                f"{query!r} is an online public-service channel, not a physical "
-                "location query. Use the matching verify/lookup/submit chain "
-                "unless the citizen explicitly asks for a physical office or branch."
-            ),
         )
 
     logger.debug("resolve_location_v4: query=%r", query)

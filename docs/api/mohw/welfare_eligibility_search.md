@@ -28,7 +28,7 @@ As of Spec 2522 US4, the adapter has a **real handle() implementation** (XML par
 |---|---|---|---|
 | `search_wrd` | `str \| None` (max 100 chars) | no | Free-text keyword in Korean. Example: `출산`. Omit to filter by codes only. |
 | `life_array` | `LifeArrayCode \| None` | no | Life-stage filter. See life-stage codes table below. |
-| `trgter_indvdl_array` | `TrgterIndvdlCode \| None` | no | Target individual/household-type filter. Example: `020` for 다자녀, `040` for 장애인, `050` for 저소득. |
+| `trgter_indvdl_array` | `TrgterIndvdlCode \| None` | no | Target individual/household-type filter. `060` is 한부모·조손. Use this field for one-parent/grandparent households; do not put household type in `life_array`. |
 | `intrs_thema_array` | `IntrsThemaCode \| None` | no | Interest-theme filter. Authoritative 임신·출산 code: `080`. `010` = 신체건강. |
 | `age` | `int \| None` (0–150) | no | Citizen age in years. Do NOT request without citizen consent. |
 | `onap_psblt_yn` | `Literal["Y", "N"] \| None` | no | Filter to online-applicable services only when `"Y"`. Omit for both. |
@@ -49,6 +49,17 @@ As of Spec 2522 US4, the adapter has a **real handle() implementation** (XML par
 | `005` | 중장년 (middle-aged, 35–64세) |
 | `006` | 노년 (elderly, 65세+) |
 | `007` | 임신·출산 (pregnancy and childbirth) |
+
+**Target-household codes (`trgter_indvdl_array`)**:
+
+| Code | Label |
+|---|---|
+| `010` | 다문화·탈북민 |
+| `020` | 다자녀 |
+| `030` | 보훈대상자 |
+| `040` | 장애인 |
+| `050` | 저소득 |
+| `060` | 한부모·조손 |
 
 **Output model**: `MohwWelfareEligibilitySearchOutput` defined in the same module.
 
@@ -117,6 +128,32 @@ Each `SsisWelfareServiceItem` carries:
   }
 }
 ```
+
+### Input envelope (one-parent child support, verified by curl on 2026-05-06)
+
+```json
+{
+  "tool_id": "mohw_welfare_eligibility_search",
+  "params": {
+    "search_wrd": "한부모가족 아동양육비 지원",
+    "trgter_indvdl_array": "060",
+    "order_by": "popular",
+    "num_of_rows": 5
+  }
+}
+```
+
+Wire request fields:
+
+- `callTp=L`
+- `srchKeyCode=003`
+- `searchWrd=한부모가족 아동양육비 지원`
+- `trgterIndvdlArray=060`
+- `pageNo=1`
+- `numOfRows=5`
+- `orderBy=popular`
+
+Live response evidence: HTTP 200, `resultCode=0`, `resultMessage=SUCCESS`, `totalCount=2`; first item `WLF00001068` / `한부모가족 아동양육비 지원` / `onapPsbltYn=Y`. The shorter official keyword `아동양육비` is also valid and returns `totalCount=3` with the same first item.
 
 ### Output envelope (success, from live evidence lifeArray=007)
 

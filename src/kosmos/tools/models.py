@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import re
-from copy import deepcopy
 from datetime import datetime
 from typing import Annotated, Final, Literal
 
@@ -170,17 +169,6 @@ class GovAPITool(BaseModel):
     model has already picked this tool, which is too late for ordering rules.
     """
 
-    llm_parameters_schema: dict[str, object] | None = None
-    """Optional JSON schema override for the OpenAI-visible tool parameters.
-
-    Runtime validation can intentionally accept legacy shapes while the LLM
-    should see a narrower citizen-facing contract. When this field is set,
-    ``to_openai_tool()`` exports it instead of ``input_schema.model_json_schema()``.
-    """
-
-    openai_strict: bool = False
-    """Emit ``function.strict=true`` for OpenAI-compatible function calling."""
-
     # Epic #2152 R6 — per-tool trigger phrase examples shown alongside each tool's
     # description in the system prompt's ``## Available tools`` block. Concrete
     # citizen-language utterances the tool covers, used to defeat Opus 4.7-class
@@ -194,15 +182,6 @@ class GovAPITool(BaseModel):
     ``— 예: "..."`` clause of the per-tool ``**Trigger**:`` line. Default ``[]``
     keeps the trigger line description-only when no examples are authored.
     """
-
-    delegation_source_tool_id: str | None = Field(
-        default=None,
-        description=(
-            "When this adapter requires a DelegationContext, this optional "
-            "metadata names the verify tool that issues the compatible context. "
-            "It is adapter-declared policy metadata, not a router hardcode."
-        ),
-    )
 
     # Spec 1634 (P3 Tool System Wiring) FR-009 — runtime live/mock mode.
     # Orthogonal to ``AdapterRegistration.source_mode`` (which classifies
@@ -405,18 +384,11 @@ class GovAPITool(BaseModel):
         ``exclude=True`` annotation.
         """
         description = self.llm_description or self.name_ko
-        parameters = (
-            deepcopy(self.llm_parameters_schema)
-            if self.llm_parameters_schema is not None
-            else self.input_schema.model_json_schema()
-        )
         function: dict[str, object] = {
             "name": self.id,
             "description": description,
-            "parameters": parameters,
+            "parameters": self.input_schema.model_json_schema(),
         }
-        if self.openai_strict:
-            function["strict"] = True
         trigger_phrase = self._build_trigger_phrase()
         if trigger_phrase is not None:
             function["trigger_phrase"] = trigger_phrase
@@ -582,9 +554,7 @@ class ResolveLocationInput(BaseModel):
         description=(
             "자유 텍스트 위치 쿼리 (한국어 또는 영어). 시민 발화에서 그대로 추출. "
             "Examples: '서울 강남구', '동아대 하단캠퍼스', '강남역', '부산 사하구', "
-            "'서울대병원'. POI / 행정동 / 도로명주소 / 지번주소 모두 허용. "
-            "온라인 행정 서비스명(홈택스, 정부24, 위택스, 워크넷, 모바일 신분증 등)은 "
-            "물리적 위치가 아니므로 금지; 실제 사무소/지점 위치를 묻는 경우에만 사용."
+            "'서울대병원'. POI / 행정동 / 도로명주소 / 지번주소 모두 허용."
         ),
     )
     want: Literal[
@@ -594,6 +564,7 @@ class ResolveLocationInput(BaseModel):
         "road_address",
         "jibun_address",
         "poi",
+        "region",
         "all",
     ] = Field(
         default="coords_and_admcd",
@@ -604,6 +575,7 @@ class ResolveLocationInput(BaseModel):
             "- 'coords_and_admcd' (default) : 좌표 + adm_cd 둘 다 — 가장 안전.\n"
             "- 'road_address' / 'jibun_address' : 사람용 주소 텍스트.\n"
             "- 'poi' : 관심 지점 정보 (이름 / 카테고리).\n"
+            "- 'region' : 좌표 기준 법정동/행정동 지역명 — NMC Q0/Q1 등.\n"
             "- 'all' : 모든 위 정보. 후속 도구별 input schema 는 각 도구의 description 참조. "
             "각 도구는 self-contained — KOSMOS 가 cross-domain chain 강제하지 않음."
         ),
@@ -630,8 +602,25 @@ class CoordResult(BaseModel):
     kind: Literal["coords"]
     lat: float = Field(ge=-90, le=90)
     lon: float = Field(ge=-180, le=180)
+    nx: int | None = Field(
+        default=None,
+        ge=1,
+        le=149,
+        description="KMA VilageFcst 5 km grid X coordinate derived from lat/lon when in domain.",
+    )
+    ny: int | None = Field(
+        default=None,
+        ge=1,
+        le=253,
+        description="KMA VilageFcst 5 km grid Y coordinate derived from lat/lon when in domain.",
+    )
     confidence: Literal["high", "medium", "low"]
     source: Literal["kakao", "juso", "sgis"]
+    region_1depth_name: str | None = None
+    region_2depth_name: str | None = None
+    region_3depth_name: str | None = None
+    region_code: str | None = None
+    region_type: Literal["B", "H"] | None = None
 
 
 class AdmCodeResult(BaseModel):
@@ -669,6 +658,26 @@ class POIResult(BaseModel):
     lat: float
     lon: float
     source: Literal["kakao"]
+    address_name: str | None = None
+    road_address_name: str | None = None
+
+
+class RegionResult(BaseModel):
+    """Legal/admin region result from a WGS-84 coordinate."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["region"]
+    region_type: Literal["B", "H"]
+    address_name: str
+    region_1depth_name: str
+    region_2depth_name: str
+    region_3depth_name: str = ""
+    region_4depth_name: str = ""
+    code: str = Field(pattern=r"^[0-9]{10}$")
+    x: float
+    y: float
+    source: Literal["kakao"]
 
 
 class ResolveBundle(BaseModel):
@@ -682,6 +691,7 @@ class ResolveBundle(BaseModel):
     adm_cd: AdmCodeResult | None = None
     address: AddressResult | None = None
     poi: POIResult | None = None
+    region: RegionResult | None = None
 
 
 class ResolveError(BaseModel):
@@ -705,7 +715,13 @@ class ResolveError(BaseModel):
 
 
 ResolveLocationOutputUnion = Annotated[
-    CoordResult | AdmCodeResult | AddressResult | POIResult | ResolveBundle | ResolveError,
+    CoordResult
+    | AdmCodeResult
+    | AddressResult
+    | POIResult
+    | RegionResult
+    | ResolveBundle
+    | ResolveError,
     Field(discriminator="kind"),
 ]
 """Discriminated union on `kind`. Binding variant names from docs/design/mvp-tools.md §4."""
@@ -892,28 +908,6 @@ class AdapterCandidate(BaseModel):
         description=(
             "Agency-published policy URL the adapter cites "
             "(KOSMOS does not invent permission classifications)."
-        ),
-    )
-    adapter_mode: Literal["live", "mock"] | None = Field(
-        default=None,
-        description=(
-            "Runtime source mode copied from GovAPITool.adapter_mode. "
-            "The LLM uses this as transparency metadata, not as a routing key."
-        ),
-    )
-    citizen_facing_gate: Literal["read-only", "login", "action", "sign", "submit"] | None = Field(
-        default=None,
-        description=(
-            "AdapterRealDomainPolicy.citizen_facing_gate from the registered tool. "
-            "The LLM uses this to decide whether a prior verify DelegationContext "
-            "is required before invocation."
-        ),
-    )
-    delegation_source_tool_id: str | None = Field(
-        default=None,
-        description=(
-            "Adapter-declared verify tool that can issue the DelegationContext "
-            "needed by this candidate, when applicable."
         ),
     )
 

@@ -182,6 +182,30 @@ async def test_large_body_truncated_with_hash() -> None:
 
 
 @pytest.mark.asyncio
+async def test_large_multibyte_body_truncates_without_replacement_character() -> None:
+    """Trace truncation must not split UTF-8 into U+FFFD in TUI captures."""
+    big_payload = "복지서비스" * 3000
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            content=big_payload.encode("utf-8"),
+            headers={"content-type": "text/plain; charset=utf-8"},
+        )
+
+    token = start_outbound_capture()
+    try:
+        async with traced_async_client(transport=_mock_transport_factory(handler)) as cli:
+            await cli.get("https://example.kr/api/big-utf8")
+    finally:
+        traces = consume_outbound_capture(token)
+
+    body = traces[0].response_body or ""
+    assert "...(truncated" in body
+    assert "\ufffd" not in body
+
+
+@pytest.mark.asyncio
 async def test_kma_forecast_fetch_emits_trace() -> None:
     """Real adapter end-to-end: kma_forecast_fetch via httpx MockTransport.
 

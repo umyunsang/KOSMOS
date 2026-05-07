@@ -29,9 +29,9 @@ import re
 # Patterns use re.search so they catch PII embedded inside longer strings.
 _PII_PATTERNS: dict[str, re.Pattern[str]] = {
     "rrn": re.compile(r"\d{6}-[1-4]\d{6}"),
-    "phone_kr": re.compile(r"01[016789]-?\d{3,4}-?\d{4}"),
+    "phone_kr": re.compile(r"(?<![\d.])01[016789]-?\d{3,4}-?\d{4}(?!\d)"),
     "email": re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"),
-    "passport_kr": re.compile(r"[A-Z]\d{8}"),
+    "passport_kr": re.compile(r"(?<![A-Z0-9])[A-Z]\d{8}(?![A-Z0-9])"),
     "credit_card": re.compile(r"\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}"),
 }
 

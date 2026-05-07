@@ -13,8 +13,11 @@ import pytest
 from kosmos.tools.errors import ConfigurationError
 from kosmos.tools.geocoding.kakao_client import (
     KakaoAddressDocument,
+    KakaoCoord2RegionResult,
+    KakaoRegionDocument,
     KakaoSearchMeta,
     KakaoSearchResult,
+    coord_to_region_code,
     search_address,
 )
 
@@ -100,6 +103,38 @@ class TestKakaoSearchResult:
 
 
 # ---------------------------------------------------------------------------
+# TestKakaoCoord2RegionResult
+# ---------------------------------------------------------------------------
+
+
+class TestKakaoCoord2RegionResult:
+    def test_hadan_region_payload_shape(self):
+        payload = {
+            "meta": {"total_count": 2},
+            "documents": [
+                {
+                    "region_type": "B",
+                    "address_name": "부산광역시 사하구 하단동",
+                    "region_1depth_name": "부산광역시",
+                    "region_2depth_name": "사하구",
+                    "region_3depth_name": "하단동",
+                    "region_4depth_name": "",
+                    "code": "2638010300",
+                    "x": 128.96044110450242,
+                    "y": 35.11437276296668,
+                }
+            ],
+        }
+
+        result = KakaoCoord2RegionResult(**payload)
+
+        assert result.meta.total_count == 2
+        assert isinstance(result.documents[0], KakaoRegionDocument)
+        assert result.documents[0].region_1depth_name == "부산광역시"
+        assert result.documents[0].region_2depth_name == "사하구"
+
+
+# ---------------------------------------------------------------------------
 # TestSearchAddress
 # ---------------------------------------------------------------------------
 
@@ -172,3 +207,38 @@ class TestSearchAddress:
 
         with pytest.raises(httpx.TimeoutException):
             await search_address("서울 강남구", client=mock_client)
+
+
+class TestCoordToRegionCode:
+    @pytest.mark.asyncio
+    async def test_coord_to_region_code_uses_xy_params(self, monkeypatch):
+        monkeypatch.setenv("KOSMOS_KAKAO_API_KEY", "test-key-123")
+        fixture = {
+            "meta": {"total_count": 1},
+            "documents": [
+                {
+                    "region_type": "B",
+                    "address_name": "부산광역시 사하구 하단동",
+                    "region_1depth_name": "부산광역시",
+                    "region_2depth_name": "사하구",
+                    "region_3depth_name": "하단동",
+                    "region_4depth_name": "",
+                    "code": "2638010300",
+                    "x": 128.96044110450242,
+                    "y": 35.11437276296668,
+                }
+            ],
+        }
+        mock_client = _make_mock_client(fixture)
+
+        result = await coord_to_region_code(
+            lon=128.966786546793,
+            lat=35.1062385683347,
+            client=mock_client,
+        )
+
+        assert result.documents[0].region_2depth_name == "사하구"
+        _, kwargs = mock_client.get.call_args
+        assert kwargs["params"]["x"] == 128.966786546793
+        assert kwargs["params"]["y"] == 35.1062385683347
+        assert kwargs["params"]["input_coord"] == "WGS84"

@@ -59,6 +59,34 @@ async def test_unregistered_tool_id_returns_structured_error() -> None:
     assert result.message  # non-empty human-readable message
 
 
+@pytest.mark.asyncio
+async def test_empty_tool_id_returns_structured_error() -> None:
+    """A malformed LLM call must not raise a raw Pydantic validation error."""
+    result = await submit(
+        tool_id="",
+        params={},
+    )
+
+    assert isinstance(result, AdapterNotFoundError)
+    assert result.reason == "adapter_not_found"
+    assert result.tool_id == "invalid_tool_id"
+    assert "non-empty registered adapter tool_id" in result.message
+
+
+@pytest.mark.asyncio
+async def test_invalid_tool_id_shape_returns_structured_error() -> None:
+    """Invalid tool-id syntax should fail closed before registry lookup."""
+    result = await submit(
+        tool_id="Invalid-ID",
+        params={},
+    )
+
+    assert isinstance(result, AdapterNotFoundError)
+    assert result.reason == "adapter_not_found"
+    assert result.tool_id == "invalid_tool_id"
+    assert "^[a-z][a-z0-9_]*$" in result.message
+
+
 # ---------------------------------------------------------------------------
 # T018-B: Envelope purity — SubmitOutput has no domain fields
 # ---------------------------------------------------------------------------

@@ -126,6 +126,10 @@ class TestResolveAdmCdParity:
                 new=AsyncMock(return_value=mock_coords),
             ),
             patch(
+                "kosmos.tools.resolve_location._kakao_adm_cd_from_coords",
+                new=AsyncMock(return_value=None),
+            ),
+            patch(
                 "kosmos.tools.resolve_location._sgis_adm_cd",
                 new=AsyncMock(return_value=adm_result),
             ),

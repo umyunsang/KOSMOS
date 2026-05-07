@@ -71,4 +71,5 @@ describe('defaultBindings — MODE_CYCLE_DEFAULT_CHORD', () => {
     const actions = DEFAULT_BINDINGS.map((e) => e.action)
     expect(actions).toContain('permission-mode-cycle')
   })
+
 })

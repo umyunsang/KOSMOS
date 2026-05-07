@@ -90,11 +90,12 @@ class _FakeStdout:
         self.buffer = _CaptureBuf()
 
     def write(self, data: str) -> int:
-        self.buffer.write(data.encode("utf-8"))
+        encoded = data.encode("utf-8")
+        self.buffer.write(encoded)
         return len(data)
 
     def flush(self) -> None:
-        pass
+        self.buffer.flush()
 
 
 # ---------------------------------------------------------------------------
@@ -219,7 +220,6 @@ async def _run_chain(
 ) -> _CaptureBuf:
     import kosmos.tools.mock  # noqa: F401 — registers all mock adapters
     from kosmos.ipc import stdio as stdio_mod
-    from kosmos.ipc.frame_schema import SessionEventFrame
 
     monkeypatch.setattr(stdio_mod, "_stdout_lock", None)
 
@@ -340,17 +340,11 @@ async def _run_chain(
         pass
 
     session_id = frame.session_id
-    exit_frame = SessionEventFrame(
-        session_id=session_id,
-        correlation_id=str(uuid.uuid4()),
-        role="tui",
-        ts=_ts(),
-        kind="session_event",
-        event="exit",
-        payload={},
-    )
+    payload = (frame.model_dump_json() + "\n").encode()
+
     r_fd, w_fd = os.pipe()
-    os.write(w_fd, (frame.model_dump_json() + "\n").encode())
+    os.write(w_fd, payload)
+    os.close(w_fd)
     r_file = os.fdopen(r_fd, "rb")
 
     class _FakeStdinWrapper:
@@ -362,23 +356,11 @@ async def _run_chain(
 
     from kosmos.ipc.stdio import run as ipc_run
 
-    run_task = asyncio.create_task(ipc_run(session_id=session_id))
     try:
-        deadline = asyncio.get_running_loop().time() + _RUNNER_TIMEOUT
-        while asyncio.get_running_loop().time() < deadline:
-            frames = fake_stdout.buffer.as_frames()
-            if any(f.get("kind") == "assistant_chunk" and f.get("done") is True for f in frames):
-                break
-            await asyncio.sleep(0.01)
-        os.write(w_fd, (exit_frame.model_dump_json() + "\n").encode())
-        os.close(w_fd)
-        await asyncio.wait_for(run_task, timeout=1.0)
+        await asyncio.wait_for(ipc_run(session_id=session_id), timeout=_RUNNER_TIMEOUT)
     except (TimeoutError, Exception) as exc:  # noqa: BLE001
-        run_task.cancel()
         _logging.getLogger(__name__).debug("_run_chain: IPC loop exited early: %s", exc)
     finally:
-        with contextlib.suppress(OSError):
-            os.close(w_fd)
         if not r_file.closed:
             r_file.close()
 

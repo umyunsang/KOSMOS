@@ -25,9 +25,6 @@
 #   send_text_pane <text>
 #   send_enter_pane
 #   send_ctrlc_pane
-# Optional env:
-#   KOSMOS_TMUX_SAMPLE_FRAMES=1  — continuously capture distinct pane frames
-#   KOSMOS_FRAME_SAMPLE_INTERVAL — sampler interval seconds (default: 0.2)
 
 set -euo pipefail
 
@@ -36,7 +33,12 @@ SCENARIO="${2:?usage: $0 <output-dir> <scenario>}"
 COLS="${KOSMOS_DEBUG_COLS:-180}"
 ROWS="${KOSMOS_DEBUG_ROWS:-60}"
 TMUX_SESSION="kosmos-debug-$$"
-FRAME_SAMPLE_PID=""
+SAMPLE_FRAMES="${KOSMOS_TMUX_SAMPLE_FRAMES:-1}"
+SAMPLE_INTERVAL="${KOSMOS_TMUX_SAMPLE_INTERVAL:-0.15}"
+MAX_FRAMES="${KOSMOS_TMUX_MAX_FRAMES:-500}"
+SAMPLER_PID=""
+FRAME_SEQ=0
+LAST_FRAME_HASH=""
 
 # Resolve scenario absolute path before any cd
 SCENARIO_ABS="$(cd "$(dirname "$SCENARIO")" && pwd)/$(basename "$SCENARIO")"
@@ -44,6 +46,12 @@ SCENARIO_ABS="$(cd "$(dirname "$SCENARIO")" && pwd)/$(basename "$SCENARIO")"
 
 mkdir -p "$OUTDIR"
 OUTDIR="$(cd "$OUTDIR" && pwd)"
+FRAME_DIR="$OUTDIR/frames"
+FRAME_TIMELINE="$FRAME_DIR/timeline.tsv"
+if [[ "$SAMPLE_FRAMES" != "0" ]]; then
+  mkdir -p "$FRAME_DIR"
+  printf 'seq\tts_epoch_s\thash\tlabel\tfile\n' > "$FRAME_TIMELINE"
+fi
 
 REPO_ROOT="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
 cd "$REPO_ROOT/tui"
@@ -54,13 +62,54 @@ if ! command -v tmux >/dev/null 2>&1; then
 fi
 
 cleanup() {
-  if [[ -n "${FRAME_SAMPLE_PID:-}" ]]; then
-    kill "$FRAME_SAMPLE_PID" 2>/dev/null || true
-    wait "$FRAME_SAMPLE_PID" 2>/dev/null || true
+  if [[ -n "${SAMPLER_PID:-}" ]]; then
+    kill "$SAMPLER_PID" 2>/dev/null || true
+    wait "$SAMPLER_PID" 2>/dev/null || true
   fi
   tmux kill-session -t "$TMUX_SESSION" 2>/dev/null || true
 }
 trap cleanup EXIT
+
+capture_distinct_frame() {
+  [[ "$SAMPLE_FRAMES" == "0" ]] && return 0
+  (( FRAME_SEQ >= MAX_FRAMES )) && return 0
+
+  local label="${1:-poll}"
+  local tmp
+  tmp="$(mktemp "$OUTDIR/.frame.XXXXXX")"
+  tmux capture-pane -t "$TMUX_SESSION" -p > "$tmp" 2>/dev/null || {
+    rm -f "$tmp"
+    return 0
+  }
+
+  local hash
+  hash="$(shasum -a 256 "$tmp" | awk '{print substr($1,1,12)}')"
+  if [[ "$hash" == "$LAST_FRAME_HASH" ]]; then
+    rm -f "$tmp"
+    return 0
+  fi
+
+  local seq
+  seq="$(printf '%04d' "$FRAME_SEQ")"
+  local name="frame_${seq}_${hash}.txt"
+  mv "$tmp" "$FRAME_DIR/$name"
+  printf '%s\t%s\t%s\t%s\t%s\n' \
+    "$seq" "$(date +%s)" "$hash" "$label" "$name" \
+    >> "$FRAME_TIMELINE"
+  LAST_FRAME_HASH="$hash"
+  FRAME_SEQ=$(( FRAME_SEQ + 1 ))
+}
+
+start_frame_sampler() {
+  [[ "$SAMPLE_FRAMES" == "0" ]] && return 0
+  (
+    while tmux has-session -t "$TMUX_SESSION" 2>/dev/null; do
+      capture_distinct_frame "poll"
+      sleep "$SAMPLE_INTERVAL"
+    done
+  ) &
+  SAMPLER_PID="$!"
+}
 
 # Spawn detached tmux session running the TUI
 tmux new-session -d -s "$TMUX_SESSION" -x "$COLS" -y "$ROWS" 'bun run tui'
@@ -77,6 +126,7 @@ tmux new-session -d -s "$TMUX_SESSION" -x "$COLS" -y "$ROWS" 'bun run tui'
 # keystroke produces.  Must run AFTER new-session so the tmux server
 # exists.
 tmux set-option -t "$TMUX_SESSION" -s escape-time 0
+start_frame_sampler
 
 # Helper: poll-with-deadline wait (replaces every Sleep <wallclock>)
 wait_for_pane() {
@@ -111,6 +161,7 @@ snapshot_pane() {
   # captures the last 10k history lines (tmux default history-limit is
   # 2000; that's what the session uses unless tmux.conf overrides it).
   tmux capture-pane -t "$TMUX_SESSION" -p -S -10000 > "$scrollback_file" 2>/dev/null || true
+  [[ -z "${SAMPLER_PID:-}" ]] && capture_distinct_frame "snapshot:$label"
   echo "[snapshot_pane $file (+ scrollback)]"
 }
 
@@ -134,69 +185,19 @@ send_ctrlc_pane() {
   tmux send-keys -t "$TMUX_SESSION" C-c
 }
 
-start_frame_sampler() {
-  local frame_dir="$OUTDIR/frames"
-  local interval="${KOSMOS_FRAME_SAMPLE_INTERVAL:-0.2}"
-  mkdir -p "$frame_dir"
-  printf 'seq\ttimestamp_utc\tsha256\tfile\n' > "$frame_dir/timeline.tsv"
-  (
-    seq=0
-    last_hash=""
-    while true; do
-      tmp="$frame_dir/.sample.$$"
-      if ! tmux capture-pane -t "$TMUX_SESSION" -p > "$tmp" 2>/dev/null; then
-        rm -f "$tmp"
-        exit 0
-      fi
-      hash="$(shasum -a 256 "$tmp" | awk '{print $1}')"
-      if [[ "$hash" != "$last_hash" ]]; then
-        file="frame_$(printf '%04d' "$seq")_${hash:0:12}.txt"
-        mv "$tmp" "$frame_dir/$file"
-        printf '%s\t%s\t%s\t%s\n' \
-          "$seq" \
-          "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
-          "$hash" \
-          "$file" >> "$frame_dir/timeline.tsv"
-        last_hash="$hash"
-        seq=$((seq + 1))
-      else
-        rm -f "$tmp"
-      fi
-      sleep "$interval"
-    done
-  ) &
-  FRAME_SAMPLE_PID=$!
-  export FRAME_SAMPLE_PID
-  echo "[frame_sampler START pid=$FRAME_SAMPLE_PID dir=$frame_dir interval=${interval}s]"
-}
-
-stop_frame_sampler() {
-  if [[ -z "${FRAME_SAMPLE_PID:-}" ]]; then
-    return 0
-  fi
-  kill "$FRAME_SAMPLE_PID" 2>/dev/null || true
-  wait "$FRAME_SAMPLE_PID" 2>/dev/null || true
-  echo "[frame_sampler STOP pid=$FRAME_SAMPLE_PID]"
-  FRAME_SAMPLE_PID=""
-  export FRAME_SAMPLE_PID
-}
-
 # Export the helpers + state to the scenario script
 export TMUX_SESSION OUTDIR
 export -f wait_for_pane snapshot_pane send_keys_pane send_text_pane \
-          send_enter_pane send_ctrlc_pane start_frame_sampler stop_frame_sampler
+          send_enter_pane send_ctrlc_pane
 SNAP_SEQ=0
 
 # Source the scenario — it can use the helpers directly
 echo "=== running scenario: $SCENARIO_ABS ==="
-if [[ "${KOSMOS_TMUX_SAMPLE_FRAMES:-0}" == "1" ]]; then
-  start_frame_sampler
-fi
 # shellcheck disable=SC1090
 source "$SCENARIO_ABS"
-stop_frame_sampler
 
 # Final dump
 tmux capture-pane -t "$TMUX_SESSION" -p > "$OUTDIR/final.txt"
+[[ -z "${SAMPLER_PID:-}" ]] && capture_distinct_frame "final"
 echo "=== captures saved to $OUTDIR ==="
 ls -la "$OUTDIR"

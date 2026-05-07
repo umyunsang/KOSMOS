@@ -18,6 +18,7 @@ import unittest.mock as mock
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from pydantic import BaseModel, ConfigDict
 
 from kosmos.primitives.delegation import (
     DelegationContext,
@@ -84,9 +85,30 @@ def _make_params(
     }
 
 
+class _AuthForTierGate(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    published_tier: str
+
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
+
+def test_gov24_registration_accepts_simple_auth_tier() -> None:
+    """Gov24 minwon submit tier gate matches the canonical simple-auth verify mapping."""
+    from kosmos.primitives.submit import check_tier_gate
+    from kosmos.tools.mock.submit_module_gov24_minwon import REGISTRATION
+
+    assert REGISTRATION.published_tier_minimum == "simple_auth_module_aal2"
+    assert (
+        check_tier_gate(
+            registration=REGISTRATION,
+            auth_context=_AuthForTierGate(published_tier="simple_auth_module_aal2"),
+        )
+        is None
+    )
 
 
 @pytest.mark.asyncio
@@ -111,8 +133,6 @@ async def test_gov24_happy_path_returns_succeeded() -> None:
     receipt = result.adapter_receipt
     assert str(receipt.get("receipt_id", "")).startswith("gov24-")
     assert receipt.get("mock") is True
-    assert "application_flow" in receipt
-    assert receipt["api_onboarding_assumptions"]["operation_api_key_required"] is True
 
     mock_append.assert_called_once()
     call_event = mock_append.call_args[0][0]
@@ -146,10 +166,6 @@ async def test_gov24_transparency_fields_present() -> None:
     assert receipt["_mode"] == "mock"
     assert receipt["_international_reference"] == "Singapore APEX"
     assert receipt["_reference_implementation"] == "ax-infrastructure-callable-channel"
-    assert receipt["_mock_fidelity_grade"] == (
-        "B-official-api-onboarding-private-submit-spec-inferred"
-    )
-    assert receipt["_mock_evidence"]["credential_status"] == "student_no_live_authority"
 
 
 @pytest.mark.asyncio

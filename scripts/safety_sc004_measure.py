@@ -77,7 +77,7 @@ _AFTERNOON = [
 
 
 def _generate_corpus(n: int = 500, seed: int = 466) -> list[str]:
-    rng = random.Random(seed)
+    rng = random.Random(seed)  # noqa: S311 - deterministic fixture generation
     out: list[str] = []
     shapes = ["koroad", "kma", "hira", "nmc"]
     for i in range(n):
@@ -133,7 +133,7 @@ def main() -> int:
     fp = len(blocks)
     fp / total * 100.0
     if blocks:
-        for idx, _snippet, _signals in blocks[:5]:
+        for _idx, _snippet, _signals in blocks[:5]:
             pass
     return 0 if fp == 0 else 1
 

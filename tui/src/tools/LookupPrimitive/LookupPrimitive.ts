@@ -33,7 +33,6 @@ import {
   renderVerboseInputJson,
   renderVerboseOutputJson,
 } from '../_shared/verboseRender.js'
-import { truncateJson } from '../_shared/jsonTruncate.js'
 import { getOrCreateKosmosBridge } from '../../ipc/bridgeSingleton.js'
 import { getOrCreatePendingCallRegistry } from '../../ipc/pendingCallSingleton.js'
 
@@ -133,10 +132,6 @@ export const LookupPrimitive = buildTool({
 
   isReadOnly() {
     return true
-  },
-
-  userFacingName() {
-    return 'find'
   },
 
   async description() {
@@ -390,16 +385,10 @@ export const LookupPrimitive = buildTool({
     if (Array.isArray(adapterResult)) {
       countText = `${adapterResult.length}건`
       summaryRows = adapterResult.slice(0, 3).map((item: unknown, i: number) => {
-        // Wave-2 G5 (F-beta-05) — JSON-aware ellipsis. Bare slice(0,N) was
-        // producing mid-key cuts like ``"sky_code":"1","interval`` with no
-        // closing brace and no indicator. truncateJson appends U+2026 when
-        // the input exceeds the budget so the citizen always sees a clear
-        // truncation marker.
-        const raw =
+        const summary =
           typeof item === 'object' && item !== null
-            ? JSON.stringify(item)
-            : String(item)
-        const summary = truncateJson(raw, 120)
+            ? JSON.stringify(item).slice(0, 120)
+            : String(item).slice(0, 120)
         return React.createElement(
           Text,
           { key: i, dimColor: true },
@@ -408,12 +397,10 @@ export const LookupPrimitive = buildTool({
       })
     } else if (adapterResult !== null && adapterResult !== undefined) {
       countText = '1건'
-      // Wave-2 G5 (F-beta-05) — same JSON-aware ellipsis as the array branch.
-      const raw =
+      const summary =
         typeof adapterResult === 'object'
-          ? JSON.stringify(adapterResult)
-          : String(adapterResult)
-      const summary = truncateJson(raw, 240)
+          ? JSON.stringify(adapterResult).slice(0, 240)
+          : String(adapterResult).slice(0, 240)
       summaryRows = [React.createElement(Text, { key: 0, dimColor: true }, `  ${summary}`)]
     }
 

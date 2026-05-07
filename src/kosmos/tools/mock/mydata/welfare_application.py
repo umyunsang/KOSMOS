@@ -82,6 +82,14 @@ class WelfareApplicationParams(BaseModel):
         le=50,
         description="Number of household members (1–50 inclusive).",
     )
+    delegation_context: object | None = Field(
+        default=None,
+        description=(
+            "Optional auth artifact from the prior verify step. This older "
+            "shape-mirror mock does not validate delegation scope; the submit "
+            "primitive enforces the published tier gate before invocation."
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -110,6 +118,7 @@ async def invoke(params: dict[str, object]) -> SubmitOutput:
         typed.benefit_code,
         typed.application_type,
     )
+    transaction_params = {k: v for k, v in params.items() if k != "delegation_context"}
 
     # Deterministic mock receipt number
     receipt_hash = hashlib.sha256(
@@ -119,7 +128,7 @@ async def invoke(params: dict[str, object]) -> SubmitOutput:
     return SubmitOutput(
         transaction_id=derive_transaction_id(
             "mock_welfare_application_submit_v1",
-            dict(params),
+            transaction_params,
             adapter_nonce=_ADAPTER_NONCE,
         ),
         status=SubmitStatus.succeeded,
@@ -156,47 +165,8 @@ REGISTRATION = AdapterRegistration(
     cache_ttl_seconds=0,
     rate_limit_per_minute=5,
     search_hint={
-        "ko": [
-            "복지",
-            "급여신청",
-            "마이데이터",
-            "기초생활",
-            "장애인",
-            "임신",
-            "출산",
-            "지원금",
-            "진료비바우처",
-            "국민행복카드",
-            "출산휴가",
-            "첫만남이용권",
-            "긴급복지",
-            "주거급여",
-            "의료비지원",
-            "재난적의료비",
-            "본인부담상한제",
-            "병원비지원",
-            "실업급여",
-            "고용보험",
-            "워크넷",
-            "고용센터",
-        ],
-        "en": [
-            "welfare",
-            "benefit application",
-            "mydata",
-            "social assistance",
-            "pregnancy",
-            "childbirth",
-            "medical voucher",
-            "maternity leave",
-            "emergency welfare",
-            "housing benefit",
-            "medical cost support",
-            "catastrophic medical expense",
-            "out-of-pocket ceiling",
-            "unemployment benefit",
-            "worknet",
-        ],
+        "ko": ["복지", "급여신청", "마이데이터", "기초생활", "장애인"],
+        "en": ["welfare", "benefit application", "mydata", "social assistance"],
     },
     auth_type="oauth",
     nonce=_ADAPTER_NONCE,

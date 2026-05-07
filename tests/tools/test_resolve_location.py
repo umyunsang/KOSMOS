@@ -11,16 +11,18 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from kosmos.tools.kma.projection import latlon_to_lcc
 from kosmos.tools.models import (
     AddressResult,
     AdmCodeResult,
     CoordResult,
     POIResult,
+    RegionResult,
     ResolveBundle,
     ResolveError,
     ResolveLocationInput,
 )
-from kosmos.tools.resolve_location import resolve_location
+from kosmos.tools.resolve_location import _keyword_doc_matches_query, resolve_location
 
 # ---------------------------------------------------------------------------
 # Shared mock return values
@@ -55,6 +57,60 @@ _POI = POIResult(
     lon=127.0276,
     source="kakao",
 )
+_REGION_BUSAN = RegionResult(
+    kind="region",
+    region_type="B",
+    address_name="부산광역시 사하구 하단동",
+    region_1depth_name="부산광역시",
+    region_2depth_name="사하구",
+    region_3depth_name="하단동",
+    code="2638010300",
+    x=128.96044110450242,
+    y=35.11437276296668,
+    source="kakao",
+)
+_REGION_SEOUL = RegionResult(
+    kind="region",
+    region_type="B",
+    address_name="서울특별시 강남구 역삼동",
+    region_1depth_name="서울특별시",
+    region_2depth_name="강남구",
+    region_3depth_name="역삼동",
+    code="1168010100",
+    x=127.03663,
+    y=37.50032,
+    source="kakao",
+)
+
+
+def test_keyword_relevance_rejects_unrelated_top_result():
+    """Kakao keyword drift must not turn nonsense addresses into popular POIs."""
+    doc = MagicMock()
+    doc.place_name = "서울특별시청"
+    doc.address_name = "서울 중구 태평로1가"
+    doc.road_address_name = "서울 중구 세종대로 110"
+
+    assert not _keyword_doc_matches_query("존재하지않는주소", doc)
+
+
+def test_keyword_relevance_accepts_place_inside_nearby_query():
+    """Nearby/service wording can wrap a valid place name."""
+    doc = MagicMock()
+    doc.place_name = "하단역"
+    doc.address_name = "부산 사하구 하단동"
+    doc.road_address_name = ""
+
+    assert _keyword_doc_matches_query("하단역 근처 응급실", doc)
+
+
+def test_keyword_relevance_accepts_seoul_city_hall_variant():
+    """Administrative suffix normalization keeps legitimate POI variants."""
+    doc = MagicMock()
+    doc.place_name = "서울특별시청"
+    doc.address_name = "서울 중구 태평로1가"
+    doc.road_address_name = "서울 중구 세종대로 110"
+
+    assert _keyword_doc_matches_query("서울시청", doc)
 
 
 # ---------------------------------------------------------------------------
@@ -73,6 +129,7 @@ class TestResolveCoords:
             result = await resolve_location(inp)
         assert isinstance(result, CoordResult)
         assert result.lat == pytest.approx(37.5665)
+        assert (result.nx, result.ny) == latlon_to_lcc(_COORD.lat, _COORD.lon)
 
     @pytest.mark.asyncio
     async def test_returns_error_when_kakao_fails(self):
@@ -133,6 +190,10 @@ class TestResolveAdmCd:
             patch(
                 "kosmos.tools.resolve_location._kakao_coords",
                 new=AsyncMock(return_value=_COORD),
+            ),
+            patch(
+                "kosmos.tools.resolve_location._kakao_adm_cd_from_coords",
+                new=AsyncMock(return_value=None),
             ),
             patch(
                 "kosmos.tools.resolve_location._sgis_adm_cd",
@@ -268,6 +329,42 @@ class TestResolvePOI:
 
 
 # ---------------------------------------------------------------------------
+# want="region"
+# ---------------------------------------------------------------------------
+
+
+class TestResolveRegion:
+    @pytest.mark.asyncio
+    async def test_region_success(self):
+        inp = ResolveLocationInput(query="하단역", want="region")
+        with (
+            patch(
+                "kosmos.tools.resolve_location._kakao_coords",
+                new=AsyncMock(return_value=_COORD),
+            ),
+            patch(
+                "kosmos.tools.resolve_location._kakao_region_from_coords",
+                new=AsyncMock(return_value=_REGION_BUSAN),
+            ),
+        ):
+            result = await resolve_location(inp)
+        assert isinstance(result, RegionResult)
+        assert result.region_1depth_name == "부산광역시"
+        assert result.region_2depth_name == "사하구"
+
+    @pytest.mark.asyncio
+    async def test_region_requires_coords_first(self):
+        inp = ResolveLocationInput(query="알수없는곳", want="region")
+        with patch(
+            "kosmos.tools.resolve_location._kakao_coords",
+            new=AsyncMock(return_value=None),
+        ):
+            result = await resolve_location(inp)
+        assert isinstance(result, ResolveError)
+        assert result.reason == "not_found"
+
+
+# ---------------------------------------------------------------------------
 # want="coords_and_admcd" (default bundle)
 # ---------------------------------------------------------------------------
 
@@ -290,6 +387,44 @@ class TestResolveCoordsAndAdmCd:
         assert isinstance(result, ResolveBundle)
         assert result.coords is not None
         assert result.adm_cd is not None
+        assert result.coords.nx is not None
+        assert result.coords.ny is not None
+
+    @pytest.mark.asyncio
+    async def test_bundle_uses_kakao_coord2region_for_poi_adm_cd(self):
+        kakao_adm = AdmCodeResult(
+            kind="adm_cd",
+            code="1168010100",
+            name="서울특별시 강남구 역삼동",
+            level="eupmyeondong",
+            source="kakao",
+        )
+        inp = ResolveLocationInput(query="강남역", want="coords_and_admcd")
+        with (
+            patch(
+                "kosmos.tools.resolve_location._kakao_coords",
+                new=AsyncMock(return_value=_COORD),
+            ),
+            patch(
+                "kosmos.tools.resolve_location._juso_adm_cd",
+                new=AsyncMock(return_value=None),
+            ),
+            patch(
+                "kosmos.tools.resolve_location._kakao_adm_cd",
+                new=AsyncMock(return_value=None),
+            ),
+            patch(
+                "kosmos.tools.resolve_location._kakao_adm_cd_from_coords",
+                new=AsyncMock(return_value=kakao_adm),
+            ),
+            patch(
+                "kosmos.tools.resolve_location._sgis_adm_cd",
+                new=AsyncMock(return_value=None),
+            ),
+        ):
+            result = await resolve_location(inp)
+        assert isinstance(result, ResolveBundle)
+        assert result.adm_cd == kakao_adm
 
     @pytest.mark.asyncio
     async def test_partial_bundle_coords_only(self):
@@ -305,6 +440,10 @@ class TestResolveCoordsAndAdmCd:
             ),
             patch(
                 "kosmos.tools.resolve_location._kakao_adm_cd",
+                new=AsyncMock(return_value=None),
+            ),
+            patch(
+                "kosmos.tools.resolve_location._kakao_adm_cd_from_coords",
                 new=AsyncMock(return_value=None),
             ),
             patch(
@@ -337,35 +476,6 @@ class TestResolveCoordsAndAdmCd:
         # strip() makes it empty
         assert isinstance(result, ResolveError)
         assert result.reason == "empty_query"
-
-    @pytest.mark.asyncio
-    async def test_online_service_name_is_not_geocoded(self):
-        inp = ResolveLocationInput(query="홈택스", want="coords_and_admcd")
-        with patch(
-            "kosmos.tools.resolve_location._kakao_coords",
-            new=AsyncMock(return_value=_COORD),
-        ) as kakao_coords:
-            result = await resolve_location(inp)
-        assert isinstance(result, ResolveError)
-        assert result.reason == "invalid_query"
-        kakao_coords.assert_not_awaited()
-
-    @pytest.mark.asyncio
-    async def test_service_name_with_physical_location_intent_is_allowed(self):
-        inp = ResolveLocationInput(query="홈택스 세무서 위치", want="coords_and_admcd")
-        with (
-            patch(
-                "kosmos.tools.resolve_location._kakao_coords",
-                new=AsyncMock(return_value=_COORD),
-            ) as kakao_coords,
-            patch(
-                "kosmos.tools.resolve_location._juso_adm_cd",
-                new=AsyncMock(return_value=_ADM),
-            ),
-        ):
-            result = await resolve_location(inp)
-        assert isinstance(result, ResolveBundle)
-        kakao_coords.assert_awaited_once()
 
 
 # ---------------------------------------------------------------------------
@@ -425,6 +535,10 @@ class TestResolveAll:
                 "kosmos.tools.geocoding.kakao_client.search_keyword",
                 new=AsyncMock(return_value=mock_kw_result),
             ),
+            patch(
+                "kosmos.tools.resolve_location._kakao_region_from_coords",
+                new=AsyncMock(return_value=_REGION_SEOUL),
+            ),
         ):
             result = await resolve_location(inp)
         assert isinstance(result, ResolveBundle)
@@ -434,3 +548,5 @@ class TestResolveAll:
         assert result.poi is not None
         assert result.poi.name == "강남역 2호선"
         assert result.poi.category == "교통,수송 > 지하철역"
+        assert result.region is not None
+        assert result.region.region_2depth_name == "강남구"

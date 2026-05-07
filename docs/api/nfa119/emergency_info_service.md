@@ -11,6 +11,8 @@ permission_tier: 1
 
 Queries the NFA (소방청, National Fire Agency) emergency activity statistics service for historical, anonymized EMS records by region, fire station, and report year-month. Covers six sub-operations: dispatch activity, patient transport, patient condition, first-aid treatment, vehicle dispatch, and vehicle fleet information.
 
+This tool is **not** a safety-instruction, AED-location, emergency-dispatch, or gas-leak guidance API. For those citizen questions KOSMOS should not force this statistical adapter; it should provide urgent 119 guidance or route to a future official safety-guidance adapter when one is registered.
+
 | Field | Value |
 |---|---|
 | Classification | Live · Permission tier 1 |

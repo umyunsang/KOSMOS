@@ -10,33 +10,132 @@
   "$id": "https://kosmos.example/api/schemas/nmc_emergency_search.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Input schema for nmc_emergency_search.\n\nPydantic v2 strict model (extra='forbid', frozen=True).\nAll three fields are required; no defaults are provided so that the LLM\nmust explicitly supply values rather than silently relying on fallbacks.",
+  "description": "Input schema for nmc_emergency_search.\n\nPydantic v2 strict model (extra='forbid', frozen=True).\n``mode`` is explicit because the official NMC V4 guide exposes separate\noperations for coordinate lookup and regional list lookup. KOSMOS models\nthose operations directly; it does not silently retry one operation with\nthe other when an upstream response is empty.",
   "properties": {
     "lat": {
-      "description": "Latitude of the search origin in decimal degrees (WGS-84). Obtain from resolve_location(want='coords'). Example: 37.5665 for central Seoul.",
-      "maximum": 90,
-      "minimum": -90,
-      "title": "Lat",
-      "type": "number"
+      "anyOf": [
+        {
+          "maximum": 90,
+          "minimum": -90,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Coordinate-mode latitude in decimal degrees (WGS-84). Required when mode='coordinate'. Obtain from resolve_location(want='coords').",
+      "title": "Lat"
     },
     "limit": {
-      "description": "Maximum number of nearest emergency rooms to return. Capped at 100 per NMC API contract. Example: 5 for the five nearest ERs.",
+      "description": "Maximum number of emergency institutions to return. Capped at 100 per NMC API contract.",
       "maximum": 100,
       "minimum": 1,
       "title": "Limit",
       "type": "integer"
     },
     "lon": {
-      "description": "Longitude of the search origin in decimal degrees (WGS-84). Obtain from resolve_location(want='coords'). Example: 126.9780 for central Seoul.",
-      "maximum": 180,
-      "minimum": -180,
-      "title": "Lon",
-      "type": "number"
+      "anyOf": [
+        {
+          "maximum": 180,
+          "minimum": -180,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Coordinate-mode longitude in decimal degrees (WGS-84). Required when mode='coordinate'. Obtain from resolve_location(want='coords').",
+      "title": "Lon"
+    },
+    "mode": {
+      "description": "Official NMC operation selector. Use 'coordinate' for getEgytLcinfoInqire with WGS84_LAT/WGS84_LON. Use 'region' for getEgytListInfoInqire with q0/q1 from resolve_location(want='all').",
+      "enum": [
+        "coordinate",
+        "region"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "origin_lat": {
+      "anyOf": [
+        {
+          "maximum": 90,
+          "minimum": -90,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional original query latitude for distance sorting in region mode. Populate from resolve_location(...).coords.lat when available.",
+      "title": "Origin Lat"
+    },
+    "origin_lon": {
+      "anyOf": [
+        {
+          "maximum": 180,
+          "minimum": -180,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional original query longitude for distance sorting in region mode. Populate from resolve_location(...).coords.lon when available.",
+      "title": "Origin Lon"
+    },
+    "q0": {
+      "anyOf": [
+        {
+          "maxLength": 40,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Region-mode NMC Q0 시도 parameter, e.g. '부산광역시'. Required when mode='region'. Populate from resolve_location(...).region.region_1depth_name.",
+      "title": "Q0"
+    },
+    "q1": {
+      "anyOf": [
+        {
+          "maxLength": 40,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Region-mode NMC Q1 시군구 parameter, e.g. '사하구'. Required when mode='region'. Populate from resolve_location(...).region.region_2depth_name.",
+      "title": "Q1"
+    },
+    "qn": {
+      "anyOf": [
+        {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional NMC QN institution-name filter. Leave unset for general nearby ER search; do not invent a hospital name.",
+      "title": "Qn"
     }
   },
   "required": [
-    "lat",
-    "lon",
+    "mode",
     "limit"
   ],
   "title": "nmc_emergency_search",

@@ -44,16 +44,6 @@
       "title": "OrderBy",
       "type": "string"
     },
-    "SrchKeyCode": {
-      "description": "Service-list keyword search field code (SSIS 검색분류).",
-      "enum": [
-        "001",
-        "002",
-        "003"
-      ],
-      "title": "SrchKeyCode",
-      "type": "string"
-    },
     "TrgterIndvdlCode": {
       "description": "Target-individual / household-type code (가구상황).",
       "enum": [
@@ -67,10 +57,11 @@
       "title": "TrgterIndvdlCode",
       "type": "string"
     },
-    "_MohwWelfareEligibilitySearchOutputStub": {
+    "_MohwPlaceholderOutput": {
       "additionalProperties": true,
-      "description": "Placeholder output schema for GovAPITool registration.\n\nReal XML-parsed output shape is deferred until Layer 3 auth is provisioned\n(Epic #16 / #20). Real models (SsisWelfareServiceItem +\nMohwWelfareEligibilitySearchOutput) are authored above ready for switch-over.",
-      "title": "_MohwWelfareEligibilitySearchOutputStub",
+      "description": "Placeholder GovAPITool.output_schema — handler returns envelope-ready dict.\n\nPermits any dict to flow through GovAPITool.output_schema validation; the\nreal envelope check happens inside ``envelope.normalize`` against the\ndiscriminated ``LookupOutput`` union (FR-015).",
+      "properties": {},
+      "title": "_MohwPlaceholderOutput",
       "type": "object"
     }
   },
@@ -90,15 +81,8 @@
         }
       ],
       "default": null,
-      "description": "Citizen age in years. Used to filter age-eligible services. Do NOT request this from the citizen unless they have consented — this field is part of the login-gated surface (citizen PII).",
+      "description": "Citizen age in years for age-eligibility filtering. Do NOT request from the citizen without consent.",
       "title": "Age"
-    },
-    "call_tp": {
-      "const": "L",
-      "default": "L",
-      "description": "Call type — fixed to 'L' (list) for NationalWelfarelistV001. Do not override.",
-      "title": "Call Tp",
-      "type": "string"
     },
     "intrs_thema_array": {
       "anyOf": [
@@ -110,7 +94,7 @@
         }
       ],
       "default": null,
-      "description": "Interest-theme filter (e.g. '080' for 임신·출산, '010' for 신체건강). NOTE: Spec draft used '010' as a placeholder; the authoritative 임신·출산 code for intrsThemaArray is '080'."
+      "description": "Interest-theme filter. Authoritative 임신·출산 code: '080'. '010' = 신체건강."
     },
     "life_array": {
       "anyOf": [
@@ -122,7 +106,7 @@
         }
       ],
       "default": null,
-      "description": "Life-stage filter (e.g. '007' for 임신·출산)."
+      "description": "Life-stage filter. 001=영유아 / 002=아동 / 003=청소년 / 004=청년 / 005=중장년 / 006=노년 / 007=임신·출산"
     },
     "num_of_rows": {
       "default": 10,
@@ -176,11 +160,6 @@
       "description": "Free-text keyword to search welfare-service names/summaries. Korean preferred. Example: '출산' for childbirth benefits. Omit to filter by codes only.",
       "title": "Search Wrd"
     },
-    "srch_key_code": {
-      "$ref": "#/$defs/SrchKeyCode",
-      "default": "003",
-      "description": "Which fields to search (001 name, 002 summary, 003 both)."
-    },
     "trgter_indvdl_array": {
       "anyOf": [
         {
@@ -191,7 +170,7 @@
         }
       ],
       "default": null,
-      "description": "Target individual / household-type filter (e.g. '020' 다자녀)."
+      "description": "Target individual / household-type filter (010 다문화·탈북민, 020 다자녀, 030 보훈, 040 장애인, 050 저소득, 060 한부모·조손). For 한부모/조손, use '060' here; do not put household type in life_array."
     }
   },
   "title": "mohw_welfare_eligibility_search",

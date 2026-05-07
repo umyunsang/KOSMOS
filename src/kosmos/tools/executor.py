@@ -27,7 +27,7 @@ from kosmos.observability import (
     filter_metadata,
 )
 from kosmos.tools.envelope import make_error_envelope
-from kosmos.tools.errors import LookupErrorReason, ToolNotFoundError
+from kosmos.tools.errors import KosmosToolError, LookupErrorReason, ToolNotFoundError
 from kosmos.tools.models import ToolResult
 from kosmos.tools.registry import ToolRegistry
 
@@ -41,6 +41,20 @@ logger = logging.getLogger(__name__)
 _tracer = trace.get_tracer(__name__)
 
 AdapterFn = Callable[[BaseModel], Awaitable[dict[str, Any]]]
+
+
+def _log_adapter_exception(message: str, tool_id: str, exc: Exception) -> None:
+    """Log expected adapter-domain failures without polluting audit logs with tracebacks."""
+    if isinstance(exc, KosmosToolError):
+        logger.warning(
+            "%s %s raised %s: %s",
+            message,
+            tool_id,
+            type(exc).__name__,
+            exc,
+        )
+        return
+    logger.warning(message + " %s raised %s", tool_id, type(exc).__name__, exc_info=True)
 
 
 def _classify_adapter_exception(exc: Exception) -> tuple[LookupErrorReason, bool]:
@@ -210,21 +224,7 @@ class ToolExecutor:
         try:
             validated_input = tool.input_schema.model_validate(params)
         except ValidationError as exc:
-            field_paths: list[str] = []
-            field_summaries: list[str] = []
-            for err in exc.errors():
-                loc = err.get("loc")
-                path = (
-                    ".".join(str(p) for p in loc)
-                    if isinstance(loc, (tuple, list)) and loc
-                    else "__root__"
-                )
-                field_paths.append(path)
-                msg = err.get("msg")
-                if isinstance(msg, str) and msg:
-                    field_summaries.append(f"{path} ({msg})")
-                else:
-                    field_summaries.append(path)
+            field_paths = [".".join(str(p) for p in e["loc"]) for e in exc.errors()]
             logger.warning(
                 "invoke: input validation failed for %s (%d errors, fields: %s)",
                 tool_id,
@@ -246,6 +246,8 @@ class ToolExecutor:
                 "lon",
                 "latitude",
                 "longitude",
+                "origin_lat",
+                "origin_lon",
                 "nx",
                 "ny",
                 "x",
@@ -257,14 +259,23 @@ class ToolExecutor:
                 for fp in field_paths
             )
             recovery_hint = ""
-            if need_resolve:
+            if tool_id == "nmc_emergency_search":
+                recovery_hint = (
+                    " RESOLVE_LOCATION FIRST: call resolve_location(query='<지역명>',"
+                    " want='all') to obtain coords and region metadata, then re-invoke"
+                    " this tool with params {mode:'region', q0:region.region_1depth_name,"
+                    " q1:region.region_2depth_name, origin_lat:coords.lat,"
+                    " origin_lon:coords.lon, limit:<N>}. Do NOT guess coordinates or"
+                    " invent NMC filters such as QZ."
+                )
+            elif need_resolve:
                 recovery_hint = (
                     " RESOLVE_LOCATION FIRST: call resolve_location(query='<지역명>',"
                     " want='coords') to obtain the missing coordinates / admin code,"
                     " then re-invoke this tool with the returned values."
                     " Do NOT guess coordinates from prior knowledge."
                 )
-            field_summary = ", ".join(field_summaries) if field_summaries else "(no field info)"
+            field_summary = ", ".join(field_paths) if field_paths else "(no field info)"
             return make_error_envelope(
                 tool_id=tool_id,
                 reason=LookupErrorReason.invalid_params,
@@ -297,12 +308,7 @@ class ToolExecutor:
                 "kosmos.tool.fetch_ms",
                 (time.monotonic_ns() - _stage_fetch_start) // 1_000_000,
             )
-            logger.warning(
-                "invoke: adapter %s raised %s",
-                tool_id,
-                type(exc).__name__,
-                exc_info=True,
-            )
+            _log_adapter_exception("invoke: adapter", tool_id, exc)
             reason, retryable = _classify_adapter_exception(exc)
             # Anthropic tool-use guidance (https://platform.claude.com/docs/en/
             # agents-and-tools/tool-use/handle-tool-calls#handling-errors-with-is_error):
@@ -540,12 +546,7 @@ class ToolExecutor:
                     try:
                         result_dict = await adapter(validated_input)
                     except Exception as exc:
-                        logger.warning(
-                            "Adapter %s raised %s",
-                            tool_name,
-                            type(exc).__name__,
-                            exc_info=True,
-                        )
+                        _log_adapter_exception("Adapter", tool_name, exc)
                         self._metrics_increment("tool.error_count", tool_name)
                         self._metrics_observe_duration(
                             "tool.duration_ms",

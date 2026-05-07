@@ -26,6 +26,7 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime
 import json
 import logging
@@ -50,7 +51,11 @@ def _now_iso() -> str:
     return datetime.datetime.now(datetime.UTC).isoformat(timespec="milliseconds")
 
 
-def _make_chat_request(message: str, session_id: str = "", correlation_id: str | None = None) -> dict:
+def _make_chat_request(
+    message: str,
+    session_id: str = "",
+    correlation_id: str | None = None,
+) -> dict:
     """Build a minimal ChatRequestFrame dict matching the Pydantic schema.
 
     Constructs the dict directly (no import of kosmos.ipc.frame_schema needed
@@ -96,7 +101,7 @@ def _spawn_backend(env_overrides: dict[str, str]) -> subprocess.Popen:
     env.setdefault("KOSMOS_TUI_LOG_LEVEL", "DEBUG")
     env.update(env_overrides)
     log.debug("spawning: %s", " ".join(cmd))
-    return subprocess.Popen(
+    return subprocess.Popen(  # noqa: S603
         cmd,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
@@ -111,7 +116,7 @@ def _spawn_backend(env_overrides: dict[str, str]) -> subprocess.Popen:
 # ---------------------------------------------------------------------------
 
 
-def _read_frames(proc: subprocess.Popen, timeout_s: float) -> list[dict]:
+def _read_frames(proc: subprocess.Popen, timeout_s: float) -> list[dict]:  # noqa: C901
     """Read NDJSON frames from *proc.stdout* until timeout or EOF."""
     frames: list[dict] = []
     assert proc.stdout is not None  # noqa: S101
@@ -204,7 +209,10 @@ def _try_validate_frames(frames: list[dict]) -> list[str]:
             try:
                 adapter.validate_python(f)
             except ValidationError as exc:
-                errors.append(f"frame[{i}] kind={f.get('kind')!r}: {exc.error_count()} validation error(s)")
+                errors.append(
+                    f"frame[{i}] kind={f.get('kind')!r}: "
+                    f"{exc.error_count()} validation error(s)"
+                )
     except ImportError:
         log.debug("kosmos package not importable — skipping Pydantic validation")
     return errors
@@ -267,7 +275,9 @@ def main(argv: list[str] | None = None) -> int:
         proc = _spawn_backend({})
     except FileNotFoundError as exc:
         sys.stderr.write(f"[probe-error] could not spawn backend: {exc}\n")
-        sys.stderr.write("[probe-error] ensure 'uv' is on PATH and the kosmos package is installed.\n")
+        sys.stderr.write(
+            "[probe-error] ensure 'uv' is on PATH and the kosmos package is installed.\n"
+        )
         return 2
 
     try:
@@ -282,10 +292,8 @@ def main(argv: list[str] | None = None) -> int:
             proc.terminate()
             proc.wait(timeout=3)
         except Exception:  # noqa: BLE001
-            try:
+            with contextlib.suppress(Exception):
                 proc.kill()
-            except Exception:  # noqa: BLE001
-                pass
 
     int((time.time() - start_ts) * 1000)
 

@@ -2,16 +2,17 @@
 // Epic γ #2294 · T019 — ToolRegistry boot probe.
 //
 // Standalone script invoked via `bun run probe:tool-registry`.
-// Runs verifyBootRegistry() against the four KOSMOS primitives and prints the
+// Runs verifyBootRegistry() against the five KOSMOS primitives and prints the
 // success line; exits 0 on pass / 1 on fail.
 //
 // Usage (from /tui):
 //   bun run probe:tool-registry
 //
 // Expected success output:
-//   tool_registry: <N> entries verified (4 primitives) in <D>ms
+//   tool_registry: <N> entries verified (5 primitives) in <D>ms
 
 import { LookupPrimitive } from '../tools/LookupPrimitive/LookupPrimitive.js'
+import { ResolveLocationPrimitive } from '../tools/ResolveLocationPrimitive/ResolveLocationPrimitive.js'
 import { SubmitPrimitive } from '../tools/SubmitPrimitive/SubmitPrimitive.js'
 import { VerifyPrimitive } from '../tools/VerifyPrimitive/VerifyPrimitive.js'
 import { SubscribePrimitive } from '../tools/SubscribePrimitive/SubscribePrimitive.js'
@@ -20,6 +21,7 @@ import type { Tool } from '../Tool.js'
 
 const primitiveRegistry: readonly Tool[] = [
   LookupPrimitive as unknown as Tool,
+  ResolveLocationPrimitive as unknown as Tool,
   SubmitPrimitive as unknown as Tool,
   VerifyPrimitive as unknown as Tool,
   SubscribePrimitive as unknown as Tool,
