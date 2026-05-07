@@ -75,15 +75,6 @@ function checkGraphicsProtocol(): PreflightCheckResult {
 }
 
 function checkRequiredEnvVars(): PreflightCheckResult[] {
-  // Canonical name + accepted aliases (mirrors envGuard.ts + useApiKeyVerification.ts).
-  // AGENTS.md hard rule: KOSMOS_ prefix is canonical; FRIENDLI_API_KEY kept as
-  // SDK-compat alias (Friendli SDK reads its own env name).
-  const required: { keys: string[]; label: string }[] = [
-    {
-      keys: ['KOSMOS_FRIENDLI_TOKEN', 'FRIENDLI_API_KEY'],
-      label: 'KOSMOS_FRIENDLI_TOKEN',
-    },
-  ]
   const optional: { keys: string[]; label: string; mockNote: string }[] = [
     {
       keys: ['KOSMOS_DATA_GO_KR_API_KEY', 'KOSMOS_DATA_GO_KR_KEY'],
@@ -92,14 +83,7 @@ function checkRequiredEnvVars(): PreflightCheckResult[] {
     },
   ]
 
-  const results: PreflightCheckResult[] = required.map(({ keys, label }) => {
-    const present = keys.some((k) => Boolean(process.env[k]))
-    return {
-      label,
-      passed: present,
-      note: present ? undefined : `${label} is not set`,
-    }
-  })
+  const results: PreflightCheckResult[] = []
 
   for (const { keys, label, mockNote } of optional) {
     const present = keys.some((k) => Boolean(process.env[k]))

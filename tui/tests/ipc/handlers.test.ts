@@ -226,16 +226,33 @@ function makeFrame(
 }
 
 async function run(buildFrames: (corrId: string) => StagedFrame[]): Promise<unknown[]> {
+  const previousPrimary = process.env.KOSMOS_FRIENDLI_TOKEN
+  const previousSession = process.env.KOSMOS_FRIENDLI_SESSION_ACTIVE
+  process.env.KOSMOS_FRIENDLI_TOKEN = 'test-token-handlers'
+  process.env.KOSMOS_FRIENDLI_SESSION_ACTIVE = '1'
   installBridge(buildFrames)
-  const callModel = productionDeps().callModel
-  const results: unknown[] = []
-  for await (const ev of callModel({
-    messages: [{ type: 'user', message: { role: 'user', content: 'hi' } }],
-    systemPrompt: 'test system prompt',
-  })) {
-    results.push(ev)
+  try {
+    const callModel = productionDeps().callModel
+    const results: unknown[] = []
+    for await (const ev of callModel({
+      messages: [{ type: 'user', message: { role: 'user', content: 'hi' } }],
+      systemPrompt: 'test system prompt',
+    })) {
+      results.push(ev)
+    }
+    return results
+  } finally {
+    if (previousPrimary === undefined) {
+      delete process.env.KOSMOS_FRIENDLI_TOKEN
+    } else {
+      process.env.KOSMOS_FRIENDLI_TOKEN = previousPrimary
+    }
+    if (previousSession === undefined) {
+      delete process.env.KOSMOS_FRIENDLI_SESSION_ACTIVE
+    } else {
+      process.env.KOSMOS_FRIENDLI_SESSION_ACTIVE = previousSession
+    }
   }
-  return results
 }
 
 // ---------------------------------------------------------------------------

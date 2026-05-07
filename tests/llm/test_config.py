@@ -13,7 +13,7 @@ from kosmos.llm.config import LLMClientConfig
 
 @pytest.fixture(autouse=True)
 def _clean_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Remove all KOSMOS_* env vars to ensure a clean state for every test."""
+    """Remove KOSMOS/Friendli credential env vars for a clean test state."""
     for key in list(os.environ):
         if key.startswith("KOSMOS_"):
             monkeypatch.delenv(key, raising=False)

@@ -5,18 +5,19 @@
 // CC version: 2.1.88
 // KOSMOS deviation: KOSMOS uses a single fixed provider (FriendliAI Serverless
 // + K-EXAONE per kosmos-migration-tree.md § L1-A A1). Authentication is the
-// `KOSMOS_FRIENDLI_TOKEN` (or `FRIENDLI_API_KEY`) env var consumed by the
-// Python backend via `src/kosmos/llm/config.py`. The TUI never authenticates
+// `/login` session key, exported as `KOSMOS_FRIENDLI_TOKEN` only inside the
+// running TUI process for the Python backend. The TUI never authenticates
 // with Anthropic — every Anthropic credential lookup path (Keychain, OAuth,
 // apiKeyHelper, Console subscription) is intentionally severed.
 //
 // This hook preserves the `VerificationStatus` discriminated-union shape so
 // every existing consumer (PromptInputFooter, Notifications, REPL.tsx, etc)
 // type-checks and reads `apiKeyStatus === 'valid'` as a green light. The
-// status is computed from `KOSMOS_FRIENDLI_TOKEN` / `FRIENDLI_API_KEY` env
-// presence — no network round-trip, no Anthropic API call.
+// status is computed from the process-scoped FriendliAI login session — no
+// network round-trip, no Anthropic API call.
 
 import { useCallback, useState } from 'react'
+import { hasFriendliCredential } from '../utils/friendliAuth.js'
 
 export type VerificationStatus =
   | 'loading'
@@ -29,20 +30,6 @@ export type ApiKeyVerificationResult = {
   status: VerificationStatus
   reverify: () => Promise<void>
   error: Error | null
-}
-
-/**
- * KOSMOS-1978 T005: env-var presence check, not Anthropic API verification.
- * Mirrors the canonical Python guard at `src/kosmos/llm/envGuard.ts:hasFriendliCredential`
- * (Spec 1633 T011) — both names accepted for backwards compatibility.
- */
-function hasFriendliCredential(): boolean {
-  const friendli = process.env.FRIENDLI_API_KEY
-  const kosmos = process.env.KOSMOS_FRIENDLI_TOKEN
-  return Boolean(
-    (friendli && friendli.trim().length > 0) ||
-      (kosmos && kosmos.trim().length > 0),
-  )
 }
 
 export function useApiKeyVerification(): ApiKeyVerificationResult {
