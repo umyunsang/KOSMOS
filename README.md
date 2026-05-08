@@ -1,4 +1,5 @@
-<img width="2172" height="724" alt="ChatGPT Image 2026년 5월 8일 오후 02_10_07" src="https://github.com/user-attachments/assets/594d33c2-b3ab-4346-bdda-9210dc5295d2" />
+<img width="2172" height="724" alt="ChatGPT Image 2026년 5월 8일 오후 02_16_28" src="https://github.com/user-attachments/assets/6e0d8dbb-6c1d-47be-8fcf-95e7f5c2b2b3" />
+
 
 # UMMAYA
 
