@@ -1,8 +1,4 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/ummaya-banner-dark.svg"/>
-  <source media="(prefers-color-scheme: light)" srcset="assets/ummaya-banner-light.svg"/>
-  <img alt="UMMAYA" src="assets/ummaya-banner-light.svg" width="600"/>
-</picture>
+<img width="2172" height="724" alt="ChatGPT Image 2026년 5월 8일 오후 02_10_07" src="https://github.com/user-attachments/assets/594d33c2-b3ab-4346-bdda-9210dc5295d2" />
 
 # UMMAYA
 
