@@ -31,7 +31,7 @@ from ummaya.tools.models import LookupMeta, LookupRecord
 
 def _make_result_msg(sender: str, recipient: str) -> AgentMessage:
     meta = LookupMeta(
-        source="lookup",
+        source="find",
         fetched_at=datetime.now(UTC),
         request_id=str(uuid4()),
         elapsed_ms=3,

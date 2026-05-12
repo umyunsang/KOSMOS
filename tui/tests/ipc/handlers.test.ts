@@ -255,6 +255,46 @@ async function run(buildFrames: (corrId: string) => StagedFrame[]): Promise<unkn
   }
 }
 
+describe('thinking persistence guard', () => {
+  test('streams thinking_delta but omits thinking from terminal AssistantMessage by default', async () => {
+    const previousPersistThinking = process.env.UMMAYA_PERSIST_THINKING
+    delete process.env.UMMAYA_PERSIST_THINKING
+    try {
+      const results = await run((corrId) => [
+        makeFrame('assistant_chunk', corrId, {
+          message_id: 'mid-thinking-redacted',
+          delta: '답변입니다',
+          thinking: '내부 추론 전문',
+          done: true,
+        }),
+      ])
+
+      const thinkingEvents = results.filter((r) => {
+        const event = (r as { event?: { delta?: { type?: string } } }).event
+        return event?.delta?.type === 'thinking_delta'
+      })
+      expect(thinkingEvents).toHaveLength(1)
+
+      const assistantMessages = results.filter(
+        (r) => (r as { type?: string }).type === 'assistant',
+      ) as Array<{
+        message: { content: Array<{ type?: string; text?: string; thinking?: string }> }
+      }>
+      const terminal = assistantMessages[assistantMessages.length - 1]!
+      expect(terminal.message.content.some((b) => b.type === 'thinking')).toBe(false)
+      expect(terminal.message.content).toEqual([
+        { type: 'text', text: '답변입니다' },
+      ])
+    } finally {
+      if (previousPersistThinking === undefined) {
+        delete process.env.UMMAYA_PERSIST_THINKING
+      } else {
+        process.env.UMMAYA_PERSIST_THINKING = previousPersistThinking
+      }
+    }
+  })
+})
+
 // ---------------------------------------------------------------------------
 // I1 — tool_call frame yields two stream events (content_block_start +
 //       content_block_stop), not a SystemMessage.

@@ -4,7 +4,7 @@
 Verifies ``ummaya.primitives.submit.submit()`` end-to-end with:
   - Happy path: valid params → SubmitOutput with transaction_id, status, adapter_receipt.
   - Audit ledger emission: the AdapterRegistration captured in the dispatch table
-    carries primitive="submit" AND tool_id as distinct, non-empty string fields
+    carries primitive="send" AND tool_id as distinct, non-empty string fields
     (FR-026 — audit must record both axes).
   - Cross-ministry shape parity: both mock_traffic_fine_pay_v1 (data_go_kr) and
     mock_welfare_application_submit_v1 (mydata) flow through the same envelope.
@@ -224,7 +224,7 @@ def test_adapter_registry_carries_primitive_and_tool_id_separately() -> None:
 
     # The primitive field must identify the verb, not the adapter
     assert registration.primitive == AdapterPrimitive.submit, (
-        f"Expected primitive='submit', got {registration.primitive!r}"
+        f"Expected primitive='send', got {registration.primitive!r}"
     )
 
     # The tool_id field must identify the specific adapter

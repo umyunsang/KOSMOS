@@ -5,10 +5,10 @@ Call ``register_all_tools(registry, executor)`` once at application startup
 to register every available tool adapter and its executor binding.
 
 NOTE (T049 / Epic #507): ``address_to_region`` and ``address_to_grid`` were
-removed in User Story 4.  Administrative code resolution is now handled by
-``resolve_location(want='adm_cd')`` via the backend-only ``juso`` and ``sgis``
-helpers.  Grid coordinate resolution is handled internally by
-``kma_forecast_fetch`` via ``latlon_to_lcc()``.
+removed in User Story 4. Administrative code and coordinate resolution are now
+first-class ``locate`` adapters in the central registry (Kakao/JUSO/SGIS).
+Grid coordinate projection is exposed through coordinate-producing locate
+adapter results and still uses ``latlon_to_lcc()`` internally.
 
 NOTE (Stage 3 / T033, T048, T056): Three seed adapters added to the registry:
 ``nmc_emergency_search`` (Layer 3 gated stub), ``kma_forecast_fetch`` (short-term
@@ -49,7 +49,7 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> Routin
     """Register all available government API tool adapters.
 
     Registers the following 16 tools in order (Epic ε #2296: 2 new lookup mocks added):
-      1. resolve_location — MVP LLM core surface: location resolution (is_core=True)
+      1. locate — MVP LLM core surface: location resolution (is_core=True)
       2. lookup — MVP LLM core surface: adapter discovery + invocation (is_core=True)
       3. koroad_accident_search — KOROAD accident hotspot search (by enum codes)
       4. koroad_accident_hazard_search — KOROAD accident hazard search (by adm_cd)
@@ -100,6 +100,7 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> Routin
     from ummaya.tools.kma.kma_weather_alert_status import register as reg_kma_alert
     from ummaya.tools.koroad.accident_hazard_search import register as reg_koroad_hazard
     from ummaya.tools.koroad.koroad_accident_search import register as reg_koroad
+    from ummaya.tools.location_adapters import register as reg_locate
     from ummaya.tools.mock.lookup_module_gov24_certificate import (
         register as reg_mock_gov24_cert,
     )
@@ -115,10 +116,10 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> Routin
     register_mvp_surface(registry)
     import ummaya.tools.mock  # noqa: F401 — registers all mock surfaces in production
 
-    # NOTE: resolve_location is intentionally NOT bound here — its
-    # 6-variant ResolveLocationOutput union is incompatible with
-    # ToolExecutor.invoke()'s LookupOutput envelope normalisation. The
-    # bypass lives in lookup._lookup_fetch (Spec 2521 SWAP/llm-provider).
+    # Locate provider endpoints are first-class adapters under the central
+    # registry. They use ToolExecutor.invoke_raw() because their output union is
+    # ResolveLocationOutput, not LookupOutput.
+    reg_locate(registry, executor)
 
     reg_koroad(registry, executor)
     reg_koroad_hazard(registry, executor)

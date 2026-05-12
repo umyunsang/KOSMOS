@@ -8,7 +8,7 @@
 
 ## 1. 작업 목적 (한 문단)
 
-K-EXAONE이 `<tool_call>{"name":"Read",...}</tool_call>` 같은 **CC 학습 데이터 도구를 hallucinate하는 문제**를 해결한다. 진짜 원인은 **TUI가 `ChatRequestFrame.tools`를 비워 보내고 backend도 fallback inject가 없어서** K-EXAONE이 `tools=None`으로 호출되는 것. 그 결과 모델은 UMMAYA의 active primitives(`lookup`, `resolve_location`, `submit`, `verify`)를 모르고 자기 학습 데이터에 있는 CC tool들(Read, Glob, Bash 등)을 응답에 박는다. 본 epic은 CC 소스맵의 tool wiring + agentic loop 패턴을 UMMAYA로 마이그레이션해서 K-EXAONE이 UMMAYA-등록 도구만 호출하고, 호출 결과가 `tool_use` content block으로 transcript에 paint되고, follow-up turn까지 진행되도록 만든다.
+K-EXAONE이 `<tool_call>{"name":"Read",...}</tool_call>` 같은 **CC 학습 데이터 도구를 hallucinate하는 문제**를 해결한다. 진짜 원인은 **TUI가 `ChatRequestFrame.tools`를 비워 보내고 backend도 fallback inject가 없어서** K-EXAONE이 `tools=None`으로 호출되는 것. 그 결과 모델은 UMMAYA의 active primitives(`find`, `locate`, `send`, `check`)를 모르고 자기 학습 데이터에 있는 CC tool들(Read, Glob, Bash 등)을 응답에 박는다. 본 epic은 CC 소스맵의 tool wiring + agentic loop 패턴을 UMMAYA로 마이그레이션해서 K-EXAONE이 UMMAYA-등록 도구만 호출하고, 호출 결과가 `tool_use` content block으로 transcript에 paint되고, follow-up turn까지 진행되도록 만든다.
 
 ## 2. 시작 전에 반드시 읽을 문서
 
@@ -147,7 +147,7 @@ CC reference: `_cc_reference/api.ts:appendSystemContext()` + `_cc_reference/prom
 - `if llm_tools: system_text = build_system_prompt_with_tools(system_text, llm_tools)`
 - `frame.system or system_text` 로 LLM 첫 메시지 설정
 
-검증: backend log에서 system prompt에 active primitive description 포함 확인. K-EXAONE 응답에서 `<tool_call>{"name":"Read"}` 가 사라지고 `<tool_call>{"name":"lookup"}` 또는 UMMAYA primitive 이름만 등장.
+검증: backend log에서 system prompt에 active primitive description 포함 확인. K-EXAONE 응답에서 `<tool_call>{"name":"Read"}` 가 사라지고 `<tool_call>{"name":"find"}` 또는 UMMAYA primitive 이름만 등장.
 
 ### Step 4 — Backend registry fallback (작업량 1-2h)
 
@@ -215,7 +215,7 @@ cd .. && uv run pytest tests/llm tests/ipc
 
 `/tmp/run_pty_tool_e2e.py` (Step 별 시나리오):
 - Step 2 검증: prompt "강남구 응급실" → frame.tools 길이 trace로 5+ 확인
-- Step 3 검증: prompt 동일 → backend log에서 system prompt 끝에 "lookup" 등장 확인 + K-EXAONE 응답에 `<tool_call>{"name":"Read"}` 0회
+- Step 3 검증: prompt 동일 → backend log에서 system prompt 끝에 "find" 등장 확인 + K-EXAONE 응답에 `<tool_call>{"name":"Read"}` 0회
 - Step 5/6 검증: prompt 동일 → tool_call frame 1+ 도착 + tool_result frame 1+ 도착 + final response paint
 - Step 7 검증: prompt "출생신고 서류 제출" (submit primitive trigger) → PermissionGauntletModal frame 캡처
 
@@ -252,7 +252,7 @@ GIF frame 추출 (10fps): `ffmpeg -i /tmp/probe-tool-loop.gif -vf "fps=10" /tmp/
 
 이 epic이 다루지 **않는** 것:
 
-- `lookup` mode 분리 (search vs fetch BM25 라우팅) — Spec 022 영역
+- `find` mode 분리 (search vs fetch BM25 라우팅) — Spec 022 영역
 - Adapter-level permission gate (Spec 033) — 이번 epic은 PermissionGauntletModal **modal 자체** 만 wire
 - Plugin-tier tools (Spec 1636) — active primitives + MVP only
 - App/push notification runtime — required before any future `subscribe` primitive returns

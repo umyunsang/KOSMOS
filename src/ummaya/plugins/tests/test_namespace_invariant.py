@@ -40,7 +40,7 @@ from ummaya.tools.registry import (
 
 
 def _adapter(
-    *, tool_id: str, primitive: AdapterPrimitive = AdapterPrimitive.lookup
+    *, tool_id: str, primitive: AdapterPrimitive = AdapterPrimitive.find
 ) -> AdapterRegistration:
     # Epic δ #2295 Path B: auth_level + pipa_class are now computed_fields
     # derived from policy.citizen_facing_gate — do NOT pass them as constructor
@@ -61,7 +61,7 @@ def _manifest_kwargs(**overrides: object) -> dict[str, object]:
     base: dict[str, object] = {
         "plugin_id": "demo_plugin",
         "version": "1.0.0",
-        "adapter": _adapter(tool_id="plugin.demo_plugin.lookup"),
+        "adapter": _adapter(tool_id="plugin.demo_plugin.find"),
         "tier": "live",
         "mock_source_spec": None,
         "processes_pii": False,
@@ -82,7 +82,7 @@ class TestQ8Namespace:
         with pytest.raises(ValidationError) as exc:
             PluginManifest(
                 **_manifest_kwargs(
-                    adapter=_adapter(tool_id="plugin.other_id.lookup"),
+                    adapter=_adapter(tool_id="plugin.other_id.find"),
                 )
             )
         assert "adapter.tool_id must start with 'plugin.demo_plugin.'" in str(exc.value)
@@ -103,13 +103,13 @@ class TestQ8Namespace:
     def test_namespace_unprefixed_rejected_by_adapter_regex(self) -> None:
         """Built-in adapter regex still rejects bare snake_case mismatching the alternation."""
         # The regex on AdapterRegistration permits either the snake_case form OR
-        # the plugin namespaced form — so bare snake_case 'lookup' is accepted
+        # the plugin namespaced form — so bare snake_case 'find' is accepted
         # at the AdapterRegistration layer (legacy in-tree adapters use it).
         # The PluginManifest._v_namespace validator then rejects it because it
         # lacks the plugin.<id>. prefix.
         bare_adapter = AdapterRegistration(
-            tool_id="lookup",
-            primitive=AdapterPrimitive.lookup,
+            tool_id="find",
+            primitive=AdapterPrimitive.find,
             module_path="example.demo_plugin.adapter",
             input_model_ref="example.demo_plugin.schema:DemoLookup",
             source_mode=AdapterSourceMode.OPENAPI,
@@ -137,19 +137,19 @@ class TestQ8NoRootOverride:
         """
         with pytest.raises(ValidationError) as exc:
             _adapter(
-                tool_id="plugin.demo_plugin.resolve_location",
-                primitive=AdapterPrimitive.resolve_location,
+                tool_id="plugin.demo_plugin.locate",
+                primitive=AdapterPrimitive.locate,
             )
         # Pydantic Field(pattern=...) error message format.
         assert "tool_id" in str(exc.value).lower()
-        assert "resolve_location" in str(exc.value)
+        assert "locate" in str(exc.value)
 
     def test_unknown_verb_rejected_at_adapter_regex(self) -> None:
         """ADR-007 regex itself rejects verbs outside the alternation."""
         with pytest.raises(ValidationError):
             AdapterRegistration(
                 tool_id="plugin.demo_plugin.bogus_verb",
-                primitive=AdapterPrimitive.lookup,
+                primitive=AdapterPrimitive.find,
                 module_path="x",
                 input_model_ref="x:Y",
                 source_mode=AdapterSourceMode.OPENAPI,
@@ -166,8 +166,8 @@ class TestQ8NoRootOverride:
         """
         with pytest.raises(ValidationError) as exc:
             AdapterRegistration(
-                tool_id="plugin.demo_plugin.resolve_location",
-                primitive=AdapterPrimitive.resolve_location,
+                tool_id="plugin.demo_plugin.locate",
+                primitive=AdapterPrimitive.locate,
                 module_path="x",
                 input_model_ref="x:Y",
                 source_mode=AdapterSourceMode.OPENAPI,
@@ -180,7 +180,7 @@ class TestQ8NoRootOverride:
     def test_resolve_location_rejected_at_govapi_tool(self) -> None:
         """C3 regression: same restriction enforced on GovAPITool._validate_id.
         Without this backstop a direct registry.register(GovAPITool(...))
-        call could install plugin.foo.resolve_location.
+        call could install plugin.foo.locate.
         """
         from pydantic import BaseModel, ConfigDict
         from pydantic import Field as PField
@@ -197,7 +197,7 @@ class TestQ8NoRootOverride:
 
         with pytest.raises(ValidationError) as exc:
             GovAPITool(
-                id="plugin.demo_plugin.resolve_location",
+                id="plugin.demo_plugin.locate",
                 name_ko="x",
                 ministry="OTHER",
                 category=["x"],
@@ -211,20 +211,20 @@ class TestQ8NoRootOverride:
                 is_irreversible=False,
                 dpa_reference=None,
                 is_personal_data=False,
-                primitive="resolve_location",
+                primitive="locate",
                 published_tier_minimum="digital_onepass_level1_aal1",
                 nist_aal_hint="AAL1",
             )
-        assert "resolve_location" in str(exc.value) or "Tool id" in str(exc.value)
+        assert "locate" in str(exc.value) or "Tool id" in str(exc.value)
 
 
 class TestQ8VerbInPrimitives:
     @pytest.mark.parametrize(
         ("verb", "primitive"),
         [
-            ("lookup", AdapterPrimitive.lookup),
-            ("submit", AdapterPrimitive.submit),
-            ("verify", AdapterPrimitive.verify),
+            ("find", AdapterPrimitive.find),
+            ("send", AdapterPrimitive.send),
+            ("check", AdapterPrimitive.check),
         ],
     )
     def test_each_active_plugin_verb_accepted(

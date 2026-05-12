@@ -14,9 +14,9 @@ import re
 
 from ummaya.plugins.checks.framework import CheckContext, CheckOutcome, failed, passed
 
-_NAMESPACE_RE = re.compile(r"^plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify)$")
-_ROOT_PRIMITIVES: frozenset[str] = frozenset({"lookup", "submit", "verify"})
-_HOST_RESERVED: frozenset[str] = frozenset({"resolve_location"})
+_NAMESPACE_RE = re.compile(r"^plugin\.[a-z][a-z0-9_]*\.(find|send|check)$")
+_ROOT_PRIMITIVES: frozenset[str] = frozenset({"find", "send", "check"})
+_HOST_RESERVED: frozenset[str] = frozenset({"locate"})
 
 
 def _ensure_manifest(ctx: CheckContext, check_id: str) -> CheckOutcome | None:
@@ -39,11 +39,11 @@ def check_namespace(ctx: CheckContext) -> CheckOutcome:
         return failed(
             ko=(
                 f"tool_id {tool_id!r} 가 plugin.<id>.<verb> 형식이 아님 "
-                "(verb ∈ lookup/submit/verify)"
+                "(verb ∈ find/send/check)"
             ),
             en=(
                 f"tool_id {tool_id!r} does not match plugin.<id>.<verb> "
-                "(verb ∈ lookup/submit/verify)"
+                "(verb ∈ find/send/check)"
             ),
         )
     return passed()

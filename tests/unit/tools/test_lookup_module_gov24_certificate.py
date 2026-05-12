@@ -309,8 +309,8 @@ def test_registration_adds_adapter_to_executor() -> None:
 
 
 def test_tool_definition_primitive_is_lookup() -> None:
-    """GovAPITool primitive field is 'lookup'."""
-    assert MOCK_LOOKUP_MODULE_GOV24_CERTIFICATE_TOOL.primitive == "lookup"
+    """GovAPITool primitive field is 'find'."""
+    assert MOCK_LOOKUP_MODULE_GOV24_CERTIFICATE_TOOL.primitive == "find"
 
 
 def test_tool_definition_adapter_mode_is_mock() -> None:

@@ -18,8 +18,10 @@ from ummaya.tools.kma.kma_current_observation import (
     KmaCurrentObservationInput,
     KmaCurrentObservationOutput,
     _call,
+    _candidate_observation_slots,
     _parse_response,
     _pivot_rows_to_output,
+    _previous_observation_slot,
     register,
 )
 from ummaya.tools.registry import ToolRegistry
@@ -44,6 +46,29 @@ def _make_mock_client(fixture_data: dict) -> httpx.AsyncClient:
     mock_client = AsyncMock(spec=httpx.AsyncClient)
     mock_client.get.return_value = mock_response
     return mock_client
+
+
+def _make_mock_client_sequence(payloads: list[dict]) -> httpx.AsyncClient:
+    responses = []
+    for fixture_data in payloads:
+        mock_response = MagicMock(spec=httpx.Response)
+        mock_response.status_code = 200
+        mock_response.headers = {"content-type": "application/json"}
+        mock_response.json.return_value = fixture_data
+        mock_response.raise_for_status = MagicMock()
+        responses.append(mock_response)
+    mock_client = AsyncMock(spec=httpx.AsyncClient)
+    mock_client.get.side_effect = responses
+    return mock_client
+
+
+def _no_data_payload(message: str = "NO_DATA") -> dict:
+    return {
+        "response": {
+            "header": {"resultCode": "03", "resultMsg": message},
+            "body": {},
+        }
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -116,6 +141,21 @@ class TestKmaCurrentObservationInput:
         """ny=254 must raise ValidationError."""
         with pytest.raises(ValidationError):
             KmaCurrentObservationInput(base_date="20260413", base_time="0600", nx=61, ny=254)
+
+
+class TestObservationSlotRecovery:
+    def test_previous_slot_same_day(self):
+        assert _previous_observation_slot("20260413", "0600") == ("20260413", "0500")
+
+    def test_previous_slot_wraps_to_previous_day(self):
+        assert _previous_observation_slot("20260413", "0000") == ("20260412", "2300")
+
+    def test_candidate_slots_walk_back_in_order(self):
+        assert _candidate_observation_slots("20260413", "0100", max_attempts=3) == [
+            ("20260413", "0100"),
+            ("20260413", "0000"),
+            ("20260412", "2300"),
+        ]
 
 
 # ---------------------------------------------------------------------------
@@ -269,6 +309,33 @@ class TestCall:
         assert result["pty"] == 0
 
     @pytest.mark.asyncio
+    async def test_no_data_retries_previous_hour(self, monkeypatch):
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-abc")
+        fixture_data = _load_fixture("kma_obs_success.json")
+        mock_client = _make_mock_client_sequence([_no_data_payload(), fixture_data])
+
+        params = KmaCurrentObservationInput(base_date="20260413", base_time="0700", nx=61, ny=126)
+        result = await _call(params, client=mock_client)
+
+        assert result["base_time"] == "0600"
+        assert mock_client.get.await_count == 2
+        call_params = [call.kwargs["params"] for call in mock_client.get.await_args_list]
+        assert [params["base_time"] for params in call_params] == ["0700", "0600"]
+
+    @pytest.mark.asyncio
+    async def test_no_data_exhaustion_raises(self, monkeypatch):
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key-abc")
+        mock_client = _make_mock_client_sequence([_no_data_payload()] * 6)
+
+        params = KmaCurrentObservationInput(base_date="20260413", base_time="0100", nx=61, ny=126)
+        with pytest.raises(ToolExecutionError) as exc_info:
+            await _call(params, client=mock_client)
+
+        assert "prior slots" in str(exc_info.value)
+        assert "20260412 2300" in str(exc_info.value)
+        assert mock_client.get.await_count == 6
+
+    @pytest.mark.asyncio
     async def test_missing_api_key(self, monkeypatch):
         """Absent UMMAYA_DATA_GO_KR_API_KEY raises ConfigurationError."""
         monkeypatch.delenv("UMMAYA_DATA_GO_KR_API_KEY", raising=False)
@@ -314,5 +381,5 @@ class TestRegister:
         register(registry, executor)
 
         assert "kma_current_observation" in registry
-        assert registry.lookup("kma_current_observation") is KMA_CURRENT_OBSERVATION_TOOL
+        assert registry.find("kma_current_observation") is KMA_CURRENT_OBSERVATION_TOOL
         assert "kma_current_observation" in executor._adapters

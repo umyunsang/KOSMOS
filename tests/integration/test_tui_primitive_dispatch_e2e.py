@@ -106,9 +106,9 @@ class _FakeStdout:
 class _TaxReturnChainLLMClient:
     """Fake LLM that emits the canonical citizen tax-return 3-step chain.
 
-    Turn 1: verify(tool_id="mock_verify_module_modid", params={...})
-    Turn 2: lookup(mode="fetch", tool_id="mock_lookup_module_hometax_simplified", params={})
-    Turn 3: submit(tool_id="mock_submit_module_hometax_taxreturn", params={...})
+    Turn 1: check(tool_id="mock_verify_module_modid", params={...})
+    Turn 2: find(mode="fetch", tool_id="mock_lookup_module_hometax_simplified", params={})
+    Turn 3: send(tool_id="mock_submit_module_hometax_taxreturn", params={...})
     Turn 4: final answer with receipt reference.
     """
 
@@ -144,7 +144,7 @@ class _TaxReturnChainLLMClient:
                 {
                     "family_hint": "modid",
                     "session_context": {
-                        "scope_list": ["lookup:hometax.simplified", "submit:hometax.tax-return"],
+                        "scope_list": ["find:hometax.simplified", "send:hometax.tax-return"],
                         "purpose_ko": "종합소득세 신고",
                         "purpose_en": "Comprehensive income tax filing",
                         "session_id": "test-e2e",
@@ -155,7 +155,7 @@ class _TaxReturnChainLLMClient:
                 type="tool_call_delta",
                 tool_call_index=0,
                 tool_call_id=call_id,
-                function_name="verify",
+                function_name="check",
                 function_args_delta=args,
             )
             yield StreamEvent(type="done")
@@ -173,7 +173,7 @@ class _TaxReturnChainLLMClient:
                 type="tool_call_delta",
                 tool_call_index=0,
                 tool_call_id=call_id,
-                function_name="lookup",
+                function_name="find",
                 function_args_delta=args,
             )
             yield StreamEvent(type="done")
@@ -196,7 +196,7 @@ class _TaxReturnChainLLMClient:
                 type="tool_call_delta",
                 tool_call_index=0,
                 tool_call_id=call_id,
-                function_name="submit",
+                function_name="send",
                 function_args_delta=args,
             )
             yield StreamEvent(type="done")
@@ -249,7 +249,7 @@ async def _run_chain(
                 "parameters": {"type": "object", "properties": {}},
             },
         }
-        for n in ("lookup", "resolve_location", "submit", "verify")
+        for n in ("find", "locate", "send", "check")
     ]
 
     monkeypatch.setattr(
@@ -286,7 +286,7 @@ async def _run_chain(
             ),
         )
 
-    monkeypatch.setattr(lookup_mod, "lookup", _fake_lookup)
+    monkeypatch.setattr(lookup_mod, "find", _fake_lookup)
 
     # Bypass the permission gate for submit so the test does not
     # wait 60 s for a TUI response that never comes in the headless harness.
@@ -323,7 +323,7 @@ async def _run_chain(
             },
         )
 
-    monkeypatch.setattr(submit_module, "submit", _fake_submit)
+    monkeypatch.setattr(submit_module, "send", _fake_submit)
 
     try:
         import ummaya.context.prompt_loader as pl_mod

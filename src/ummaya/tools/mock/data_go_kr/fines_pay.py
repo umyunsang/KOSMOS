@@ -149,7 +149,7 @@ async def invoke(params: dict[str, object]) -> SubmitOutput:
 
 REGISTRATION = AdapterRegistration(
     tool_id="mock_traffic_fine_pay_v1",
-    primitive=AdapterPrimitive.submit,
+    primitive=AdapterPrimitive.send,
     module_path=__name__,
     input_model_ref=f"{__name__}.FinesPayParams",
     source_mode=AdapterSourceMode.OOS,
@@ -173,7 +173,7 @@ REGISTRATION = AdapterRegistration(
         real_classification_text=(
             "교통 범칙금 / 과태료 납부 — 경찰청 이파인 공식 정책 페이지 (Spec 1636 mandate)."
         ),
-        citizen_facing_gate="submit",
+        citizen_facing_gate="send",
         last_verified=datetime(2026, 5, 4, tzinfo=UTC),
     ),
 )

@@ -86,13 +86,13 @@ function permissionComponentForTool(tool: Tool): React.ComponentType<PermissionR
     case FileReadTool:
       return FilesystemPermissionRequest;
     // UMMAYA Epic 1 finish — 4 primitive arms (FR-012 spec).
-    // lookup: read-only, bypass via checkPermissions allow. Adapter returns null.
+    // find: read-only, bypass via checkPermissions allow. Adapter returns null.
     case LookupPrimitive:
       return LookupPermissionRequestAdapter;
-    // verify: Layer 1 (green ⓵) — delegates to external auth vendor.
+    // check: Layer 1 (green ⓵) — delegates to external auth vendor.
     case VerifyPrimitive:
       return VerifyPermissionRequestAdapter;
-    // submit: Layer 2 (reversible) / Layer 3 (irreversible) — side-effecting citizen action.
+    // send: Layer 2 (reversible) / Layer 3 (irreversible) — side-effecting citizen action.
     case SubmitPrimitive:
       return SubmitPermissionRequestAdapter;
     default:

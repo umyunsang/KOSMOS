@@ -90,7 +90,7 @@ def _write_receipt(
         "receipt_id": receipt_id,
         "session_id": session_id,
         "tool_id": "kma_short_term_forecast",
-        "primitive": "lookup",
+        "primitive": "find",
         "decision": "allow_once",
         "granted_at": "2026-05-04T00:00:00.000Z",
         "revoked_at": revoked_at,

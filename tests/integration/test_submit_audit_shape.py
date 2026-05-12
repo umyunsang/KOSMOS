@@ -13,7 +13,7 @@ registry (``_ADAPTER_REGISTRY``).  This module tests:
   1. The ``AdapterRegistration.primitive`` field is a non-empty str (the verb).
   2. The ``AdapterRegistration.tool_id`` field is a non-empty str (the adapter).
   3. ``primitive`` and ``tool_id`` are distinct strings — never concatenated.
-  4. The ``primitive`` value equals ``"submit"`` for all registered submit adapters.
+  4. The ``primitive`` value equals ``"send"`` for all registered submit adapters.
   5. After a successful submit() call, the SubmitOutput envelope carries
      ``transaction_id`` (derived from ``tool_id`` + params + nonce), confirming
      the resolved adapter id participates in the audit-relevant digest.
@@ -136,12 +136,12 @@ class TestAuditFieldsDistinct:
 
 
 # ---------------------------------------------------------------------------
-# T032-B: primitive field value equals "submit" for submit adapters
+# T032-B: primitive field value equals "send" for submit adapters
 # ---------------------------------------------------------------------------
 
 
 class TestAuditPrimitiveValue:
-    """primitive must equal 'submit' for adapters in the submit dispatcher."""
+    """primitive must equal 'send' for adapters in the submit dispatcher."""
 
     @pytest.mark.parametrize(
         "tool_id",
@@ -154,7 +154,7 @@ class TestAuditPrimitiveValue:
         """AdapterRegistration.primitive must equal AdapterPrimitive.submit."""
         reg = _get_registration(tool_id)
         assert reg.primitive == AdapterPrimitive.submit, (
-            f"Expected primitive='submit', got {reg.primitive!r} for {tool_id!r}"
+            f"Expected primitive='send', got {reg.primitive!r} for {tool_id!r}"
         )
 
     @pytest.mark.parametrize(
@@ -165,10 +165,10 @@ class TestAuditPrimitiveValue:
         ],
     )
     def test_primitive_str_value_is_submit(self, tool_id: str) -> None:
-        """Primitive value as a plain string must be 'submit'."""
+        """Primitive value as a plain string must be 'send'."""
         reg = _get_registration(tool_id)
-        assert str(reg.primitive) == "submit", (
-            f"str(primitive) must equal 'submit', got {str(reg.primitive)!r}"
+        assert str(reg.primitive) == "send", (
+            f"str(primitive) must equal 'send', got {str(reg.primitive)!r}"
         )
 
 

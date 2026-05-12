@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""lookup facade coroutine — T024.
+"""find facade coroutine — T024.
 
 Single entry point for adapter discovery (search) and invocation (fetch).
 
@@ -108,7 +108,7 @@ async def _lookup_search(
         filtered = []
         for candidate in candidates:
             try:
-                tool = registry.lookup(candidate.tool_id)
+                tool = registry.find(candidate.tool_id)
                 if any(domain_lower in cat.lower() for cat in tool.category):
                     filtered.append(candidate)
             except Exception:
@@ -145,83 +145,10 @@ async def _lookup_fetch(
             retryable=False,
         )
 
-    # SWAP/llm-provider(2521): resolve_location bypass.
-    # resolve_location's 6-variant ResolveLocationOutput union (CoordResult /
-    # AdmCodeResult / AddressResult / POIResult / ResolveBundle / ResolveError)
-    # does NOT match ToolExecutor.invoke()'s 5-variant LookupOutput envelope
-    # contract — handing it to executor.invoke() makes envelope.normalize()
-    # raise EnvelopeNormalizationError → "Response processing failed". The
-    # mvp_surface.py docstring already declared this: "These tools are NOT
-    # bound to executor adapters — their invocation is handled directly by
-    # the UMMAYA orchestrator loop". Citizen-visible symptom without this
-    # bypass: 7-turn lookup() spam ending in two unrelated upstream errors
-    # because the LLM never gets a usable lat/lon back (probe-traced
-    # 2026-05-01). Returning a LookupRecord wraps the bundle so the existing
-    # LookupOutput consumers stay unchanged; the bundle's typed fields
-    # (coords.lat / coords.lon / adm_cd) are preserved inside record.fields.
-    if inp.tool_id == "resolve_location":
-        from datetime import datetime  # noqa: PLC0415
-        from zoneinfo import ZoneInfo  # noqa: PLC0415
-
-        # UMMAYA canonical citizen-facing timezone (Asia/Seoul). Internal
-        # OTEL/audit/IPC paths keep UTC; only envelope-visible stamps switch.
-        seoul_tz = ZoneInfo("Asia/Seoul")
-
-        from ummaya.tools.models import (
-            LookupMeta,
-            LookupRecord,
-            ResolveError,
-        )
-        from ummaya.tools.models import (
-            ResolveLocationInput as _ResolveLocationInput,
-        )
-        from ummaya.tools.resolve_location import resolve_location as _resolve_fn
-
-        try:
-            resolve_inp = _ResolveLocationInput.model_validate(inp.params or {})
-        except Exception as exc:
-            return LookupError(
-                kind="error",
-                reason=LookupErrorReason.invalid_params,
-                message=f"resolve_location: input validation failed: {exc}",
-                retryable=False,
-            )
-        try:
-            resolve_result = await _resolve_fn(resolve_inp)
-        except Exception as exc:
-            return LookupError(
-                kind="error",
-                reason=LookupErrorReason.upstream_unavailable,
-                message=f"resolve_location: {type(exc).__name__}: {exc}",
-                retryable=False,
-            )
-
-        if isinstance(resolve_result, ResolveError):
-            return LookupError(
-                kind="error",
-                reason=LookupErrorReason.upstream_unavailable,
-                message=f"resolve_location: {resolve_result.message}",
-                retryable=False,
-            )
-
-        # Wrap the typed ResolveLocationOutput into a LookupRecord so the
-        # downstream agentic-loop code path (which expects a LookupOutput
-        # variant) keeps working. The original bundle is in record.fields.
-        return LookupRecord(
-            kind="record",
-            item=resolve_result.model_dump(),
-            meta=LookupMeta(
-                source="resolve_location",
-                fetched_at=datetime.now(tz=seoul_tz),
-                request_id=str(uuid.uuid4()),
-                elapsed_ms=0,
-            ),
-        )
-
     request_id = str(uuid.uuid4())
 
     # FR-018: annotate the current execute_tool span with ummaya.tool.adapter
-    # for fetch mode only.  search mode and resolve_location MUST NOT carry this
+    # for fetch mode only.  search mode and locate MUST NOT carry this
     # attribute.  Use get_current_span() — no new span is created.
     current_span = trace.get_current_span()
     current_span.set_attribute("ummaya.tool.adapter", inp.tool_id)
@@ -235,3 +162,6 @@ async def _lookup_fetch(
 
     # executor.invoke() always returns a LookupOutput variant — pass through
     return result  # type: ignore[return-value]
+
+
+find = lookup

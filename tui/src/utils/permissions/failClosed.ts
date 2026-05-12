@@ -30,13 +30,13 @@ import type { UmmayaPrimitive } from './aalToLayer.js'
  * even when `bypassPermissions` is true or the session is in auto-mode.
  *
  * Rationale (FR-012):
- *   - verify: delegates real credentials to external auth vendor (Layer 1).
- *   - submit: side-effecting, potentially irreversible (Layer 2/3).
- *   - lookup: read-only; intentionally excluded — bypass is safe here.
+ *   - check: delegates real credentials to external auth vendor (Layer 1).
+ *   - send: side-effecting, potentially irreversible (Layer 2/3).
+ *   - find: read-only; intentionally excluded — bypass is safe here.
  */
 export const BYPASS_BLOCKED_PRIMITIVES: ReadonlySet<UmmayaPrimitive> = new Set<UmmayaPrimitive>([
-  'verify',
-  'submit',
+  'check',
+  'send',
 ])
 
 // ---------------------------------------------------------------------------
@@ -56,8 +56,8 @@ export function isUmmayaBypassAllowed(
   primitive: UmmayaPrimitive,
   _toolPermissionContext?: Pick<ToolPermissionContext, 'bypassPermissions'>,
 ): boolean {
-  if (primitive === 'lookup') {
-    // lookup: read-only, bypass is always safe.
+  if (primitive === 'find') {
+    // find: read-only, bypass is always safe.
     return true
   }
   if (BYPASS_BLOCKED_PRIMITIVES.has(primitive)) {

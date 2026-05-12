@@ -1,6 +1,6 @@
 # Onboarding: Active Primitive Harness
 
-UMMAYA replaced an earlier eight-verb surface (`pay`, `issue_certificate`, `submit_application`, `reserve_slot`, `subscribe_alert`, `check_eligibility`, and two others) with the active canonical primitives: `lookup`, `resolve_location`, `submit`, and `verify`. `subscribe` was removed from the active surface on 2026-05-07 after official 국민비서 references confirmed notification delivery belongs to authenticated mobile/app channels and push settings, not a CLI-only stream. Domain specialisation now lives entirely in adapter modules (`src/ummaya/tools/<ministry>/<adapter>.py`), keeping the main LLM-visible surface ministry-agnostic. The rationale and six-layer architecture that motivates this design are in [`docs/vision.md`](../vision.md).
+UMMAYA replaced an earlier eight-verb surface (`pay`, `issue_certificate`, `submit_application`, `reserve_slot`, `subscribe_alert`, `check_eligibility`, and two others) with the active canonical primitives: `find`, `locate`, `send`, and `check`. `subscribe` was removed from the active surface on 2026-05-07 after official 국민비서 references confirmed notification delivery belongs to authenticated mobile/app channels and push settings, not a CLI-only stream. Domain specialisation now lives entirely in adapter modules (`src/ummaya/tools/<ministry>/<adapter>.py`), keeping the main LLM-visible surface ministry-agnostic. The rationale and six-layer architecture that motivates this design are in [`docs/vision.md`](../vision.md).
 
 ---
 
@@ -20,13 +20,12 @@ The table below is transcribed from [`specs/031-five-primitive-harness/research.
 
 | UMMAYA primitive | Claude Code analogue (restored-src) | Shape carried over | Port type |
 |---|---|---|---|
-| `lookup` (mode=`search`) | `src/tools/GrepTool/` + `src/tools/ToolSearchTool/` | BM25 over `search_hint`, no side effects, idempotent | Structural port |
-| `lookup` (mode=`fetch`) | `src/tools/FileReadTool/` + `src/tools/WebFetchTool/` | Deterministic output, cache-friendly, idempotent | Structural port |
-| `resolve_location` | `src/tools/GlobTool/` | Deterministic resolver, one-shot, no side effects | Structural port |
-| `submit` | `src/tools/BashTool/` + `bashPermissions.ts` + `bashSecurity.ts` | Envelope `{tool_id, params}` → `{transaction_id, status, adapter_receipt}`; permission-gated side effects | Structural port (escalates to Pydantic AI + OpenAI Agents SDK guardrail for per-adapter schema) |
-| `verify` | `src/services/oauth/` + `src/tools/McpAuthTool/` | Discriminated union over external credential families, delegation-only | Architecture port, Korean-domain tiers (escalates to OpenAI Agents SDK guardrail; Pydantic v2 discriminated union) |
+| `find` | `src/tools/GrepTool/` + `src/tools/ToolSearchTool/` | BM25 over `search_hint`, deterministic adapter discovery, no side effects, idempotent | Structural port |
+| `locate` | `src/tools/GlobTool/` | Deterministic resolver, one-shot, no side effects | Structural port |
+| `send` | `src/tools/BashTool/` + `bashPermissions.ts` + `bashSecurity.ts` | Envelope `{tool_id, params}` → `{transaction_id, status, adapter_receipt}`; permission-gated side effects | Structural port (escalates to Pydantic AI + OpenAI Agents SDK guardrail for per-adapter schema) |
+| `check` | `src/services/oauth/` + `src/tools/McpAuthTool/` | Discriminated union over external credential families, delegation-only | Architecture port, Korean-domain tiers (escalates to OpenAI Agents SDK guardrail; Pydantic v2 discriminated union) |
 
-**Verdict from research.md, revised 2026-05-07**: `lookup`, `resolve_location`, and `submit` are structural ports of CC tools. `verify` is UMMAYA-net-new and uses CC's delegation architecture for Korean identity tiers. `subscribe` is deferred until UMMAYA owns an app/push delivery runtime.
+**Verdict from research.md, revised 2026-05-07**: `find`, `locate`, and `send` are structural ports of CC tools. `check` is UMMAYA-net-new and uses CC's delegation architecture for Korean identity tiers. `subscribe` is deferred until UMMAYA owns an app/push delivery runtime.
 
 ---
 

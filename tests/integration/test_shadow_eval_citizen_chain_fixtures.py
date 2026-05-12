@@ -37,7 +37,7 @@ def test_fixture_loads_and_satisfies_invariants(fixture_path: Path) -> None:
     raw = json.loads(fixture_path.read_text(encoding="utf-8"))
     fixture = CitizenChainFixture.model_validate(raw)
 
-    if fixture.expected_first_tool_call.name == "verify":
+    if fixture.expected_first_tool_call.name == "check":
         assert fixture.expected_family_hint is not None, (
             f"{fixture_path.name}: verify call requires expected_family_hint to be non-None"
         )

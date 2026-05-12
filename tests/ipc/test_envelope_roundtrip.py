@@ -84,7 +84,7 @@ ALL_FRAMES: list[IPCFrame] = [
         role="backend",
         kind="tool_call",
         call_id="call-001",
-        name="lookup",
+        name="find",
         arguments={"mode": "fetch", "tool_id": "kma_forecast"},
     ),
     # 4. tool_result
@@ -93,7 +93,7 @@ ALL_FRAMES: list[IPCFrame] = [
         role="backend",
         kind="tool_result",
         call_id="call-001",
-        envelope=ToolResultEnvelope(kind="lookup", data=[]),
+        envelope=ToolResultEnvelope(kind="find", data=[]),
     ),
     # 5. coordinator_phase
     CoordinatorPhaseFrame(**_BASE, role="backend", kind="coordinator_phase", phase="Research"),
@@ -104,7 +104,7 @@ ALL_FRAMES: list[IPCFrame] = [
         kind="worker_status",
         worker_id="w1",
         role_id="transport-specialist",
-        current_primitive="lookup",
+        current_primitive="find",
         status="running",
     ),
     # 7. permission_request
@@ -114,7 +114,7 @@ ALL_FRAMES: list[IPCFrame] = [
         kind="permission_request",
         request_id="req-001",
         worker_id="w1",
-        primitive_kind="submit",
+        primitive_kind="send",
         description_ko="민원 제출 허가 요청",
         description_en="Permission to submit civil petition",
         risk_level="high",

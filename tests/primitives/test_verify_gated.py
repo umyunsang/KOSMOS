@@ -2,14 +2,14 @@
 """Tests for verify primitive gating (Gap B fix).
 
 Verifies that:
-1. ``GATED_PRIMITIVES`` includes ``verify``.
+1. ``GATED_PRIMITIVES`` includes ``check``.
 2. ``LIGHT_GATE_PRIMITIVES`` is a subset of ``GATED_PRIMITIVES`` containing
-   only ``verify``.
-3. ``HEAVY_GATE_PRIMITIVES`` contains ``submit`` but NOT ``verify``.
+   only ``check``.
+3. ``HEAVY_GATE_PRIMITIVES`` contains ``send`` but NOT ``check``.
 4. The gate partition is exhaustive: every primitive is either gated or
    fully auto-allowed (lookup / resolve_location).
 5. The IPC stdio ``_check_permission_gate`` emits a ``PermissionRequestFrame``
-   for a ``verify`` call (i.e. verify now enters the bridge, not the
+   for a ``check`` call (i.e. verify now enters the bridge, not the
    auto-allow shortcut).
 """
 
@@ -53,28 +53,28 @@ _RUNNER_TIMEOUT = 20.0
 
 def test_gated_primitives_includes_verify() -> None:
     """Gap B invariant: verify must be in GATED_PRIMITIVES."""
-    assert "verify" in GATED_PRIMITIVES, (
-        f"'verify' missing from GATED_PRIMITIVES={GATED_PRIMITIVES!r}"
+    assert "check" in GATED_PRIMITIVES, (
+        f"'check' missing from GATED_PRIMITIVES={GATED_PRIMITIVES!r}"
     )
 
 
 def test_light_gate_contains_only_verify() -> None:
     """LIGHT_GATE_PRIMITIVES must be exactly {verify}."""
-    assert frozenset({"verify"}) == LIGHT_GATE_PRIMITIVES, (
-        f"LIGHT_GATE_PRIMITIVES={LIGHT_GATE_PRIMITIVES!r}, expected {{'verify'}}"
+    assert frozenset({"check"}) == LIGHT_GATE_PRIMITIVES, (
+        f"LIGHT_GATE_PRIMITIVES={LIGHT_GATE_PRIMITIVES!r}, expected {{'check'}}"
     )
 
 
 def test_heavy_gate_does_not_contain_verify() -> None:
     """verify is light-gate; it must NOT appear in HEAVY_GATE_PRIMITIVES."""
-    assert "verify" not in HEAVY_GATE_PRIMITIVES, (
-        f"'verify' must not be in HEAVY_GATE_PRIMITIVES={HEAVY_GATE_PRIMITIVES!r}"
+    assert "check" not in HEAVY_GATE_PRIMITIVES, (
+        f"'check' must not be in HEAVY_GATE_PRIMITIVES={HEAVY_GATE_PRIMITIVES!r}"
     )
 
 
 def test_heavy_gate_contains_submit() -> None:
     """submit is side-effecting — must be in HEAVY_GATE_PRIMITIVES."""
-    assert "submit" in HEAVY_GATE_PRIMITIVES
+    assert "send" in HEAVY_GATE_PRIMITIVES
     assert "subscribe" not in HEAVY_GATE_PRIMITIVES
 
 
@@ -92,17 +92,17 @@ def test_gated_equals_light_union_heavy() -> None:
     )
 
 
-def test_auto_allowed_primitives_are_lookup_and_resolve_location() -> None:
-    """lookup and resolve_location must NOT be gated (fully auto-allowed)."""
+def test_auto_allowed_primitives_are_find_and_locate() -> None:
+    """find and locate must NOT be gated (fully auto-allowed)."""
     all_primitives = frozenset(PRIMITIVE_REGISTRY.keys())
     auto_allowed = all_primitives - GATED_PRIMITIVES
-    assert auto_allowed == frozenset({"lookup", "resolve_location"}), (
-        f"Auto-allowed set={auto_allowed!r}, expected {{'lookup', 'resolve_location'}}"
+    assert auto_allowed == frozenset({"find", "locate"}), (
+        f"Auto-allowed set={auto_allowed!r}, expected {{'find', 'locate'}}"
     )
 
 
 # ---------------------------------------------------------------------------
-# 2. IPC integration — verify enters permission bridge
+# 2. IPC integration — check enters permission bridge
 # ---------------------------------------------------------------------------
 
 
@@ -186,7 +186,7 @@ class _VerifyOnceLLMClient:
                 type="tool_call_delta",
                 tool_call_index=0,
                 tool_call_id=call_id,
-                function_name="verify",
+                function_name="check",
                 function_args_delta=type(self)._args_json,
             )
             yield StreamEvent(type="done")
@@ -307,8 +307,8 @@ async def test_verify_call_emits_permission_request_frame(
     perm_frames = [f for f in frames if f.get("kind") == "permission_request"]
     assert len(perm_frames) >= 1
     pf = perm_frames[0]
-    assert pf.get("primitive_kind") == "verify", (
-        f"permission_request.primitive_kind must be 'verify', got {pf.get('primitive_kind')!r}"
+    assert pf.get("primitive_kind") == "check", (
+        f"permission_request.primitive_kind must be 'check', got {pf.get('primitive_kind')!r}"
     )
     # verify is LIGHT_GATE → risk_level must be "low"
     assert pf.get("risk_level") == "low", (

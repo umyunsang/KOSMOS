@@ -7,7 +7,7 @@
       "response": {
         "toolCalls": [
           {
-            "name": "lookup",
+            "name": "find",
             "arguments": {
               "mode": "fetch",
               "tool_id": "nfa_emergency_info_service",

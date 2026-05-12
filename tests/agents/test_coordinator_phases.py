@@ -56,7 +56,7 @@ class _InMemoryMailbox:
     ) -> None:
         """Pre-seed a result message from a worker to the coordinator."""
         meta = LookupMeta(
-            source="lookup",
+            source="find",
             fetched_at=datetime.now(UTC),
             request_id=str(uuid4()),
             elapsed_ms=5,

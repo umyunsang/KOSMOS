@@ -864,7 +864,7 @@ export async function performMCPOAuthFlow(
   abortSignal?: AbortSignal,
   options?: {
     skipBrowserOpen?: boolean
-    onWaitingForCallback?: (submit: (callbackUrl: string) => void) => void
+    onWaitingForCallback?: (send: (callbackUrl: string) => void) => void
   },
 ): Promise<void> {
   // XAA (SEP-990): if configured, bypass the per-server consent dance.

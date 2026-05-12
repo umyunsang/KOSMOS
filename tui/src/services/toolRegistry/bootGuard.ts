@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Epic γ #2294 · T004 · ToolRegistry boot guard.
 //
-// Walks every active registered UMMAYA primitive (lookup / resolve_location /
+// Walks every active registered UMMAYA primitive (lookup / locate /
 // submit / verify) at process boot and asserts that
 // each one exposes the full `Tool<>` 9-member surface from
 // `tui/src/Tool.ts` (byte-identical to CC `Tool.ts`). Fails closed with a
@@ -22,7 +22,7 @@
 
 import type { Tool } from '../../Tool.js'
 
-const PRIMITIVE_NAMES = ['lookup', 'resolve_location', 'submit', 'verify'] as const
+const PRIMITIVE_NAMES = ['find', 'locate', 'send', 'check'] as const
 export type PrimitiveName = (typeof PRIMITIVE_NAMES)[number]
 
 const REQUIRED_MEMBERS = [
@@ -81,7 +81,7 @@ export function verifyBootRegistry(registry: readonly Tool[]): BootResult {
       diagnostic:
         `[UMMAYA][bootGuard] 활성 primitive 중 일부가 ToolRegistry에 등록되지 않았습니다. ` +
         `누락: ${missingNames.join(', ')}.\n` +
-        `UMMAYA는 활성 primitive(lookup/resolve_location/submit/verify) 모두 등록되어야 부팅을 허용합니다.\n` +
+        `UMMAYA는 활성 primitive(find/locate/send/check) 모두 등록되어야 부팅을 허용합니다.\n` +
         `참조: specs/2294-5-primitive-align/contracts/registry-boot-guard.md`,
     }
   }

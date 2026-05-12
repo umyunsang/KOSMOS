@@ -41,7 +41,7 @@ def _make_tool(**overrides) -> GovAPITool:
     - requires_auth=False (V5: public must not require auth)
     - pipa_class="non_personal" + dpa_reference=None (V1/V2: no PII)
     - is_irreversible=False (V4: public cannot be irreversible)
-    - primitive="lookup" (Invariant 1: must be declared)
+    - primitive="find" (Invariant 1: must be declared)
     """
     defaults: dict = {
         "id": "fixture_tool",
@@ -58,7 +58,7 @@ def _make_tool(**overrides) -> GovAPITool:
         "is_irreversible": False,
         "dpa_reference": None,
         "requires_auth": False,
-        "primitive": "lookup",
+        "primitive": "find",
         "adapter_mode": "live",
     }
     defaults.update(overrides)
@@ -82,25 +82,25 @@ class TestBuildRoutingIndexHappy:
         """A single valid adapter is indexed by both tool_id and primitive."""
         idx = build_routing_index([_make_tool()])
         assert "fixture_tool" in idx.by_tool_id
-        assert "lookup" in idx.by_primitive
-        assert idx.by_primitive["lookup"][0].id == "fixture_tool"
+        assert "find" in idx.by_primitive
+        assert idx.by_primitive["find"][0].id == "fixture_tool"
 
     def test_multiple_adapters_different_primitives(self):
         """Adapters with different primitives each appear in their primitive bucket."""
-        t1 = _make_tool(id="fixture_lookup", primitive="lookup")
-        t2 = _make_tool(id="fixture_resolve", primitive="resolve_location")
+        t1 = _make_tool(id="fixture_lookup", primitive="find")
+        t2 = _make_tool(id="fixture_resolve", primitive="locate")
         idx = build_routing_index([t1, t2])
-        assert len(idx.by_primitive["lookup"]) == 1
-        assert len(idx.by_primitive["resolve_location"]) == 1
+        assert len(idx.by_primitive["find"]) == 1
+        assert len(idx.by_primitive["locate"]) == 1
         assert "fixture_lookup" in idx.by_tool_id
         assert "fixture_resolve" in idx.by_tool_id
 
     def test_multiple_adapters_same_primitive(self):
         """Multiple adapters with the same primitive are all in the same bucket."""
-        t1 = _make_tool(id="tool_alpha", primitive="lookup")
-        t2 = _make_tool(id="tool_beta", primitive="lookup")
+        t1 = _make_tool(id="tool_alpha", primitive="find")
+        t2 = _make_tool(id="tool_beta", primitive="find")
         idx = build_routing_index([t1, t2])
-        tool_ids = {a.id for a in idx.by_primitive["lookup"]}
+        tool_ids = {a.id for a in idx.by_primitive["find"]}
         assert tool_ids == {"tool_alpha", "tool_beta"}
 
     def test_result_is_routing_index_instance(self):
@@ -134,13 +134,13 @@ class TestInvariant1PrimitiveDeclared:
     def test_first_adapter_none_stops_processing(self):
         """Fail-fast: error raised on first None-primitive adapter, not after."""
         bad = _make_tool(id="bad_tool", primitive=None)
-        good = _make_tool(id="good_tool", primitive="lookup")
+        good = _make_tool(id="good_tool", primitive="find")
         with pytest.raises(RoutingValidationError):
             build_routing_index([bad, good])
 
     def test_valid_primitive_does_not_raise(self):
         """Each supported primitive value is accepted without error."""
-        primitives = ["lookup", "resolve_location", "submit", "verify"]
+        primitives = ["find", "locate", "send", "check"]
         for prim in primitives:
             tool = _make_tool(id=f"tool_{prim}", primitive=prim)
             idx = build_routing_index([tool])
@@ -249,7 +249,7 @@ class TestMinistryOtherWarning:
         tool = _make_tool(ministry="OTHER")
         idx = build_routing_index([tool])
         assert "fixture_tool" in idx.by_tool_id
-        assert len(idx.by_primitive["lookup"]) == 1
+        assert len(idx.by_primitive["find"]) == 1
 
     def test_multiple_other_ministries_each_emit_warning(self):
         """Two OTHER-ministry adapters produce two separate warnings."""

@@ -2,7 +2,7 @@
   "$defs": {
     "DelegationContext": {
       "additionalProperties": false,
-      "description": "Carries a ``DelegationToken`` plus bilingual purpose strings for the permission UI.\n\nReturned by verify adapters (except ``mock_verify_module_any_id_sso``).\nPassed forward through the LLM's tool-call context to the next adapter.",
+      "description": "Carries a ``DelegationToken`` plus bilingual purpose strings for the permission UI.\n\nReturned by check adapters (except ``mock_verify_module_any_id_sso``).\nPassed forward through the LLM's tool-call context to the next adapter.",
       "properties": {
         "citizen_did": {
           "anyOf": [
@@ -14,7 +14,7 @@
             }
           ],
           "default": null,
-          "description": "Citizen DID if the verify ceremony surfaced one (e.g. 'did:web:mobileid.go.kr' issuance). Optional.",
+          "description": "Citizen DID if the check ceremony surfaced one (e.g. 'did:web:mobileid.go.kr' issuance). Optional.",
           "title": "Citizen Did"
         },
         "purpose_en": {
@@ -46,7 +46,7 @@
     },
     "DelegationToken": {
       "additionalProperties": false,
-      "description": "Opaque, scope-bound, time-bound credential issued by a verify adapter.\n\nIn Mock mode the ``vp_jwt`` header is ``{\"alg\":\"none\",\"typ\":\"vp+jwt\"}``;\nthe signature segment is the literal string ``\"mock-signature-not-cryptographic\"``.\n\nValidators:\n- ``expires_at > issued_at``\n- ``scope`` matches the multi-scope grammar\n- ``delegation_token`` starts with ``del_`` and has >= 24 chars after the prefix",
+      "description": "Opaque, scope-bound, time-bound credential issued by a check adapter.\n\nIn Mock mode the ``vp_jwt`` header is ``{\"alg\":\"none\",\"typ\":\"vp+jwt\"}``;\nthe signature segment is the literal string ``\"mock-signature-not-cryptographic\"``.\n\nValidators:\n- ``expires_at > issued_at``\n- ``scope`` matches the multi-scope grammar\n- ``delegation_token`` starts with ``del_`` and has >= 24 chars after the prefix",
       "properties": {
         "_mode": {
           "const": "mock",
@@ -56,7 +56,7 @@
           "type": "string"
         },
         "delegation_token": {
-          "description": "Opaque bearer token consumed by submit/lookup adapters. Must start with 'del_' and have >= 24 chars after the prefix.",
+          "description": "Opaque bearer token consumed by send/find adapters. Must start with 'del_' and have >= 24 chars after the prefix.",
           "minLength": 1,
           "title": "Delegation Token",
           "type": "string"
@@ -74,7 +74,7 @@
           "type": "string"
         },
         "issuer_did": {
-          "description": "DID of the issuing verify adapter, e.g. 'did:web:mobileid.go.kr'.",
+          "description": "DID of the issuing check adapter, e.g. 'did:web:mobileid.go.kr'.",
           "minLength": 1,
           "title": "Issuer Did",
           "type": "string"
@@ -997,7 +997,7 @@
             }
           ],
           "default": null,
-          "description": "Scope-bound delegation credential issued when the caller requests downstream MyData lookup/submit authority."
+          "description": "Scope-bound delegation credential issued when the caller requests downstream MyData find/send authority."
         },
         "external_session_ref": {
           "anyOf": [
@@ -1127,7 +1127,7 @@
     },
     "VerifyOutput": {
       "additionalProperties": false,
-      "description": "Top-level output envelope for the verify primitive.",
+      "description": "Top-level output envelope for the check primitive.",
       "properties": {
         "result": {
           "discriminator": {
@@ -1178,7 +1178,7 @@
   "$id": "https://ummaya.example/api/schemas/geumyung_module.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Main-surface input for the verify primitive (FR-006).",
+  "description": "Main-surface input for the check primitive (FR-006).",
   "properties": {
     "family_hint": {
       "enum": [

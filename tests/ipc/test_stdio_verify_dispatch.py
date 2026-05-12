@@ -66,8 +66,8 @@ _RUNNER_TIMEOUT = 30.0
 # ---------------------------------------------------------------------------
 
 
-# Source-of-truth: prompts/system_v1.md <verify_families> block.
-# Mirrored here so any drift between prompt and code blows up the test.
+# Source-of-truth: registry/discovery metadata.
+# Mirrored here so any drift between metadata and dispatcher mapping blows up the test.
 _EXPECTED_PAIRS: dict[str, str] = {
     "mock_verify_gongdong_injeungseo": "gongdong_injeungseo",
     "mock_verify_geumyung_injeungseo": "geumyung_injeungseo",
@@ -171,7 +171,7 @@ class _FakeStdout:
 
 
 class _VerifyOnceLLMClient:
-    """Fake LLM that emits exactly one ``verify`` tool_call and then
+    """Fake LLM that emits exactly one ``check`` tool_call and then
     finishes the conversation on turn 2.
 
     The exact tool-call args are pulled from class-level ``_args_json``
@@ -180,7 +180,7 @@ class _VerifyOnceLLMClient:
 
     _class_turn: int = 0
     _args_json: str = "{}"
-    _call_id_prefix: str = "verify"
+    _call_id_prefix: str = "check"
 
     def __init__(self, config: Any) -> None:  # noqa: D401
         pass
@@ -206,7 +206,7 @@ class _VerifyOnceLLMClient:
                 type="tool_call_delta",
                 tool_call_index=0,
                 tool_call_id=call_id,
-                function_name="verify",
+                function_name="check",
                 function_args_delta=type(self)._args_json,
             )
             yield StreamEvent(type="done")
@@ -230,7 +230,7 @@ async def _run_verify_dispatch(
 
     monkeypatch.setattr(stdio_mod, "_stdout_lock", None)
 
-    # Gap B fix: verify is now gated (GATED_PRIMITIVES includes "verify").
+    # Gap B fix: verify is now gated (GATED_PRIMITIVES includes "check").
     # These tests only exercise the tool_id → family_hint translation path,
     # NOT the permission gating logic. Bypass the gate by patching
     # GATED_PRIMITIVES to submit only so
@@ -240,7 +240,7 @@ async def _run_verify_dispatch(
     monkeypatch.setattr(
         _prims_mod,
         "GATED_PRIMITIVES",
-        frozenset({"submit"}),
+        frozenset({"send"}),
     )
 
     fake_stdout = _FakeStdout()
@@ -348,7 +348,7 @@ async def test_dispatch_verify_translates_tool_id_to_family_hint(
     args_obj: dict[str, Any] = {
         "tool_id": tool_id,
         "params": {
-            "scope_list": ["lookup:test.adapter"],
+            "scope_list": ["find:test.adapter"],
             "purpose_ko": "테스트",
             "purpose_en": "test",
         },
@@ -361,8 +361,8 @@ async def test_dispatch_verify_translates_tool_id_to_family_hint(
     envelope = parts["envelope"]
     inner = parts["inner"]
 
-    assert envelope.get("kind") == "verify", (
-        f"Expected envelope.kind=='verify', got {envelope.get('kind')!r}"
+    assert envelope.get("kind") == "check", (
+        f"Expected envelope.kind=='check', got {envelope.get('kind')!r}"
     )
     # The envelope's outer ``family`` mirror is set from the resolved
     # family_hint; must equal the expected mapping.
@@ -390,7 +390,7 @@ async def test_dispatch_verify_legacy_family_hint_still_works(
     args_obj: dict[str, Any] = {
         "family_hint": "modid",
         "session_context": {
-            "scope_list": ["lookup:hometax.simplified"],
+            "scope_list": ["find:hometax.simplified"],
             "session_id": "test-legacy",
         },
     }
@@ -455,12 +455,15 @@ async def test_dispatch_verify_empty_tool_id_falls_back_to_mismatch_error(
 
 
 @pytest.mark.asyncio
-async def test_dispatch_verify_unknown_tool_id_falls_back_to_mismatch_error(
+async def test_dispatch_verify_unknown_tool_id_surfaces_registry_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Unknown tool_ids that are not in the canonical map AND have no
-    legacy ``family_hint`` companion arg must surface
-    ``VerifyMismatchError`` cleanly."""
+    """Unknown tool_ids must fail at the registry boundary.
+
+    The correct architecture validates adapter identity before translating
+    to the legacy verify family, so this is now a dispatcher error rather
+    than a primitive-level VerifyMismatchError.
+    """
     args_obj: dict[str, Any] = {
         "tool_id": "mock_verify_does_not_exist",
         "session_context": {},
@@ -469,10 +472,9 @@ async def test_dispatch_verify_unknown_tool_id_falls_back_to_mismatch_error(
     buf = await _run_verify_dispatch(frame, args_obj, monkeypatch)
 
     frames = buf.as_frames()
-    parts = _extract_verify_envelope(frames)
-    inner = parts["inner"]
+    tool_results = [f for f in frames if f.get("kind") == "tool_result"]
+    assert tool_results, f"No tool_result frames emitted; got {frames!r}"
+    envelope = tool_results[0].get("envelope", {})
 
-    assert inner.get("family") == "mismatch_error", (
-        f"unknown tool_id must surface VerifyMismatchError, got "
-        f"family={inner.get('family')!r}; inner={inner!r}"
-    )
+    assert envelope.get("kind") == "check"
+    assert "No check adapter registered" in str(envelope.get("error"))

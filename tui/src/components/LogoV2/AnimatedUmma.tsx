@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: Apache-2.0
 // UMMAYA terminal mascot animation.
 //
-// Keeps the CC AnimatedClawd frame contract while animating the UMMAYA
-// house-shaped mascot.
+// Keeps the CC animated mascot frame contract while animating Umma, the
+// UMMAYA open-mouth cat mascot.
 
 import * as React from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { Box } from '../../ink.js'
-import { Clawd, type ClawdPose } from './Clawd.js'
+import { Umma, type UmmaPose } from './Umma.js'
 
 type Frame = {
-  pose: ClawdPose
+  pose: UmmaPose
   /** marginTop offset in fixed-height container (0 = normal, 1 = low) */
   offset: number
 }
 
-function hold(pose: ClawdPose, offset: number, frames: number): Frame[] {
+function hold(pose: UmmaPose, offset: number, frames: number): Frame[] {
   return Array.from({ length: frames }, () => ({ pose, offset }))
 }
 
@@ -51,22 +51,22 @@ const incrementFrame = (i: number) => i + 1
 const MASCOT_HEIGHT = 5
 
 /**
- * UMMAYA mascot with a fixed-height house footprint. Click animations either
- * shift the CC-style eyes left/right or raise the roof arms.
+ * Umma with a fixed-height cat footprint. Click animations either shift the
+ * eyes left/right or lift the ears.
  */
-export function AnimatedClawd(): React.ReactNode {
-  const { pose, bounceOffset, onClick } = useClawdAnimation()
+export function AnimatedUmma(): React.ReactNode {
+  const { pose, bounceOffset, onClick } = useUmmaAnimation()
   return (
     <Box height={MASCOT_HEIGHT} flexDirection="column" onClick={onClick}>
       <Box marginTop={bounceOffset} flexShrink={0}>
-        <Clawd pose={pose} />
+        <Umma pose={pose} />
       </Box>
     </Box>
   )
 }
 
-function useClawdAnimation(): {
-  pose: ClawdPose
+function useUmmaAnimation(): {
+  pose: UmmaPose
   bounceOffset: number
   onClick: () => void
 } {

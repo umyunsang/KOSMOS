@@ -1,8 +1,8 @@
 # UMMAYA MVP — Main Tools Precision Design
 
 > **Status**: Shipped design (Spec 022 merged). This document is the historical record for the MVP 2-tool facade as shipped.
-> **Scope (as shipped)**: MVP ships **1 main tool** (`lookup`) and **1 primitive** (`resolve_location`) on top of the existing 6-layer architecture in `docs/vision.md`.
-> **Expansion**: The main-tool axis was reset to an active primitive harness design. Current active primitives are `lookup`, `resolve_location`, `submit`, and `verify`; `subscribe` is deferred until UMMAYA has an app/push-notification runtime. All ministry- and domain-specific knowledge (eligibility, payment, certificate issuance, application submission, slot reservation, notification handoff) collapses into adapters under `src/ummaya/tools/<ministry>/<adapter>.py`; the main surface stays domain-agnostic. The previous 8-verb proposal and its Discussion have been retired.
+> **Scope (as shipped)**: MVP ships **1 main tool** (`find`) and **1 primitive** (`locate`) on top of the existing 6-layer architecture in `docs/vision.md`.
+> **Expansion**: The main-tool axis was reset to an active primitive harness design. Current active primitives are `find`, `locate`, `send`, and `check`; `subscribe` is deferred until UMMAYA has an app/push-notification runtime. All ministry- and domain-specific knowledge (eligibility, payment, certificate issuance, application submission, slot reservation, notification handoff) collapses into adapters under `src/ummaya/tools/<ministry>/<adapter>.py`; the main surface stays domain-agnostic. The previous 8-verb proposal and its Discussion have been retired.
 > **Last updated**: 2026-05-07 (8-verb expansion retired; active primitive harness corrected after subscribe deferral. Body preserved at 2026-04-16 shipped-MVP state).
 
 ## 1. Scope and non-goals
@@ -10,10 +10,10 @@
 ### In scope (MVP)
 - Two LLM-visible "main" tools that together cover the common citizen-query pattern: *resolve a place → query a government dataset*.
 - A thin **Facade + Tool Search hybrid** surface where hot-path tools are always resident and cold-path API adapters load lazily.
-- A seed set of **4 per-API adapters** (KOROAD · KMA · HIRA · NMC) that exercise every canonical return shape (`collection`, `timeseries`) and every spatial-parameter convention (sido/gugun codes, KMA LCC grid, WGS84 coord+radius, distance-sorted WGS84) so `lookup` is validated end-to-end against real provider heterogeneity.
+- A seed set of **4 per-API adapters** (KOROAD · KMA · HIRA · NMC) that exercise every canonical return shape (`collection`, `timeseries`) and every spatial-parameter convention (sido/gugun codes, KMA LCC grid, WGS84 coord+radius, distance-sorted WGS84) so `find` is validated end-to-end against real provider heterogeneity.
 
 ### Explicit non-goals
-- Domain-specific action verbs (eligibility check, payment, certificate issuance, application submission, slot reservation, alert subscription) — **deferred at shipped-MVP time (2026-04-16)** and **no longer tracked as main-tool verbs**. Active primitives treat these as adapter concerns beneath `lookup`, `resolve_location`, `submit`, and `verify`. Legal/auth barriers for live promotion remain (student project, PASS TEE-bound, 공동인증서 NDA-closed); see `docs/vision.md § access matrix`.
+- Domain-specific action verbs (eligibility check, payment, certificate issuance, application submission, slot reservation, alert subscription) — **deferred at shipped-MVP time (2026-04-16)** and **no longer tracked as main-tool verbs**. Active primitives treat these as adapter concerns beneath `find`, `locate`, `send`, and `check`. Legal/auth barriers for live promotion remain (student project, PASS TEE-bound, 공동인증서 NDA-closed); see `docs/vision.md § access matrix`.
 - Writing/mutating endpoints. MVP is **read-only**.
 - Full coverage of `data.go.kr`. MVP needs only enough adapters to prove the retrieval pattern works.
 - Multi-turn planning, permission pipeline depth beyond fail-closed defaults.
@@ -25,14 +25,14 @@ Citations abbreviated; full URLs in § 11.
 | Finding | Source | Implication for UMMAYA |
 |---|---|---|
 | **Single "universal" API-call facade hallucinates 30–45% of params** | ToolBench (arXiv:2307.16789), API-Bank (arXiv:2304.08244) | Do NOT expose `lookup(api_id, params)` as a flat tool. |
-| **Hierarchical retrieval router beats flat facades** on 16k-tool benchmarks | AnyTool (arXiv:2402.04253) | `lookup` must be a *retrieval surface*, not a monolithic dispatcher. |
+| **Hierarchical retrieval router beats flat facades** on 16k-tool benchmarks | AnyTool (arXiv:2402.04253) | `find` must be a *retrieval surface*, not a monolithic dispatcher. |
 | **Tree dispatcher anti-pattern**: nested tool calls amplify failure up to 17× | NESTful (EMNLP'25, arXiv:2409.03797); multi-agent-trap survey | Dispatcher tool calling sub-tools is banned. Use 2-step flat chain: retrieve → call. |
 | **Anthropic Tool Search Tool (BM25)** ships as first-party primitive (2025-11) | Anthropic docs; Arcade, Spring, Stacklok replications | Pattern is validated. UMMAYA reimplements client-side (FriendliAI/K-EXAONE has no server-side equivalent). |
 | **Cursor Dynamic Context Discovery: 46.9% token reduction** (production A/B) | Cursor blog (2026-01) | Realistic ceiling; design for 30–50% savings, not 90%. |
-| **Structured envelope `{items, next_cursor, meta}` + opaque cursor** | LangChain / MCP reference servers; data.go.kr convention | Canonical shape for `lookup` return. Offset/page pagination causes loops. |
+| **Structured envelope `{items, next_cursor, meta}` + opaque cursor** | LangChain / MCP reference servers; data.go.kr convention | Canonical shape for `find` return. Offset/page pagination causes loops. |
 | **`shape` discriminator beats inference** (record / timeseries / collection) | Anthropic computer-use; Cursor `@docs` | Return `shape` field explicitly. |
 | **Claude Code tool convention: 2–4 required params, mode enums over booleans, discriminated-union returns, fail-closed defaults via `buildTool()` factory** | `.references/claude-reviews-claude/docs/chapters/02-tool-system.md` | Direct blueprint — UMMAYA adopts the same shape. |
-| **Korean geocoding: 카카오 Local + 도로명주소 + SGIS** covers all MVP needs with zero-cost student access | API survey (this doc's Agent C) | `resolve_location` backend is a 3-provider deterministic chain. |
+| **Korean geocoding: 카카오 Local + 도로명주소 + SGIS** covers all MVP needs with zero-cost student access | API survey (this doc's Agent C) | `locate` backend is a 3-provider deterministic chain. |
 | **Korean-public-API specifics**: ~`response.header.resultCode` envelope, XML default with `?type=json`, 429 signalled in-band not via HTTP status | data.go.kr convention; KOROAD docs | Adapter layer must normalize envelope; client HTTP status is insufficient. |
 
 ## 3. Architecture overview
@@ -71,22 +71,22 @@ Citations abbreviated; full URLs in § 11.
 ```
 
 - **Hot path (always loaded)**: 2 tools, total schema budget ~1–2K tokens.
-- **Cold path**: N per-API adapters, registered via `GovAPITool` (`docs/tool-adapters.md`). Schemas NOT loaded until `lookup` surfaces them.
+- **Cold path**: N per-API adapters, registered via `GovAPITool` (`docs/tool-adapters.md`). Schemas NOT loaded until `find` surfaces them.
 - **Dispatch flatness**: every path is at most **2 LLM tool calls** — never a dispatcher-calls-subtool chain. This avoids the 17× compound failure amplification (NESTful).
 
 ### 3.2 Why not one universal `lookup(api_id, params)` facade?
 
 Published benchmarks (ToolBench, API-Bank, AnyTool) show flat universal facades fail on **param hallucination**: the model guesses `startDate` vs `start_date`, `region` vs `sido`, omits required auth params, etc. Rate: 30–45% of failures. A hierarchical retrieve-then-call pattern shifts failures to tool-selection (~20%), which is recoverable via retrieval re-ranking.
 
-UMMAYA `lookup` therefore exposes **two operations** — `search` (retrieve candidates) and `fetch` (invoke the selected adapter with typed args). The LLM sees one tool with a `mode` discriminator, which is how Claude Code's `Grep` handles `output_mode: "content"|"files_with_matches"|"count"`.
+UMMAYA `find` therefore exposes **two operations** — `search` (retrieve candidates) and `fetch` (invoke the selected adapter with typed args). The LLM sees one tool with a `mode` discriminator, which is how Claude Code's `Grep` handles `output_mode: "content"|"files_with_matches"|"count"`.
 
-## 4. Tool #1 — `resolve_location`
+## 4. Tool #1 — `locate`
 
 ### 4.1 Problem scope
 
-Turn natural-language place references ("강남역", "서울 종로구 세종대로 175", "37.5,127.0", "상암월드컵경기장") into structured location data consumable by `lookup` adapters: WGS84 coordinates, road-name address, jibun address, 10-digit 행정동 code.
+Turn natural-language place references ("강남역", "서울 종로구 세종대로 175", "37.5,127.0", "상암월드컵경기장") into structured location data consumable by `find` adapters: WGS84 coordinates, road-name address, jibun address, 10-digit 행정동 code.
 
-Small, bounded domain → **true thin facade with deterministic dispatch** is the right pattern here (distinct from `lookup`'s retrieval pattern).
+Small, bounded domain → **true thin facade with deterministic dispatch** is the right pattern here (distinct from `find`'s retrieval pattern).
 
 ### 4.2 Public schema
 
@@ -232,7 +232,7 @@ class ResolveBundle(BaseModel):
    - Place: kakao → juso (address mode) → v-world (deferred, post-MVP)
    - Address: juso → kakao → v-world
    - Adm_cd: sgis (canonical) → juso (returns `admCd` directly) → kakao (`coord2regioncode`)
-3. **Never re-enter the LLM loop** inside `resolve_location`. All fallback is handled by this chain.
+3. **Never re-enter the LLM loop** inside `locate`. All fallback is handled by this chain.
 
 **Why deterministic dispatch (not Tool Search)**:
 - Only 3 backends, bounded for 2+ years.
@@ -240,10 +240,10 @@ class ResolveBundle(BaseModel):
 - Eliminates LLM cost + latency per geocoding call.
 
 **Provider-specific spatial variants are adapter-owned, not resolver-owned**:
-- `resolve_location` returns generic primitives only (WGS84 coords, 10-digit adm_cd, road/jibun address, POI).
+- `locate` returns generic primitives only (WGS84 coords, 10-digit adm_cd, road/jibun address, POI).
 - KMA adapter runs the Lambert-Conformal-Conic projection (`docs/vision.md` refs: docx P264-P271, xlsx fallback `research/data/kma/격자_위경도.xlsx`) **inside the adapter**, taking `lat`/`lon` as input.
 - KOROAD adapter owns the sido/gugun codebook including year-dependent quirks (2023 강원 42→51, 전북 45→52; 부천시 split history 197/199/195 → 190 → 192/194/196), converting from `adm_cd` at call time.
-- Rationale: provider pathology stays localized. `resolve_location` remains a stable, generic surface.
+- Rationale: provider pathology stays localized. `locate` remains a stable, generic surface.
 
 ### 4.5 Backend provider selection (evidence-backed)
 
@@ -268,7 +268,7 @@ cache_ttl_seconds = 86400        # 24h; place↔admCd mapping is stable
 rate_limit_per_minute = 60       # well under kakao's 300K/day
 ```
 
-## 5. Tool #2 — `lookup`
+## 5. Tool #2 — `find`
 
 ### 5.1 Problem scope
 
@@ -443,7 +443,7 @@ To prevent the BM25 retriever from silently degrading as adapters are added, `/s
 ### 5.7 Tool Search / lazy loading posture
 
 - All registered `GovAPITool` instances are **not** sent to the LLM as individual tools. They live only in the BM25 index.
-- The LLM only ever sees `lookup` + `resolve_location`. Context tokens for adapters: **zero until requested**.
+- The LLM only ever sees `find` + `locate`. Context tokens for adapters: **zero until requested**.
 - This is the UMMAYA equivalent of Anthropic's `defer_loading: true`, implemented client-side because FriendliAI/K-EXAONE has no server-side Tool Search primitive.
 - When `lookup(mode="search")` returns candidates, their `input_schema` field provides the just-in-time schema the LLM needs to construct a correct `fetch` call. Mirrors Cursor's `describe_tools` and Claude Code's `shouldDefer` + ToolSearch hint pattern (`02-tool-system.md:250-263, 371-398`).
 
@@ -464,7 +464,7 @@ To validate the pattern end-to-end, MVP ships with **4 adapters** covering every
 
 **NMC freshness threshold**: `hvidate` older than **30 minutes** emits `LookupError(reason="stale_data", retryable=False)`. Override via `UMMAYA_NMC_FRESHNESS_MINUTES`.
 
-Additional adapters follow the standard `docs/tool-adapters.md` spec cycle and require no changes to `lookup` itself — pure registration.
+Additional adapters follow the standard `docs/tool-adapters.md` spec cycle and require no changes to `find` itself — pure registration.
 
 ### 5.9 Fail-closed defaults
 
@@ -485,15 +485,15 @@ This is the **entire** tool list the model sees, in order:
 ```
 [
   {
-    "name": "resolve_location",
+    "name": "locate",
     "description":
       "Convert Korean place references to structured coordinates, addresses, "
-      "or 행정동(administrative-dong) codes. Prefer this BEFORE calling `lookup` "
+      "or 행정동(administrative-dong) codes. Prefer this BEFORE calling `find` "
       "when a government API requires location parameters.",
     "input_schema": <ResolveLocationInput schema>
   },
   {
-    "name": "lookup",
+    "name": "find",
     "description":
       "Search the Korean public-API registry and invoke a specific adapter. "
       "Two-step usage: first call with mode='search' to retrieve candidates, "
@@ -511,9 +511,9 @@ Following Claude Code's static/dynamic split (`10-context-assembly.md:25-54`), t
 # Tool usage rules
 
 - If a user question requires Korean government data AND mentions a place,
-  call `resolve_location` FIRST to obtain coordinates or 행정동 code, THEN
-  call `lookup` using those values as adapter args.
-- `lookup` is always two steps: `search` returns candidates, then `fetch`
+  call `locate` FIRST to obtain coordinates or 행정동 code, THEN
+  call `find` using those values as adapter args.
+- `find` is always two steps: `search` returns candidates, then `fetch`
   invokes a specific adapter. Do not attempt to fetch without searching
   first unless you already know a valid adapter_id from an earlier turn.
 - Never guess `adapter_id` — it must come from a `search` result.
@@ -601,7 +601,7 @@ LLM → [explains to user: real-time bed data requires consent (post-MVP);
        falls back to nearest canonical hospitals via HIRA]
 ```
 
-**Pattern D is the UMMAYA sweet spot**: one `resolve_location` output feeds multiple adapters with different spatial conventions + the Layer 3 harness gate fires on the PII-flagged adapter, letting the LLM gracefully degrade to a non-PII alternative.
+**Pattern D is the UMMAYA sweet spot**: one `locate` output feeds multiple adapters with different spatial conventions + the Layer 3 harness gate fires on the PII-flagged adapter, letting the LLM gracefully degrade to a non-PII alternative.
 
 ## 8. Non-MVP / deferred (tracked but not built)
 
@@ -618,11 +618,11 @@ This preserves the architectural shape for KSC 2026 evaluation while keeping sco
 
 ### 8.2 Other deferrals
 
-- V-World backend for `resolve_location` (지적/공간정보).
+- V-World backend for `locate` (지적/공간정보).
 - Vector-retrieval upgrade for `lookup.search` (only if BM25 precision <60% on eval set).
 - Per-turn result caching (beyond `cache_ttl_seconds`).
 - Write-oriented tools (`submit_application`, `pay`, etc.) — legal/auth barriers.
-- Multi-adapter composition within `lookup.fetch` — the LLM chains primitive adapters (e.g., `koroad_accident_search` + `kma_*`) end-to-end through `lookup`. Composite adapters were prototyped early and then removed in Epic #1634 per migration tree § L1-B B6 in favour of primitive chaining.
+- Multi-adapter composition within `lookup.fetch` — the LLM chains primitive adapters (e.g., `koroad_accident_search` + `kma_*`) end-to-end through `find`. Composite adapters were prototyped early and then removed in Epic #1634 per migration tree § L1-B B6 in favour of primitive chaining.
 - HIRA `MadmDtlInfoService2.7` (11 sub-operations joined on `ykiho`) — adapter surface too large for MVP; add post-MVP once the `ykiho` join idiom is validated by `hira_hospital_search`.
 - NMC real-time bed fields (`hv1`~`hv61`, acceptance mkiosk fields `mkioskty1`~`28`) are surfaced in `nmc_emergency_nearby` responses but not individually queryable — post-MVP may add a dedicated `nmc_bed_availability` adapter.
 - Cost/budget tracking across chains (planned for Phase 2).

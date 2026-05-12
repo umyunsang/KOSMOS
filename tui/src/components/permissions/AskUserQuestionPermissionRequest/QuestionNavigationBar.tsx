@@ -135,7 +135,7 @@ export function QuestionNavigationBar(t0) {
   }
   let t5;
   if ($[26] !== currentQuestionIndex || $[27] !== hideSubmitTab || $[28] !== questions.length) {
-    t5 = !hideSubmitTab && <Box key="submit">{currentQuestionIndex === questions.length ? <Text backgroundColor="permission" color="inverseText">{" "}{figures.tick} Submit{" "}</Text> : <Text> {figures.tick} Submit </Text>}</Box>;
+    t5 = !hideSubmitTab && <Box key="send">{currentQuestionIndex === questions.length ? <Text backgroundColor="permission" color="inverseText">{" "}{figures.tick} Submit{" "}</Text> : <Text> {figures.tick} Submit </Text>}</Box>;
     $[26] = currentQuestionIndex;
     $[27] = hideSubmitTab;
     $[28] = questions.length;

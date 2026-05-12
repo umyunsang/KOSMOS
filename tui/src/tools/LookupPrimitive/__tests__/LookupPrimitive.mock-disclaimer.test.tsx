@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-// Audit-2 P0 · LookupPrimitive mock-disclaimer unit tests.
+// Audit-2 P0 · FindPrimitive mock-disclaimer unit tests.
 //
-// Citizen-safety: mock lookup results MUST display 🧪 모의 prefix and
+// Citizen-safety: mock find results MUST display 🧪 모의 prefix and
 // "실제 행정 영향 없는 시연 결과입니다." caveat.
-// Live lookup results MUST NOT show any mock prefix.
+// Live find results MUST NOT show any mock prefix.
 
 import { test, expect, describe } from 'bun:test'
 import { render } from 'ink-testing-library'
@@ -31,8 +31,8 @@ function renderLookup(output: Output, opts: { verbose?: boolean } = {}): string 
 // Mock path — disclaimer required (fetch / record result)
 // ---------------------------------------------------------------------------
 
-describe('LookupPrimitive renderToolResultMessage — mock disclaimer', () => {
-  test('mock lookup (ok=true, _mode="mock" in result) shows 🧪 모의 prefix', () => {
+describe('FindPrimitive renderToolResultMessage — mock disclaimer', () => {
+  test('mock find (ok=true, _mode="mock" in result) shows 🧪 모의 prefix', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -104,8 +104,8 @@ describe('LookupPrimitive renderToolResultMessage — mock disclaimer', () => {
 // Live path — NO mock disclaimer
 // ---------------------------------------------------------------------------
 
-describe('LookupPrimitive renderToolResultMessage — live path (no mock disclaimer)', () => {
-  test('live lookup (no _mode field) shows tool_id without 🧪 prefix', () => {
+describe('FindPrimitive renderToolResultMessage — live path (no mock disclaimer)', () => {
+  test('live find (no _mode field) shows tool_id without 🧪 prefix', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -121,7 +121,7 @@ describe('LookupPrimitive renderToolResultMessage — live path (no mock disclai
     expect(frame).not.toContain('시연 결과')
   })
 
-  test('live lookup with _mode="live" does NOT show mock disclaimer', () => {
+  test('live find with _mode="live" does NOT show mock disclaimer', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -142,7 +142,7 @@ describe('LookupPrimitive renderToolResultMessage — live path (no mock disclai
 // Error path preserved
 // ---------------------------------------------------------------------------
 
-describe('LookupPrimitive renderToolResultMessage — error path preserved', () => {
+describe('FindPrimitive renderToolResultMessage — error path preserved', () => {
   test('ok=false renders error message in red, no mock disclaimer', () => {
     const output: Output = {
       ok: false,

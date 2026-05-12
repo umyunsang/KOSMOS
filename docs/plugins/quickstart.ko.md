@@ -67,13 +67,13 @@ uv run pytest     # ~5초 (synthetic fixture 기반 happy-path 테스트 1건)
 
 [`docs/plugins/architecture.md`](architecture.md) 의 핵심:
 
-- **Active plugin primitive**: `lookup`, `submit`, `verify`. `subscribe` 는 앱/푸시 런타임이 생길 때까지 비활성.
+- **Active plugin primitive**: `find`, `send`, `check`. `subscribe` 는 앱/푸시 런타임이 생길 때까지 비활성.
 - 플러그인의 `tool_id` 는 반드시 `plugin.<plugin_id>.<verb>` 형식이며 `<verb>` 는 active plugin primitive 중 하나여야 함 (ADR-007).
 - `adapter.py` 는 `GovAPITool` 인스턴스를 모듈-레벨 `TOOL` 심볼로 export.
 - **Live tier vs Mock tier** — 코드를 작성하기 전에 결정 (`docs/plugins/live-vs-mock.md`).
 
 `busan-bike` 예시:
-- `tool_id`: `plugin.busan_bike.lookup`
+- `tool_id`: `plugin.busan_bike.find`
 - `tier`: `live` (부산 공공데이터포털)
 - `permission_layer`: 1 (공공 자전거 잔여대수 — PII 없음)
 
@@ -87,7 +87,7 @@ uv run pytest     # ~5초 (synthetic fixture 기반 happy-path 테스트 1건)
 plugin_id: busan_bike
 version: 0.1.0
 adapter:
-  tool_id: plugin.busan_bike.lookup
+  tool_id: plugin.busan_bike.find
   primitive: lookup
   module_path: plugin_busan_bike.adapter
   input_model_ref: plugin_busan_bike.schema:LookupInput
@@ -154,7 +154,7 @@ ENDPOINT = "https://api.bts.go.kr/openapi/bike/stations"
 
 def _build_tool() -> GovAPITool:
     return GovAPITool(
-        id="plugin.busan_bike.lookup",
+        id="plugin.busan_bike.find",
         name_ko="부산 따릉이 대여소 잔여 자전거 조회",
         ministry="OTHER",
         category=["교통", "자전거"],
@@ -168,7 +168,7 @@ def _build_tool() -> GovAPITool:
         is_irreversible=False,
         dpa_reference=None,
         is_personal_data=False,
-        primitive="lookup",
+        primitive="find",
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",
         is_concurrency_safe=True,
@@ -209,7 +209,7 @@ async def adapter(payload: BusanBikeQueryInput) -> dict:
 
 ## 단계 7 — 테스트 업데이트 (3분)
 
-`tests/test_adapter.py` 는 synthetic fixture (`tests/fixtures/plugin.busan_bike.lookup.json`) 와 함께 happy-path 테스트가 기본 포함됩니다. 자신의 `output_schema` 에 맞춰 fixture 편집:
+`tests/test_adapter.py` 는 synthetic fixture (`tests/fixtures/plugin.busan_bike.find.json`) 와 함께 happy-path 테스트가 기본 포함됩니다. 자신의 `output_schema` 에 맞춰 fixture 편집:
 
 ```json
 {
@@ -302,7 +302,7 @@ PR 작성 후 `plugin-validation.yml` workflow 가 PR 에 자동 실행. 기대 
 | 카탈로그 | catalog | `ummaya-plugin-store/index/index.json` — 설치 가능한 플러그인 메타 인덱스. |
 | 수탁자 | trustee | PIPA §26 기반 위탁자/수탁자 체인의 수탁 측. Live tier + PII 처리 시 필수. |
 | 동의 영수증 | consent receipt | 플러그인 install/uninstall 시 `~/.ummaya/memdir/user/consent/<id>.json` 에 append. Spec 035 ledger 확장. |
-| 프리미티브 | primitive | active plugin 동사 (`lookup`, `submit`, `verify`). 플러그인은 이 중 하나에 binding. |
+| 프리미티브 | primitive | active plugin 동사 (`find`, `send`, `check`). 플러그인은 이 중 하나에 binding. |
 | 1차 매핑 | byte mirror | OpenAPI 사양과 byte-equivalent 한 어댑터 (Spec 031 `source_mode=OPENAPI`). |
 | 2차 매핑 | shape mirror | OSS SDK 와 shape-compatible 한 어댑터 (`source_mode=OOS`). |
 

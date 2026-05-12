@@ -18,7 +18,7 @@ Empirical K-EXAONE formats (Epic #2152 P5 smoke):
 
 1. **OpenAI-shape JSON** (the well-formed case)::
 
-       <tool_call>{"name": "resolve_location", "arguments": {"location": "강남역"}}</tool_call>
+       <tool_call>{"name": "locate", "arguments": {"location": "강남역"}}</tool_call>
 
 2. **XML-attribute pseudo-JSON** (no quotes around keys)::
 

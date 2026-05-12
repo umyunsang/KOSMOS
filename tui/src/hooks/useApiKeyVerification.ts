@@ -5,7 +5,7 @@
 // CC version: 2.1.88
 // UMMAYA deviation: UMMAYA uses a single fixed provider (FriendliAI Serverless
 // + K-EXAONE per ummaya-migration-tree.md § L1-A A1). Authentication is the
-// `/login` session key, exported as `UMMAYA_FRIENDLI_TOKEN` only inside the
+// `/login` FriendliAI token, exported as `UMMAYA_FRIENDLI_TOKEN` only inside the
 // running TUI process for the Python backend. The TUI never authenticates
 // with Anthropic — every Anthropic credential lookup path (Keychain, OAuth,
 // apiKeyHelper, Console subscription) is intentionally severed.

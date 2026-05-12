@@ -1,7 +1,6 @@
 # UMMAYA Environment Variable Registry
 
-Authoritative reference for every environment variable consumed by UMMAYA. Machine-parsed by
-`scripts/audit-env-registry.py`. Adding a row here — not elsewhere — is the single source of truth.
+Authoritative reference for every environment variable consumed by UMMAYA. Adding a row here — not elsewhere — is the single source of truth.
 
 ---
 
@@ -269,8 +268,9 @@ Any env var matching the expansion `UMMAYA_<TOOL_ID_UPPER>_API_KEY` (e.g.,
 priority over the provider-level key (`UMMAYA_DATA_GO_KR_API_KEY` or `UMMAYA_KAKAO_API_KEY`) in
 the lookup chain defined by `ummaya.permissions.credentials.resolve_credential`.
 
-The audit script treats any env var name matching this pattern as covered by this family row,
-suppressing "undocumented" false positives for concrete expansions.
+This family pattern covers concrete per-tool expansions and keeps env-var reviews aligned
+with the registry contract (no false-positive regressions on concrete
+`UMMAYA_<TOOL_ID>_API_KEY` keys).
 
 Lookup order (from `ummaya.permissions.credentials.resolve_credential`):
 
@@ -347,11 +347,13 @@ RequiredVar(
 
 ### Step 4 — Verify locally
 
-```bash
-uv run python scripts/audit-env-registry.py
-```
+변경 반영 전/후로 아래 항목을 점검하세요:
 
-Exit code `0` means code and registry agree. Non-zero prints a diff-style report.
+- 변수명 규칙(`UMMAYA_*` + 승인된 예외)을 준수하는지.
+- 표의 `Consumed by`가 실제 모듈 경로와 일치하는지.
+- `UMMAYA_FRIENDLI_TOKEN`은 사용자 세션 키로 분리되어 있는지.
+- 운영자 키(`UMMAYA_KAKAO_API_KEY`, `UMMAYA_DATA_GO_KR_API_KEY`, per-tool 키)는 환경 변수 정책을 만족하는지.
+- 필요한 경우 해당 기능/권한/세션 테스트로 회귀를 확인했는지.
 
 ---
 
@@ -771,7 +773,7 @@ The following nine names are **not** environment variables — they are Python
 string constants whose values are the OTel span-attribute keys written by
 `ummaya.ipc.envelope.emit_ndjson`.  They carry the `UMMAYA_` prefix because
 their values live under the `ummaya.ipc.*` namespace; they are listed in the
-registry so the drift-audit script (`scripts/audit-env-registry.py`) recognises
+registry so env-var review and migration checks recognise
 the symbols rather than treating them as unregistered env vars (same pattern
 as the Agent Swarm `UMMAYA_AGENT_*` OTel attributes).
 
@@ -799,4 +801,3 @@ and `backpressure.emit_backpressure_event`.
 - `src/ummaya/config/guard.py` — startup guard implementation; `_REQUIRED_VARS` must stay
   in sync with the `Yes (dev/ci/prod)` and `Yes (prod only)` rows in this table
 - `specs/026-secrets-infisical-oidc/spec.md` — full FR/NFR specification for Epic #468
-- `scripts/audit-env-registry.py` — CI enforcement script that parses this table

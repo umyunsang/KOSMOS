@@ -958,10 +958,10 @@ class LLMClient:
         uses the caller's values — defaults are set at the call site.
 
         K-EXAONE specific: ``chat_template_kwargs.enable_thinking`` controls
-        the model's reasoning mode. **UMMAYA now defaults this to ``False``**
-        (Spec 2521 FriendliAI-cadence migration, 2026-05-01) so the citizen
-        gets a sub-10 s first-token answer on the visible content channel
-        instead of 1-3 minutes of reasoning trace before the bullet appears.
+        the model's reasoning mode. UMMAYA intentionally defaults this to
+        ``True`` per Spec 2521 FR-010; set ``UMMAYA_K_EXAONE_THINKING=false``
+        only for diagnostic runs that isolate visible response/tool cadence
+        from the separated reasoning channel.
 
         Empirical channel behaviour (probe_friendli_channels.py, 2026-05-01):
             enable_thinking=False → answer streams out on ``delta.content`` at
@@ -975,22 +975,11 @@ class LLMClient:
                                      (separated channel), clean tool_calls.
                                      First-paragraph latency: 60-180 s.
 
-        Why default flipped (Spec 2521 user directive):
-            Layer 5 frame-by-frame review proved no frontend / pacing layer
-            could dilate K-EXAONE's paragraph-granularity SSE chunks into
-            Anthropic-style per-token deltas. The CC-token-streaming UX
-            cannot be back-ported, so UMMAYA migrates to the FriendliAI
-            cadence as the design baseline: paragraph-shaped reveal with
-            inter-paragraph spinner cycling. ``enable_thinking=False``
-            puts the answer on the visible channel where that cadence is
-            citizen-readable; ``True`` buries it on ``reasoning_content``
-            with a 1-3 min wait.
-
-        Override via ``UMMAYA_K_EXAONE_THINKING=true`` to re-enable the
-        model-card-recommended reasoning mode for benchmark / evaluation
-        runs (τ²-Bench Retail 78.6 / Airline 60.4 / Telecom 73.5 are all
-        measured with thinking ON). The ``/effort high`` slash command
-        is the planned UX shortcut.
+        UI/storage handling mirrors the CC restored source: the reasoning
+        channel may stream for live progress, but it is not treated as normal
+        assistant text and the TUI can choose whether to persist it. The
+        model-card-recommended benchmark/evaluation path remains thinking ON
+        by default (τ²-Bench Retail 78.6 / Airline 60.4 / Telecom 73.5).
         """
         import os  # noqa: PLC0415 — local import keeps top-level imports thin
 
@@ -1153,3 +1142,11 @@ class LLMClient:
             model=data["model"],  # type: ignore[arg-type]
             finish_reason=choice["finish_reason"],
         )
+
+
+# Stable runtime type used by Pydantic infrastructure models.
+#
+# Several IPC tests monkeypatch ``ummaya.llm.client.LLMClient`` so the stdio
+# bridge constructs a fake streaming client.  QueryContext should still validate
+# against the real runtime client class when it is imported under that monkeypatch.
+LLMClientRuntimeType = LLMClient

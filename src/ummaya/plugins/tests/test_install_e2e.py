@@ -71,7 +71,7 @@ _ADAPTER_SOURCE = (
     )
 
     TOOL = GovAPITool(
-        id="plugin.timing_demo.lookup",
+        id="plugin.timing_demo.find",
         name_ko="타이밍 데모 플러그인",
         ministry="OTHER",
         category=["demo"],
@@ -81,7 +81,7 @@ _ADAPTER_SOURCE = (
         output_schema=DemoLookupOutput,
         search_hint="타이밍 데모 timing 공공 demo",
         policy=_POLICY,
-        primitive="lookup",
+        primitive="find",
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",
     )
@@ -102,8 +102,8 @@ def _manifest_dict() -> dict[str, Any]:
         "plugin_id": "timing_demo",
         "version": "1.0.0",
         "adapter": {
-            "tool_id": "plugin.timing_demo.lookup",
-            "primitive": "lookup",
+            "tool_id": "plugin.timing_demo.find",
+            "primitive": "find",
             "module_path": "adapter",
             "input_model_ref": "adapter:DemoLookupInput",
             "source_mode": "OPENAPI",
@@ -262,7 +262,7 @@ class TestBm25SurfaceSC004:
 
         assert elapsed < 5.0, f"BM25 search took {elapsed:.2f}s (SC-004 budget 5s)"
         tool_ids = {r.tool.id for r in results}
-        assert "plugin.timing_demo.lookup" in tool_ids
+        assert "plugin.timing_demo.find" in tool_ids
 
 
 # ---------------------------------------------------------------------------

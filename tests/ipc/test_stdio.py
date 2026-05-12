@@ -9,7 +9,7 @@ Tests added per Epic #2077 T011:
 
 (b) test_chat_request_appends_available_tools_section
     The LLM-bound system message ends with the '## Available tools' block
-    containing '### lookup', '### submit', etc. (Step 3 inject).
+    containing '### find', '### send', etc. (Step 3 inject).
 
 (c) test_unknown_tool_in_frame_dropped_silently
     xfail — current _handle_chat_request does not emit a
@@ -24,7 +24,7 @@ Tests added per Epic #2077 T011:
     (default 8) per FR-011.
 
 (e) test_otel_spans_preserved
-    After one chat_request with a non-gated tool call (lookup), spans with
+    After one chat_request with a non-gated tool call (find), spans with
     at minimum these attribute keys are emitted:
     ummaya.tool.dispatched, ummaya.permission.mode, ummaya.permission.decision,
     ummaya.session.id.  Exact values are not asserted — only key presence.
@@ -303,7 +303,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
         {
             "type": "function",
             "function": {
-                "name": "lookup",
+                "name": "find",
                 "description": "Search or fetch government API data",
                 "parameters": {"type": "object", "properties": {}},
             },
@@ -311,7 +311,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
         {
             "type": "function",
             "function": {
-                "name": "submit",
+                "name": "send",
                 "description": "Submit a government service transaction",
                 "parameters": {"type": "object", "properties": {}},
             },
@@ -319,7 +319,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
         {
             "type": "function",
             "function": {
-                "name": "verify",
+                "name": "check",
                 "description": "Verify identity or delegate",
                 "parameters": {"type": "object", "properties": {}},
             },
@@ -327,7 +327,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
         {
             "type": "function",
             "function": {
-                "name": "resolve_location",
+                "name": "locate",
                 "description": "Resolve a Korean address or location",
                 "parameters": {"type": "object", "properties": {}},
             },
@@ -454,7 +454,7 @@ async def test_chat_request_appends_available_tools_section(
 
     Verifies the Step 3 system-prompt augmentation from system-prompt-builder.md.
     The system message (role='system') in messages[0].content must contain
-    '### lookup', '### submit', etc. — one per registered primitive.
+    '### find', '### send', etc. — one per registered primitive.
     """
     frame = _make_chat_request(tools=[], system="Base system prompt.")
 
@@ -481,9 +481,9 @@ async def test_chat_request_appends_available_tools_section(
         f"System message does not contain '## Available tools' block. "
         f"Content preview: {system_content[:300]!r}"
     )
-    # At minimum the lookup primitive must appear (it is always registered).
-    assert "### lookup" in system_content, (
-        f"'### lookup' not found in system prompt Available tools section. "
+    # At minimum the find primitive must appear (it is always registered).
+    assert "### find" in system_content, (
+        f"'### find' not found in system prompt Available tools section. "
         f"Content preview: {system_content[:500]!r}"
     )
 
@@ -533,7 +533,7 @@ async def test_unknown_tool_in_frame_dropped_silently(
     valid_tool = ToolDefinition(
         type="function",
         function=ToolDefinitionFunction(
-            name="lookup",
+            name="find",
             description="Lookup tool",
             parameters={},
         ),
@@ -590,14 +590,14 @@ class _EternalToolCallLLMClient(_BaseFakeLLMClient):
     ) -> AsyncIterator[StreamEvent]:
         type(self).turn_count += 1
         type(self).recorded_calls.append({"messages": messages, "tools": tools})
-        # Emit a tool_call_delta for 'lookup' then done.
+        # Emit a tool_call_delta for 'find' then done.
         # The agentic loop will dispatch it, wait for result (which will time out),
         # then loop again — until max turns.
         yield StreamEvent(
             type="tool_call_delta",
             tool_call_index=0,
             tool_call_id=str(uuid.uuid4()),
-            function_name="lookup",
+            function_name="find",
             function_args_delta=(
                 '{"mode":"fetch","tool_id":"nmc_emergency_search","params":{"query":"응급실"}}'
             ),
@@ -666,9 +666,9 @@ async def test_agentic_loop_max_turns_honored(
 
 
 class _SingleLookupLLMClient(_BaseFakeLLMClient):
-    """LLM that first requests one lookup tool call, then answers.
+    """LLM that first requests one find tool call, then answers.
 
-    Turn 1: emit tool_call_delta for lookup.
+    Turn 1: emit tool_call_delta for find.
     Turn 2+: emit a text answer.
 
     Uses class-level turn counter so the instance created by _ensure_llm_client()
@@ -701,7 +701,7 @@ class _SingleLookupLLMClient(_BaseFakeLLMClient):
                 type="tool_call_delta",
                 tool_call_index=0,
                 tool_call_id=f"call-{uuid.uuid4().hex[:8]}",
-                function_name="lookup",
+                function_name="find",
                 function_args_delta=(
                     '{"mode":"fetch","tool_id":"nfa_emergency_info_service",'
                     '"params":{"query":"응급실"}}'
@@ -744,7 +744,7 @@ class _SingleSubmitPermissionTimeoutLLMClient(_BaseFakeLLMClient):
             type="tool_call_delta",
             tool_call_index=0,
             tool_call_id=f"call-{uuid.uuid4().hex[:8]}",
-            function_name="submit",
+            function_name="send",
             function_args_delta=(
                 '{"tool_id":"mock_submit_module_gov24_minwon",'
                 '"params":{"applicant_name":"홍길동","service_code":"resident_register",'
@@ -896,9 +896,9 @@ class _PreambleThenToolCallLLMClient(_BaseFakeLLMClient):
                 type="tool_call_delta",
                 tool_call_index=0,
                 tool_call_id=f"call-{uuid.uuid4().hex[:8]}",
-                function_name="lookup",
+                function_name="find",
                 function_args_delta=(
-                    '{"mode":"fetch","tool_id":"hira_hospital_search","params":{"query":"내과"}}'
+                    '{"mode":"fetch","tool_id":"nfa_emergency_info_service","params":{"query":"응급실"}}'
                 ),
             )
             yield StreamEvent(type="done")

@@ -86,10 +86,10 @@ export function Login({
       <Box flexDirection="column" gap={1}>
         <Text bold>
           {startingMessage ??
-            'Paste your FriendliAI API key to sign in for this session.'}
+            'Paste your FriendliAI API key to sign in for this installation.'}
         </Text>
         {existingSource !== 'none' && (
-          <Text dimColor>Current session source: {existingSource}</Text>
+          <Text dimColor>Current credential source: {existingSource}</Text>
         )}
         <Box>
           <Text>API key: </Text>
@@ -108,7 +108,10 @@ export function Login({
           />
         </Box>
         {error && <Text color="error">{error}</Text>}
-        <Text dimColor>The key is kept in process memory and is not saved to disk.</Text>
+        <Text dimColor>
+          The key is saved to your local UMMAYA user store and restored on the
+          next start until /logout removes it.
+        </Text>
       </Box>
     </Dialog>
   )

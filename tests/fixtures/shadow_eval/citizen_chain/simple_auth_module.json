@@ -2,7 +2,7 @@
   "fixture_id": "simple_auth_gov24_minwon",
   "citizen_prompt": "정부24 민원 하나 신청해줘",
   "expected_first_tool_call": {
-    "name": "verify",
+    "name": "check",
     "arguments": {
       "family_hint": "simple_auth_module"
     }

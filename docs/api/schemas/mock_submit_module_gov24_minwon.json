@@ -2,7 +2,7 @@
   "$defs": {
     "DelegationContext": {
       "additionalProperties": false,
-      "description": "Carries a ``DelegationToken`` plus bilingual purpose strings for the permission UI.\n\nReturned by verify adapters (except ``mock_verify_module_any_id_sso``).\nPassed forward through the LLM's tool-call context to the next adapter.",
+      "description": "Carries a ``DelegationToken`` plus bilingual purpose strings for the permission UI.\n\nReturned by check adapters (except ``mock_verify_module_any_id_sso``).\nPassed forward through the LLM's tool-call context to the next adapter.",
       "properties": {
         "citizen_did": {
           "anyOf": [
@@ -14,7 +14,7 @@
             }
           ],
           "default": null,
-          "description": "Citizen DID if the verify ceremony surfaced one (e.g. 'did:web:mobileid.go.kr' issuance). Optional.",
+          "description": "Citizen DID if the check ceremony surfaced one (e.g. 'did:web:mobileid.go.kr' issuance). Optional.",
           "title": "Citizen Did"
         },
         "purpose_en": {
@@ -46,7 +46,7 @@
     },
     "DelegationToken": {
       "additionalProperties": false,
-      "description": "Opaque, scope-bound, time-bound credential issued by a verify adapter.\n\nIn Mock mode the ``vp_jwt`` header is ``{\"alg\":\"none\",\"typ\":\"vp+jwt\"}``;\nthe signature segment is the literal string ``\"mock-signature-not-cryptographic\"``.\n\nValidators:\n- ``expires_at > issued_at``\n- ``scope`` matches the multi-scope grammar\n- ``delegation_token`` starts with ``del_`` and has >= 24 chars after the prefix",
+      "description": "Opaque, scope-bound, time-bound credential issued by a check adapter.\n\nIn Mock mode the ``vp_jwt`` header is ``{\"alg\":\"none\",\"typ\":\"vp+jwt\"}``;\nthe signature segment is the literal string ``\"mock-signature-not-cryptographic\"``.\n\nValidators:\n- ``expires_at > issued_at``\n- ``scope`` matches the multi-scope grammar\n- ``delegation_token`` starts with ``del_`` and has >= 24 chars after the prefix",
       "properties": {
         "_mode": {
           "const": "mock",
@@ -56,7 +56,7 @@
           "type": "string"
         },
         "delegation_token": {
-          "description": "Opaque bearer token consumed by submit/lookup adapters. Must start with 'del_' and have >= 24 chars after the prefix.",
+          "description": "Opaque bearer token consumed by send/find adapters. Must start with 'del_' and have >= 24 chars after the prefix.",
           "minLength": 1,
           "title": "Delegation Token",
           "type": "string"
@@ -74,7 +74,7 @@
           "type": "string"
         },
         "issuer_did": {
-          "description": "DID of the issuing verify adapter, e.g. 'did:web:mobileid.go.kr'.",
+          "description": "DID of the issuing check adapter, e.g. 'did:web:mobileid.go.kr'.",
           "minLength": 1,
           "title": "Issuer Did",
           "type": "string"
@@ -124,7 +124,7 @@
     },
     "delegation_context": {
       "$ref": "#/$defs/DelegationContext",
-      "description": "DelegationContext from the prior verify step. Keep it nested under this field only; do not spread token/citizen_did/purpose fields into top-level submit params."
+      "description": "DelegationContext from the prior check step. Keep it nested under this field only; do not spread token/citizen_did/purpose fields into top-level send params."
     },
     "delivery_method": {
       "description": "Delivery channel for the requested document.",
@@ -149,7 +149,7 @@
       "type": "string"
     },
     "session_id": {
-      "description": "Consuming session ID used for delegation session-binding check. Must equal the session_id supplied to the preceding verify params/session_context.",
+      "description": "Consuming session ID used for delegation session-binding check. Must equal the session_id supplied to the preceding check params/session_context.",
       "maxLength": 128,
       "minLength": 1,
       "title": "Session Id",

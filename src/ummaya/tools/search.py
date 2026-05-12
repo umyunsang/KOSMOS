@@ -123,7 +123,7 @@ def search(
     results: list[AdapterCandidate] = []
     for tool_id, score in scored[:effective_top_k]:
         try:
-            tool = registry.lookup(tool_id)
+            tool = registry.find(tool_id)
         except Exception:  # pragma: no cover
             logger.warning("search: tool %r in retriever but not in registry", tool_id)
             continue

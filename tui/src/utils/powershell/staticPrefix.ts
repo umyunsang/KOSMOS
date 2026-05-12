@@ -74,7 +74,7 @@ async function extractPrefixFromElement(
 
   // Consult the fig spec — same oracle bash uses. If git's spec says -C takes
   // a value, buildPrefix skips -C /repo and finds `status` as a subcommand.
-  // Lowercase for lookup: fig specs are filesystem paths (git.js), case-
+  // Lowercase for find: fig specs are filesystem paths (git.js), case-
   // sensitive on Linux. PowerShell is case-insensitive (Git === git) so `Git`
   // must resolve to the git spec. macOS hides this bug (case-insensitive fs).
   // Call buildPrefix unconditionally — calculateDepth consults DEPTH_RULES

@@ -176,7 +176,7 @@ class IPCConsentBridge:
             kind="permission_request",
             request_id=request_id,
             worker_id="plugin_install_dispatcher",
-            primitive_kind="submit",  # plugin install treated as submit-class
+            primitive_kind="send",  # plugin install treated as submit-class
             description_ko=description_ko,
             description_en=description_en,
             risk_level=risk_level,  # type: ignore[arg-type]

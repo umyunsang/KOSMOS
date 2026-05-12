@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// UMMAYA-original — Epic #1634 P3 · SubmitPrimitive.
+// UMMAYA-original — Epic #1634 P3 · SendPrimitive.
 //
-// LLM-visible tool name: "submit"
-// Primitive wrapper over Spec 031 ummaya.primitives.submit.
+// LLM-visible tool name: "send"
+// Primitive wrapper over Spec 031 ummaya.primitives.send.
 // Permission-gated side-effecting citizen action (application, report, etc.)
 //
 // Epic γ #2294 · T010/T011/T012: real validateInput + renderToolResultMessage.
@@ -22,7 +22,7 @@ import {
   type AdapterWithPolicy,
 } from '../shared/primitiveCitation.js'
 import { extractMockMeta, mockLabel } from '../shared/mockDisclaimer.js'
-import { SUBMIT_TOOL_NAME, DESCRIPTION, SUBMIT_TOOL_PROMPT } from './prompt.js'
+import { SEND_TOOL_NAME, DESCRIPTION, SEND_TOOL_PROMPT } from './prompt.js'
 import {
   isManifestSynced,
   resolveAdapter,
@@ -53,7 +53,7 @@ const inputSchema = lazySchema(() =>
     tool_id: z
       .string()
       .min(1)
-      .describe('Registered adapter identifier (obtain via lookup mode=search)'),
+      .describe('Registered adapter identifier (obtain via find mode=search)'),
     params: z
       .record(z.string(), z.unknown())
       .describe('Adapter-defined Pydantic-validated parameter body'),
@@ -88,15 +88,30 @@ type OutputSchema = ReturnType<typeof outputSchema>
 
 export type Output = z.infer<OutputSchema>
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null
+    ? (value as Record<string, unknown>)
+    : null
+}
+
+function firstString(record: Record<string, unknown> | null, keys: string[]): string | null {
+  if (!record) return null
+  for (const key of keys) {
+    const value = record[key]
+    if (typeof value === 'string' && value.trim()) return value
+  }
+  return null
+}
+
 // ---------------------------------------------------------------------------
 // Tool definition
 // ---------------------------------------------------------------------------
 
 export const SubmitPrimitive = buildTool({
-  name: SUBMIT_TOOL_NAME,
+  name: SEND_TOOL_NAME,
 
   /** Bilingual keyword hint for ToolSearch deferred-tool discovery. */
-  searchHint: '제출 신청 신고 submit apply report 공공 서비스 side-effect',
+  searchHint: '제출 신청 신고 send apply report 공공 서비스 side-effect',
 
   maxResultSizeChars: 50_000,
 
@@ -113,7 +128,7 @@ export const SubmitPrimitive = buildTool({
   },
 
   isConcurrencySafe() {
-    // submit is side-effecting — not concurrency safe.
+    // send is side-effecting — not concurrency safe.
     return false
   },
 
@@ -122,7 +137,7 @@ export const SubmitPrimitive = buildTool({
   },
 
   isDestructive() {
-    // submit can be irreversible (e.g., form submission, report filing).
+    // send can be irreversible (e.g., form submission, report filing).
     return true
   },
 
@@ -131,7 +146,7 @@ export const SubmitPrimitive = buildTool({
   },
 
   async prompt() {
-    return SUBMIT_TOOL_PROMPT
+    return SEND_TOOL_PROMPT
   },
 
   mapToolResultToToolResultBlockParam(output, toolUseID) {
@@ -179,8 +194,8 @@ export const SubmitPrimitive = buildTool({
     if (isManifestSynced()) {
       const backendEntry = resolveAdapter(input.tool_id)
       if (backendEntry) {
-        // Internal-mode adapters (lookup/submit/verify primitives
-        // themselves, resolve_location, etc.) are not citizen-facing
+        // Internal-mode adapters (find/send/check primitives
+        // themselves, locate, etc.) are not citizen-facing
         // agency calls and are exempt from the citation invariant.
         if (backendEntry.source_mode === 'internal') {
           ;(context as ContextWithCitation).ummayaCitations = []
@@ -252,17 +267,19 @@ export const SubmitPrimitive = buildTool({
     // `.ts`. Use `React.createElement` for parity with the other 3 primitives.
     //
     // UMMAYA hotfix #2519 — after dispatchPrimitive register-and-await
-    // rewrite, output.result is the actual submit primitive output
+    // rewrite, output.result is the actual send primitive output
     // (transaction_id / ministry / status / agency_handoff_url) unwrapped
     // from ToolResultEnvelope.result.
     if (output.ok) {
-      const result = output.result as Record<string, unknown> | undefined
+      const result = asRecord(output.result)
+      const adapterReceipt = asRecord(result?.adapter_receipt)
       const receiptId =
-        typeof result?.transaction_id === 'string'
-          ? result.transaction_id
-          : typeof result?.receipt_id === 'string'
-            ? result.receipt_id
-            : null
+        firstString(adapterReceipt, [
+          'receipt_id',
+          'receipt_number',
+          'confirmation_id',
+          '접수번호',
+        ]) ?? firstString(result, ['receipt_id', 'receipt_number', 'confirmation_id'])
       const ministry =
         typeof result?.ministry === 'string' ? result.ministry : null
       const status =
@@ -275,6 +292,8 @@ export const SubmitPrimitive = buildTool({
       const statusLabel =
         status === 'accepted'
           ? '접수됨'
+          : status === 'succeeded'
+            ? '접수 완료'
           : status === 'pending'
             ? '처리 중'
             : status === 'rejected'
@@ -353,7 +372,7 @@ export const SubmitPrimitive = buildTool({
   },
 
   /**
-   * submit is a side-effecting citizen action (신청, 신고, etc.) that may
+   * send is a side-effecting citizen action (신청, 신고, etc.) that may
    * be irreversible. Always ask for citizen permission before proceeding.
    * Spec 024 invariant: adapters cite agency policy; the permission gauntlet
    * surfaces that citation via context.ummayaCitations (set in validateInput).
@@ -366,11 +385,11 @@ export const SubmitPrimitive = buildTool({
   },
 
   /**
-   * Dispatch submit call via real IPC bridge (T011 — stub replaced).
+   * Dispatch send call via real IPC bridge (T011 — stub replaced).
    */
   async call(input, context) {
     return dispatchPrimitive<Output>({
-      primitive: 'submit',
+      primitive: 'send',
       args: input as Record<string, unknown>,
       context,
       registry: getOrCreatePendingCallRegistry(),

@@ -179,7 +179,7 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:  # noqa: C901
     for event in collected_events:
         if event.type == "tool_use":
             # Only emit ToolCallFrame for primitive names that frame_schema accepts
-            primitive_names = {"lookup", "resolve_location", "submit", "verify"}
+            primitive_names = {"find", "locate", "send", "check"}
             if event.tool_name in primitive_names:
                 frame = ToolCallFrame(
                     session_id=session_id,
@@ -196,14 +196,14 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:  # noqa: C901
         elif event.type == "tool_result":
             # tool_result events carry a ToolResult; derive envelope kind from tool_name
             # by inspecting the most recent tool_use event tool_name in collected_events.
-            # Fall back to "lookup" as the default primitive kind.
-            result_tool_name = "lookup"
+            # Fall back to "find" as the default primitive kind.
+            result_tool_name = "find"
             for prev in reversed(collected_events[: collected_events.index(event)]):
                 if prev.type == "tool_use" and prev.tool_name in {
-                    "lookup",
-                    "resolve_location",
-                    "submit",
-                    "verify",
+                    "find",
+                    "locate",
+                    "send",
+                    "check",
                 }:
                     result_tool_name = prev.tool_name
                     break
@@ -256,7 +256,7 @@ async def test_sc8_scenario1_ipc_frame_sequence() -> None:  # noqa: C901
     tool_call_frames = [f for f in ipc_frames if isinstance(f, ToolCallFrame)]
     assert tool_call_frames, "Expected at least one ToolCallFrame in IPC output"
     tool_names_seen = {f.name for f in tool_call_frames}
-    assert tool_names_seen & {"lookup", "resolve_location"}, (
+    assert tool_names_seen & {"find", "locate"}, (
         f"Expected lookup or resolve_location in ToolCallFrames, got: {tool_names_seen!r}"
     )
 

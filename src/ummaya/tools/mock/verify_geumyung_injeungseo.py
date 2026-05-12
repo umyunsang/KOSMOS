@@ -35,9 +35,9 @@ _INTERNATIONAL_REF: Final = "Singapore Myinfo"
 
 ADAPTER_REGISTRATION = AdapterRegistration(
     tool_id="mock_verify_geumyung_injeungseo",
-    primitive=AdapterPrimitive.verify,
+    primitive=AdapterPrimitive.check,
     module_path="ummaya.tools.mock.verify_geumyung_injeungseo",
-    input_model_ref="ummaya.primitives.verify:VerifyInput",
+    input_model_ref="ummaya.primitives.check:VerifyInput",
     source_mode=AdapterSourceMode.OOS,
     published_tier_minimum="geumyung_injeungseo_personal_aal2",
     nist_aal_hint="AAL2",

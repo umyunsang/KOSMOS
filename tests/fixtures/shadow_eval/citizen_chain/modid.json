@@ -2,7 +2,7 @@
   "fixture_id": "modid_taxreturn_canonical",
   "citizen_prompt": "내 종합소득세 신고해줘",
   "expected_first_tool_call": {
-    "name": "verify",
+    "name": "check",
     "arguments": {
       "family_hint": "modid"
     }

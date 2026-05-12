@@ -468,12 +468,12 @@ def _make_text_events(content: str, usage: TokenUsage | None = None) -> list[Str
 def build_happy_script() -> tuple[list[list[StreamEvent]], ScenarioScript]:
     """Build the 6-turn happy-path script (resolve x2, search x2, fetch x2, synthesize)."""
     turns_events = [
-        _tce("resolve_location", _RESOLVE_GANGNAM_ARGS, "call_001", _U),
-        _tce("resolve_location", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _U),
-        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_003", _U),
-        _tce("lookup", _FETCH_KOROAD_ARGS, "call_004", _U),
-        _tce("lookup", _SEARCH_KMA_ARGS, "call_005", _U),
-        _tce("lookup", _FETCH_KMA_ARGS, "call_006", _U),
+        _tce("locate", _RESOLVE_GANGNAM_ARGS, "call_001", _U),
+        _tce("locate", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _U),
+        _tce("find", _SEARCH_KOROAD_ARGS, "call_003", _U),
+        _tce("find", _FETCH_KOROAD_ARGS, "call_004", _U),
+        _tce("find", _SEARCH_KMA_ARGS, "call_005", _U),
+        _tce("find", _FETCH_KMA_ARGS, "call_006", _U),
         _make_text_events(_KOREAN_SYNTHESIS, _USAGE_SYNTHESIS),
     ]
 
@@ -481,42 +481,42 @@ def build_happy_script() -> tuple[list[list[StreamEvent]], ScenarioScript]:
         ScenarioTurn(
             index=0,
             kind="tool_call",
-            tool_name="resolve_location",
+            tool_name="locate",
             tool_arguments=_RESOLVE_GANGNAM_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=1,
             kind="tool_call",
-            tool_name="resolve_location",
+            tool_name="locate",
             tool_arguments=_RESOLVE_SEOUL_STATION_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=2,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_SEARCH_KOROAD_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=3,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_FETCH_KOROAD_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=4,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_SEARCH_KMA_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=5,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_FETCH_KMA_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
@@ -536,63 +536,63 @@ def build_degraded_kma_retry_script() -> tuple[list[list[StreamEvent]], Scenario
     """KMA first call fails (retryable), second succeeds; KOROAD succeeds."""
     # Simulate: KMA fetch fails first, engine retries, then synthesizes with both data
     turns_events = [
-        _tce("resolve_location", _RESOLVE_GANGNAM_ARGS, "call_001", _U),
-        _tce("resolve_location", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _U),
-        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_003", _U),
-        _tce("lookup", _FETCH_KOROAD_ARGS, "call_004", _U),
-        _tce("lookup", _SEARCH_KMA_ARGS, "call_005", _U),
+        _tce("locate", _RESOLVE_GANGNAM_ARGS, "call_001", _U),
+        _tce("locate", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _U),
+        _tce("find", _SEARCH_KOROAD_ARGS, "call_003", _U),
+        _tce("find", _FETCH_KOROAD_ARGS, "call_004", _U),
+        _tce("find", _SEARCH_KMA_ARGS, "call_005", _U),
         # KMA fetch — first attempt returns error, retry on same tool call
-        _tce("lookup", _FETCH_KMA_ARGS, "call_006", _U),
-        _tce("lookup", _FETCH_KMA_ARGS, "call_007r", _U),
+        _tce("find", _FETCH_KMA_ARGS, "call_006", _U),
+        _tce("find", _FETCH_KMA_ARGS, "call_007r", _U),
         _make_text_events(_KOREAN_SYNTHESIS, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
         ScenarioTurn(
             index=0,
             kind="tool_call",
-            tool_name="resolve_location",
+            tool_name="locate",
             tool_arguments=_RESOLVE_GANGNAM_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=1,
             kind="tool_call",
-            tool_name="resolve_location",
+            tool_name="locate",
             tool_arguments=_RESOLVE_SEOUL_STATION_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=2,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_SEARCH_KOROAD_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=3,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_FETCH_KOROAD_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=4,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_SEARCH_KMA_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=5,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_FETCH_KMA_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=6,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_FETCH_KMA_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
@@ -611,54 +611,54 @@ def build_degraded_kma_retry_script() -> tuple[list[list[StreamEvent]], Scenario
 def build_degraded_koroad_no_retry_script() -> tuple[list[list[StreamEvent]], ScenarioScript]:
     """KOROAD fails (no retry); KMA succeeds; synthesis references KMA data + gap note."""
     turns_events = [
-        _tce("resolve_location", _RESOLVE_GANGNAM_ARGS, "call_001", _U),
-        _tce("resolve_location", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _U),
-        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_003", _U),
-        _tce("lookup", _FETCH_KOROAD_ARGS, "call_004", _U),
-        _tce("lookup", _SEARCH_KMA_ARGS, "call_005", _U),
-        _tce("lookup", _FETCH_KMA_ARGS, "call_006", _U),
+        _tce("locate", _RESOLVE_GANGNAM_ARGS, "call_001", _U),
+        _tce("locate", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _U),
+        _tce("find", _SEARCH_KOROAD_ARGS, "call_003", _U),
+        _tce("find", _FETCH_KOROAD_ARGS, "call_004", _U),
+        _tce("find", _SEARCH_KMA_ARGS, "call_005", _U),
+        _tce("find", _FETCH_KMA_ARGS, "call_006", _U),
         _make_text_events(_DEGRADED_SYNTHESIS, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
         ScenarioTurn(
             index=0,
             kind="tool_call",
-            tool_name="resolve_location",
+            tool_name="locate",
             tool_arguments=_RESOLVE_GANGNAM_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=1,
             kind="tool_call",
-            tool_name="resolve_location",
+            tool_name="locate",
             tool_arguments=_RESOLVE_SEOUL_STATION_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=2,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_SEARCH_KOROAD_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=3,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_FETCH_KOROAD_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=4,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_SEARCH_KMA_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=5,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_FETCH_KMA_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
@@ -680,54 +680,54 @@ def build_degraded_koroad_no_retry_script() -> tuple[list[list[StreamEvent]], Sc
 def build_both_down_script() -> tuple[list[list[StreamEvent]], ScenarioScript]:
     """Both adapters fail; engine produces graceful Korean error message."""
     turns_events = [
-        _tce("resolve_location", _RESOLVE_GANGNAM_ARGS, "call_001", _U),
-        _tce("resolve_location", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _U),
-        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_003", _U),
-        _tce("lookup", _FETCH_KOROAD_ARGS, "call_004", _U),
-        _tce("lookup", _SEARCH_KMA_ARGS, "call_005", _U),
-        _tce("lookup", _FETCH_KMA_ARGS, "call_006", _U),
+        _tce("locate", _RESOLVE_GANGNAM_ARGS, "call_001", _U),
+        _tce("locate", _RESOLVE_SEOUL_STATION_ARGS, "call_002", _U),
+        _tce("find", _SEARCH_KOROAD_ARGS, "call_003", _U),
+        _tce("find", _FETCH_KOROAD_ARGS, "call_004", _U),
+        _tce("find", _SEARCH_KMA_ARGS, "call_005", _U),
+        _tce("find", _FETCH_KMA_ARGS, "call_006", _U),
         _make_text_events(_BOTH_DOWN_SYNTHESIS, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
         ScenarioTurn(
             index=0,
             kind="tool_call",
-            tool_name="resolve_location",
+            tool_name="locate",
             tool_arguments=_RESOLVE_GANGNAM_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=1,
             kind="tool_call",
-            tool_name="resolve_location",
+            tool_name="locate",
             tool_arguments=_RESOLVE_SEOUL_STATION_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=2,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_SEARCH_KOROAD_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=3,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_FETCH_KOROAD_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=4,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_SEARCH_KMA_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
         ScenarioTurn(
             index=5,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_FETCH_KMA_ARGS,
             token_usage=_USAGE_TOOL_CALL,
         ),
@@ -759,30 +759,30 @@ def build_quirk_2023_gangwon_script() -> tuple[list[list[StreamEvent]], Scenario
         "춘천 중심가 일대에 사고다발구역이 확인되었습니다."
     )
     turns_events = [
-        _tce("resolve_location", gangwon_resolve_args, "call_001", _U),
-        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_002", _U),
-        _tce("lookup", fetch_gangwon_args, "call_003", _U),
+        _tce("locate", gangwon_resolve_args, "call_001", _U),
+        _tce("find", _SEARCH_KOROAD_ARGS, "call_002", _U),
+        _tce("find", fetch_gangwon_args, "call_003", _U),
         _make_text_events(korean_response, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
         ScenarioTurn(
             index=0,
             kind="tool_call",
-            tool_name="resolve_location",
+            tool_name="locate",
             tool_arguments=gangwon_resolve_args,
             token_usage=_U,
         ),
         ScenarioTurn(
             index=1,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_SEARCH_KOROAD_ARGS,
             token_usage=_U,
         ),
         ScenarioTurn(
             index=2,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=fetch_gangwon_args,
             token_usage=_U,
         ),
@@ -811,30 +811,30 @@ def build_quirk_2023_jeonbuk_script() -> tuple[list[list[StreamEvent]], Scenario
         "전주 도심 일대에 사고다발구역이 확인되었습니다."
     )
     turns_events = [
-        _tce("resolve_location", jeonbuk_resolve_args, "call_001", _U),
-        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_002", _U),
-        _tce("lookup", fetch_jeonbuk_args, "call_003", _U),
+        _tce("locate", jeonbuk_resolve_args, "call_001", _U),
+        _tce("find", _SEARCH_KOROAD_ARGS, "call_002", _U),
+        _tce("find", fetch_jeonbuk_args, "call_003", _U),
         _make_text_events(korean_response, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
         ScenarioTurn(
             index=0,
             kind="tool_call",
-            tool_name="resolve_location",
+            tool_name="locate",
             tool_arguments=jeonbuk_resolve_args,
             token_usage=_U,
         ),
         ScenarioTurn(
             index=1,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_SEARCH_KOROAD_ARGS,
             token_usage=_U,
         ),
         ScenarioTurn(
             index=2,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=fetch_jeonbuk_args,
             token_usage=_U,
         ),
@@ -863,30 +863,30 @@ def build_quirk_2022_control_script() -> tuple[list[list[StreamEvent]], Scenario
         "2022년 기준 춘천 지역 사고다발구역이 확인되었습니다."
     )
     turns_events = [
-        _tce("resolve_location", gangwon_resolve_args, "call_001", _U),
-        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_002", _U),
-        _tce("lookup", fetch_gangwon_2022_args, "call_003", _U),
+        _tce("locate", gangwon_resolve_args, "call_001", _U),
+        _tce("find", _SEARCH_KOROAD_ARGS, "call_002", _U),
+        _tce("find", fetch_gangwon_2022_args, "call_003", _U),
         _make_text_events(korean_response, _USAGE_SYNTHESIS),
     ]
     scenario_turns = (
         ScenarioTurn(
             index=0,
             kind="tool_call",
-            tool_name="resolve_location",
+            tool_name="locate",
             tool_arguments=gangwon_resolve_args,
             token_usage=_U,
         ),
         ScenarioTurn(
             index=1,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=_SEARCH_KOROAD_ARGS,
             token_usage=_U,
         ),
         ScenarioTurn(
             index=2,
             kind="tool_call",
-            tool_name="lookup",
+            tool_name="find",
             tool_arguments=fetch_gangwon_2022_args,
             token_usage=_U,
         ),
@@ -988,7 +988,7 @@ def _build_registry_and_executor() -> tuple[ToolRegistry, ToolExecutor]:
         result = await _resolve_location_fn(inp)
         return result.model_dump(mode="json")
 
-    executor.register_adapter("resolve_location", _resolve_location_adapter)
+    executor.register_adapter("locate", _resolve_location_adapter)
 
     # Register lookup executor adapter.
     # _LookupInput is a RootModel wrapper; inp.root is the actual discriminated input.
@@ -1004,7 +1004,7 @@ def _build_registry_and_executor() -> tuple[ToolRegistry, ToolExecutor]:
         result = await _lookup_fn(actual_inp, registry=registry, executor=executor)
         return result.model_dump(mode="json")
 
-    executor.register_adapter("lookup", _lookup_adapter)
+    executor.register_adapter("find", _lookup_adapter)
 
     # Register KOROAD adapter (with V1-V6 validation)
     reg_koroad_hazard(registry, executor)
@@ -1046,7 +1046,7 @@ def _extract_fetched_adapters(events: list[QueryEvent]) -> list[str]:
     """
     result: list[str] = []
     for event in events:
-        if event.type != "tool_use" or event.tool_name != "lookup":
+        if event.type != "tool_use" or event.tool_name != "find":
             continue
         if not event.arguments:
             continue

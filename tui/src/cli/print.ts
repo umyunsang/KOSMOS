@@ -4302,7 +4302,7 @@ export function getCanUseToolFn(
         toolUseId,
       ))
   }
-  // Lazy lookup: MCP connects are per-server incremental in print mode, so
+  // Lazy find: MCP connects are per-server incremental in print mode, so
   // the tool may not be in appState yet at init time. Resolve on first call
   // (first permission prompt), by which point connects have had time to finish.
   let resolved: CanUseToolFn | null = null

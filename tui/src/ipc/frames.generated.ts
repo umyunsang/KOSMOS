@@ -275,7 +275,7 @@ export type CallId = string;
 /**
  * Primitive name per Spec 031.
  */
-export type Name3 = 'lookup' | 'resolve_location' | 'submit' | 'verify';
+export type Name3 = 'find' | 'locate' | 'send' | 'check';
 /**
  * Opaque session identifier.
  */
@@ -315,7 +315,7 @@ export type CallId1 = string;
 /**
  * Primitive kind discriminator per Spec 031.
  */
-export type Kind5 = 'lookup' | 'resolve_location' | 'submit' | 'verify';
+export type Kind5 = 'find' | 'locate' | 'send' | 'check';
 /**
  * Opaque session identifier.
  */
@@ -395,7 +395,7 @@ export type RoleId = string;
 /**
  * Primitive currently being invoked by this worker.
  */
-export type CurrentPrimitive = 'lookup' | 'resolve_location' | 'submit' | 'verify';
+export type CurrentPrimitive = 'find' | 'locate' | 'send' | 'check';
 /**
  * Worker execution status.
  */
@@ -443,7 +443,7 @@ export type WorkerId1 = string;
 /**
  * The primitive the worker wants to invoke.
  */
-export type PrimitiveKind = 'lookup' | 'resolve_location' | 'submit' | 'verify';
+export type PrimitiveKind = 'find' | 'locate' | 'send' | 'check';
 /**
  * Korean-language description shown to the citizen.
  */
@@ -507,7 +507,7 @@ export type ReceiptId = string | null;
 /**
  * The primitive that was authorised. The TUI feeds this into `aalToLayer(primitive, isIrreversible)` to recompute the gauntlet layer (1=green / 2=orange / 3=red) for the receipt row. None on deny / timeout / legacy backends.
  */
-export type PrimitiveKind1 = ('lookup' | 'resolve_location' | 'submit' | 'verify') | null;
+export type PrimitiveKind1 = ('find' | 'locate' | 'send' | 'check') | null;
 /**
  * The fully-qualified adapter id (e.g. `mock_verify_mobile_id`, `mock_submit_welfare_grant`) the citizen authorised. The TUI uses this to render the human-readable Korean adapter name in /consent list and the modal title. None for non-adapter primitives (rare) or legacy backends.
  */
@@ -1134,7 +1134,7 @@ export type Name5 = string;
 /**
  * Primitive verb the adapter is registered under (I6).
  */
-export type Primitive = 'lookup' | 'submit' | 'verify' | 'resolve_location';
+export type Primitive = 'find' | 'send' | 'check' | 'locate';
 /**
  * Agency-published policy URL (HTTPS). None only when source_mode == 'internal' (I4/I5).
  */

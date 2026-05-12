@@ -3,7 +3,7 @@
 
 import React from 'react'
 import { Box, Text } from 'src/ink.js'
-import { Clawd } from './Clawd.js'
+import { Umma } from './Umma.js'
 
 const WELCOME_V2_WIDTH = 58
 
@@ -25,7 +25,7 @@ export interface WelcomeV2Props {
 function MascotMark(): React.ReactElement {
   return (
     <Box flexDirection="column" alignItems="center" marginY={1}>
-      <Clawd />
+      <Umma />
     </Box>
   )
 }

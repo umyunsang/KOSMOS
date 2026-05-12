@@ -1,11 +1,11 @@
 /**
  * UMMAYA-original — SubmitReceipt renderer.
  *
- * Success receipt shown after a submit primitive completes.
+ * Success receipt shown after a send primitive completes.
  * Displays confirmation id, timestamp, and summary.
  * If mock_reason is present a [MOCK: <reason>] chip is rendered (FR-026).
  *
- * FR-026: submit success renderer.
+ * FR-026: send success renderer.
  */
 import React from 'react'
 import { Box, Text } from 'ink'

@@ -6,9 +6,9 @@
 // UMMAYA `UmmayaPrimitivePermissionRequestProps` interface.
 //
 // One adapter per primitive:
-//   LookupPermissionRequestAdapter    → bypasses (returns null; lookup is read-only)
-//   VerifyPermissionRequestAdapter    → Layer 1 (green ⓵)
-//   SubmitPermissionRequestAdapter    → Layer 2 / 3 based on is_irreversible
+//   LookupPermissionRequestAdapter    → bypasses (returns null; find is read-only)
+//   VerifyPermissionRequestAdapter    → Layer 1 (green ⓵, check)
+//   SubmitPermissionRequestAdapter    → Layer 2 / 3 (send) based on is_irreversible
 //
 // CC reference: .references/claude-code-sourcemap/restored-src/src/components/
 //   permissions/PermissionRequest.tsx:47-82 (permissionComponentForTool switch).
@@ -29,11 +29,11 @@ import { setPendingPermissionDecision } from '../../../utils/permissions/ipcPerm
 // ---------------------------------------------------------------------------
 
 /**
- * Lookup is read-only and side-effect-free. It always has
+ * Find is read-only and side-effect-free. It always has
  * `checkPermissions → { behavior: 'allow' }` so this adapter is defensive-
  * only: it returns null and immediately calls `onDone`.
  *
- * The CC pipeline will never show the gauntlet for lookup because
+ * The CC pipeline will never show the gauntlet for find because
  * `checkPermissions` returns `{ behavior: 'allow' }`, but `permissionComponentForTool`
  * must still return _some_ component for the switch statement to compile.
  */
@@ -41,7 +41,7 @@ export function LookupPermissionRequestAdapter({
   onDone,
 }: PermissionRequestProps): React.ReactNode {
   // Defensive: dismiss immediately without showing any modal.
-  // In practice this adapter is never rendered — lookup bypasses via
+  // In practice this adapter is never rendered — find bypasses via
   // checkPermissions allow.
   React.useEffect(() => {
     onDone()
@@ -121,7 +121,7 @@ export function VerifyPermissionRequestAdapter({
 
   return (
     <UmmayaPrimitivePermissionRequest
-      primitive="verify"
+      primitive="check"
       toolName={toolName}
       workerBadge={
         workerBadge
@@ -164,7 +164,7 @@ export function SubmitPermissionRequestAdapter({
 
   return (
     <UmmayaPrimitivePermissionRequest
-      primitive="submit"
+      primitive="send"
       toolName={toolName}
       isIrreversible={isIrreversible}
       workerBadge={

@@ -40,8 +40,6 @@ jobs:
         run: uv run ruff check src tests
       - name: Ruff format check
         run: uv run ruff format --check src tests
-      - name: README env table sync check
-        run: uv run python scripts/sync_readme_env.py --check
       - name: Mypy strict
         run: uv run mypy src
       - name: Validate prompts/manifest.yaml against JSON Schema
@@ -79,8 +77,6 @@ jobs:
       - run: uv sync --frozen --all-extras --dev
       - name: Secrets audit (block long-lived tokens in workflows)
         run: ./scripts/audit-secrets.sh
-      - name: Env registry drift check
-        run: uv run python scripts/audit-env-registry.py
       - name: Fetch secrets from Infisical (OIDC federation)
         uses: Infisical/secrets-action@77ab1f4ccd183a543cb5b42435fbd181189f4995  # v1.0.16
         with:

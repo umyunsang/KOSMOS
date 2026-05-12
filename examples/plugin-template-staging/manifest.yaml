@@ -1,8 +1,8 @@
 plugin_id: my_plugin
 version: 0.1.0
 adapter:
-  tool_id: plugin.my_plugin.lookup
-  primitive: lookup
+  tool_id: plugin.my_plugin.find
+  primitive: find
   module_path: plugin_my_plugin.adapter
   input_model_ref: plugin_my_plugin.schema:LookupInput
   source_mode: OPENAPI

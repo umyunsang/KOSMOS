@@ -36,7 +36,7 @@ from ummaya.ipc.frame_schema import AdapterManifestEntry, AdapterManifestSyncFra
 
 def _make_entry(
     tool_id: str,
-    primitive: str = "lookup",
+    primitive: str = "find",
     source_mode: str = "live",
     policy_url: str | None = None,
 ) -> AdapterManifestEntry:
@@ -67,8 +67,8 @@ def test_emit_manifest_happy_path() -> None:
     """emit_manifest writes a valid JSON-encoded AdapterManifestSyncFrame."""
     # Seed the extra registry with two known adapters.
     _EXTRA_REGISTRY.clear()
-    _EXTRA_REGISTRY["alpha_tool"] = _make_entry("alpha_tool", "submit")
-    _EXTRA_REGISTRY["beta_tool"] = _make_entry("beta_tool", "verify")
+    _EXTRA_REGISTRY["alpha_tool"] = _make_entry("alpha_tool", "send")
+    _EXTRA_REGISTRY["beta_tool"] = _make_entry("beta_tool", "check")
 
     buf = io.StringIO()
     registry = _empty_registry()
@@ -101,9 +101,9 @@ def test_emit_manifest_happy_path() -> None:
 def test_build_entries_sort_order() -> None:
     """Entries returned by _build_entries are sorted by tool_id (ascending)."""
     _EXTRA_REGISTRY.clear()
-    _EXTRA_REGISTRY["zebra_tool"] = _make_entry("zebra_tool", "submit")
-    _EXTRA_REGISTRY["apple_tool"] = _make_entry("apple_tool", "lookup")
-    _EXTRA_REGISTRY["mango_tool"] = _make_entry("mango_tool", "verify")
+    _EXTRA_REGISTRY["zebra_tool"] = _make_entry("zebra_tool", "send")
+    _EXTRA_REGISTRY["apple_tool"] = _make_entry("apple_tool", "find")
+    _EXTRA_REGISTRY["mango_tool"] = _make_entry("mango_tool", "check")
 
     registry = _empty_registry()
     entries = _build_entries(registry)
@@ -122,7 +122,7 @@ def test_build_entries_sort_order() -> None:
 def test_hash_matches_canonical_json() -> None:
     """manifest_hash in the emitted frame matches SHA-256 of canonical JSON."""
     _EXTRA_REGISTRY.clear()
-    _EXTRA_REGISTRY["gamma_tool"] = _make_entry("gamma_tool", "lookup")
+    _EXTRA_REGISTRY["gamma_tool"] = _make_entry("gamma_tool", "find")
 
     buf = io.StringIO()
     emit_manifest(buf, _empty_registry(), pid=1)
@@ -155,7 +155,7 @@ def test_extra_registry_takes_precedence_over_main_registry() -> None:
     extra_entry = AdapterManifestEntry(
         tool_id="conflict_tool",
         name="Extra Version",
-        primitive="verify",
+        primitive="check",
         policy_authority_url="https://extra.gov.kr/policy.do",
         source_mode="mock",
     )
@@ -165,7 +165,7 @@ def test_extra_registry_takes_precedence_over_main_registry() -> None:
     mock_tool = MagicMock()
     mock_tool.id = "conflict_tool"
     mock_tool.name_ko = "Registry Version"
-    mock_tool.primitive = "lookup"
+    mock_tool.primitive = "find"
     mock_tool.adapter_mode = "live"
     mock_tool.policy = None
 
@@ -252,6 +252,9 @@ def test_audit4_p0_9_mock_submits_have_policy_url(caplog: pytest.LogCaptureFixtu
         assert entry.policy_authority_url.startswith("https://"), (
             f"{mock_id} policy_authority_url must be HTTPS, got {entry.policy_authority_url!r}"
         )
+
+    assert by_id["mock_submit_module_gov24_minwon"].name == "정부24 민원신청"
+    assert by_id["mock_submit_module_hometax_taxreturn"].name == "홈택스 종합소득세 신고"
 
     # Zero "policy_authority_url is required" warnings during the walk.
     blocking_warnings = [rec for rec in caplog.records if "no policy URL" in rec.message]

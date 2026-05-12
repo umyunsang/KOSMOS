@@ -163,7 +163,7 @@ function B5_ContextRef() {
     ),
     h(Box, { marginLeft: 2, marginTop: 1 },
       h(ToolUseBlock, {
-        primitive: 'lookup', ministry: 'KMA',
+        primitive: 'find', ministry: 'KMA',
         detail: '미세먼지 측정소 · 서울',
         result: '종로구 측정소 기준 PM10 45µg/m³',
       })

@@ -2,14 +2,14 @@
 
 ## Objective
 
-Wire Python adapters (`src/ummaya/tools/`) as the LLM tool surface via stdio MCP. Expose active primitives (`lookup`/`resolve_location`/`submit`/`verify`) + auxiliary tools. Remove all CC dev tools from the runtime path.
+Wire Python adapters (`src/ummaya/tools/`) as the LLM tool surface via stdio MCP. Expose active primitives (`find`/`locate`/`send`/`check`) + auxiliary tools. Remove all CC dev tools from the runtime path.
 
 ## Context from codebase audit
 
 **Python side — already built:**
-- 14 registered tool_ids: `resolve_location`, `lookup`, `koroad_accident_search`, `koroad_accident_hazard_search`, `kma_weather_alert_status`, `kma_current_observation`, `kma_short_term_forecast`, `kma_ultra_short_term_forecast`, `kma_pre_warning`, `nmc_emergency_search`, `kma_forecast_fetch`, `hira_hospital_search`, `nfa_emergency_info_service`, `mohw_welfare_eligibility_search` (an earlier composite adapter was removed in Epic #1634 per migration tree § L1-B B6)
-- `GovAPITool` model already has `primitive` field — but only 4 adapters set it (`accident_hazard_search`, `kma_forecast_fetch`, `hira_hospital_search`, `nmc_emergency_search` → `"lookup"`). 11 adapters have `primitive=None`
-- Mock adapters cover active `verify` and `submit` surfaces. Subscribe is deferred until UMMAYA has an app/push-notification runtime.
+- 14 registered tool_ids: `locate`, `find`, `koroad_accident_search`, `koroad_accident_hazard_search`, `kma_weather_alert_status`, `kma_current_observation`, `kma_short_term_forecast`, `kma_ultra_short_term_forecast`, `kma_pre_warning`, `nmc_emergency_search`, `kma_forecast_fetch`, `hira_hospital_search`, `nfa_emergency_info_service`, `mohw_welfare_eligibility_search` (an earlier composite adapter was removed in Epic #1634 per migration tree § L1-B B6)
+- `GovAPITool` model already has `primitive` field — but only 4 adapters set it (`accident_hazard_search`, `kma_forecast_fetch`, `hira_hospital_search`, `nmc_emergency_search` → `"find"`). 11 adapters have `primitive=None`
+- Mock adapters cover active `check` and `send` surfaces. Subscribe is deferred until UMMAYA has an app/push-notification runtime.
 - `GovAPITool` does NOT have `permission_tier`, `ministry`, `mode` (live/mock) fields — see clarification below
 
 **TUI side:**
@@ -41,13 +41,13 @@ Wire Python adapters (`src/ummaya/tools/`) as the LLM tool surface via stdio MCP
 
 ### New — active primitive wrappers
 - `tui/src/tools/primitive/{lookup,submit,verify}.ts`
-- `resolve_location` is a built-in meta-tool. `subscribe` is deferred until UMMAYA has an app/push-notification runtime.
+- `locate` is a built-in meta-tool. `subscribe` is deferred until UMMAYA has an app/push-notification runtime.
 
 ### New — auxiliary tools
 - `tui/src/tools/{Translate,Calculator,DateParser,ExportPDF}/`
 
 ### Python-side changes
-- `register_all.py` — populate `primitive` on 11 adapters (`resolve_location`/`lookup`=`lookup`, others per metadata)
+- `register_all.py` — populate `primitive` on 11 adapters (`locate`/`find`=`find`, others per metadata)
 - `routing_index.py` new — `build_routing_index()` validate `primitive != None` at boot
 
 ### MCP bridge

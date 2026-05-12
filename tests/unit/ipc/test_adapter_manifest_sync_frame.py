@@ -39,23 +39,23 @@ def _canonical_json(obj: object) -> str:
 def _make_entries() -> list[AdapterManifestEntry]:
     return [
         AdapterManifestEntry(
-            tool_id="resolve_location",
+            tool_id="locate",
             name="Resolve Location",
-            primitive="resolve_location",
+            primitive="locate",
             policy_authority_url=None,
             source_mode="internal",
         ),
         AdapterManifestEntry(
             tool_id="nmc_emergency_search",
             name="NMC Emergency Bed Availability",
-            primitive="lookup",
+            primitive="find",
             policy_authority_url="https://www.e-gen.or.kr/nemc/main.do",
             source_mode="live",
         ),
         AdapterManifestEntry(
             tool_id="mock_submit_module_hometax_taxreturn",
             name="Mock — Hometax Tax Return Submission",
-            primitive="submit",
+            primitive="send",
             policy_authority_url="https://www.hometax.go.kr/api-policy.do",
             source_mode="mock",
         ),
@@ -101,7 +101,7 @@ def test_round_trip_serialisation() -> None:
     # Check one entry round-trips correctly.
     tool_ids = {e.tool_id for e in parsed.entries}
     assert "nmc_emergency_search" in tool_ids
-    assert "resolve_location" in tool_ids
+    assert "locate" in tool_ids
 
 
 # ---------------------------------------------------------------------------
@@ -157,16 +157,16 @@ def test_hash_mismatch_detected() -> None:
 def test_duplicate_tool_id_rejected() -> None:
     """Two entries with the same tool_id must raise ValidationError (I2)."""
     entry = AdapterManifestEntry(
-        tool_id="resolve_location",
+        tool_id="locate",
         name="Resolve Location A",
-        primitive="resolve_location",
+        primitive="locate",
         policy_authority_url=None,
         source_mode="internal",
     )
     entry_dup = AdapterManifestEntry(
-        tool_id="resolve_location",  # duplicate!
+        tool_id="locate",  # duplicate!
         name="Resolve Location B",
-        primitive="resolve_location",
+        primitive="locate",
         policy_authority_url=None,
         source_mode="internal",
     )
@@ -195,7 +195,7 @@ def test_entry_live_without_policy_url_rejected() -> None:
         AdapterManifestEntry(
             tool_id="nmc_emergency_search",
             name="NMC Emergency",
-            primitive="lookup",
+            primitive="find",
             policy_authority_url=None,  # missing for live
             source_mode="live",
         )
@@ -205,9 +205,9 @@ def test_entry_internal_with_policy_url_rejected() -> None:
     """internal entry with non-null policy_authority_url must raise ValidationError (I5)."""
     with pytest.raises(ValidationError):
         AdapterManifestEntry(
-            tool_id="resolve_location",
+            tool_id="locate",
             name="Resolve Location",
-            primitive="resolve_location",
+            primitive="locate",
             policy_authority_url="https://example.gov.kr/policy.do",  # must be None
             source_mode="internal",
         )
@@ -219,7 +219,7 @@ def test_entry_tool_id_invalid_format() -> None:
         AdapterManifestEntry(
             tool_id="Invalid-ID",  # uppercase and hyphen — invalid
             name="Some Entry",
-            primitive="lookup",
+            primitive="find",
             policy_authority_url="https://example.gov.kr/",
             source_mode="live",
         )

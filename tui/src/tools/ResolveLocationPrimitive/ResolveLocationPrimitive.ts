@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // UMMAYA-original — ResolveLocationPrimitive.
 //
-// LLM-visible tool name: "resolve_location"
-// Primitive wrapper over Spec 031 ummaya.tools.resolve_location.
+// LLM-visible tool name: "locate"
+// Primitive wrapper over Spec 031 ummaya.tools.locate.
 
 import React from 'react'
 import { z } from 'zod/v4'
@@ -11,9 +11,9 @@ import { MessageResponse } from '../../components/MessageResponse.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {
-  RESOLVE_LOCATION_TOOL_NAME,
+  LOCATE_TOOL_NAME,
   DESCRIPTION,
-  RESOLVE_LOCATION_TOOL_PROMPT,
+  LOCATE_TOOL_PROMPT,
 } from './prompt.js'
 import { dispatchPrimitive } from '../_shared/dispatchPrimitive.js'
 import {
@@ -23,32 +23,15 @@ import {
 import { getOrCreateUmmayaBridge } from '../../ipc/bridgeSingleton.js'
 import { getOrCreatePendingCallRegistry } from '../../ipc/pendingCallSingleton.js'
 
-const WANT_VALUES = [
-  'coords',
-  'adm_cd',
-  'coords_and_admcd',
-  'road_address',
-  'jibun_address',
-  'poi',
-  'region',
-  'all',
-] as const
-
 const inputSchema = lazySchema(() =>
   z.strictObject({
-    query: z
+    tool_id: z
       .string()
       .min(1)
-      .max(200)
-      .describe('Free-text Korean or English place query from the citizen request.'),
-    want: z
-      .enum(WANT_VALUES)
-      .default('coords_and_admcd')
-      .describe('Identifier shape required by the downstream public-service adapter.'),
-    near: z
-      .tuple([z.number(), z.number()])
-      .optional()
-      .describe('Optional [lat, lon] tiebreaker for ambiguous place names.'),
+      .describe('Registered locate adapter identifier from <available_adapters>.'),
+    params: z
+      .record(z.string(), z.unknown())
+      .describe('Adapter-defined Pydantic-validated parameter body.'),
   }),
 )
 type InputSchema = ReturnType<typeof inputSchema>
@@ -85,6 +68,73 @@ function numberField(obj: Record<string, unknown>, key: string): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
+function summarizeLocationSlot(key: string, value: Record<string, unknown>): React.ReactNode[] {
+  const rows: React.ReactNode[] = []
+  if (key === 'coords') {
+    const lat = numberField(value, 'lat')
+    const lon = numberField(value, 'lon')
+    const nx = numberField(value, 'nx')
+    const ny = numberField(value, 'ny')
+    if (lat !== null && lon !== null) {
+      rows.push(React.createElement(Text, { key: 'coords-latlon' }, `좌표: ${lat.toFixed(6)}, ${lon.toFixed(6)}`))
+    }
+    if (nx !== null && ny !== null) {
+      rows.push(React.createElement(Text, { key: 'coords-grid' }, `KMA 격자: X ${nx}, Y ${ny}`))
+    }
+    return rows
+  }
+
+  if (key === 'adm_cd') {
+    const code = stringField(value, 'code')
+    const name = stringField(value, 'name')
+    const level = stringField(value, 'level')
+    if (code || name) {
+      rows.push(
+        React.createElement(
+          Text,
+          { key: 'adm-code' },
+          `행정동: ${name ?? '이름 없음'}${code ? ` (${code})` : ''}${level ? ` · ${level}` : ''}`,
+        ),
+      )
+    }
+    return rows
+  }
+
+  if (key === 'region') {
+    const name = stringField(value, 'address_name') ?? stringField(value, 'name')
+    const code = stringField(value, 'code')
+    if (name || code) {
+      rows.push(React.createElement(Text, { key: 'region' }, `지역: ${name ?? '이름 없음'}${code ? ` (${code})` : ''}`))
+    }
+    return rows
+  }
+
+  if (key === 'address') {
+    const road = stringField(value, 'road_address')
+    const jibun = stringField(value, 'jibun_address')
+    if (road) rows.push(React.createElement(Text, { key: 'road' }, `도로명: ${road}`))
+    if (jibun) rows.push(React.createElement(Text, { key: 'jibun' }, `지번: ${jibun}`))
+    return rows
+  }
+
+  if (key === 'poi') {
+    const name = stringField(value, 'name')
+    const category = stringField(value, 'category')
+    const lat = numberField(value, 'lat')
+    const lon = numberField(value, 'lon')
+    const nx = numberField(value, 'nx')
+    const ny = numberField(value, 'ny')
+    if (name) rows.push(React.createElement(Text, { key: 'poi' }, `장소: ${name}${category ? ` · ${category}` : ''}`))
+    if (lat !== null && lon !== null) {
+      rows.push(React.createElement(Text, { key: 'poi-latlon' }, `좌표: ${lat.toFixed(6)}, ${lon.toFixed(6)}`))
+    }
+    if (nx !== null && ny !== null) {
+      rows.push(React.createElement(Text, { key: 'poi-grid' }, `KMA 격자: X ${nx}, Y ${ny}`))
+    }
+  }
+  return rows
+}
+
 function summarizeLocationResult(result: unknown): React.ReactNode[] {
   if (result === null || typeof result !== 'object') {
     return [React.createElement(Text, { key: 'raw', dimColor: true }, String(result))]
@@ -98,13 +148,7 @@ function summarizeLocationResult(result: unknown): React.ReactNode[] {
     for (const key of ['coords', 'adm_cd', 'address', 'poi', 'region']) {
       const value = obj[key]
       if (value && typeof value === 'object') {
-        rows.push(
-          React.createElement(
-            Text,
-            { key },
-            `${key}: ${JSON.stringify(value).slice(0, 160)}`,
-          ),
-        )
+        rows.push(...summarizeLocationSlot(key, value as Record<string, unknown>))
       }
     }
     return rows.length > 0
@@ -116,6 +160,11 @@ function summarizeLocationResult(result: unknown): React.ReactNode[] {
   const lon = numberField(obj, 'lon')
   if (lat !== null && lon !== null) {
     rows.push(React.createElement(Text, { key: 'coords' }, `좌표: ${lat}, ${lon}`))
+  }
+  const nx = numberField(obj, 'nx')
+  const ny = numberField(obj, 'ny')
+  if (nx !== null && ny !== null) {
+    rows.push(React.createElement(Text, { key: 'grid' }, `KMA 격자: X ${nx}, Y ${ny}`))
   }
 
   const code = stringField(obj, 'code') ?? stringField(obj, 'b_code') ?? stringField(obj, 'region_code')
@@ -143,9 +192,9 @@ function summarizeLocationResult(result: unknown): React.ReactNode[] {
 }
 
 export const ResolveLocationPrimitive = buildTool({
-  name: RESOLVE_LOCATION_TOOL_NAME,
+  name: LOCATE_TOOL_NAME,
 
-  searchHint: '위치 주소 좌표 행정동 법정동 resolve_location geocode location',
+  searchHint: '위치 주소 좌표 행정동 법정동 locate geocode location',
 
   maxResultSizeChars: 40_000,
 
@@ -174,14 +223,14 @@ export const ResolveLocationPrimitive = buildTool({
   },
 
   async prompt() {
-    return RESOLVE_LOCATION_TOOL_PROMPT
+    return LOCATE_TOOL_PROMPT
   },
 
-  renderToolUseMessage(input: { query?: string; want?: string }, options: { verbose: boolean }) {
+  renderToolUseMessage(input: { tool_id?: string; query?: string; want?: string }, options: { verbose: boolean }) {
     if (options.verbose) {
       return renderVerboseInputJson(input)
     }
-    return input.query ?? ''
+    return input.tool_id ?? input.query ?? ''
   },
 
   isMcp: false,
@@ -225,7 +274,7 @@ export const ResolveLocationPrimitive = buildTool({
 
   async call(input, context) {
     return dispatchPrimitive<Output>({
-      primitive: 'resolve_location',
+      primitive: 'locate',
       args: input as Record<string, unknown>,
       context,
       registry: getOrCreatePendingCallRegistry(),

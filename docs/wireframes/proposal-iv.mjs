@@ -72,7 +72,7 @@ function ActiveSingle() {
     h(Box, { marginTop: 1 }, h(UserMsg, { text: '오늘 서울 날씨 어때?' })),
     h(Box, { marginTop: 1 }, h(AsstLine, { text: 'assistant:' })),
     h(Box, { marginTop: 1 }, h(ToolUseBlock, {
-      primitive: 'lookup',
+      primitive: 'find',
       ministry:  'KMA',
       detail:    '현재 관측 · 서울',
       result:    '12°C, 맑음, 미세먼지 보통',
@@ -100,17 +100,17 @@ function ActiveSwarm() {
       text: 'assistant: 3개 부처 협력이 필요합니다.',
     })),
     h(Box, { marginTop: 1 }, h(ToolUseBlock, {
-      primitive: 'lookup', ministry: 'MOIS',
+      primitive: 'find', ministry: 'MOIS',
       detail:    '전입신고 절차 조회',
       result:    '세대주 이전일 기준 14일 내 관할 주민센터 방문',
     })),
     h(Box, { marginTop: 1 }, h(ToolUseBlock, {
-      primitive: 'lookup', ministry: 'MOLIT',
+      primitive: 'find', ministry: 'MOLIT',
       detail:    '자동차 주소변경 절차',
       result:    '전입신고 후 15일 내 자동차 등록증 주소 변경',
     })),
     h(Box, { marginTop: 1 }, h(ToolUseBlock, {
-      primitive: 'lookup', ministry: 'NHIS',
+      primitive: 'find', ministry: 'NHIS',
       detail:    '건보 주소변경',
       result:    '전입신고 데이터 자동 연계 (별도 절차 불요)',
     })),

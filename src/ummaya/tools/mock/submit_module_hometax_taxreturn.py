@@ -10,7 +10,7 @@ Adapter identity:
   primitive: submit
 
 Delegation contract (FR-009/010/011):
-  Requires scope ``"submit:hometax.tax-return"`` in the caller's DelegationToken.
+  Requires scope ``"send:hometax.tax-return"`` in the caller's DelegationToken.
   Validates expiry, scope, session binding, and revocation before executing.
   Appends a ``delegation_used`` ledger event on EVERY invocation (success or failure).
 
@@ -63,7 +63,7 @@ _POLICY_AUTHORITY: Final = (
 _INTERNATIONAL_REF: Final = "UK HMRC Making Tax Digital"
 
 # Required delegation scope for this adapter
-_REQUIRED_SCOPE: Final = "submit:hometax.tax-return"
+_REQUIRED_SCOPE: Final = "send:hometax.tax-return"
 
 # ---------------------------------------------------------------------------
 # Typed input model
@@ -241,7 +241,7 @@ async def invoke(params: dict[str, Any]) -> SubmitOutput:
 
 REGISTRATION = AdapterRegistration(
     tool_id="mock_submit_module_hometax_taxreturn",
-    primitive=AdapterPrimitive.submit,
+    primitive=AdapterPrimitive.send,
     module_path=__name__,
     input_model_ref=f"{__name__}.HometaxTaxreturnParams",
     source_mode=AdapterSourceMode.OOS,
@@ -265,7 +265,7 @@ REGISTRATION = AdapterRegistration(
         real_classification_text=(
             "홈택스 종합소득세 신고 — 국세청 공식 정책 페이지 (Spec 1636 Live-channel mandate)."
         ),
-        citizen_facing_gate="submit",
+        citizen_facing_gate="send",
         last_verified=datetime(2026, 5, 4, tzinfo=UTC),
     ),
 )

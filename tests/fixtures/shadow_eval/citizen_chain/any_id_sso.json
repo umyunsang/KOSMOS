@@ -2,7 +2,7 @@
   "fixture_id": "any_id_sso_login",
   "citizen_prompt": "다른 정부 사이트 SSO 로그인 좀",
   "expected_first_tool_call": {
-    "name": "verify",
+    "name": "check",
     "arguments": {
       "family_hint": "any_id_sso"
     }

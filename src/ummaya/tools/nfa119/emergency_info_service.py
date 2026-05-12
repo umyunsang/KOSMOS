@@ -655,7 +655,7 @@ NFA_EMERGENCY_INFO_SERVICE_TOOL = GovAPITool(
     cache_ttl_seconds=86400,
     rate_limit_per_minute=10,
     is_core=False,
-    primitive="lookup",
+    primitive="find",
     trigger_examples=[
         "천안동남소방서 2021년 12월 구급활동 통계 조회",
         "파주소방서 2021년 7월 구급환자상태 통계 조회",

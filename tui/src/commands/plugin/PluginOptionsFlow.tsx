@@ -26,7 +26,7 @@ const saveMcpServerUserConfig = (pluginId: string, server: string, values: Plugi
 import { PluginOptionsDialog } from './PluginOptionsDialog.js';
 
 /**
- * Post-install lookup: return the LoadedPlugin for the just-installed
+ * Post-install find: return the LoadedPlugin for the just-installed
  * pluginId so the caller can divert to PluginOptionsFlow. Returns undefined
  * if the plugin somehow didn't make it into the fresh load — callers treat
  * undefined as "carry on closing."

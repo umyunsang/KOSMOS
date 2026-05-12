@@ -75,7 +75,7 @@ async def test_reader_loop_reads_permission_response_while_chat_request_runs() -
 
 
 def test_build_verify_session_context_packs_params_shape() -> None:
-    """Backend dispatch must mirror the LLM-visible verify(tool_id, params) schema."""
+    """Backend dispatch must mirror the LLM-visible check(tool_id, params) schema."""
     from ummaya.ipc.stdio import _build_verify_session_context
 
     ctx = _build_verify_session_context(
@@ -83,14 +83,14 @@ def test_build_verify_session_context_packs_params_shape() -> None:
             "tool_id": "mock_verify_module_modid",
             "session_context": {"purpose_ko": "기존 목적", "session_id": "explicit"},
             "params": {
-                "scope_list": ["lookup:hometax.simplified", "submit:hometax.tax-return"],
+                "scope_list": ["find:hometax.simplified", "send:hometax.tax-return"],
                 "purpose_ko": "종합소득세 신고",
             },
         },
         session_id="backend-session",
     )
 
-    assert ctx["scope_list"] == ["lookup:hometax.simplified", "submit:hometax.tax-return"]
+    assert ctx["scope_list"] == ["find:hometax.simplified", "send:hometax.tax-return"]
     assert ctx["purpose_ko"] == "종합소득세 신고"
     assert ctx["session_id"] == "explicit"
 
@@ -112,7 +112,7 @@ def test_build_verify_session_context_normalizes_tool_id_scopes() -> None:
         session_id="backend-session",
     )
 
-    assert ctx["scope_list"] == ["submit:mydata.welfare_application"]
+    assert ctx["scope_list"] == ["send:mydata.welfare_application"]
 
 
 def test_build_verify_session_context_canonicalizes_gov24_submit_tool_scope() -> None:
@@ -132,7 +132,7 @@ def test_build_verify_session_context_canonicalizes_gov24_submit_tool_scope() ->
         session_id="GOV24-MINWON-SESSION-001",
     )
 
-    assert ctx["scope_list"] == ["submit:gov24.minwon"]
+    assert ctx["scope_list"] == ["send:gov24.minwon"]
 
 
 def test_build_verify_session_context_flattens_nested_legacy_context() -> None:
@@ -152,7 +152,7 @@ def test_build_verify_session_context_flattens_nested_legacy_context() -> None:
     )
 
     assert ctx["session_id"] == "GOV24-MINWON-SESSION-001"
-    assert ctx["scope_list"] == ["submit:gov24.minwon"]
+    assert ctx["scope_list"] == ["send:gov24.minwon"]
     assert "session_context" not in ctx
 
 
@@ -165,7 +165,7 @@ def test_inject_delegation_context_overwrites_partial_llm_copy() -> None:
         return {
             "token": {
                 "delegation_token": "del_backend_owned_token_value",
-                "scope": "submit:hometax.tax-return",
+                "scope": "send:hometax.tax-return",
             },
             "purpose_ko": "신고",
             "purpose_en": "Filing",
@@ -194,7 +194,7 @@ def test_inject_delegation_context_overwrites_partial_llm_copy() -> None:
     assert params["delegation_context"] == {
         "token": {
             "delegation_token": "del_backend_owned_token_value",
-            "scope": "submit:hometax.tax-return",
+            "scope": "send:hometax.tax-return",
         },
         "purpose_ko": "신고",
         "purpose_en": "Filing",
@@ -243,7 +243,7 @@ async def test_mydata_verify_issues_scope_bound_delegation_context(tmp_path) -> 
     session_id = "MYDATA-ACTION-SESSION-001"
     ctx = invoke(
         {
-            "scope_list": ["submit:public_mydata.action"],
+            "scope_list": ["send:public_mydata.action"],
             "session_id": session_id,
             "purpose_ko": "공공 마이데이터 제공 동의",
             "purpose_en": "Public MyData consent action",
@@ -252,11 +252,11 @@ async def test_mydata_verify_issues_scope_bound_delegation_context(tmp_path) -> 
     )
 
     assert ctx.delegation_context is not None
-    assert ctx.delegation_context.token.scope == "submit:public_mydata.action"
+    assert ctx.delegation_context.token.scope == "send:public_mydata.action"
     assert (
         await validate_delegation(
             ctx.delegation_context,
-            required_scope="submit:public_mydata.action",
+            required_scope="send:public_mydata.action",
             current_session_id=session_id,
             revoked_set=set(),
             ledger_reader=FileLedgerReader(tmp_path),
@@ -269,7 +269,7 @@ def test_invalid_gated_primitive_tool_id_result_blocks_blank_tool() -> None:
     """Gated primitives must not open permission modals for blank tool ids."""
     from ummaya.ipc.stdio import _invalid_gated_primitive_tool_id_result
 
-    result = _invalid_gated_primitive_tool_id_result("submit", {"params": {}})
+    result = _invalid_gated_primitive_tool_id_result("send", {"params": {}})
 
     assert result is not None
     assert "error" not in result
@@ -279,8 +279,8 @@ def test_invalid_gated_primitive_tool_id_result_blocks_blank_tool() -> None:
         "reason": "adapter_not_found",
         "tool_id": "invalid_tool_id",
         "message": (
-            "submit requires a non-empty registered adapter tool_id; "
-            "call submit(tool_id=<adapter>, params={...})."
+            "send requires a non-empty registered adapter tool_id; "
+            "call send(tool_id=<adapter>, params={...})."
         ),
     }
 
@@ -291,7 +291,7 @@ def test_invalid_gated_primitive_tool_id_result_accepts_valid_tool() -> None:
 
     assert (
         _invalid_gated_primitive_tool_id_result(
-            "submit",
+            "send",
             {"tool_id": "mock_submit_module_gov24_minwon", "params": {}},
         )
         is None
@@ -320,14 +320,66 @@ def test_ensure_mock_disclosure_appends_once() -> None:
     """Citizen-facing final answers must carry a mandatory mock disclosure."""
     from ummaya.ipc.stdio import _ensure_mock_disclosure
 
-    prose = "주민등록등본 신청 접수가 완료되었습니다."
+    prose = "모바일 신분증 시연 인증이 완료되었습니다."
 
     disclosed = _ensure_mock_disclosure(prose)
 
     assert prose in disclosed
     assert "실제 행정 영향이 없는 시연(모의) 결과" in disclosed
+    assert "접수번호" not in disclosed
+    assert _ensure_mock_disclosure(disclosed) == disclosed
+
+
+def test_ensure_mock_disclosure_mentions_receipt_only_when_present() -> None:
+    """Mock receipt lookup warning is reserved for mock send receipt answers."""
+    from ummaya.ipc.stdio import _ensure_mock_disclosure
+
+    disclosed = _ensure_mock_disclosure("접수번호: gov24-2026-05-07-MW-4FA74579")
+
+    assert "실제 행정 영향이 없는 시연(모의) 결과" in disclosed
     assert "실제 기관 포털에서 조회되지 않습니다" in disclosed
     assert _ensure_mock_disclosure(disclosed) == disclosed
+
+
+def test_ensure_mock_disclosure_removes_internal_tool_id_prose() -> None:
+    """Final answers should not expose internal mock adapter IDs to citizens."""
+    from ummaya.ipc.stdio import _ensure_mock_disclosure
+
+    disclosed = _ensure_mock_disclosure(
+        "\n".join(
+            [
+                "방금 mock_verify_mobile_id 도구를 호출해 모바일 신분증 본인확인을 조회했습니다.",
+                "본인확인이 성공적으로 완료되었습니다. (상태: verified, 인증 수준: AAL2)",
+            ]
+        )
+    )
+
+    assert "mock_verify_mobile_id" not in disclosed
+    assert "도구를 호출" not in disclosed
+    assert "본인확인이 성공적으로 완료되었습니다" in disclosed
+    assert "접수번호" not in disclosed
+
+
+def test_ensure_mock_disclosure_normalizes_check_only_prose() -> None:
+    """Mock check-only turns should answer as verification, not lookup/application."""
+    from ummaya.ipc.stdio import _ensure_mock_disclosure
+
+    disclosed = _ensure_mock_disclosure(
+        "\n".join(
+            [
+                "방금 모바일 신분증 본인확인 절차를 조회했습니다.",
+                "조회 결과 본인확인이 완료된 것으로 확인되었습니다.",
+                "이 정보는 모바일 신분증 본인확인 절차의 시연 결과입니다.",
+            ]
+        ),
+        mock_primitives={"check"},
+    )
+
+    assert "모바일 신분증 본인확인이 완료되었습니다" in disclosed
+    assert "조회" not in disclosed
+    assert "이 정보는" not in disclosed
+    assert "접수번호" not in disclosed
+    assert "실제 행정 영향이 없는 시연(모의) 결과" in disclosed
 
 
 def test_ensure_mock_disclosure_removes_real_portal_claims() -> None:

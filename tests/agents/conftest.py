@@ -103,7 +103,7 @@ class FixtureTapeLLMClient(LLMClient):
         {
           "content": "optional text",
           "tool_calls": [
-            {"id": "tc1", "name": "lookup", "arguments": "{...}"}
+            {"id": "tc1", "name": "find", "arguments": "{...}"}
           ],
           "usage": {"input_tokens": 10, "output_tokens": 5}
         },

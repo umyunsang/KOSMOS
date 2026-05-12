@@ -73,8 +73,8 @@ TOOL_MIN_AAL: Final[dict[str, AALLevel]] = {
     # verbs (check_eligibility / subscribe_alert / reserve_slot /
     # issue_certificate / submit_application / pay) are superseded by the
     # v1.2 dual-axis table; see docs/security/tool-template-security-spec-v1.md §2.
-    "lookup": "AAL1",
-    "resolve_location": "AAL1",
+    "find": "AAL1",
+    "locate": "AAL1",
     # Phase 2 API adapters (spec 029):
     # NFA EMS stats — api_key serviceKey auth; citizen_facing_gate=login derives AAL2.
     "nfa_emergency_info_service": "AAL2",

@@ -35,9 +35,9 @@ _INTERNATIONAL_REF: Final = "Estonia X-Road (NPKI analog)"
 
 ADAPTER_REGISTRATION = AdapterRegistration(
     tool_id="mock_verify_gongdong_injeungseo",
-    primitive=AdapterPrimitive.verify,
+    primitive=AdapterPrimitive.check,
     module_path="ummaya.tools.mock.verify_gongdong_injeungseo",
-    input_model_ref="ummaya.primitives.verify:VerifyInput",
+    input_model_ref="ummaya.primitives.check:VerifyInput",
     source_mode=AdapterSourceMode.OOS,
     published_tier_minimum="gongdong_injeungseo_personal_aal3",
     nist_aal_hint="AAL3",

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// UMMAYA-original — Epic #1634 P3 · LookupPrimitive.
+// UMMAYA-original — Epic #1634 P3 · FindPrimitive.
 //
-// LLM-visible tool name: "lookup"
-// Primitive wrapper over Spec 022 ummaya.tools.lookup — two modes:
+// LLM-visible tool name: "find"
+// Primitive wrapper over Spec 022 ummaya.tools.find — two modes:
 //   search: BM25+dense hybrid retrieval over registered adapters
 //   fetch:  direct adapter invocation by tool_id
 //
@@ -27,7 +27,7 @@ import {
   isManifestSynced,
   resolveAdapter,
 } from '../../services/api/adapterManifest.js'
-import { LOOKUP_TOOL_NAME, DESCRIPTION, LOOKUP_TOOL_PROMPT } from './prompt.js'
+import { FIND_TOOL_NAME, DESCRIPTION, FIND_TOOL_PROMPT } from './prompt.js'
 import { dispatchPrimitive } from '../_shared/dispatchPrimitive.js'
 import {
   renderVerboseInputJson,
@@ -45,13 +45,362 @@ type ContextWithCitation = ToolUseContext & {
   ummayaCitations?: AdapterCitation[]
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === 'object'
+    ? value as Record<string, unknown>
+    : null
+}
+
+function numberValue(obj: Record<string, unknown>, key: string): number | null {
+  const value = obj[key]
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function stringValue(obj: Record<string, unknown>, key: string): string | null {
+  const value = obj[key]
+  return typeof value === 'string' && value.length > 0 ? value : null
+}
+
+function firstStringValue(obj: Record<string, unknown>, keys: string[]): string | null {
+  for (const key of keys) {
+    const value = obj[key]
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value.trim()
+    }
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return String(value)
+    }
+  }
+  return null
+}
+
+function firstNumberValue(obj: Record<string, unknown>, keys: string[]): number | null {
+  for (const key of keys) {
+    const value = obj[key]
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value
+    }
+    if (typeof value === 'string' && value.trim().length > 0) {
+      const parsed = Number(value)
+      if (Number.isFinite(parsed)) return parsed
+    }
+  }
+  return null
+}
+
+function formatDistanceMeters(value: number | null): string | null {
+  if (value === null) return null
+  if (value >= 1000) return `${(value / 1000).toFixed(value >= 10_000 ? 0 : 1)} km`
+  return `${Math.round(value)} m`
+}
+
+function formatDistanceKilometers(value: number | null): string | null {
+  if (value === null) return null
+  if (value < 1) return `${Math.round(value * 1000)} m`
+  return `${value.toFixed(value >= 10 ? 0 : 1)} km`
+}
+
+function normalizeDistanceUnit(value: unknown): 'm' | 'km' | null {
+  if (typeof value !== 'string') return null
+  const normalized = value.trim().toLowerCase()
+  if (['m', 'meter', 'meters'].includes(normalized)) return 'm'
+  if (['km', 'kilometer', 'kilometers'].includes(normalized)) return 'km'
+  return null
+}
+
+function isNmcRecord(record: Record<string, unknown>): boolean {
+  return (
+    stringValue(record, '_nmc_operation') !== null ||
+    stringValue(record, 'dutyName') !== null ||
+    stringValue(record, 'dutyAddr') !== null ||
+    stringValue(record, 'dutyTel3') !== null
+  )
+}
+
+function formatRecordDistance(record: Record<string, unknown>): string | null {
+  const kilometers = firstNumberValue(record, [
+    'distance_km',
+    'distanceKm',
+    'distance_kilometers',
+    'distanceKilometers',
+  ])
+  if (kilometers !== null) return formatDistanceKilometers(kilometers)
+
+  const meters = firstNumberValue(record, [
+    'distance_m',
+    'distanceMeters',
+    'distance_meter',
+    'distanceMeter',
+    'dist_m',
+    'distMeters',
+  ])
+  if (meters !== null) return formatDistanceMeters(meters)
+
+  const generic = firstNumberValue(record, ['distance', 'dist'])
+  if (generic === null) return null
+
+  const unit =
+    normalizeDistanceUnit(record.distance_unit) ??
+    normalizeDistanceUnit(record.distanceUnit)
+  if (unit === 'km') return formatDistanceKilometers(generic)
+  if (unit === 'm') return formatDistanceMeters(generic)
+
+  return isNmcRecord(record)
+    ? formatDistanceKilometers(generic)
+    : formatDistanceMeters(generic)
+}
+
+function extractErrorMessage(message: string): string {
+  try {
+    const parsed = JSON.parse(message) as unknown
+    const record = asRecord(parsed)
+    const error = asRecord(record?.error)
+    const nested = typeof error?.message === 'string' ? error.message : null
+    if (nested) return nested
+  } catch {
+    // Keep original message when it is not JSON.
+  }
+  return message
+}
+
+function truncateInline(value: string, maxLength: number): string {
+  return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value
+}
+
+function groupedFindLabel(input: unknown): string {
+  const record = asRecord(input)
+  if (!record) return 'find'
+  const label =
+    firstStringValue(record, ['tool_id', 'query', 'mode']) ??
+    firstStringValue(asRecord(record.params) ?? {}, ['tool_id', 'query', 'address', 'q']) ??
+    'find'
+  return truncateInline(label.replace(/\s+/g, ' '), 48)
+}
+
+function formatGenericCollectionItem(item: unknown, index: number): React.ReactNode[] {
+  const record = asRecord(item)
+  if (!record) {
+    return [
+      React.createElement(
+        Text,
+        { key: `generic-${index}-value`, dimColor: true },
+        `  ${index + 1}. ${String(item).slice(0, 120)}`,
+      ),
+    ]
+  }
+
+  const name =
+    firstStringValue(record, [
+      'yadmNm',
+      'dutyName',
+      'spot_nm',
+      'spotName',
+      'facilName',
+      'facil_nm',
+      'name',
+      'title',
+      'serviceName',
+      'wlfareInfoNm',
+    ]) ?? `결과 ${index + 1}`
+  const kind = firstStringValue(record, [
+    'clCdNm',
+    'dutyEmclsName',
+    'type',
+    'category',
+    'spot_type',
+    'facilKind',
+    'kind',
+  ])
+  const distance = formatRecordDistance(record)
+  const address = firstStringValue(record, [
+    'addr',
+    'dutyAddr',
+    'adres',
+    'address',
+    'roadAddr',
+    'rnAdres',
+    'location',
+  ])
+  const phone = firstStringValue(record, [
+    'telno',
+    'dutyTel1',
+    'dutyTel3',
+    'tel',
+    'phone',
+    'telephone',
+  ])
+
+  const suffix = [kind, distance].filter(Boolean).join(' · ')
+  const rows: React.ReactNode[] = [
+    React.createElement(
+      Text,
+      { key: `generic-${index}-head`, dimColor: true },
+      `  ${index + 1}. ${name}${suffix ? ` · ${suffix}` : ''}`,
+    ),
+  ]
+  if (address) {
+    rows.push(
+      React.createElement(
+        Text,
+        { key: `generic-${index}-addr`, dimColor: true },
+        `     주소: ${address}`,
+      ),
+    )
+  }
+  if (phone) {
+    rows.push(
+      React.createElement(
+        Text,
+        { key: `generic-${index}-phone`, dimColor: true },
+        `     전화: ${phone}`,
+      ),
+    )
+  }
+  return rows
+}
+
+function precipitationTypeLabel(code: number | null): string | null {
+  switch (code) {
+    case 0:
+      return '없음'
+    case 1:
+      return '비'
+    case 2:
+      return '비/눈'
+    case 3:
+      return '눈'
+    case 5:
+      return '빗방울'
+    case 6:
+      return '빗방울/눈날림'
+    case 7:
+      return '눈날림'
+    default:
+      return code === null ? null : `코드 ${code}`
+  }
+}
+
+function skyLabel(code: string | null): string | null {
+  switch (code) {
+    case '1':
+      return '맑음'
+    case '3':
+      return '구름 많음'
+    case '4':
+      return '흐림'
+    default:
+      return code === null ? null : `SKY ${code}`
+  }
+}
+
+function forecastCategoryLabel(category: string, value: string): string | null {
+  switch (category) {
+    case 'TMP':
+      return `기온 ${value}°C`
+    case 'POP':
+      return `강수확률 ${value}%`
+    case 'PTY':
+      return `강수형태 ${precipitationTypeLabel(Number(value)) ?? value}`
+    case 'PCP':
+      return `강수량 ${value}`
+    case 'REH':
+      return `습도 ${value}%`
+    case 'WSD':
+      return `풍속 ${value} m/s`
+    case 'SKY':
+      return `하늘 ${skyLabel(value) ?? value}`
+    default:
+      return null
+  }
+}
+
+function formatKmaShortTermForecast(item: Record<string, unknown>): React.ReactNode[] | null {
+  const source = stringValue(asRecord(item.meta) ?? {}, 'source')
+  const data = asRecord(item.item) ?? item
+  const rows = Array.isArray(data.items) ? data.items : null
+  const hasForecastRows = rows?.some((raw) => {
+    const row = asRecord(raw)
+    return row && stringValue(row, 'category') !== null && stringValue(row, 'fcst_value') !== null
+  }) ?? false
+  if (source !== 'kma_short_term_forecast' && !hasForecastRows) {
+    return null
+  }
+  if (!rows || rows.length === 0) {
+    return null
+  }
+
+  const byTime = new Map<string, string[]>()
+  for (const raw of rows) {
+    const row = asRecord(raw)
+    if (!row) continue
+    const fcstDate = stringValue(row, 'fcst_date')
+    const fcstTime = stringValue(row, 'fcst_time')
+    const category = stringValue(row, 'category')
+    const value = stringValue(row, 'fcst_value')
+    if (!fcstDate || !fcstTime || !category || value === null) continue
+    const label = forecastCategoryLabel(category, value)
+    if (!label) continue
+    const key = `${fcstDate} ${fcstTime}`
+    const existing = byTime.get(key) ?? []
+    existing.push(label)
+    byTime.set(key, existing)
+  }
+
+  const totalCount = numberValue(data, 'total_count')
+  const summary: string[] = []
+  if (totalCount !== null) summary.push(`예보 항목: ${totalCount}건`)
+  for (const [time, labels] of Array.from(byTime.entries()).slice(0, 5)) {
+    summary.push(`${time}: ${labels.slice(0, 5).join(', ')}`)
+  }
+  if (byTime.size > 5) summary.push(`외 ${byTime.size - 5}개 시간대`)
+  return summary.map((row, i) => React.createElement(Text, { key: `kma-stf-${i}`, dimColor: i === 0 }, `  ${row}`))
+}
+
+function formatKmaCurrentObservation(item: Record<string, unknown>): React.ReactNode[] | null {
+  const source = stringValue(asRecord(item.meta) ?? {}, 'source')
+  const data = asRecord(item.item) ?? item
+  if (source !== 'kma_current_observation' && !('t1h' in data && 'rn1' in data && 'reh' in data)) {
+    return null
+  }
+
+  const rows: string[] = []
+  const baseDate = stringValue(data, 'base_date')
+  const baseTime = stringValue(data, 'base_time')
+  if (baseDate && baseTime) rows.push(`관측 기준: ${baseDate} ${baseTime}`)
+
+  const t1h = numberValue(data, 't1h')
+  if (t1h !== null) rows.push(`기온: ${t1h}°C`)
+
+  const rn1 = numberValue(data, 'rn1')
+  if (rn1 !== null) rows.push(`1시간 강수량: ${rn1} mm`)
+
+  const pty = numberValue(data, 'pty')
+  const ptyLabel = precipitationTypeLabel(pty)
+  if (ptyLabel) rows.push(`강수형태: ${ptyLabel}`)
+
+  const reh = numberValue(data, 'reh')
+  if (reh !== null) rows.push(`습도: ${reh}%`)
+
+  const wsd = numberValue(data, 'wsd')
+  if (wsd !== null) rows.push(`풍속: ${wsd} m/s`)
+
+  const vec = numberValue(data, 'vec')
+  if (vec !== null) rows.push(`풍향: ${vec}°`)
+
+  const nx = numberValue(data, 'nx')
+  const ny = numberValue(data, 'ny')
+  if (nx !== null && ny !== null) rows.push(`KMA 격자: X ${nx}, Y ${ny}`)
+
+  return rows.map((row, i) => React.createElement(Text, { key: `kma-${i}`, dimColor: i === 0 }, `  ${row}`))
+}
+
 // ---------------------------------------------------------------------------
 // Input schema — Spec 2521 (2026-05-01) fetch-only.
 //
 // BM25 adapter discovery is a backend-internal mechanism (auto-injected
 // into the system prompt's <available_adapters> dynamic suffix). The LLM
 // MUST NOT see ``search`` as a callable mode — it picks a tool_id from
-// the suffix and calls lookup with ``{tool_id, params}`` only.
+// the suffix and calls find with ``{tool_id, params}`` only.
 // ---------------------------------------------------------------------------
 
 const inputSchema = lazySchema(() =>
@@ -106,10 +455,10 @@ export type Output = z.infer<OutputSchema>
 // ---------------------------------------------------------------------------
 
 export const LookupPrimitive = buildTool({
-  name: LOOKUP_TOOL_NAME,
+  name: FIND_TOOL_NAME,
 
   /** Bilingual keyword hint for ToolSearch deferred-tool discovery. */
-  searchHint: '조회 검색 lookup discover search adapter 공공 API 어댑터',
+  searchHint: '조회 검색 find discover search adapter 공공 API 어댑터',
 
   maxResultSizeChars: 100_000,
 
@@ -126,7 +475,7 @@ export const LookupPrimitive = buildTool({
   },
 
   isConcurrencySafe() {
-    // lookup is read-only and side-effect-free.
+    // find is read-only and side-effect-free.
     return true
   },
 
@@ -139,7 +488,7 @@ export const LookupPrimitive = buildTool({
   },
 
   async prompt() {
-    return LOOKUP_TOOL_PROMPT
+    return FIND_TOOL_PROMPT
   },
 
   mapToolResultToToolResultBlockParam(output, toolUseID) {
@@ -178,6 +527,40 @@ export const LookupPrimitive = buildTool({
       return renderVerboseInputJson(input)
     }
     return input.tool_id ?? input.query ?? ''
+  },
+
+  renderGroupedToolUse(toolUses) {
+    const total = toolUses.length
+    const resolved = toolUses.filter((item) => item.isResolved).length
+    const errors = toolUses.filter((item) => item.isError).length
+    const labels = Array.from(
+      new Set(toolUses.map((item) => groupedFindLabel(item.param.input))),
+    )
+    const visibleLabels = labels.slice(0, 3)
+    const more = labels.length > visibleLabels.length
+      ? ` 외 ${labels.length - visibleLabels.length}건`
+      : ''
+    const status =
+      errors > 0
+        ? `${errors}건 오류`
+        : resolved < total
+          ? `${resolved}/${total} 완료`
+          : `${total}회 완료`
+
+    return React.createElement(
+      MessageResponse,
+      null,
+      React.createElement(
+        Box,
+        { flexDirection: 'column' },
+        React.createElement(Text, { bold: true }, `find 호출 ${status}`),
+        React.createElement(
+          Text,
+          { dimColor: true },
+          `${visibleLabels.join(' · ')}${more}`,
+        ),
+      ),
+    )
   },
 
   // Epic γ #2294 · 9-member interface compliance.
@@ -287,19 +670,20 @@ export const LookupPrimitive = buildTool({
     //
     // After the dispatchPrimitive register-and-await rewrite, output.result
     // is the actual primitive output (the inner of the backend envelope:
-    // src/ummaya/tools/lookup.py LookupSearchResult / LookupRecord /
+    // src/ummaya/tools/find.py LookupSearchResult / LookupRecord /
     // LookupCollection / LookupTimeseries / LookupError) — discriminated by
     // its own `kind` field. The CC pattern wraps each branch in
     // <MessageResponse> so the "  ⎿  " gutter glyph prefixes every row
     // (tui/src/components/MessageResponse.tsx:22).
     if (!output.ok) {
+      const message = extractErrorMessage(output.error.message)
       return React.createElement(
         MessageResponse,
         null,
         React.createElement(
           Text,
           { color: 'red' },
-          `오류가 발생했습니다: ${output.error.message}`,
+          `오류가 발생했습니다: ${message}`,
         ),
       )
     }
@@ -317,7 +701,7 @@ export const LookupPrimitive = buildTool({
           React.createElement(
             Text,
             { color: 'red' },
-            '검색 결과가 없습니다 — 다른 도구(resolve_location 등)를 시도하거나 시민에게 직접 안내하세요.',
+            '검색 결과가 없습니다 — 다른 도구(locate 등)를 시도하거나 시민에게 직접 안내하세요.',
           ),
         )
       }
@@ -353,13 +737,17 @@ export const LookupPrimitive = buildTool({
     // fetch error (LookupError, models.py — kind="error"):
     //   { kind: "error", reason, message, retryable, ... }
     if (result?.kind === 'error') {
+      const message =
+        typeof result.message === 'string'
+          ? extractErrorMessage(result.message)
+          : String(result.reason ?? 'unknown')
       return React.createElement(
         MessageResponse,
         null,
         React.createElement(
           Text,
           { color: 'red' },
-          `검색 오류: ${typeof result.message === 'string' ? result.message : String(result.reason ?? 'unknown')}`,
+          `검색 오류: ${message}`,
         ),
       )
     }
@@ -383,25 +771,48 @@ export const LookupPrimitive = buildTool({
     let summaryRows: React.ReactNode[] = []
 
     if (Array.isArray(adapterResult)) {
-      countText = `${adapterResult.length}건`
-      summaryRows = adapterResult.slice(0, 3).map((item: unknown, i: number) => {
-        const summary =
-          typeof item === 'object' && item !== null
-            ? JSON.stringify(item).slice(0, 120)
-            : String(item).slice(0, 120)
-        return React.createElement(
-          Text,
-          { key: i, dimColor: true },
-          `  ${i + 1}. ${summary}`,
+      const totalCount = firstNumberValue(result, ['total_count', 'totalCount', 'total'])
+      countText =
+        totalCount !== null && totalCount > adapterResult.length
+          ? `총 ${totalCount}건 중 ${adapterResult.length}건 표시`
+          : `${adapterResult.length}건`
+      summaryRows = adapterResult
+        .slice(0, 5)
+        .flatMap((item: unknown, i: number) => formatGenericCollectionItem(item, i))
+      if (totalCount !== null && totalCount > adapterResult.length) {
+        summaryRows.push(
+          React.createElement(
+            Text,
+            { key: 'generic-more', dimColor: true },
+            `  외 ${totalCount - 5}건`,
+          ),
         )
-      })
+      } else if (adapterResult.length > 5) {
+        summaryRows.push(
+          React.createElement(
+            Text,
+            { key: 'generic-more', dimColor: true },
+            `  외 ${adapterResult.length - 5}건`,
+          ),
+        )
+      }
     } else if (adapterResult !== null && adapterResult !== undefined) {
       countText = '1건'
-      const summary =
-        typeof adapterResult === 'object'
-          ? JSON.stringify(adapterResult).slice(0, 240)
-          : String(adapterResult).slice(0, 240)
-      summaryRows = [React.createElement(Text, { key: 0, dimColor: true }, `  ${summary}`)]
+      const structuredRows = formatKmaCurrentObservation(result)
+      if (structuredRows) {
+        summaryRows = structuredRows
+      } else {
+        const forecastRows = formatKmaShortTermForecast(result)
+        if (forecastRows) {
+          summaryRows = forecastRows
+        } else {
+          const summary =
+            typeof adapterResult === 'object'
+              ? JSON.stringify(adapterResult).slice(0, 240)
+              : String(adapterResult).slice(0, 240)
+          summaryRows = [React.createElement(Text, { key: 0, dimColor: true }, `  ${summary}`)]
+        }
+      }
     }
 
     // Audit-2 P0: check _mode === 'mock' from transparency stamp (Spec 024).
@@ -448,7 +859,7 @@ export const LookupPrimitive = buildTool({
   },
 
   /**
-   * lookup is read-only — always allow, defer to the general permission system.
+   * find is read-only — always allow, defer to the general permission system.
    * Explicit declaration avoids relying on the buildTool default and makes the
    * intent clear at the primitive surface (Spec 031 / Spec 024).
    */
@@ -457,12 +868,12 @@ export const LookupPrimitive = buildTool({
   },
 
   /**
-   * Dispatch lookup call via real IPC bridge (T009 — stub replaced).
+   * Dispatch find call via real IPC bridge (T009 — stub replaced).
    * validateInput has already resolved the adapter and populated ummayaCitations on the context.
    */
   async call(input, context) {
     return dispatchPrimitive<Output>({
-      primitive: 'lookup',
+      primitive: 'find',
       args: input as Record<string, unknown>,
       context,
       registry: getOrCreatePendingCallRegistry(),

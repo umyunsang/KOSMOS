@@ -129,6 +129,143 @@ class ToolExecutor:
         self._adapters[tool_id] = adapter
         logger.debug("Registered adapter for tool: %s", tool_id)
 
+    async def invoke_raw(
+        self,
+        tool_id: str,
+        params: dict[str, object],
+        request_id: str,
+        *,
+        session_identity: object | None = None,
+    ) -> object:
+        """Invoke an adapter without forcing the ``find`` LookupOutput envelope.
+
+        ``find`` adapters use :meth:`invoke`, which normalizes every handler
+        response into the 5-variant LookupOutput envelope. Other primitives
+        (notably ``locate``) have their own result unions, but should still use
+        the same central registry, auth gate, input validation, rate limit, and
+        ingress-safety path. This method is that shared adapter execution path.
+        """
+
+        start_ns = time.monotonic_ns()
+
+        def _elapsed() -> int:
+            return (time.monotonic_ns() - start_ns) // 1_000_000
+
+        try:
+            tool = self._registry.find(tool_id)
+        except ToolNotFoundError:
+            logger.warning("invoke_raw: tool not found: %s", tool_id)
+            return make_error_envelope(
+                tool_id=tool_id,
+                reason=LookupErrorReason.unknown_tool,
+                message=f"No tool registered with id {tool_id!r}.",
+                request_id=request_id,
+                elapsed_ms=_elapsed(),
+                retryable=False,
+            )
+
+        gate = tool.policy.citizen_facing_gate if tool.policy is not None else "login"
+        if gate != "read-only" and session_identity is None:
+            logger.info("invoke_raw: auth_required short-circuit for tool %s", tool_id)
+            return make_error_envelope(
+                tool_id=tool_id,
+                reason=LookupErrorReason.auth_required,
+                message=f"Tool {tool_id!r} requires authentication. Provide a session identity.",
+                request_id=request_id,
+                elapsed_ms=_elapsed(),
+                retryable=False,
+            )
+
+        adapter = self._adapters.get(tool_id)
+        if adapter is None:
+            logger.warning("invoke_raw: no adapter registered for tool: %s", tool_id)
+            return make_error_envelope(
+                tool_id=tool_id,
+                reason=LookupErrorReason.unknown_tool,
+                message=f"No adapter registered for tool {tool_id!r}.",
+                request_id=request_id,
+                elapsed_ms=_elapsed(),
+                retryable=False,
+            )
+
+        try:
+            validated_input = tool.input_schema.model_validate(params)
+        except ValidationError as exc:
+            field_paths = [".".join(str(p) for p in e["loc"]) for e in exc.errors()]
+            field_summary = ", ".join(field_paths) if field_paths else "(no field info)"
+            return make_error_envelope(
+                tool_id=tool_id,
+                reason=LookupErrorReason.invalid_params,
+                message=(
+                    f"Invalid parameters for tool {tool_id!r}. "
+                    f"Missing or invalid fields: {field_summary}. "
+                    "Read this adapter's input_schema in <available_adapters> and retry "
+                    "with the exact field names."
+                ),
+                request_id=request_id,
+                elapsed_ms=_elapsed(),
+                retryable=False,
+            )
+
+        rate_limiter = self._registry.get_rate_limiter(tool_id)
+        if not rate_limiter.check():
+            return make_error_envelope(
+                tool_id=tool_id,
+                reason=LookupErrorReason.upstream_unavailable,
+                message=f"Rate limit exceeded for tool {tool_id!r}.",
+                request_id=request_id,
+                elapsed_ms=_elapsed(),
+                retryable=True,
+            )
+
+        try:
+            rate_limiter.record()
+            raw_output = await adapter(validated_input)
+        except Exception as exc:
+            _log_adapter_exception("invoke_raw: adapter", tool_id, exc)
+            reason, retryable = _classify_adapter_exception(exc)
+            return make_error_envelope(
+                tool_id=tool_id,
+                reason=reason,
+                message=(
+                    f"Adapter '{tool_id}' raised {type(exc).__name__}: {str(exc)[:240]}. "
+                    "Do NOT fabricate a response from prior knowledge; use another "
+                    "appropriate adapter or explain that the lookup failed."
+                ),
+                request_id=request_id,
+                elapsed_ms=_elapsed(),
+                retryable=retryable,
+            )
+
+        from ummaya.safety._ingress import apply_ingress_safety  # noqa: PLC0415
+        from ummaya.safety._span import emit_safety_event  # noqa: PLC0415
+        from ummaya.settings import settings  # noqa: PLC0415
+
+        scan_dict: dict[str, Any] | None = None
+        if isinstance(raw_output, BaseModel):
+            scan_dict = raw_output.model_dump(mode="python")
+        elif isinstance(raw_output, dict):
+            scan_dict = raw_output
+
+        if scan_dict is not None:
+            sanitized, safety_event = apply_ingress_safety(scan_dict, settings.safety)
+            if safety_event is not None:
+                emit_safety_event(safety_event)
+            if sanitized is None:
+                return make_error_envelope(
+                    tool_id=tool_id,
+                    reason=LookupErrorReason.injection_detected,
+                    message="Tool output blocked by injection detector.",
+                    request_id=request_id,
+                    elapsed_ms=_elapsed(),
+                    retryable=False,
+                )
+            if isinstance(raw_output, BaseModel):
+                return sanitized
+            return sanitized
+
+        return raw_output
+
     async def invoke(  # noqa: C901
         self,
         tool_id: str,
@@ -139,7 +276,7 @@ class ToolExecutor:
     ) -> object:
         """Invoke an adapter handler through the Layer 3 auth-gate + envelope normalizer.
 
-        This is the typed invocation path for ``lookup(mode='fetch')``.  The
+        This is the typed invocation path for ``find`` adapter calls.  The
         legacy ``dispatch()`` path remains for backward compatibility with
         existing callers that pass JSON strings.
 
@@ -173,7 +310,7 @@ class ToolExecutor:
 
         # --- Tool lookup -------------------------------------------------------
         try:
-            tool = self._registry.lookup(tool_id)
+            tool = self._registry.find(tool_id)
         except ToolNotFoundError:
             logger.warning("invoke: tool not found: %s", tool_id)
             return make_error_envelope(
@@ -261,19 +398,21 @@ class ToolExecutor:
             recovery_hint = ""
             if tool_id == "nmc_emergency_search":
                 recovery_hint = (
-                    " RESOLVE_LOCATION FIRST: call resolve_location(query='<지역명>',"
-                    " want='all') to obtain coords and region metadata, then re-invoke"
-                    " this tool with params {mode:'region', q0:region.region_1depth_name,"
-                    " q1:region.region_2depth_name, origin_lat:coords.lat,"
-                    " origin_lon:coords.lon, limit:<N>}. Do NOT guess coordinates or"
-                    " invent NMC filters such as QZ."
+                    " LOCATE FIRST: call locate with a locate adapter from"
+                    " <available_adapters>. For a named place use"
+                    " locate({tool_id:'kakao_keyword_search', params:{query:'<지역명>'}}),"
+                    " then call locate({tool_id:'kakao_coord_to_region',"
+                    " params:{lat:<lat>, lon:<lon>}}). Re-invoke this tool with"
+                    " params {mode:'region', q0:region.region_1depth_name,"
+                    " q1:region.region_2depth_name, origin_lat:<lat>, origin_lon:<lon>,"
+                    " limit:<N>}. Do NOT guess coordinates or invent NMC filters such as QZ."
                 )
             elif need_resolve:
                 recovery_hint = (
-                    " RESOLVE_LOCATION FIRST: call resolve_location(query='<지역명>',"
-                    " want='coords') to obtain the missing coordinates / admin code,"
-                    " then re-invoke this tool with the returned values."
-                    " Do NOT guess coordinates from prior knowledge."
+                    " LOCATE FIRST: call locate with the appropriate locate adapter"
+                    " from <available_adapters> to obtain the missing coordinates /"
+                    " admin code, then re-invoke this tool with the returned values."
+                    " Do NOT guess coordinates or codes from prior knowledge."
                 )
             field_summary = ", ".join(field_paths) if field_paths else "(no field info)"
             return make_error_envelope(
@@ -292,7 +431,7 @@ class ToolExecutor:
         # Epic #2766 issue C — HIRA / KMA / KOROAD timeout diagnostics.
         # Annotate the current execute_tool span with `ummaya.tool.stage`
         # transitions so OTLP / Langfuse traces show whether latency comes
-        # from `lookup` (registry+gate, sub-millisecond), `fetch` (HTTP RTT),
+        # from `find` (registry+gate, sub-millisecond), `fetch` (HTTP RTT),
         # or `parse` (envelope normalisation). Citizens experiencing slow
         # turns on long-tail HIRA queries can now see where the time went.
         from opentelemetry import trace as _otel_trace  # noqa: PLC0415
@@ -439,7 +578,7 @@ class ToolExecutor:
             try:
                 # Step 1: Lookup tool
                 try:
-                    tool = self._registry.lookup(tool_name)
+                    tool = self._registry.find(tool_name)
                 except ToolNotFoundError as exc:
                     logger.warning("Tool not found: %s", tool_name)
                     self._metrics_increment("tool.error_count", tool_name)

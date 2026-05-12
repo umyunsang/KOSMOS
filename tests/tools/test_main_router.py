@@ -78,8 +78,8 @@ def test_ministry_for_tool_recognises_all_four_prefixes() -> None:
 
 
 def test_ministry_for_tool_returns_none_for_non_ministry() -> None:
-    assert ministry_for_tool("lookup") is None
-    assert ministry_for_tool("resolve_location") is None
+    assert ministry_for_tool("find") is None
+    assert ministry_for_tool("locate") is None
 
 
 def test_ministry_for_tool_case_fold() -> None:
@@ -120,7 +120,7 @@ def test_no_scope_record_refuses_all_ministry_tools(tmp_path: Path) -> None:
 
 
 def test_no_scope_record_passes_non_ministry_tools(tmp_path: Path) -> None:
-    assert check_ministry_scope("lookup", memdir_root=tmp_path) == "pass"
+    assert check_ministry_scope("find", memdir_root=tmp_path) == "pass"
 
 
 def test_composite_tool_ministries_empty_after_p3_removal() -> None:
@@ -258,7 +258,7 @@ def test_resolve_with_scope_guard_bypasses_non_ministry(tmp_path: Path) -> None:
 
     async def run() -> str:
         return await resolve_with_scope_guard(
-            "lookup",
+            "find",
             {},
             memdir_root=tmp_path,
             resolver=_noop_resolver,

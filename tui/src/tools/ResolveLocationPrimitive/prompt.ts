@@ -1,20 +1,22 @@
 // SPDX-License-Identifier: Apache-2.0
-// UMMAYA-original — ResolveLocationPrimitive prompt strings.
+// UMMAYA-original — LocatePrimitive prompt strings.
 
-export const RESOLVE_LOCATION_TOOL_NAME = 'resolve_location'
+export const LOCATE_TOOL_NAME = 'locate'
 
 /** Citizen-facing Korean description shown to the LLM. */
 export const DESCRIPTION =
-  '한국 위치 표현을 좌표, 법정동 코드, 주소, 지역명으로 해석합니다. 후속 공공서비스 어댑터가 lat/lon, adm_cd, b_code, region을 요구할 때 먼저 호출하세요.'
+  '한국 위치 표현을 처리하는 locate 어댑터를 호출합니다. <available_adapters>에서 Kakao/JUSO/SGIS 어댑터를 고르고 해당 input_schema에 맞춰 params를 채우세요.'
 
 /** Extended prompt included in the system-prompt tool-use section. */
-export const RESOLVE_LOCATION_TOOL_PROMPT = `Resolve a Korean location phrase into structured location identifiers.
+export const LOCATE_TOOL_PROMPT = `Resolve a Korean location phrase into structured location identifiers.
 
 Input:
-  { query: string, want?: "coords" | "adm_cd" | "coords_and_admcd" | "road_address" | "jibun_address" | "poi" | "region" | "all", near?: [lat, lon] }
+  { tool_id: string, params: object }
 
 Rules:
-- Use this before lookup/submit adapters that require coordinates, b_code, adm_cd, or region text.
-- Preserve the citizen's location phrase in query.
-- Use want="coords_and_admcd" unless a downstream adapter asks for only one identifier.
+- Pick tool_id only from <available_adapters> entries whose primitive is locate.
+- Use kakao_keyword_search for named places, campuses, stations, landmarks, hospitals, and POIs.
+- Coordinate-producing locate results may include KMA nx/ny; pass those exact values to KMA weather adapters that require nx and ny.
+- Use kakao_address_search or juso_adm_cd_lookup for structured road/jibun addresses and district text.
+- Use kakao_coord_to_region after a coordinate result when a downstream adapter needs q0/q1 or region names.
 - If the result is kind="error", do not invent coordinates or administrative codes.`

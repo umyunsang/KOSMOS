@@ -2878,7 +2878,7 @@ export function handleMessageFromStream(
           // chain-of-thought on the reasoning_content channel. Without
           // wiring streamingThinking here (CC's source only updates it
           // on the final assistant message) the citizen sees the
-          // ``● lookup(...)`` tool_call painted with no reasoning
+          // ``● find(...)`` tool_call painted with no reasoning
           // preview — which user surfaced as "왜 도구호출부터 하는거지?".
           // Live-streaming the reasoning preview lets the citizen see
           // *what* the model is reasoning about right before the

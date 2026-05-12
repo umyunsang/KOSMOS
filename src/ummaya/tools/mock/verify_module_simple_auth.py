@@ -118,7 +118,7 @@ def invoke(session_context: dict[str, Any]) -> SimpleAuthModuleContext:
     - ``purpose_en`` (str, optional): English purpose statement.
     - ``ledger_root`` (Path, optional): test override for ledger directory.
     """
-    scope_list: list[str] = session_context.get("scope_list", ["verify:simple_auth.identity"])
+    scope_list: list[str] = session_context.get("scope_list", ["check:simple_auth.identity"])
     scope_str = ",".join(scope_list)
     session_id: str = session_context.get("session_id", "mock-session-unknown")
     purpose_ko: str = session_context.get("purpose_ko", "간편인증 신원확인")

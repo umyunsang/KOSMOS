@@ -66,7 +66,7 @@ class KmaShortTermForecastInput(BaseModel):
         ge=1,
         le=149,
         description=(
-            "KMA 격자 X 좌표 (1-149). resolve_location(query='<지역>') 으로 받아 "
+            "KMA 격자 X 좌표 (1-149). locate adapter 결과의 coords.nx 를 "
             "그대로 전달. 예: 서울 종로구=60, 부산 사하구=96."
         ),
     )
@@ -75,7 +75,7 @@ class KmaShortTermForecastInput(BaseModel):
         ge=1,
         le=253,
         description=(
-            "KMA 격자 Y 좌표 (1-253). nx 와 함께 resolve_location 으로 받음. "
+            "KMA 격자 Y 좌표 (1-253). nx 와 함께 locate 으로 받음. "
             "예: 서울 종로구=127, 부산 사하구=73."
         ),
     )
@@ -387,8 +387,8 @@ KMA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
         ),
         self_contained_decl=(
             "REQUIRED: nx/ny 입력 필수. 지역명 ('동아대학교', '부산 사하구 다대1동') 은 "
-            "resolve_location 으로 nx/ny 받은 후 본 도구 호출. "
-            "ORDERING: turn1=resolve_location(query), turn2=이 도구. 좌표 추측 금지."
+            "locate(kakao_keyword_search 또는 kakao_address_search)로 nx/ny 받은 후 "
+            "본 도구 호출. ORDERING: turn1=locate adapter, turn2=이 도구. 좌표 추측 금지."
         ),
     ),
     search_hint=(
@@ -405,7 +405,7 @@ KMA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
     cache_ttl_seconds=1800,
     rate_limit_per_minute=10,
     is_core=True,
-    primitive="lookup",
+    primitive="find",
     trigger_examples=[
         "내일부터 3일 서울 날씨",
         "이번 주 서울 비 예보",

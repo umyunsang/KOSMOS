@@ -3,7 +3,7 @@
   "tool_id": "mock_verify_module_any_id_sso",
   "citizen_prompt": "Any-ID SSO로 신원 확인해줘",
   "expected_first_tool_call": {
-    "name": "verify",
+    "name": "check",
     "arguments": {
       "tool_id": "mock_verify_module_any_id_sso",
       "params": {

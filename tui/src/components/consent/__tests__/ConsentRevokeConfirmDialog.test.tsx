@@ -2,7 +2,7 @@
 // Epic 2 — ConsentRevokeConfirmDialog unit tests.
 //
 // Tests are ink-testing-library (Layer 1b) snapshot tests.
-// They verify:
+// They check:
 //   1. Renders without crashing for a standard receipt.
 //   2. PIPA §36 citation is present in the output.
 //   3. onConfirm('once') fires on Y keypress.

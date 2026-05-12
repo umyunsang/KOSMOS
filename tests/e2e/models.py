@@ -51,7 +51,7 @@ class ScenarioTurn(BaseModel):
 
     index: int = Field(ge=0, description="Zero-based position in the scenario turn sequence.")
     kind: Literal["tool_call", "text_delta"]
-    tool_name: Literal["resolve_location", "lookup"] | None = None
+    tool_name: Literal["locate", "find"] | None = None
     tool_arguments: dict[str, Any] | None = None
     text_content: str | None = None
     token_usage: TokenUsage | None = None
@@ -115,7 +115,7 @@ class CapturedSpan(BaseModel):
 
     Invariants:
       I4: outcome="error" => status_code="ERROR" and error_type is non-None.
-      I5: adapter_id is not None => tool_name == "lookup".
+      I5: adapter_id is not None => tool_name == "find".
     """
 
     model_config = ConfigDict(frozen=True)
@@ -141,9 +141,9 @@ class CapturedSpan(BaseModel):
             if self.error_type is None:
                 raise ValueError("I4: outcome='error' requires error_type to be non-None")
         # I5
-        if self.adapter_id is not None and self.tool_name != "lookup":
+        if self.adapter_id is not None and self.tool_name != "find":
             raise ValueError(
-                f"I5: adapter_id is non-None but tool_name={self.tool_name!r} != 'lookup'"
+                f"I5: adapter_id is non-None but tool_name={self.tool_name!r} != 'find'"
             )
         return self
 

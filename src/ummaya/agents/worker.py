@@ -52,7 +52,7 @@ _tracer = trace.get_tracer(__name__)
 _SEOUL_TZ = ZoneInfo("Asia/Seoul")
 
 # The two facade tool IDs that workers are allowed to see
-_ALLOWED_TOOLS: frozenset[str] = frozenset({"lookup", "resolve_location"})
+_ALLOWED_TOOLS: frozenset[str] = frozenset({"find", "locate"})
 
 # Default per-worker token budget (generous for test purposes)
 _DEFAULT_WORKER_BUDGET: int = 200_000

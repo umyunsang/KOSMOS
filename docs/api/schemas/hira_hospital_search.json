@@ -10,7 +10,7 @@
   "$id": "https://ummaya.example/api/schemas/hira_hospital_search.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Input schema for hira_hospital_search.\n\nQueries HIRA's hospital basis list endpoint by WGS84 coordinate and\nradius. All three parameters are required.\n\nObtain xPos / yPos from resolve_location(want='coords') before calling\nthis tool — never guess coordinate values from model memory.",
+  "description": "Input schema for hira_hospital_search.\n\nQueries HIRA's hospital basis list endpoint by WGS84 coordinate and\nradius. All three parameters are required.\n\nObtain xPos / yPos from locate(want='coords') before calling\nthis tool — never guess coordinate values from model memory.",
   "properties": {
     "clCd": {
       "anyOf": [
@@ -62,14 +62,14 @@
       "type": "integer"
     },
     "xPos": {
-      "description": "Longitude (WGS84, decimal degrees). Korean peninsula range: 124–132. Obtain from resolve_location(want='coords'). Never guess.",
+      "description": "Longitude (WGS84, decimal degrees). Korean peninsula range: 124–132. Obtain from locate(want='coords'). Never guess.",
       "maximum": 132.0,
       "minimum": 124.0,
       "title": "Xpos",
       "type": "number"
     },
     "yPos": {
-      "description": "Latitude (WGS84, decimal degrees). Korean peninsula range: 33–39. Obtain from resolve_location(want='coords'). Never guess.",
+      "description": "Latitude (WGS84, decimal degrees). Korean peninsula range: 33–39. Obtain from locate(want='coords'). Never guess.",
       "maximum": 39.0,
       "minimum": 33.0,
       "title": "Ypos",

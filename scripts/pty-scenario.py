@@ -416,16 +416,16 @@ def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
         })
 
     primitive_names_seen = {tc["name"] for tc in seen_call_ids}
-    has_lookup = "lookup" in primitive_names_seen
-    has_resolve = "resolve_location" in primitive_names_seen
+    has_lookup = "find" in primitive_names_seen
+    has_resolve = "locate" in primitive_names_seen
     # Accept either primitive alone or the chain; the spec expects both
     # primitives to appear in the call sequence.
     success = has_lookup or has_resolve
 
     if not has_lookup:
-        result.errors.append("no tool_call with name='lookup' observed")
+        result.errors.append("no tool_call with name='find' observed")
     if not has_resolve:
-        result.errors.append("no tool_call with name='resolve_location' observed")
+        result.errors.append("no tool_call with name='locate' observed")
     # Both required per SC-001; mark success only when chain is complete.
     success = has_lookup and has_resolve
 
@@ -440,7 +440,7 @@ def cmd_lookup_emergency_room(_args: argparse.Namespace) -> HarnessResult:
     }
     result.markers_seen = _scan_markers(
         result.stdout_text,
-        ["tool_call", "lookup", "resolve_location"],
+        ["tool_call", "find", "locate"],
     )
     return result
 
@@ -510,11 +510,11 @@ def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:  # noqa: C90
         else:
             log.debug("no permission_request within timeout; proceeding to tool_call watch")
 
-        # Phase 5: wait for tool_call{name:"submit"} frame.
+        # Phase 5: wait for tool_call{name:"send"} frame.
         tc_deadline = time.time() + DEFAULT_TURN_TIMEOUT_MS / 1000
 
         def _has_submit_tool_call(frames: list[dict]) -> bool:
-            return any(f.get("kind") == "tool_call" and f.get("name") == "submit" for f in frames)
+            return any(f.get("kind") == "tool_call" and f.get("name") == "send" for f in frames)
 
         _drain_until(
             fd, result.captured_stdout, tc_deadline, _has_submit_tool_call, f"{scenario}-tool-call"
@@ -540,7 +540,7 @@ def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:  # noqa: C90
 
     # Evaluate success per decision path.
     frames = _parse_ipc_frames(bytes(result.captured_stdout))
-    tool_calls = [f for f in frames if f.get("kind") == "tool_call" and f.get("name") == "submit"]
+    tool_calls = [f for f in frames if f.get("kind") == "tool_call" and f.get("name") == "send"]
     tool_results = [f for f in frames if f.get("kind") in ("tool_result", "error")]
 
     if decision == "deny":
@@ -551,7 +551,7 @@ def cmd_submit_fine_pay(args: argparse.Namespace) -> HarnessResult:  # noqa: C90
         # Allow path: both tool_call and a tool_result must be present.
         bool(tool_calls) and bool(tool_results)
         if not tool_calls:
-            result.errors.append("allow path: no tool_call{name:'submit'} observed")
+            result.errors.append("allow path: no tool_call{name:'send'} observed")
         if not tool_results:
             result.errors.append("allow path: no tool_result observed after submit dispatch")
 
@@ -584,11 +584,11 @@ def cmd_verify_gongdong(_args: argparse.Namespace) -> HarnessResult:
         _send(fd, "공동인증서로 본인인증 부탁해\r".encode(), f"{scenario}-input")
         send_ts = time.time()
 
-        # Phase 3: wait for tool_call{name:"verify"}.
+        # Phase 3: wait for tool_call{name:"check"}.
         tc_deadline = send_ts + DEFAULT_TURN_TIMEOUT_MS / 1000
 
         def _has_verify_tool_call(frames: list[dict]) -> bool:
-            return any(f.get("kind") == "tool_call" and f.get("name") == "verify" for f in frames)
+            return any(f.get("kind") == "tool_call" and f.get("name") == "check" for f in frames)
 
         found_tc = _drain_until(
             fd, result.captured_stdout, tc_deadline, _has_verify_tool_call, f"{scenario}-tool-call"
@@ -597,13 +597,13 @@ def cmd_verify_gongdong(_args: argparse.Namespace) -> HarnessResult:
             tool_call_ms = int((time.time() - send_ts) * 1000)
             log.debug("verify tool_call in %dms", tool_call_ms)
 
-        # Phase 4: wait for tool_result with kind="verify" + family="gongdong_injeungseo".
+        # Phase 4: wait for tool_result with kind="check" + family="gongdong_injeungseo".
         tr_deadline = time.time() + DEFAULT_TURN_TIMEOUT_MS / 1000
 
         def _has_auth_context(frames: list[dict]) -> bool:
             return any(
                 f.get("kind") == "tool_result"
-                and f.get("output", {}).get("kind") == "verify"
+                and f.get("output", {}).get("kind") == "check"
                 and f.get("output", {}).get("family") == "gongdong_injeungseo"
                 for f in frames
             )
@@ -623,7 +623,7 @@ def cmd_verify_gongdong(_args: argparse.Namespace) -> HarnessResult:
     frames = _parse_ipc_frames(bytes(result.captured_stdout))
     verify_results = [
         f for f in frames
-        if f.get("kind") == "tool_result" and f.get("output", {}).get("kind") == "verify"
+        if f.get("kind") == "tool_result" and f.get("output", {}).get("kind") == "check"
     ]
 
     if verify_results:
@@ -635,10 +635,10 @@ def cmd_verify_gongdong(_args: argparse.Namespace) -> HarnessResult:
         }
 
     if tool_call_ms is None:
-        result.errors.append("timeout: no tool_call{name:'verify'} observed")
+        result.errors.append("timeout: no tool_call{name:'check'} observed")
     if auth_context_ms is None:
         result.errors.append(
-            "timeout: no tool_result{kind:'verify', family:'gongdong_injeungseo'} observed"
+            "timeout: no tool_result{kind:'check', family:'gongdong_injeungseo'} observed"
         )
 
     result.markers_seen = _scan_markers(

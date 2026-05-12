@@ -91,7 +91,7 @@ REPL 화면이 나타나면 시민 컨텍스트 확인:
 
 시민이 enter 누르자, UMMAYA 가:
 1. BM25 검색에서 새 플러그인의 `search_hint_ko` ("지하철 도착 시간 강남역") 매칭
-2. `lookup(mode="fetch", tool_id="plugin.seoul_subway.lookup", params={station: "강남"})` 호출
+2. `lookup(mode="fetch", tool_id="plugin.seoul_subway.find", params={station: "강남"})` 호출
 3. 권한 모달 (이미 한번만 승인된 것으로 간주, 또는 세션 자동 시 묵묵히 통과)
 4. plugin 응답 반환
 5. 모델이 한국어로 통합 응답 생성:
@@ -101,7 +101,7 @@ REPL 화면이 나타나면 시민 컨텍스트 확인:
 
   ✻ 강남역 다음 열차 정보를 조회 중입니다…
 
-  [도구 호출 plugin.seoul_subway.lookup ✓ 0.6s]
+  [도구 호출 plugin.seoul_subway.find ✓ 0.6s]
 
   강남역 (2호선)
 

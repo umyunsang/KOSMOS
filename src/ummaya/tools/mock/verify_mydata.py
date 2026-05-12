@@ -44,9 +44,9 @@ _ISSUER_DID: Final = "did:web:mydata.kftc.or.kr"
 
 ADAPTER_REGISTRATION = AdapterRegistration(
     tool_id=_TOOL_ID,
-    primitive=AdapterPrimitive.verify,
+    primitive=AdapterPrimitive.check,
     module_path="ummaya.tools.mock.verify_mydata",
-    input_model_ref="ummaya.primitives.verify:VerifyInput",
+    input_model_ref="ummaya.primitives.check:VerifyInput",
     source_mode=AdapterSourceMode.OOS,
     published_tier_minimum="mydata_individual_aal2",
     nist_aal_hint="AAL2",

@@ -3,7 +3,7 @@
 
 Provides:
 - ``DelegationToken``: scope-bound, time-bound, session-bound credential issued
-  by a verify adapter and consumed by a submit or lookup adapter.
+  by a check adapter and consumed by a send or find adapter.
 - ``DelegationContext``: wrapper carrying the token plus bilingual purpose strings.
 - ``IdentityAssertion``: alternative result type for identity-SSO-only adapters
   (e.g. ``mock_verify_module_any_id_sso``) that do NOT produce a delegation grant.
@@ -37,12 +37,12 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _SINGLE_SCOPE_PATTERN: re.Pattern[str] = re.compile(
-    r"^(lookup|submit|verify):[a-z0-9_]+\.[a-z0-9_-]+$"
+    r"^(find|send|check):[a-z0-9_]+\.[a-z0-9_-]+$"
 )
 
 _MULTI_SCOPE_PATTERN: re.Pattern[str] = re.compile(
-    r"^((lookup|submit|verify):[a-z0-9_]+\.[a-z0-9_-]+)"
-    r"(,(lookup|submit|verify):[a-z0-9_]+\.[a-z0-9_-]+)*$"
+    r"^((find|send|check):[a-z0-9_]+\.[a-z0-9_-]+)"
+    r"(,(find|send|check):[a-z0-9_]+\.[a-z0-9_-]+)*$"
 )
 
 
@@ -76,7 +76,7 @@ class DelegationToken(BaseModel):
     delegation_token: str = Field(
         min_length=1,
         description=(
-            "Opaque bearer token consumed by submit/lookup adapters. "
+    "Opaque bearer token consumed by send/find adapters. "
             "Must start with 'del_' and have >= 24 chars after the prefix."
         ),
     )
@@ -155,7 +155,7 @@ class DelegationToken(BaseModel):
 class DelegationContext(BaseModel):
     """Carries a ``DelegationToken`` plus bilingual purpose strings for the permission UI.
 
-    Returned by verify adapters (except ``mock_verify_module_any_id_sso``).
+    Returned by check adapters (except ``mock_verify_module_any_id_sso``).
     Passed forward through the LLM's tool-call context to the next adapter.
     """
 
@@ -269,11 +269,11 @@ def _scope_matches(token_scope: str, required: str) -> bool:
     """Return True if ``required`` is one of the comma-joined scope entries in ``token_scope``.
 
     Examples::
-        _scope_matches("submit:hometax.tax-return", "submit:hometax.tax-return") → True
-        _scope_matches("lookup:hometax.simplified,submit:hometax.tax-return",
-                       "submit:hometax.tax-return") → True
-        _scope_matches("lookup:hometax.simplified,submit:hometax.tax-return",
-                       "submit:gov24.minwon") → False
+        _scope_matches("send:hometax.tax-return", "send:hometax.tax-return") → True
+        _scope_matches("find:hometax.simplified,send:hometax.tax-return",
+                       "send:hometax.tax-return") → True
+        _scope_matches("find:hometax.simplified,send:hometax.tax-return",
+                       "send:gov24.minwon") → False
     """
     return required in token_scope.split(",")
 
@@ -336,7 +336,7 @@ async def validate_delegation(
     Args:
         context: The ``DelegationContext`` carrying the token to validate.
         required_scope: The exact scope string the consumer adapter requires,
-            e.g. ``"submit:hometax.tax-return"``.
+            e.g. ``"send:hometax.tax-return"``.
         current_session_id: Session ID of the consuming call.
         revoked_set: In-memory session-scoped set of revoked token values.
         ledger_reader: Async reader that resolves the issuance session for a token.

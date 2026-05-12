@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-// Audit-2 P0 · VerifyPrimitive mock-disclaimer unit tests.
+// Audit-2 P0 · CheckPrimitive mock-disclaimer unit tests.
 //
-// Citizen-safety: mock verify results MUST display 🧪 모의 prefix and
+// Citizen-safety: mock check results MUST display 🧪 모의 prefix and
 // "실제 행정 영향 없는 시연 결과입니다." caveat.
-// Live verify results MUST NOT show any mock prefix.
+// Live check results MUST NOT show any mock prefix.
 
 import { test, expect, describe } from 'bun:test'
 import { render } from 'ink-testing-library'
@@ -31,8 +31,8 @@ function renderVerify(output: Output, opts: { verbose?: boolean } = {}): string 
 // Mock path — disclaimer required
 // ---------------------------------------------------------------------------
 
-describe('VerifyPrimitive renderToolResultMessage — mock disclaimer', () => {
-  test('mock verify (ok=true, _mode="mock" in result) shows 🧪 모의 prefix', () => {
+describe('CheckPrimitive renderToolResultMessage — mock disclaimer', () => {
+  test('mock check (ok=true, _mode="mock" in result) shows 🧪 모의 prefix', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -56,7 +56,7 @@ describe('VerifyPrimitive renderToolResultMessage — mock disclaimer', () => {
     expect(frame).toContain('인증 완료')
   })
 
-  test('mock verify (pending status) shows 🧪 모의 인증 처리 중', () => {
+  test('mock check (pending status) shows 🧪 모의 인증 처리 중', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -76,7 +76,7 @@ describe('VerifyPrimitive renderToolResultMessage — mock disclaimer', () => {
     expect(frame).toContain('인증 처리 중')
   })
 
-  test('mock verify shows actual endpoint footer when present', () => {
+  test('mock check shows actual endpoint footer when present', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -101,8 +101,8 @@ describe('VerifyPrimitive renderToolResultMessage — mock disclaimer', () => {
 // Live path — NO mock disclaimer
 // ---------------------------------------------------------------------------
 
-describe('VerifyPrimitive renderToolResultMessage — live path (no mock disclaimer)', () => {
-  test('live verify (no _mode field) shows 인증 완료 without 🧪 prefix', () => {
+describe('CheckPrimitive renderToolResultMessage — live path (no mock disclaimer)', () => {
+  test('live check (no _mode field) shows 인증 완료 without 🧪 prefix', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -120,7 +120,7 @@ describe('VerifyPrimitive renderToolResultMessage — live path (no mock disclai
     expect(frame).not.toContain('시연 결과')
   })
 
-  test('live verify with _mode="live" does NOT show mock disclaimer', () => {
+  test('live check with _mode="live" does NOT show mock disclaimer', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -140,7 +140,7 @@ describe('VerifyPrimitive renderToolResultMessage — live path (no mock disclai
 // Regression guard: mismatch_error path unaffected by mock disclaimer
 // ---------------------------------------------------------------------------
 
-describe('VerifyPrimitive renderToolResultMessage — mismatch guard unaffected', () => {
+describe('CheckPrimitive renderToolResultMessage — mismatch guard unaffected', () => {
   test('[H1] mismatch_error (ok=false) still renders ❌ 인증 모듈 거부 regardless of mock', () => {
     const output: Output = {
       ok: false,

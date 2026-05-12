@@ -20,10 +20,10 @@
         "primitive": {
           "description": "Primitive verb the adapter is registered under (I6).",
           "enum": [
-            "lookup",
-            "submit",
-            "verify",
-            "resolve_location"
+            "find",
+            "send",
+            "check",
+            "locate"
           ],
           "title": "Primitive",
           "type": "string"
@@ -1873,10 +1873,10 @@
         "primitive_kind": {
           "description": "The primitive the worker wants to invoke.",
           "enum": [
-            "lookup",
-            "resolve_location",
-            "submit",
-            "verify"
+            "find",
+            "locate",
+            "send",
+            "check"
           ],
           "title": "Primitive Kind",
           "type": "string"
@@ -2043,10 +2043,10 @@
           "anyOf": [
             {
               "enum": [
-                "lookup",
-                "resolve_location",
-                "submit",
-                "verify"
+                "find",
+                "locate",
+                "send",
+                "check"
               ],
               "type": "string"
             },
@@ -2905,10 +2905,10 @@
         "name": {
           "description": "Primitive name per Spec 031.",
           "enum": [
-            "lookup",
-            "resolve_location",
-            "submit",
-            "verify"
+            "find",
+            "locate",
+            "send",
+            "check"
           ],
           "title": "Name",
           "type": "string"
@@ -2996,10 +2996,10 @@
         "kind": {
           "description": "Primitive kind discriminator per Spec 031.",
           "enum": [
-            "lookup",
-            "resolve_location",
-            "submit",
-            "verify"
+            "find",
+            "locate",
+            "send",
+            "check"
           ],
           "title": "Kind",
           "type": "string"
@@ -3298,10 +3298,10 @@
         "current_primitive": {
           "description": "Primitive currently being invoked by this worker.",
           "enum": [
-            "lookup",
-            "resolve_location",
-            "submit",
-            "verify"
+            "find",
+            "locate",
+            "send",
+            "check"
           ],
           "title": "Current Primitive",
           "type": "string"

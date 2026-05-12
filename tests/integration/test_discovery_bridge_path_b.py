@@ -306,4 +306,4 @@ def test_b2_verify_candidate_has_policy_url(
     assert target is not None, "modid verify not in search results"
     assert target.real_classification_url is not None
     assert target.real_classification_url.startswith("http")
-    assert target.primitive == "verify"
+    assert target.primitive == "check"

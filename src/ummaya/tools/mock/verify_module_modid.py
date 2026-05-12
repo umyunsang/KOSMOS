@@ -94,7 +94,7 @@ def invoke(session_context: dict[str, Any]) -> ModidContext:
     - ``purpose_en`` (str, optional): English purpose statement.
     - ``ledger_root`` (Path, optional): test override for ledger directory.
     """
-    scope_list: list[str] = session_context.get("scope_list", ["verify:modid.identity"])
+    scope_list: list[str] = session_context.get("scope_list", ["check:modid.identity"])
     scope_str = ",".join(scope_list)
     session_id: str = session_context.get("session_id", "mock-session-unknown")
     purpose_ko: str = session_context.get("purpose_ko", "모바일 신분증 신원확인")

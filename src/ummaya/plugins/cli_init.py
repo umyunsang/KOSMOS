@@ -104,8 +104,8 @@ def _manifest_dict(opts: InitOptions) -> dict[str, object]:
         "plugin_id": opts.name,
         "version": "0.1.0",
         "adapter": {
-            "tool_id": f"plugin.{opts.name}.lookup",
-            "primitive": "lookup",
+            "tool_id": f"plugin.{opts.name}.find",
+            "primitive": "find",
             "module_path": f"plugin_{opts.name}.adapter",
             "input_model_ref": f"plugin_{opts.name}.schema:LookupInput",
             "source_mode": "OPENAPI",
@@ -167,7 +167,7 @@ def _build_files(opts: InitOptions) -> dict[str, str]:
         "tests/__init__.py": "# SPDX-License-Identifier: Apache-2.0\n",
         "tests/conftest.py": _CONFTEST,
         "tests/test_adapter.py": _TEST_ADAPTER.format(name=name),
-        f"tests/fixtures/plugin.{name}.lookup.json": (
+        f"tests/fixtures/plugin.{name}.find.json": (
             '{\n  "echo": "sample",\n  "source": "' + name + '-stub"\n}\n'
         ),
         ".github/workflows/plugin-validation.yml": _PLUGIN_VAL_WORKFLOW,
@@ -258,7 +258,7 @@ def _build_tool() -> Any:
         last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
     )
     return GovAPITool(
-        id="plugin.{name}.lookup",
+        id="plugin.{name}.find",
         name_ko="{name} 조회",
         ministry="OTHER",
         category=["{name}"],
@@ -266,9 +266,9 @@ def _build_tool() -> Any:
         auth_type="api_key",
         input_schema=LookupInput,
         output_schema=LookupOutput,
-        search_hint="{name} 조회 lookup",
+        search_hint="{name} 조회 find",
         policy=policy,
-        primitive="lookup",
+        primitive="find",
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",
     )
@@ -324,7 +324,7 @@ from .schema import LookupInput, LookupOutput
 
 _FIXTURE_PATH = (
     Path(__file__).resolve().parent.parent / "tests" / "fixtures"
-    / "plugin.{name}.lookup.json"
+    / "plugin.{name}.find.json"
 )
 
 
@@ -343,7 +343,7 @@ def _build_tool() -> Any:
         last_verified=datetime(2026, 4, 29, tzinfo=timezone.utc),
     )
     return GovAPITool(
-        id="plugin.{name}.lookup",
+        id="plugin.{name}.find",
         name_ko="{name} 조회",
         ministry="OTHER",
         category=["{name}"],
@@ -351,9 +351,9 @@ def _build_tool() -> Any:
         auth_type="api_key",
         input_schema=LookupInput,
         output_schema=LookupOutput,
-        search_hint="{name} 조회 lookup",
+        search_hint="{name} 조회 find",
         policy=policy,
-        primitive="lookup",
+        primitive="find",
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",
         adapter_mode="mock",
@@ -393,7 +393,7 @@ async def adapter(payload: LookupInput) -> dict[str, Any]:
 '''
 
 _SCHEMA = '''# SPDX-License-Identifier: Apache-2.0
-"""Pydantic v2 input + output schemas for the lookup primitive."""
+"""Pydantic v2 input + output schemas for the find primitive."""
 
 from __future__ import annotations
 
@@ -664,7 +664,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--search-hint-en",
         default=None,
-        help="English BM25 hint (default: '<name> lookup search')",
+        help="English BM25 hint (default: '<name> find search')",
     )
     # PIPA flags — required when --pii.
     parser.add_argument("--pipa-org")
@@ -722,7 +722,7 @@ def main(argv: list[str] | None = None) -> int:
         # so the scaffold passes Q4-HINT-MINISTRY out of the box; contributor
         # replaces with the real ministry / agency name during step 4.
         search_hint_ko=args.search_hint_ko or f"{args.name} 공공 데이터 조회 검색 추천",
-        search_hint_en=args.search_hint_en or f"{args.name} public data lookup search",
+        search_hint_en=args.search_hint_en or f"{args.name} public data find search",
         pipa=pipa,
         mock_source_spec=args.mock_source_spec,
     )

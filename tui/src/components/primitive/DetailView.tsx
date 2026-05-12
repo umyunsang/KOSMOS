@@ -4,7 +4,7 @@
  * Renders key/value pairs for a single structured record in a two-column
  * grid layout.  Labels are right-aligned; values are left-aligned.
  *
- * FR-020: lookup detail view renderer.
+ * FR-020: find detail view renderer.
  */
 import React from 'react'
 import { Box, Text } from 'ink'

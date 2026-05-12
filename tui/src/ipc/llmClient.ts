@@ -544,7 +544,7 @@ export class LLMClient {
             try {
               const env = trFrame.envelope as Record<string, unknown>
               const envKind = typeof env?.['kind'] === 'string' ? env['kind'] : ''
-              if (envKind === 'submit') {
+              if (envKind === 'send') {
                 const RX = /hometax-\d{4}-\d{2}-\d{2}-RX-[A-Z0-9]{5}/
                 const haystack =
                   (typeof trFrame.transaction_id === 'string' ? trFrame.transaction_id : '') +
@@ -632,7 +632,7 @@ export class LLMClient {
       // blocks because the API serializes them inline. With K-EXAONE the
       // streaming order can land tool_use blocks BEFORE thinking blocks
       // in ``acc.contentBlocks`` — which makes the TUI render
-      // ``● lookup(...)`` BEFORE ``∴ Thinking — ...`` and confuses the
+      // ``● find(...)`` BEFORE ``∴ Thinking — ...`` and confuses the
       // citizen ("왜 도구호출부터 하는거지?", user-reported 2026-05-02).
       //
       // Re-order to canonical CC layout at commit time so the rendered

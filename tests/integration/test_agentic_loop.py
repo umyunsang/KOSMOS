@@ -147,7 +147,7 @@ _MINIMAL_TEST_TOOLS: list[dict[str, object]] = [
     {
         "type": "function",
         "function": {
-            "name": "lookup",
+            "name": "find",
             "description": "Search or fetch government API data",
             "parameters": {"type": "object", "properties": {}},
         },
@@ -155,7 +155,7 @@ _MINIMAL_TEST_TOOLS: list[dict[str, object]] = [
     {
         "type": "function",
         "function": {
-            "name": "resolve_location",
+            "name": "locate",
             "description": "Resolve a Korean address or location",
             "parameters": {"type": "object", "properties": {}},
         },
@@ -163,7 +163,7 @@ _MINIMAL_TEST_TOOLS: list[dict[str, object]] = [
     {
         "type": "function",
         "function": {
-            "name": "submit",
+            "name": "send",
             "description": "Submit a government service transaction",
             "parameters": {"type": "object", "properties": {}},
         },
@@ -171,7 +171,7 @@ _MINIMAL_TEST_TOOLS: list[dict[str, object]] = [
     {
         "type": "function",
         "function": {
-            "name": "verify",
+            "name": "check",
             "description": "Verify identity or delegate",
             "parameters": {"type": "object", "properties": {}},
         },
@@ -298,7 +298,7 @@ _CC_TOOL_NAMES = re.compile(
 class _SingleLookupThenAnswerLLMClient(_BaseFakeLLMClient):
     """LLM that calls lookup once on Turn 1, then answers on Turn 2.
 
-    Turn 1: tool_call_delta(name='lookup', args='{"mode":"fetch",...}') + done.
+    Turn 1: tool_call_delta(name='find', args='{"mode":"fetch",...}') + done.
     Turn 2: emits content_delta('강남구 응급실은 강남세브란스병원입니다.') + done.
     """
 
@@ -330,7 +330,7 @@ class _SingleLookupThenAnswerLLMClient(_BaseFakeLLMClient):
                 type="tool_call_delta",
                 tool_call_index=0,
                 tool_call_id=f"call-{uuid.uuid4().hex[:12]}",
-                function_name="lookup",
+                function_name="find",
                 function_args_delta=(
                     '{"mode":"fetch","tool_id":"nmc_emergency_search",'
                     '"params":{"query":"강남구 응급실"}}'
@@ -392,7 +392,7 @@ async def test_single_tool_call_closure(monkeypatch: pytest.MonkeyPatch) -> None
             reason="ok",
         )
 
-    monkeypatch.setattr(lookup_mod, "lookup", _fake_lookup)
+    monkeypatch.setattr(lookup_mod, "find", _fake_lookup)
 
     buf, _ = await _run_with_frame(
         frame,
@@ -407,15 +407,15 @@ async def test_single_tool_call_closure(monkeypatch: pytest.MonkeyPatch) -> None
     emitted = buf.as_frames()
     assert emitted, "No IPC frames were emitted — harness or handler may have failed"
 
-    # --- Assert: at least one tool_call frame for 'lookup' ---
+    # --- Assert: at least one tool_call frame for 'find' ---
     tool_call_frames = [f for f in emitted if f.get("kind") == "tool_call"]
     assert tool_call_frames, (
-        "No tool_call frame emitted. Expected at least one tool_call for 'lookup'. "
+        "No tool_call frame emitted. Expected at least one tool_call for 'find'. "
         f"Emitted kinds: {[f.get('kind') for f in emitted]}"
     )
-    lookup_calls = [f for f in tool_call_frames if f.get("name") == "lookup"]
+    lookup_calls = [f for f in tool_call_frames if f.get("name") == "find"]
     assert lookup_calls, (
-        f"tool_call frames present but none for name='lookup'. "
+        f"tool_call frames present but none for name='find'. "
         f"tool_call names: {[f.get('name') for f in tool_call_frames]}"
     )
 
@@ -487,7 +487,7 @@ class _FiveTurnToolCallLLMClient(_BaseFakeLLMClient):
                 type="tool_call_delta",
                 tool_call_index=0,
                 tool_call_id=f"call-turn{turn}-{uuid.uuid4().hex[:8]}",
-                function_name="lookup",
+                function_name="find",
                 function_args_delta=(
                     '{"mode":"fetch","tool_id":"nmc_emergency_search",'
                     f'"params":{{"query":"응급실 검색 {turn}"}}}}'
@@ -552,7 +552,7 @@ async def test_five_turn_agentic_loop(monkeypatch: pytest.MonkeyPatch) -> None:
             reason="ok",
         )
 
-    monkeypatch.setattr(lookup_mod, "lookup", _fast_lookup)
+    monkeypatch.setattr(lookup_mod, "find", _fast_lookup)
 
     start = time.perf_counter()
     buf, _ = await _run_with_frame(
@@ -627,7 +627,7 @@ async def test_five_turn_agentic_loop(monkeypatch: pytest.MonkeyPatch) -> None:
 class _ThreeToolsInOneTurnLLMClient(_BaseFakeLLMClient):
     """LLM that emits 3 simultaneous tool calls, then a follow-up single call.
 
-    Turn 1: three tool_call_delta events at index 0, 1, 2 — each for name='lookup'
+    Turn 1: three tool_call_delta events at index 0, 1, 2 — each for name='find'
             with a distinct query argument. Then done.
     Turn 2: one follow-up tool_call_delta after observing the first result.
     Turn 3: one content_delta carrying the final answer text. Then done.
@@ -676,7 +676,7 @@ class _ThreeToolsInOneTurnLLMClient(_BaseFakeLLMClient):
                     type="tool_call_delta",
                     tool_call_index=idx,
                     tool_call_id=call_id,
-                    function_name="lookup",
+                    function_name="find",
                     function_args_delta=json.dumps(
                         {
                             "mode": "fetch",
@@ -692,7 +692,7 @@ class _ThreeToolsInOneTurnLLMClient(_BaseFakeLLMClient):
                 type="tool_call_delta",
                 tool_call_index=0,
                 tool_call_id=type(self)._followup_call_id,
-                function_name="lookup",
+                function_name="find",
                 function_args_delta=json.dumps(
                     {
                         "mode": "fetch",
@@ -770,7 +770,7 @@ async def test_multi_tool_turn_is_coerced_to_one_visible_dispatch(
             reason="ok",
         )
 
-    monkeypatch.setattr(lookup_mod, "lookup", _multi_lookup)
+    monkeypatch.setattr(lookup_mod, "find", _multi_lookup)
 
     buf, _ = await _run_with_frame(
         frame,

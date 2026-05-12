@@ -281,14 +281,12 @@ async function* queryModelWithStreaming(params: {
   // React state, atomically cleared at line 2984 when the final message
   // arrives).
   let accumulated = ''
-  // Spec 2521 — accumulate K-EXAONE reasoning_content into a thinking
-  // content block so the terminal AssistantMessage carries the canonical
-  // CC shape `[{type:'thinking',...}, {type:'text',...}, {type:'tool_use',...}]`.
-  // Without this the live streamingThinking buffer paints reasoning at the
-  // BOTTOM of the transcript while tool_use blocks land in the message
-  // ABOVE — visually reversing the ReAct order. CC reference:
-  // services/api/claude.ts:1995 (content_block_start thinking) +
-  // messages.ts:normalizeContentFromAPI (final block array assembly).
+  // K-EXAONE reasoning_content is streamed to the live thinking renderer,
+  // but is not persisted by default. CC keeps protected thinking only as
+  // API-bound trajectory state and strips/tombstones it on retry; storing
+  // full reasoning in UMMAYA session JSON is unnecessary and leaks too much.
+  // Keep an explicit diagnostic escape hatch for local debugging.
+  const persistThinking = process.env.UMMAYA_PERSIST_THINKING === '1'
   let accumulatedThinking = ''
   let messageStartEmitted = false
   let frameCount = 0
@@ -383,11 +381,12 @@ async function* queryModelWithStreaming(params: {
       // delta.reasoning_content here. Mirror Anthropic's thinking_delta
       // (ummaya/llm/_cc_reference/claude.ts:2148-2161). handleMessageFromStream
       // (utils/messages.ts:3080) routes thinking_delta through onUpdateLength
-      // so AssistantThinkingMessage paints the reasoning inline. We also
-      // accumulate the full thinking text so the terminal AssistantMessage
-      // can carry it as a content block (Spec 2521 ReAct transcript order).
+      // so AssistantThinkingMessage paints the reasoning inline. Persistence
+      // is opt-in only; live paint is enough for the normal terminal flow.
       if (thinkingText.length > 0) {
-        accumulatedThinking += thinkingText
+        if (persistThinking) {
+          accumulatedThinking += thinkingText
+        }
         yield {
           type: 'stream_event' as const,
           event: {
@@ -429,7 +428,8 @@ async function* queryModelWithStreaming(params: {
         // string path and createAssistantMessage substitutes NO_CONTENT_MESSAGE.
         const trimmedText = accumulated.trimStart()
         // PR #2768 / Render-order fix — assemble content array in transcript
-        // visual order: thinking → tool_use[] → text (final synthesis last).
+        // visual order: optional diagnostic thinking → tool_use[] → text
+        // (final synthesis last).
         // CC's normalizeContentFromAPI emits BetaContentBlock[] in stream
         // arrival order, but K-EXAONE streams text deltas BEFORE tool_use
         // emit, so naive arrival order produces "answer above tool call"
@@ -442,7 +442,7 @@ async function* queryModelWithStreaming(params: {
           | { type: 'text'; text: string }
           | { type: 'tool_use'; id: string; name: string; input: unknown }
         const blocks: _AssistantBlock[] = []
-        if (accumulatedThinking.length > 0) {
+        if (persistThinking && accumulatedThinking.length > 0) {
           blocks.push({ type: 'thinking', thinking: accumulatedThinking })
         }
         // Epic #2766 follow-up — render-order fix v2 (root-cause).
@@ -609,7 +609,7 @@ async function* queryModelWithStreaming(params: {
       // response, recreating the same stdio deadlock at the TUI layer.
       const fp = f as {
         request_id?: string
-        primitive_kind?: 'lookup' | 'resolve_location' | 'verify' | 'submit'
+        primitive_kind?: 'find' | 'locate' | 'check' | 'send'
         description_ko?: string
         description_en?: string
         risk_level?: 'low' | 'medium' | 'high'
@@ -624,7 +624,7 @@ async function* queryModelWithStreaming(params: {
       const { pushIpcPermissionRequest } = await import('../utils/permissions/ipcPermissionBridge.js')
       pushIpcPermissionRequest({
         request_id: fp.request_id ?? '',
-        primitive_kind: fp.primitive_kind ?? 'submit',
+        primitive_kind: fp.primitive_kind ?? 'send',
         description_ko: fp.description_ko ?? '',
         description_en: fp.description_en ?? '',
         risk_level: fp.risk_level ?? 'medium',

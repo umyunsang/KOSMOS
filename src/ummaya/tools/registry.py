@@ -44,10 +44,10 @@ class AdapterPrimitive(StrEnum):
     Matches data-model.md § 4 verbatim.
     """
 
-    lookup = "lookup"
-    resolve_location = "resolve_location"
-    submit = "submit"
-    verify = "verify"
+    find = "find"
+    locate = "locate"
+    send = "send"
+    check = "check"
 
 
 class AdapterSourceMode(StrEnum):
@@ -89,7 +89,7 @@ PublishedTier = Literal[
     "mobile_id_resident_aal2",
     # mydata — 1 label
     "mydata_individual_aal2",
-    # Spec 2296 Epic ε — AX-infrastructure callable-channel verify modules.
+    # Spec 2296 Epic ε — AX-infrastructure callable-channel check modules.
     # Five new tier values for the mock_verify_module_* family. Each tier
     # encodes (a) the AX-channel family name and (b) the NIST AAL hint
     # the channel is expected to attest to once a real backend ships.
@@ -127,11 +127,11 @@ class AdapterRegistration(BaseModel):
         # either snake_case (built-in adapters from Spec 022/031) OR
         # plugin-namespaced ``plugin.<plugin_id>.<verb>`` (Migration tree
         # § L1-C C7) where <verb> is one of the active plugin primitives.
-        # resolve_location is host-reserved (Q8-NO-ROOT-OVERRIDE) and
+        # locate is host-reserved (Q8-NO-ROOT-OVERRIDE) and
         # cannot be overridden by plugins; the regex enforces that on
         # both AdapterRegistration and GovAPITool to keep the layers
         # drift-free.
-        pattern=r"^([a-z][a-z0-9_]*|plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify))$",
+        pattern=r"^([a-z][a-z0-9_]*|plugin\.[a-z][a-z0-9_]*\.(find|send|check))$",
     )
     primitive: AdapterPrimitive
     module_path: str
@@ -156,16 +156,16 @@ class AdapterRegistration(BaseModel):
     # may register without a policy (None allowed during migration); the V6
     # backstop in ``ToolRegistry.register`` skips invariant enforcement when
     # policy is None. New registrations SHOULD populate this field; UMMAYA-internal
-    # synthetic surfaces (resolve_location / lookup / search_tools) carry None.
+    # synthetic surfaces (locate / find / search_tools) carry None.
     policy: AdapterRealDomainPolicy | None = None
 
     # Spec 031 T023 — optional per-adapter nonce used to namespace the
-    # deterministic ``transaction_id`` emitted by the ``submit`` dispatcher
-    # (see :func:`ummaya.primitives.submit.derive_transaction_id`). Adapters
-    # that participate in the ``submit`` primitive declare a stable nonce
+    # deterministic ``transaction_id`` emitted by the ``send`` dispatcher
+    # (see :func:`ummaya.primitives.send.derive_transaction_id`). Adapters
+    # that participate in the ``send`` primitive declare a stable nonce
     # string so the dispatcher and the adapter body compute byte-identical
-    # transaction ids (FR-004). ``None`` is valid for non-submit primitives
-    # and for submit adapters that explicitly opt out of nonce namespacing.
+    # transaction ids (FR-004). ``None`` is valid for non-send primitives
+    # and for send adapters that explicitly opt out of nonce namespacing.
     nonce: str | None = Field(default=None, max_length=128)
 
     @model_validator(mode="after")
@@ -193,7 +193,7 @@ class AdapterRegistration(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def is_irreversible(self) -> bool:
-        """Derived from ``policy.citizen_facing_gate`` (sign/submit ⇒ True)."""
+        """Derived from ``policy.citizen_facing_gate`` (sign/send ⇒ True)."""
         if self.policy is None:
             return False
         return derive_is_irreversible(self.policy.citizen_facing_gate)
@@ -204,7 +204,7 @@ class AdapterRegistration(BaseModel):
         """Derived minimum NIST AAL required for this adapter's gate.
 
         Returns ``"AAL1"`` (the safest default for read-only) when policy is
-        None — UMMAYA-internal synthetic surfaces (resolve_location, lookup).
+        None — UMMAYA-internal synthetic surfaces (locate, find).
         """
         if self.policy is None:
             return "AAL1"
@@ -274,7 +274,7 @@ class ToolRegistry:
 
         # Epic δ #2295 Path B — V6 invariant rewritten on derived auth_level.
         # When ``tool.policy`` is set, derive the AAL via policy_derivation and
-        # verify it is permitted under the canonical (auth_type → auth_level)
+        # check it is permitted under the canonical (auth_type → auth_level)
         # mapping (``_AUTH_TYPE_LEVEL_MAPPING``). UMMAYA-internal synthetic
         # surfaces (policy=None) skip this check.
         if tool.policy is not None:
@@ -351,12 +351,21 @@ class ToolRegistry:
 
         logger.info("Registered tool: %s", tool.id)
 
-    def lookup(self, tool_id: str) -> GovAPITool:
+    def find(self, tool_id: str) -> GovAPITool:
         """Look up tool by id. Raises ToolNotFoundError if not found."""
         try:
             return self._tools[tool_id]
         except KeyError:
             raise ToolNotFoundError(tool_id) from None
+
+    def lookup(self, tool_id: str) -> GovAPITool:
+        """Backward-compatible internal alias for :meth:`find`.
+
+        ``lookup`` is no longer an LLM-visible primitive name, but existing
+        registry callers and third-party tests may still use this method to
+        retrieve a registered adapter by id.
+        """
+        return self.find(tool_id)
 
     def all_tools(self) -> list[GovAPITool]:
         """Return all active registered tools (filters Spec 1979 _inactive set)."""
@@ -406,7 +415,7 @@ class ToolRegistry:
         self._rate_limiters.pop(tool_id, None)
         self._inactive.discard(tool_id)
         # Rebuild BM25 over the surviving tools so the deregistered tool
-        # never surfaces in lookup() results again.
+        # never surfaces in find() results again.
         corpus = {tid: t.search_hint for tid, t in self._tools.items()}
         self._retriever.rebuild(corpus)
         logger.info("Deregistered tool: %s", tool_id)

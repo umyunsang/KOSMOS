@@ -209,7 +209,7 @@ async def test_partial_results_preserved_after_cancel() -> None:
     # Pre-seed one successful worker result
     cid = uuid4()
     meta = LookupMeta(
-        source="lookup",
+        source="find",
         fetched_at=datetime.now(UTC),
         request_id=str(uuid4()),
         elapsed_ms=3,

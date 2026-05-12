@@ -74,7 +74,7 @@ def register_manifest_entry(entry: AdapterManifestEntry) -> None:
         register_manifest_entry(AdapterManifestEntry(
             tool_id="mock_verify_module_simple_auth",
             name="간편인증 / Simple Auth (Mock)",
-            primitive="verify",
+            primitive="check",
             policy_authority_url="https://www.mois.go.kr/.../mobile-id-policy.do",
             source_mode="mock",
         ))
@@ -191,8 +191,8 @@ def _build_entries(  # noqa: C901, ANN401 — three-source walker, refactor defe
             continue
         seen[family] = AdapterManifestEntry(
             tool_id=family,
-            name=f"verify:{family}",
-            primitive="verify",
+            name=f"check:{family}",
+            primitive="check",
             policy_authority_url=None,
             source_mode="internal",
         )
@@ -216,7 +216,7 @@ def _build_entries(  # noqa: C901, ANN401 — three-source walker, refactor defe
         if raw_primitive is None:
             # Primitive may be None during pre-v1.2 compatibility window;
             # infer from adapter_mode or skip.
-            raw_primitive = "lookup"
+            raw_primitive = "find"
 
         adapter_mode: str = getattr(tool, "adapter_mode", "live")
         source_mode_val = "mock" if adapter_mode == "mock" else "live"
@@ -234,8 +234,8 @@ def _build_entries(  # noqa: C901, ANN401 — three-source walker, refactor defe
             logger.warning("manifest_emitter: skipping ToolRegistry entry %s — %s", tool_id, exc)
 
     # --- Add internal MVP surface entries (resolve_location, lookup) ----------
-    _add_internal_if_absent(seen, "resolve_location", "Resolve Location", "resolve_location")
-    _add_internal_if_absent(seen, "lookup", "Lookup", "lookup")
+    _add_internal_if_absent(seen, "locate", "Resolve Location", "locate")
+    _add_internal_if_absent(seen, "find", "Lookup", "find")
 
     return sorted(seen.values(), key=lambda e: e.tool_id)
 
@@ -272,25 +272,44 @@ def _map_source_mode(raw: str) -> Literal["live", "mock", "internal"]:
 
 def _map_primitive(
     raw: Any,
-) -> Literal["lookup", "submit", "verify", "resolve_location"]:  # noqa: ANN401
+) -> Literal["find", "send", "check", "locate"]:  # noqa: ANN401
     """Normalise AdapterPrimitive enum value or string to the literal form."""
     s = raw.value if hasattr(raw, "value") else str(raw)
-    if s == "lookup":
-        return "lookup"
-    if s == "submit":
-        return "submit"
-    if s == "verify":
-        return "verify"
-    if s == "resolve_location":
-        return "resolve_location"
-    return "lookup"  # fail-safe
+    if s == "find":
+        return "find"
+    if s == "send":
+        return "send"
+    if s == "check":
+        return "check"
+    if s == "locate":
+        return "locate"
+    return "find"  # fail-safe
 
 
 def _adapter_display_name(reg: Any) -> str:  # noqa: ANN401
     """Extract a human-readable display name from an AdapterRegistration."""
-    # Prefer module_path tail as a display name fallback.
     tool_id: str = reg.tool_id
-    return tool_id.replace("_", " ").title()
+
+    policy = getattr(reg, "policy", None)
+    policy_text = getattr(policy, "real_classification_text", None)
+    if isinstance(policy_text, str):
+        text = policy_text.strip()
+        if text:
+            # Adapter policy text is the authoritative citizen-facing source.
+            # Most submit mocks phrase it as "<service name> -- <authority note>".
+            service_name = text.split("—", 1)[0].split(" - ", 1)[0].strip()
+            if service_name:
+                return service_name
+
+    search_hint = getattr(reg, "search_hint", None)
+    if isinstance(search_hint, dict):
+        ko_hints = search_hint.get("ko")
+        if isinstance(ko_hints, list):
+            hints = [str(h).strip() for h in ko_hints if str(h).strip()]
+            if hints:
+                return " ".join(hints[:2])
+
+    return tool_id.replace("_", " ")
 
 
 # ---------------------------------------------------------------------------

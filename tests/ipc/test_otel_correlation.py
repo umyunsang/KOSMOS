@@ -116,7 +116,7 @@ async def test_full_turn_shares_one_correlation_id(
         ts=_ts(),
         kind="tool_call",
         call_id=str(uuid.uuid4()),
-        name="lookup",
+        name="find",
         arguments={"tool_id": "koroad_accident_hazard_search", "q": "대전"},
         transaction_id=str(uuid.uuid4()),
     )
@@ -180,7 +180,7 @@ async def test_transaction_id_present_only_on_irreversible_tool_call(
         ts=_ts(),
         kind="tool_call",
         call_id=str(uuid.uuid4()),
-        name="lookup",
+        name="find",
         arguments={"tool_id": "koroad_accident_hazard_search", "q": "서울"},
         transaction_id=tx_id,
     )
@@ -240,7 +240,7 @@ async def test_tx_cache_state_transitions_miss_then_hit_on_replay(
         ts=_ts(),
         kind="tool_call",
         call_id=str(uuid.uuid4()),
-        name="lookup",
+        name="find",
         arguments={"tool_id": "koroad_accident_hazard_search", "q": "부산"},
         transaction_id=tx_id,
     )

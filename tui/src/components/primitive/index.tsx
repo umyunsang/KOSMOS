@@ -7,8 +7,8 @@
  *
  * Dispatch strategy:
  *   1. Switch on payload.kind (active primitive arms + unknown).
- *   2. Within lookup: switch on payload.subtype.
- *   3. Within submit / verify: switch on payload.ok.
+ *   2. Within find: switch on payload.subtype.
+ *   3. Within send / check: switch on payload.ok.
  *   4. Unknown kind or subtype → <UnrecognizedPayload> (FR-033).
  *
  * TypeScript never-check ensures exhaustiveness at compile time.
@@ -67,7 +67,7 @@ function dispatchLookup(payload: LookupPayload): React.JSX.Element {
       const _exhaustive: never = payload
       return (
         <UnrecognizedPayload
-          data={{ raw_kind: `lookup`, raw_data: _exhaustive as Record<string, unknown> }}
+          data={{ raw_kind: `find`, raw_data: _exhaustive as Record<string, unknown> }}
         />
       )
     }
@@ -86,7 +86,7 @@ function dispatchResolveLocation(payload: ResolveLocationPayload): React.JSX.Ele
   if (!hasCoords && !hasAdmCode && !hasRegion && !hasAddress && !hasPoi) {
     return (
       <UnrecognizedPayload
-        data={{ raw_kind: 'resolve_location', raw_data: { reason: 'no slots present' } }}
+        data={{ raw_kind: 'locate', raw_data: { reason: 'no slots present' } }}
       />
     )
   }
@@ -139,13 +139,13 @@ export function PrimitiveDispatcher({ payload }: PrimitiveDispatcherProps): Reac
   const kind = (payload as { kind?: string }).kind
 
   switch (kind) {
-    case 'lookup':
+    case 'find':
       return dispatchLookup(payload as LookupPayload)
-    case 'resolve_location':
+    case 'locate':
       return dispatchResolveLocation(payload as ResolveLocationPayload)
-    case 'submit':
+    case 'send':
       return dispatchSubmit(payload as SubmitPayload)
-    case 'verify':
+    case 'check':
       return dispatchVerify(payload as VerifyPayload)
     default:
       return (

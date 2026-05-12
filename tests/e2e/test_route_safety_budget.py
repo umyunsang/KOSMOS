@@ -82,7 +82,7 @@ async def test_t014_api_budget_exceeded_scenario() -> None:
             type="tool_call_delta",
             tool_call_index=0,
             tool_call_id="call_budget_001",
-            function_name="resolve_location",
+            function_name="locate",
             function_args_delta=None,
         ),
         StreamEvent(

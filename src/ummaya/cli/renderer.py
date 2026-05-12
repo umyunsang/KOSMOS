@@ -166,7 +166,7 @@ class EventRenderer:
         korean_name = tool_id
         if self._registry is not None:
             try:
-                tool = self._registry.lookup(tool_id)
+                tool = self._registry.find(tool_id)
                 korean_name = tool.name_ko
             except Exception:  # noqa: BLE001
                 logger.debug("Could not resolve Korean name for tool %r", tool_id)

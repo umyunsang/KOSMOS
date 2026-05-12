@@ -56,7 +56,7 @@ def test_passes_visible_resolve_lookup_trace(tmp_path: Path) -> None:
 
     result = run_audit(
         tmp_path,
-        expected_chain=["resolve_location", "kma_forecast_fetch"],
+        expected_chain=["locate", "kma_forecast_fetch"],
         require_expanded_trace=True,
         strict_frames=True,
     )
@@ -92,7 +92,7 @@ def test_fails_recoverable_invalid_params_without_retry(tmp_path: Path) -> None:
         "find(kma_forecast_fetch)\nInvalid parameters",
     )
 
-    result = run_audit(tmp_path, expected_chain=["resolve_location", "kma_forecast_fetch"])
+    result = run_audit(tmp_path, expected_chain=["locate", "kma_forecast_fetch"])
 
     statuses = status_by_name(result)
     assert result["overall"] == "fail"

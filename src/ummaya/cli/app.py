@@ -22,7 +22,7 @@ from ummaya.observability import setup_tracing
 logger = logging.getLogger(__name__)
 
 # UMMAYA version string
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 # Typer application
 _app = typer.Typer(

@@ -12,7 +12,7 @@
 //
 // Submit key convention (callers decide):
 //   `${sessionId}:${toolId}:${stableParamsHash}` — ensures that a user
-//   double-clicking "submit" for the same action and the same parameters gets
+//   double-clicking "send" for the same action and the same parameters gets
 //   the same transaction_id. A genuinely different action must use a fresh key.
 //
 // Security properties:
@@ -25,7 +25,7 @@
 //
 // Usage:
 //   const reg = new TxRegistry()
-//   const txId = reg.getOrMint(`${sessionId}:submit:${hash}`)
+//   const txId = reg.getOrMint(`${sessionId}:send:${hash}`)
 //   // ... send IPC frame with transaction_id = txId
 //   // on response:
 //   reg.onResponseReceived(txId)

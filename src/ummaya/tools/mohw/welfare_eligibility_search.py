@@ -521,7 +521,7 @@ _MOHW_DESCRIPTION = build_description_v4(
     ),
     self_contained_decl=(
         "This tool is self-contained for catalog queries. "
-        "No resolve_location prerequisite. "
+        "No locate prerequisite. "
         "For '임신·출산' welfare services use life_array='007'. "
         "For '한부모' welfare services use trgter_indvdl_array='060', not life_array; "
         "for child-support precision add search_wrd='아동양육비'. "
@@ -563,7 +563,7 @@ MOHW_WELFARE_ELIGIBILITY_SEARCH_TOOL = GovAPITool(
     cache_ttl_seconds=0,
     rate_limit_per_minute=10,
     is_core=False,
-    primitive="lookup",
+    primitive="find",
     trigger_examples=[
         "출산 보조금 뭐 있어?",
         "임산부 복지 혜택",

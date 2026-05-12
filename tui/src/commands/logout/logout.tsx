@@ -26,7 +26,12 @@ export async function call(
 ): Promise<React.ReactNode> {
   await performLogout(context)
 
-  const message = <Text>Successfully logged out from your FriendliAI session.</Text>
+  const message = (
+    <Text>
+      Successfully logged out from your FriendliAI session. Stored token has been
+      removed.
+    </Text>
+  )
 
   setTimeout(() => {
     gracefulShutdownSync(0, 'logout')

@@ -32,7 +32,7 @@ from ummaya.tools.models import LookupMeta, LookupRecord
 
 def _meta() -> LookupMeta:
     return LookupMeta(
-        source="lookup",
+        source="find",
         fetched_at=datetime.now(UTC),
         request_id="00000000-0000-0000-0000-000000000001",
         elapsed_ms=5,

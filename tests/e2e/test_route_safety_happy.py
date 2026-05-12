@@ -34,30 +34,30 @@ async def test_t011_happy_path_resolve_lookup_synthesize() -> None:
     """
     report = await run_scenario("happy")
 
-    # AC1: tool call order — resolve x2, then lookup x4
-    assert "resolve_location" in report.tool_call_order, (
-        f"Expected 'resolve_location' in tool_call_order, got {report.tool_call_order!r}"
+    # AC1: tool call order — locate x2, then find x4
+    assert "locate" in report.tool_call_order, (
+        f"Expected 'locate' in tool_call_order, got {report.tool_call_order!r}"
     )
-    assert "lookup" in report.tool_call_order, (
-        f"Expected 'lookup' in tool_call_order, got {report.tool_call_order!r}"
+    assert "find" in report.tool_call_order, (
+        f"Expected 'find' in tool_call_order, got {report.tool_call_order!r}"
     )
 
-    # Two resolve_location calls
-    resolve_calls = [t for t in report.tool_call_order if t == "resolve_location"]
+    # Two locate calls
+    resolve_calls = [t for t in report.tool_call_order if t == "locate"]
     assert len(resolve_calls) >= 2, (
         f"Expected ≥2 resolve_location calls, got {len(resolve_calls)}: {report.tool_call_order}"
     )
 
     # At least 4 lookup calls (2 search + 2 fetch)
-    lookup_calls = [t for t in report.tool_call_order if t == "lookup"]
+    lookup_calls = [t for t in report.tool_call_order if t == "find"]
     assert len(lookup_calls) >= 4, (
         f"Expected ≥4 lookup calls, got {len(lookup_calls)}: {report.tool_call_order}"
     )
 
     # AC2: resolve calls precede all lookup calls
-    first_lookup_idx = next(i for i, t in enumerate(report.tool_call_order) if t == "lookup")
+    first_lookup_idx = next(i for i, t in enumerate(report.tool_call_order) if t == "find")
     last_resolve_idx = max(
-        i for i, t in enumerate(report.tool_call_order) if t == "resolve_location"
+        i for i, t in enumerate(report.tool_call_order) if t == "locate"
     )
     assert last_resolve_idx < first_lookup_idx, (
         "All resolve_location calls must precede the first lookup call. "

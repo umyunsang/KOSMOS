@@ -38,7 +38,7 @@ def _schema() -> dict:  # type: ignore[type-arg]
 
 def _meta() -> LookupMeta:
     return LookupMeta(
-        source="lookup",
+        source="find",
         fetched_at=datetime.now(UTC),
         request_id=str(uuid4()),
         elapsed_ms=5,

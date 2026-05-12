@@ -35,8 +35,8 @@ describe('WelcomeV2', () => {
     const frame = lastFrame() ?? ''
     expect(frame).toContain('Welcome to UMMAYA')
     expect(frame).toContain('v0.1.0')
-    expect(frame).toContain('▗▟▀▙▖')
-    expect(frame).toContain('▟█▙')
+    expect(frame).toContain('▗▖ ▗▖')
+    expect(frame).toContain('███')
     for (const banned of BANNED) expect(frame).not.toContain(banned)
     expect(frame).toMatchSnapshot()
   })

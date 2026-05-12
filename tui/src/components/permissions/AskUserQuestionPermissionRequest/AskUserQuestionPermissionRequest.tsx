@@ -467,7 +467,7 @@ Questions asked and answers provided:\n${questionsWithAnswers_0}`;
         handleCancel();
         return;
       }
-      if (value === "submit") {
+      if (value === "send") {
         submitAnswers(answers).catch(logError);
       }
     };

@@ -24,7 +24,7 @@ otel_attributes:
 
 # AdapterRegistration (Spec 022 + Spec 031 dual-axis security).
 adapter:
-  tool_id: plugin.seoul_subway.lookup
+  tool_id: plugin.seoul_subway.find
   primitive: lookup
   module_path: plugin_seoul_subway.adapter
   input_model_ref: plugin_seoul_subway.adapter.LookupInput

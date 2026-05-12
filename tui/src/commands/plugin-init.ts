@@ -139,8 +139,8 @@ function manifestForOptions(opts: PluginInitOptions): Record<string, unknown> {
     plugin_id: opts.name,
     version: '0.1.0',
     adapter: {
-      tool_id: `plugin.${opts.name}.lookup`,
-      primitive: 'lookup',
+      tool_id: `plugin.${opts.name}.find`,
+      primitive: 'find',
       module_path: `plugin_${opts.name}.adapter`,
       input_model_ref: `plugin_${opts.name}.schema:LookupInput`,
       source_mode: 'OPENAPI',
@@ -195,7 +195,7 @@ asyncio_mode = "auto"
 const ADAPTER_TEMPLATE_LIVE = (name: string, layerNote: string) => `# SPDX-License-Identifier: Apache-2.0
 """UMMAYA plugin adapter for ${name}.
 
-Scaffolded by 'ummaya plugin init'. Replace the placeholder lookup logic
+Scaffolded by 'ummaya plugin init'. Replace the placeholder find logic
 with a real call to the upstream public API. ${layerNote}
 """
 
@@ -214,7 +214,7 @@ from .schema import LookupInput, LookupOutput
 #     returning a dict matching LookupOutput.
 #
 # At install time the host imports this module and routes
-# 'plugin.${name}.lookup' through the registry.
+# 'plugin.${name}.find' through the registry.
 
 # NOTE: GovAPITool is imported lazily so the scaffold's tests can run
 # without the ummaya package installed (CI uses the published wheel; local
@@ -230,7 +230,7 @@ def _build_tool() -> Any:
     from ummaya.tools.models import GovAPITool
 
     return GovAPITool(
-        id="plugin.${name}.lookup",
+        id="plugin.${name}.find",
         name_ko="${name} 조회",
         ministry="OTHER",
         category=["${name}"],
@@ -238,13 +238,13 @@ def _build_tool() -> Any:
         auth_type="api_key",
         input_schema=LookupInput,
         output_schema=LookupOutput,
-        search_hint="${name} 조회 lookup",
+        search_hint="${name} 조회 find",
         auth_level="AAL1",
         pipa_class="non_personal",
         is_irreversible=False,
         dpa_reference=None,
         is_personal_data=False,
-        primitive="lookup",
+        primitive="find",
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",
     )
@@ -299,7 +299,7 @@ from .schema import LookupInput, LookupOutput
 
 _FIXTURE_PATH = (
     Path(__file__).resolve().parent.parent / "tests" / "fixtures"
-    / "plugin.${name}.lookup.json"
+    / "plugin.${name}.find.json"
 )
 
 
@@ -308,7 +308,7 @@ def _build_tool() -> Any:
     from ummaya.tools.models import GovAPITool
 
     return GovAPITool(
-        id="plugin.${name}.lookup",
+        id="plugin.${name}.find",
         name_ko="${name} 조회",
         ministry="OTHER",
         category=["${name}"],
@@ -316,13 +316,13 @@ def _build_tool() -> Any:
         auth_type="api_key",
         input_schema=LookupInput,
         output_schema=LookupOutput,
-        search_hint="${name} 조회 lookup",
+        search_hint="${name} 조회 find",
         auth_level="AAL1",
         pipa_class="non_personal",
         is_irreversible=False,
         dpa_reference=None,
         is_personal_data=False,
-        primitive="lookup",
+        primitive="find",
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",
         adapter_mode="mock",
@@ -361,7 +361,7 @@ async def adapter(payload: LookupInput) -> dict[str, Any]:
 `
 
 const SCHEMA_TEMPLATE = `# SPDX-License-Identifier: Apache-2.0
-"""Pydantic v2 input + output schemas for the lookup primitive."""
+"""Pydantic v2 input + output schemas for the find primitive."""
 
 from __future__ import annotations
 
@@ -369,7 +369,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class LookupInput(BaseModel):
-    """Input model for the lookup primitive — REPLACE with real fields."""
+    """Input model for the find primitive — REPLACE with real fields."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -475,7 +475,7 @@ from plugin_${name}.adapter import adapter
 from plugin_${name}.schema import LookupInput, LookupOutput
 
 
-_FIXTURE_PATH = Path(__file__).parent / "fixtures" / "plugin.${name}.lookup.json"
+_FIXTURE_PATH = Path(__file__).parent / "fixtures" / "plugin.${name}.find.json"
 
 
 @pytest.mark.asyncio
@@ -683,7 +683,7 @@ function buildFiles(opts: PluginInitOptions): FileSpec[] {
     { path: 'tests/conftest.py', body: CONFTEST_TEMPLATE },
     { path: 'tests/test_adapter.py', body: TEST_ADAPTER_TEMPLATE(opts.name) },
     {
-      path: `tests/fixtures/plugin.${opts.name}.lookup.json`,
+      path: `tests/fixtures/plugin.${opts.name}.find.json`,
       body: FIXTURE_TEMPLATE(opts.name),
     },
     { path: '.github/workflows/plugin-validation.yml', body: PLUGIN_VALIDATION_WORKFLOW },
@@ -954,6 +954,6 @@ export function mainPluginInit(argv: string[]): PluginInitResult {
     searchHintKo:
       opts.searchHintKo ?? `${parsed.name} 공공 데이터 조회 검색 추천`,
     searchHintEn:
-      opts.searchHintEn ?? `${parsed.name} public data lookup search`,
+      opts.searchHintEn ?? `${parsed.name} public data find search`,
   })
 }

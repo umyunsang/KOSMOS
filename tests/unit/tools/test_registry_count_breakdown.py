@@ -18,7 +18,7 @@ from __future__ import annotations
 # ---------------------------------------------------------------------------
 # Main ToolRegistry count — 33 total
 # ---------------------------------------------------------------------------
-# Epic η #2298 — extended from 16 to 18 by adding `verify` / `submit`
+# Epic η #2298 — extended from 16 to 18 by adding `check` / `send`
 # to mvp_surface as `is_core=True` GovAPITool entries (FR-021).
 # Without these, the LLM cannot emit the verify→lookup→submit chain because
 # `registry.export_core_tools_openai()` only returned [resolve_location, lookup].
@@ -60,7 +60,7 @@ _EXPECTED_LIVE_TOOL_IDS = frozenset(
     }
 )
 
-_EXPECTED_MVP_SURFACE_IDS = frozenset({"lookup", "resolve_location", "verify", "submit"})
+_EXPECTED_MVP_SURFACE_IDS = frozenset({"find", "locate", "check", "send"})
 
 _EXPECTED_LOOKUP_MOCK_IDS = frozenset(
     {

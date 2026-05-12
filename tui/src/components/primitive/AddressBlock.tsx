@@ -2,10 +2,10 @@
  * UMMAYA-original — AddressBlock renderer.
  *
  * Multi-line Korean address display from the address slot of a
- * resolve_location result.  Shows road address, parcel address,
+ * locate result.  Shows road address, parcel address,
  * detail address, and zip code on separate lines as available.
  *
- * FR-024: resolve_location address renderer.
+ * FR-024: locate address renderer.
  */
 import React from 'react'
 import { Box, Text } from 'ink'

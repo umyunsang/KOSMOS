@@ -222,7 +222,7 @@ export function getToolsForDefaultPreset(): string[] {
  *
  * **Epic #1634 P3 — closed 13-tool citizen-facing surface** (contracts/primitive-envelope.md § 1):
  *
- *   Active primitives (4):     lookup, resolve_location, submit, verify
+ *   Active primitives (4):     find, locate, send, check
  *   Retained CC auxiliary (2): WebFetch, WebSearch
  *   New auxiliary (4):         Translate, Calculator, DateParser, ExportPDF
  *   Task primitive backing:    AgentTool (rewired per T027)

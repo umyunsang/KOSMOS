@@ -198,7 +198,7 @@ class HiraHospitalSearchInput(BaseModel):
     Queries HIRA's hospital basis list endpoint by WGS84 coordinate and
     radius. All three parameters are required.
 
-    Obtain xPos / yPos from resolve_location(want='coords') before calling
+    Obtain xPos / yPos from a coordinate-producing locate adapter before calling
     this tool — never guess coordinate values from model memory.
     """
 
@@ -209,7 +209,7 @@ class HiraHospitalSearchInput(BaseModel):
         le=132.0,
         description=(
             "Longitude (WGS84, decimal degrees). Korean peninsula range: 124–132. "
-            "Obtain from resolve_location(want='coords'). Never guess."
+            "Obtain from a coordinate-producing locate adapter. Never guess."
         ),
     )
     yPos: float = Field(  # noqa: N815
@@ -217,7 +217,7 @@ class HiraHospitalSearchInput(BaseModel):
         le=39.0,
         description=(
             "Latitude (WGS84, decimal degrees). Korean peninsula range: 33–39. "
-            "Obtain from resolve_location(want='coords'). Never guess."
+            "Obtain from a coordinate-producing locate adapter. Never guess."
         ),
     )
     radius: int = Field(
@@ -506,7 +506,7 @@ _HIRA_DESCRIPTION = build_description_v4(
     ),
     input_quirk=(
         "xPos = longitude (124–132). yPos = latitude (33–39). "
-        "Citizen location → resolve_location(want='coords') first. "
+        "Citizen location → locate(kakao_keyword_search 또는 kakao_address_search) first. "
         "radius: 1500m '근처' / 3000m '주변' / max 10000m. "
         "dgsbjt + clCd are optional natural-language filters (see short_reference)."
     ),
@@ -527,7 +527,7 @@ _HIRA_DESCRIPTION = build_description_v4(
     ),
     self_contained_decl=(
         "REQUIRED: xPos/yPos. Citizen location ('동아대학교', '강남역') needs "
-        "resolve_location(want='coords') first. ORDERING: turn1=resolve_location, "
+        "locate(kakao_keyword_search 또는 kakao_address_search) first. ORDERING: turn1=locate adapter, "
         "turn2=this tool. When citizen says '근처 내과' / '강남역 소아과' / "
         "'큰 종합병원', map specialty/type to dgsbjt / clCd in the SAME call."
     ),
@@ -558,7 +558,7 @@ HIRA_HOSPITAL_SEARCH_TOOL = GovAPITool(
     rate_limit_per_minute=10,
     is_core=False,
     # Spec 031 T032/T033 dual-axis fields — None during pre-v1.2 compatibility window FR-028
-    primitive="lookup",
+    primitive="find",
     published_tier_minimum=None,
     nist_aal_hint=None,
     trigger_examples=[

@@ -1,11 +1,11 @@
 /**
  * UMMAYA-original — AuthContextCard renderer.
  *
- * Success card shown after a verify primitive completes.
+ * Success card shown after a check primitive completes.
  * Displays authenticated identity, Korea tier (primary label per FR-030),
  * and optional NIST AAL hint.
  *
- * FR-030 / FR-031: verify success renderer; korea_tier is always the primary label.
+ * FR-030 / FR-031: check success renderer; korea_tier is always the primary label.
  */
 import React from 'react'
 import { Box, Text } from 'ink'

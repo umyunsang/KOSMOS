@@ -24,7 +24,7 @@
         }
       ],
       "default": null,
-      "description": "Coordinate-mode latitude in decimal degrees (WGS-84). Required when mode='coordinate'. Obtain from resolve_location(want='coords').",
+      "description": "Coordinate-mode latitude in decimal degrees (WGS-84). Required when mode='coordinate'. Obtain from locate(want='coords').",
       "title": "Lat"
     },
     "limit": {
@@ -46,11 +46,11 @@
         }
       ],
       "default": null,
-      "description": "Coordinate-mode longitude in decimal degrees (WGS-84). Required when mode='coordinate'. Obtain from resolve_location(want='coords').",
+      "description": "Coordinate-mode longitude in decimal degrees (WGS-84). Required when mode='coordinate'. Obtain from locate(want='coords').",
       "title": "Lon"
     },
     "mode": {
-      "description": "Official NMC operation selector. Use 'coordinate' for getEgytLcinfoInqire with WGS84_LAT/WGS84_LON. Use 'region' for getEgytListInfoInqire with q0/q1 from resolve_location(want='all').",
+      "description": "Official NMC operation selector. Use 'coordinate' for getEgytLcinfoInqire with WGS84_LAT/WGS84_LON. Use 'region' for getEgytListInfoInqire with q0/q1 from locate(want='all').",
       "enum": [
         "coordinate",
         "region"
@@ -70,7 +70,7 @@
         }
       ],
       "default": null,
-      "description": "Optional original query latitude for distance sorting in region mode. Populate from resolve_location(...).coords.lat when available.",
+      "description": "Optional original query latitude for distance sorting in region mode. Populate from locate(...).coords.lat when available.",
       "title": "Origin Lat"
     },
     "origin_lon": {
@@ -85,7 +85,7 @@
         }
       ],
       "default": null,
-      "description": "Optional original query longitude for distance sorting in region mode. Populate from resolve_location(...).coords.lon when available.",
+      "description": "Optional original query longitude for distance sorting in region mode. Populate from locate(...).coords.lon when available.",
       "title": "Origin Lon"
     },
     "q0": {
@@ -100,7 +100,7 @@
         }
       ],
       "default": null,
-      "description": "Region-mode NMC Q0 시도 parameter, e.g. '부산광역시'. Required when mode='region'. Populate from resolve_location(...).region.region_1depth_name.",
+      "description": "Region-mode NMC Q0 시도 parameter, e.g. '부산광역시'. Required when mode='region'. Populate from locate(...).region.region_1depth_name.",
       "title": "Q0"
     },
     "q1": {
@@ -115,7 +115,7 @@
         }
       ],
       "default": null,
-      "description": "Region-mode NMC Q1 시군구 parameter, e.g. '사하구'. Required when mode='region'. Populate from resolve_location(...).region.region_2depth_name.",
+      "description": "Region-mode NMC Q1 시군구 parameter, e.g. '사하구'. Required when mode='region'. Populate from locate(...).region.region_2depth_name.",
       "title": "Q1"
     },
     "qn": {

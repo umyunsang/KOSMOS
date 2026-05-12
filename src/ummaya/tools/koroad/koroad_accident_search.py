@@ -121,7 +121,7 @@ class KoroadAccidentSearchInput(BaseModel):
             # Section 1 — what this field is
             "2-digit 광역시도 code for the KOROAD siDo wire parameter. "
             # Section 2 — sourcing rule (mandatory geocoding prerequisite)
-            "MUST be derived from a prior resolve_location geocoding tool call "
+            "MUST be derived from a prior locate geocoding tool call "
             "on the user-provided location string — never fill this from model memory. "
             # Section 3 — short reference table (17 시도, 2-digit codes)
             f"[SHORT REFERENCE] {KOROAD_SIDO_SHORT_REFERENCE}. "
@@ -138,7 +138,7 @@ class KoroadAccidentSearchInput(BaseModel):
     gu_gun: GugunCode = Field(
         description=(
             "3-digit 시군구 code for the KOROAD guGun wire parameter. Required by the KOROAD API. "
-            "MUST be derived from a prior resolve_location geocoding tool call "
+            "MUST be derived from a prior locate geocoding tool call "
             "on the user-provided location string — never fill this from model memory. "
             "[WIRE FORMAT] siDo is 2-digit (e.g. '11'=서울), guGun is 3-digit (e.g. '680'=강남구). "
             "Do NOT use 4-digit 행정구역코드 (e.g. '1100', '1168') — the API rejects them. "
@@ -381,7 +381,7 @@ KOROAD_ACCIDENT_SEARCH_TOOL = GovAPITool(
     llm_description=(
         "Query the authoritative KOROAD accident-prone hotspot dataset for a "
         "Korean municipality. To call this tool correctly: first invoke "
-        "`resolve_location` with the citizen's place name to obtain the "
+        "`locate` with the citizen's place name to obtain the "
         "accurate si_do and gu_gun codes, then pass those codes here. "
         "This is the canonical source for Korean accident hotspot data — "
         "use it whenever the citizen asks about traffic accidents, dangerous "
@@ -401,7 +401,7 @@ KOROAD_ACCIDENT_SEARCH_TOOL = GovAPITool(
     cache_ttl_seconds=3600,
     rate_limit_per_minute=10,
     is_core=True,
-    primitive="lookup",
+    primitive="find",
     trigger_examples=[
         "교차로 사고 통계",
         "음주운전 사고 다발",

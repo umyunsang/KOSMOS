@@ -45,7 +45,7 @@ def _make_tool(
 
 
 LOOKUP_TOOL = _make_tool(
-    name="lookup",
+    name="find",
     description="Look up a public service by tool_id.",
     parameters={
         "type": "object",
@@ -99,7 +99,7 @@ def test_single_tool_appends_section() -> None:
     assert "\n\n## Available tools\n\n" in result
 
     # Tool heading
-    assert "### lookup\n" in result
+    assert "### find\n" in result
 
     # Description
     assert "Look up a public service by tool_id." in result
@@ -189,10 +189,10 @@ def test_caller_order_preserved() -> None:
 
     assert result_lw != result_wl
 
-    # Positional check: lookup appears before kma_forecast_fetch in first result
-    assert result_lw.index("### lookup") < result_lw.index("### kma_forecast_fetch")
+    # Positional check: find appears before kma_forecast_fetch in first result
+    assert result_lw.index("### find") < result_lw.index("### kma_forecast_fetch")
     # And reversed in the second result
-    assert result_wl.index("### kma_forecast_fetch") < result_wl.index("### lookup")
+    assert result_wl.index("### kma_forecast_fetch") < result_wl.index("### find")
 
 
 # ---------------------------------------------------------------------------
@@ -222,7 +222,7 @@ def test_trigger_line_present_per_tool() -> None:
     """I-B2 — every per-tool block emits exactly one ``**Trigger**: `` line
     immediately above ``**Parameters**:`` when ``trigger_phrase`` is set."""
     tool_with_trigger = _make_tool(
-        name="resolve_location",
+        name="locate",
         description="Resolve a Korean place name to coordinates.",
         trigger_phrase=(
             "한국 지역의 위치, 주소, 역, 관공서 질문에 호출. — "
@@ -252,7 +252,7 @@ def test_trigger_line_no_examples() -> None:
     """I-B3 — when ``trigger_examples`` are absent, the trigger line carries
     no ``— 예:`` clause."""
     tool = _make_tool(
-        name="lookup",
+        name="find",
         description="Look up by tool_id.",
         trigger_phrase="시민의 메타 조회 호출.",
     )

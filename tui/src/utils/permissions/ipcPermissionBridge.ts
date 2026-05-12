@@ -92,12 +92,12 @@ type PrimitiveKind = PermissionRequestFrame['primitive_kind']
 
 function primitiveKindToTool(kind: PrimitiveKind): Tool {
   switch (kind) {
-    case 'lookup':
-    case 'resolve_location':
+    case 'find':
+    case 'locate':
       return LookupPrimitive
-    case 'verify':
+    case 'check':
       return VerifyPrimitive
-    case 'submit':
+    case 'send':
       return SubmitPrimitive
     default: {
       // Exhaustive fallback — future primitive kinds fall through to verify

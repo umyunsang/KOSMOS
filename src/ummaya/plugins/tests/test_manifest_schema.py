@@ -45,8 +45,8 @@ from ummaya.tools.registry import (
 
 def _make_adapter(
     *,
-    tool_id: str = "plugin.demo_plugin.lookup",
-    primitive: AdapterPrimitive = AdapterPrimitive.lookup,
+    tool_id: str = "plugin.demo_plugin.find",
+    primitive: AdapterPrimitive = AdapterPrimitive.find,
     pipa_class: str = "personal_standard",  # kept for API compat; ignored — derived from policy
 ) -> AdapterRegistration:
     """Build a baseline AdapterRegistration that satisfies the v1.2 GA backstop.
@@ -115,7 +115,7 @@ class TestPluginManifestPositive:
         assert m.version == "1.0.0"
         assert m.tier == "live"
         assert m.processes_pii is True
-        assert m.adapter.tool_id == "plugin.demo_plugin.lookup"
+        assert m.adapter.tool_id == "plugin.demo_plugin.find"
         assert m.otel_attributes["ummaya.plugin.id"] == m.plugin_id
 
     def test_mock_tier_with_source_spec_passes(self) -> None:
@@ -225,7 +225,7 @@ class TestCrossFieldValidators:
         with pytest.raises(ValidationError) as exc:
             PluginManifest(
                 **_make_manifest_kwargs(
-                    adapter=_make_adapter(tool_id="plugin.other_id.lookup"),
+                    adapter=_make_adapter(tool_id="plugin.other_id.find"),
                 )
             )
         assert "adapter.tool_id must start with 'plugin.demo_plugin.'" in str(exc.value)
@@ -237,10 +237,10 @@ class TestCrossFieldValidators:
         """
         with pytest.raises(ValidationError) as exc:
             _make_adapter(
-                tool_id="plugin.demo_plugin.resolve_location",
-                primitive=AdapterPrimitive.resolve_location,
+                tool_id="plugin.demo_plugin.locate",
+                primitive=AdapterPrimitive.locate,
             )
-        assert "resolve_location" in str(exc.value)
+        assert "locate" in str(exc.value)
 
 
 # ---------------------------------------------------------------------------

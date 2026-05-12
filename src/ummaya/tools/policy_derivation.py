@@ -18,7 +18,7 @@ Mapping table (binding contract — change requires ADR):
     "login"             │ "AAL2"             │ False                   │ "personal"
     "action"            │ "AAL2"             │ False                   │ "personal"
     "sign"              │ "AAL3"             │ True                    │ "personal"
-    "submit"            │ "AAL3"             │ True                    │ "personal"
+    "send"            │ "AAL3"             │ True                    │ "personal"
 
 Rationale:
 - ``read-only`` ⇒ AAL1 (citizen identity not required; serviceKey auth at infra)
@@ -48,7 +48,7 @@ from __future__ import annotations
 
 from typing import Final, Literal
 
-CitizenFacingGate = Literal["read-only", "login", "action", "sign", "submit"]
+CitizenFacingGate = Literal["read-only", "login", "action", "sign", "send"]
 AALLevel = Literal["public", "AAL1", "AAL2", "AAL3"]
 PIPAClass = Literal["non_personal", "personal", "sensitive", "identifier"]
 
@@ -59,7 +59,7 @@ _GATE_TO_AUTH_LEVEL: Final[dict[CitizenFacingGate, AALLevel]] = {
     "login": "AAL2",
     "action": "AAL2",
     "sign": "AAL3",
-    "submit": "AAL3",
+    "send": "AAL3",
 }
 
 _GATE_TO_IS_IRREVERSIBLE: Final[dict[CitizenFacingGate, bool]] = {
@@ -67,7 +67,7 @@ _GATE_TO_IS_IRREVERSIBLE: Final[dict[CitizenFacingGate, bool]] = {
     "login": False,
     "action": False,
     "sign": True,
-    "submit": True,
+    "send": True,
 }
 
 _GATE_TO_PIPA_CLASS_DEFAULT: Final[dict[CitizenFacingGate, PIPAClass]] = {
@@ -75,7 +75,7 @@ _GATE_TO_PIPA_CLASS_DEFAULT: Final[dict[CitizenFacingGate, PIPAClass]] = {
     "login": "personal",
     "action": "personal",
     "sign": "personal",
-    "submit": "personal",
+    "send": "personal",
 }
 
 

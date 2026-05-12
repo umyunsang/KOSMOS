@@ -1,10 +1,10 @@
 /**
  * UMMAYA-original — TimeseriesTable renderer.
  *
- * Renders a table of time-value rows for a lookup timeseries result.
+ * Renders a table of time-value rows for a find timeseries result.
  * Displays a sticky header row and a capped list of data rows.
  *
- * FR-018: lookup timeseries renderer.
+ * FR-018: find timeseries renderer.
  */
 import React from 'react'
 import { Box, Text } from 'ink'

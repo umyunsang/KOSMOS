@@ -199,7 +199,7 @@ class TestHiraV4Description:
 
     def test_description_mentions_resolve_location(self) -> None:
         """Section 5 self_contained_decl: resolve_location chain guidance present."""
-        assert "resolve_location" in _HIRA_DESCRIPTION
+        assert "locate" in _HIRA_DESCRIPTION
 
     def test_tool_llm_description_matches_built_description(self) -> None:
         """HIRA_HOSPITAL_SEARCH_TOOL.llm_description equals _HIRA_DESCRIPTION."""

@@ -260,7 +260,7 @@ async def test_kakao_tool_refresh_uses_kakao_key(
 async def test_data_go_kr_tool_refresh_uses_data_go_kr_key(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Regression: KOROAD/KMA tools discover UMMAYA_DATA_GO_KR_API_KEY."""
+    """Regression: data.go.kr tools discover UMMAYA_DATA_GO_KR_API_KEY."""
     monkeypatch.delenv("UMMAYA_KOROAD_ACCIDENT_SEARCH_API_KEY", raising=False)
     monkeypatch.delenv("UMMAYA_KAKAO_API_KEY", raising=False)
     monkeypatch.delenv("UMMAYA_API_KEY", raising=False)
@@ -268,6 +268,34 @@ async def test_data_go_kr_tool_refresh_uses_data_go_kr_key(
 
     assert await attempt_auth_refresh("koroad_accident_search") is True
     assert get_credential("koroad_accident_search") == "data-key"
+
+
+async def test_all_live_data_go_kr_adapters_use_shared_data_go_kr_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Every live data.go.kr adapter should share the provider credential."""
+    monkeypatch.delenv("UMMAYA_API_KEY", raising=False)
+    monkeypatch.delenv("UMMAYA_KAKAO_API_KEY", raising=False)
+    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "data-key")
+
+    tool_ids = [
+        "koroad_accident_search",
+        "koroad_accident_hazard_search",
+        "kma_forecast_fetch",
+        "kma_weather_alert_status",
+        "kma_current_observation",
+        "kma_short_term_forecast",
+        "kma_ultra_short_term_forecast",
+        "kma_pre_warning",
+        "hira_hospital_search",
+        "nmc_emergency_search",
+        "nfa_emergency_info_service",
+        "mohw_welfare_eligibility_search",
+    ]
+    for tool_id in tool_ids:
+        monkeypatch.delenv(f"UMMAYA_{tool_id.upper()}_API_KEY", raising=False)
+        assert await attempt_auth_refresh(tool_id) is True
+        assert get_credential(tool_id) == "data-key"
 
 
 async def test_kakao_tool_rejects_data_go_kr_only_environment(

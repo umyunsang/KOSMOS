@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, Literal, cast
 
 import httpx
@@ -33,6 +33,8 @@ from ummaya.tools.registry import ToolRegistry
 logger = logging.getLogger(__name__)
 
 _BASE_URL = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst"
+_NO_DATA_RESULT_CODE = "03"
+_MAX_OBSERVATION_SLOT_ATTEMPTS = 6
 
 # ---------------------------------------------------------------------------
 # Input / Output models
@@ -67,7 +69,7 @@ class KmaCurrentObservationInput(BaseModel):
         le=149,
         description=(
             "KMA grid X coordinate (1-149). 시도/시군구 명칭이 아닌 KMA 격자 좌표. "
-            "Obtain via resolve_location(query='<지역명>') which returns nx/ny "
+            "Obtain via a coordinate-producing locate adapter which returns nx/ny "
             "verbatim. Example: 서울 종로구 = 60, 부산 사하구 = 96."
         ),
     )
@@ -76,7 +78,7 @@ class KmaCurrentObservationInput(BaseModel):
         ge=1,
         le=253,
         description=(
-            "KMA grid Y coordinate (1-253). nx와 함께 resolve_location 으로 받음. "
+            "KMA grid Y coordinate (1-253). nx와 함께 locate 으로 받음. "
             "Example: 서울 종로구 = 127, 부산 사하구 = 73."
         ),
     )
@@ -238,6 +240,43 @@ def _pivot_rows_to_output(items: list[dict[str, object]]) -> KmaCurrentObservati
     )
 
 
+def _previous_observation_slot(base_date: str, base_time: str) -> tuple[str, str]:
+    """Return the previous hourly KMA observation slot."""
+    hour = int(base_time[:2])
+    if hour > 0:
+        return base_date, f"{hour - 1:02d}00"
+
+    base_day = datetime.strptime(base_date, "%Y%m%d").replace(tzinfo=UTC)
+    prev_day = base_day - timedelta(days=1)
+    return prev_day.strftime("%Y%m%d"), "2300"
+
+
+def _candidate_observation_slots(
+    base_date: str,
+    base_time: str,
+    *,
+    max_attempts: int = _MAX_OBSERVATION_SLOT_ATTEMPTS,
+) -> list[tuple[str, str]]:
+    """Return current and prior hourly slots for KMA NO_DATA recovery."""
+    slots: list[tuple[str, str]] = []
+    current_date = base_date
+    current_time = base_time
+    for _ in range(max_attempts):
+        slots.append((current_date, current_time))
+        current_date, current_time = _previous_observation_slot(current_date, current_time)
+    return slots
+
+
+def _is_retryable_no_data_error(exc: ToolExecutionError) -> bool:
+    """Return true for KMA data-not-ready responses worth retrying backward."""
+    message = str(exc)
+    return (
+        f"resultCode='{_NO_DATA_RESULT_CODE}'" in message
+        or "resultMsg='NO_DATA'" in message
+        or "empty items list" in message
+    )
+
+
 def _parse_response(payload: dict[str, object]) -> KmaCurrentObservationOutput:
     """Parse a full KMA getUltraSrtNcst JSON response.
 
@@ -317,18 +356,6 @@ async def _call(
             message="XML data_type is not supported; use JSON.",
         )
 
-    query_params: dict[str, str | int] = {
-        "serviceKey": api_key,
-        "base_date": params.base_date,
-        "base_time": params.base_time,
-        "nx": params.nx,
-        "ny": params.ny,
-        "numOfRows": params.num_of_rows,
-        "pageNo": params.page_no,
-        "dataType": params.data_type,
-        "_type": "json",
-    }
-
     logger.debug(
         "KMA observation request: base_date=%s base_time=%s nx=%d ny=%d",
         params.base_date,
@@ -343,35 +370,64 @@ async def _call(
 
     try:
         assert client is not None  # noqa: S101 — guaranteed by branch above
-        response = await client.get(
-            _BASE_URL,
-            params=query_params,
-        )
-        response.raise_for_status()
+        no_data_slots: list[str] = []
+        for base_date, base_time in _candidate_observation_slots(params.base_date, params.base_time):
+            query_params: dict[str, str | int] = {
+                "serviceKey": api_key,
+                "base_date": base_date,
+                "base_time": base_time,
+                "nx": params.nx,
+                "ny": params.ny,
+                "numOfRows": params.num_of_rows,
+                "pageNo": params.page_no,
+                "dataType": params.data_type,
+                "_type": "json",
+            }
 
-        content_type = response.headers.get("content-type", "")
-        if "xml" in content_type.lower():
-            raise ToolExecutionError(
-                tool_id="kma_current_observation",
-                message=(
-                    f"Unexpected XML response from KMA API "
-                    f"(content-type={content_type!r}). "
-                    "Check serviceKey validity."
-                ),
+            response = await client.get(
+                _BASE_URL,
+                params=query_params,
             )
+            response.raise_for_status()
 
-        payload: dict[str, object] = response.json()
-        output = _parse_response(payload)
+            content_type = response.headers.get("content-type", "")
+            if "xml" in content_type.lower():
+                raise ToolExecutionError(
+                    tool_id="kma_current_observation",
+                    message=(
+                        f"Unexpected XML response from KMA API "
+                        f"(content-type={content_type!r}). "
+                        "Check serviceKey validity."
+                    ),
+                )
 
-        logger.info(
-            "KMA observation retrieved: base_date=%s base_time=%s nx=%d ny=%d t1h=%s",
-            output.base_date,
-            output.base_time,
-            output.nx,
-            output.ny,
-            output.t1h,
+            payload: dict[str, object] = response.json()
+            try:
+                output = _parse_response(payload)
+            except ToolExecutionError as exc:
+                if not _is_retryable_no_data_error(exc):
+                    raise
+                no_data_slots.append(f"{base_date} {base_time}: {exc}")
+                continue
+
+            logger.info(
+                "KMA observation retrieved: base_date=%s base_time=%s nx=%d ny=%d t1h=%s",
+                output.base_date,
+                output.base_time,
+                output.nx,
+                output.ny,
+                output.t1h,
+            )
+            return output.model_dump()
+
+        attempted = ", ".join(no_data_slots)
+        raise ToolExecutionError(
+            tool_id="kma_current_observation",
+            message=(
+                "KMA API returned no observation data for the requested slot or prior slots. "
+                f"attempted={attempted}"
+            ),
         )
-        return output.model_dump()
 
     except (ToolExecutionError, ConfigurationError):
         raise
@@ -412,11 +468,10 @@ KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
             "시민이 '지금 기온' / '현재 비 와' / '오늘 날씨 어때' 묻는 경우 첫 호출."
         ),
         input_quirk=(
-            "nx (1-149), ny (1-253) 는 Lambert Conformal Conic 5 km 격자. "
-            "base_date=YYYYMMDD (오늘), base_time=HHMM (직전 정시, 반드시 MM=00). "
-            "base_time 은 시스템 프롬프트의 '현재 KST 시각' 의 직전 정시 사용. "
-            "추측 금지 — 16:30 이면 1600, 11:50 이면 1100. "
-            "data_type=JSON 권장. resultCode 는 string '00' = 정상."
+            "nx/ny 는 locate 결과의 KMA 격자 X/Y를 그대로 복사. "
+            "base_date=YYYYMMDD, base_time=HH00. 시스템 프롬프트의 '현재 KST 시각'을 기준으로 직전 정시 사용; "
+            ":40 전이면 한 시간 더 이전이 안정. NO_DATA 시 이전 시간 자동 재시도. "
+            "data_type=JSON, resultCode '00'=정상."
         ),
         short_reference=kma_grid_short_reference(),
         domain_quirk=(
@@ -431,8 +486,8 @@ KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
         ),
         self_contained_decl=(
             "REQUIRED: nx/ny 입력 필수. 지역명 ('동아대학교', '부산 사하구 다대1동') 은 "
-            "resolve_location 으로 nx/ny 받은 후 본 도구 호출. "
-            "ORDERING: turn1=resolve_location(query), turn2=이 도구. 좌표 추측 금지."
+            "locate(kakao_keyword_search 또는 kakao_address_search)로 nx/ny 받은 후 "
+            "본 도구 호출. ORDERING: turn1=locate adapter, turn2=이 도구. 좌표 추측 금지."
         ),
     ),
     search_hint=(
@@ -449,7 +504,7 @@ KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
     cache_ttl_seconds=600,
     rate_limit_per_minute=10,
     is_core=True,
-    primitive="lookup",
+    primitive="find",
     trigger_examples=[
         "지금 서울 기온",
         "현재 풍속",

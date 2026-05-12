@@ -17,14 +17,14 @@ from pydantic import BaseModel, ConfigDict
 from ummaya.tools.models import GovAPITool
 
 # Primitive literal type — the closed set enforced by invariant 1.
-_PrimitiveT = Literal["lookup", "resolve_location", "submit", "verify"]
+_PrimitiveT = Literal["find", "locate", "send", "check"]
 
 
 class RoutingIndex(BaseModel):
     model_config = ConfigDict(frozen=True, arbitrary_types_allowed=True)
 
     by_primitive: dict[
-        Literal["lookup", "resolve_location", "submit", "verify"],
+        Literal["find", "locate", "send", "check"],
         tuple[GovAPITool, ...],
     ]
     by_tool_id: dict[str, GovAPITool]

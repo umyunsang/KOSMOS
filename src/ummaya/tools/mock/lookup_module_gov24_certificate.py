@@ -8,7 +8,7 @@ sub-registry) because the ``lookup`` primitive resolves adapter IDs against the
 BM25-indexed main registry.
 
 When called with a ``DelegationContext``, validates the scope matches
-``"lookup:gov24.certificate"`` (fail-closed per Constitution § II). When no
+``"find:gov24.certificate"`` (fail-closed per Constitution § II). When no
 delegation context is supplied, the adapter proceeds without scope enforcement
 (lookups are read-only and may not require delegation in all flows).
 
@@ -55,7 +55,7 @@ _POLICY_AUTHORITY: Final = "https://www.gov.kr/portal/main/nlogin"
 _INTERNATIONAL_REF: Final = "Estonia X-Road"
 
 # Required delegation scope when a DelegationContext is present.
-_REQUIRED_SCOPE: Final = "lookup:gov24.certificate"
+_REQUIRED_SCOPE: Final = "find:gov24.certificate"
 
 # ---------------------------------------------------------------------------
 # Certificate type literals
@@ -183,7 +183,7 @@ async def handle(
     """Handle a Gov24 certificate lookup.
 
     When ``delegation_context`` is supplied, validates that the token scope
-    matches ``"lookup:gov24.certificate"``; rejects with a scope-violation
+    matches ``"find:gov24.certificate"``; rejects with a scope-violation
     error if not. When absent, proceeds without delegation enforcement (the
     lookup is read-only).
 
@@ -263,7 +263,7 @@ MOCK_LOOKUP_MODULE_GOV24_CERTIFICATE_TOOL = GovAPITool(
         "가족관계증명서 (family relations certificate), or "
         "사업자등록증 (business registration certificate). "
         "Returns a synthetic fixture stamped with six AX-channel transparency fields. "
-        "When a DelegationContext is provided, requires scope 'lookup:gov24.certificate'. "
+        "When a DelegationContext is provided, requires scope 'find:gov24.certificate'. "
         "This is a Mock adapter — no real Gov24 API is called. "
         "Use when a citizen asks to retrieve their registration documents or "
         "business registration details through the government portal."
@@ -286,7 +286,7 @@ MOCK_LOOKUP_MODULE_GOV24_CERTIFICATE_TOOL = GovAPITool(
     cache_ttl_seconds=0,
     rate_limit_per_minute=60,
     is_core=False,
-    primitive="lookup",
+    primitive="find",
     published_tier_minimum=None,
     nist_aal_hint=None,
     trigger_examples=[

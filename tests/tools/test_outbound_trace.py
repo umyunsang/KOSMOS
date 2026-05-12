@@ -301,7 +301,7 @@ async def test_outbound_trace_attached_to_envelope_via_dispatcher() -> None:
         traces = consume_outbound_capture(token)
 
     # Envelope payload: dispatcher attaches model_dump()'d traces.
-    payload = {"kind": "lookup", "result": {"kind": "record"}}
+    payload = {"kind": "find", "result": {"kind": "record"}}
     if traces:
         payload["outbound_traces"] = [t.model_dump() for t in traces]
 

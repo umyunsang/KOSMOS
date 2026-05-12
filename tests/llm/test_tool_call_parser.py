@@ -25,11 +25,11 @@ def test_no_markers_returns_text_unchanged() -> None:
 
 def test_format1_openai_shape_json() -> None:
     text = (
-        '<tool_call>{"name": "resolve_location", "arguments": {"location": "강남역"}}</tool_call>'
+        '<tool_call>{"name": "locate", "arguments": {"location": "강남역"}}</tool_call>'
     )
     calls, cleaned = extract_textual_tool_calls(text)
     assert len(calls) == 1
-    assert calls[0].name == "resolve_location"
+    assert calls[0].name == "locate"
     assert calls[0].arguments == {"location": "강남역"}
     assert "<tool_call>" not in cleaned
 
@@ -43,10 +43,10 @@ def test_format3_single_key_dict_with_name_prefix() -> None:
 
 
 def test_format3_single_key_dict_without_prefix() -> None:
-    text = '<tool_call>{"resolve_location": {"location": "강남역"}}</tool_call>'
+    text = '<tool_call>{"locate": {"location": "강남역"}}</tool_call>'
     calls, _ = extract_textual_tool_calls(text)
     assert len(calls) == 1
-    assert calls[0].name == "resolve_location"
+    assert calls[0].name == "locate"
     assert calls[0].arguments == {"location": "강남역"}
 
 
@@ -94,7 +94,7 @@ def test_marker_stripped_from_surrounding_prose() -> None:
 
 def test_multiple_markers_in_one_turn() -> None:
     text = (
-        '<tool_call>{"name": "resolve_location", '
+        '<tool_call>{"name": "locate", '
         '"arguments": {"location": "강남역"}}</tool_call>'
         " 이어서 "
         '<tool_call>{"name": "kma_forecast_fetch", '
@@ -102,7 +102,7 @@ def test_multiple_markers_in_one_turn() -> None:
     )
     calls, cleaned = extract_textual_tool_calls(text)
     assert len(calls) == 2
-    assert [c.name for c in calls] == ["resolve_location", "kma_forecast_fetch"]
+    assert [c.name for c in calls] == ["locate", "kma_forecast_fetch"]
     assert "<tool_call>" not in cleaned
 
 
@@ -166,7 +166,7 @@ def test_stream_gate_strips_complete_marker_in_one_chunk() -> None:
     gate = StreamGate()
     chunk = (
         "기상청 자료를 확인합니다.\n"
-        '<tool_call>{"name": "lookup", "arguments": {"q": "서울"}}</tool_call>\n'
+        '<tool_call>{"name": "find", "arguments": {"q": "서울"}}</tool_call>\n'
         "잠시만 기다려 주세요."
     )
     out = _drive(gate, [chunk])
@@ -181,7 +181,7 @@ def test_stream_gate_strips_marker_split_across_chunks() -> None:
         "안녕 ",
         "<tool_",
         'call>{"name":',
-        ' "lookup", "arguments":',
+        ' "find", "arguments":',
         ' {"q": "x"}}</tool',
         "_call>",
         " 끝.",
