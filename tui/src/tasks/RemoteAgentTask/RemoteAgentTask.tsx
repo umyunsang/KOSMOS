@@ -9,7 +9,8 @@ import { type BackgroundRemoteSessionPrecondition, checkBackgroundRemoteSessionE
 import { logForDebugging } from '../../utils/debug.js';
 import { logError } from '../../utils/log.js';
 import { enqueuePendingNotification } from '../../utils/messageQueueManager.js';
-import { extractTag, extractTextContent } from '../../utils/messages.js';
+import { extractTag } from '../../utils/messages.js';
+import { extractTextContent } from '../../utils/messageText.js';
 import { emitTaskTerminatedSdk } from '../../utils/sdkEventQueue.js';
 import { deleteRemoteAgentMetadata, listRemoteAgentMetadata, type RemoteAgentMetadata, writeRemoteAgentMetadata } from '../../utils/sessionStorage.js';
 import { jsonStringify } from '../../utils/slowOperations.js';

@@ -34,7 +34,7 @@ import sys
 import time
 import uuid
 from collections.abc import Callable
-from datetime import UTC
+from datetime import UTC, datetime, timedelta
 from types import FrameType
 from typing import TYPE_CHECKING, Any, Final, Literal, cast
 
@@ -427,6 +427,50 @@ def _normalize_mock_check_final_answer(text: str) -> str:
         return text
     subject = "모바일 신분증 본인확인" if "모바일" in text else "본인확인"
     return f"{subject}이 완료되었습니다."
+
+
+_KMA_FORECAST_BASE_HOURS: Final[tuple[int, ...]] = (2, 5, 8, 11, 14, 17, 20, 23)
+
+
+def _kma_day_note(reference_kst: datetime, slot_kst: datetime) -> str:
+    if slot_kst.date() == reference_kst.date():
+        return "오늘"
+    if slot_kst.date() == (reference_kst - timedelta(days=1)).date():
+        return "어제"
+    return slot_kst.strftime("%Y-%m-%d")
+
+
+def _kma_forecast_base_slot_hint(now_kst: datetime) -> tuple[str, str, str]:
+    """Return the latest KMA short-term forecast base_date/time before now."""
+    previous_hour = max(
+        (hour for hour in _KMA_FORECAST_BASE_HOURS if hour <= now_kst.hour),
+        default=_KMA_FORECAST_BASE_HOURS[-1],
+    )
+    if now_kst.hour < _KMA_FORECAST_BASE_HOURS[0]:
+        slot = (now_kst - timedelta(days=1)).replace(
+            hour=_KMA_FORECAST_BASE_HOURS[-1],
+            minute=0,
+            second=0,
+            microsecond=0,
+        )
+    else:
+        slot = now_kst.replace(hour=previous_hour, minute=0, second=0, microsecond=0)
+    return slot.strftime("%Y%m%d"), slot.strftime("%H00"), _kma_day_note(now_kst, slot)
+
+
+def _kma_observation_base_slot_hint(now_kst: datetime) -> tuple[str, str, str]:
+    """Return the stable KMA ultra-short current-observation base_date/time."""
+    candidate_hour = now_kst.hour if now_kst.minute >= 40 else now_kst.hour - 1
+    if candidate_hour < 0:
+        slot = (now_kst - timedelta(days=1)).replace(
+            hour=23,
+            minute=0,
+            second=0,
+            microsecond=0,
+        )
+    else:
+        slot = now_kst.replace(hour=candidate_hour, minute=0, second=0, microsecond=0)
+    return slot.strftime("%Y%m%d"), slot.strftime("%H00"), _kma_day_note(now_kst, slot)
 
 
 def _final_answer_looks_like_pending_tool_plan(text: str) -> bool:
@@ -4671,7 +4715,6 @@ async def run(  # noqa: C901
             # 따라서 KST 날짜 + KST 현재 시각 (HH:MM, HHMM) 둘 다 inject —
             # 도구 description 이 "직전 정시" 를 참조할 수 있도록.
             # invariant 유지. ISO 8601 date format (YYYY-MM-DD) 으로 표기.
-            from datetime import datetime  # noqa: PLC0415
             from zoneinfo import ZoneInfo  # noqa: PLC0415
 
             _kst = ZoneInfo("Asia/Seoul")
@@ -4679,24 +4722,15 @@ async def run(  # noqa: C901
             today_kst_iso = _now_kst.strftime("%Y-%m-%d")
             now_kst_hm = _now_kst.strftime("%H:%M")
             now_kst_hhmm = _now_kst.strftime("%H%M")
-            # KMA base_time 은 KST 정시 발표 (0200/0500/0800/1100/1400/
-            # 1700/2000/2300). 현재 KST 시각의 직전 정시 hint 도 함께 emit
-            # — LLM 이 추측하지 않도록.
-            _valid_base_times = (2, 5, 8, 11, 14, 17, 20, 23)
-            _h = _now_kst.hour
-            _prev = max(
-                (b for b in _valid_base_times if b <= _h),
-                default=_valid_base_times[-1],
-            )
-            # 오늘 시각이 첫 발표(0200) 이전이면 어제 2300 사용
-            if _h < _valid_base_times[0]:
-                _kma_base_date = (_now_kst.replace(hour=23, minute=0)).strftime("%Y%m%d")
-                _kma_base_time = "2300"
-                _kma_hint_note = "어제"
-            else:
-                _kma_base_date = _now_kst.strftime("%Y%m%d")
-                _kma_base_time = f"{_prev:02d}00"
-                _kma_hint_note = "오늘"
+            # KMA 단기예보는 하루 8회 발표, 초단기실황은 매시 관측이다.
+            # 두 규칙을 분리해 주입해야 현재관측 도구가 단기예보 슬롯을
+            # 복사하지 않는다.
+            _kma_base_date, _kma_base_time, _kma_hint_note = _kma_forecast_base_slot_hint(_now_kst)
+            (
+                _kma_obs_base_date,
+                _kma_obs_base_time,
+                _kma_obs_hint_note,
+            ) = _kma_observation_base_slot_hint(_now_kst)
             augmented_system = (
                 augmented_system + f"\n\n## Current session context\n\n"
                 f"오늘 날짜 (KST): {today_kst_iso}.\n"
@@ -4705,10 +4739,14 @@ async def run(  # noqa: C901
                 "날짜/시간 정보를 추측 또는 fabricate 하지 말고, "
                 "필요하면 도구 (예: kma_short_term_forecast) 를 호출해서 "
                 "실제 데이터를 받아 응답에 인용합니다.\n"
-                "KMA 단기예보/실황 발표 시각은 KST 정시 8회: "
+                "KMA 단기예보 발표 시각은 KST 정시 8회: "
                 "0200/0500/0800/1100/1400/1700/2000/2300. "
-                f"현재 KST 시각의 직전 발표는 {_kma_hint_note} "
+                f"현재 KST 시각의 단기예보 직전 발표는 {_kma_hint_note} "
                 f"base_date={_kma_base_date}, base_time={_kma_base_time}. "
+                "KMA 초단기실황 관측 기준은 매시 HH00; :40 전이면 "
+                "한 시간 더 이전이 안정. "
+                f"현재 KST 시각의 초단기실황 권장 기준은 {_kma_obs_hint_note} "
+                f"base_date={_kma_obs_base_date}, base_time={_kma_obs_base_time}. "
                 "base_time 추측 금지 — 위 hint 또는 그 이전 정시 사용.\n"
             )
 

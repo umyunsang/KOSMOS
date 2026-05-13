@@ -32,11 +32,8 @@ import { createChildAbortController } from './abortController.js'
 import { logForDebugging } from './debug.js'
 import { cloneFileStateCache } from './fileStateCache.js'
 import type { REPLHookContext } from './hooks/postSamplingHooks.js'
-import {
-  createUserMessage,
-  extractTextContent,
-  getLastAssistantMessage,
-} from './messages.js'
+import { createUserMessage, getLastAssistantMessage } from './messages.js'
+import { extractTextContent } from './messageText.js'
 import { createDenialTrackingState } from './permissions/denialTracking.js'
 import { parseToolListFromCLI } from './permissions/permissionSetup.js'
 import { recordSidechainTranscript } from './sessionStorage.js'

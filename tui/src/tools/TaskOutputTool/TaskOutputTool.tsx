@@ -15,7 +15,7 @@ import type { RemoteAgentTaskState } from '../../tasks/RemoteAgentTask/RemoteAge
 import type { TaskState } from '../../tasks/types.js';
 import { AbortError } from '../../utils/errors.js';
 import { lazySchema } from '../../utils/lazySchema.js';
-import { extractTextContent } from '../../utils/messages.js';
+import { extractTextContent } from '../../utils/messageText.js';
 import { semanticBoolean } from '../../utils/semanticBoolean.js';
 import { sleep } from '../../utils/sleep.js';
 import { jsonParse } from '../../utils/slowOperations.js';

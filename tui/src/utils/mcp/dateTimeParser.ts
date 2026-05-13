@@ -3,7 +3,7 @@
 // Spec source: specs/2643-utils-residue/contracts/dateTimeParser.contract.md
 import { queryHaiku } from '../../services/api/claude.js'
 import { logError } from '../log.js'
-import { extractTextContent } from '../messages.js'
+import { extractTextContent } from '../messageText.js'
 import { asSystemPrompt } from '../systemPromptType.js'
 
 export type DateTimeParseResult =

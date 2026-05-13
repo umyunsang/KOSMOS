@@ -18,7 +18,7 @@ import { logEvent } from '../../services/analytics/index.js';
 import type { LocalJSXCommandCall } from '../../types/command.js';
 import type { AssistantMessage, Message } from '../../types/message.js';
 import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js';
-import { extractTextContent, stripPromptXMLTags } from '../../utils/messages.js';
+import { extractTextContent, stripPromptXMLTags } from '../../utils/messageText.js';
 import { countCharInString } from '../../utils/stringUtils.js';
 const COPY_DIR = join(tmpdir(), 'claude');
 const RESPONSE_FILENAME = 'response.md';

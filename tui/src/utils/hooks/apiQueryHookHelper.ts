@@ -9,7 +9,7 @@ import type { Message } from '../../types/message.js'
 import { createAbortController } from '../../utils/abortController.js'
 import { logError } from '../../utils/log.js'
 import { toError } from '../errors.js'
-import { extractTextContent } from '../messages.js'
+import { extractTextContent } from '../messageText.js'
 import { asSystemPrompt } from '../systemPromptType.js'
 import type { REPLHookContext } from './postSamplingHooks.js'
 

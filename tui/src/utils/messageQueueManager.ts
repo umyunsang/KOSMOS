@@ -14,7 +14,7 @@ import type {
   QueuePriority,
 } from '../types/textInputTypes.js'
 import type { PastedContent } from './config.js'
-import { extractTextContent } from './messages.js'
+import { extractTextContent } from './messageText.js'
 import { objectGroupBy } from './objectGroupBy.js'
 import { recordQueueOperation } from './sessionStorage.js'
 import { createSignal } from './signal.js'

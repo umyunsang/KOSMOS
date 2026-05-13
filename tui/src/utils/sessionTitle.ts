@@ -23,7 +23,7 @@ import type { Message } from '../types/message.js'
 import { logForDebugging } from './debug.js'
 import { safeParseJSON } from './json.js'
 import { lazySchema } from './lazySchema.js'
-import { extractTextContent } from './messages.js'
+import { extractTextContent } from './messageText.js'
 import { asSystemPrompt } from './systemPromptType.js'
 
 const MAX_CONVERSATION_TEXT = 1000

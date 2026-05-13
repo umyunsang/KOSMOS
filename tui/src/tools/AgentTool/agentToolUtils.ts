@@ -42,10 +42,8 @@ import { logForDebugging } from '../../utils/debug.js'
 import { AbortError, errorMessage } from '../../utils/errors.js'
 import type { CacheSafeParams } from '../../utils/forkedAgent.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import {
-  extractTextContent,
-  getLastAssistantMessage,
-} from '../../utils/messages.js'
+import { getLastAssistantMessage } from '../../utils/messages.js'
+import { extractTextContent } from '../../utils/messageText.js'
 import type { PermissionMode } from '../../utils/permissions/PermissionMode.js'
 import { permissionRuleValueFromString } from '../../utils/permissions/permissionRuleParser.js'
 // UMMAYA: utils/permissions/yoloClassifier deleted (Anthropic growthbook auto-mode classifier).

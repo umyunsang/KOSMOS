@@ -22,7 +22,8 @@ const ORG_DISABLED_ERROR_MESSAGE_ENV_KEY_WITH_OAUTH = 'Organization disabled (OA
 const PROMPT_TOO_LONG_ERROR_MESSAGE = 'Prompt too long'
 const TOKEN_REVOKED_ERROR_MESSAGE = 'Token revoked'
 const startsWithApiErrorPrefix = (msg: string): boolean => msg.startsWith(API_ERROR_MESSAGE_PREFIX)
-import { isEmptyMessageText, NO_RESPONSE_REQUESTED } from '../../utils/messages.js';
+import { NO_RESPONSE_REQUESTED } from '../../utils/messages.js';
+import { isEmptyMessageText } from '../../utils/messageText.js';
 import { getUpgradeMessage } from '../../utils/model/contextWindowUpgradeCheck.js';
 import { getDefaultSonnetModel, renderModelName } from '../../utils/model/model.js';
 // UMMAYA: secureStorage deleted by Spec 1633 P1. isMacOsKeychainLocked → false (no OS keychain in UMMAYA).

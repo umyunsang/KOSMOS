@@ -35,6 +35,10 @@ from tests.ipc.test_stdio import (  # type: ignore[import-not-found]
     _make_chat_request,
     _run_with_frame,
 )
+from ummaya.ipc.stdio import (
+    _kma_forecast_base_slot_hint,
+    _kma_observation_base_slot_hint,
+)
 
 
 def _extract_system_content(fake_client: type) -> str:
@@ -158,6 +162,26 @@ async def test_system_prompt_includes_kma_base_time_hint(
     assert "base_time 추측 금지" in system_content, (
         "Anti-hallucination directive 'base_time 추측 금지' missing from suffix."
     )
+
+
+def test_kma_forecast_base_slot_hint_rolls_to_previous_day_before_0200() -> None:
+    """00:xx KST must not render same-day 2300, which is a future KMA slot."""
+    now_kst = datetime(2026, 5, 14, 0, 6, tzinfo=ZoneInfo("Asia/Seoul"))
+
+    assert _kma_forecast_base_slot_hint(now_kst) == ("20260513", "2300", "어제")
+
+
+def test_kma_observation_base_slot_hint_rolls_to_previous_day_before_0040() -> None:
+    """Current observation is hourly, and 00:00 data is not stable before 00:40."""
+    now_kst = datetime(2026, 5, 14, 0, 6, tzinfo=ZoneInfo("Asia/Seoul"))
+
+    assert _kma_observation_base_slot_hint(now_kst) == ("20260513", "2300", "어제")
+
+
+def test_kma_observation_base_slot_hint_uses_current_hour_after_0040() -> None:
+    now_kst = datetime(2026, 5, 14, 0, 45, tzinfo=ZoneInfo("Asia/Seoul"))
+
+    assert _kma_observation_base_slot_hint(now_kst) == ("20260514", "0000", "오늘")
 
 
 # ---------------------------------------------------------------------------
