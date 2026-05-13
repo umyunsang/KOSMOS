@@ -63,6 +63,30 @@ function baseCreateAssistantMessage({
   }
 }
 
+export function createAssistantMessage({
+  content,
+  usage,
+  isVirtual,
+}: {
+  content: string | BetaContentBlock[]
+  usage?: Usage
+  isVirtual?: true
+}): AssistantMessage {
+  return baseCreateAssistantMessage({
+    content:
+      typeof content === 'string'
+        ? [
+            {
+              type: 'text' as const,
+              text: content === '' ? NO_CONTENT_MESSAGE : content,
+            } as BetaContentBlock,
+          ]
+        : content,
+    usage,
+    isVirtual,
+  })
+}
+
 export function createAssistantAPIErrorMessage({
   content,
   apiError,

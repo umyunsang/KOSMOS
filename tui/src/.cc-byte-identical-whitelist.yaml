@@ -178,9 +178,9 @@ entries:
     spec_ref: "#1633 (cli-highlight unbundled), #2521 (K-EXAONE leading-whitespace skip)"
     notes: "Suspense + use(promise) lazy-load path replaced with highlight=null; skip render when stripped text empty."
   - path: tui/src/components/MessageRow.tsx
-    cause: W9
-    spec_ref: "#2521 (K-EXAONE multi-tool layout)"
-    notes: "suppressTopMargin prop added for adjacent blocks from one assistant turn."
+    cause: W9,W15
+    spec_ref: "#2521 (K-EXAONE multi-tool layout); .github/workflows/tui-boot-smoke.yml"
+    notes: "suppressTopMargin prop added for adjacent blocks from one assistant turn; direct messageLookups.js import avoids Linux Bun evaluating the large messages.ts export surface."
   - path: tui/src/components/Messages.tsx
     cause: W9,W12
     spec_ref: "#2521 (multi-tool layout), #2294 (frame_commit OTEL Phase 4)"
@@ -235,6 +235,21 @@ entries:
     cause: W15,W8
     spec_ref: ".github/workflows/package-npm.yml, .github/workflows/publish-npm.yml"
     notes: "Linux Bun loader requires direct messageText.js import for text/synthetic-message helpers; behavior is unchanged and package boot smoke stays deterministic."
+  - path: tui/src/components/CompactSummary.tsx
+    cause: W15
+    spec_ref: ".github/workflows/tui-boot-smoke.yml; docs/requirements/ummaya-migration-tree.md § L1-A"
+    notes: "Linux Bun loader requires direct messageContent.js import for getUserMessageText; behavior is unchanged."
+    expected_sha256: d5de3d204c306d8f3d71e327fc51ad97a8572f91c59ec298a3dd3a58459dec71
+  - path: tui/src/components/PromptInput/PromptInputQueuedCommands.tsx
+    cause: W15
+    spec_ref: ".github/workflows/tui-boot-smoke.yml; docs/requirements/ummaya-migration-tree.md § L1-A"
+    notes: "Linux Bun loader requires direct messageLookups.js import for EMPTY_LOOKUPS; behavior is unchanged."
+    expected_sha256: e4d3c3b02c88bbd2914aa6e2beef9345de90fdc613bf256e6fcccb46f940dcdf
+  - path: tui/src/components/messages/AttachmentMessage.tsx
+    cause: W15
+    spec_ref: ".github/workflows/tui-boot-smoke.yml; docs/requirements/ummaya-migration-tree.md § L1-A"
+    notes: "Linux Bun loader requires direct messageContent.js import for getUserMessageText; behavior is unchanged."
+    expected_sha256: a9d2e34b927fa0a5ce96d6ced761b73148d99f353723225393b8f7ed80177f7a
   - path: tui/src/components/messages/UserBashOutputMessage.tsx
     cause: W15
     spec_ref: ".github/workflows/tui-boot-smoke.yml"
@@ -331,9 +346,9 @@ entries:
     spec_ref: "#1633 (useEffectEvent → useCallback workaround)"
     notes: "useEffectEvent (React experimental) replaced with useCallback for downstream Bun compatibility."
   - path: tui/src/components/tasks/RemoteSessionDetailDialog.tsx
-    cause: W13
-    spec_ref: "#1633 / #1978 T011 (utils/teleport deletion)"
-    notes: "teleportResumeCodeSession stubbed."
+    cause: W13,W15
+    spec_ref: "#1633 / #1978 T011 (utils/teleport deletion); .github/workflows/tui-boot-smoke.yml"
+    notes: "teleportResumeCodeSession stubbed; direct messageLookups.js import avoids Linux Bun evaluating the large messages.ts export surface."
   - path: tui/src/dialogLaunchers.tsx
     cause: W13
     spec_ref: "Epic #2639 D1 (TeleportResumeWrapper DROP)"

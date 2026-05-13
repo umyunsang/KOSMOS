@@ -11,7 +11,7 @@ import { MessageResponse } from '../../components/MessageResponse.js';
 import { Box, Text } from '../../ink.js';
 import type { Tools } from '../../Tool.js';
 import type { ProgressMessage } from '../../types/message.js';
-import { buildSubagentLookups, EMPTY_LOOKUPS } from '../../utils/messages.js';
+import { buildSubagentLookups, EMPTY_LOOKUPS } from '../../utils/messageLookups.js';
 import { plural } from '../../utils/stringUtils.js';
 import type { inputSchema, Output, Progress } from './SkillTool.js';
 type Input = z.infer<ReturnType<typeof inputSchema>>;
