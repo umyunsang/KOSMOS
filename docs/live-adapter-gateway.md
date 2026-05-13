@@ -95,8 +95,10 @@ scripts/deploy-live-gateway-cloud-run.sh
 ```
 
 The GitHub Actions workflow `.github/workflows/deploy-live-gateway.yml` uses
-Google Workload Identity Federation and Artifact Registry. Configure these
-repository or environment variables before dispatching it:
+Google Workload Identity Federation and Artifact Registry. It runs automatically
+on `main` when gateway-relevant paths change and also supports manual
+`workflow_dispatch` with an optional `image_tag`. Configure these repository or
+environment variables before relying on either path:
 
 ```text
 GCP_PROJECT_ID

@@ -1,6 +1,19 @@
 name: Deploy Live Adapter Gateway
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/deploy-live-gateway.yml"
+      - "docker/Dockerfile.gateway"
+      - "docs/plugins/security-review.md"
+      - "prompts/**"
+      - "pyproject.toml"
+      - "README.md"
+      - "src/**"
+      - "tests/fixtures/plugin_validation/**"
+      - "uv.lock"
   workflow_dispatch:
     inputs:
       image_tag:
@@ -75,7 +88,7 @@ jobs:
       - name: Resolve image name
         id: image
         env:
-          INPUT_TAG: ${{ inputs.image_tag }}
+          INPUT_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.image_tag || '' }}
           GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
           GCP_REGION: ${{ vars.GCP_REGION }}
           GCP_ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.GCP_ARTIFACT_REGISTRY_REPOSITORY }}
