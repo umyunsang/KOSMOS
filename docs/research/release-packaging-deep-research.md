@@ -28,10 +28,11 @@ Scope:
    The npm package therefore includes the TUI source, backend source,
    `pyproject.toml`, and `uv.lock`, and the wrapper launches the backend with
    `uv --directory <package-root>`.
-4. Homebrew should follow the npm artifact. The tap repository exists, but
-   Homebrew has no central reservation mechanism for third-party formula names.
-   The formula should install from a stable npm registry tarball and pass
-   formula syntax, audit, install, and `test do` checks after the tap update.
+4. Homebrew should follow the npm artifact through a cask. The tap repository
+   exists, but Homebrew has no central reservation mechanism for third-party
+   names. The cask should install from a stable npm registry tarball, run the
+   package dependency install in `preflight`, create a Caskroom-local wrapper,
+   and let Homebrew manage the public link through a `binary` artifact.
 5. LLMOps packaging evidence should be release metadata, not another runtime
    framework. UMMAYA already has prompt hashes, eval scenarios, OpenTelemetry,
    optional Langfuse integration, and release manifests. Packaging should bind
@@ -62,14 +63,18 @@ npm package state after implementation:
 
 Homebrew state after implementation:
 
-- `scripts/render-homebrew-formula.mjs` renders `Formula/ummaya.rb` from version
-  and npm tarball SHA-256.
-- `ruby -c Formula/ummaya.rb` passed locally.
-- Local Homebrew 5.1.9 disallows path-based `brew audit [path]`; full audit/test
-  must run after the formula is committed to the tap.
-- Bun is not available as a Homebrew core formula on this machine, so the
-  formula depends on `oven-sh/bun/bun` and docs instruct users to tap
-  `oven-sh/bun` first.
+- `scripts/render-homebrew-cask.mjs` renders `Casks/ummaya.rb` from version and
+  npm tarball SHA-256.
+- `ruby -c Casks/ummaya.rb` passed locally.
+- `brew audit --cask ummaya` passed against the tap cask.
+- The cask depends on `oven-sh/bun/bun` and `uv`, installs npm package
+  dependencies in `preflight`, and writes a Caskroom-local wrapper that
+  executes `#{HOMEBREW_PREFIX}/opt/bun/bin/bun` directly so stale user PATH
+  entries do not select an older Bun.
+- The npm package includes `bun.lock` for cask/Bun dependency installation and
+  `npm-shrinkwrap.json` for npm consumers. Future cask installs can use Bun's
+  frozen lockfile path. Older tarballs without `bun.lock` fall back to
+  non-frozen install args for compatibility.
 
 Existing CI/release infrastructure:
 
@@ -101,6 +106,26 @@ bundled JavaScript CLI. UMMAYA is currently between those patterns: source
 distributed for v0.1.0, with a future bundled/native TUI artifact as the likely
 next packaging hardening step.
 
+Additional packaging checks on 2026-05-13:
+
+- Claude Code's Homebrew cask downloads a platform-specific executable and
+  exposes it through a Homebrew-managed `binary "claude"` artifact. Its shell
+  installer downloads the latest installer binary, verifies the SHA-256 checksum
+  from a manifest, then delegates setup to `claude install`.
+- Codex's Homebrew cask follows the same native-artifact pattern: a GitHub
+  release tarball contains the platform executable, and the cask maps that file
+  to the public `codex` binary.
+- Gemini CLI is the useful npm-tarball counterexample. It is packaged as a
+  Homebrew formula, not a cask, and runs `npm install` into Homebrew-managed
+  `libexec` before linking the executable.
+
+Implication for UMMAYA: if the project remains cask-only, the cask must avoid
+direct writes to `HOMEBREW_PREFIX/bin`; it should create any generated launcher
+inside Caskroom and expose it with `binary`. The current npm source tarball path
+also needs a lockfile in the published artifact. The production-grade target is
+still a platform-specific native/bundled artifact similar to Claude Code and
+Codex, with the cask reduced to URL, SHA-256, dependencies, and `binary`.
+
 ## Official Guidance Digest
 
 npm:
@@ -117,11 +142,12 @@ Homebrew:
 
 - A tap maps `brew tap owner/name` to
   `https://github.com/owner/homebrew-name`.
-- New Homebrew formulae should use stable, tagged versions and pass
-  `brew audit --new --formula` or the current equivalent for a tapped formula.
-- Formula tests should exercise deterministic basic behavior. If credentials
-  are needed, the preferred pattern is to verify controlled unauthenticated
-  behavior rather than calling live APIs.
+- Homebrew casks should use stable versioned URLs, SHA-256 checksums, a
+  `verified` URL parameter when the download and homepage domains differ, and
+  Homebrew-managed artifacts such as `binary` instead of direct writes to
+  `HOMEBREW_PREFIX/bin`.
+- Cask verification should exercise deterministic basic behavior by reinstalling
+  the cask and checking `ummaya --version` rather than calling live APIs.
 
 Supply chain:
 
@@ -148,7 +174,7 @@ LLMOps:
 Recommended order:
 
 1. npm package first.
-2. Homebrew formula second, generated from the npm tarball.
+2. Homebrew cask second, generated from the npm tarball.
 3. PyPI/backend package later only if the product surface requires standalone
    Python distribution.
 
@@ -156,8 +182,9 @@ Recommended install story:
 
 | User need | Preferred install |
 |---|---|
-| General CLI | `npm install -g ummaya` |
-| macOS one-command install | `brew tap oven-sh/bun && brew tap umyunsang/ummaya && brew install ummaya` |
+| General CLI | `curl -fsSL https://raw.githubusercontent.com/umyunsang/UMMAYA/main/install.sh \| bash` |
+| Homebrew manual install | `brew tap umyunsang/ummaya && brew install --cask ummaya` |
+| npm fallback | `npm install -g ummaya` |
 | Source checkout | `uv sync --frozen --all-extras --dev`, then `cd tui && bun install --frozen-lockfile` |
 
 Recommended release gates:
@@ -167,8 +194,8 @@ Recommended release gates:
   break-glass fallback; do not add GitHub encrypted registry tokens.
 - npm gate: `npm pack --dry-run --json`, `bin` smoke, content allowlist,
   package-size budgets, no test/source-only files unless explicitly accepted.
-- Homebrew gate: formula syntax, formula audit, formula test, stable URL,
-  SHA-256, and no live government API calls.
+- Homebrew gate: cask syntax, cask audit, reinstall smoke, stable URL, SHA-256,
+  and no live government API calls.
 - Supply-chain gate: SBOM upload, artifact attestation, release manifest,
   prompt hash emission, and optional SLSA provenance verification.
 - LLMOps gate: eval scenario checksum and trace/eval scorecard attached to the
@@ -181,8 +208,12 @@ Recommended release gates:
 - npm Trusted Publishing: <https://docs.npmjs.com/trusted-publishers/>
 - npm provenance: <https://docs.npmjs.com/generating-provenance-statements/>
 - Homebrew taps: <https://docs.brew.sh/Taps>
-- Homebrew Formula Cookbook: <https://docs.brew.sh/Formula-Cookbook>
-- Homebrew Node formula guidance: <https://docs.brew.sh/Node-for-Formula-Authors>
+- Homebrew Cask Cookbook: <https://docs.brew.sh/Cask-Cookbook>
+- Claude Code setup docs: <https://docs.anthropic.com/en/docs/claude-code/setup>
+- Claude Code shell installer: <https://claude.ai/install.sh>
+- Homebrew Claude Code cask: <https://formulae.brew.sh/cask/claude-code>
+- Homebrew Codex cask: <https://formulae.brew.sh/cask/codex>
+- Homebrew Gemini CLI formula: <https://formulae.brew.sh/formula/gemini-cli>
 - GitHub artifact attestations: <https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations/using-artifact-attestations-to-establish-provenance-for-builds>
 - OpenSSF Trusted Publishers: <https://repos.openssf.org/trusted-publishers-for-all-package-repositories.html>
 - OpenTelemetry GenAI semantic conventions: <https://opentelemetry.io/docs/specs/semconv/gen-ai/>

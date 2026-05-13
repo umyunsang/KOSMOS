@@ -24,6 +24,8 @@ const fileSet = new Set(files)
 const required = [
   'bin/ummaya',
   'package.json',
+  'bun.lock',
+  'npm-shrinkwrap.json',
   'README.md',
   'LICENSE',
   'assets/ummaya-banner-dark.svg',

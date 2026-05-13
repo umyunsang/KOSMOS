@@ -9,12 +9,13 @@
 > 사용자의 한 문장을 Query Engine이 의도로 분석하고, Reasoning Agent가 Agentic RAG 방식으로 필요한 공공 도메인과 도구를 찾고, 도구시스템이 AI의 손과 발이 되어 조회·확인·신청 흐름을 실행합니다.
 
 ```bash
-npm install -g ummaya
+curl -fsSL https://raw.githubusercontent.com/umyunsang/UMMAYA/main/install.sh | bash
 ```
 
 또는
 
 ```bash
+brew tap umyunsang/ummaya
 brew install --cask ummaya
 ```
 
@@ -212,17 +213,25 @@ UMMAYA는 사용자의 상황을 바탕으로 관련 복지 도메인을 찾고,
 
 ### 1. 설치하기
 
+권장 설치:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/umyunsang/UMMAYA/main/install.sh | bash
+ummaya
+```
+
+Homebrew cask로 직접 설치:
+
+```bash
+brew tap umyunsang/ummaya
+brew install --cask ummaya
+ummaya
+```
+
 npm으로 설치:
 
 ```bash
 npm install -g ummaya
-ummaya
-```
-
-Homebrew로 설치:
-
-```bash
-brew install --cask ummaya
 ummaya
 ```
 
