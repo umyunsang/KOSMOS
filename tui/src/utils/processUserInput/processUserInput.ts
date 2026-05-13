@@ -48,12 +48,10 @@ import {
 } from '../imageResizer.js'
 import { storeImages } from '../imageStore.js'
 import {
-  createUserMessage,
-} from '../messages.js'
-import {
   createCommandInputMessage,
   createSystemMessage,
 } from '../systemMessageFactories.js'
+import { createUserMessage } from '../userMessageFactories.js'
 import { queryCheckpoint } from '../queryProfiler.js'
 import { parseSlashCommand } from '../slashCommandParsing.js'
 import {

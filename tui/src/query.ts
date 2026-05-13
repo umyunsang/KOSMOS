@@ -53,8 +53,10 @@ import {
   createToolUseSummaryMessage,
 } from './utils/systemMessageFactories.js'
 import {
-  createUserMessage,
   createUserInterruptionMessage,
+  createUserMessage,
+} from './utils/userMessageFactories.js'
+import {
   stripSignatureBlocks,
 } from './utils/messages.js'
 import { createAssistantAPIErrorMessage } from './utils/assistantMessageFactories.js'

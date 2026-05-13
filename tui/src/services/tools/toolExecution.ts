@@ -69,7 +69,7 @@ import {
 } from '../../utils/errors.js'
 import { executePermissionDeniedHooks } from '../../utils/hooks.js'
 import { logError } from '../../utils/log.js'
-import { createUserMessage } from '../../utils/messages.js'
+import { createUserMessage } from '../../utils/userMessageFactories.js'
 import { createStopHookSummaryMessage } from '../../utils/systemMessageFactories.js'
 import {
   createProgressMessage,

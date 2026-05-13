@@ -29,13 +29,13 @@ import {
   getTeammateIdleHookMessage,
 } from '../utils/hooks.js'
 import {
-  createUserInterruptionMessage,
-  createUserMessage,
-} from '../utils/messages.js'
-import {
   createStopHookSummaryMessage,
   createSystemMessage,
 } from '../utils/systemMessageFactories.js'
+import {
+  createUserInterruptionMessage,
+  createUserMessage,
+} from '../utils/userMessageFactories.js'
 import type { SystemPrompt } from '../utils/systemPromptType.js'
 import { getTaskListId, listTasks } from '../utils/tasks.js'
 import { getAgentName, getTeamName, isTeammate } from '../utils/teammate.js'
