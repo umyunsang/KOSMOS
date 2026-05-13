@@ -51,12 +51,12 @@ try {
 // ═══════════════════════════════════════════════════════════════════════
 // Bun MACRO.* build-time constants
 // ═══════════════════════════════════════════════════════════════════════
-// UMMAYA version is sourced from tui/package.json — the single source of
-// truth. Bun supports native JSON imports, so editing package.json (manually
-// or via `npm version` / `bun pm version`) is the only step required to
-// bump the user-visible version. The previous "2.1.88-ummaya" hardcode was
-// a residue of the CC 2.1.88 source-map import; UMMAYA is a separate
-// project with its own release cadence (github.com/umyunsang/UMMAYA).
+// UMMAYA's user-visible TUI version is sourced from tui/package.json.
+// Release bumps must keep root package.json, pyproject.toml, and this TUI
+// package version in sync; otherwise the npm tarball can publish one version
+// while `ummaya --version` prints another. The previous "2.1.88-ummaya"
+// hardcode was a residue of the CC 2.1.88 source-map import; UMMAYA is a
+// separate project with its own release cadence (github.com/umyunsang/UMMAYA).
 //
 // BUILD_TIME is injected from the env var UMMAYA_BUILD_TIME at runtime
 // (set by the packaging step). When unset (e.g. local dev) we fall back to

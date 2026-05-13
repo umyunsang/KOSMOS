@@ -150,6 +150,12 @@ the user approve it in the browser.
 After the trust relationship exists, release through `.github/workflows/publish-npm.yml`
 and verify the exact package version with `npm view ummaya@<version> version`.
 
+For every release bump, keep these version sources synchronized before packing:
+root `package.json`, `package-lock.json`, `npm-shrinkwrap.json`, `pyproject.toml`,
+`uv.lock`, and `tui/package.json`. The TUI `--version` output reads
+`tui/package.json` through `tui/src/stubs/macro-preload.ts`, so root-only bumps
+can publish a new tarball whose CLI still reports the previous version.
+
 ## Baseline Verification
 
 For non-TUI backend changes:
