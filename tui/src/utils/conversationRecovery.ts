@@ -31,9 +31,9 @@ import {
   filterUnresolvedToolUses,
   filterWhitespaceOnlyAssistantMessages,
   isToolUseResultMessage,
-  NO_RESPONSE_REQUESTED,
   normalizeMessages,
 } from './messages.js'
+import { NO_RESPONSE_REQUESTED } from './messageText.js'
 import { copyPlanForResume } from './plans.js'
 import { processSessionStartHooks } from './sessionStart.js'
 import {
