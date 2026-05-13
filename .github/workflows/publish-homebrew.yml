@@ -50,12 +50,12 @@ jobs:
           sha256="$(sha256sum "ummaya-${version}.tgz" | cut -d ' ' -f1)"
           echo "UMMAYA_TARBALL_SHA256=${sha256}" >> "${GITHUB_ENV}"
 
-      - name: Render formula
+      - name: Render cask
         run: |
-          node scripts/render-homebrew-formula.mjs \
+          node scripts/render-homebrew-cask.mjs \
             "${{ steps.version.outputs.version }}" \
             "${UMMAYA_TARBALL_SHA256}" \
-            Formula/ummaya.rb
+            Casks/ummaya.rb
 
       - name: Fetch Homebrew tap token from Infisical
         continue-on-error: true
@@ -98,17 +98,17 @@ jobs:
           path: tap
           ssh-key: ${{ secrets.UMMAYA_HOMEBREW_TAP_SSH_KEY }}
 
-      - name: Commit formula
+      - name: Commit cask
         run: |
-          mkdir -p tap/Formula
-          cp Formula/ummaya.rb tap/Formula/ummaya.rb
+          mkdir -p tap/Casks
+          cp Casks/ummaya.rb tap/Casks/ummaya.rb
           cd tap
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Formula/ummaya.rb
+          git add Casks/ummaya.rb
           if git diff --cached --quiet; then
-            echo "Formula unchanged"
+            echo "Cask unchanged"
             exit 0
           fi
-          git commit -m "ummaya ${{ steps.version.outputs.version }}"
+          git commit -m "ummaya cask ${{ steps.version.outputs.version }}"
           git push

@@ -1,8 +1,27 @@
-# frozen_string_literal: true
+#!/usr/bin/env node
+// SPDX-License-Identifier: Apache-2.0
+
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { dirname } from 'node:path'
+
+const [version, sha256, outputPath = 'Casks/ummaya.rb'] = process.argv.slice(2)
+
+if (!version || !sha256) {
+  throw new Error('Usage: scripts/render-homebrew-cask.mjs <version> <sha256> [output-path]')
+}
+
+if (!/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(version)) {
+  throw new Error(`Invalid cask version: ${version}`)
+}
+if (!/^[0-9a-f]{64}$/.test(sha256)) {
+  throw new Error(`Invalid SHA-256: ${sha256}`)
+}
+
+const cask = `# frozen_string_literal: true
 
 cask "ummaya" do
-  version "0.1.1"
-  sha256 "ebabd6242972759ece8064065aea65d10ca1087487189156012a5f11bba46585"
+  version "${version}"
+  sha256 "${sha256}"
 
   url "https://registry.npmjs.org/ummaya/-/ummaya-#{version}.tgz",
       verified: "registry.npmjs.org/ummaya/"
@@ -37,3 +56,8 @@ cask "ummaya" do
 
   zap trash: "~/.ummaya"
 end
+`
+
+mkdirSync(dirname(outputPath), { recursive: true })
+writeFileSync(outputPath, cask)
+console.log(`render-homebrew-cask: wrote ${outputPath}`)
