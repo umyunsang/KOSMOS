@@ -45,7 +45,7 @@ jobs:
       - name: Upload eval report artifact
         # Always upload the report so reviewers can inspect it even on failure.
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: retrieval-eval-report
           path: .eval-artifacts/retrieval.json
