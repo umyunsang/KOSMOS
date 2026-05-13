@@ -1,8 +1,4 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/ummaya-banner-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="assets/ummaya-banner-light.svg" />
-  <img width="2172" height="724" alt="UMMAYA banner with Umma, the open-mouth cat mascot" src="assets/ummaya-banner-light.svg" />
-</picture>
+<img width="2172" height="724" alt="ChatGPT Image 2026년 5월 8일 오후 02_16_28" src="https://github.com/user-attachments/assets/addab8c2-1bf7-4785-806b-7cde792f5475" />
 
 # UMMAYA
 
