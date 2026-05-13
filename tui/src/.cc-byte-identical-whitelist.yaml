@@ -7,7 +7,7 @@
 # interactiveHelpers.tsx, replLauncher.tsx).
 #
 # This file enumerates every legitimate UMMAYA-side divergence with its
-# cause (W1~W13) and a citation (issue # OR doc path). Any divergence not
+# cause (W1~W15) and a citation (issue # OR doc path). Any divergence not
 # listed here causes CI to fail.
 #
 # When you intentionally diverge a file from CC, add an entry here in the
@@ -27,7 +27,8 @@ generated_by: "Epic #2639 Lead Opus, 2026-05-03"
 # Cause taxonomy. W1~W12 originate from audit § 7. W13 is added by this
 # Epic to capture Spec 1633 / Spec 1978 / Spec 2293 dead-code cleanup
 # (Anthropic services/api/auth/secureStorage/teleport/claudeAiLimits modules
-# inlined or stubbed at the call site).
+# inlined or stubbed at the call site). W14/W15 capture later real-use and
+# runtime-loader audit corrections.
 causes:
   W1: "@anthropic-ai/sdk → src/sdk-compat.js import substitution"
   W2: "Brand string substitution (Claude Code → UMMAYA)"
@@ -43,6 +44,7 @@ causes:
   W12: "OTEL frame_commit instrumentation hook"
   W13: "Dead-code cleanup (Spec 1633/1978/2293 — Anthropic services/api/auth/secureStorage/teleport stubbed at call site)"
   W14: "Real-use TUI audit correction (accessibility/legibility, no contract change)"
+  W15: "Runtime import stabilization (direct module import, no behavior change)"
 
 # Each entry must specify: path (repo-root relative), cause (one or comma-separated),
 # spec_ref (issue # or docs path). Optional: notes, expected_sha256 (locks
@@ -216,6 +218,10 @@ entries:
     cause: W13,W1
     spec_ref: "#1633 (services/api/errors removal), #2293 (secureStorage removal)"
     notes: "API error message constants inlined; isMacOsKeychainLocked stubbed → false; sdk-compat."
+  - path: tui/src/components/messageActions.tsx
+    cause: W15
+    spec_ref: ".github/workflows/package-npm.yml, .github/workflows/publish-npm.yml"
+    notes: "Linux Bun loader requires direct messageText.js import for text helpers; behavior is unchanged and package boot smoke stays deterministic."
   - path: tui/src/components/permissions/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx
     cause: W13,W1
     spec_ref: "#1633 (Anthropic queryHaiku auto-naming removal), #2293 (utils/auth removal)"
