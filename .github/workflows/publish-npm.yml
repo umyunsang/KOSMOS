@@ -137,6 +137,4 @@ jobs:
 
       - name: Publish with npm Trusted Publishing
         if: steps.npm-version.outputs.exists != 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish
