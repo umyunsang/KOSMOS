@@ -2,7 +2,7 @@
 
 cask "ummaya" do
   version "0.1.5"
-  sha256 "2d6f923113544d139dad4b48477188e28b4cbe887a23e3bcbf917def401c0a85"
+  sha256 "6bfc1ae896955da7f8803944f28c8fddaee0fb7240e9786b2f5927a313ff6fcc"
 
   url "https://registry.npmjs.org/ummaya/-/ummaya-#{version}.tgz",
       verified: "registry.npmjs.org/ummaya/"

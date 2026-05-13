@@ -71,10 +71,10 @@ import { executePermissionDeniedHooks } from '../../utils/hooks.js'
 import { logError } from '../../utils/log.js'
 import {
   createProgressMessage,
-  createStopHookSummaryMessage,
   createToolResultStopMessage,
   createUserMessage,
 } from '../../utils/messages.js'
+import { createStopHookSummaryMessage } from '../../utils/systemMessageFactories.js'
 import {
   CANCEL_MESSAGE,
   withMemoryCorrectionHint,

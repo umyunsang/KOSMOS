@@ -17,8 +17,8 @@ import {
 } from '../../utils/forkedAgent.js'
 import {
   createUserMessage,
-  createMemorySavedMessage,
 } from '../../utils/messages.js'
+import { createMemorySavedMessage } from '../../utils/systemMessageFactories.js'
 import type { Message } from '../../types/message.js'
 import { logForDebugging } from '../../utils/debug.js'
 import type { ToolUseContext } from '../../Tool.js'

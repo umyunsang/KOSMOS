@@ -49,10 +49,12 @@ import {
   getMessagesAfterCompactBoundary,
 } from './utils/messageBoundary.js'
 import {
-  createUserMessage,
-  createUserInterruptionMessage,
   createSystemMessage,
   createToolUseSummaryMessage,
+} from './utils/systemMessageFactories.js'
+import {
+  createUserMessage,
+  createUserInterruptionMessage,
   stripSignatureBlocks,
 } from './utils/messages.js'
 import { createAssistantAPIErrorMessage } from './utils/assistantMessageFactories.js'

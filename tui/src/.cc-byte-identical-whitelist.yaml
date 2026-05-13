@@ -266,6 +266,10 @@ entries:
     cause: W15
     spec_ref: ".github/workflows/tui-boot-smoke.yml"
     notes: "Linux Bun loader requires direct messageText.js import for extractTag; behavior is unchanged."
+  - path: tui/src/screens/ResumeConversation.tsx
+    cause: W15
+    spec_ref: ".github/workflows/tui-smoke.yml; docs/requirements/ummaya-migration-tree.md § L1-A"
+    notes: "Linux Bun loader requires direct systemMessageFactories.js import for createSystemMessage; behavior is unchanged."
   - path: tui/src/components/permissions/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx
     cause: W13,W1
     spec_ref: "#1633 (Anthropic queryHaiku auto-naming removal), #2293 (utils/auth removal)"

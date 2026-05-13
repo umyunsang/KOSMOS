@@ -34,9 +34,9 @@ import type { REPLHookContext } from '../../utils/hooks/postSamplingHooks.js'
 import { logError } from '../../utils/log.js'
 import type { SetAppState } from '../../utils/messageQueueManager.js'
 import {
-  createSystemMessage,
   createUserMessage,
 } from '../../utils/messages.js'
+import { createSystemMessage } from '../../utils/systemMessageFactories.js'
 import {
   INTERRUPT_MESSAGE,
   INTERRUPT_MESSAGE_FOR_TOOL_USE,

@@ -6,7 +6,9 @@ import { getOrCreateUmmayaBridge, getUmmayaBridgeSessionId } from '../ipc/bridge
 import type { ChatRequestFrame, IPCFrame } from '../ipc/frames.generated.js'
 import { getToolDefinitionsForFrame } from './toolSerialization.js'
 import { SYNTHETIC_MODEL } from '../utils/messageText.js'
-import { createAssistantMessage, createSystemMessage, createUserMessage } from '../utils/messages.js'
+import { createAssistantMessage } from '../utils/messages.js'
+import { createSystemMessage } from '../utils/systemMessageFactories.js'
+import { createUserMessage } from '../utils/userMessageFactories.js'
 import { buildChatMessagesFromTranscript } from './chatMessagesBuilder.js'
 import { assertFriendliCredentialForUse } from '../utils/friendliAuth.js'
 
