@@ -31,6 +31,8 @@ export const currentLimits: { isUsingOverage: boolean } = {
   isUsingOverage: false,
 }
 
+export const statusListeners = new Set<(limits: ClaudeAILimits) => void>()
+
 export function extractQuotaStatusFromError(_err: unknown): null {
   return null
 }

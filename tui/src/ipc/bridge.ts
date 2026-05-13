@@ -459,6 +459,7 @@ export function createBridge(opts: BridgeOptions = {}): IPCBridge {
           stdin: 'pipe',
           stdout: 'pipe',
           stderr: 'pipe',
+          env: spawnEnv,
         })
         _remainder = ''
 
@@ -485,7 +486,6 @@ export function createBridge(opts: BridgeOptions = {}): IPCBridge {
         _emitResumeRequest()
 
         _reconnecting = false
-        _reconnectAttempt = 0
         return
       } catch (e: unknown) {
         _log('WARN', `Reconnect attempt ${_reconnectAttempt} failed: ${e}`)
@@ -520,6 +520,9 @@ export function createBridge(opts: BridgeOptions = {}): IPCBridge {
           for (const result of frames) {
             if (result.ok) {
               const frame = result.frame
+              if (_reconnectAttempt !== 0) {
+                _reconnectAttempt = 0
+              }
 
               // Track last-seen for resume requests — only advance forward so
               // heartbeats (frame_seq=0) never regress the watermark.

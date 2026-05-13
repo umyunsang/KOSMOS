@@ -37,6 +37,10 @@ export function modelSupportsStructuredOutputs(_model?: string): boolean {
   return false
 }
 
+export function modelSupportsAutoMode(_model?: string): boolean {
+  return false
+}
+
 export function shouldUseGlobalCacheScope(..._args: unknown[]): boolean {
   return false
 }

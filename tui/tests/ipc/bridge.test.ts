@@ -88,6 +88,27 @@ describe('bridge: process lifecycle', () => {
     await bridge.close()
     expect(Date.now() - t).toBeLessThan(5000)
   })
+
+  test('reconnect attempts are exhausted when backend exits before handshake', async () => {
+    let reconnectFailed = false
+    const bridge = createBridge({
+      cmd: ['bun', '-e', 'process.exit(1)'],
+      maxReconnectAttempts: 2,
+      initialBackoffMs: 10,
+      maxBackoffMs: 10,
+      onReconnectFailed: () => {
+        reconnectFailed = true
+      },
+    })
+
+    const deadline = Date.now() + 3000
+    while (!reconnectFailed && Date.now() < deadline) {
+      await new Promise(resolve => setTimeout(resolve, 25))
+    }
+
+    expect(reconnectFailed).toBe(true)
+    await bridge.close().catch(() => {})
+  })
 })
 
 describe('bridge: FIFO frame ordering (FR-005)', () => {
