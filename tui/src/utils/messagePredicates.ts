@@ -9,6 +9,14 @@ export function isHumanTurn(m: Message): m is UserMessage {
   return m.type === 'user' && !m.isMeta && m.toolUseResult === undefined
 }
 
+export function isThinkingMessage(message: Message): boolean {
+  if (message.type !== 'assistant') return false
+  if (!Array.isArray(message.message.content)) return false
+  return message.message.content.every(
+    block => block.type === 'thinking' || block.type === 'redacted_thinking',
+  )
+}
+
 export function isNotEmptyMessage(message: Message): boolean {
   if (
     message.type === 'progress' ||
