@@ -135,6 +135,9 @@ npm:
 - `files` is the correct allowlist mechanism for publish content.
 - `bin` is the correct field for globally installed CLI commands.
 - npm Trusted Publishing uses OIDC, requires npm CLI 11.5.1+ and Node 22.14.0+,
+  while `npm trust` package-configuration commands require npm 11.10.0+; keep release
+  workflows on current npm 11.x and GitHub-hosted Node 24 runners to match npm's
+  maintained examples.
   and automatically generates provenance for public packages from public
   repositories.
 
