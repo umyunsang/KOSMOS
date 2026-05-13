@@ -57,6 +57,8 @@ try {
 // while `ummaya --version` prints another. The previous "2.1.88-ummaya"
 // hardcode was a residue of the CC 2.1.88 source-map import; UMMAYA is a
 // separate project with its own release cadence (github.com/umyunsang/UMMAYA).
+// npm release smoke also checks `ummaya --help` to catch commander option
+// parse errors that happen after the fast --version path.
 //
 // BUILD_TIME is injected from the env var UMMAYA_BUILD_TIME at runtime
 // (set by the packaging step). When unset (e.g. local dev) we fall back to
