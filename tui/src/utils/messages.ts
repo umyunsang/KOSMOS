@@ -82,8 +82,17 @@ import {
 } from './attachments.js'
 import { quote } from './bash/shellQuote.js'
 import { formatNumber, formatTokens } from './format.js'
+import { extractTextContent } from './messageText.js'
 import { getPewterLedgerVariant } from './planModeV2.js'
 import { jsonStringify } from './slowOperations.js'
+
+// Keep these pure helper exports near the top of this large module. Linux Bun
+// has previously missed named exports declared deep inside messages.ts.
+export {
+  extractTextContent,
+  isEmptyMessageText,
+  stripPromptXMLTags,
+} from './messageText.js'
 
 // Hook attachments that have a hookName field (excludes HookPermissionDecisionAttachment)
 type HookAttachmentWithName = Exclude<
@@ -2553,14 +2562,6 @@ export function normalizeContentFromAPI(
   })
 }
 
-// Spec debug-infra-rebuild (2026-05-02): the canonical implementations of
-// these two helpers now live in `./messageText.ts` so small importers
-// (e.g. AssistantThinkingMessage → thinking-delta-render.test) don't pay
-// the parse cost — and the Bun-Linux SyntaxError — of evaluating this
-// 5,000+-line module just to read two pure functions. Re-exported here
-// so existing call sites continue to compile.
-export { isEmptyMessageText, stripPromptXMLTags } from './messageText.js'
-
 export function getToolUseID(message: NormalizedMessage): string | null {
   switch (message.type) {
     case 'attachment':
@@ -2682,21 +2683,6 @@ export function textForResubmit(
     return { text: `${cmd} ${args}`, mode: 'prompt' }
   }
   return { text: stripIdeContextTags(content), mode: 'prompt' }
-}
-
-/**
- * Extract text from an array of content blocks, joining text blocks with the
- * given separator. Works with ContentBlock, ContentBlockParam, BetaContentBlock,
- * and their readonly/DeepImmutable variants via structural typing.
- */
-export function extractTextContent(
-  blocks: readonly { readonly type: string }[],
-  separator = '',
-): string {
-  return blocks
-    .filter((b): b is { type: 'text'; text: string } => b.type === 'text')
-    .map(b => b.text)
-    .join(separator)
 }
 
 export function getContentText(

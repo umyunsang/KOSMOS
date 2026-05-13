@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Spec debug-infra-rebuild (2026-05-02): tiny module so the most-imported
-// helpers (isEmptyMessageText, stripPromptXMLTags) can be loaded without
+// helpers can be loaded without
 // dragging in the 5,000+-line `messages.ts` parse cost. The Bun loader on
 // Linux CI repeatedly emitted
 //   SyntaxError: Export named 'isEmptyMessageText' not found in module
@@ -27,4 +27,19 @@ export function isEmptyMessageText(text: string): boolean {
   return (
     stripPromptXMLTags(text).trim() === '' || text.trim() === NO_CONTENT_MESSAGE
   )
+}
+
+/**
+ * Extract text from an array of content blocks, joining text blocks with the
+ * given separator. Works with ContentBlock, ContentBlockParam, BetaContentBlock,
+ * and their readonly/DeepImmutable variants via structural typing.
+ */
+export function extractTextContent(
+  blocks: readonly { readonly type: string }[],
+  separator = '',
+): string {
+  return blocks
+    .filter((b): b is { type: 'text'; text: string } => b.type === 'text')
+    .map(b => b.text)
+    .join(separator)
 }

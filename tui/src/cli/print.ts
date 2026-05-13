@@ -67,6 +67,7 @@ import { externalMetadataToAppState } from 'src/state/onChangeAppState.js'
 import { getInMemoryErrors, logError, logMCPDebug } from 'src/utils/log.js'
 import {
   writeToStdout,
+  writeToStderr,
   registerProcessOutputErrorHandlers,
 } from 'src/utils/process.js'
 import type { Stream } from 'src/utils/stream.js'
@@ -945,14 +946,14 @@ export async function runHeadless(
       }
       switch (lastMessage.subtype) {
         case 'success':
-          writeToStdout(
-            lastMessage.result.endsWith('\n')
-              ? lastMessage.result
-              : lastMessage.result + '\n',
-          )
+          if (lastMessage.is_error) {
+            writeToStderr(formatResultText(lastMessage.result))
+          } else {
+            writeToStdout(formatResultText(lastMessage.result))
+          }
           break
         case 'error_during_execution':
-          writeToStdout(`Execution error`)
+          writeToStderr(formatExecutionErrorMessage(lastMessage))
           break
         case 'error_max_turns':
           writeToStdout(`Error: Reached max turns (${options.maxTurns})`)
@@ -982,6 +983,26 @@ export async function runHeadless(
   gracefulShutdownSync(
     lastMessage?.type === 'result' && lastMessage?.is_error ? 1 : 0,
   )
+}
+
+function formatExecutionErrorMessage(message: unknown): string {
+  const fallback = 'Execution error'
+  const errors = (message as { errors?: unknown } | null)?.errors
+  if (!Array.isArray(errors)) {
+    return `${fallback}\n`
+  }
+
+  const details = errors
+    .filter((error): error is string => typeof error === 'string')
+    .map(error => error.trim())
+    .filter(error => error.length > 0)
+
+  return `${details.length > 0 ? details.join('\n') : fallback}\n`
+}
+
+function formatResultText(result: unknown): string {
+  const text = typeof result === 'string' ? result : String(result ?? '')
+  return text.endsWith('\n') ? text : `${text}\n`
 }
 
 function runHeadlessStreaming(
