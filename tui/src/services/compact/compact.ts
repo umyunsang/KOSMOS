@@ -61,9 +61,11 @@ import { normalizeMessagesForAPI } from '../../utils/messageApiNormalize.js'
 import {
   createCompactBoundaryMessage,
   createUserMessage,
+} from '../../utils/messages.js'
+import {
   getMessagesAfterCompactBoundary,
   isCompactBoundaryMessage,
-} from '../../utils/messages.js'
+} from '../../utils/messageBoundary.js'
 import { getAssistantMessageText } from '../../utils/messageContent.js'
 import { getLastAssistantMessage } from '../../utils/messageQueries.js'
 import { expandPath } from '../../utils/path.js'

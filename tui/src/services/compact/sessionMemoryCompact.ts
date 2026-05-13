@@ -10,8 +10,8 @@ import { errorMessage } from '../../utils/errors.js'
 import {
   createCompactBoundaryMessage,
   createUserMessage,
-  isCompactBoundaryMessage,
 } from '../../utils/messages.js'
+import { isCompactBoundaryMessage } from '../../utils/messageBoundary.js'
 import { getMainLoopModel } from '../../utils/model/model.js'
 import { getSessionMemoryPath } from '../../utils/permissions/filesystem.js'
 import { processSessionStartHooks } from '../../utils/sessionStart.js'

@@ -44,11 +44,11 @@ const isPromptTooLongMessage = (msg: unknown): boolean =>
   (msg as Record<string, unknown>).apiError === 'prompt_too_long'
 import { logAntError, logForDebugging } from './utils/debug.js'
 import { normalizeMessagesForAPI } from './utils/messageApiNormalize.js'
+import { getMessagesAfterCompactBoundary } from './utils/messageBoundary.js'
 import {
   createUserMessage,
   createUserInterruptionMessage,
   createSystemMessage,
-  getMessagesAfterCompactBoundary,
   createToolUseSummaryMessage,
   createMicrocompactBoundaryMessage,
   stripSignatureBlocks,

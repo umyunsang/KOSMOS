@@ -6,7 +6,7 @@ import { type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS, logEve
 import { shouldUseSessionMemoryCompaction } from '../../services/compact/sessionMemoryCompact.js';
 import type { Message } from '../../types/message.js';
 import { isEnvTruthy } from '../../utils/envUtils.js';
-import { isCompactBoundaryMessage } from '../../utils/messages.js';
+import { isCompactBoundaryMessage } from '../../utils/messageBoundary.js';
 // utils/telemetry/events removed — UMMAYA telemetry handled by Spec 021 OTEL pipeline.
 const logOTelEvent = (_event: string, _attrs?: Record<string, unknown>): void => { /* no-op */ }
 import { useSurveyState } from './useSurveyState.js';

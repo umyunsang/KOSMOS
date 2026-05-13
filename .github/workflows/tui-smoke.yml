@@ -127,60 +127,7 @@ jobs:
         # tests (LogoV2, onboarding, commands, components, keybindings)
         # that reference files renamed/deleted by the CC 2.1.88 port. Epic
         # #1633 will decide whether to forward-port or delete those tests.
-        #
-        # PR escape hatch — same sentinel pattern as the SBOM gate.
-        # PR commits carrying `[tui-bun-linux-known-issue]` get a
-        # warn-only run so the Linux-specific Bun loader regression
-        # discovered on PR #2578 (tui/src/utils/messages.ts evaluated
-        # cleanly on macOS Bun 1.3.12 + Bun 1.3.12+700fc117a Linux
-        # ought to as well, but emits an opaque
-        #   SyntaxError: Export named 'isEmptyMessageText' not found
-        # against a transformed/generated source fragment we couldn't
-        # localise after 9 PR runs of progressive narrowing) doesn't
-        # block merges of unrelated work. Local development still runs
-        # `bun run test` and catches genuine regressions; reviewers
-        # eyeball the warn output. Tracked separately for upstream
-        # report once a reproducible Bun patch tag is found.
-        env:
-          # PR builds checkout a synthetic merge commit ("Merge X into Y")
-          # whose message never carries our sentinel — even with fetch-depth>=1.
-          # Read the sentinel directly from the PR's title/body context AND
-          # only the commit messages in the PR head range. Push builds scan
-          # only the pushed range, so old main-branch sentinel commits cannot
-          # make unrelated future TUI failures warn-only.
-          EVENT_NAME: ${{ github.event_name }}
-          PR_TITLE: ${{ github.event.pull_request.title || '' }}
-          PR_BODY: ${{ github.event.pull_request.body || '' }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
-          PUSH_BEFORE_SHA: ${{ github.event.before || '' }}
-          PUSH_AFTER_SHA: ${{ github.sha || '' }}
-          HEAD_COMMIT_MSG: ${{ github.event.head_commit.message || '' }}
-        run: |
-          if [ "$EVENT_NAME" = "pull_request" ] && [ -n "$PR_BASE_SHA" ] && [ -n "$PR_HEAD_SHA" ]; then
-            GIT_LOG_MSGS=$(git -C "$GITHUB_WORKSPACE" log -50 "$PR_BASE_SHA..$PR_HEAD_SHA" --format=%B 2>/dev/null || true)
-          elif [ "$EVENT_NAME" = "push" ] && [ -n "$PUSH_BEFORE_SHA" ] && [ "$PUSH_BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
-            GIT_LOG_MSGS=$(git -C "$GITHUB_WORKSPACE" log -50 "$PUSH_BEFORE_SHA..$PUSH_AFTER_SHA" --format=%B 2>/dev/null || true)
-          else
-            GIT_LOG_MSGS=$(git -C "$GITHUB_WORKSPACE" log -50 HEAD --format=%B 2>/dev/null || true)
-          fi
-          if printf '%s\n%s\n%s\n%s\n' "$PR_TITLE" "$PR_BODY" "$HEAD_COMMIT_MSG" "$GIT_LOG_MSGS" | grep -qF "[tui-bun-linux-known-issue]"; then
-            BYPASS=1
-          else
-            BYPASS=0
-          fi
-          if bun run test; then
-            echo "TUI tests: PASS"
-          else
-            if [ "$BYPASS" = "1" ]; then
-              echo "WARNING: TUI tests failed under Linux Bun. Bypassed via [tui-bun-linux-known-issue] sentinel."
-            else
-              echo "ERROR: TUI tests failed."
-              echo "       If this is the Linux Bun messages.ts loader regression,"
-              echo "       add [tui-bun-linux-known-issue] to a PR commit message."
-              exit 1
-            fi
-          fi
+        run: bun run test
 
       - name: PTY boot smoke
         working-directory: tui

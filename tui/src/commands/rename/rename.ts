@@ -9,7 +9,7 @@ import type {
   LocalJSXCommandContext,
   LocalJSXCommandOnDone,
 } from '../../types/command.js'
-import { getMessagesAfterCompactBoundary } from '../../utils/messages.js'
+import { getMessagesAfterCompactBoundary } from '../../utils/messageBoundary.js'
 import {
   getTranscriptPath,
   saveAgentName,
