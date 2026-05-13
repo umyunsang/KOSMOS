@@ -10,7 +10,7 @@ target="stable"
 
 usage() {
   cat <<'USAGE'
-Install UMMAYA with the Homebrew cask.
+Install UMMAYA on macOS with the Homebrew cask.
 
 Usage:
   curl -fsSL https://raw.githubusercontent.com/umyunsang/UMMAYA/main/install.sh | bash
@@ -74,6 +74,13 @@ esac
 if ! command -v brew >/dev/null 2>&1; then
   fail "Homebrew is required. Install it from https://brew.sh, then rerun this script."
 fi
+
+case "$(uname -s)" in
+  Darwin) ;;
+  *)
+    fail "this installer uses a Homebrew cask and currently supports macOS only. On this platform, use: npm install -g ummaya"
+    ;;
+esac
 
 log "Installing UMMAYA via Homebrew cask..."
 run brew tap "$tap"

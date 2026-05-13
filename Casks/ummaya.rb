@@ -13,9 +13,9 @@ cask "ummaya" do
   depends_on formula: "oven-sh/bun/bun"
   depends_on formula: "uv"
 
-  preflight do |c|
-    install_args = ["install", "--production", "--cwd", "#{c.staged_path}/package"]
-    if File.exist?("#{c.staged_path}/package/bun.lock")
+  preflight do
+    install_args = ["install", "--production", "--cwd", "#{staged_path}/package"]
+    if File.exist?("#{staged_path}/package/bun.lock")
       install_args << "--frozen-lockfile"
     else
       install_args << "--no-save"
@@ -24,11 +24,11 @@ cask "ummaya" do
     system_command "#{HOMEBREW_PREFIX}/opt/bun/bin/bun",
                    args: install_args
 
-    wrapper = c.staged_path/"ummaya"
+    wrapper = staged_path/"ummaya"
     wrapper.write <<~SH
       #!/bin/bash
       export PATH="#{HOMEBREW_PREFIX}/opt/bun/bin:#{HOMEBREW_PREFIX}/opt/uv/bin:$PATH"
-      exec "#{HOMEBREW_PREFIX}/opt/bun/bin/bun" "#{c.staged_path}/package/bin/ummaya" "$@"
+      exec "#{HOMEBREW_PREFIX}/opt/bun/bin/bun" "#{staged_path}/package/bin/ummaya" "$@"
     SH
     FileUtils.chmod 0755, wrapper
   end
