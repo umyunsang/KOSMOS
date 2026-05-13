@@ -71,16 +71,16 @@ case "$target" in
   *) fail "unsupported target '$target'" ;;
 esac
 
-if ! command -v brew >/dev/null 2>&1; then
-  fail "Homebrew is required. Install it from https://brew.sh, then rerun this script."
-fi
-
 case "$(uname -s)" in
   Darwin) ;;
   *)
     fail "this installer uses a Homebrew cask and currently supports macOS only. On this platform, use: npm install -g ummaya"
     ;;
 esac
+
+if ! command -v brew >/dev/null 2>&1; then
+  fail "Homebrew is required. Install it from https://brew.sh, then rerun this script."
+fi
 
 log "Installing UMMAYA via Homebrew cask..."
 run brew tap "$tap"
