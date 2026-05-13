@@ -757,127 +757,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/77/59/28403890c5f757254bf2068ff321fb3e656fb2e5658a3de8bfc092e4fd83/kiwipiepy_model-0.23.0.tar.gz", hash = "sha256:498a22f5585e6c4a162423d7557eb3ee3f71cddc6e0aeb2650c50467e85933e2", size = 87976912, upload-time = "2026-03-17T16:28:32.318Z" }
 
 [[package]]
-name = "ummaya"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "httpx" },
-    { name = "kiwipiepy" },
-    { name = "numpy" },
-    { name = "openai" },
-    { name = "opentelemetry-exporter-otlp-proto-http" },
-    { name = "opentelemetry-sdk" },
-    { name = "opentelemetry-semantic-conventions" },
-    { name = "presidio-analyzer" },
-    { name = "prompt-toolkit" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "pyyaml" },
-    { name = "rank-bm25" },
-    { name = "rich" },
-    { name = "sentence-transformers" },
-    { name = "torch", version = "2.11.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
-    { name = "torch", version = "2.11.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
-    { name = "typer" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "hypothesis" },
-    { name = "mypy" },
-    { name = "pip-audit" },
-    { name = "pip-licenses" },
-    { name = "pre-commit" },
-    { name = "pyte" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-benchmark" },
-    { name = "pytest-cov" },
-    { name = "pytest-xdist" },
-    { name = "respx" },
-    { name = "ruff" },
-    { name = "vulture" },
-]
-langfuse = [
-    { name = "langfuse" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "hypothesis" },
-    { name = "jsonschema" },
-    { name = "mypy" },
-    { name = "pip-audit" },
-    { name = "pip-licenses" },
-    { name = "pre-commit" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-benchmark" },
-    { name = "pytest-cov" },
-    { name = "pytest-xdist" },
-    { name = "respx" },
-    { name = "ruff" },
-    { name = "types-pyyaml" },
-    { name = "vulture" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "httpx", specifier = ">=0.27" },
-    { name = "hypothesis", extras = ["pydantic"], marker = "extra == 'dev'", specifier = ">=6.100" },
-    { name = "kiwipiepy", specifier = ">=0.17" },
-    { name = "langfuse", marker = "extra == 'langfuse'", specifier = ">=2.60" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.20.0" },
-    { name = "numpy", specifier = ">=1.26" },
-    { name = "openai", specifier = ">=2.32.0" },
-    { name = "opentelemetry-exporter-otlp-proto-http", specifier = ">=1.25" },
-    { name = "opentelemetry-sdk", specifier = ">=1.25" },
-    { name = "opentelemetry-semantic-conventions", specifier = ">=0.46b0" },
-    { name = "pip-audit", marker = "extra == 'dev'", specifier = ">=2.10.0" },
-    { name = "pip-licenses", marker = "extra == 'dev'", specifier = ">=5.0" },
-    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.7" },
-    { name = "presidio-analyzer", specifier = ">=2.2" },
-    { name = "prompt-toolkit", specifier = ">=3.0" },
-    { name = "pydantic", specifier = ">=2.13.0" },
-    { name = "pydantic-settings", specifier = ">=2.13.1" },
-    { name = "pyte", marker = "extra == 'dev'", specifier = ">=0.8.2" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.3.0" },
-    { name = "pytest-benchmark", marker = "extra == 'dev'", specifier = ">=5.2.3" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=7.1.0" },
-    { name = "pytest-xdist", marker = "extra == 'dev'", specifier = ">=3.5" },
-    { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "rank-bm25", specifier = ">=0.2.2" },
-    { name = "respx", marker = "extra == 'dev'", specifier = ">=0.23.1" },
-    { name = "rich", specifier = ">=13.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5" },
-    { name = "sentence-transformers", specifier = ">=3.0" },
-    { name = "torch", specifier = ">=2.5", index = "https://download.pytorch.org/whl/cpu" },
-    { name = "typer", specifier = ">=0.24.1" },
-    { name = "vulture", marker = "extra == 'dev'", specifier = ">=2.16" },
-]
-provides-extras = ["dev", "langfuse"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "hypothesis", extras = ["pydantic"], specifier = ">=6.100" },
-    { name = "jsonschema", specifier = ">=4.26.0" },
-    { name = "mypy", specifier = ">=1.20.0" },
-    { name = "pip-audit", specifier = ">=2.10.0" },
-    { name = "pip-licenses", specifier = ">=5.0" },
-    { name = "pre-commit", specifier = ">=3.7" },
-    { name = "pytest", specifier = ">=9.0.3" },
-    { name = "pytest-asyncio", specifier = ">=1.3.0" },
-    { name = "pytest-benchmark", specifier = ">=5.2.3" },
-    { name = "pytest-cov", specifier = ">=7.1.0" },
-    { name = "pytest-xdist", specifier = ">=3.5" },
-    { name = "respx", specifier = ">=0.23.1" },
-    { name = "ruff", specifier = ">=0.5" },
-    { name = "types-pyyaml", specifier = ">=6.0.12" },
-    { name = "vulture", specifier = ">=2.16" },
-]
-
-[[package]]
 name = "langfuse"
 version = "4.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2787,12 +2666,133 @@ wheels = [
 ]
 
 [[package]]
+name = "ummaya"
+version = "0.1.1"
+source = { editable = "." }
+dependencies = [
+    { name = "httpx" },
+    { name = "kiwipiepy" },
+    { name = "numpy" },
+    { name = "openai" },
+    { name = "opentelemetry-exporter-otlp-proto-http" },
+    { name = "opentelemetry-sdk" },
+    { name = "opentelemetry-semantic-conventions" },
+    { name = "presidio-analyzer" },
+    { name = "prompt-toolkit" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "pyyaml" },
+    { name = "rank-bm25" },
+    { name = "rich" },
+    { name = "sentence-transformers" },
+    { name = "torch", version = "2.11.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
+    { name = "torch", version = "2.11.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
+    { name = "typer" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "hypothesis" },
+    { name = "mypy" },
+    { name = "pip-audit" },
+    { name = "pip-licenses" },
+    { name = "pre-commit" },
+    { name = "pyte" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-benchmark" },
+    { name = "pytest-cov" },
+    { name = "pytest-xdist" },
+    { name = "respx" },
+    { name = "ruff" },
+    { name = "vulture" },
+]
+langfuse = [
+    { name = "langfuse" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "hypothesis" },
+    { name = "jsonschema" },
+    { name = "mypy" },
+    { name = "pip-audit" },
+    { name = "pip-licenses" },
+    { name = "pre-commit" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-benchmark" },
+    { name = "pytest-cov" },
+    { name = "pytest-xdist" },
+    { name = "respx" },
+    { name = "ruff" },
+    { name = "types-pyyaml" },
+    { name = "vulture" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "hypothesis", extras = ["pydantic"], marker = "extra == 'dev'", specifier = ">=6.100" },
+    { name = "kiwipiepy", specifier = ">=0.17" },
+    { name = "langfuse", marker = "extra == 'langfuse'", specifier = ">=2.60" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.20.0" },
+    { name = "numpy", specifier = ">=1.26" },
+    { name = "openai", specifier = ">=2.32.0" },
+    { name = "opentelemetry-exporter-otlp-proto-http", specifier = ">=1.25" },
+    { name = "opentelemetry-sdk", specifier = ">=1.25" },
+    { name = "opentelemetry-semantic-conventions", specifier = ">=0.46b0" },
+    { name = "pip-audit", marker = "extra == 'dev'", specifier = ">=2.10.0" },
+    { name = "pip-licenses", marker = "extra == 'dev'", specifier = ">=5.0" },
+    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.7" },
+    { name = "presidio-analyzer", specifier = ">=2.2" },
+    { name = "prompt-toolkit", specifier = ">=3.0" },
+    { name = "pydantic", specifier = ">=2.13.0" },
+    { name = "pydantic-settings", specifier = ">=2.13.1" },
+    { name = "pyte", marker = "extra == 'dev'", specifier = ">=0.8.2" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.3.0" },
+    { name = "pytest-benchmark", marker = "extra == 'dev'", specifier = ">=5.2.3" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=7.1.0" },
+    { name = "pytest-xdist", marker = "extra == 'dev'", specifier = ">=3.5" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
+    { name = "rank-bm25", specifier = ">=0.2.2" },
+    { name = "respx", marker = "extra == 'dev'", specifier = ">=0.23.1" },
+    { name = "rich", specifier = ">=13.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5" },
+    { name = "sentence-transformers", specifier = ">=3.0" },
+    { name = "torch", specifier = ">=2.5", index = "https://download.pytorch.org/whl/cpu" },
+    { name = "typer", specifier = ">=0.24.1" },
+    { name = "vulture", marker = "extra == 'dev'", specifier = ">=2.16" },
+]
+provides-extras = ["dev", "langfuse"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "hypothesis", extras = ["pydantic"], specifier = ">=6.100" },
+    { name = "jsonschema", specifier = ">=4.26.0" },
+    { name = "mypy", specifier = ">=1.20.0" },
+    { name = "pip-audit", specifier = ">=2.10.0" },
+    { name = "pip-licenses", specifier = ">=5.0" },
+    { name = "pre-commit", specifier = ">=3.7" },
+    { name = "pytest", specifier = ">=9.0.3" },
+    { name = "pytest-asyncio", specifier = ">=1.3.0" },
+    { name = "pytest-benchmark", specifier = ">=5.2.3" },
+    { name = "pytest-cov", specifier = ">=7.1.0" },
+    { name = "pytest-xdist", specifier = ">=3.5" },
+    { name = "respx", specifier = ">=0.23.1" },
+    { name = "ruff", specifier = ">=0.5" },
+    { name = "types-pyyaml", specifier = ">=6.0.12" },
+    { name = "vulture", specifier = ">=2.16" },
+]
+
+[[package]]
 name = "urllib3"
-version = "2.6.3"
+version = "2.7.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/c7/24/5f1b3bdffd70275f6661c76461e25f024d5a38a46f04aaca912426a2b1d3/urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed", size = 435556, upload-time = "2026-01-07T16:24:43.925Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/53/0c/06f8b233b8fd13b9e5ee11424ef85419ba0d8ba0b3138bf360be2ff56953/urllib3-2.7.0.tar.gz", hash = "sha256:231e0ec3b63ceb14667c67be60f2f2c40a518cb38b03af60abc813da26505f4c", size = 433602, upload-time = "2026-05-07T16:13:18.596Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4", size = 131584, upload-time = "2026-01-07T16:24:42.685Z" },
+    { url = "https://files.pythonhosted.org/packages/7f/3e/5db95bcf282c52709639744ca2a8b149baccf648e39c8cc87553df9eae0c/urllib3-2.7.0-py3-none-any.whl", hash = "sha256:9fb4c81ebbb1ce9531cce37674bbc6f1360472bc18ca9a553ede278ef7276897", size = 131087, upload-time = "2026-05-07T16:13:17.151Z" },
 ]
 
 [[package]]

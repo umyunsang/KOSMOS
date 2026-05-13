@@ -8,7 +8,7 @@
       "response": {
         "toolCalls": [
           {
-            "name": "lookup",
+            "name": "find",
             "arguments": {
               "tool_id": "hira_hospital_search",
               "params": {

@@ -3,7 +3,7 @@
   "tool_id": "mock_verify_mydata",
   "citizen_prompt": "마이데이터로 내 금융 정보 조회해줘",
   "expected_first_tool_call": {
-    "name": "verify",
+    "name": "check",
     "arguments": {
       "tool_id": "mock_verify_mydata",
       "params": {

@@ -73,7 +73,7 @@ describe.skip('dispatchPrimitive (server-side-ack) — superseded by register-an
 
   test('lookup returns ok=true with ack envelope', async () => {
     const result = (await dispatchPrimitive({
-      primitive: 'lookup',
+      primitive: 'find',
       args: { mode: 'search', query: '날씨' },
       context: fakeContext('lookup-use-1'),
       registry,
@@ -82,7 +82,7 @@ describe.skip('dispatchPrimitive (server-side-ack) — superseded by register-an
 
     expect(result.data.ok).toBe(true)
     expect(result.data.result?.['dispatched_via']).toBe('backend-server-side')
-    expect(result.data.result?.['primitive']).toBe('lookup')
+    expect(result.data.result?.['primitive']).toBe('find')
     expect(result.data.result?.['tool_use_id']).toBe('lookup-use-1')
   })
 
@@ -90,14 +90,14 @@ describe.skip('dispatchPrimitive (server-side-ack) — superseded by register-an
     const args = {
       tool_id: 'mock_verify_module_modid',
       params: {
-        scope_list: ['lookup:hometax.simplified'],
+        scope_list: ['find:hometax.simplified'],
         purpose_ko: '종합소득세 신고',
         purpose_en: 'Tax return',
       },
     }
 
     const result = (await dispatchPrimitive({
-      primitive: 'verify',
+      primitive: 'check',
       args,
       context: fakeContext('verify-use-1'),
       registry,
@@ -109,12 +109,12 @@ describe.skip('dispatchPrimitive (server-side-ack) — superseded by register-an
     // The server-side-ack architecture leaves args untouched on the
     // wire — backend's `_VerifyInputForLLM` pre-validator owns translation.
     expect(args.tool_id).toBe('mock_verify_module_modid')
-    expect(args.params.scope_list).toEqual(['lookup:hometax.simplified'])
+    expect(args.params.scope_list).toEqual(['find:hometax.simplified'])
   })
 
   test('submit returns ack with submit primitive name', async () => {
     const result = (await dispatchPrimitive({
-      primitive: 'submit',
+      primitive: 'send',
       args: { tool_id: 'mock_submit_module_hometax_taxreturn' },
       context: fakeContext('submit-use-1'),
       registry,
@@ -122,7 +122,7 @@ describe.skip('dispatchPrimitive (server-side-ack) — superseded by register-an
     })) as unknown as { data: { ok: boolean; result?: Record<string, unknown> } }
 
     expect(result.data.ok).toBe(true)
-    expect(result.data.result?.['primitive']).toBe('submit')
+    expect(result.data.result?.['primitive']).toBe('send')
   })
 
   test('missing toolUseId surfaces null in ack envelope', async () => {
@@ -142,7 +142,7 @@ describe.skip('dispatchPrimitive (server-side-ack) — superseded by register-an
     } as unknown as ToolUseContext
 
     const result = (await dispatchPrimitive({
-      primitive: 'lookup',
+      primitive: 'find',
       args: {},
       context: ctx,
       registry,
@@ -164,7 +164,7 @@ describe.skip('dispatchPrimitive (server-side-ack) — superseded by register-an
     } as unknown as IPCBridge
 
     await dispatchPrimitive({
-      primitive: 'lookup',
+      primitive: 'find',
       args: {},
       context: fakeContext(),
       registry,
@@ -180,7 +180,7 @@ describe.skip('dispatchPrimitive (server-side-ack) — superseded by register-an
   test('completes synchronously (no timeout path under default settings)', async () => {
     const start = Date.now()
     await dispatchPrimitive({
-      primitive: 'lookup',
+      primitive: 'find',
       args: {},
       context: fakeContext(),
       registry,
@@ -218,7 +218,7 @@ describe('dispatchPrimitive — [H1] inner-payload error classification', () => 
   // the pending call's promise mid-flight. We bypass the IPC bridge entirely
   // — only the unwrap path under test matters here.
   async function dispatchAndInjectFrame(
-    primitive: 'lookup' | 'resolve_location' | 'verify' | 'submit',
+    primitive: 'find' | 'locate' | 'check' | 'send',
     envelope: Record<string, unknown>,
     toolUseId = `${primitive}-h1-1`,
   ): Promise<{ data: { ok: boolean; result?: unknown; error?: { kind: string; message: string } } }> {
@@ -247,9 +247,9 @@ describe('dispatchPrimitive — [H1] inner-payload error classification', () => 
     return promise
   }
 
-  test('verify: inner family=mismatch_error → ok=false, error.kind=mismatch_error', async () => {
+  test('check: inner family=mismatch_error → ok=false, error.kind=mismatch_error', async () => {
     const envelope = {
-      kind: 'verify',
+      kind: 'check',
       family: '',
       result: {
         family: 'mismatch_error',
@@ -260,7 +260,7 @@ describe('dispatchPrimitive — [H1] inner-payload error classification', () => 
           "No verify adapter registered for family 'gongdong_injeungseo'.",
       },
     }
-    const result = await dispatchAndInjectFrame('verify', envelope)
+    const result = await dispatchAndInjectFrame('check', envelope)
     expect(result.data.ok).toBe(false)
     expect(result.data.error?.kind).toBe('mismatch_error')
     expect(result.data.error?.message).toContain('No verify adapter registered')
@@ -270,18 +270,18 @@ describe('dispatchPrimitive — [H1] inner-payload error classification', () => 
     )
   })
 
-  test('lookup: inner kind=error with reason=scope_violation → ok=false, error.kind=scope_violation', async () => {
+  test('find: inner kind=error with reason=scope_violation → ok=false, error.kind=scope_violation', async () => {
     const envelope = {
-      kind: 'lookup',
+      kind: 'find',
       result: {
         kind: 'error',
         reason: 'scope_violation',
         message:
-          "Delegation token scope 'lookup:other' does not grant 'lookup:hometax.simplified'.",
+          "Delegation token scope 'find:other' does not grant 'find:hometax.simplified'.",
         retryable: false,
       },
     }
-    const result = await dispatchAndInjectFrame('lookup', envelope)
+    const result = await dispatchAndInjectFrame('find', envelope)
     expect(result.data.ok).toBe(false)
     // ``reason`` (more specific) wins over ``kind === error`` (generic) in
     // the kind-precedence rules, but we accept either as a citizen-safe
@@ -290,42 +290,42 @@ describe('dispatchPrimitive — [H1] inner-payload error classification', () => 
     expect(result.data.error?.message).toContain('Delegation token scope')
   })
 
-  test('submit: inner kind=error → ok=false, error.kind=tool_error', async () => {
+  test('send: inner kind=error → ok=false, error.kind=tool_error', async () => {
     const envelope = {
-      kind: 'submit',
+      kind: 'send',
       result: {
         kind: 'error',
         message: 'Hometax 신고 모듈 OPAQUE — submit 불가.',
       },
     }
-    const result = await dispatchAndInjectFrame('submit', envelope)
+    const result = await dispatchAndInjectFrame('send', envelope)
     expect(result.data.ok).toBe(false)
     expect(result.data.error?.kind).toBe('tool_error')
     expect(result.data.error?.message).toContain('OPAQUE')
   })
 
-  test('lookup: success envelope with normal result still flips ok=true (regression guard)', async () => {
+  test('find: success envelope with normal result still flips ok=true (regression guard)', async () => {
     // The classifier must NOT over-trigger — a benign result with no
     // family/kind/reason fields should pass through as ok=true.
     const envelope = {
-      kind: 'lookup',
+      kind: 'find',
       result: {
         items: [{ name: 'Sample', value: 42 }],
         count: 1,
       },
     }
-    const result = await dispatchAndInjectFrame('lookup', envelope)
+    const result = await dispatchAndInjectFrame('find', envelope)
     expect(result.data.ok).toBe(true)
     expect((result.data.result as Record<string, unknown>)?.['count']).toBe(1)
   })
 
   test('top-level envelope.error still classified as ok=false (legacy path preserved)', async () => {
     const envelope = {
-      kind: 'verify',
+      kind: 'check',
       error: 'IPC bridge crashed mid-dispatch.',
       tool_id: 'verify_module_modid',
     }
-    const result = await dispatchAndInjectFrame('verify', envelope)
+    const result = await dispatchAndInjectFrame('check', envelope)
     expect(result.data.ok).toBe(false)
     expect(result.data.error?.kind).toBe('dispatch_error')
     expect(result.data.error?.message).toContain('IPC bridge crashed')

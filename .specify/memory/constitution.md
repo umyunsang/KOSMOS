@@ -1,4 +1,4 @@
-# KOSMOS Constitution
+# UMMAYA Constitution
 
 ## Core Principles
 
@@ -6,7 +6,7 @@
 
 Every design decision MUST trace to a concrete reference source. All sources listed in `docs/vision.md § Reference materials` are valid, including open-source repos, official documentation, reconstructed architecture analyses, and leaked-source review documents.
 
-**Primary migration source (project-wide)**: `.references/claude-code-sourcemap/restored-src/src/` — Claude Code 2.1.88, 1,884 .ts/.tsx files, research-use reconstruction from `@anthropic-ai/claude-code` v2.1.88 source map. Per AGENTS.md, KOSMOS migrates the Claude Code harness (tool loop, permission gauntlet, context assembly, TUI, and the related coordinator/commands/services/context layers) to the Korean public-service domain. Before authoring any new module at any layer, check restored-src for the corresponding construct first; only escalate to the secondary references below when restored-src does not cover the need (document the escalation in `research.md`). The rewrite boundary is narrow: `services/api/` (→ KOSMOS Python backend over stdio JSONL), `tools/*` (→ thin renderers over KOSMOS's 5-primitive surface), and net-new domain layers Claude Code does not have (Korean IME, public-API adapters, PIPA permission extensions, Spec 027 swarm mailbox). Files lifted from restored-src MUST carry a header citing the upstream path + version `2.1.88` + research-use notice; per-layer `NOTICE` declares Anthropic attribution.
+**Primary migration source (project-wide)**: `.references/claude-code-sourcemap/restored-src/src/` — Claude Code 2.1.88, 1,884 .ts/.tsx files, research-use reconstruction from `@anthropic-ai/claude-code` v2.1.88 source map. Per AGENTS.md, UMMAYA migrates the Claude Code harness (tool loop, permission gauntlet, context assembly, TUI, and the related coordinator/commands/services/context layers) to the Korean public-service domain. Before authoring any new module at any layer, check restored-src for the corresponding construct first; only escalate to the secondary references below when restored-src does not cover the need (document the escalation in `research.md`). The rewrite boundary is narrow: `services/api/` (→ UMMAYA Python backend over stdio JSONL), `tools/*` (→ thin renderers over UMMAYA's 5-primitive surface), and net-new domain layers Claude Code does not have (Korean IME, public-API adapters, PIPA permission extensions, Spec 027 swarm mailbox). Files lifted from restored-src MUST carry a header citing the upstream path + version `2.1.88` + research-use notice; per-layer `NOTICE` declares Anthropic attribution.
 
 **Mandatory reference mapping** — every `/speckit-plan` Phase 0 Research MUST read `docs/vision.md` and map each design decision to one of these sources:
 
@@ -20,14 +20,14 @@ Every design decision MUST trace to a concrete reference source. All sources lis
 | Error Recovery | OpenAI Agents SDK (retry matrix) | Claude Agent SDK (error handling) |
 | TUI | Ink + Gemini CLI (React terminal UI) | Claude Code reconstructed (TUI components) |
 
-**Encouraged**: actively study reconstructed source repositories (`ChinaSiro/claude-code-sourcemap`), architecture review documents (`openedclaude/claude-reviews-claude`), and harness implementations (`ultraworkers/claw-code`) to understand internal patterns. Adapt patterns to KOSMOS's domain — do not copy line-for-line.
+**Encouraged**: actively study reconstructed source repositories (`ChinaSiro/claude-code-sourcemap`), architecture review documents (`openedclaude/claude-reviews-claude`), and harness implementations (`ultraworkers/claw-code`) to understand internal patterns. Adapt patterns to UMMAYA's domain — do not copy line-for-line.
 
 ### II. Fail-Closed Security (NON-NEGOTIABLE)
 
-KOSMOS does not invent permission policy. Every tool adapter MUST cite the agency's own published policy. Fail-closed defaults apply.
+UMMAYA does not invent permission policy. Every tool adapter MUST cite the agency's own published policy. Fail-closed defaults apply.
 
 - Permission UX uses CC's `<PermissionRequest>` pipeline byte-identical with `.references/claude-code-sourcemap/`.
-- KOSMOS-invented classifications (5-mode spectrum / `pipa_class` / `auth_level` / `permission_tier` / `is_personal_data` / `is_irreversible` / `requires_auth` / `dpa_reference`) were removed in Spec 1979 (3-correction iterations 2026-04-28 / 2026-04-29) and MUST NOT be reintroduced.
+- UMMAYA-invented classifications (5-mode spectrum / `pipa_class` / `auth_level` / `permission_tier` / `is_personal_data` / `is_irreversible` / `requires_auth` / `dpa_reference`) were removed in Spec 1979 (3-correction iterations 2026-04-28 / 2026-04-29) and MUST NOT be reintroduced.
 - OPAQUE-forever domains (those without a public LLM-callable channel) are never wrapped as adapters; the harness hands the citizen off via narrative scenario docs.
 
 Adapter metadata schema, transparency fields, and citizen-facing gate enums are spec-driven artifacts under Initiative #2290 — see `specs/1979-plugin-dx-tui-integration/cc-source-scope-audit.md` and `delegation-flow-design.md § 12` for the current canonical shapes.
@@ -45,11 +45,11 @@ All tool inputs and outputs MUST use Pydantic v2 models. The `Any` type is forbi
 - NEVER call live `data.go.kr` APIs from CI tests; use recorded fixtures only.
 - Every adapter MUST track daily per-key quota via `rate_limit_per_minute` and `usage_tracker`.
 - Happy-path AND error-path tests are required for every adapter.
-- No hardcoded API keys; all credentials via `KOSMOS_`-prefixed environment variables.
+- No hardcoded API keys; all credentials via `UMMAYA_`-prefixed environment variables.
 
 ### V. Policy Alignment
 
-KOSMOS aligns with the Korea AI Action Plan (2026-2028), specifically:
+UMMAYA aligns with the Korea AI Action Plan (2026-2028), specifically:
 
 - **Principle 8**: single conversational window for cross-ministry citizen services
 - **Principle 9**: Open API and OpenMCP for public service integration

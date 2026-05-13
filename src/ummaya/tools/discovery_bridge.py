@@ -194,7 +194,7 @@ _VERIFY_FAMILIES: list[dict[str, Any]] = [
         "family": "ganpyeon_injeung",
         "name_ko": "간편인증 (PASS·카카오·네이버)",
         "search_hint_ko": [
-            "간편인증 로그인 행정서비스 이용 권한 확인 본인확인 verify:ganpyeon.identity",
+            "간편인증 로그인 행정서비스 이용 권한 확인 본인확인 check:ganpyeon.identity",
             "간편인증",
             "PASS",
             "카카오",
@@ -206,7 +206,7 @@ _VERIFY_FAMILIES: list[dict[str, Any]] = [
         "policy_authority": "https://www.kftc.or.kr/",
         "scope_rules": (
             "Scope rule: simple-auth login uses exactly scope_list "
-            "['verify:ganpyeon.identity']; do not use Any-ID SSO, "
+            "['check:ganpyeon.identity']; do not use Any-ID SSO, "
             "admin_service scopes, or submit scopes for identity-only 간편인증."
         ),
     },
@@ -220,8 +220,8 @@ _VERIFY_FAMILIES: list[dict[str, Any]] = [
         "policy_authority": "https://www.mobileid.go.kr/",
         "scope_rules": (
             "Scope rule: mobile ID identity verification uses exactly scope_list "
-            "['verify:mobile_id.identity']; do not invent lookup:identity.info "
-            "or lookup:identity.verify scopes."
+            "['check:mobile_id.identity']; do not invent find:identity.info "
+            "or find:identity.verify scopes."
         ),
     },
     {
@@ -229,10 +229,10 @@ _VERIFY_FAMILIES: list[dict[str, Any]] = [
         "family": "mydata",
         "name_ko": "마이데이터 (KFTC)",
         "search_hint_ko": [
-            "복지신청 scope_list submit:mydata.welfare_application 전용",
-            "공공마이데이터 제공동의 scope_list submit:public_mydata.action 전용",
-            "lookup:mohw.welfare_eligibility_search 제외",
-            "submit:mock.welfare_application_submit_v1 금지",
+            "복지신청 scope_list send:mydata.welfare_application 전용",
+            "공공마이데이터 제공동의 scope_list send:public_mydata.action 전용",
+            "find:mohw.welfare_eligibility_search 제외",
+            "send:mock.welfare_application_submit_v1 금지",
             "마이데이터",
             "공공 마이데이터",
             "마이데이터 동의",
@@ -271,12 +271,12 @@ _VERIFY_FAMILIES: list[dict[str, Any]] = [
         "policy_authority": "https://www.mydatacenter.or.kr:3441/",
         "scope_rules": (
             "Scope rule: for '마이데이터 제공 동의' or '동의 상태 확인하고 ... 제공 동의', "
-            "use exactly scope_list ['submit:public_mydata.action']; pure MyData "
-            "authentication uses ['verify:mydata.consent']; welfare application verify uses "
-            "exactly ['submit:mydata.welfare_application'] because MOHW eligibility lookup "
+            "use exactly scope_list ['send:public_mydata.action']; pure MyData "
+            "authentication uses ['check:mydata.consent']; welfare application verify uses "
+            "exactly ['send:mydata.welfare_application'] because MOHW eligibility lookup "
             "is public and already ran before verify; never include "
-            "lookup:mohw.welfare_eligibility_search, submit:mock.welfare_application_submit_v1, "
-            "or lookup:mydata.public.consent; never invent lookup:mydata.public.consent."
+            "find:mohw.welfare_eligibility_search, send:mock.welfare_application_submit_v1, "
+            "or find:mydata.public.consent; never invent find:mydata.public.consent."
         ),
     },
 ]
@@ -297,23 +297,22 @@ def _verify_to_govapitool(entry: dict[str, Any]) -> GovAPITool:
         id=entry["tool_id"],
         name_ko=entry["name_ko"],
         ministry="UMMAYA",
-        category=["verify", "mock", "delegation"],
+        category=["check", "mock", "delegation"],
         endpoint=entry["endpoint"],
         auth_type="api_key",
         input_schema=_VerifyParamsShell,
         output_schema=_OpaqueOutput,
         llm_description=(
-            "Use only through the core verify primitive: "
-            f"verify(tool_id='{entry['tool_id']}', params={{...}}). "
-            "Do not call this adapter through lookup.\n\n"
+            "Use only through the core check primitive: "
+            f"check(tool_id='{entry['tool_id']}', params={{...}}). "
+            "Do not call this adapter through find.\n\n"
             f"{scope_clause}"
             f"Verify ceremony for {entry['name_ko']}. Issues a DelegationToken bound to "
             "the citizen's session and the requested scope_list. Returns the DelegationContext "
-            "that downstream lookup/submit calls pass via params['delegation_context'].\n\n"
+            "that downstream find/send calls pass via params['delegation_context'].\n\n"
             "Citizen-shape input: {tool_id, params={scope_list, purpose_ko, purpose_en}}. "
-            "The verify primitive (registered separately as a core 'verify' tool) "
-            "translates this to the dispatcher's family_hint via the canonical map "
-            "in prompts/system_v1.md <verify_families>."
+            "The check primitive translates this to the dispatcher's family_hint via "
+            "adapter metadata, not via the system prompt."
         ),
         search_hint=_build_verify_search_hint(entry),
         policy=AdapterRealDomainPolicy(
@@ -330,7 +329,7 @@ def _verify_to_govapitool(entry: dict[str, Any]) -> GovAPITool:
         cache_ttl_seconds=0,
         rate_limit_per_minute=30,
         is_core=False,  # Discoverable via lookup search; NOT in primary LLM tool list
-        primitive="verify",
+        primitive="check",
     )
 
 
@@ -349,15 +348,15 @@ def _submit_to_govapitool(
         id=tool_id,
         name_ko=tool_id.replace("mock_submit_module_", "").replace("_", " "),
         ministry="UMMAYA",
-        category=["submit", "mock"],
+        category=["send", "mock"],
         endpoint=f"internal://mock-submit/{tool_id}",
         auth_type=registration.auth_type,
         input_schema=input_model,
         output_schema=_OpaqueOutput,
         llm_description=(
             f"Submit primitive — {tool_id}. REQUIRES a DelegationContext from a prior "
-            "verify call with matching scope. params MUST include 'delegation_context' "
-            "(returned by verify) plus the adapter-specific payload defined in this "
+            "check call with matching scope. params MUST include 'delegation_context' "
+            "(returned by check) plus the adapter-specific payload defined in this "
             "tool's input_schema. On success: returns transaction_id (deterministic URN) "
             "+ adapter_receipt with the agency's 접수번호.\n\n"
             "Failure modes: scope_violation / expired / session_violation / revoked / "
@@ -369,7 +368,7 @@ def _submit_to_govapitool(
         cache_ttl_seconds=registration.cache_ttl_seconds,
         rate_limit_per_minute=registration.rate_limit_per_minute,
         is_core=False,  # Discoverable via lookup search; NOT in primary LLM tool list
-        primitive="submit",
+        primitive="send",
     )
 
 

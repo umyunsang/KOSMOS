@@ -2,9 +2,9 @@
  * UMMAYA-original — ErrorBanner renderer.
  *
  * Displays a red banner with a title, description, and optional retry hint.
- * Used for lookup-level errors surfaced from a tool result envelope.
+ * Used for find-level errors surfaced from a tool result envelope.
  *
- * FR-021: lookup error renderer.
+ * FR-021: find error renderer.
  */
 import React from 'react'
 import { Box, Text } from 'ink'

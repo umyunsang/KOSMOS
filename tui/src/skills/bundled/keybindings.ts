@@ -31,7 +31,7 @@ function generateContextsTable(): string {
  * Build a markdown table of all actions with their default bindings and context.
  */
 function generateActionsTable(): string {
-  // Build a lookup: action -> { keys, context }
+  // Build a find: action -> { keys, context }
   const actionInfo: Record<string, { keys: string[]; context: string }> = {}
   for (const block of DEFAULT_BINDINGS) {
     for (const [key, action] of Object.entries(block.bindings)) {

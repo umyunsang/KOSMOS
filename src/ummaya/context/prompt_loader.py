@@ -65,15 +65,23 @@ def default_manifest_path() -> Path:
     """Return the default path to ``prompts/manifest.yaml``.
 
     Resolution order:
-      1. Package-bundled resource at ``ummaya/prompts/manifest.yaml``
-         (shipped into the wheel via ``[tool.hatch.build.targets.wheel.force-include]``).
-      2. Repo-root ``prompts/manifest.yaml`` — used in editable / dev installs
+      1. Repo-root ``prompts/manifest.yaml`` — used in editable / dev installs
          where the repo tree is the working directory.
+      2. Package-bundled resource at ``ummaya/prompts/manifest.yaml``
+         (shipped into the wheel via ``[tool.hatch.build.targets.wheel.force-include]``).
 
     Raising the manifest-not-found error is deferred to :class:`PromptLoader`
     (R1/R2 path) so this helper stays side-effect free and callable at import.
     """
-    # Prefer the package-bundled copy (wheel install).
+    # Editable / source checkout: four levels above this file
+    # (src/ummaya/context/prompt_loader.py → repo root). Prefer this path when
+    # present so local prompt edits are exercised by `bun bin/ummaya` without
+    # requiring a rebuild/reinstall.
+    source_manifest = Path(__file__).resolve().parents[3] / "prompts" / "manifest.yaml"
+    if source_manifest.is_file():
+        return source_manifest
+
+    # Wheel install fallback.
     try:
         bundled = Path(str(files("ummaya").joinpath("prompts", "manifest.yaml")))
         if bundled.is_file():
@@ -83,9 +91,7 @@ def default_manifest_path() -> Path:
         # is not a concrete filesystem path — fall through to the dev path.
         pass
 
-    # Editable / source checkout: four levels above this file
-    # (src/ummaya/context/prompt_loader.py → repo root).
-    return Path(__file__).resolve().parents[3] / "prompts" / "manifest.yaml"
+    return source_manifest
 
 
 # ---------------------------------------------------------------------------

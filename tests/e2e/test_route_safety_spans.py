@@ -63,7 +63,7 @@ async def test_fr018_fetch_span_has_adapter_attribute() -> None:
     if obs.sdk_disabled:
         pytest.skip("OTel SDK was disabled during this run; span assertions skipped")
 
-    # Spans with adapter_id set must have tool_name == "lookup"
+    # Spans with adapter_id set must have tool_name == "find"
     adapter_spans = [s for s in obs.spans if s.adapter_id is not None]
 
     if not adapter_spans:
@@ -73,7 +73,7 @@ async def test_fr018_fetch_span_has_adapter_attribute() -> None:
 
     for span in adapter_spans:
         # FR-018: ummaya.tool.adapter is only set on lookup fetch spans
-        assert span.tool_name == "lookup" or "lookup" in span.name.lower(), (
+        assert span.tool_name == "find" or "find" in span.name.lower(), (
             f"FR-018: ummaya.tool.adapter must only appear on lookup spans, "
             f"but span {span.name!r} has adapter_id={span.adapter_id!r}"
         )
@@ -104,7 +104,7 @@ async def test_fr018_search_spans_have_no_adapter_attribute() -> None:
         pytest.skip("OTel SDK was disabled during this run; span assertions skipped")
 
     # resolve_location spans must NOT have adapter_id
-    resolve_spans = [s for s in obs.spans if s.tool_name == "resolve_location"]
+    resolve_spans = [s for s in obs.spans if s.tool_name == "locate"]
     for span in resolve_spans:
         assert span.adapter_id is None, (
             f"FR-018: resolve_location span {span.name!r} must NOT have "

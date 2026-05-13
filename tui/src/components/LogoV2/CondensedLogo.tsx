@@ -11,8 +11,8 @@ import { isFullscreenEnvEnabled } from '../../utils/fullscreen.js';
 import { formatModelAndBilling, getLogoDisplayData, truncatePath } from '../../utils/logoV2Utils.js';
 import { renderModelSetting } from '../../utils/model/model.js';
 import { OffscreenFreeze } from '../OffscreenFreeze.js';
-import { AnimatedClawd } from './AnimatedClawd.js';
-import { Clawd } from './Clawd.js';
+import { AnimatedUmma } from './AnimatedUmma.js';
+import { Umma } from './Umma.js';
 // GuestPassesUpsell + OverageCreditUpsell removed — claude.ai SaaS billing dead in UMMAYA
 export function CondensedLogo() {
   const $ = _c(17);
@@ -42,7 +42,7 @@ export function CondensedLogo() {
   const truncatedCwd = truncatePath(cwd, Math.max(cwdAvailableWidth, 10));
   let t4;
   if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
-    t4 = isFullscreenEnvEnabled() ? <AnimatedClawd /> : <Clawd />;
+    t4 = isFullscreenEnvEnabled() ? <AnimatedUmma /> : <Umma />;
     $[0] = t4;
   } else {
     t4 = $[0];

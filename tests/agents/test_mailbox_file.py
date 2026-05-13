@@ -47,7 +47,7 @@ def _make_task_msg(sender: str, recipient: str) -> AgentMessage:
 def _make_result_msg(sender: str, recipient: str) -> AgentMessage:
     """Build a minimal result message for testing."""
     meta = LookupMeta(
-        source="lookup",
+        source="find",
         fetched_at=datetime.now(UTC),
         request_id=str(uuid4()),
         elapsed_ms=3,

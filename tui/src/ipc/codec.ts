@@ -131,12 +131,12 @@ const AssistantChunkFrameSchema = BaseFrame.extend({
 const ToolCallFrameSchema = BaseFrame.extend({
   kind: z.literal('tool_call'),
   call_id: z.string(),
-  name: z.enum(['lookup', 'resolve_location', 'submit', 'verify']),
+  name: z.enum(['find', 'locate', 'send', 'check']),
   arguments: z.record(z.unknown()),
 })
 
 const ToolResultEnvelopeSchema = z.object({
-  kind: z.enum(['lookup', 'resolve_location', 'submit', 'verify']),
+  kind: z.enum(['find', 'locate', 'send', 'check']),
 }).passthrough()
 
 const ToolResultFrameSchema = BaseFrame.extend({
@@ -154,7 +154,7 @@ const WorkerStatusFrameSchema = BaseFrame.extend({
   kind: z.literal('worker_status'),
   worker_id: z.string(),
   role_id: z.string(),
-  current_primitive: z.enum(['lookup', 'resolve_location', 'submit', 'verify']),
+  current_primitive: z.enum(['find', 'locate', 'send', 'check']),
   status: z.enum(['idle', 'running', 'waiting_permission', 'error']),
 })
 
@@ -162,7 +162,7 @@ const PermissionRequestFrameSchema = BaseFrame.extend({
   kind: z.literal('permission_request'),
   request_id: z.string(),
   worker_id: z.string(),
-  primitive_kind: z.enum(['lookup', 'resolve_location', 'submit', 'verify']),
+  primitive_kind: z.enum(['find', 'locate', 'send', 'check']),
   description_ko: z.string(),
   description_en: z.string(),
   risk_level: z.enum(['low', 'medium', 'high']),
@@ -291,7 +291,7 @@ const PluginOpFrameSchema = BaseFrame.extend({
 const AdapterManifestEntrySchema = z.object({
   tool_id: z.string().min(1),
   name: z.string().min(1).max(80),
-  primitive: z.enum(['lookup', 'submit', 'verify', 'resolve_location']),
+  primitive: z.enum(['find', 'send', 'check', 'locate']),
   policy_authority_url: z.string().url().nullable().optional(),
   source_mode: z.enum(['live', 'mock', 'internal']),
 })

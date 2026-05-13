@@ -33,10 +33,12 @@ class TestToolRegistration:
         # citizen-OPAQUE chain via OpenAI tool_calls schema.
         # Epic ζ #2297 path B (live smoke 2026-04-30): + 15 non-core mock
         # adapter wrappers (10 verify + 5 submit via discovery_bridge) = 33.
+        # Locate adapter split: + 5 first-class locate provider adapters
+        # (Kakao address/keyword/coord-region, JUSO adm_cd, SGIS adm_cd) = 38.
         # is_core=False so the LLM's primary tool list stays at active
         # primitives + lookup-class; these participate in
         # lookup(mode="search") BM25 corpus only.
-        assert len(registry) == 33
+        assert len(registry) == 38
 
     def test_tool_ids_present(self) -> None:
         """Each expected tool_id is in the registry.
@@ -50,8 +52,14 @@ class TestToolRegistration:
         register_all_tools(registry, executor)
         expected = {
             # MVP LLM-visible core surface (T028)
-            "resolve_location",
-            "lookup",
+            "locate",
+            "find",
+            # Locate provider adapters
+            "kakao_address_search",
+            "kakao_keyword_search",
+            "kakao_coord_to_region",
+            "juso_adm_cd_lookup",
+            "sgis_adm_cd_lookup",
             # Adapters
             "koroad_accident_search",
             "koroad_accident_hazard_search",
@@ -108,8 +116,8 @@ class TestToolRegistration:
         executor = ToolExecutor(registry)
         register_all_tools(registry, executor)
         core_ids = {t.id for t in registry.core_tools()}
-        assert "resolve_location" in core_ids
-        assert "lookup" in core_ids
+        assert "locate" in core_ids
+        assert "find" in core_ids
 
     def test_idempotent_fails_on_duplicate(self) -> None:
         """Calling register_all_tools twice raises DuplicateToolError."""

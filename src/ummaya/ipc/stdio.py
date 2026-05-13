@@ -51,6 +51,8 @@ from ummaya.ipc.frame_schema import (
 
 if TYPE_CHECKING:
     from ummaya.session.manager import SessionManager
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -62,75 +64,79 @@ _tracer = trace.get_tracer(__name__)
 # stdin stream. Running them inline deadlocks the reader: chat_request waits for
 # permission_response while the reader is still awaiting chat_request.
 _BACKGROUND_FRAME_KINDS: frozenset[str] = frozenset({"chat_request", "user_input", "plugin_op"})
-_SCOPE_ENTRY_RE = re.compile(r"^(lookup|submit|verify):[a-z0-9_]+\.[a-z0-9_-]+$")
-_TOOL_ID_SCOPE_RE = re.compile(
-    r"^(?P<verb>lookup|submit|verify):(?P<tool_id>[a-z][a-z0-9_]*[a-z0-9])$"
-)
+_SCOPE_ENTRY_RE = re.compile(r"^(find|send|check):[a-z0-9_]+\.[a-z0-9_-]+$")
+_TOOL_ID_SCOPE_RE = re.compile(r"^(?P<verb>find|send|check):(?P<tool_id>[a-z][a-z0-9_]*[a-z0-9])$")
+_LEGACY_SCOPE_VERB_ALIASES: Final[dict[str, str]] = {
+    "lookup": "find",
+    "submit": "send",
+    "verify": "check",
+}
 _CANONICAL_SCOPE_ALIASES: Final[dict[str, str]] = {
-    "lookup:mock_lookup_module_hometax_simplified": "lookup:hometax.simplified",
-    "lookup:mock.lookup_module_hometax_simplified": "lookup:hometax.simplified",
-    "submit:mock_submit_module_gov24_minwon": "submit:gov24.minwon",
-    "submit:mock.submit_module_gov24_minwon": "submit:gov24.minwon",
-    "submit:mock_submit_module_hometax_taxreturn": "submit:hometax.tax-return",
-    "submit:mock.submit_module_hometax_taxreturn": "submit:hometax.tax-return",
-    "submit:mock_welfare_application_submit_v1": "submit:mydata.welfare_application",
-    "submit:mock.welfare_application_submit_v1": "submit:mydata.welfare_application",
-    "submit:mohw.welfare_application": "submit:mydata.welfare_application",
-    "submit:pub.mohw.welfare_application": "submit:mydata.welfare_application",
-    "submit:mock_traffic_fine_pay_v1": "submit:traffic.fine-pay",
-    "submit:mock.traffic_fine_pay_v1": "submit:traffic.fine-pay",
-    "submit:traffic_fine.payment": "submit:traffic.fine-pay",
-    "submit:traffic_fine.pay": "submit:traffic.fine-pay",
-    "submit:traffic.fine.payment": "submit:traffic.fine-pay",
-    "submit:traffic.fine.pay": "submit:traffic.fine-pay",
-    "submit:traffic.fine_pay": "submit:traffic.fine-pay",
+    "find:mock_lookup_module_hometax_simplified": "find:hometax.simplified",
+    "find:mock.lookup_module_hometax_simplified": "find:hometax.simplified",
+    "send:mock_submit_module_gov24_minwon": "send:gov24.minwon",
+    "send:mock.submit_module_gov24_minwon": "send:gov24.minwon",
+    "send:mock_submit_module_hometax_taxreturn": "send:hometax.tax-return",
+    "send:mock.submit_module_hometax_taxreturn": "send:hometax.tax-return",
+    "send:mock_welfare_application_submit_v1": "send:mydata.welfare_application",
+    "send:mock.welfare_application_submit_v1": "send:mydata.welfare_application",
+    "send:mohw.welfare_application": "send:mydata.welfare_application",
+    "send:pub.mohw.welfare_application": "send:mydata.welfare_application",
+    "send:mock_traffic_fine_pay_v1": "send:traffic.fine-pay",
+    "send:mock.traffic_fine_pay_v1": "send:traffic.fine-pay",
+    "send:traffic_fine.payment": "send:traffic.fine-pay",
+    "send:traffic_fine.pay": "send:traffic.fine-pay",
+    "send:traffic.fine.payment": "send:traffic.fine-pay",
+    "send:traffic.fine.pay": "send:traffic.fine-pay",
+    "send:traffic.fine_pay": "send:traffic.fine-pay",
 }
 _NON_DELEGATING_VERIFY_SCOPE_ALIASES: Final[frozenset[str]] = frozenset(
     {
-        "lookup:gov24.certificate",
-        "lookup:gov24.resident_certificate",
-        "lookup:gov24.simplified",
-        "lookup:gov24_certificate.lookup",
-        "lookup:mock_lookup_module_gov24_certificate",
-        "lookup:mock.lookup_module_gov24_certificate",
-        "lookup:mydata.welfare",
-        "lookup:mydata.welfare_eligibility_search",
-        "lookup:public_mydata.welfare_eligibility_search",
-        "lookup:mohw.welfare_eligibility",
-        "lookup:mohw_welfare_eligibility_search",
-        "lookup:mohw.welfare_eligibility_search",
-        "lookup:pub.mohw.welfare_eligibility",
-        "lookup:pub.mohw.welfare_eligibility_search",
-        "lookup:traffic_fine.check",
-        "lookup:traffic.fine",
-        "lookup:traffic.fine_check",
-        "lookup:traffic.fine.check",
-        "lookup:traffic_fine.inquiry",
-        "lookup:traffic.fine_inquiry",
-        "lookup:traffic.fine.inquiry",
-        "lookup:traffic_fine.search",
-        "lookup:traffic.fine_search",
-        "lookup:traffic.fine.search",
+        "find:gov24.certificate",
+        "find:gov24.resident_certificate",
+        "find:gov24.simplified",
+        "find:gov24_certificate.lookup",
+        "find:mock_lookup_module_gov24_certificate",
+        "find:mock.lookup_module_gov24_certificate",
+        "find:mydata.welfare",
+        "find:mydata.welfare_eligibility_search",
+        "find:public_mydata.welfare_eligibility_search",
+        "find:mohw.welfare_eligibility",
+        "find:mohw_welfare_eligibility_search",
+        "find:mohw.welfare_eligibility_search",
+        "find:pub.mohw.welfare_eligibility",
+        "find:pub.mohw.welfare_eligibility_search",
+        "find:traffic_fine.check",
+        "find:traffic.fine",
+        "find:traffic.fine_check",
+        "find:traffic.fine.check",
+        "find:traffic_fine.inquiry",
+        "find:traffic.fine_inquiry",
+        "find:traffic.fine.inquiry",
+        "find:traffic_fine.search",
+        "find:traffic.fine_search",
+        "find:traffic.fine.search",
     }
 )
 _PRUNABLE_OVERBROAD_VERIFY_SCOPES: Final[frozenset[str]] = frozenset(
     {
-        "lookup:hometax.simplified",
-        "submit:hometax.tax-return",
+        "find:hometax.simplified",
+        "send:hometax.tax-return",
     }
 )
 _QUERY_BOUND_NON_DELEGATING_SCOPE_PREFIXES: Final[dict[str, tuple[str, ...]]] = {
-    "submit:gov24.minwon": ("lookup:gov24.",),
+    "send:gov24.minwon": ("find:gov24.",),
 }
 _PRIMITIVE_TOOL_ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
-_MOCK_DISCLOSURE_KO: Final = (
-    "이 결과는 실제 행정 영향이 없는 시연(모의) 결과입니다. "
-    "접수번호는 시연용이며 실제 기관 포털에서 조회되지 않습니다."
+_MOCK_DISCLOSURE_KO: Final = "이 결과는 실제 행정 영향이 없는 시연(모의) 결과입니다."
+_MOCK_SUBMIT_RECEIPT_DISCLOSURE_KO: Final = (
+    f"{_MOCK_DISCLOSURE_KO} 접수번호는 시연용이며 실제 기관 포털에서 조회되지 않습니다."
 )
 _GOV24_MINWON_RECEIPT_RE: Final = re.compile(r"gov24-\d{4}-\d{2}-\d{2}-MW-[A-Z0-9]+")
 _HOMETAX_TAXRETURN_RECEIPT_RE: Final = re.compile(r"hometax-\d{4}-\d{2}-\d{2}-RX-[A-Z0-9]+")
-_UMMAYA_SUBMIT_TX_RE: Final = re.compile(r"urn:ummaya:submit:[a-f0-9]+")
+_UMMAYA_SUBMIT_TX_RE: Final = re.compile(r"urn:ummaya:(?:send|submit):[a-f0-9]+")
 _GOV24_MINWON_SESSION_RE: Final = re.compile(r"GOV24-[A-Z0-9-]+")
+_INTERNAL_TOOL_ID_RE: Final = re.compile(r"\b[a-z]+_[a-z0-9_]*\b")
 _DELEGATION_CONTEXT_SPREAD_KEYS: Final[frozenset[str]] = frozenset(
     {
         "citizen_did",
@@ -150,7 +156,7 @@ _DELEGATION_CONTEXT_SPREAD_KEYS: Final[frozenset[str]] = frozenset(
 _SENSITIVE_LOOKUP_AUTH_REQUIREMENTS: Final[dict[str, dict[str, str]]] = {
     "mock_lookup_module_hometax_simplified": {
         "verify_tool_id": "mock_verify_module_modid",
-        "scope": "lookup:hometax.simplified",
+        "scope": "find:hometax.simplified",
         "purpose_ko": "연말정산 간소화 자료 조회",
         "purpose_en": "Hometax simplified year-end tax lookup",
     },
@@ -161,8 +167,8 @@ _VERIFY_QUERY_REQUIREMENTS: Final[tuple[tuple[tuple[str, ...], dict[str, str]], 
         {
             "verify_tool_id": "mock_verify_ganpyeon_injeung",
             "allowed_tool_ids": "mock_verify_ganpyeon_injeung,mock_verify_module_simple_auth",
-            "scope": "verify:ganpyeon.identity",
-            "allowed_scopes": "verify:ganpyeon.identity",
+            "scope": "check:ganpyeon.identity",
+            "allowed_scopes": "check:ganpyeon.identity",
             "purpose_ko": "간편인증 로그인",
             "purpose_en": "Simple authentication login",
         },
@@ -172,8 +178,8 @@ _VERIFY_QUERY_REQUIREMENTS: Final[tuple[tuple[tuple[str, ...], dict[str, str]], 
         {
             "verify_tool_id": "mock_verify_mobile_id",
             "allowed_tool_ids": "mock_verify_mobile_id",
-            "scope": "verify:mobile_id.identity",
-            "allowed_scopes": "verify:mobile_id.identity",
+            "scope": "check:mobile_id.identity",
+            "allowed_scopes": "check:mobile_id.identity",
             "purpose_ko": "모바일 신분증 본인확인",
             "purpose_en": "Mobile ID identity verification",
         },
@@ -183,8 +189,8 @@ _VERIFY_QUERY_REQUIREMENTS: Final[tuple[tuple[tuple[str, ...], dict[str, str]], 
         {
             "verify_tool_id": "mock_verify_mydata",
             "allowed_tool_ids": "mock_verify_mydata",
-            "scope": "verify:mydata.consent",
-            "allowed_scopes": "verify:mydata.consent,submit:public_mydata.action",
+            "scope": "check:mydata.consent",
+            "allowed_scopes": "check:mydata.consent,send:public_mydata.action",
             "purpose_ko": "마이데이터 인증",
             "purpose_en": "MyData authentication",
         },
@@ -194,8 +200,8 @@ _VERIFY_QUERY_REQUIREMENTS: Final[tuple[tuple[tuple[str, ...], dict[str, str]], 
         {
             "verify_tool_id": "mock_verify_module_modid",
             "allowed_tool_ids": "mock_verify_module_modid",
-            "scope": "lookup:hometax.simplified",
-            "allowed_scopes": "lookup:hometax.simplified",
+            "scope": "find:hometax.simplified",
+            "allowed_scopes": "find:hometax.simplified",
             "purpose_ko": "연말정산 간소화 자료 조회",
             "purpose_en": "Hometax simplified year-end tax lookup",
         },
@@ -205,8 +211,8 @@ _VERIFY_QUERY_REQUIREMENTS: Final[tuple[tuple[tuple[str, ...], dict[str, str]], 
         {
             "verify_tool_id": "mock_verify_module_simple_auth",
             "allowed_tool_ids": "mock_verify_module_simple_auth",
-            "scope": "submit:gov24.minwon",
-            "allowed_scopes": "submit:gov24.minwon",
+            "scope": "send:gov24.minwon",
+            "allowed_scopes": "send:gov24.minwon",
             "purpose_ko": "주민등록등본 발급 민원 신청",
             "purpose_en": "Gov24 resident registration certificate civil petition",
         },
@@ -216,8 +222,8 @@ _VERIFY_QUERY_REQUIREMENTS: Final[tuple[tuple[tuple[str, ...], dict[str, str]], 
         {
             "verify_tool_id": "mock_verify_mydata",
             "allowed_tool_ids": "mock_verify_mydata",
-            "scope": "submit:mydata.welfare_application",
-            "allowed_scopes": "submit:mydata.welfare_application",
+            "scope": "send:mydata.welfare_application",
+            "allowed_scopes": "send:mydata.welfare_application",
             "purpose_ko": "한부모가족 아동양육비 지원 신청",
             "purpose_en": "Single-parent family child support application",
         },
@@ -227,8 +233,8 @@ _VERIFY_QUERY_REQUIREMENTS: Final[tuple[tuple[tuple[str, ...], dict[str, str]], 
         {
             "verify_tool_id": "mock_verify_ganpyeon_injeung",
             "allowed_tool_ids": "mock_verify_ganpyeon_injeung",
-            "scope": "submit:traffic.fine-pay",
-            "allowed_scopes": "submit:traffic.fine-pay",
+            "scope": "send:traffic.fine-pay",
+            "allowed_scopes": "send:traffic.fine-pay",
             "purpose_ko": "교통 과태료 납부",
             "purpose_en": "Traffic fine payment",
         },
@@ -263,6 +269,21 @@ _LOCATION_INDEPENDENT_WORKFLOW_HINTS_KO: Final[frozenset[str]] = frozenset(
         "아동양육비",
     }
 )
+_NON_LOCATION_STATION_SUFFIX_WORDS_KO: Final[frozenset[str]] = frozenset(
+    {
+        "내역",
+        "영역",
+        "지역",
+        "권역",
+        "용역",
+        "무역",
+        "전역",
+        "현역",
+        "병역",
+        "역",
+    }
+)
+_DEFAULT_CHAT_MAX_TOKENS: Final[int] = 4096
 
 # ---------------------------------------------------------------------------
 # Internal state
@@ -285,6 +306,10 @@ def _serialize_primitive_result(raw: object) -> dict[str, Any]:
         if isinstance(result, dict):
             return result
         return {"raw": result}
+    if isinstance(raw, dict):
+        return raw
+    if isinstance(raw, list):
+        return {"items": raw}
     return {"raw": str(raw)}
 
 
@@ -327,112 +352,111 @@ def _contains_mock_marker(value: object) -> bool:
     return False
 
 
-def _ensure_mock_disclosure(text: str) -> str:
+def _ensure_mock_disclosure(text: str, *, mock_primitives: set[str] | None = None) -> str:
     """Append the mandatory citizen-facing mock disclosure when absent."""
     text = _normalize_gov24_mock_minwon_final_answer(text)
     text = _normalize_hometax_mock_taxreturn_final_answer(text)
+    text = _remove_internal_tool_id_lines(text)
+    if mock_primitives == {"check"}:
+        text = _normalize_mock_check_final_answer(text)
     text = _remove_mock_conflicting_real_world_claims(text)
     if "실제 행정 영향" in text and ("시연" in text or "모의" in text):
         return text
-    suffix = _MOCK_DISCLOSURE_KO
+    suffix = (
+        _MOCK_SUBMIT_RECEIPT_DISCLOSURE_KO
+        if (
+            "접수번호" in text
+            or _GOV24_MINWON_RECEIPT_RE.search(text)
+            or _HOMETAX_TAXRETURN_RECEIPT_RE.search(text)
+        )
+        else _MOCK_DISCLOSURE_KO
+    )
     if not text.strip():
         return suffix
     return f"{text.rstrip()}\n\n{suffix}"
 
 
-def _append_str_line(lines: list[str], label: str, value: object) -> None:
-    if isinstance(value, str) and value:
-        lines.append(f"{label}: {value}")
+def _remove_unneeded_mock_disclosure(text: str) -> str:
+    """Strip mock disclosure text from live-tool final answers."""
+    text = _remove_internal_tool_id_lines(text)
+    if "실제 행정 영향" not in text and "시연(모의)" not in text:
+        return text
+    fragments = (
+        _MOCK_SUBMIT_RECEIPT_DISCLOSURE_KO,
+        _MOCK_DISCLOSURE_KO,
+        "이 결과는 실제 행정 영향이 없는 시연(모의) 결과입니다.",
+        "실제 행정 영향이 없는 시연(모의) 결과입니다.",
+        "접수번호는 시연용이며 실제 기관 포털에서 조회되지 않습니다.",
+    )
+    cleaned = text
+    for fragment in fragments:
+        cleaned = cleaned.replace(fragment, "")
+    lines = [
+        line.rstrip()
+        for line in cleaned.splitlines()
+        if not ("실제 행정 영향" in line and ("시연" in line or "모의" in line))
+    ]
+    return "\n".join(lines).strip()
 
 
-def _finish_synthetic_submit_lines(lines: list[str], tx_line: str | None) -> str:
-    if tx_line is not None:
-        lines.append(tx_line)
-    lines.append(_MOCK_DISCLOSURE_KO)
-    return "\n".join(lines)
+def _remove_internal_tool_id_lines(text: str) -> str:
+    """Drop final prose lines that expose adapter ids as implementation detail."""
+    kept: list[str] = []
+    for line in text.splitlines():
+        compact = line.lower()
+        exposes_tool_id = _INTERNAL_TOOL_ID_RE.search(line) is not None and (
+            "도구" in compact or "어댑터" in compact or "tool" in compact or "adapter" in compact
+        )
+        if exposes_tool_id:
+            continue
+        kept.append(line.rstrip())
+    return "\n".join(kept).strip()
 
 
-def _synthetic_gov24_submit_answer(
-    params: dict[str, object],
-    receipt: dict[str, object],
-    tx_line: str | None,
-) -> str:
-    lines = ["정부24 주민등록등본 발급 민원 신청이 시연 환경에서 접수되었습니다."]
-    receipt_id = receipt.get("receipt_id")
-    if isinstance(receipt_id, str):
-        lines.append(f"접수번호: {receipt_id} (시연용)")
-    _append_str_line(lines, "신청자", params.get("applicant_name"))
-    lines.append("문서 종류: 주민등록등본")
-    if params.get("delivery_method") == "online":
-        lines.append("수령 방법: 온라인 발급")
-    return _finish_synthetic_submit_lines(lines, tx_line)
+def _normalize_mock_check_final_answer(text: str) -> str:
+    """Keep mock check-only final answers as verification results, not lookups."""
+    if (
+        "접수번호" in text
+        or _GOV24_MINWON_RECEIPT_RE.search(text)
+        or _HOMETAX_TAXRETURN_RECEIPT_RE.search(text)
+    ):
+        return text
+    if not any(marker in text for marker in ("본인확인", "인증", "검증")):
+        return text
+    if not any(marker in text for marker in ("완료", "성공", "verified", "인증 완료")):
+        return text
+    subject = "모바일 신분증 본인확인" if "모바일" in text else "본인확인"
+    return f"{subject}이 완료되었습니다."
 
 
-def _synthetic_traffic_fine_answer(
-    params: dict[str, object],
-    receipt: dict[str, object],
-    tx_line: str | None,
-) -> str:
-    lines = ["교통 과태료 납부가 시연 환경에서 접수되었습니다."]
-    receipt_ref = receipt.get("receipt_ref")
-    if isinstance(receipt_ref, str):
-        lines.append(f"접수번호: {receipt_ref} (시연용)")
-    fine_reference = receipt.get("fine_reference") or params.get("fine_reference")
-    payment_channel = receipt.get("payment_channel") or params.get("payment_method")
-    _append_str_line(lines, "과태료 참조", fine_reference)
-    _append_str_line(lines, "결제 수단", payment_channel)
-    return _finish_synthetic_submit_lines(lines, tx_line)
+def _final_answer_looks_like_pending_tool_plan(text: str) -> bool:
+    """Return true when final prose says it will call tools after tools already ran."""
+    normalized = " ".join(text.strip().split())
+    if not normalized:
+        return False
+    pending_markers = (
+        "호출하겠습니다",
+        "조회하겠습니다",
+        "찾아보겠습니다",
+        "검색하겠습니다",
+        "진행하겠습니다",
+        "확인하겠습니다",
+        "will call",
+        "i'll call",
+        "i will call",
+        "will look up",
+    )
+    return any(marker in normalized.lower() for marker in pending_markers)
 
 
-def _synthetic_public_mydata_answer(
-    _params: dict[str, object],
-    receipt: dict[str, object],
-    tx_line: str | None,
-) -> str:
-    lines = ["공공 마이데이터 제공 동의가 시연 환경에서 접수되었습니다."]
-    receipt_id = receipt.get("receipt_id")
-    if isinstance(receipt_id, str):
-        lines.append(f"접수번호: {receipt_id} (시연용)")
-    _append_str_line(lines, "처리 상태", receipt.get("status"))
-    return _finish_synthetic_submit_lines(lines, tx_line)
-
-
-def _synthetic_welfare_application_answer(
-    params: dict[str, object],
-    receipt: dict[str, object],
-    tx_line: str | None,
-) -> str:
-    lines = ["복지 급여 신청이 시연 환경에서 접수되었습니다."]
-    application_ref = receipt.get("application_ref")
-    if isinstance(application_ref, str):
-        lines.append(f"접수번호: {application_ref} (시연용)")
-    _append_str_line(lines, "급여 코드", receipt.get("benefit_code") or params.get("benefit_code"))
-    return _finish_synthetic_submit_lines(lines, tx_line)
-
-
-def _synthetic_submit_final_answer(
-    tool_id: str,
-    submit_args: dict[str, object],
-    envelope_dump: dict[str, object],
-) -> str | None:
-    """Build a receipt-only final answer when the backend had to synthesize submit."""
-    result = envelope_dump.get("result")
-    if not isinstance(result, dict) or result.get("status") != "succeeded":
-        return None
-    receipt = result.get("adapter_receipt")
-    receipt_dict = receipt if isinstance(receipt, dict) else {}
-    raw_params = submit_args.get("params")
-    params = raw_params if isinstance(raw_params, dict) else {}
-    transaction_id = result.get("transaction_id")
-    tx_line = f"거래 ID: {transaction_id}" if isinstance(transaction_id, str) else None
-    builders: dict[str, Callable[[dict[str, object], dict[str, object], str | None], str]] = {
-        "mock_submit_module_gov24_minwon": _synthetic_gov24_submit_answer,
-        "mock_traffic_fine_pay_v1": _synthetic_traffic_fine_answer,
-        "mock_submit_module_public_mydata_action": _synthetic_public_mydata_answer,
-        "mock_welfare_application_submit_v1": _synthetic_welfare_application_answer,
-    }
-    builder = builders.get(tool_id)
-    return None if builder is None else builder(params, receipt_dict, tx_line)
+def _conversation_has_successful_any_primitive_result(llm_messages: list[Any]) -> bool:
+    """Return True when the loop already has a successful primitive result."""
+    return (
+        _conversation_has_successful_primitive_any_tool(llm_messages, primitive="find")
+        or _conversation_has_successful_primitive_any_tool(llm_messages, primitive="locate")
+        or _conversation_has_successful_primitive_any_tool(llm_messages, primitive="check")
+        or _conversation_has_successful_primitive_any_tool(llm_messages, primitive="send")
+    )
 
 
 def _normalize_gov24_mock_minwon_final_answer(text: str) -> str:
@@ -455,7 +479,7 @@ def _normalize_gov24_mock_minwon_final_answer(text: str) -> str:
         lines.append("수령 방법: 온라인 발급")
     if session_id is not None:
         lines.append(f"세션 ID: {session_id}")
-    lines.append(_MOCK_DISCLOSURE_KO)
+    lines.append(_MOCK_SUBMIT_RECEIPT_DISCLOSURE_KO)
     return "\n".join(lines)
 
 
@@ -474,7 +498,7 @@ def _normalize_hometax_mock_taxreturn_final_answer(text: str) -> str:
     if "42,000,000" in text or "42000000" in text:
         lines.append("총 신고 소득: 42,000,000원")
     lines.append("신고 상태: 신고완료")
-    lines.append(_MOCK_DISCLOSURE_KO)
+    lines.append(_MOCK_SUBMIT_RECEIPT_DISCLOSURE_KO)
     return "\n".join(lines)
 
 
@@ -726,9 +750,9 @@ def _build_verify_session_context(
     *,
     session_id: str,
 ) -> dict[str, object]:
-    """Translate LLM citizen-shape verify args into adapter session context.
+    """Translate LLM citizen-shape check args into adapter session context.
 
-    The OpenAI tool schema teaches ``verify(tool_id, params={scope_list, ...})``.
+    The OpenAI tool schema teaches ``check(tool_id, params={scope_list, ...})``.
     The primitive implementation consumes ``verify(family_hint, session_context)``.
     Keep this translation at the backend boundary so direct IPC dispatch follows
     the same contract as the Pydantic LLM-visible schema.
@@ -752,9 +776,20 @@ def _build_verify_session_context(
 
 def _normalize_scope_entry(scope: str) -> str:
     """Normalize model-emitted ``verb:tool_id`` shorthand to scope grammar."""
+    if ":" in scope:
+        verb, rest = scope.split(":", 1)
+        canonical_verb = _LEGACY_SCOPE_VERB_ALIASES.get(verb)
+        if canonical_verb is not None:
+            normalized_verb_scope = f"{canonical_verb}:{rest}"
+            logger.debug(
+                "check: normalized legacy scope verb %r -> %r",
+                scope,
+                normalized_verb_scope,
+            )
+            scope = normalized_verb_scope
     alias = _CANONICAL_SCOPE_ALIASES.get(scope)
     if alias is not None:
-        logger.debug("verify: normalized scope alias %r -> %r", scope, alias)
+        logger.debug("check: normalized scope alias %r -> %r", scope, alias)
         return alias
     if _SCOPE_ENTRY_RE.match(scope):
         return scope
@@ -767,7 +802,7 @@ def _normalize_scope_entry(scope: str) -> str:
     family, action = tool_id.split("_", 1)
     normalized = f"{match.group('verb')}:{family}.{action}"
     normalized = _CANONICAL_SCOPE_ALIASES.get(normalized, normalized)
-    logger.debug("verify: normalized scope entry %r -> %r", scope, normalized)
+    logger.debug("check: normalized scope entry %r -> %r", scope, normalized)
     return normalized
 
 
@@ -775,7 +810,7 @@ def _normalize_verify_scope_entry(scope: str) -> str | None:
     """Normalize a verify scope and drop public lookup aliases from delegation."""
     normalized = _normalize_scope_entry(scope)
     if normalized in _NON_DELEGATING_VERIFY_SCOPE_ALIASES:
-        logger.debug("verify: ignored non-delegating scope alias %r", scope)
+        logger.debug("check: ignored non-delegating scope alias %r", scope)
         return None
     return normalized
 
@@ -821,7 +856,7 @@ def _inject_delegation_context(
     removed_keys = sorted(set(params) - set(merged))
     if removed_keys:
         logger.info(
-            "submit: removed model-spread delegation fields before injecting "
+            "send: removed model-spread delegation fields before injecting "
             "backend-owned DelegationContext: %s",
             ",".join(removed_keys),
         )
@@ -844,7 +879,7 @@ def _bind_submit_session_id(
     merged = dict(params)
     if merged.get("session_id") != session_id:
         logger.info(
-            "submit: replacing model-emitted session_id with verified session_id "
+            "send: replacing model-emitted session_id with verified session_id "
             "for delegation session binding"
         )
     merged["session_id"] = session_id
@@ -860,7 +895,7 @@ def _delegation_scope_entries(auth_context: object | None) -> set[str]:
     scope = getattr(token, "scope", None)
     if not isinstance(scope, str):
         return set()
-    return {entry.strip() for entry in scope.split(",") if entry.strip()}
+    return {_normalize_scope_entry(entry.strip()) for entry in scope.split(",") if entry.strip()}
 
 
 def _sensitive_lookup_requirement(args_obj: dict[str, object]) -> dict[str, str] | None:
@@ -886,7 +921,7 @@ def _check_sensitive_lookup_auth_prerequisite(
     gateway boundary therefore requires a prior verify result whose delegation
     token grants the exact lookup scope before the lookup dispatch can proceed.
     """
-    if fname != "lookup":
+    if fname != "find":
         return None
     requirement = _sensitive_lookup_requirement(args_obj)
     if requirement is None:
@@ -908,12 +943,12 @@ def _check_sensitive_lookup_auth_prerequisite(
         "citizen-specific Hometax simplified tax data and MUST NOT run before "
         f"a verify turn grants {required_scope!r}. {reason} "
         "RECOVERY: in the next turn call "
-        f"verify(tool_id={verify_tool_id!r}, params={{"
+        f"check(tool_id={verify_tool_id!r}, params={{"
         f'"scope_list": [{required_scope!r}], '
         f'"purpose_ko": {purpose_ko!r}, '
         f'"purpose_en": {purpose_en!r}'
-        "}}). Do NOT answer from cached or synthetic tax data until that verify "
-        "tool_result succeeds; then retry the original lookup."
+        "}}). Do NOT answer from cached or synthetic tax data until that check "
+        "tool_result succeeds; then retry the original find."
     )
 
 
@@ -930,7 +965,7 @@ def _sensitive_lookup_verify_redirect_for_query(
     required verify scope. In that case the API layer discards the premature
     lookup call and forces the next turn to the canonical verify primitive.
     """
-    if fname != "lookup":
+    if fname != "find":
         return None
     requirement = _sensitive_lookup_requirement(args_obj)
     if requirement is None:
@@ -1016,7 +1051,7 @@ def _lookup_call_ids_for_tool(
             call_fn = getattr(getattr(tool_call, "function", None), "name", None) or (
                 tool_call.get("function", {}).get("name") if isinstance(tool_call, dict) else None
             )
-            if call_fn != "lookup":
+            if call_fn != "find":
                 continue
             args = _tool_call_arguments_dict(tool_call)
             call_id = getattr(tool_call, "id", None) or (
@@ -1037,7 +1072,7 @@ def _tool_result_payload_for_call(
     if role != "tool":
         return None
     name = getattr(msg, "name", None) or (msg.get("name") if isinstance(msg, dict) else None)
-    if name != "lookup":
+    if name != "find":
         return None
     call_id = getattr(msg, "tool_call_id", None) or (
         msg.get("tool_call_id") if isinstance(msg, dict) else None
@@ -1136,6 +1171,36 @@ def _tool_result_payload_for_primitive_call(
         return None
 
 
+def _tool_result_payload_for_primitive(
+    msg: Any,
+    *,
+    primitive: str,
+) -> object | None:
+    """Parse a primitive tool-result payload from a tool message.
+
+    Unlike ``_tool_result_payload_for_primitive_call``, this helper does not
+    require matching call IDs. It is used for recovery gates that need the
+    resolved state of the most recent primitive invocation, not a specific
+    call handle.
+    """
+    role = getattr(msg, "role", None) or (msg.get("role") if isinstance(msg, dict) else None)
+    if role != "tool":
+        return None
+    name = getattr(msg, "name", None) or (msg.get("name") if isinstance(msg, dict) else None)
+    if name != primitive:
+        return None
+    content = getattr(msg, "content", None) or (
+        msg.get("content") if isinstance(msg, dict) else None
+    )
+    if not isinstance(content, str):
+        return None
+    try:
+        payload: object = _stdlib_json.loads(content)
+        return payload
+    except _stdlib_json.JSONDecodeError:
+        return None
+
+
 def _primitive_payload_is_success(payload: object, *, primitive: str) -> bool:
     """Return True when a primitive payload represents a completed operation."""
     if _tool_result_payload_is_error(payload):
@@ -1143,7 +1208,7 @@ def _primitive_payload_is_success(payload: object, *, primitive: str) -> bool:
     if not isinstance(payload, dict):
         return True
     result = payload.get("result")
-    if primitive == "submit":
+    if primitive == "send":
         if isinstance(result, dict) and result.get("status") == "succeeded":
             return True
         return payload.get("status") == "succeeded"
@@ -1175,6 +1240,207 @@ def _conversation_has_successful_primitive(
     return False
 
 
+def _conversation_has_primitive_call(
+    llm_messages: list[Any],
+    *,
+    primitive: str,
+    tool_id: str,
+) -> bool:
+    """Return True when a prior assistant turn called a specific adapter."""
+    return bool(
+        _primitive_call_ids_for_tool(
+            llm_messages,
+            primitive=primitive,
+            tool_id=tool_id,
+        )
+    )
+
+
+def _conversation_has_successful_primitive_any_tool(
+    llm_messages: list[Any],
+    *,
+    primitive: str,
+) -> bool:
+    """Return True when any prior tool result for ``primitive`` succeeded."""
+    for msg in llm_messages:
+        payload = _tool_result_payload_for_primitive(msg, primitive=primitive)
+        if payload is not None and _primitive_payload_is_success(payload, primitive=primitive):
+            return True
+    return False
+
+
+def _latest_successful_primitive_result(
+    llm_messages: list[Any],
+    *,
+    primitive: str,
+) -> dict[str, object] | None:
+    """Return the most recent successful primitive result payload."""
+    for msg in reversed(llm_messages):
+        payload = _tool_result_payload_for_primitive(msg, primitive=primitive)
+        if payload is None or not _primitive_payload_is_success(payload, primitive=primitive):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        result = payload.get("result")
+        if isinstance(result, dict):
+            return cast("dict[str, object]", result)
+    return None
+
+
+def _nonempty_str(value: object) -> str | None:
+    """Return a stripped string when value is meaningful."""
+    if not isinstance(value, str):
+        return None
+    stripped = value.strip()
+    return stripped or None
+
+
+def _region_pair_from_address_text(text: object) -> tuple[str, str] | None:
+    """Derive NMC Q0/Q1 from a structured Korean address string.
+
+    This is intentionally conservative: it only parses strings returned by
+    locate's official geocoder payloads and only extracts 시도 + 시군구.
+    """
+    if not isinstance(text, str):
+        return None
+    parts = [part.strip() for part in text.split() if part.strip()]
+    if len(parts) < 2:
+        return None
+    q0 = parts[0]
+    if not q0.endswith(("특별시", "광역시", "특별자치시", "특별자치도", "도")):
+        return None
+    q1 = parts[1]
+    if (
+        len(parts) >= 3
+        and q0.endswith(("도", "특별자치도"))
+        and parts[1].endswith("시")
+        and parts[2].endswith(("구", "군"))
+    ):
+        # Kakao region_2depth_name can be "성남시 분당구"; keep that shape
+        # when the fallback source was a full adm_cd/address name.
+        q1 = f"{parts[1]} {parts[2]}"
+    if not q1.endswith(("시", "군", "구")):
+        return None
+    return q0, q1
+
+
+def _locate_result_region_pair(result: dict[str, object]) -> tuple[str, str] | None:  # noqa: C901
+    """Extract NMC region-mode q0/q1 from a locate result."""
+    for key in ("region", "coords"):
+        value = result.get(key)
+        if not isinstance(value, dict):
+            continue
+        q0 = _nonempty_str(value.get("region_1depth_name"))
+        q1 = _nonempty_str(value.get("region_2depth_name"))
+        if q0 and q1:
+            return q0, q1
+
+    q0 = _nonempty_str(result.get("region_1depth_name"))
+    q1 = _nonempty_str(result.get("region_2depth_name"))
+    if q0 and q1:
+        return q0, q1
+
+    for key in ("adm_cd", "region", "address", "poi"):
+        value = result.get(key)
+        if isinstance(value, dict):
+            for text_key in (
+                "address_name",
+                "name",
+                "road_address",
+                "jibun_address",
+                "road_address_name",
+            ):
+                pair = _region_pair_from_address_text(value.get(text_key))
+                if pair is not None:
+                    return pair
+    for text_key in ("address_name", "name", "road_address", "jibun_address"):
+        pair = _region_pair_from_address_text(result.get(text_key))
+        if pair is not None:
+            return pair
+    return None
+
+
+def _locate_result_coords(result: dict[str, object]) -> tuple[float, float] | None:
+    """Extract WGS-84 lat/lon from a locate result."""
+    candidates: list[object] = [result.get("coords"), result.get("poi"), result]
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+        lat = candidate.get("lat")
+        lon = candidate.get("lon")
+        if isinstance(lat, int | float) and isinstance(lon, int | float):
+            return float(lat), float(lon)
+    return None
+
+
+def _normalize_nmc_lookup_args_from_prior_locate(
+    fname: str,
+    args_obj: dict[str, object],
+    llm_messages: list[Any],
+) -> dict[str, object]:
+    """Fill NMC region-mode params from the latest successful locate result.
+
+    CC's equivalent control point is Tool.validateInput(input, context): tool
+    definitions guide the call, and the executor can still inspect surrounding
+    context before running the tool. UMMAYA keeps NMC's official operation
+    semantics in the adapter description, then normalizes here when the model
+    selected the right adapter but omitted the derived q0/q1 fields.
+    """
+    if fname != "find" or args_obj.get("tool_id") != "nmc_emergency_search":
+        return args_obj
+
+    raw_params = args_obj.get("params")
+    params = dict(raw_params) if isinstance(raw_params, dict) else {}
+    limit = params.get("limit")
+    needs_default_limit = not isinstance(limit, int) or isinstance(limit, bool)
+
+    has_region_params = (
+        params.get("mode") == "region"
+        and bool(_nonempty_str(params.get("q0")))
+        and bool(_nonempty_str(params.get("q1")))
+    )
+    if has_region_params and not needs_default_limit:
+        return args_obj
+
+    locate_result = _latest_successful_primitive_result(llm_messages, primitive="locate")
+    if locate_result is None:
+        if has_region_params and needs_default_limit:
+            normalized = dict(args_obj)
+            next_params = dict(params)
+            next_params["limit"] = 5
+            normalized["params"] = next_params
+            return normalized
+        return args_obj
+
+    region_pair = _locate_result_region_pair(locate_result)
+    if region_pair is None:
+        return args_obj
+    origin_coords = _locate_result_coords(locate_result)
+
+    next_params = dict(params)
+    next_params["mode"] = "region"
+    next_params["q0"], next_params["q1"] = region_pair
+    next_params.pop("lat", None)
+    next_params.pop("lon", None)
+    if origin_coords is not None:
+        next_params["origin_lat"] = origin_coords[0]
+        next_params["origin_lon"] = origin_coords[1]
+    if needs_default_limit:
+        next_params["limit"] = 5
+
+    if next_params == params and isinstance(raw_params, dict):
+        return args_obj
+    normalized = dict(args_obj)
+    normalized["params"] = next_params
+    logger.info(
+        "find: normalized nmc_emergency_search params from prior locate q0=%s q1=%s origin=%s",
+        next_params.get("q0"),
+        next_params.get("q1"),
+        origin_coords,
+    )
+    return normalized
+
+
 def _check_sensitive_lookup_terminated_without_lookup(
     llm_messages: list[Any],
     user_query: str,
@@ -1196,9 +1462,9 @@ def _check_sensitive_lookup_terminated_without_lookup(
             "Sensitive lookup follow-up missing: verify has already granted "
             f"{required_scope!r}, but the citizen's requested data has not been "
             f"retrieved from {tool_id!r}. RECOVERY: in the next turn call "
-            f"lookup(mode='fetch', tool_id={tool_id!r}, params={{}}). "
+            f"find(tool_id={tool_id!r}, params={{}}). "
             "Do NOT answer from the verify result alone; summarize the requested "
-            "medical and education deduction fields only after the lookup "
+            "medical and education deduction fields only after the find "
             "tool_result succeeds."
         ),
     }
@@ -1237,10 +1503,12 @@ def _conversation_has_tool_call(llm_messages: list[Any], tool_name: str) -> bool
     return False
 
 
-def _verify_requirement_for_query(user_query: str) -> dict[str, str] | None:
+def _verify_requirement_for_query(user_query: str) -> dict[str, str] | None:  # noqa: C901
     """Map citizen auth wording to the verify tool/scope the next turn must call."""
     if not user_query:
         return None
+    compact = re.sub(r"\s+", "", user_query).lower()
+    lowered = user_query.lower()
     submit_requirement = _submit_requirement_for_query(user_query)
     if (
         submit_requirement is not None
@@ -1249,59 +1517,63 @@ def _verify_requirement_for_query(user_query: str) -> dict[str, str] | None:
         return {
             "verify_tool_id": "mock_verify_mydata",
             "allowed_tool_ids": "mock_verify_mydata",
-            "scope": "submit:public_mydata.action",
-            "allowed_scopes": "submit:public_mydata.action",
+            "scope": "send:public_mydata.action",
+            "allowed_scopes": "send:public_mydata.action",
             "purpose_ko": "공공 마이데이터 제공 동의",
             "purpose_en": "Public MyData consent action",
         }
-    if (
-        submit_requirement is not None
-        and submit_requirement["tool_id"] == "mock_submit_module_hometax_taxreturn"
-    ):
-        return {
-            "verify_tool_id": "mock_verify_module_modid",
-            "allowed_tool_ids": "mock_verify_module_modid",
-            "scope": "lookup:hometax.simplified",
-            "required_scopes": "lookup:hometax.simplified,submit:hometax.tax-return",
-            "allowed_scopes": "lookup:hometax.simplified,submit:hometax.tax-return",
-            "purpose_ko": "종합소득세 신고",
-            "purpose_en": "Comprehensive income tax filing",
-        }
-    compact = re.sub(r"\s+", "", user_query).lower()
-    lowered = user_query.lower()
+    if submit_requirement is not None:
+        submit_tool_id = submit_requirement["tool_id"]
+        if submit_tool_id == "mock_submit_module_hometax_taxreturn":
+            return {
+                "verify_tool_id": "mock_verify_module_modid",
+                "allowed_tool_ids": "mock_verify_module_modid",
+                "scope": "find:hometax.simplified",
+                "required_scopes": "find:hometax.simplified,send:hometax.tax-return",
+                "allowed_scopes": "find:hometax.simplified,send:hometax.tax-return",
+                "purpose_ko": "종합소득세 신고",
+                "purpose_en": "Comprehensive income tax filing",
+            }
+        if submit_tool_id == "mock_submit_module_gov24_minwon":
+            wants_modid = (
+                "mock_verify_module_modid" in lowered
+                or "모바일id" in compact
+                or "mobileid" in compact
+            )
+            return {
+                "verify_tool_id": "mock_verify_module_modid"
+                if wants_modid
+                else "mock_verify_module_simple_auth",
+                "allowed_tool_ids": "mock_verify_module_simple_auth,mock_verify_module_modid",
+                "scope": "send:gov24.minwon",
+                "allowed_scopes": "send:gov24.minwon",
+                "purpose_ko": "주민등록등본 발급 민원 신청",
+                "purpose_en": "Gov24 resident registration certificate civil petition",
+            }
+        if submit_tool_id == "mock_welfare_application_submit_v1":
+            return {
+                "verify_tool_id": "mock_verify_mydata",
+                "allowed_tool_ids": "mock_verify_mydata",
+                "scope": "send:mydata.welfare_application",
+                "allowed_scopes": "send:mydata.welfare_application",
+                "purpose_ko": "한부모가족 아동양육비 지원 신청",
+                "purpose_en": "Single-parent family child support application",
+            }
+        if submit_tool_id == "mock_traffic_fine_pay_v1":
+            return {
+                "verify_tool_id": "mock_verify_ganpyeon_injeung",
+                "allowed_tool_ids": "mock_verify_ganpyeon_injeung",
+                "scope": "send:traffic.fine-pay",
+                "allowed_scopes": "send:traffic.fine-pay",
+                "purpose_ko": "교통 과태료 납부",
+                "purpose_en": "Traffic fine payment",
+            }
     for keywords, requirement in _VERIFY_QUERY_REQUIREMENTS:
         for keyword in keywords:
             needle = re.sub(r"\s+", "", keyword).lower()
             if needle in compact or keyword.lower() in lowered:
                 return requirement
     return None
-
-
-def _initial_verify_tool_choice_for_query(
-    llm_messages: list[Any],
-    user_query: str,
-) -> str | None:
-    """Force identity-only verification requests through the verify primitive."""
-    requirement = _verify_requirement_for_query(user_query)
-    if requirement is None:
-        return None
-    if not requirement["scope"].startswith("verify:"):
-        return None
-    allowed_tool_ids = {
-        item.strip()
-        for item in requirement.get("allowed_tool_ids", requirement["verify_tool_id"]).split(",")
-        if item.strip()
-    }
-    if any(
-        _conversation_has_successful_primitive(
-            llm_messages,
-            primitive="verify",
-            tool_id=tool_id,
-        )
-        for tool_id in allowed_tool_ids
-    ):
-        return None
-    return requirement["verify_tool_id"]
 
 
 def _compact_query(user_query: str) -> str:
@@ -1362,7 +1634,7 @@ def _submit_requirement_for_query(user_query: str) -> dict[str, str] | None:
         return {
             "tool_id": "mock_submit_module_hometax_taxreturn",
             "verify_tool_id": "mock_verify_module_modid",
-            "scope": "submit:hometax.tax-return",
+            "scope": "send:hometax.tax-return",
             "pre_submit_lookup_tool_id": "mock_lookup_module_hometax_simplified",
             "params_json": _stdlib_json.dumps(params, ensure_ascii=False),
         }
@@ -1378,7 +1650,7 @@ def _submit_requirement_for_query(user_query: str) -> dict[str, str] | None:
         return {
             "tool_id": "mock_submit_module_gov24_minwon",
             "verify_tool_id": "mock_verify_module_simple_auth",
-            "scope": "submit:gov24.minwon",
+            "scope": "send:gov24.minwon",
             "params_json": _stdlib_json.dumps(params, ensure_ascii=False),
         }
 
@@ -1399,7 +1671,7 @@ def _submit_requirement_for_query(user_query: str) -> dict[str, str] | None:
         return {
             "tool_id": "mock_welfare_application_submit_v1",
             "verify_tool_id": "mock_verify_mydata",
-            "scope": "submit:mydata.welfare_application",
+            "scope": "send:mydata.welfare_application",
             "params_json": _stdlib_json.dumps(params, ensure_ascii=False),
         }
 
@@ -1411,7 +1683,7 @@ def _submit_requirement_for_query(user_query: str) -> dict[str, str] | None:
         return {
             "tool_id": "mock_traffic_fine_pay_v1",
             "verify_tool_id": "mock_verify_ganpyeon_injeung",
-            "scope": "submit:traffic.fine-pay",
+            "scope": "send:traffic.fine-pay",
             "params_json": _stdlib_json.dumps(params, ensure_ascii=False),
         }
 
@@ -1426,7 +1698,7 @@ def _submit_requirement_for_query(user_query: str) -> dict[str, str] | None:
         return {
             "tool_id": "mock_submit_module_public_mydata_action",
             "verify_tool_id": "mock_verify_mydata",
-            "scope": "submit:public_mydata.action",
+            "scope": "send:public_mydata.action",
             "params_json": _stdlib_json.dumps(params, ensure_ascii=False),
         }
 
@@ -1444,11 +1716,11 @@ def _check_submit_terminated_without_submit(
         return None
     if _conversation_has_successful_primitive(
         llm_messages,
-        primitive="submit",
+        primitive="send",
         tool_id=requirement["tool_id"],
     ):
         return None
-    if auth_context is None or not _conversation_has_tool_call(llm_messages, "verify"):
+    if auth_context is None or not _conversation_has_tool_call(llm_messages, "check"):
         return None
     pre_submit_lookup_tool_id = requirement.get("pre_submit_lookup_tool_id")
     if pre_submit_lookup_tool_id and not _conversation_has_successful_lookup(
@@ -1461,10 +1733,10 @@ def _check_submit_terminated_without_submit(
     return {
         **requirement,
         "message": (
-            "Submit follow-up missing: the citizen asked to complete a write, "
+            "Send follow-up missing: the citizen asked to complete a write, "
             "payment, consent, or filing flow and verification has already run, "
             f"but {tool_id!r} has not succeeded. RECOVERY: in the next turn call "
-            f"submit(tool_id={tool_id!r}, params={params_json}). The backend will "
+            f"send(tool_id={tool_id!r}, params={params_json}). The backend will "
             "inject the cached DelegationContext. Do NOT ask for additional mock "
             "fields and do NOT end with guidance-only prose."
         ),
@@ -1477,20 +1749,20 @@ def _check_duplicate_submit_prerequisite(
     llm_messages: list[Any],
 ) -> str | None:
     """Reject repeat submit calls after the same adapter already succeeded."""
-    if fname != "submit":
+    if fname != "send":
         return None
     tool_id = args_obj.get("tool_id")
     if not isinstance(tool_id, str) or not tool_id:
         return None
     if not _conversation_has_successful_primitive(
         llm_messages,
-        primitive="submit",
+        primitive="send",
         tool_id=tool_id,
     ):
         return None
     return (
         f"Submit already succeeded for {tool_id!r} in this conversation. "
-        "RECOVERY: do NOT call submit again and do NOT request another "
+        "RECOVERY: do NOT call send again and do NOT request another "
         "permission decision. Produce the final citizen-facing answer from the "
         "prior successful submit tool_result and include the mock disclosure."
     )
@@ -1516,11 +1788,11 @@ def _canonicalize_submit_tool_id(
         return args_obj
     if not isinstance(tool_id, str) or not tool_id:
         return {**args_obj, "tool_id": required_tool_id}
-    emitted_scope = _normalize_scope_entry(f"submit:{tool_id}")
-    if tool_id != "submit" and emitted_scope != requirement["scope"]:
+    emitted_scope = _normalize_scope_entry(f"send:{tool_id}")
+    if tool_id != "send" and emitted_scope != requirement["scope"]:
         return args_obj
     logger.info(
-        "submit: normalized model-emitted tool_id %r -> %r for citizen request",
+        "send: normalized model-emitted tool_id %r -> %r for citizen request",
         tool_id,
         required_tool_id,
     )
@@ -1553,7 +1825,7 @@ def _normalize_submit_args_for_query(
     user_query: str,
 ) -> dict[str, object]:
     """Fill submit adapter payload fields already present in the citizen request."""
-    if fname != "submit":
+    if fname != "send":
         return args_obj
     requirement = _submit_requirement_for_query(user_query)
     if requirement is None:
@@ -1639,7 +1911,7 @@ def _canonicalize_lookup_tool_id_for_query(
 ) -> dict[str, object]:
     """Fill unambiguous lookup adapter id when tool_choice forced lookup only."""
     tool_id = str(args_obj.get("tool_id") or "")
-    if tool_id and tool_id != "lookup":
+    if tool_id and tool_id != "find":
         return args_obj
     sensitive_lookup = _sensitive_lookup_requirement_for_query(user_query)
     if sensitive_lookup is None:
@@ -1647,7 +1919,7 @@ def _canonicalize_lookup_tool_id_for_query(
     normalized = dict(args_obj)
     normalized["tool_id"] = sensitive_lookup["tool_id"]
     logger.info(
-        "lookup: normalized model-emitted tool_id %r -> %r for citizen request",
+        "find: normalized model-emitted tool_id %r -> %r for citizen request",
         tool_id or "<missing>",
         sensitive_lookup["tool_id"],
     )
@@ -1660,7 +1932,7 @@ def _normalize_lookup_args_for_query(
     user_query: str,
 ) -> dict[str, object]:
     """Fill deterministic lookup filters already present in the citizen request."""
-    if fname != "lookup":
+    if fname != "find":
         return args_obj
     args_obj = _canonicalize_lookup_tool_id_for_query(args_obj, user_query)
     args_obj = _normalize_hometax_lookup_args_for_query(args_obj, user_query)
@@ -1701,7 +1973,7 @@ def _check_verify_terminated_without_verify(
     requirement = _verify_requirement_for_query(user_query)
     if requirement is None:
         return None
-    if _conversation_has_tool_call(llm_messages, "verify"):
+    if _conversation_has_tool_call(llm_messages, "check"):
         return None
     verify_tool_id = requirement["verify_tool_id"]
     scope_entries = _requirement_scope_entries(requirement)
@@ -1710,10 +1982,10 @@ def _check_verify_terminated_without_verify(
     return {
         **requirement,
         "message": (
-            "Verify prerequisite missing: the citizen asked for an authentication, "
+            "Check prerequisite missing: the citizen asked for an authentication, "
             "login, consent, or identity flow, but this turn is about to answer "
-            "without invoking verify. RECOVERY: in the next turn call "
-            f"verify(tool_id={verify_tool_id!r}, params={{"
+            "without invoking check. RECOVERY: in the next turn call "
+            f"check(tool_id={verify_tool_id!r}, params={{"
             f'"scope_list": {list(scope_entries)!r}, '
             f'"purpose_ko": {purpose_ko!r}, '
             f'"purpose_en": {purpose_en!r}'
@@ -1817,9 +2089,9 @@ def _check_verify_tool_choice_prerequisite(
     expected_scope_list = list(_requirement_scope_entries(requirement))
     purpose_ko = requirement["purpose_ko"]
     purpose_en = requirement["purpose_en"]
-    if fname != "verify":
+    if fname != "check":
         wrong_verify_tool = (
-            tool_id == "verify"
+            tool_id == "check"
             or tool_id.startswith("mock_verify_")
             or tool_id in allowed_tool_ids
             or _verify_tool_matches_requirement(
@@ -1833,15 +2105,15 @@ def _check_verify_tool_choice_prerequisite(
         return {
             **requirement,
             "message": (
-                "Verify primitive prerequisite mismatch: the citizen wording maps "
-                f"to verify tool(s) {sorted(allowed_tool_ids)!r} with scope(s) "
+                "Check primitive prerequisite mismatch: the citizen wording maps "
+                f"to check tool(s) {sorted(allowed_tool_ids)!r} with scope(s) "
                 f"{sorted(allowed_scopes)!r}, but the model emitted {fname}"
                 f"(tool_id={tool_id!r}). RECOVERY: call "
-                f"verify(tool_id={expected_tool!r}, params={{"
+                f"check(tool_id={expected_tool!r}, params={{"
                 f'"scope_list": {expected_scope_list!r}, '
                 f'"purpose_ko": {purpose_ko!r}, '
                 f'"purpose_en": {purpose_en!r}'
-                "}}). Do NOT call verify adapters through lookup or another primitive."
+                "}}). Do NOT call check adapters through find or another primitive."
             ),
         }
     if (
@@ -1857,11 +2129,11 @@ def _check_verify_tool_choice_prerequisite(
     return {
         **requirement,
         "message": (
-            "Verify tool-choice prerequisite mismatch: the citizen wording maps "
-            f"to verify tool(s) {sorted(allowed_tool_ids)!r} with scope(s) "
+            "Check tool-choice prerequisite mismatch: the citizen wording maps "
+            f"to check tool(s) {sorted(allowed_tool_ids)!r} with scope(s) "
             f"{sorted(allowed_scopes)!r}, but the model emitted tool_id={tool_id!r} "
             f"and scope_list={sorted(scopes)!r}. RECOVERY: call "
-            f"verify(tool_id={expected_tool!r}, params={{"
+            f"check(tool_id={expected_tool!r}, params={{"
             f'"scope_list": {expected_scope_list!r}, '
             f'"purpose_ko": {purpose_ko!r}, '
             f'"purpose_en": {purpose_en!r}'
@@ -1957,7 +2229,7 @@ def _normalize_verify_args_for_query(
     user_query: str,
 ) -> dict[str, object]:
     """Normalize known verify scope drift before it reaches citizen-visible UI."""
-    if fname != "verify":
+    if fname != "check":
         return args_obj
     requirement = _verify_requirement_for_query(user_query)
     if requirement is None:
@@ -1965,7 +2237,7 @@ def _normalize_verify_args_for_query(
 
     entries = _verify_scope_list_entries(args_obj)
     if entries is None:
-        if not requirement["scope"].startswith("verify:"):
+        if not requirement["scope"].startswith("check:"):
             return args_obj
         normalized = dict(args_obj)
         normalized["tool_id"] = str(normalized.get("tool_id") or requirement["verify_tool_id"])
@@ -1976,7 +2248,7 @@ def _normalize_verify_args_for_query(
         params.setdefault("purpose_en", requirement["purpose_en"])
         normalized["params"] = params
         logger.info(
-            "verify: filled missing identity scope_list for citizen request (%s)",
+            "check: filled missing identity scope_list for citizen request (%s)",
             requirement["verify_tool_id"],
         )
         return normalized
@@ -2000,7 +2272,7 @@ def _normalize_verify_args_for_query(
         return args_obj
     if dropped:
         logger.info(
-            "verify: normalized query-bound scope_list by dropping non-required scope(s): %s",
+            "check: normalized query-bound scope_list by dropping non-required scope(s): %s",
             ",".join(dropped),
         )
     return _with_verify_scope_list(args_obj, normalized_entries)
@@ -2012,13 +2284,13 @@ def _normalize_verify_tool_id_for_query(
     user_query: str,
 ) -> dict[str, object]:
     """Canonicalize generic verify tool_id when scope already selects one adapter."""
-    if fname != "verify":
+    if fname != "check":
         return args_obj
     requirement = _verify_requirement_for_query(user_query)
     if requirement is None:
         return args_obj
     tool_id = str(args_obj.get("tool_id") or "")
-    if tool_id and tool_id != "verify":
+    if tool_id and tool_id != "check":
         return args_obj
     scopes = _verify_scope_entries(args_obj)
     allowed_scopes = {
@@ -2034,7 +2306,7 @@ def _normalize_verify_tool_id_for_query(
         return args_obj
     required_tool_id = requirement["verify_tool_id"]
     logger.info(
-        "verify: normalized model-emitted tool_id %r -> %r for citizen request",
+        "check: normalized model-emitted tool_id %r -> %r for citizen request",
         tool_id or "<missing>",
         required_tool_id,
     )
@@ -2045,7 +2317,14 @@ def _query_implies_location_resolution(user_query: str) -> bool:
     """Return True when a citizen query must canonicalise a place string first."""
     if not user_query:
         return False
-    if any(keyword in user_query for keyword in _LOCATION_RESOLUTION_HINTS_KO):
+    station_tokens: list[str] = []
+    for token in re.findall(r"[0-9A-Za-z가-힣]+", user_query):
+        if token.endswith("역") and token not in _NON_LOCATION_STATION_SUFFIX_WORDS_KO:
+            station_tokens.append(token)
+    if station_tokens:
+        return True
+    location_hints = _LOCATION_RESOLUTION_HINTS_KO - {"역"}
+    if any(keyword in user_query for keyword in location_hints):
         return True
     lowered = user_query.lower()
     return any(
@@ -2054,12 +2333,25 @@ def _query_implies_location_resolution(user_query: str) -> bool:
     )
 
 
+def _effective_chat_max_tokens(requested: int) -> int:
+    """Clamp interactive chat completions so bad tool-routing loops fail fast."""
+    raw = os.getenv("UMMAYA_CHAT_MAX_TOKENS")
+    cap = _DEFAULT_CHAT_MAX_TOKENS
+    if raw:
+        try:
+            parsed = int(raw)
+        except ValueError:
+            parsed = cap
+        cap = min(32000, max(512, parsed))
+    return min(requested, cap)
+
+
 def _location_independent_resolve_redirect_for_query(
     fname: str,
     user_query: str,
 ) -> dict[str, str] | None:
-    """Return the next primitive when resolve_location is irrelevant."""
-    if fname != "resolve_location":
+    """Return the next primitive when locate is irrelevant."""
+    if fname != "locate":
         return None
     if _query_implies_location_resolution(user_query):
         return None
@@ -2075,14 +2367,14 @@ def _location_independent_resolve_redirect_for_query(
     submit_requirement = _submit_requirement_for_query(user_query)
     if submit_requirement is not None:
         return {
-            "primitive": "verify",
+            "primitive": "check",
             "tool_id": submit_requirement["verify_tool_id"],
         }
 
     sensitive_lookup = _sensitive_lookup_requirement_for_query(user_query)
     if sensitive_lookup is not None:
         return {
-            "primitive": "verify",
+            "primitive": "check",
             "tool_id": sensitive_lookup["verify_tool_id"],
         }
 
@@ -2093,7 +2385,7 @@ def _location_independent_resolve_redirect_for_query(
         verify_requirement = _verify_requirement_for_query(user_query)
         if verify_requirement is not None:
             return {
-                "primitive": "verify",
+                "primitive": "check",
                 "tool_id": verify_requirement["verify_tool_id"],
             }
 
@@ -2107,13 +2399,13 @@ def _check_location_terminated_without_resolve(
     """Return recovery text when a location-like request would end without resolve."""
     if not _query_implies_location_resolution(user_query):
         return None
-    if _conversation_has_tool_call(llm_messages, "resolve_location"):
+    if _conversation_has_tool_call(llm_messages, "locate"):
         return None
     return (
         "Location resolution prerequisite missing: the citizen supplied a place, "
         "address, station, or nearby-search request, but this turn is about to "
-        "answer without invoking resolve_location. RECOVERY: in the next turn call "
-        "resolve_location(query=<citizen supplied place/address text>, "
+        "answer without invoking locate. RECOVERY: in the next turn call "
+        "locate(query=<citizen supplied place/address text>, "
         "want='coords_and_admcd') even when the text looks fake or incomplete. "
         "Only report not_found / 유효한 위치 없음 after the resolver returns it; "
         "do NOT invent coordinates."
@@ -2174,7 +2466,7 @@ async def _reader_loop(
 
 
 # Coordinate / admin-code field names that signal a downstream tool needs
-# resolve_location to have run first (Epic #2766 chain prerequisite gate).
+# locate to have run first (Epic #2766 chain prerequisite gate).
 # The literal field set is intentionally broader than what any single
 # adapter accepts so the gate catches every variant the LLM might pick.
 _COORD_INPUT_FIELDS: frozenset[str] = frozenset(
@@ -2216,7 +2508,7 @@ def _check_chain_prerequisite(  # noqa: C901
     ``.references/claude-code-sourcemap/restored-src/src/Tool.ts:489``.
     The CC hook is tool-scoped; UMMAYA centralises the equivalent
     pre-dispatch check here because every coord-input adapter has the
-    identical prerequisite (resolve_location must have been called in
+    identical prerequisite (locate must have been called in
     a prior turn of the same conversation). Adapter-scoped overrides can
     be added later by extending this function to dispatch on tool_id.
 
@@ -2228,8 +2520,8 @@ def _check_chain_prerequisite(  # noqa: C901
     # Only the `lookup` primitive carries adapter calls (mode='fetch'
     # routes to a registered GovAPITool). All other primitives are
     # either coord-free (verify) or carry their own param schema
-    # (submit, resolve_location).
-    if fname != "lookup":
+    # (submit, locate).
+    if fname != "find":
         return None
     if not isinstance(args_obj, dict):
         return None
@@ -2247,59 +2539,37 @@ def _check_chain_prerequisite(  # noqa: C901
     params_obj = args_obj.get("params")
     params: dict[str, object] = params_obj if isinstance(params_obj, dict) else {}
 
-    # Two ways to recognise a coord-input adapter call:
-    # 1. The supplied params already carry coordinate/admcd fields — the
-    #    LLM filled them in (possibly from prior knowledge). This is the
-    #    primary failure mode the gate exists to catch.
-    # 2. The supplied params are empty / coord-free, but the tool_id's
-    #    registered input_schema declares coord/admcd fields. The LLM is
-    #    about to hit invalid_params; getting here gives the chain hint
-    #    one turn earlier and saves the round-trip.
+    # Recognise coord-input adapter calls only when the model actually
+    # supplied coordinate/admcd fields. Empty or coord-free params are left
+    # to the adapter-level schema/validator so the primitive does not
+    # pre-interpret arbitrary tool_ids before dispatch.
     has_coord = any(k in params for k in _COORD_INPUT_FIELDS)
     has_admcd = any(k in params for k in _ADMCD_INPUT_FIELDS)
     schema_coord_fields: set[str] = set()
     schema_admcd_fields: set[str] = set()
-    if not (has_coord or has_admcd):
-        # Inspect the adapter's declared input schema to find out whether
-        # this is a coord/admcd tool that simply has not been parameterised
-        # yet. Best-effort — adapter lookup failures fall through as
-        # "unknown shape, allow".
-        if registry is None:
-            return None
+    schema_required_fields: set[str] = set()
+    if registry is not None:
         try:
-            tool = registry.lookup(tool_id)
+            tool = registry.find(tool_id)
             schema = tool.input_schema.model_json_schema()
             props = schema.get("properties", {})
             schema_coord_fields = set(props) & _COORD_INPUT_FIELDS
             schema_admcd_fields = set(props) & _ADMCD_INPUT_FIELDS
-            if not (schema_coord_fields or schema_admcd_fields):
-                return None
-        except Exception:  # noqa: BLE001
+            required = schema.get("required", [])
+            if isinstance(required, list):
+                schema_required_fields = {str(field) for field in required}
+        except Exception as exc:  # noqa: BLE001
             # Unknown tool / registry not booted — let the dispatcher
             # produce its own unknown_tool error instead of guessing.
-            return None
+            logger.debug("find prerequisite schema lookup skipped for %s: %s", tool_id, exc)
+    if not (has_coord or has_admcd):
+        return None
 
+    has_prior_resolve = _conversation_has_successful_primitive_any_tool(
+        llm_messages,
+        primitive="locate",
+    )
     if tool_id == "nmc_emergency_search":
-        has_prior_resolve = False
-        for m in llm_messages:
-            role = getattr(m, "role", None) or (m.get("role") if isinstance(m, dict) else None)
-            if role != "assistant":
-                continue
-            tool_calls = getattr(m, "tool_calls", None) or (
-                m.get("tool_calls") if isinstance(m, dict) else None
-            )
-            if tool_calls:
-                for tc in tool_calls:
-                    call_fn = getattr(getattr(tc, "function", None), "name", None) or (
-                        tc.get("function", {}).get("name") if isinstance(tc, dict) else None
-                    )
-                    if call_fn == "resolve_location":
-                        has_prior_resolve = True
-            content = getattr(m, "content", None) or (
-                m.get("content") if isinstance(m, dict) else None
-            )
-            if isinstance(content, str) and "resolve_location" in content:
-                has_prior_resolve = True
         has_region_params = (
             params.get("mode") == "region"
             and isinstance(params.get("q0"), str)
@@ -2313,40 +2583,39 @@ def _check_chain_prerequisite(  # noqa: C901
             return (
                 "NMC operation prerequisite missing: citizen place-name ER search must use "
                 "the official getEgytListInfoInqire region operation, not the coordinate "
-                "operation. The prior resolve_location call did not provide the q0/q1 "
+                "operation. The prior locate call did not provide the q0/q1 "
                 "region-mode parameters used by NMC. RECOVERY: call "
-                "resolve_location(query='<지역명>', want='all'), then call "
-                "lookup(mode='fetch', tool_id='nmc_emergency_search', "
+                "locate(tool_id='kakao_coord_to_region', "
+                "params={lat:<prior_lat>, lon:<prior_lon>}), then call "
+                "find(tool_id='nmc_emergency_search', "
                 "params={mode:'region', q0:region.region_1depth_name, "
                 "q1:region.region_2depth_name, origin_lat:coords.lat, "
                 "origin_lon:coords.lon, limit:<N>}). Do NOT retry coordinate mode for "
                 "station/neighborhood ER search and do NOT invent NMC filters such as QZ."
             )
 
-    # Walk prior turns for a resolve_location invocation. Both function-
-    # call envelopes (assistant.tool_calls[*].function.name) and the
-    # textual <tool_call> markers (assistant.content) count — K-EXAONE
-    # uses both. We accept either as evidence the citizen's location
-    # was canonicalised through the registered resolver.
-    for m in llm_messages:
-        # LLMChatMessage instance OR dict — handle both.
-        role = getattr(m, "role", None) or (m.get("role") if isinstance(m, dict) else None)
-        if role != "assistant":
-            continue
-        tool_calls = getattr(m, "tool_calls", None) or (
-            m.get("tool_calls") if isinstance(m, dict) else None
+    # Require a successful prior locate for this context. If resolve
+    # fails (e.g. ``not_found``), find still requires recovery and should not
+    # be treated as fulfilled chain state.
+    if _conversation_has_successful_primitive_any_tool(
+        llm_messages,
+        primitive="locate",
+    ):
+        missing_required_fields = sorted(
+            field for field in schema_required_fields if params.get(field) in (None, "")
         )
-        if tool_calls:
-            for tc in tool_calls:
-                call_fn = getattr(getattr(tc, "function", None), "name", None) or (
-                    tc.get("function", {}).get("name") if isinstance(tc, dict) else None
-                )
-                if call_fn == "resolve_location":
-                    return None
-        content = getattr(m, "content", None) or (m.get("content") if isinstance(m, dict) else None)
-        if isinstance(content, str) and "resolve_location" in content:
-            # Textual <tool_call> marker fallback for K-EXAONE inline form.
-            return None
+        if missing_required_fields:
+            return (
+                "Chain parameter transfer missing: a prior locate call succeeded, "
+                "but the current find call omitted required adapter params "
+                f"{missing_required_fields!r}. RECOVERY: re-invoke "
+                f"find(tool_id={tool_id!r}) with params copied from the latest locate "
+                "tool_result. For KMA adapters, use the displayed KMA grid nx/ny "
+                "values exactly and fill base_date/base_time from the current KST "
+                "context in the tool schema. Do NOT call the adapter with empty params "
+                "and do NOT guess location values from prior knowledge."
+            )
+        return None
 
     # Field naming: prefer the actually-supplied params (the LLM tipped its
     # hand on which fields it tried to fill), otherwise fall back to the
@@ -2358,10 +2627,12 @@ def _check_chain_prerequisite(  # noqa: C901
     if tool_id == "nmc_emergency_search":
         return (
             "Chain prerequisite missing: nmc_emergency_search models two official NMC "
-            "operations and must receive location fields from resolve_location in the "
-            "same conversation. No resolve_location turn precedes the current call. "
-            "RECOVERY: in the next turn call resolve_location(query='<지역명>', "
-            "want='all'), then call lookup(mode='fetch', tool_id='nmc_emergency_search', "
+            "operations and must receive location fields from locate in the "
+            "same conversation. No locate turn precedes the current call. "
+            "RECOVERY: in the next turn call a coordinate-producing locate adapter "
+            "such as locate(tool_id='kakao_keyword_search', params={query:'<지역명>'}), "
+            "then locate(tool_id='kakao_coord_to_region', params={lat:<lat>, lon:<lon>}), "
+            "then call find(tool_id='nmc_emergency_search', "
             "params={mode:'region', q0:region.region_1depth_name, "
             "q1:region.region_2depth_name, origin_lat:coords.lat, origin_lon:coords.lon, "
             "limit:<N>}). Do NOT guess coordinates or set NMC filters such as QZ unless "
@@ -2376,13 +2647,14 @@ def _check_chain_prerequisite(  # noqa: C901
     return (
         f"Chain prerequisite missing: this tool requires {field_kind} "
         f"({', '.join(missing_fields) if missing_fields else 'see input schema'}) "
-        f"that MUST come from a prior resolve_location call in the same "
-        f"conversation. No resolve_location turn precedes the current call — "
+        f"that MUST come from a prior locate call in the same "
+        f"conversation. No locate turn precedes the current call — "
         f"that means the values would be guessed from prior knowledge instead "
         f"of being resolved against Kakao Local API. "
-        f"RECOVERY: in the next turn call resolve_location(query='<지역명>', "
-        f"want='coords') to obtain the canonical lat/lon for the citizen's "
-        f"location, then re-invoke this tool with the returned values. Do NOT "
+        f"RECOVERY: in the next turn call a coordinate-producing locate adapter "
+        f"such as locate(tool_id='kakao_keyword_search', params={{query:'<지역명>'}}) "
+        f"to obtain the canonical lat/lon for the citizen's location, then "
+        f"re-invoke this tool with the returned values. Do NOT "
         f"guess coordinates."
     )
 
@@ -2391,7 +2663,7 @@ def _check_chain_prerequisite(  # noqa: C901
 # Follow-up lookup gate (G-class fabrication countermeasure — 2026-05-04)
 # ---------------------------------------------------------------------------
 # Citizen query keywords that signal "the LLM needs to call a follow-up
-# adapter (lookup mode='fetch') after resolve_location returns coordinates
+# adapter (lookup mode='fetch') after locate returns coordinates
 # or admcd". Without the follow-up, LLM fabricates the data from parametric
 # memory (the donga-univ-poi-bug 1-day-newer regression: snap-001 captured
 # 4.7°C drift / 61%p humidity drift between LLM-claimed values and the raw
@@ -2458,17 +2730,31 @@ _FOLLOWUP_REQUIRED_KEYWORDS_EN: frozenset[str] = frozenset(
         "subsidy",
     }
 )
+_CURRENT_WEATHER_KEYWORDS_KO: frozenset[str] = frozenset(
+    {"날씨", "기온", "온도", "습도", "강수", "비", "눈", "바람", "풍속"}
+)
+_CURRENT_WEATHER_KEYWORDS_EN: frozenset[str] = frozenset(
+    {"weather", "temperature", "humidity", "rainfall", "rain", "snow", "wind"}
+)
+_CURRENT_TIME_HINTS_KO: frozenset[str] = frozenset(
+    {"오늘", "현재", "지금", "실시간", "현시각", "요즘"}
+)
+_CURRENT_TIME_HINTS_EN: frozenset[str] = frozenset({"today", "current", "now", "live"})
+_FUTURE_TIME_HINTS_KO: frozenset[str] = frozenset(
+    {"내일", "모레", "글피", "주말", "다음주", "다음 주", "이번 주말"}
+)
+_FUTURE_TIME_HINTS_EN: frozenset[str] = frozenset({"tomorrow", "weekend", "next week", "forecast"})
 
 
 def _query_implies_followup_lookup(user_query: str) -> bool:
     """Return True when the citizen query semantics require a follow-up
-    ``lookup(mode='fetch', tool_id=...)`` after ``resolve_location`` resolves
+    ``find(tool_id=...)`` after ``locate`` resolves
     coordinates.
 
     G-class chain enforcement: the integration-verification capture
-    ``snap-001-01-kma-now`` showed K-EXAONE calling ``resolve_location`` twice
+    ``snap-001-01-kma-now`` showed K-EXAONE calling ``locate`` twice
     and then producing a fabricated weather answer (16°C / 84% humidity vs
-    raw KMA 20.7°C / 23%) without ever invoking ``lookup(kma_current_observation)``.
+    raw KMA 20.7°C / 23%) without ever invoking ``find(kma_current_observation)``.
     The fabrication mode is deterministic when the citizen query mentions a
     location-bound observable (weather / hospital / accident / 119) — no
     adapter shipped today answers those purely from coordinates.
@@ -2482,16 +2768,67 @@ def _query_implies_followup_lookup(user_query: str) -> bool:
     return any(kw in q for kw in _FOLLOWUP_REQUIRED_KEYWORDS_EN)
 
 
+def _query_implies_current_weather_observation(user_query: str) -> bool:
+    """Return True when final weather prose should include current observation."""
+    if not user_query:
+        return False
+    q = user_query.lower()
+    has_weather = any(kw in user_query for kw in _CURRENT_WEATHER_KEYWORDS_KO) or any(
+        kw in q for kw in _CURRENT_WEATHER_KEYWORDS_EN
+    )
+    if not has_weather:
+        return False
+    if any(kw in user_query for kw in _CURRENT_TIME_HINTS_KO) or any(
+        kw in q for kw in _CURRENT_TIME_HINTS_EN
+    ):
+        return True
+    # Bare "강남역 날씨 알려줘" is normally asking for current/today weather.
+    return not (
+        any(kw in user_query for kw in _FUTURE_TIME_HINTS_KO)
+        or any(kw in q for kw in _FUTURE_TIME_HINTS_EN)
+    )
+
+
+def _check_current_weather_terminated_without_observation(
+    llm_messages: list[Any],
+    user_query: str,
+) -> str | None:
+    """Require KMA current observation before final current/today weather prose."""
+    if not _query_implies_current_weather_observation(user_query):
+        return None
+    if _conversation_has_primitive_call(
+        llm_messages,
+        primitive="find",
+        tool_id="kma_current_observation",
+    ):
+        return None
+    if not _conversation_has_successful_primitive_any_tool(
+        llm_messages,
+        primitive="locate",
+    ):
+        return None
+    return (
+        "Current weather observation missing: the citizen asked for current/today "
+        "weather, but the conversation is about to answer without calling "
+        "find(tool_id='kma_current_observation'). RECOVERY: call "
+        "find(tool_id='kma_current_observation', params={base_date:<current KST "
+        "YYYYMMDD>, base_time:<current or prior HH00>, nx:<latest locate KMA X>, "
+        "ny:<latest locate KMA Y>}) using the latest locate result. Do NOT claim "
+        "that live/current observation data is unavailable unless this adapter was "
+        "called and returned an error."
+    )
+
+
 def _check_resolve_terminated_without_followup(  # noqa: C901
     llm_messages: list[Any],
     user_query: str,
 ) -> str | None:
     """Return chain-recovery error message when the LLM is about to terminate
-    a turn without invoking a follow-up ``lookup`` after ``resolve_location``.
+    a turn without invoking a follow-up ``lookup`` after ``locate``.
 
     Triggers when ALL of the following hold:
     1. The conversation contains at least one assistant turn that called
-       ``resolve_location`` AND the corresponding ``role='tool'`` result.
+       ``locate`` AND the corresponding ``role='tool'`` result.
     2. The conversation contains NO assistant turn that called
        ``lookup`` with ``mode='fetch'`` (or shape-equivalent bare
        ``{tool_id, params}``) on a coord/admcd-input adapter.
@@ -2512,15 +2849,22 @@ def _check_resolve_terminated_without_followup(  # noqa: C901
     if not _query_implies_followup_lookup(user_query):
         return None
 
-    saw_resolve_result = False
+    resolve_succeeded = False
     saw_followup_lookup = False
     for m in llm_messages:
         role = getattr(m, "role", None) or (m.get("role") if isinstance(m, dict) else None)
-        # Detect resolve_location tool result message
+        # Detect locate tool result message
         if role == "tool":
             name = getattr(m, "name", None) or (m.get("name") if isinstance(m, dict) else None)
-            if name == "resolve_location":
-                saw_resolve_result = True
+            if name == "locate":
+                resolve_payload = _tool_result_payload_for_primitive(
+                    m,
+                    primitive="locate",
+                )
+                resolve_succeeded = bool(resolve_payload) and _primitive_payload_is_success(
+                    resolve_payload,
+                    primitive="locate",
+                )
             continue
         if role != "assistant":
             continue
@@ -2533,7 +2877,7 @@ def _check_resolve_terminated_without_followup(  # noqa: C901
             call_fn = getattr(getattr(tc, "function", None), "name", None) or (
                 tc.get("function", {}).get("name") if isinstance(tc, dict) else None
             )
-            if call_fn != "lookup":
+            if call_fn != "find":
                 continue
             # Inspect arguments to confirm fetch-mode against an adapter.
             raw_args = getattr(getattr(tc, "function", None), "arguments", None) or (
@@ -2558,22 +2902,22 @@ def _check_resolve_terminated_without_followup(  # noqa: C901
         if saw_followup_lookup:
             break
 
-    if not saw_resolve_result:
+    if not resolve_succeeded:
         return None
     if saw_followup_lookup:
         return None
     return (
-        "Chain incomplete: this conversation invoked resolve_location but did NOT "
-        "follow up with lookup(mode='fetch', tool_id=<adapter>, params={...}) on "
+        "Chain incomplete: this conversation invoked locate but did NOT "
+        "follow up with find(tool_id=<adapter>, params={...}) on "
         "any coord/admcd-input adapter. The citizen query asks about an "
         "observable (weather / hospital / accident / 119 / welfare) whose "
         "authoritative value lives in an external agency API — answering from "
         "coordinates alone IS fabrication (citizen-safety violation per "
         "system_v1.md CRITICAL directive). RECOVERY: in the next turn, choose "
         "the correct adapter from the <available_adapters> block and call "
-        "lookup(mode='fetch', tool_id='<adapter>', params={lat: <resolved>, "
+        "find(tool_id='<adapter>', params={lat: <resolved>, "
         "lon: <resolved>, ...}) using the coordinates returned by the prior "
-        "resolve_location turn. Do NOT produce a final answer this turn."
+        "locate turn. Do NOT produce a final answer this turn."
     )
 
 
@@ -2941,10 +3285,10 @@ async def run(  # noqa: C901
     # such side-effects exist — registration is a function call, not a
     # module-level statement. This pair is now the single source of truth
     # for *all* dispatcher paths (search/fetch/export_core_tools_openai).
-    _tool_registry_ref: list[object] = []
-    _tool_executor_ref: list[object] = []
+    _tool_registry_ref: list[ToolRegistry] = []
+    _tool_executor_ref: list[ToolExecutor] = []
 
-    def _ensure_tool_registry() -> object:
+    def _ensure_tool_registry() -> ToolRegistry:
         # CC reference: (no direct CC analog — UMMAYA-only IPC adaptation).
         # CC's QueryEngine.ts assumes ToolRegistry populated at SDK construction
         # time (Anthropic SDK ``new Anthropic({...}).messages.stream(...)`` has
@@ -2990,7 +3334,7 @@ async def run(  # noqa: C901
                 logger.exception("Failed to emit adapter manifest: %s", _exc)
         return _tool_registry_ref[0]
 
-    def _ensure_tool_executor() -> object:
+    def _ensure_tool_executor() -> ToolExecutor:
         """Return the ToolExecutor paired with the singleton ToolRegistry.
 
         Triggers lazy registration if neither has been built yet so callers
@@ -3159,7 +3503,7 @@ async def run(  # noqa: C901
     # ``<available_adapters>`` block. Must be small enough to keep the
     # dynamic suffix LLM-readable (over-injecting blows the suffix budget
     # and reduces prompt-cache effectiveness for the static prefix). Five
-    # mirrors the historical ``lookup(mode='search')`` default top_k that
+    # mirrors the historical ``find(mode='search')`` default top_k that
     # K-EXAONE had been calling explicitly, so token-budget impact is
     # neutral relative to pre-2521 behavior.
     _AVAILABLE_ADAPTERS_TOP_K = int(  # noqa: N806 — env-derived constant
@@ -3181,19 +3525,36 @@ async def run(  # noqa: C901
         if not q:
             return ""
         try:
-            from ummaya.tools.registry import ToolRegistry  # noqa: PLC0415
             from ummaya.tools.search import search  # noqa: PLC0415
 
-            registry = cast("ToolRegistry", _ensure_tool_registry())
+            registry = _ensure_tool_registry()
+            raw_top_k = max(_AVAILABLE_ADAPTERS_TOP_K * 3, _AVAILABLE_ADAPTERS_TOP_K)
             candidates = search(
                 query=q,
                 bm25_index=registry.bm25_index,
                 registry=registry,
-                top_k=_AVAILABLE_ADAPTERS_TOP_K,
+                top_k=min(raw_top_k, 20),
             )
         except Exception:
             logger.exception("BM25 retrieval failed for '%s'", q[:80])
             return ""
+        filtered_candidates = []
+        for candidate in candidates:
+            try:
+                tool = registry.find(candidate.tool_id)
+            except Exception:
+                logger.debug(
+                    "Skipping unavailable adapter candidate %s",
+                    candidate.tool_id,
+                    exc_info=True,
+                )
+                continue
+            if tool.is_core:
+                continue
+            filtered_candidates.append(candidate)
+            if len(filtered_candidates) >= _AVAILABLE_ADAPTERS_TOP_K:
+                break
+        candidates = filtered_candidates
         if not candidates:
             return ""
         # Build a compact, LLM-readable block.
@@ -3217,12 +3578,15 @@ async def run(  # noqa: C901
             hint = (c.search_hint or "").strip()
             if len(hint) > 90:
                 hint = hint[:87] + "..."
-            lines.append(f"- {c.tool_id} [{c.score:.2f}] — {hint or '(설명 없음)'}")
+            primitive = c.primitive or "find"
+            lines.append(
+                f"- {c.tool_id} (primitive={primitive}) [{c.score:.2f}] — {hint or '(설명 없음)'}"
+            )
             # Render the adapter's llm_description (usage prose, ORDERING RULE,
             # prerequisites, worked examples) so the LLM sees the complete
-            # "먼저 resolve_location 호출" ordering rule.
+            # "먼저 locate 호출" ordering rule.
             # Bug: without this, the per-field description for nx is truncated
-            # and K-EXAONE skips resolve_location, producing invalid_params.
+            # and K-EXAONE skips locate, producing invalid_params.
             if c.llm_description:
                 desc_text = c.llm_description.strip().replace("\n", " ")
                 # Emit at most 300 chars — enough for the ORDERING RULE and
@@ -3241,10 +3605,10 @@ async def run(  # noqa: C901
                 required = {str(item) for item in raw_required if isinstance(item, str)}
             # Spec 2522 T010 — ORDERING directive removed.
             # The Spec 2521 ORDERING block ("nx/ny 는 KMA 격자 좌표 — 반드시
-            # resolve_location 을 먼저 호출") forced a cross-domain chain that
+            # locate 을 먼저 호출") forced a cross-domain chain that
             # contradicts both the user directive ("chain X / UMMAYA does not
             # force cross-domain chain") and v4 description 5-section
-            # self_contained_decl ("이 도구 단독 호출로 완결. resolve_location 등
+            # self_contained_decl ("이 도구 단독 호출로 완결. locate 등
             # cross-domain chain 불필요"). With both signals present K-EXAONE
             # ignored both and hallucinated nx/ny → Spec 2521 regression.
             # Each adapter's description (섹션 4 domain_quirk + 섹션 5
@@ -3337,15 +3701,16 @@ async def run(  # noqa: C901
                     )
         lines.append("")
         lines.append(
-            '규칙: 위 목록의 tool_id 만 lookup({"tool_id":"...", "params":{...}})'
-            " 으로 호출하세요. 동일 tool_id 를 한 turn 안에서 반복 호출하지 마세요."
+            "규칙: 위 목록의 primitive에 맞는 루트 도구만 호출하세요: "
+            'locate/find/check/send({"tool_id":"...", "params":{...}}). '
+            "동일 tool_id 를 한 turn 안에서 반복 호출하지 마세요."
         )
         lines.append(
             'params 는 위에 표시된 정확한 필드명만 사용하세요 — 일반적인 "location"/'
             '"date" 같은 추측 키는 모든 어댑터에서 invalid_params 로 거부됩니다.'
         )
         lines.append(
-            "BM25 도구 발견은 백엔드 internal 기능 — lookup(mode='search') 같은 호출은"
+            "BM25 도구 발견은 백엔드 internal 기능 — find(mode='search') 같은 호출은"
             " 무효화됩니다 (Spec 2521)."
         )
         lines.append("</available_adapters>")
@@ -3370,7 +3735,7 @@ async def run(  # noqa: C901
 
     # Primitives that require a citizen permission request when called outside
     # an existing session-grant. Spec 033 Layer 1 (L1) exempts lookup/
-    # resolve_location (read-only, public-tier); verify and submit enter the
+    # locate (read-only, public-tier); verify and submit enter the
     # bridge.
     #
     # Epic #2077 T010 (FR-003) — single-source-of-truth migration: read the
@@ -3398,7 +3763,7 @@ async def run(  # noqa: C901
         4. On allow_once: write consent receipt, no cache.
         5. On deny or timeout: emit synthetic tool_result with error, return False.
 
-        For non-gated primitives (lookup/resolve_location/verify): return True
+        For non-gated primitives (lookup/locate/verify): return True
         immediately without touching the bridge.
         """
         from ummaya.ipc.frame_schema import (  # noqa: PLC0415
@@ -3429,16 +3794,16 @@ async def run(  # noqa: C901
         # verify is LIGHT_GATE (low risk, identity delegation read-only).
         # submit is HEAVY_GATE (high risk, side-effecting).
         _PRIM_RISK: dict[str, str] = {  # noqa: N806
-            "verify": "low",
-            "submit": "high",
+            "check": "low",
+            "send": "high",
         }
         _PRIM_KO: dict[str, str] = {  # noqa: N806
-            "verify": "신원 확인을 위해 인증 위임을 요청합니다.",
-            "submit": "정부 API에 데이터를 제출합니다. 이 작업은 되돌릴 수 없습니다.",
+            "check": "신원 확인을 위해 인증 위임을 요청합니다.",
+            "send": "정부 API에 데이터를 제출합니다. 이 작업은 되돌릴 수 없습니다.",
         }
         _PRIM_EN: dict[str, str] = {  # noqa: N806
-            "verify": "Request identity delegation for verification.",
-            "submit": "Submit data to a government API. This action is irreversible.",
+            "check": "Request identity delegation for verification.",
+            "send": "Submit data to a government API. This action is irreversible.",
         }
 
         request_id = str(uuid.uuid4())
@@ -3761,7 +4126,7 @@ async def run(  # noqa: C901
         CC reference: ``services/tools/toolOrchestration.ts:19-72`` (CC's ``runTools``
         async generator). Note partition policy divergence: UMMAYA dispatches all
         primitive calls in parallel via ``asyncio.gather`` since the citizen-facing
-        primitives (lookup/resolve_location/verify) are read-only-equivalent. CC
+        primitives (lookup/locate/verify) are read-only-equivalent. CC
         partitions by ``isConcurrencySafe`` (read-only batches parallel,
         write-side serial). Tracking the partition adoption as Deferred Item #2574.
 
@@ -3848,7 +4213,7 @@ async def run(  # noqa: C901
             _outbound_trace_token = start_outbound_capture()
 
             try:
-                if fname == "verify":
+                if fname == "check":
                     from ummaya.primitives.verify import (  # noqa: PLC0415
                         verify,
                     )
@@ -3857,37 +4222,49 @@ async def run(  # noqa: C901
                     )
 
                     # Spec 2297 / Issue #C1 (2026-05-04) — translate
-                    # ``tool_id`` → ``family_hint`` via the canonical map
-                    # parsed from ``prompts/system_v1.md`` ``<verify_families>``.
+                    # ``tool_id`` → ``family_hint`` via adapter metadata.
                     # The mvp_surface ``_VerifyInputForLLM.translate_tool_id_shape``
                     # validator only fires when the LLM call goes through Pydantic
                     # schema validation; the IPC stdio dispatcher bypasses that
                     # path and historically read ``family_hint`` directly from
                     # the args dict, leaving every K-EXAONE-emitted
-                    # ``verify({tool_id: …})`` call resolving to ``family_hint=""``
-                    # → "No verify adapter registered for family ''".
+                    # ``check({tool_id: …})`` call resolving to ``family_hint=""``
+                    # → "No check adapter registered for family ''".
                     # Accept both ``family`` (citizen-facing tool schema) and
                     # ``family_hint`` (primitive's internal arg name) for
                     # legacy / tools-bridge compatibility.
                     tool_id = str(args_obj.get("tool_id") or "")
-                    family_hint = resolve_family(tool_id) or str(
-                        args_obj.get("family_hint") or args_obj.get("family") or ""
-                    )
-                    session_ctx = _build_verify_session_context(
-                        args_obj,
-                        session_id=session_id,
-                    )
-                    raw = await verify(family_hint=family_hint, session_context=session_ctx)
-                    if _cacheable_auth_context(raw):
-                        _session_auth_contexts[session_id] = raw
-                        issued_session_id = session_ctx.get("session_id", session_id)
-                        _session_auth_session_ids[session_id] = str(issued_session_id)
-                    result_payload = {
-                        "family": family_hint,
-                        "result": _serialize_primitive_result(raw),
-                    }
+                    if tool_id:
+                        registry = _ensure_tool_registry()
+                        try:
+                            tool = registry.find(tool_id)
+                        except Exception:
+                            dispatch_error = f"No check adapter registered for tool_id={tool_id!r}."
+                        else:
+                            if tool.primitive != "check":
+                                dispatch_error = (
+                                    f"Adapter {tool_id!r} is primitive={tool.primitive!r}, "
+                                    "but was called through check."
+                                )
+                    if dispatch_error is None:
+                        family_hint = resolve_family(tool_id) or str(
+                            args_obj.get("family_hint") or args_obj.get("family") or ""
+                        )
+                        session_ctx = _build_verify_session_context(
+                            args_obj,
+                            session_id=session_id,
+                        )
+                        raw = await verify(family_hint=family_hint, session_context=session_ctx)
+                        if _cacheable_auth_context(raw):
+                            _session_auth_contexts[session_id] = raw
+                            issued_session_id = session_ctx.get("session_id", session_id)
+                            _session_auth_session_ids[session_id] = str(issued_session_id)
+                        result_payload = {
+                            "family": family_hint,
+                            "result": _serialize_primitive_result(raw),
+                        }
 
-                elif fname == "lookup":
+                elif fname == "find":
                     # Spec 2521 (2026-05-01): the LLM-visible ``lookup``
                     # surface is fetch-only. BM25 adapter discovery is a
                     # backend-internal mechanism (auto-injected into the
@@ -3898,7 +4275,7 @@ async def run(  # noqa: C901
                     # loop continues without painting an "internal
                     # function as tool" UI block.
                     from ummaya.tools.errors import LookupErrorReason  # noqa: PLC0415
-                    from ummaya.tools.lookup import lookup  # noqa: PLC0415
+                    from ummaya.tools.lookup import find  # noqa: PLC0415
                     from ummaya.tools.models import (  # noqa: PLC0415
                         LookupError,  # noqa: A004 — Pydantic model named LookupError; intentional shadow with module-level alias not feasible in narrow import scope
                         LookupFetchInput,
@@ -3907,7 +4284,7 @@ async def run(  # noqa: C901
                     requested_mode = args_obj.get("mode")
                     if requested_mode is not None and str(requested_mode) != "fetch":
                         logger.warning(
-                            "lookup: rejected mode=%r — LLM-visible surface is "
+                            "find: rejected mode=%r — LLM-visible surface is "
                             "fetch-only since Spec 2521. Skipping dispatch.",
                             requested_mode,
                         )
@@ -3915,14 +4292,14 @@ async def run(  # noqa: C901
                             kind="error",
                             reason=LookupErrorReason.invalid_params,
                             message=(
-                                "lookup(mode='search') 는 백엔드 internal 기능입니다 — "
+                                "find(mode='search') 는 백엔드 internal 기능입니다 — "
                                 "직접 호출하지 마십시오. 시스템 프롬프트의 "
                                 "<available_adapters> 에서 tool_id 를 골라 fetch 호출만 사용하세요."
                             ),
                             retryable=False,
                         )
                         result_payload = {
-                            "kind": "lookup",
+                            "kind": "find",
                             "result": _serialize_primitive_result(raw),
                         }
                     else:
@@ -3948,53 +4325,112 @@ async def run(  # noqa: C901
                             tool_id=str(args_obj.get("tool_id", "")),
                             params=lookup_params,
                         )
-                        raw = await lookup(
+                        raw = await find(
                             inp_lk,
                             registry=registry,
                             executor=executor,
                             session_identity=session_id,
                         )
                         result_payload = {
-                            "kind": "lookup",
+                            "kind": "find",
                             "result": _serialize_primitive_result(raw),
                         }
 
-                elif fname == "resolve_location":
-                    from ummaya.tools.models import ResolveLocationInput  # noqa: PLC0415
-                    from ummaya.tools.resolve_location import resolve_location  # noqa: PLC0415
+                elif fname == "locate":
+                    tool_id = str(args_obj.get("tool_id") or "")
+                    if tool_id:
+                        registry = _ensure_tool_registry()
+                        try:
+                            tool = registry.find(tool_id)
+                        except Exception:
+                            dispatch_error = (
+                                f"No locate adapter registered for tool_id={tool_id!r}."
+                            )
+                        else:
+                            if tool.primitive != "locate":
+                                dispatch_error = (
+                                    f"Adapter {tool_id!r} is primitive={tool.primitive!r}, "
+                                    "but was called through locate."
+                                )
+                            else:
+                                executor = _ensure_tool_executor()
+                                locate_params = cast(
+                                    "dict[str, object]",
+                                    args_obj.get("params") or {},
+                                )
+                                raw = await executor.invoke_raw(
+                                    tool_id=tool_id,
+                                    params=locate_params,
+                                    request_id=str(uuid.uuid4()),
+                                    session_identity=session_id,
+                                )
+                    else:
+                        # Backward compatibility for old transcripts/tests that
+                        # still contain locate({query, want}). New LLM-visible
+                        # schema is locate({tool_id, params}); no semantic
+                        # rewriting is performed before adapter dispatch.
+                        from ummaya.tools.models import ResolveLocationInput  # noqa: PLC0415
+                        from ummaya.tools.resolve_location import locate  # noqa: PLC0415
 
-                    inp_rl = ResolveLocationInput(
-                        query=str(args_obj.get("query", "")),
-                        want=str(args_obj.get("want", "coords_and_admcd")),  # type: ignore[arg-type]
-                    )
-                    raw = await resolve_location(inp_rl)
-                    result_payload = {
-                        "kind": "resolve_location",
-                        "result": _serialize_primitive_result(raw),
-                    }
+                        inp_rl = ResolveLocationInput(
+                            query=str(args_obj.get("query", "")),
+                            want=str(args_obj.get("want", "coords_and_admcd")),  # type: ignore[arg-type]
+                        )
+                        raw = await locate(inp_rl)
+                    if dispatch_error is None:
+                        result_payload = {
+                            "kind": "locate",
+                            "result": _serialize_primitive_result(raw),
+                        }
 
-                elif fname == "submit":
+                elif fname == "send":
                     from ummaya.primitives.submit import submit  # noqa: PLC0415
 
-                    auth_context = _session_auth_contexts.get(session_id)
-                    submit_params = cast("dict[str, object]", args_obj.get("params") or {})
-                    if auth_context is not None:
-                        submit_params = _inject_delegation_context(submit_params, auth_context)
-                    delegation_session_id = _session_auth_session_ids.get(session_id, session_id)
-                    submit_params = _bind_submit_session_id(
-                        submit_params,
-                        session_id=delegation_session_id,
-                    )
-                    raw = await submit(
-                        tool_id=str(args_obj.get("tool_id", "")),
-                        params=submit_params,
-                        auth_context=auth_context,
-                        session_id=session_id,
-                    )
-                    result_payload = {
-                        "kind": "submit",
-                        "result": _serialize_primitive_result(raw),
-                    }
+                    requested_tool_id = str(args_obj.get("tool_id", ""))
+                    if requested_tool_id:
+                        registry = _ensure_tool_registry()
+                        try:
+                            tool = registry.find(requested_tool_id)
+                        except Exception:
+                            dispatch_error = (
+                                f"No send adapter registered for tool_id={requested_tool_id!r}."
+                            )
+                        else:
+                            if tool.primitive != "send":
+                                dispatch_error = (
+                                    f"Adapter {requested_tool_id!r} is "
+                                    f"primitive={tool.primitive!r}, "
+                                    "but was called through send."
+                                )
+                    if dispatch_error is None:
+                        auth_context = _session_auth_contexts.get(session_id)
+                        submit_params = cast(
+                            "dict[str, object]",
+                            args_obj.get("params") or {},
+                        )
+                        if auth_context is not None:
+                            submit_params = _inject_delegation_context(
+                                submit_params,
+                                auth_context,
+                            )
+                        delegation_session_id = _session_auth_session_ids.get(
+                            session_id,
+                            session_id,
+                        )
+                        submit_params = _bind_submit_session_id(
+                            submit_params,
+                            session_id=delegation_session_id,
+                        )
+                        raw = await submit(
+                            tool_id=requested_tool_id,
+                            params=submit_params,
+                            auth_context=auth_context,
+                            session_id=session_id,
+                        )
+                        result_payload = {
+                            "kind": "send",
+                            "result": _serialize_primitive_result(raw),
+                        }
 
                 else:
                     dispatch_error = f"unknown primitive {fname!r}"
@@ -4144,12 +4580,12 @@ async def run(  # noqa: C901
         # (docs/vision.md L1-C): `system prompt exposes primitive
         # signatures only; BM25 surfaces adapters dynamically`. Adapter
         # tools (kma_*, hira_*, nmc_*, koroad_*, mohw_*, nfa_*) are
-        # invoked via `lookup(tool_id="<adapter_id>", params={...})`,
+        # invoked via `find(tool_id="<adapter_id>", params={...})`,
         # never directly. The previous version of this block
         # (commit 5050417f) emitted every core_tool — primitive AND
         # adapter — into the tools[] parameter, which let K-EXAONE call
         # adapter ids directly (e.g. `kma_current_observation()` instead
-        # of `lookup(tool_id="kma_current_observation", params=...)`).
+        # of `find(tool_id="kma_current_observation", params=...)`).
         # The dispatcher then rejected the call with "Model requested
         # unknown tool 'kma_current_observation'" because PRIMITIVE_REGISTRY
         # only contains the active primitives. Captured live in
@@ -4205,7 +4641,7 @@ async def run(  # noqa: C901
         # G-class chain enforcement (2026-05-04) — top-level scope so the
         # follow-up-lookup gate inside the agentic loop can read the original
         # citizen utterance to decide whether the conversation must end with a
-        # `lookup(mode='fetch', ...)` call (weather / hospital / accident /
+        # `find(...)` call (weather / hospital / accident /
         # 119 / welfare queries) before the LLM is allowed to produce a final
         # answer. Lifted out of the BM25 try-block so the variable survives
         # the suffix-builder failure path.
@@ -4280,8 +4716,8 @@ async def run(  # noqa: C901
             # function, NOT an LLM-callable tool. Run the search against the
             # latest citizen utterance and inject the top-K candidates into
             # the dynamic suffix as ``<available_adapters>``. The LLM picks
-            # a tool_id from this block and calls ``lookup({tool_id, params})``
-            # — search-mode calls were the source of the "● lookup(search:)"
+            # a tool_id from this block and calls ``find({tool_id, params})``
+            # — search-mode calls were the source of the "● find(search:)"
             # phantom tool-UI noise that user surfaced via Layer 5 frame
             # capture (specs/2521 frames/raw.cast frame_0160 onwards).
             try:
@@ -4367,26 +4803,19 @@ async def run(  # noqa: C901
         # absent.
         from ummaya.llm.tool_call_parser import StreamGate  # noqa: PLC0415
 
-        # Neurosymbolic constraint flag — set when the chain-prerequisite
-        # gate rejected a coord-input tool call earlier in the loop. The
-        # next LLM turn forces tool_choice=resolve_location, removing the
-        # bypass path the LLM used in donga-univ-poi-bug captures
-        # (the LLM read the chain hint and then refused the tool anyway,
-        # answering "I don't have a location resolver" — a documented
-        # failure mode in the 2026 hallucination literature: business
-        # rules in prompts are interpreted as suggestions, not constraints,
-        # so the constraint must move to the API layer where the model
-        # cannot bypass it). Once a turn fires resolve_location the flag
-        # clears so the agentic loop returns to free tool_choice.
-        force_resolve_location_next_turn = False
-        force_verify_next_turn = _initial_verify_tool_choice_for_query(
-            llm_messages,
-            latest_user_utt,
-        )
+        # Routing-observation flags — validation gates may reject a bad
+        # primitive call and add a repair observation to the conversation.
+        # These flags only keep the loop alive for another free-choice model
+        # turn; they no longer force OpenAI/Friendli tool_choice.
+        force_locate_next_turn = False
+        force_verify_next_turn: str | None = None
         force_lookup_next_turn: str | None = None
         force_submit_next_turn: str | None = None
         continue_free_next_turn = False
         mock_disclosure_required = False
+        mock_primitives_seen: set[str] = set()
+        verify_choice_mismatch_count = 0
+        empty_final_retry_count = 0
 
         for _turn in range(_AGENTIC_LOOP_MAX_TURNS):
             message_id = str(uuid.uuid4())
@@ -4409,193 +4838,24 @@ async def run(  # noqa: C901
             stream_error: Exception | None = None
             stream_gate = StreamGate()
 
-            async def _dispatch_synthetic_submit_followup(
-                submit_followup_gate: dict[str, str],
-                *,
-                message_id_for_turn: str,
-                reason: str,
-            ) -> Literal["continue", "return"]:
-                """Run the required submit adapter after verify using cached auth context."""
-                nonlocal mock_disclosure_required
-
-                synth_call_id = str(uuid.uuid4())
-                submit_args = {
-                    "tool_id": submit_followup_gate["tool_id"],
-                    "params": _stdlib_json.loads(submit_followup_gate["params_json"]),
-                }
-                await write_frame(
-                    ToolCallFrame(
-                        session_id=frame.session_id,
-                        correlation_id=frame.correlation_id,
-                        role="backend",
-                        ts=_utcnow(),
-                        kind="tool_call",
-                        call_id=synth_call_id,
-                        name="submit",
-                        arguments=submit_args,
-                    )
-                )
-                loop = asyncio.get_event_loop()
-                _pending_calls[synth_call_id] = loop.create_future()
-                asyncio.create_task(
-                    _dispatch_primitive(
-                        synth_call_id,
-                        "submit",
-                        submit_args,
-                        frame.session_id,
-                        frame.correlation_id,
-                    ),
-                    name=f"primitive-submit-{synth_call_id[:8]}",
-                )
+            def _append_tool_routing_observation(reason: str, message: str) -> None:
+                """Add a non-tool observation so the model chooses the next call."""
                 llm_messages.append(
                     LLMChatMessage(
-                        role="assistant",
-                        content="",
-                        tool_calls=[
-                            LLMToolCall(
-                                id=synth_call_id,
-                                type="function",
-                                function=LLMFunctionCall(
-                                    name="submit",
-                                    arguments=_json.dumps(
-                                        submit_args,
-                                        ensure_ascii=False,
-                                    ),
-                                ),
-                            )
-                        ],
+                        role="user",
+                        content=(
+                            "[UMMAYA_TOOL_ROUTING_OBSERVATION]\n"
+                            f"{message}\n"
+                            "Use the available tool descriptions and adapter metadata to "
+                            "choose the next primitive call yourself. Do not answer from "
+                            "memory when the observation says a tool prerequisite is missing."
+                        ),
                     )
                 )
-                try:
-                    result = await asyncio.wait_for(
-                        _pending_calls[synth_call_id],
-                        timeout=_TOOL_RESULT_TIMEOUT_S,
-                    )
-                except TimeoutError:
-                    pending = _pending_calls.pop(synth_call_id, None)
-                    if pending and not pending.done():
-                        pending.cancel()
-                    await write_frame(
-                        ErrorFrame(
-                            session_id=frame.session_id,
-                            correlation_id=frame.correlation_id or str(uuid.uuid4()),
-                            role="backend",
-                            ts=_utcnow(),
-                            kind="error",
-                            code="tool_timeout",
-                            message=(f"Tool result timeout after {_TOOL_RESULT_TIMEOUT_S:.0f}s"),
-                            details={"call_ids": [synth_call_id]},
-                        )
-                    )
-                    return "return"
-
-                envelope = getattr(result, "envelope", None)
-                if envelope is not None and hasattr(envelope, "model_dump"):
-                    envelope_dump = envelope.model_dump()
-                    if _contains_mock_marker(envelope_dump):
-                        mock_disclosure_required = True
-                    if envelope_dump.get("denied") is True and envelope_dump.get("error") in {
-                        "permission_denied",
-                        "permission_timeout",
-                    }:
-                        code = str(envelope_dump["error"])
-                        if code == "permission_timeout":
-                            denial_message = (
-                                "권한 응답 시간이 초과되어 작업을 진행하지 않았습니다. "
-                                "후속 제출 작업은 실행되지 않았습니다. "
-                                f"(code: {code})"
-                            )
-                        else:
-                            denial_message = (
-                                "권한 요청이 거부되어 작업을 진행하지 않았습니다. "
-                                "후속 제출 작업은 실행되지 않았습니다. "
-                                f"(code: {code})"
-                            )
-                        await write_frame(
-                            AssistantChunkFrame(
-                                session_id=frame.session_id,
-                                correlation_id=frame.correlation_id,
-                                role="llm",
-                                ts=_utcnow(),
-                                kind="assistant_chunk",
-                                message_id=message_id_for_turn,
-                                delta=denial_message,
-                                done=False,
-                            )
-                        )
-                        await write_frame(
-                            AssistantChunkFrame(
-                                session_id=frame.session_id,
-                                correlation_id=frame.correlation_id,
-                                role="llm",
-                                ts=_utcnow(),
-                                kind="assistant_chunk",
-                                message_id=message_id_for_turn,
-                                delta="",
-                                done=True,
-                            )
-                        )
-                        return "return"
-                    payload = _json.dumps(
-                        envelope_dump,
-                        ensure_ascii=False,
-                        default=str,
-                    )
-                else:
-                    payload = _json.dumps({"result": str(result)}, ensure_ascii=False)
-
-                llm_messages.append(
-                    LLMChatMessage(
-                        role="tool",
-                        content=payload,
-                        name="submit",
-                        tool_call_id=synth_call_id,
-                    )
-                )
-                if envelope is not None and hasattr(envelope, "model_dump"):
-                    final_answer = _synthetic_submit_final_answer(
-                        submit_followup_gate["tool_id"],
-                        submit_args,
-                        envelope_dump,
-                    )
-                    if final_answer is not None:
-                        await write_frame(
-                            AssistantChunkFrame(
-                                session_id=frame.session_id,
-                                correlation_id=frame.correlation_id,
-                                role="llm",
-                                ts=_utcnow(),
-                                kind="assistant_chunk",
-                                message_id=message_id_for_turn,
-                                delta=final_answer,
-                                done=False,
-                            )
-                        )
-                        await write_frame(
-                            AssistantChunkFrame(
-                                session_id=frame.session_id,
-                                correlation_id=frame.correlation_id,
-                                role="llm",
-                                ts=_utcnow(),
-                                kind="assistant_chunk",
-                                message_id=message_id_for_turn,
-                                delta="",
-                                done=True,
-                            )
-                        )
-                        logger.warning(
-                            "_handle_chat_request: %s. Dispatched synthetic submit "
-                            "call and emitted deterministic receipt answer (%s).",
-                            reason,
-                            submit_followup_gate["tool_id"],
-                        )
-                        return "return"
                 logger.warning(
-                    "_handle_chat_request: %s. Dispatched synthetic submit call immediately (%s).",
+                    "_handle_chat_request: %s. Re-entering loop with free tool_choice.",
                     reason,
-                    submit_followup_gate["tool_id"],
                 )
-                return "continue"
 
             # spec-multi-turn-contamination diagnostic — accumulate the K-EXAONE
             # reasoning_content stream so we can compare its first 1024 bytes
@@ -4606,53 +4866,24 @@ async def run(  # noqa: C901
             _diag_reasoning_buf: list[str] = []
             _diag_reasoning_emitted = False
 
-            # Materialise the tool_choice for this turn from the gate flag.
-            # When forced, OpenAI/FriendliAI accept the explicit-function
-            # form (verified live against FriendliAI Serverless 2026-05-04);
-            # K-EXAONE on FriendliAI honours it as a hard constraint at the
-            # decoding boundary rather than a system-prompt hint.
+            # Gate flags now add observations to the model context but do not
+            # force a root tool at the API layer. The model must choose the
+            # primitive + adapter from tool descriptions and <available_adapters>;
+            # runtime validation rejects mismatches.
             stream_tool_choice: str | dict[str, object] | None = None
-            if force_resolve_location_next_turn:
-                stream_tool_choice = {
-                    "type": "function",
-                    "function": {"name": "resolve_location"},
-                }
+            if (
+                force_locate_next_turn
+                or force_verify_next_turn is not None
+                or force_lookup_next_turn is not None
+                or force_submit_next_turn is not None
+            ):
                 logger.warning(
-                    "_handle_chat_request: forcing tool_choice=resolve_location for "
-                    "turn %d (chain gate previously rejected a coord-input call)",
+                    "_handle_chat_request: continuing turn %d with free tool_choice "
+                    "after validation gate hint (locate=%s check=%s find=%s send=%s)",
                     _turn,
-                )
-            elif force_verify_next_turn is not None:
-                stream_tool_choice = {
-                    "type": "function",
-                    "function": {"name": "verify"},
-                }
-                logger.warning(
-                    "_handle_chat_request: forcing tool_choice=verify for turn %d "
-                    "(sensitive lookup gate requires %s)",
-                    _turn,
+                    force_locate_next_turn,
                     force_verify_next_turn,
-                )
-            elif force_lookup_next_turn is not None:
-                stream_tool_choice = {
-                    "type": "function",
-                    "function": {"name": "lookup"},
-                }
-                logger.warning(
-                    "_handle_chat_request: forcing tool_choice=lookup for turn %d "
-                    "(sensitive lookup gate requires %s)",
-                    _turn,
                     force_lookup_next_turn,
-                )
-            elif force_submit_next_turn is not None:
-                stream_tool_choice = {
-                    "type": "function",
-                    "function": {"name": "submit"},
-                }
-                logger.warning(
-                    "_handle_chat_request: forcing tool_choice=submit for turn %d "
-                    "(submit gate requires %s)",
-                    _turn,
                     force_submit_next_turn,
                 )
             try:
@@ -4661,7 +4892,7 @@ async def run(  # noqa: C901
                     tools=llm_tools or None,
                     temperature=frame.temperature,
                     top_p=frame.top_p,
-                    max_tokens=frame.max_tokens,
+                    max_tokens=_effective_chat_max_tokens(frame.max_tokens),
                     tool_choice=stream_tool_choice,
                 ):
                     event_type = getattr(event, "type", None)
@@ -4831,200 +5062,24 @@ async def run(  # noqa: C901
                     llm_messages, latest_user_utt
                 )
                 if location_gate_msg is not None:
-                    synth_call_id = str(uuid.uuid4())
-                    llm_messages.append(
-                        LLMChatMessage(
-                            role="assistant",
-                            content="",
-                            tool_calls=[
-                                LLMToolCall(
-                                    id=synth_call_id,
-                                    type="function",
-                                    function=LLMFunctionCall(
-                                        name="resolve_location",
-                                        arguments=_json.dumps(
-                                            {
-                                                "query": latest_user_utt,
-                                                "want": "coords_and_admcd",
-                                            },
-                                            ensure_ascii=False,
-                                        ),
-                                    ),
-                                )
-                            ],
-                        )
-                    )
-                    llm_messages.append(
-                        LLMChatMessage(
-                            role="tool",
-                            content=_json.dumps(
-                                {
-                                    "kind": "error",
-                                    "reason": "location_prerequisite_missing",
-                                    "message": location_gate_msg,
-                                },
-                                ensure_ascii=False,
-                            ),
-                            name="resolve_location",
-                            tool_call_id=synth_call_id,
-                        )
-                    )
-                    logger.warning(
-                        "_handle_chat_request: rejected final-answer turn — "
-                        "location-like request terminated without resolve_location. "
-                        "Re-entering loop with resolve_location forced."
+                    _append_tool_routing_observation(
+                        (
+                            "rejected final-answer turn - location-like request "
+                            "terminated without locate"
+                        ),
+                        location_gate_msg,
                     )
                     buffered_visible.clear()
-                    force_resolve_location_next_turn = True
                     continue
 
                 verify_gate = _check_verify_terminated_without_verify(llm_messages, latest_user_utt)
                 if verify_gate is not None:
-                    synth_call_id = str(uuid.uuid4())
-                    verify_args: dict[str, object] = {
-                        "tool_id": verify_gate["verify_tool_id"],
-                        "params": {
-                            "scope_list": list(_requirement_scope_entries(verify_gate)),
-                            "purpose_ko": verify_gate["purpose_ko"],
-                            "purpose_en": verify_gate["purpose_en"],
-                        },
-                    }
-                    await write_frame(
-                        ToolCallFrame(
-                            session_id=frame.session_id,
-                            correlation_id=frame.correlation_id,
-                            role="backend",
-                            ts=_utcnow(),
-                            kind="tool_call",
-                            call_id=synth_call_id,
-                            name="verify",
-                            arguments=verify_args,
-                        )
-                    )
-                    loop = asyncio.get_event_loop()
-                    _pending_calls[synth_call_id] = loop.create_future()
-                    asyncio.create_task(
-                        _dispatch_primitive(
-                            synth_call_id,
-                            "verify",
-                            verify_args,
-                            frame.session_id,
-                            frame.correlation_id,
+                    _append_tool_routing_observation(
+                        (
+                            "rejected final-answer turn - verify-required request "
+                            "terminated without check"
                         ),
-                        name=f"primitive-verify-{synth_call_id[:8]}",
-                    )
-                    llm_messages.append(
-                        LLMChatMessage(
-                            role="assistant",
-                            content="",
-                            tool_calls=[
-                                LLMToolCall(
-                                    id=synth_call_id,
-                                    type="function",
-                                    function=LLMFunctionCall(
-                                        name="verify",
-                                        arguments=_json.dumps(
-                                            verify_args,
-                                            ensure_ascii=False,
-                                        ),
-                                    ),
-                                )
-                            ],
-                        )
-                    )
-                    try:
-                        result = await asyncio.wait_for(
-                            _pending_calls[synth_call_id],
-                            timeout=_TOOL_RESULT_TIMEOUT_S,
-                        )
-                    except TimeoutError:
-                        pending = _pending_calls.pop(synth_call_id, None)
-                        if pending and not pending.done():
-                            pending.cancel()
-                        await write_frame(
-                            ErrorFrame(
-                                session_id=frame.session_id,
-                                correlation_id=frame.correlation_id or str(uuid.uuid4()),
-                                role="backend",
-                                ts=_utcnow(),
-                                kind="error",
-                                code="tool_timeout",
-                                message=(
-                                    f"Tool result timeout after {_TOOL_RESULT_TIMEOUT_S:.0f}s"
-                                ),
-                                details={"call_ids": [synth_call_id]},
-                            )
-                        )
-                        return
-
-                    envelope = getattr(result, "envelope", None)
-                    if envelope is not None and hasattr(envelope, "model_dump"):
-                        envelope_dump = envelope.model_dump()
-                        if _contains_mock_marker(envelope_dump):
-                            mock_disclosure_required = True
-                        if envelope_dump.get("denied") is True and envelope_dump.get("error") in {
-                            "permission_denied",
-                            "permission_timeout",
-                        }:
-                            code = str(envelope_dump["error"])
-                            if code == "permission_timeout":
-                                denial_message = (
-                                    "권한 응답 시간이 초과되어 작업을 진행하지 않았습니다. "
-                                    "후속 제출 또는 구독 작업은 실행되지 않았습니다. "
-                                    f"(code: {code})"
-                                )
-                            else:
-                                denial_message = (
-                                    "권한 요청이 거부되어 작업을 진행하지 않았습니다. "
-                                    "후속 제출 또는 구독 작업은 실행되지 않았습니다. "
-                                    f"(code: {code})"
-                                )
-                            await write_frame(
-                                AssistantChunkFrame(
-                                    session_id=frame.session_id,
-                                    correlation_id=frame.correlation_id,
-                                    role="llm",
-                                    ts=_utcnow(),
-                                    kind="assistant_chunk",
-                                    message_id=message_id,
-                                    delta=denial_message,
-                                    done=False,
-                                )
-                            )
-                            await write_frame(
-                                AssistantChunkFrame(
-                                    session_id=frame.session_id,
-                                    correlation_id=frame.correlation_id,
-                                    role="llm",
-                                    ts=_utcnow(),
-                                    kind="assistant_chunk",
-                                    message_id=message_id,
-                                    delta="",
-                                    done=True,
-                                )
-                            )
-                            return
-                        payload = _json.dumps(
-                            envelope_dump,
-                            ensure_ascii=False,
-                            default=str,
-                        )
-                    else:
-                        payload = _json.dumps({"result": str(result)}, ensure_ascii=False)
-
-                    llm_messages.append(
-                        LLMChatMessage(
-                            role="tool",
-                            content=payload,
-                            name="verify",
-                            tool_call_id=synth_call_id,
-                        )
-                    )
-                    logger.warning(
-                        "_handle_chat_request: rejected final-answer turn — "
-                        "verify-required request terminated without verify. "
-                        "Dispatched synthetic verify call immediately (%s).",
-                        verify_gate["verify_tool_id"],
+                        verify_gate["message"],
                     )
                     buffered_visible.clear()
                     continue
@@ -5035,16 +5090,13 @@ async def run(  # noqa: C901
                     _session_auth_contexts.get(frame.session_id),
                 )
                 if submit_followup_gate is not None:
-                    synthetic_submit_outcome = await _dispatch_synthetic_submit_followup(
-                        submit_followup_gate,
-                        message_id_for_turn=message_id,
-                        reason=(
-                            "rejected final-answer turn — submit-class request "
-                            "verified but ended without submit"
+                    _append_tool_routing_observation(
+                        (
+                            "rejected final-answer turn - submit-class request "
+                            "verified but ended without send"
                         ),
+                        submit_followup_gate["message"],
                     )
-                    if synthetic_submit_outcome == "return":
-                        return
                     buffered_visible.clear()
                     continue
 
@@ -5054,60 +5106,19 @@ async def run(  # noqa: C901
                     _session_auth_contexts.get(frame.session_id),
                 )
                 if sensitive_lookup_followup_gate is not None:
-                    synth_call_id = str(uuid.uuid4())
-                    lookup_args = {
-                        "mode": "fetch",
-                        "tool_id": sensitive_lookup_followup_gate["tool_id"],
-                        "params": {},
-                    }
-                    llm_messages.append(
-                        LLMChatMessage(
-                            role="assistant",
-                            content="",
-                            tool_calls=[
-                                LLMToolCall(
-                                    id=synth_call_id,
-                                    type="function",
-                                    function=LLMFunctionCall(
-                                        name="lookup",
-                                        arguments=_json.dumps(
-                                            lookup_args,
-                                            ensure_ascii=False,
-                                        ),
-                                    ),
-                                )
-                            ],
-                        )
-                    )
-                    llm_messages.append(
-                        LLMChatMessage(
-                            role="tool",
-                            content=_json.dumps(
-                                {
-                                    "kind": "error",
-                                    "reason": "sensitive_lookup_followup_missing",
-                                    "message": sensitive_lookup_followup_gate["message"],
-                                },
-                                ensure_ascii=False,
-                            ),
-                            name="lookup",
-                            tool_call_id=synth_call_id,
-                        )
-                    )
-                    logger.warning(
-                        "_handle_chat_request: rejected final-answer turn — "
-                        "sensitive lookup request verified but ended without "
-                        "the required lookup. Re-entering loop with lookup "
-                        "forced (%s).",
-                        sensitive_lookup_followup_gate["tool_id"],
+                    _append_tool_routing_observation(
+                        (
+                            "rejected final-answer turn - sensitive lookup request "
+                            "verified but ended without find"
+                        ),
+                        sensitive_lookup_followup_gate["message"],
                     )
                     buffered_visible.clear()
-                    force_lookup_next_turn = sensitive_lookup_followup_gate["tool_id"]
                     continue
 
                 # ---- G-class fabrication gate (2026-05-04) ---------------
                 # Before emitting a final-answer turn, check whether the
-                # conversation invoked resolve_location but never followed up
+                # conversation invoked locate but never followed up
                 # with a coord/admcd-input lookup despite the citizen query
                 # demanding one (weather / hospital / accident / 119 /
                 # welfare). The donga-univ-poi-bug snap-001-01-kma-now
@@ -5115,69 +5126,82 @@ async def run(  # noqa: C901
                 # humidity by parametric memory — 4.7°C / 61%p drift versus
                 # the raw KMA observation — because the agentic loop allowed
                 # the answer turn to fire without a tool result in scope.
-                # Inject a synthetic chain-recovery tool_result and continue
-                # the loop so the next turn produces the missing lookup call.
+                # Add a chain-recovery observation and continue the loop so
+                # the model chooses the missing follow-up find call itself.
                 chain_followup_msg = _check_resolve_terminated_without_followup(
                     llm_messages, latest_user_utt
                 )
                 if chain_followup_msg is not None:
-                    synth_call_id = str(uuid.uuid4())
-                    # Synthesise an assistant turn that appears to have
-                    # called a sentinel "chain_gate" — keeps the message
-                    # ordering invariant (assistant tool_calls precede the
-                    # role='tool' content). The model will not see this
-                    # call_id again — only the role='tool' content matters.
-                    llm_messages.append(
-                        LLMChatMessage(
-                            role="assistant",
-                            content="",
-                            tool_calls=[
-                                LLMToolCall(
-                                    id=synth_call_id,
-                                    type="function",
-                                    function=LLMFunctionCall(
-                                        name="lookup",
-                                        arguments=_json.dumps(
-                                            {
-                                                "mode": "fetch",
-                                                "tool_id": "<chain-gate-pending>",
-                                                "params": {},
-                                            }
-                                        ),
-                                    ),
-                                )
-                            ],
-                        )
-                    )
-                    llm_messages.append(
-                        LLMChatMessage(
-                            role="tool",
-                            content=_json.dumps(
-                                {
-                                    "kind": "error",
-                                    "reason": "chain_followup_missing",
-                                    "message": chain_followup_msg,
-                                },
-                                ensure_ascii=False,
-                            ),
-                            name="lookup",
-                            tool_call_id=synth_call_id,
-                        )
-                    )
-                    logger.warning(
-                        "_handle_chat_request: rejected final-answer turn — "
-                        "resolve_location ran but follow-up lookup was never "
-                        "invoked despite citizen query implying it. "
-                        "Re-entering loop with chain-recovery hint."
+                    _append_tool_routing_observation(
+                        "rejected final-answer turn — locate ran but follow-up find was missing",
+                        chain_followup_msg,
                     )
                     # Drop the buffered prose so the citizen never sees the
                     # fabrication that the LLM was about to emit.
                     buffered_visible.clear()
                     continue
 
+                current_weather_gate_msg = _check_current_weather_terminated_without_observation(
+                    llm_messages,
+                    latest_user_utt,
+                )
+                if current_weather_gate_msg is not None:
+                    _append_tool_routing_observation(
+                        "rejected final-answer turn — current weather answer missing observation",
+                        current_weather_gate_msg,
+                    )
+                    buffered_visible.clear()
+                    continue
+
                 merged_prose = "".join(buffered_visible)
                 if mock_disclosure_required:
-                    merged_prose = _ensure_mock_disclosure(merged_prose)
+                    merged_prose = _ensure_mock_disclosure(
+                        merged_prose,
+                        mock_primitives=mock_primitives_seen,
+                    )
+                else:
+                    merged_prose = _remove_unneeded_mock_disclosure(merged_prose)
+                has_successful_tool_result = _conversation_has_successful_any_primitive_result(
+                    llm_messages
+                )
+                if not merged_prose.strip() and has_successful_tool_result:
+                    if empty_final_retry_count < 2:
+                        empty_final_retry_count += 1
+                        _append_tool_routing_observation(
+                            "rejected empty final-answer turn after successful tool result",
+                            (
+                                "The previous assistant turn produced no citizen-facing text "
+                                "after successful tool results. Produce a concise Korean final "
+                                "answer using the latest successful tool_result. Do not call "
+                                "another tool unless additional data is essential."
+                            ),
+                        )
+                        buffered_visible.clear()
+                        continue
+                    merged_prose = (
+                        "도구 조회는 완료됐지만 최종 응답 생성이 비어 있었습니다. "
+                        "위 도구 결과를 기준으로 확인해 주세요."
+                    )
+                if (
+                    merged_prose.strip()
+                    and has_successful_tool_result
+                    and _final_answer_looks_like_pending_tool_plan(merged_prose)
+                    and empty_final_retry_count < 2
+                ):
+                    empty_final_retry_count += 1
+                    _append_tool_routing_observation(
+                        "rejected pending-tool-plan final answer after successful tool result",
+                        (
+                            "The previous assistant turn described a future tool call "
+                            "after successful tool results were already available. "
+                            "Produce a concise Korean final answer using the latest "
+                            "successful tool_result. Include concrete returned values "
+                            "when present. Do not say you will call or look up another "
+                            "tool unless additional data is essential."
+                        ),
+                    )
+                    buffered_visible.clear()
+                    continue
                 if merged_prose:
                     await write_frame(
                         AssistantChunkFrame(
@@ -5238,26 +5262,6 @@ async def run(  # noqa: C901
                     args_obj = {"_value": args_obj}
 
                 fname = slot["name"]
-                args_obj = _normalize_lookup_args_for_query(
-                    fname,
-                    args_obj,
-                    latest_user_utt,
-                )
-                args_obj = _normalize_submit_args_for_query(
-                    fname,
-                    args_obj,
-                    latest_user_utt,
-                )
-                args_obj = _normalize_verify_args_for_query(
-                    fname,
-                    args_obj,
-                    latest_user_utt,
-                )
-                args_obj = _normalize_verify_tool_id_for_query(
-                    fname,
-                    args_obj,
-                    latest_user_utt,
-                )
                 # Epic #2077 FR-003 — registry-derived whitelist. spec.md
                 # § Out of Scope (Permanent) forbids hardcoded enumerations
                 # outside the registry; ``PRIMITIVE_REGISTRY`` is the single
@@ -5285,16 +5289,16 @@ async def run(  # noqa: C901
                 )
                 if resolve_redirect is not None:
                     primitive = resolve_redirect["primitive"]
-                    if primitive == "verify":
+                    if primitive == "check":
                         force_verify_next_turn = resolve_redirect["tool_id"]
-                    elif primitive == "submit":
+                    elif primitive == "send":
                         force_submit_next_turn = resolve_redirect["tool_id"]
-                    elif primitive == "lookup":
+                    elif primitive == "find":
                         force_lookup_next_turn = resolve_redirect["tool_id"]
                     else:
                         continue_free_next_turn = True
                     logger.warning(
-                        "_handle_chat_request: suppressed irrelevant resolve_location "
+                        "_handle_chat_request: suppressed irrelevant locate "
                         "call_id=%s for location-independent workflow; next=%s:%s",
                         call_id[:12],
                         primitive,
@@ -5391,115 +5395,39 @@ async def run(  # noqa: C901
                 # ``.references/claude-code-sourcemap/restored-src/src/Tool.ts:489``
                 # — tool-scoped prerequisite hook that inspects the
                 # surrounding ToolUseContext and may reject with a
-                # message the LLM sees in the tool_result. UMMAYA port:
+                # message the LLM sees as a validation observation. UMMAYA port:
                 # we run the check here, before issuing the ToolCallFrame
                 # and before the dispatch task starts, so a rejected call
-                # never burns an outbound HTTP request and the LLM gets
-                # a deterministic chain-recovery instruction in the same
-                # turn it tried to skip the prerequisite.
+                # never burns an outbound HTTP request and the LLM gets a
+                # deterministic chain-recovery instruction without painting
+                # a recoverable internal routing error in the citizen UI.
                 #
-                # Concretely: when fname == "lookup" + the chosen tool_id
+                # Concretely: when fname == "find" + the chosen tool_id
                 # is a coordinate/admcd-input adapter (kma_*, hira_*, nmc_*,
                 # koroad_*) AND the citizen-supplied params already carry
                 # the coordinates AND no prior turn in llm_messages
-                # invoked resolve_location, that means the LLM guessed
+                # invoked locate, that means the LLM guessed
                 # the coordinates from prior knowledge instead of routing
                 # through the canonical resolver. Three live captures
                 # under specs/integration-verification/donga-univ-poi-bug/
                 # showed this exact pattern producing wrong-region
                 # hospital lists. Rejecting here forces the next turn
-                # through resolve_location.
+                # through locate.
                 chain_error_msg = _check_chain_prerequisite(
                     fname, args_obj, llm_messages, registry=_ensure_tool_registry()
                 )
                 if chain_error_msg is not None:
-                    from ummaya.ipc.frame_schema import (  # noqa: PLC0415
-                        ToolResultEnvelope,
-                        ToolResultFrame,
-                    )
-
-                    # Emit a ToolCallFrame first so the TUI registers the
-                    # call_id in seenToolUseIds (deps.ts L420). Without it
-                    # the subsequent ToolResultFrame surfaces as a
-                    # `tool_result_orphan` system error in the transcript.
-                    await write_frame(
-                        ToolCallFrame(
-                            session_id=frame.session_id,
-                            correlation_id=frame.correlation_id,
-                            role="backend",
-                            ts=_utcnow(),
-                            kind="tool_call",
-                            call_id=call_id,
-                            name=fname,  # type: ignore[arg-type]
-                            arguments=args_obj,
-                        )
-                    )
-                    err_envelope = ToolResultEnvelope.model_validate(
-                        {
-                            "kind": cast("Any", fname),
-                            "result": {
-                                "kind": "error",
-                                "reason": "chain_prerequisite_missing",
-                                "message": chain_error_msg,
-                                "retryable": False,
-                            },
-                        }
-                    )
-                    await write_frame(
-                        ToolResultFrame(
-                            session_id=frame.session_id,
-                            correlation_id=frame.correlation_id,
-                            role="backend",
-                            ts=_utcnow(),
-                            kind="tool_result",
-                            call_id=call_id,
-                            envelope=err_envelope,
-                        )
-                    )
-                    # Inject a synthetic tool message into history so the
-                    # next LLM turn sees the chain hint and follows it.
-                    llm_messages.append(
-                        LLMChatMessage(
-                            role="assistant",
-                            content="",
-                            tool_calls=[
-                                LLMToolCall(
-                                    id=call_id,
-                                    type="function",
-                                    function=LLMFunctionCall(
-                                        name=fname,
-                                        arguments=_json.dumps(args_obj),
-                                    ),
-                                )
-                            ],
-                        )
-                    )
-                    llm_messages.append(
-                        LLMChatMessage(
-                            role="tool",
-                            content=_json.dumps(
-                                {
-                                    "kind": "error",
-                                    "reason": "chain_prerequisite_missing",
-                                    "message": chain_error_msg,
-                                },
-                                ensure_ascii=False,
-                            ),
-                            name=fname,
-                            tool_call_id=call_id,
-                        )
+                    _append_tool_routing_observation(
+                        f"rejected {fname} call_id={call_id[:12]} — chain prerequisite missing",
+                        chain_error_msg,
                     )
                     logger.warning(
                         "_handle_chat_request: rejected %s call_id=%s — chain prerequisite missing",
                         fname,
                         call_id[:12],
                     )
-                    # Neurosymbolic constraint — the next LLM turn must
-                    # call resolve_location before any other tool. Set the
-                    # flag here so the next loop iteration's tool_choice
-                    # forces the model down the chain. See the flag
-                    # comment at the loop start for the full rationale.
-                    force_resolve_location_next_turn = True
+                    # Keep the loop alive for a free-choice repair turn.
+                    force_locate_next_turn = True
                     continue
 
                 verify_choice_gate = _check_verify_tool_choice_prerequisite(
@@ -5578,6 +5506,60 @@ async def run(  # noqa: C901
                             tool_call_id=call_id,
                         )
                     )
+                    verify_choice_mismatch_count += 1
+                    repeated_forced_verify_mismatch = (
+                        force_verify_next_turn == verify_choice_gate["verify_tool_id"]
+                    )
+                    if repeated_forced_verify_mismatch or verify_choice_mismatch_count > 1:
+                        expected_scopes = sorted(
+                            {
+                                item.strip()
+                                for item in verify_choice_gate.get(
+                                    "allowed_scopes",
+                                    verify_choice_gate.get("scope", ""),
+                                ).split(",")
+                                if item.strip()
+                            }
+                        )
+                        terminal_message = (
+                            "요청의 인증 도구와 권한 범위가 서로 맞지 않아 실행을 중단했습니다. "
+                            "이 흐름은 "
+                            f"check(tool_id={verify_choice_gate['verify_tool_id']!r}, "
+                            f"scope_list={expected_scopes!r})"
+                            " 형태로 맞춰야 합니다. 인증 계열과 제출 scope를 섞은 상태로는 "
+                            "권한 위임을 만들 수 없습니다."
+                        )
+                        await write_frame(
+                            AssistantChunkFrame(
+                                session_id=frame.session_id,
+                                correlation_id=frame.correlation_id,
+                                role="llm",
+                                ts=_utcnow(),
+                                kind="assistant_chunk",
+                                message_id=message_id,
+                                delta=terminal_message,
+                                done=False,
+                            )
+                        )
+                        await write_frame(
+                            AssistantChunkFrame(
+                                session_id=frame.session_id,
+                                correlation_id=frame.correlation_id,
+                                role="llm",
+                                ts=_utcnow(),
+                                kind="assistant_chunk",
+                                message_id=message_id,
+                                delta="",
+                                done=True,
+                            )
+                        )
+                        logger.warning(
+                            "_handle_chat_request: terminal verify tool-choice "
+                            "mismatch after forced retry for call_id=%s expected=%s",
+                            call_id[:12],
+                            verify_choice_gate["verify_tool_id"],
+                        )
+                        return
                     force_verify_next_turn = verify_choice_gate["verify_tool_id"]
                     logger.warning(
                         "_handle_chat_request: rejected %s call_id=%s — verify "
@@ -5681,7 +5663,7 @@ async def run(  # noqa: C901
                     )
                     requirement = _sensitive_lookup_requirement(args_obj)
                     force_verify_next_turn = (
-                        requirement["verify_tool_id"] if requirement is not None else "verify"
+                        requirement["verify_tool_id"] if requirement is not None else "check"
                     )
                     logger.warning(
                         "_handle_chat_request: rejected %s call_id=%s — sensitive "
@@ -5732,28 +5714,27 @@ async def run(  # noqa: C901
                 )
 
                 # Neurosymbolic constraint — clear the force flag once a
-                # resolve_location turn has actually been dispatched. Any
+                # locate turn has actually been dispatched. Any
                 # subsequent turn returns to free tool_choice so the LLM
                 # can route to the actual coord-input adapter (KMA/HIRA/
                 # NMC) with the resolved coordinates.
-                if fname == "resolve_location":
-                    force_resolve_location_next_turn = False
-                if fname == "verify":
+                if fname == "locate":
+                    force_locate_next_turn = False
+                if fname == "check":
                     force_verify_next_turn = None
-                if fname == "lookup":
+                if fname == "find":
                     force_lookup_next_turn = None
-                if fname == "submit":
+                if fname == "send":
                     force_submit_next_turn = None
 
             # If every tool call was rejected (whitelist), terminate.
-            # Exception: when the chain gate fired (force flag set) we
-            # MUST continue to the next iteration so the forced
-            # tool_choice=resolve_location actually gets a chance to run.
+            # Exception: when a validation gate fired (repair flag set), keep
+            # the loop alive so the model gets one more free-choice turn.
             # Returning here would leave the citizen with the chain-error
             # tool_result frame as the only visible output.
             if not issued_calls:
                 if (
-                    force_resolve_location_next_turn
+                    force_locate_next_turn
                     or force_verify_next_turn is not None
                     or force_lookup_next_turn is not None
                     or force_submit_next_turn is not None
@@ -5849,6 +5830,7 @@ async def run(  # noqa: C901
                         envelope_dump = envelope.model_dump()
                         if _contains_mock_marker(envelope_dump):
                             mock_disclosure_required = True
+                            mock_primitives_seen.add(fname)
                         payload = _json.dumps(
                             envelope_dump,
                             ensure_ascii=False,
@@ -5872,7 +5854,7 @@ async def run(  # noqa: C901
                         tool_call_id=cid,
                     )
                 )
-                if fname == "verify":
+                if fname == "check":
                     verify_result_seen = True
 
             if terminal_permission_code is not None:
@@ -5926,16 +5908,10 @@ async def run(  # noqa: C901
                     _session_auth_contexts.get(frame.session_id),
                 )
                 if submit_followup_gate is not None:
-                    synthetic_submit_outcome = await _dispatch_synthetic_submit_followup(
-                        submit_followup_gate,
-                        message_id_for_turn=message_id,
-                        reason=(
-                            "verify completed for submit-class request and no submit "
-                            "tool call followed in the same observed turn"
-                        ),
+                    _append_tool_routing_observation(
+                        "verify completed for submit-class request and no send tool call followed",
+                        submit_followup_gate["message"],
                     )
-                    if synthetic_submit_outcome == "return":
-                        return
                     continue
 
             # Loop back: re-invoke client.stream with extended history.
@@ -6138,7 +6114,7 @@ async def run(  # noqa: C901
                     await handle_plugin_op_request(
                         frame,
                         registry=_registry,
-                        executor=ToolExecutor(registry=_registry),  # type: ignore[arg-type]
+                        executor=ToolExecutor(registry=_registry),
                         write_frame=write_frame,
                         consent_bridge=consent_bridge,
                         session_id=frame.session_id,

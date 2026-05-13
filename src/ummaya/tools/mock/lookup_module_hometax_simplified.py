@@ -8,7 +8,7 @@ sub-registry) because the ``lookup`` primitive resolves adapter IDs against the
 BM25-indexed main registry.
 
 When called with a ``DelegationContext``, validates the scope matches
-``"lookup:hometax.simplified"`` (fail-closed per Constitution § II). When no
+``"find:hometax.simplified"`` (fail-closed per Constitution § II). When no
 delegation context is supplied, the adapter proceeds without scope enforcement
 (lookups are read-only and may not require delegation in all flows).
 
@@ -35,7 +35,7 @@ from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel, model_validator
 
-from ummaya.primitives.delegation import DelegationContext
+from ummaya.primitives.delegation import DelegationContext, _scope_matches
 from ummaya.tools.models import AdapterRealDomainPolicy, GovAPITool
 from ummaya.tools.transparency import stamp_mock_response
 
@@ -58,7 +58,8 @@ _POLICY_AUTHORITY: Final = (
 _INTERNATIONAL_REF: Final = "UK HMRC Making Tax Digital"
 
 # Required delegation scope when a DelegationContext is present.
-_REQUIRED_SCOPE: Final = "lookup:hometax.simplified"
+_REQUIRED_SCOPE: Final = "find:hometax.simplified"
+_LEGACY_REQUIRED_SCOPE: Final = "lookup:hometax.simplified"
 
 
 def _default_tax_year() -> int:
@@ -189,7 +190,7 @@ async def handle(
     """Handle a Hometax simplified data lookup.
 
     When ``delegation_context`` is supplied, validates that the token scope
-    matches ``"lookup:hometax.simplified"``; rejects with a scope-violation
+    matches ``"find:hometax.simplified"``; rejects with a scope-violation
     error if not. When absent, proceeds without delegation enforcement (the
     lookup is read-only).
 
@@ -208,8 +209,7 @@ async def handle(
 
         if isinstance(delegation_context, DelegationContext):
             token_scope = delegation_context.token.scope
-            # Scope may be comma-joined multi-scope; match exact entry.
-            if _REQUIRED_SCOPE not in token_scope.split(","):
+            if not _scope_matches(token_scope, _REQUIRED_SCOPE):
                 logger.warning(
                     "mock_lookup_module_hometax_simplified: scope violation "
                     "(token_scope=%r required=%r)",
@@ -229,7 +229,8 @@ async def handle(
                     "reason": "auth_required",
                     "message": (
                         f"Delegation token scope {token_scope!r} does not "
-                        f"grant {_REQUIRED_SCOPE!r}."
+                        f"grant {_REQUIRED_SCOPE!r} "
+                        f"(legacy alias {_LEGACY_REQUIRED_SCOPE!r})."
                     ),
                     "retryable": False,
                 }
@@ -268,7 +269,7 @@ MOCK_LOOKUP_MODULE_HOMETAX_SIMPLIFIED_TOOL = GovAPITool(
         "settlement (연말정산) or comprehensive income tax filing (종합소득세). "
         "Returns a synthetic fixture including employment income, medical expenses, "
         "and education expenses stamped with six AX-channel transparency fields. "
-        "When a DelegationContext is provided, requires scope 'lookup:hometax.simplified'. "
+        "When a DelegationContext is provided, requires scope 'find:hometax.simplified'. "
         "This is a Mock adapter — no real Hometax API is called. "
         "Mock PII minimization: if the citizen did not provide year or "
         "resident_id_prefix, call the adapter with defaults instead of asking "
@@ -295,7 +296,7 @@ MOCK_LOOKUP_MODULE_HOMETAX_SIMPLIFIED_TOOL = GovAPITool(
     cache_ttl_seconds=0,
     rate_limit_per_minute=60,
     is_core=False,
-    primitive="lookup",
+    primitive="find",
     published_tier_minimum=None,
     nist_aal_hint=None,
     trigger_examples=[

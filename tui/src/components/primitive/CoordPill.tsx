@@ -2,9 +2,9 @@
  * UMMAYA-original — CoordPill renderer.
  *
  * Compact inline pill showing latitude and longitude from the coords slot
- * of a resolve_location result.  Includes a copy hint in the inactive color.
+ * of a locate result.  Includes a copy hint in the inactive color.
  *
- * FR-022: resolve_location coords renderer.
+ * FR-022: locate coords renderer.
  */
 import React from 'react'
 import { Box, Text } from 'ink'

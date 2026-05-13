@@ -32,11 +32,11 @@ def _entry(
     is_irreversible: bool,
     correlation_id: str = "corr-default",
 ) -> TxEntry:
-    resp = ToolCallResponse(tool_id="submit", success=True, data={"ref": "K20260419"})
+    resp = ToolCallResponse(tool_id="send", success=True, data={"ref": "K20260419"})
     return TxEntry(
         session_id=session_id,
         transaction_id=tx_id,
-        tool_id="submit",
+        tool_id="send",
         is_irreversible=is_irreversible,
         first_seen_ts=datetime(2026, 4, 19, 12, 0, 0, tzinfo=UTC),
         cached_response=resp.to_dict(),
@@ -196,6 +196,6 @@ class TestPinSurvivesResumeReplay:
 
         # T042: validate that from_dict() can reconstruct
         response = ToolCallResponse.from_dict(hit.cached_response)
-        assert response.tool_id == "submit"
+        assert response.tool_id == "send"
         assert response.success is True
         assert response.data == {"ref": "K20260419"}

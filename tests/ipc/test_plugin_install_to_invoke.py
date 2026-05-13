@@ -36,7 +36,7 @@ def stub_tool() -> Any:
         result: str
 
     return GovAPITool(
-        id="plugin.fixture_test.lookup",
+        id="plugin.fixture_test.find",
         ministry="OTHER",
         category=["test"],
         endpoint="https://test.local/lookup",
@@ -71,7 +71,7 @@ class TestInstallToInvoke:
         registry.register(stub_tool)
 
         core = registry.core_tools()
-        assert any(t.id == "plugin.fixture_test.lookup" for t in core), (
+        assert any(t.id == "plugin.fixture_test.find" for t in core), (
             "freshly registered plugin tool must surface in core_tools"
         )
 
@@ -83,7 +83,7 @@ class TestInstallToInvoke:
 
         exported = registry.export_core_tools_openai()
         ids = [t.get("function", {}).get("name") if isinstance(t, dict) else None for t in exported]
-        assert "plugin.fixture_test.lookup" in ids, (
+        assert "plugin.fixture_test.find" in ids, (
             "freshly registered plugin tool must surface in OpenAI tool export "
             "(this is the R-6 fallback path consumed by stdio.py:1192-1195)"
         )
@@ -94,11 +94,11 @@ class TestInstallToInvoke:
 
         registry = ToolRegistry()
         registry.register(stub_tool)
-        registry.set_active("plugin.fixture_test.lookup", False)
+        registry.set_active("plugin.fixture_test.find", False)
 
-        assert not registry.is_active("plugin.fixture_test.lookup")
+        assert not registry.is_active("plugin.fixture_test.find")
         core = registry.core_tools()
-        assert all(t.id != "plugin.fixture_test.lookup" for t in core), (
+        assert all(t.id != "plugin.fixture_test.find" for t in core), (
             "inactive plugin tool must not surface in core_tools"
         )
 
@@ -107,11 +107,11 @@ class TestInstallToInvoke:
 
         registry = ToolRegistry()
         registry.register(stub_tool)
-        registry.set_active("plugin.fixture_test.lookup", False)
+        registry.set_active("plugin.fixture_test.find", False)
 
         exported = registry.export_core_tools_openai()
         ids = [t.get("function", {}).get("name") if isinstance(t, dict) else None for t in exported]
-        assert "plugin.fixture_test.lookup" not in ids, (
+        assert "plugin.fixture_test.find" not in ids, (
             "inactive plugin must not surface in the LLM-visible tool inventory"
         )
 
@@ -121,8 +121,8 @@ class TestInstallToInvoke:
 
         registry = ToolRegistry()
         registry.register(stub_tool)
-        assert "plugin.fixture_test.lookup" in registry
+        assert "plugin.fixture_test.find" in registry
 
-        registry.deregister("plugin.fixture_test.lookup")
-        assert "plugin.fixture_test.lookup" not in registry
-        assert all(t.id != "plugin.fixture_test.lookup" for t in registry.all_tools())
+        registry.deregister("plugin.fixture_test.find")
+        assert "plugin.fixture_test.find" not in registry
+        assert all(t.id != "plugin.fixture_test.find" for t in registry.all_tools())

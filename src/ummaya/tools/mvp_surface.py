@@ -2,25 +2,25 @@
 """LLM-visible core tool definitions for the MVP primitive surface.
 
 Defines ``GovAPITool`` registrations for the 4 callable primitives:
-``resolve_location`` + ``lookup`` + ``verify`` + ``submit``.
+``locate`` + ``find`` + ``check`` + ``send``.
 All carry ``is_core=True`` so they appear in the core prompt partition and are
 exported via ``registry.export_core_tools_openai()``.
 
-Original Spec 022 / Spec 1634 (T028) shipped 2 tools (resolve_location + lookup).
+Original Spec 022 / Spec 1634 (T028) shipped 2 tools (locate + find).
 Epic η #2298 (Initiative #2290) extended the LLM-visible surface with
-verify / submit so the citizen-OPAQUE chain
-(verify → lookup → submit) the system prompt teaches is actually callable.
+check / send so the citizen-OPAQUE chain
+(check → find → send) the system prompt teaches is actually callable.
 
-For ``verify``, the input_schema declares ``family_hint: str`` permissively —
+For ``check``, the input_schema declares ``family_hint: str`` permissively —
 the system prompt's ``<verify_families>`` table is the source of valid family
 values (10 active families per Epic ε #2296). The dispatcher's
 ``_VERIFY_ADAPTERS`` registry validates the value at call time and returns
 ``VerifyMismatchError`` if a non-registered family is passed (FR-007 / FR-010
-of Spec 031). This is the same pattern lookup uses — permissive ``tool_id: str``
+of Spec 031). This is the same pattern find uses — permissive ``tool_id: str``
 where the prompt + BM25 search hint tells the LLM what's valid.
 
-FR-001 (Epic η updated): The LLM sees exactly four tools: resolve_location,
-lookup, verify, submit. Subscribe is deferred until UMMAYA has a real
+FR-001 (Epic η updated): The LLM sees exactly four tools: locate,
+find, check, send. Subscribe is deferred until UMMAYA has a real
 app/push-notification runtime rather than a CLI-only subscription surface.
 """
 
@@ -33,7 +33,6 @@ from pydantic import BaseModel, ConfigDict, Field, RootModel, model_validator
 from ummaya.tools.models import (
     AdapterRealDomainPolicy,
     GovAPITool,
-    ResolveLocationInput,
 )
 
 # ---------------------------------------------------------------------------
@@ -45,21 +44,21 @@ from ummaya.tools.models import (
 
 
 class _ResolveLocationOutput(RootModel[object]):
-    """Placeholder output schema for resolve_location tool registration."""
+    """Placeholder output schema for locate tool registration."""
 
 
 class _LookupOutput(RootModel[object]):
-    """Placeholder output schema for lookup tool registration."""
+    """Placeholder output schema for find tool registration."""
 
 
 class _LookupInputForLLM(BaseModel):
-    """LLM-visible lookup input — fetch-only ``{tool_id, params}`` envelope.
+    """LLM-visible find input — fetch-only ``{tool_id, params}`` envelope.
 
     Spec 2521 (2026-05-01): the previous ``_LookupInput`` (RootModel union of
     LookupSearchInput | LookupFetchInput) exposed BM25 adapter discovery as
     a callable mode. That mis-modeled an *internal backend mechanism* as a
-    user-visible tool: the LLM kept emitting ``lookup(mode='search')`` calls
-    after each answer turn, painting a redundant `● lookup(search:)` block
+    user-visible tool: the LLM kept emitting ``find(mode='search')`` calls
+    after each answer turn, painting a redundant `● find(search:)` block
     in the citizen transcript and burning agentic-loop budget.
 
     The corrected design (per user directive 2026-05-01):
@@ -68,7 +67,7 @@ class _LookupInputForLLM(BaseModel):
        backend runs it automatically against every citizen utterance and
        injects the top-K candidates into the system prompt's
        ``<available_adapters>`` dynamic suffix (see ``stdio.py``).
-    2. The LLM-visible ``lookup`` tool is fetch-only: pick a ``tool_id``
+    2. The LLM-visible ``find`` tool is fetch-only: pick a ``tool_id``
        from the injected suffix, supply ``params``, get a typed result.
     3. ``LookupSearchInput`` / ``LookupSearchResults`` survive as
        internal API consumed by the auto-inject path + the eval harness
@@ -79,7 +78,7 @@ class _LookupInputForLLM(BaseModel):
 
     tool_id: str = Field(
         # Mirrors LookupFetchInput.tool_id pattern (Spec 1636 ADR-007).
-        pattern=r"^([a-z][a-z0-9_]*|plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify|resolve_location))$",
+        pattern=r"^([a-z][a-z0-9_]*|plugin\.[a-z][a-z0-9_]*\.(find|send|check|locate))$",
         description=(
             "Adapter identifier picked from the dynamically-injected "
             "<available_adapters> block. Must come from the candidate "
@@ -96,41 +95,58 @@ class _LookupInputForLLM(BaseModel):
     )
 
 
+class _LocateInputForLLM(BaseModel):
+    """LLM-visible locate input — provider-adapter envelope.
+
+    Location resolution is no longer a monolithic ``query/want`` façade. The
+    model chooses a provider endpoint adapter from ``<available_adapters>`` and
+    fills that adapter's schema directly.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    tool_id: str = Field(
+        pattern=r"^[a-z][a-z0-9_]*$",
+        description=(
+            "Locate adapter id from <available_adapters>, e.g. "
+            "'kakao_keyword_search', 'kakao_address_search', "
+            "'kakao_coord_to_region', 'juso_adm_cd_lookup', or "
+            "'sgis_adm_cd_lookup'."
+        ),
+    )
+    params: dict[str, object] = Field(
+        description="Validated against the selected locate adapter's input_schema."
+    )
+
+
 # ---------------------------------------------------------------------------
-# resolve_location core tool definition (T028)
+# locate core tool definition (T028)
 # ---------------------------------------------------------------------------
 
 RESOLVE_LOCATION_TOOL = GovAPITool(
-    id="resolve_location",
+    id="locate",
     name_ko="위치 정보 조회",
     ministry="UMMAYA",
     category=["위치", "지오코딩", "행정구역"],
-    endpoint="internal://resolve_location",
+    endpoint="internal://locate",
     auth_type="public",
-    input_schema=ResolveLocationInput,
+    input_schema=_LocateInputForLLM,
     output_schema=_ResolveLocationOutput,
     llm_description=(
-        "Convert a free-text Korean place name, address, or landmark into structured "
-        "location identifiers (coordinates, 10-digit 행정동 code, road address, POI).\n\n"
-        "ALWAYS call this tool first before calling lookup(mode='fetch') on any "
-        "location-dependent adapter such as koroad_accident_hazard_search.\n\n"
-        "QUERY DISCIPLINE — pass ONLY a place/location noun. Do NOT splice the "
-        "service the citizen asked about into the query: split '동아대학교 근처 병원' "
-        "into resolve_location(query='동아대학교') first, then hira_hospital_search "
-        "with the returned coordinates. NEVER call resolve_location(query='X 병원') / "
-        "(query='X 식당') / (query='X 주변 약국') — those collapse the citizen's "
-        "two-step intent into a single keyword that Kakao matches as 'X병원' "
-        "(institution name), bringing back the institution's address rather than "
-        "the campus/landmark the citizen referenced. Examples of the right shape: "
-        "query='동아대학교' / '강남역' / '부산 사하구 다대1동' / '경복궁'.\n\n"
-        "want options:\n"
-        "  - 'coords_and_admcd' (default): returns lat/lon + 10-digit adm_cd bundle\n"
-        "  - 'adm_cd': returns only the 10-digit 행정동 administrative code\n"
-        "  - 'coords': returns lat/lon with confidence level\n"
-        "  - 'road_address' / 'jibun_address': returns structured address\n"
-        "  - 'poi': returns the nearest point-of-interest match\n"
-        "  - 'all': returns all of the above in a ResolveBundle\n\n"
-        "Examples: query='서울 강남구', want='adm_cd' → '1168000000'"
+        "Location primitive. Choose a locate adapter from the dynamic "
+        "<available_adapters> block and call locate({tool_id, params}). "
+        "Provider endpoints are separate adapters: Kakao address search, Kakao "
+        "keyword/POI search, Kakao coordinate-to-region, JUSO admCd lookup, and "
+        "SGIS coordinate-to-adm_cd lookup.\n\n"
+        "Do not invent coordinates or administrative codes. If the citizen gives "
+        "a named place/campus/station/landmark, prefer kakao_keyword_search. If "
+        "the citizen gives a structured road/jibun address or district text, "
+        "prefer kakao_address_search or juso_adm_cd_lookup. If a downstream "
+        "adapter needs q0/q1 region names after you have lat/lon, call "
+        "kakao_coord_to_region with those coordinates.\n\n"
+        "Examples:\n"
+        "  locate({tool_id:'kakao_keyword_search', params:{query:'동아대학교 승학캠퍼스'}})\n"
+        "  locate({tool_id:'kakao_coord_to_region', params:{lat:35.115446, lon:128.967669}})"
     ),
     search_hint=(
         "위치 조회 주소 변환 행정동 코드 좌표 지오코딩 POI 장소 검색 "
@@ -148,7 +164,7 @@ RESOLVE_LOCATION_TOOL = GovAPITool(
     cache_ttl_seconds=300,
     rate_limit_per_minute=60,
     is_core=True,
-    primitive="lookup",
+    primitive="locate",
     trigger_examples=[
         "강남역 어디야?",
         "서울시청 주소 알려줘",
@@ -158,15 +174,15 @@ RESOLVE_LOCATION_TOOL = GovAPITool(
 
 
 # ---------------------------------------------------------------------------
-# lookup core tool definition (T028)
+# find core tool definition (T028)
 # ---------------------------------------------------------------------------
 
 LOOKUP_SEARCH_TOOL = GovAPITool(
-    id="lookup",
+    id="find",
     name_ko="데이터 조회",
     ministry="UMMAYA",
     category=["시스템", "도구검색", "데이터조회"],
-    endpoint="internal://lookup",
+    endpoint="internal://find",
     auth_type="public",
     input_schema=_LookupInputForLLM,
     output_schema=_LookupOutput,
@@ -175,7 +191,7 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
         "KMA 현재 관측 등) 를 조회하는 추상 도구. 시스템 프롬프트의 "
         "<available_adapters> 블록에 백엔드가 매 사용자 발화마다 후보 어댑터를 "
         "자동으로 inject 합니다 — LLM 은 그 목록의 tool_id 중 하나를 선택해 "
-        "이 lookup 도구를 호출하면 됩니다.\n\n"
+        "이 find 도구를 호출하면 됩니다.\n\n"
         "사용법:\n"
         '  {"tool_id": "<후보 목록의 tool_id>", "params": {...}}\n\n'
         "예시 (시민: '오늘 부산 날씨'):\n"
@@ -189,12 +205,12 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
         "않습니다 — 결과를 바탕으로 답변하거나, 필요하면 다른 tool_id 로 보완 호출."
     ),
     search_hint=(
-        "데이터 조회 도구 호출 검색 패치 lookup search fetch invoke tool adapter data query"
+        "데이터 조회 도구 호출 검색 패치 find search fetch invoke tool adapter data query"
     ),
     policy=AdapterRealDomainPolicy(
         real_classification_url="https://www.data.go.kr/policy/privacyPolicy.do",
         real_classification_text=(
-            "공공데이터포털 개인정보처리방침 (UMMAYA 내부 lookup 메타-표면 — 시민 PII 미포함)"
+            "공공데이터포털 개인정보처리방침 (UMMAYA 내부 find 메타-표면 — 시민 PII 미포함)"
         ),
         citizen_facing_gate="read-only",
         last_verified=datetime(2026, 4, 29, tzinfo=UTC),
@@ -203,7 +219,7 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
     cache_ttl_seconds=0,
     rate_limit_per_minute=60,
     is_core=True,
-    primitive="lookup",
+    primitive="find",
     trigger_examples=[
         "어떤 도구가 있어?",
         "공공 데이터 검색",
@@ -217,22 +233,22 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
 
 
 # ---------------------------------------------------------------------------
-# Epic η #2298 — verify / submit primitive surfaces
+# Epic η #2298 — check / send primitive surfaces
 # ---------------------------------------------------------------------------
 # These two primitives were previously registered into per-primitive sub-
 # registries only (Spec 031 + Spec 2296) and were NOT visible to the LLM via
 # the OpenAI tool_calls schema. The system prompt teaches the citizen-OPAQUE
-# verify→lookup→submit chain pattern, but the LLM cannot follow it without
+# check→find→send chain pattern, but the LLM cannot follow it without
 # these tools also appearing in `registry.export_core_tools_openai()`.
 # Epic η registers them here as core tools to close the gap.
 
 
 class _SubmitInputForLLM(BaseModel):
-    """LLM-visible submit input schema — `{tool_id, params}` envelope.
+    """LLM-visible send input schema — `{tool_id, params}` envelope.
 
-    Mirrors :class:`ummaya.primitives.submit.SubmitInput` but lives here so the
-    OpenAI tool_calls schema published to FriendliAI for the ``submit`` tool
-    is the submit envelope, NOT the lookup mode-discriminated union. (Codex
+    Mirrors :class:`ummaya.primitives.send.SubmitInput` but lives here so the
+    OpenAI tool_calls schema published to FriendliAI for the ``send`` tool
+    is the send envelope, NOT the find mode-discriminated union. (Codex
     P1 #2 on PR #2480 caught the original copy-paste bug where SUBMIT_TOOL
     was declared with ``input_schema=_LookupInput``.)
     """
@@ -244,7 +260,7 @@ class _SubmitInputForLLM(BaseModel):
         max_length=128,
         pattern=r"^[a-z][a-z0-9_]*$",
         description=(
-            "Registered submit adapter id (e.g. mock_submit_module_hometax_"
+            "Registered send adapter id (e.g. mock_submit_module_hometax_"
             "taxreturn). MUST match a tool_id from the system prompt's "
             "<verify_chain_pattern> 기본 매핑 section."
         ),
@@ -253,7 +269,7 @@ class _SubmitInputForLLM(BaseModel):
         default_factory=dict,
         description=(
             "Adapter-defined payload. MUST include 'delegation_context' "
-            "(the value returned by the prior verify call) plus any adapter-"
+            "(the value returned by the prior check call) plus any adapter-"
             "specific filing fields. Adapter validates against its own "
             "Pydantic model at invocation time."
         ),
@@ -261,7 +277,7 @@ class _SubmitInputForLLM(BaseModel):
 
 
 class _VerifyInputForLLM(BaseModel):
-    """LLM-visible verify input schema — accepts both citizen-shape and legacy-shape.
+    """LLM-visible check input schema — accepts both citizen-shape and legacy-shape.
 
     **Citizen-facing shape** (emitted by K-EXAONE per ``prompts/system_v1.md``
     v2 ``<verify_chain_pattern>``):
@@ -271,7 +287,7 @@ class _VerifyInputForLLM(BaseModel):
         {
           "tool_id": "mock_verify_module_modid",
           "params": {
-            "scope_list": ["lookup:hometax.simplified", "submit:hometax.tax-return"],
+            "scope_list": ["find:hometax.simplified", "send:hometax.tax-return"],
             "purpose_ko": "종합소득세 신고",
             "purpose_en": "Comprehensive income tax filing"
           }
@@ -294,12 +310,12 @@ class _VerifyInputForLLM(BaseModel):
     description tags) for backward compatibility with existing integration tests.
 
     Fix: resolves the schema↔prompt contradiction that caused K-EXAONE to fall
-    back to a conversational "no tool" response instead of emitting verify().
+    back to a conversational "no tool" response instead of emitting check().
     (Epic ζ #2297, FR-008 / FR-008a / FR-008b).
 
     References
     ----------
-    - ``specs/2297-zeta-e2e-smoke/contracts/verify-input-shape.md`` — I-V1 … I-V8
+    - ``specs/2297-zeta-e2e-smoke/contracts/check-input-shape.md`` — I-V1 … I-V8
     - ``specs/2297-zeta-e2e-smoke/data-model.md § 1``
     - ``specs/2297-zeta-e2e-smoke/research.md § Decision 1 + Decision 2``
     """
@@ -421,14 +437,14 @@ class _VerifyInputForLLM(BaseModel):
         After the pre-validator runs, at least ONE of {``tool_id``,
         non-empty ``family_hint``} MUST be present. The default ``family_hint=""``
         + optional ``tool_id`` combination would otherwise let the LLM emit
-        ``verify({})`` and pass schema validation, after which the dispatcher
-        would silently call ``verify(family_hint="")`` and return a
+        ``check({})`` and pass schema validation, after which the dispatcher
+        would silently call ``check(family_hint="")`` and return a
         no-adapter error. Reject empty-everything at the schema boundary so
         the LLM gets a typed validation failure on the same turn.
         """
         if not self.tool_id and not self.family_hint:
             raise ValueError(
-                "verify requires at least one selector — either citizen-shape "
+                "check requires at least one selector — either citizen-shape "
                 "'tool_id' (e.g. 'mock_verify_module_modid') OR legacy-shape "
                 "non-empty 'family_hint'. Both were empty."
             )
@@ -436,11 +452,11 @@ class _VerifyInputForLLM(BaseModel):
 
 
 VERIFY_TOOL = GovAPITool(
-    id="verify",
+    id="check",
     name_ko="인증 및 위임",
     ministry="UMMAYA",
     category=["인증", "위임토큰", "primitive"],
-    endpoint="internal://verify",
+    endpoint="internal://check",
     # api_key auth type required for citizen_facing_gate=login (AAL2) per V6
     # invariant — the delegation ceremony establishes session-bound credentials.
     auth_type="api_key",
@@ -449,26 +465,26 @@ VERIFY_TOOL = GovAPITool(
     llm_description=(
         "Authentication-ceremony primitive that issues a scope-bound "
         "DelegationContext (or IdentityAssertion for any_id_sso). Call this "
-        "FIRST when the citizen requests any OPAQUE-domain submit-class action "
+        "FIRST when the citizen requests any OPAQUE-domain send-class action "
         "(홈택스 신고 / 정부24 민원 / 마이데이터 액션). Pass the scope_list "
-        "covering ALL downstream lookup + submit calls in a single verify "
+        "covering ALL downstream find + send calls in a single check "
         "invocation. The returned DelegationContext is then passed as a "
-        "param into the subsequent lookup(mode='fetch', params={'delegation_"
-        "context': ctx}) and submit(delegation_context=ctx) calls.\n\n"
+        "param into the subsequent find(mode='fetch', params={'delegation_"
+        "context': ctx}) and send(delegation_context=ctx) calls.\n\n"
         "family_hint values + canonical AAL hints are documented in the "
         "system prompt's <verify_families> table. The LLM defaults to the "
         "lowest AAL satisfying the citizen's stated purpose.\n\n"
         "Exception: family_hint='any_id_sso' returns an IdentityAssertion "
-        "with no DelegationToken — do NOT chain a submit after this verify."
+        "with no DelegationToken — do NOT chain a send after this check."
     ),
     search_hint=(
-        "인증 위임 토큰 verify 모바일ID 공동인증서 금융인증서 간편인증 "
+        "인증 위임 토큰 check 모바일ID 공동인증서 금융인증서 간편인증 "
         "마이데이터 KEC SSO delegation token authentication ceremony"
     ),
     policy=AdapterRealDomainPolicy(
         real_classification_url="https://www.data.go.kr/policy/privacyPolicy.do",
         real_classification_text=(
-            "공공데이터포털 개인정보처리방침 (UMMAYA 내부 verify primitive — "
+            "공공데이터포털 개인정보처리방침 (UMMAYA 내부 check primitive — "
             "각 family adapter 가 기관 자체 정책 citation; UMMAYA 권한 발명 X)"
         ),
         citizen_facing_gate="login",
@@ -478,7 +494,7 @@ VERIFY_TOOL = GovAPITool(
     cache_ttl_seconds=0,
     rate_limit_per_minute=30,
     is_core=True,
-    primitive="verify",
+    primitive="check",
     trigger_examples=[
         "내 종합소득세 신고해줘",
         "정부24 민원 하나 신청해줘",
@@ -488,47 +504,47 @@ VERIFY_TOOL = GovAPITool(
 
 
 SUBMIT_TOOL = GovAPITool(
-    id="submit",
+    id="send",
     name_ko="행정 모듈 제출",
     ministry="UMMAYA",
     category=["제출", "신고", "primitive"],
-    endpoint="internal://submit",
-    # api_key auth type required for citizen_facing_gate=submit (AAL3) per V6.
+    endpoint="internal://send",
+    # api_key auth type required for citizen_facing_gate=send (AAL3) per V6.
     auth_type="api_key",
     input_schema=_SubmitInputForLLM,
     output_schema=_LookupOutput,
     llm_description=(
         "Submit primitive — invokes a write-transaction adapter (홈택스 신고, "
         "정부24 민원, mydata 액션 등). REQUIRES a valid DelegationContext "
-        "from a prior verify call with matching scope. tool_id MUST be one of "
-        "the registered submit adapters (e.g. mock_submit_module_hometax_"
+        "from a prior check call with matching scope. tool_id MUST be one of "
+        "the registered send adapters (e.g. mock_submit_module_hometax_"
         "taxreturn). params MUST include 'delegation_context' (the value "
-        "returned by verify) and the adapter-specific payload.\n\n"
+        "returned by check) and the adapter-specific payload.\n\n"
         "On success: returns transaction_id (deterministic URN) + adapter_"
         "receipt with the agency's 접수번호 (e.g. 'hometax-2026-MM-DD-RX-XXXXX'). "
         "Cite the receipt in the citizen-facing Korean response.\n\n"
         "Failure modes: scope_violation / expired / session_violation / "
-        "revoked / DelegationGrantMissing (after any_id_sso verify). Each "
+        "revoked / DelegationGrantMissing (after any_id_sso check). Each "
         "failure surfaces a typed error; do NOT silently retry."
     ),
     search_hint=(
-        "제출 신고 민원 홈택스 정부24 마이데이터 submit transaction receipt "
+        "제출 신고 민원 홈택스 정부24 마이데이터 send transaction receipt "
         "delegation hometax 접수번호 minwon application filing"
     ),
     policy=AdapterRealDomainPolicy(
         real_classification_url="https://www.data.go.kr/policy/privacyPolicy.do",
         real_classification_text=(
-            "공공데이터포털 개인정보처리방침 (UMMAYA 내부 submit primitive — "
+            "공공데이터포털 개인정보처리방침 (UMMAYA 내부 send primitive — "
             "각 adapter 가 기관 자체 정책 citation; UMMAYA 권한 발명 X)"
         ),
-        citizen_facing_gate="submit",
+        citizen_facing_gate="send",
         last_verified=datetime(2026, 4, 30, tzinfo=UTC),
     ),
     is_concurrency_safe=False,
     cache_ttl_seconds=0,
     rate_limit_per_minute=30,
     is_core=True,
-    primitive="submit",
+    primitive="send",
     trigger_examples=[
         "신고 제출",
         "민원 신청 마무리",
@@ -539,8 +555,8 @@ SUBMIT_TOOL = GovAPITool(
 def register_mvp_surface(registry: object) -> None:
     """Register the MVP LLM-visible core tools — 4-primitive surface.
 
-    Spec 022 / Spec 1634 shipped resolve_location + lookup. Epic η #2298 added
-    verify and submit so the citizen-OPAQUE chain the system prompt teaches is
+    Spec 022 / Spec 1634 shipped locate + find. Epic η #2298 added
+    check and send so the citizen-OPAQUE chain the system prompt teaches is
     actually callable from the OpenAI tool_calls schema sent to the LLM.
 
     These tools are NOT bound to executor adapters — their invocation is

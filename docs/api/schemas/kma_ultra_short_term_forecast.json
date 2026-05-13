@@ -104,14 +104,14 @@
       "type": "integer"
     },
     "nx": {
-      "description": "KMA 격자 X (1-149). resolve_location 으로 받아 그대로 전달.",
+      "description": "KMA 격자 X (1-149). locate 으로 받아 그대로 전달.",
       "maximum": 149,
       "minimum": 1,
       "title": "Nx",
       "type": "integer"
     },
     "ny": {
-      "description": "KMA 격자 Y (1-253). nx 와 함께 resolve_location 으로 받음.",
+      "description": "KMA 격자 Y (1-253). nx 와 함께 locate 으로 받음.",
       "maximum": 253,
       "minimum": 1,
       "title": "Ny",

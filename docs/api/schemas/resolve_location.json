@@ -1,14 +1,14 @@
 {
   "$defs": {
     "_ResolveLocationOutput": {
-      "description": "Placeholder output schema for resolve_location tool registration.",
+      "description": "Placeholder output schema for locate tool registration.",
       "title": "_ResolveLocationOutput"
     }
   },
-  "$id": "https://ummaya.example/api/schemas/resolve_location.json",
+  "$id": "https://ummaya.example/api/schemas/locate.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Input to the resolve_location tool.\n\nConverts a free-text place query into typed location identifiers.\nField shapes and enum values are binding per contracts/resolve_location.input.schema.json.",
+  "description": "Input to the locate tool.\n\nConverts a free-text place query into typed location identifiers.\nField shapes and enum values are binding per contracts/locate.input.schema.json.",
   "properties": {
     "near": {
       "anyOf": [
@@ -60,6 +60,6 @@
   "required": [
     "query"
   ],
-  "title": "resolve_location",
+  "title": "locate",
   "type": "object"
 }

@@ -10,7 +10,7 @@
 
 **Core findings**
 1. UMMAYA already has a **more rigorous security model than CC** (V1–V6 validators on `GovAPITool`, dual auth dispatch with Layer-3 gate in `executor.invoke`), but its tool surface layout diverges from CC sharply: CC groups *all* assets for a tool under `src/tools/<ToolName>/{Tool.ts, UI.tsx, prompt.ts, …}`, whereas UMMAYA groups by **ministry** (`src/ummaya/tools/{koroad,kma,hira,…}`) with **no per-tool UI** in the TUI layer. The TUI renders everything through one generic `PrimitiveDispatcher` (`tui/src/components/primitive/index.tsx:139`).
-2. The **main-tool router is already primitive-first**: the LLM sees `resolve_location`, `lookup`, `submit`, and `verify`. This matches the *main_verb = primitive* rule and is ahead of CC conceptually — CC's Tool interface is still per-verb (Read, Bash, Edit, …).
+2. The **main-tool router is already primitive-first**: the LLM sees `locate`, `find`, `send`, and `check`. This matches the *main_verb = primitive* rule and is ahead of CC conceptually — CC's Tool interface is still per-verb (Read, Bash, Edit, …).
 3. **Live-capable adapters today**: 10 real HTTP-calling adapters (KOROAD×2, KMA×6, HIRA×1) + 1 composite, plus 2 **Layer-3-gated stubs** (NMC, NFA 119, MOHW/SSIS) that are wired into the registry but intentionally return `LookupError(auth_required)` until personal-data auth is provisioned. Mock adapters (`src/ummaya/tools/mock/`) cover the active *submit/verify* primitives — all evidence-backed under `docs/mock/` per the Mock-vs-Scenario rule. `subscribe` is deferred until UMMAYA owns an app/push delivery runtime.
 4. CC's **per-tool file bundle** (`UI.tsx`, `prompt.ts`, `permissions logic`, `ToolSearch searchHint`, preapproved hostnames) has **no UMMAYA analogue** today — the closest we have is `llm_description` on `GovAPITool` and a 16-file shared `primitive/` directory. This is the biggest structural gap for Epic #287 "90% file-layout match".
 5. **Deferred tool loading** (ToolSearch) is idiomatic in CC — `shouldDefer=true` tools ship with stub schemas and require an explicit `ToolSearchTool` call to load. UMMAYA's `lookup(mode="search")` is *equivalent in behaviour* but *inequivalent in shape* — it produces `LookupSearchResult.candidates` rather than a schema-hydration side effect.
@@ -54,10 +54,10 @@ tui/src/components/primitive/     18 .tsx files (850 LOC total)
 
 | Primitive | Entry point | Shape | Code |
 |-----------|-------------|-------|------|
-| `lookup` | `ummaya.tools.lookup.lookup(inp)` | `LookupInput` discriminated on `mode` → `LookupOutput` (5 variants) | `src/ummaya/tools/lookup.py:33` |
-| `resolve_location` | `mvp_surface.RESOLVE_LOCATION_TOOL` | `ResolveLocationInput` → `ResolveLocationOutput` (6 variants) | `src/ummaya/tools/mvp_surface.py:47` / `src/ummaya/tools/resolve_location.py` |
-| `submit` | `ummaya.primitives.submit.submit(tool_id, params)` | `SubmitInput` → `SubmitOutput` (deterministic `transaction_id`) | `src/ummaya/primitives/submit.py:410` |
-| `verify` | `ummaya.primitives.verify.verify(family, session_context)` | `VerifyInput` → discriminated `DigitalOnepassContext | … | VerifyError` | `src/ummaya/primitives/verify.py` |
+| `find` | `ummaya.tools.lookup.lookup(inp)` | `LookupInput` discriminated on `mode` → `LookupOutput` (5 variants) | `src/ummaya/tools/lookup.py:33` |
+| `locate` | `mvp_surface.RESOLVE_LOCATION_TOOL` | `ResolveLocationInput` → `ResolveLocationOutput` (6 variants) | `src/ummaya/tools/mvp_surface.py:47` / `src/ummaya/tools/resolve_location.py` |
+| `send` | `ummaya.primitives.submit.submit(tool_id, params)` | `SubmitInput` → `SubmitOutput` (deterministic `transaction_id`) | `src/ummaya/primitives/submit.py:410` |
+| `check` | `ummaya.primitives.verify.verify(family, session_context)` | `VerifyInput` → discriminated `DigitalOnepassContext | … | VerifyError` | `src/ummaya/primitives/verify.py` |
 
 Every dispatcher owns its own in-process registry (`_ADAPTER_REGISTRY`) parallel to the main `ToolRegistry`, so adapter registration is **primitive-scoped** (`register_submit_adapter`, `register_verify_adapter`) at import time — `src/ummaya/primitives/submit.py:149`. The legacy `GovAPITool` + `ToolExecutor` path handles `lookup(mode="fetch")` via BM25 retrieval then typed Pydantic invocation.
 
@@ -78,8 +78,8 @@ Source-of-truth: `src/ummaya/tools/register_all.py:33-115` (registration order).
 
 | # | tool_id | Ministry | Endpoint (public) | Live? | Auth | PIPA | Evidence |
 |---|---------|----------|-------------------|-------|------|------|----------|
-| 1 | `resolve_location` | UMMAYA meta | `internal://resolve_location` | yes (no key if KAKAO/JUSO/SGIS set) | `public` | non_personal | `mvp_surface.py:47` |
-| 2 | `lookup` | UMMAYA meta | `internal://lookup` | yes | `public` | non_personal | `mvp_surface.py:95` |
+| 1 | `locate` | UMMAYA meta | `internal://resolve_location` | yes (no key if KAKAO/JUSO/SGIS set) | `public` | non_personal | `mvp_surface.py:47` |
+| 2 | `find` | UMMAYA meta | `internal://lookup` | yes | `public` | non_personal | `mvp_surface.py:95` |
 | 3 | `koroad_accident_search` | KOROAD | `apis.data.go.kr/B552061/frequentzoneLg/getRestFrequentzoneLg` | **yes** (data_go_kr key) | `api_key` / AAL1 | non_personal | `koroad/koroad_accident_search.py:343` |
 | 4 | `koroad_accident_hazard_search` | KOROAD | same endpoint, `adm_cd` input | **yes** | `api_key` / AAL1 | non_personal | `koroad/accident_hazard_search.py:865` |
 | 5 | `kma_weather_alert_status` | KMA | `apis.data.go.kr/B552061/…` (alert status) | **yes** | `api_key` / AAL1 | non_personal | `kma/kma_weather_alert_status.py:302` |
@@ -93,7 +93,7 @@ Source-of-truth: `src/ummaya/tools/register_all.py:33-115` (registration order).
 | 13 | `nfa_emergency_info_service` | NFA 119 | NFA getEmg*Info endpoints | **gated stub** | AAL2 | personal_standard | `nfa119/emergency_info_service.py:276` |
 | 14 | `mohw_welfare_eligibility_search` | MOHW/SSIS | SSIS NationalWelfarelistV001 | **gated stub** | AAL2 | personal_standard | `ssis/welfare_eligibility_search.py:168` |
 
-Composite tools have been removed (Epic #1634); the LLM now chains primitive adapters end-to-end through `lookup` per migration tree § L1-B B6.
+Composite tools have been removed (Epic #1634); the LLM now chains primitive adapters end-to-end through `find` per migration tree § L1-B B6.
 
 Mock-only (under `mock/`, evidence in `docs/mock/<system>/`):
 - **verify primitive**: `mock_verify_digital_onepass`, `mock_verify_ganpyeon_injeung`, `mock_verify_geumyung_injeungseo`, `mock_verify_gongdong_injeungseo`, `mock_verify_mobile_id`, `mock_verify_mydata` — shape-mirror of OpenDID / PASS / 공동인증서 / 모바일신분증 / MyData APIs. (`src/ummaya/tools/mock/verify_*.py`).
@@ -104,10 +104,10 @@ Mock-only (under `mock/`, evidence in `docs/mock/<system>/`):
 
 `tui/src/components/primitive/` (18 files, 850 LOC). Single entry `PrimitiveDispatcher` (`index.tsx:139`) switches on `payload.kind` (5 arms + Unknown) and sub-dispatches:
 
-- `lookup` → subtype discriminator → {PointCard, TimeseriesTable, CollectionList, DetailView, ErrorBanner}.
-- `resolve_location` → renders subset of {CoordPill, AdmCodeBadge, AddressBlock, POIMarker}.
-- `submit` → ok? SubmitReceipt : SubmitErrorBanner.
-- `verify` → ok? AuthContextCard : AuthWarningBanner.
+- `find` → subtype discriminator → {PointCard, TimeseriesTable, CollectionList, DetailView, ErrorBanner}.
+- `locate` → renders subset of {CoordPill, AdmCodeBadge, AddressBlock, POIMarker}.
+- `send` → ok? SubmitReceipt : SubmitErrorBanner.
+- `check` → ok? AuthContextCard : AuthWarningBanner.
 - Unknown `kind` → `UnrecognizedPayload` (FR-033 harness discipline: never guess).
 
 The dispatcher is *tool-agnostic*: a KOROAD hazard search and an NMC ER bed lookup both render through `CollectionList`. There is **no per-adapter React component** today.
@@ -232,9 +232,9 @@ Evidence: `.env.example:1-30` (keys UMMAYA currently holds), `register_all.py:33
 | Provider | Key env var | Endpoint pattern | Live adapters bound | Notes |
 |----------|-------------|------------------|---------------------|-------|
 | data.go.kr (KOROAD/KMA/HIRA/NMC) | `UMMAYA_DATA_GO_KR_API_KEY` | `apis.data.go.kr/…` | 10 adapters (rows 3-12 in §2.4) | Single key covers four providers — memory §reference_koroad_portal |
-| Kakao Local | `UMMAYA_KAKAO_API_KEY` | `dapi.kakao.com/v2/local/…` | `resolve_location` (internal) | Backend-only, not LLM-visible |
-| JUSO | `UMMAYA_JUSO_CONFM_KEY` (optional) | `business.juso.go.kr/addrlink/addrLinkApi.do` | `resolve_location` (internal) | Log-and-skip when unset |
-| SGIS | `UMMAYA_SGIS_KEY` + `UMMAYA_SGIS_SECRET` (optional) | `sgis.kostat.go.kr/…` | `resolve_location` (internal) | Log-and-skip when unset |
+| Kakao Local | `UMMAYA_KAKAO_API_KEY` | `dapi.kakao.com/v2/local/…` | `locate` (internal) | Backend-only, not LLM-visible |
+| JUSO | `UMMAYA_JUSO_CONFM_KEY` (optional) | `business.juso.go.kr/addrlink/addrLinkApi.do` | `locate` (internal) | Log-and-skip when unset |
+| SGIS | `UMMAYA_SGIS_KEY` + `UMMAYA_SGIS_SECRET` (optional) | `sgis.kostat.go.kr/…` | `locate` (internal) | Log-and-skip when unset |
 
 ### 5.2 Ministries WITHOUT live auth (Layer-3 gated stubs or not yet wired)
 
@@ -295,7 +295,7 @@ Introduce a TypeScript protocol in `tui/src/tools/UmmayaTool.ts` (new file, **no
 export interface UmmayaTool<Payload extends PrimitivePayload = PrimitivePayload> {
   readonly tool_id: string                    // e.g. 'koroad_accident_hazard_search'
   readonly name_ko: string                    // GovAPITool.name_ko
-  readonly primitive: 'lookup' | 'resolve_location' | 'submit' | 'verify'
+  readonly primitive: 'find' | "locate" | 'send' | 'check'
   readonly searchHint?: string                // derived from GovAPITool.search_hint
   userFacingName(input: Partial<Record<string,unknown>> | undefined): string
   getToolUseSummary?(input: Partial<Record<string,unknown>> | undefined): string | null
@@ -309,7 +309,7 @@ export interface UmmayaTool<Payload extends PrimitivePayload = PrimitivePayload>
     opts: { theme: ThemeName; verbose: boolean }
   ): React.ReactNode
   renderToolUseErrorMessage?(
-    payload: Extract<Payload, { kind: 'lookup'; subtype: 'error' } | { ok: false }>,
+    payload: Extract<Payload, { kind: 'find'; subtype: 'error' } | { ok: false }>,
     opts: { theme: ThemeName; verbose: boolean }
   ): React.ReactNode
 }
@@ -441,7 +441,7 @@ Revised Wave C-2.0 (prerequisite, 2 Teammates):
 | Rule | Compliance |
 |------|------------|
 | **Harness not reimpl** | Plan preserves `GovAPITool` + primitive dispatchers; new layout is file-relocation + TS bridge, not a reimplementation. NMC/NFA/MOHW stay Layer-3 gated — no live-auth backfill attempted here. |
-| **Main verb = primitive** | Main surface stays `resolve_location` + `lookup` + `submit` + `verify`; `subscribe` is deferred until app/push delivery exists. Ministry-specific vocabulary lives in adapters only. New per-adapter UI.tsx is rendering-only; it does not leak ministry shape into the envelope. |
+| **Main verb = primitive** | Main surface stays `locate` + `find` + `send` + `check`; `subscribe` is deferred until app/push delivery exists. Ministry-specific vocabulary lives in adapters only. New per-adapter UI.tsx is rendering-only; it does not leak ministry shape into the envelope. |
 | **Mock evidence-based** | Live/Mock/Scenario matrix in §5 cites public specs per row. No adapter proposed without verified public shape. Scores ≥ 4 all carry a link in `.env.example` / `docs/mock/<system>/README.md`. |
 | **Mock vs Scenario** | Six `docs/mock/` systems retained (data_go_kr, cbs, mydata, barocert, omnione, npki_crypto). Three OPAQUE items (gov24 / kec xml signature / npki portal session) remain in `docs/scenarios/` only, with no adapter proposed. |
 | **No hardcoding** | The LLM continues to drive tool choice via `lookup(mode="search")`. Per-tool `searchHint` stays a bilingual metadata field (`GovAPITool.search_hint`), not a static keyword router. No new static tokenisers / salvage code proposed. |

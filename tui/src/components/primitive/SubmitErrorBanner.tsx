@@ -1,10 +1,10 @@
 /**
  * UMMAYA-original — SubmitErrorBanner renderer.
  *
- * Failure banner shown when a submit primitive returns ok=false.
+ * Failure banner shown when a send primitive returns ok=false.
  * Includes error code, message, optional retry guidance, and mock chip.
  *
- * FR-027: submit error renderer.
+ * FR-027: send error renderer.
  */
 import React from 'react'
 import { Box, Text } from 'ink'

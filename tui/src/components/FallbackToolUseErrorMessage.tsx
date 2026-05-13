@@ -9,6 +9,36 @@ import { useShortcutDisplay } from '../keybindings/useShortcutDisplay.js';
 import { countCharInString } from '../utils/stringUtils.js';
 import { MessageResponse } from './MessageResponse.js';
 const MAX_RENDERED_LINES = 10;
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === 'object' ? value as Record<string, unknown> : null;
+}
+
+function extractStructuredToolError(result: string): string | null {
+  try {
+    const parsed = JSON.parse(result) as unknown;
+    const root = asRecord(parsed);
+    if (!root) return null;
+
+    const error = asRecord(root.error);
+    if (typeof error?.message === 'string' && error.message.trim().length > 0) {
+      return error.message.trim();
+    }
+
+    const nestedResult = asRecord(root.result);
+    if (nestedResult?.kind === 'error' && typeof nestedResult.message === 'string' && nestedResult.message.trim().length > 0) {
+      return nestedResult.message.trim();
+    }
+
+    if (typeof root.message === 'string' && root.message.trim().length > 0) {
+      return root.message.trim();
+    }
+  } catch {
+    // Non-JSON tool errors continue through the normal CC-style tag path.
+  }
+  return null;
+}
+
 type Props = {
   result: ToolResultBlockParam['content'];
   verbose: boolean;
@@ -33,7 +63,9 @@ export function FallbackToolUseErrorMessage(t0) {
       error = "Tool execution failed";
     } else {
       const extractedError = extractTag(result, "tool_use_error") ?? result;
-      const withoutSandboxViolations = removeSandboxViolationTags(extractedError);
+      const structuredError = extractStructuredToolError(extractedError);
+      const displayError = structuredError ?? extractedError;
+      const withoutSandboxViolations = removeSandboxViolationTags(displayError);
       const withoutErrorTags = withoutSandboxViolations.replace(/<\/?error>/g, "");
       const trimmed = withoutErrorTags.trim();
       if (!verbose && trimmed.includes("InputValidationError: ")) {

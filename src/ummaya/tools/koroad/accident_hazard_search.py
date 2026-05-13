@@ -13,7 +13,7 @@ Internal codebook maps the first 5 digits of ``adm_cd`` to KOROAD
     unified as 192 for 2023+ (FR-018, FR-019).
 
 FR-018: ``input_schema`` registered with adm_cd pattern + year.
-FR-019: 2023 code quirks encapsulated here (not in resolve_location).
+FR-019: 2023 code quirks encapsulated here (not in locate).
 FR-037: Adapter is an async coroutine.
 """
 
@@ -52,7 +52,8 @@ class AccidentHazardSearchInput(BaseModel):
         pattern=r"^[0-9]{10}$",
         description=(
             "10-digit 행정동 administrative code. "
-            "Obtain from resolve_location(want='adm_cd'). "
+            "Obtain from a locate adapter that returns adm_cd, such as "
+            "kakao_address_search, juso_adm_cd_lookup, or sgis_adm_cd_lookup. "
             "Example: '1111000000' for 서울특별시 종로구."
         ),
     )
@@ -919,7 +920,7 @@ KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL = GovAPITool(
         "coordinates, occurrence counts, and casualty counts for the specified municipality "
         "and year. "
         # Section 2 — mandatory prerequisite
-        "ORDERING RULE: call resolve_location(want='adm_cd') FIRST to obtain the 10-digit "
+        "ORDERING RULE: call a locate adm_cd adapter FIRST to obtain the 10-digit "
         "adm_cd before invoking this tool — never guess or construct adm_cd from memory. "
         # Section 3 — wire format notes
         "[WIRE FORMAT] Input accepts a 10-digit adm_cd (e.g. '1168000000' for 강남구), "
@@ -930,7 +931,7 @@ KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL = GovAPITool(
         "to reduce context window usage. "
         # Section 4 — when to use this tool vs koroad_accident_search
         "Prefer this tool over koroad_accident_search when the caller already has a "
-        "10-digit adm_cd from resolve_location — it accepts the adm_cd directly and "
+        "10-digit adm_cd from locate — it accepts the adm_cd directly and "
         "handles all siDo/guGun mapping internally. "
         # Section 5 — trigger examples
         "Use this when a user asks about traffic danger zones, accident hotspots, "
@@ -952,7 +953,7 @@ KOROAD_ACCIDENT_HAZARD_SEARCH_TOOL = GovAPITool(
     rate_limit_per_minute=10,
     is_core=False,
     # Spec 031 T032/T033 dual-axis fields — None during pre-v1.2 compatibility window FR-028
-    primitive="lookup",
+    primitive="find",
     published_tier_minimum=None,
     nist_aal_hint=None,
     trigger_examples=[

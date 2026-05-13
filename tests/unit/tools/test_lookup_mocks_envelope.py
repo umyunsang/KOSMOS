@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """B1 — LookupOutput envelope contract regression for lookup mock adapters.
 
-Reproduces the snap-S8-002 regression where the two ``primitive='lookup'``
+Reproduces the snap-S8-002 regression where the two ``primitive='find'``
 mock adapters (``mock_lookup_module_gov24_certificate`` /
 ``mock_lookup_module_hometax_simplified``) returned a flat stamped dict
 without the ``kind`` discriminator, causing

@@ -44,7 +44,7 @@
         }
       ],
       "default": null,
-      "description": "Optional auth artifact from the prior verify step. This older shape-mirror mock does not validate delegation scope; the submit primitive enforces the published tier gate before invocation.",
+      "description": "Optional auth artifact from the prior check step. This older shape-mirror mock does not validate delegation scope; the send primitive enforces the published tier gate before invocation.",
       "title": "Delegation Context"
     },
     "household_size": {

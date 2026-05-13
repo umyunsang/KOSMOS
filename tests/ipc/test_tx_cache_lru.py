@@ -35,11 +35,11 @@ def _make_entry(
     is_irreversible: bool = False,
 ) -> TxEntry:
     """Factory for minimal TxEntry."""
-    response = ToolCallResponse(tool_id="lookup", success=True, data={"v": 1})
+    response = ToolCallResponse(tool_id="find", success=True, data={"v": 1})
     return TxEntry(
         session_id=session_id,
         transaction_id=tx_id,
-        tool_id="lookup",
+        tool_id="find",
         is_irreversible=is_irreversible,
         first_seen_ts=datetime(2026, 4, 19, 12, 0, 0, tzinfo=UTC),
         cached_response=response.to_dict(),

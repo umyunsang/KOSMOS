@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Verify primitive — delegation-only identity binding for Spec 031 US2.
+"""Check primitive — delegation-only identity binding for Spec 031 US2.
 
 FR-009 (harness-not-reimplementation): UMMAYA holds NO private keys, performs
 NO certificate signing, and runs NO HSM or VC-issuer logic. All authentication
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 _tracer = trace.get_tracer("ummaya.primitives.verify")
 
 # ---------------------------------------------------------------------------
-# VerifyInput
+# CheckInput
 # ---------------------------------------------------------------------------
 
 FamilyHint = Literal[
@@ -43,7 +43,7 @@ FamilyHint = Literal[
 
 
 class VerifyInput(BaseModel):
-    """Main-surface input for the verify primitive (FR-006)."""
+    """Main-surface input for the check primitive (FR-006)."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -448,7 +448,7 @@ async def verify(
     family_hint: str,
     session_context: dict[str, object] | None = None,
 ) -> AuthContext | VerifyMismatchError:
-    """Verify primitive dispatcher (T041).
+    """Check primitive dispatcher (T041).
 
     Delegates entirely to the registered adapter for ``family_hint``.  Returns
     ``VerifyMismatchError`` if:
@@ -466,12 +466,12 @@ async def verify(
         session_context = {}
 
     with _tracer.start_as_current_span("gen_ai.tool_loop.iteration") as span:
-        span.set_attribute("gen_ai.tool.name", f"verify:{family_hint}")
+        span.set_attribute("gen_ai.tool.name", f"check:{family_hint}")
         span.set_attribute("ummaya.verify.family_hint", family_hint)
 
         adapter = _VERIFY_ADAPTERS.get(family_hint)
         if adapter is None:
-            logger.warning("verify: no adapter registered for family=%s", family_hint)
+            logger.warning("check: no adapter registered for family=%s", family_hint)
             span.set_attribute("error.type", "adapter_not_found")
             return VerifyMismatchError(
                 family="mismatch_error",
@@ -479,7 +479,7 @@ async def verify(
                 expected_family=family_hint,
                 observed_family="<no_adapter>",
                 message=(
-                    f"No verify adapter registered for family {family_hint!r}. "
+                    f"No check adapter registered for family {family_hint!r}. "
                     "Register a mock or live adapter via register_verify_adapter()."
                 ),
             )
@@ -553,6 +553,9 @@ async def verify(
         return result
 
 
+check = verify
+
+
 __all__ = [
     "AuthContext",
     "DigitalOnepassContext",
@@ -567,5 +570,5 @@ __all__ = [
     "VerifyOutput",
     "_AuthContextBase",
     "register_verify_adapter",
-    "verify",
+    "check",
 ]

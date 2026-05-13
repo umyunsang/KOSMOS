@@ -115,7 +115,7 @@ from plugin_busan_bike.schema import LookupInput
 async def main():
     payload = LookupInput(district="해운대구")
     result = await adapter(payload)
-    fixture_path = Path("tests/fixtures/plugin.busan_bike.lookup.json")
+    fixture_path = Path("tests/fixtures/plugin.busan_bike.find.json")
     fixture_path.parent.mkdir(parents=True, exist_ok=True)
     fixture_path.write_text(json.dumps(result, ensure_ascii=False, indent=2))
     print(f"Wrote {fixture_path}")
@@ -127,7 +127,7 @@ asyncio.run(main())
 3. fixture 를 commit:
 
 ```bash
-git add tests/fixtures/plugin.busan_bike.lookup.json
+git add tests/fixtures/plugin.busan_bike.find.json
 git commit -m "test: record happy-path fixture for busan_bike"
 ```
 
@@ -140,7 +140,7 @@ from pathlib import Path
 import pytest
 
 _FIXTURE = json.loads(
-    Path(__file__).parent.joinpath("fixtures/plugin.busan_bike.lookup.json").read_text()
+    Path(__file__).parent.joinpath("fixtures/plugin.busan_bike.find.json").read_text()
 )
 
 

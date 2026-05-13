@@ -1,14 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
-"""resolve_location facade coroutine — T023.
+"""locate facade coroutine — T023.
 
 Single entry point for converting a natural-language place reference into
 structured location data (coordinates, 10-digit 행정동 code, address, POI).
 
-Deterministic resolver chain: kakao → juso → sgis.
-Short-circuits on the first non-error result for the requested ``want`` type.
+Legacy compatibility resolver chain: kakao → juso → sgis.
+New LLM-visible calls should use the root ``locate({tool_id, params})`` tool
+with provider adapters from ``ummaya.tools.location_adapters``.
 
 FR-002: Accepts ``query``, ``want``, and optional ``near`` anchor.
-FR-003: Kakao / JUSO / SGIS are backend-only; never exposed as LLM tools.
+FR-003: Kakao / JUSO / SGIS are exposed as separate locate adapters; this
+legacy façade is retained for old transcripts and direct unit tests.
 FR-035: ``source`` field populated on every successful result.
 FR-036: ``ResolveBundle`` carries per-backend provenance.
 """
@@ -40,7 +42,7 @@ logger = logging.getLogger(__name__)
 def _compact_match_text(value: str) -> str:
     """Normalize Korean/English location text for conservative relevance checks."""
     compact = re.sub(r"[^0-9a-zA-Z가-힣]+", "", value).lower()
-    return compact.replace("특별", "").replace("광역", "")
+    return compact.replace("특별", "").replace("광역", "").replace("대학교", "대")
 
 
 def _keyword_doc_matches_query(query: str, doc: object) -> bool:
@@ -151,17 +153,19 @@ async def _kakao_geocode(
                 lat = lon = None
             if lat is None or lon is None:
                 return None
-            return POIResult(
-                kind="poi",
-                name=doc.place_name,
-                category=doc.category_name,
-                lat=lat,
-                lon=lon,
-                source="kakao",
-                address_name=doc.address_name if isinstance(doc.address_name, str) else None,
-                road_address_name=(
-                    doc.road_address_name if isinstance(doc.road_address_name, str) else None
-                ),
+            return _poi_with_kma_grid(
+                POIResult(
+                    kind="poi",
+                    name=doc.place_name,
+                    category=doc.category_name,
+                    lat=lat,
+                    lon=lon,
+                    source="kakao",
+                    address_name=doc.address_name if isinstance(doc.address_name, str) else None,
+                    road_address_name=(
+                        doc.road_address_name if isinstance(doc.road_address_name, str) else None
+                    ),
+                )
             )
         except Exception as exc:  # noqa: BLE001
             logger.debug("kakao keyword geocode failed for %r: %s", query, exc)
@@ -195,6 +199,16 @@ def _with_kma_grid(coords: CoordResult) -> CoordResult:
         logger.debug("kma grid projection skipped: %s", exc)
         return coords
     return coords.model_copy(update={"nx": nx, "ny": ny})
+
+
+def _poi_with_kma_grid(poi: POIResult) -> POIResult:
+    """Attach official KMA nx/ny grid coordinates to POI results when possible."""
+    try:
+        nx, ny = latlon_to_lcc(poi.lat, poi.lon)
+    except KMADomainError as exc:
+        logger.debug("poi kma grid projection skipped: %s", exc)
+        return poi
+    return poi.model_copy(update={"nx": nx, "ny": ny})
 
 
 def _adm_level_from_code(code: str) -> Literal["sido", "sigungu", "eupmyeondong"]:
@@ -563,7 +577,7 @@ async def resolve_location(  # noqa: C901
             message="Query must not be empty.",
         )
 
-    logger.debug("resolve_location: query=%r want=%s", query, want)
+    logger.debug("locate: query=%r want=%s", query, want)
 
     # --- coords path ---
     if want == "coords":
@@ -695,21 +709,23 @@ async def resolve_location(  # noqa: C901
                 except (ValueError, TypeError):
                     lat = lon = None
                 if lat is not None and lon is not None:
-                    return POIResult(
-                        kind="poi",
-                        name=doc.place_name,
-                        category=doc.category_name,
-                        lat=lat,
-                        lon=lon,
-                        source="kakao",
-                        address_name=(
-                            doc.address_name if isinstance(doc.address_name, str) else None
-                        ),
-                        road_address_name=(
-                            doc.road_address_name
-                            if isinstance(doc.road_address_name, str)
-                            else None
-                        ),
+                    return _poi_with_kma_grid(
+                        POIResult(
+                            kind="poi",
+                            name=doc.place_name,
+                            category=doc.category_name,
+                            lat=lat,
+                            lon=lon,
+                            source="kakao",
+                            address_name=(
+                                doc.address_name if isinstance(doc.address_name, str) else None
+                            ),
+                            road_address_name=(
+                                doc.road_address_name
+                                if isinstance(doc.road_address_name, str)
+                                else None
+                            ),
+                        )
                     )
         except Exception as exc:  # noqa: BLE001
             logger.debug("poi resolution failed for %r: %s", query, exc)
@@ -823,21 +839,25 @@ async def resolve_location(  # noqa: C901
                                 source="kakao",
                             )
                         )
-                    poi_result = POIResult(
-                        kind="poi",
-                        name=doc_kw.place_name,
-                        category=doc_kw.category_name,
-                        lat=lat_kw,
-                        lon=lon_kw,
-                        source="kakao",
-                        address_name=(
-                            doc_kw.address_name if isinstance(doc_kw.address_name, str) else None
-                        ),
-                        road_address_name=(
-                            doc_kw.road_address_name
-                            if isinstance(doc_kw.road_address_name, str)
-                            else None
-                        ),
+                    poi_result = _poi_with_kma_grid(
+                        POIResult(
+                            kind="poi",
+                            name=doc_kw.place_name,
+                            category=doc_kw.category_name,
+                            lat=lat_kw,
+                            lon=lon_kw,
+                            source="kakao",
+                            address_name=(
+                                doc_kw.address_name
+                                if isinstance(doc_kw.address_name, str)
+                                else None
+                            ),
+                            road_address_name=(
+                                doc_kw.road_address_name
+                                if isinstance(doc_kw.road_address_name, str)
+                                else None
+                            ),
+                        )
                     )
         else:
             coords_bundle = await _kakao_coords(query, client=client)
@@ -997,3 +1017,6 @@ async def resolve_location_v4(
         confidence=confidence,  # type: ignore[arg-type]
         source="kakao",
     )
+
+
+locate = resolve_location

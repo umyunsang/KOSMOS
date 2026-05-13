@@ -92,7 +92,7 @@ export function AssistantToolUseMessage(t0) {
     // ToolRegistry 를 dynamic 으로 LLM 에 emit 한 이후, TUI 의 정적
     // ``getAllBaseTools()`` 에 없는 tool (예: 새 agency adapter 또는
     // 과거 캡처의 virtual tool) 의 ``tool_call`` frame 도 도착함. 이전 코드는
-    // ``return null`` 로 silent drop → 화면에 ``⏺ resolve_location``
+    // ``return null`` 로 silent drop → 화면에 ``⏺ locate``
     // 라인 자체가 안 보이고 logError 만 발생 → 시민이 chain 의 어떤
     // 단계에서 좌표가 resolve 됐는지 모름. Generic placeholder render 로
     // 변경: tool name + raw JSON input 만 표시. CC 의 byte-identical

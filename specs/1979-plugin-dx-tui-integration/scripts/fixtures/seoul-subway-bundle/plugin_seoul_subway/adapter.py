@@ -3,7 +3,7 @@
 
 Returns canned subway arrival data without making any outbound network
 call. The fixture stays in sync with the manifest's tool_id =
-plugin.seoul_subway.lookup.
+plugin.seoul_subway.find.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ class LookupOutput(BaseModel):
 
 
 TOOL = GovAPITool(
-    id="plugin.seoul_subway.lookup",
+    id="plugin.seoul_subway.find",
     ministry="OTHER",
     category=["transport"],
     endpoint="https://test.local/seoul-subway/arrivals",

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-// UMMAYA-original — Epic #1634 P3 · VerifyPrimitive.
+// UMMAYA-original — Epic #1634 P3 · CheckPrimitive.
 //
-// LLM-visible tool name: "verify"
-// Primitive wrapper over Spec 031 ummaya.primitives.verify.
+// LLM-visible tool name: "check"
+// Primitive wrapper over Spec 031 ummaya.primitives.check.
 // Delegates credential verification to an auth vendor — never mints credentials.
 //
 // Epic γ #2294 · T013/T014/T015: real validateInput + renderToolResultMessage.
@@ -22,7 +22,7 @@ import {
   type AdapterWithPolicy,
 } from '../shared/primitiveCitation.js'
 import { extractMockMeta, mockLabel } from '../shared/mockDisclaimer.js'
-import { VERIFY_TOOL_NAME, DESCRIPTION, VERIFY_TOOL_PROMPT } from './prompt.js'
+import { CHECK_TOOL_NAME, DESCRIPTION, CHECK_TOOL_PROMPT } from './prompt.js'
 import {
   isManifestSynced,
   resolveAdapter,
@@ -96,10 +96,10 @@ export type Output = z.infer<OutputSchema>
 // ---------------------------------------------------------------------------
 
 export const VerifyPrimitive = buildTool({
-  name: VERIFY_TOOL_NAME,
+  name: CHECK_TOOL_NAME,
 
   /** Bilingual keyword hint for ToolSearch deferred-tool discovery. */
-  searchHint: '인증 검증 verify credential auth 공인인증서 간편인증 본인확인',
+  searchHint: '인증 검증 check credential auth 공인인증서 간편인증 본인확인',
 
   maxResultSizeChars: 50_000,
 
@@ -116,7 +116,7 @@ export const VerifyPrimitive = buildTool({
   },
 
   isConcurrencySafe() {
-    // verify is read-only (delegates, never mints) — concurrency safe.
+    // check is read-only (delegates, never mints) — concurrency safe.
     return true
   },
 
@@ -129,7 +129,7 @@ export const VerifyPrimitive = buildTool({
   },
 
   async prompt() {
-    return VERIFY_TOOL_PROMPT
+    return CHECK_TOOL_PROMPT
   },
 
   mapToolResultToToolResultBlockParam(output, toolUseID) {
@@ -240,7 +240,7 @@ export const VerifyPrimitive = buildTool({
       return renderVerboseOutputJson(output)
     }
     // UMMAYA hotfix #2519 — after dispatchPrimitive register-and-await
-    // rewrite, output.result is the actual verify primitive output
+    // rewrite, output.result is the actual check primitive output
     // unwrapped from ToolResultEnvelope.result.
     if (output.ok === true) {
       // Extract verification status from the result payload.
@@ -367,7 +367,7 @@ export const VerifyPrimitive = buildTool({
   },
 
   /**
-   * verify delegates to an external auth vendor (credentials, 공인인증서,
+   * check delegates to an external auth vendor (credentials, 공인인증서,
    * 간편인증). Always ask for citizen permission before proceeding.
    * Spec 024 invariant: adapters cite agency policy; the permission gauntlet
    * surfaces that citation via context.ummayaCitations (set in validateInput).
@@ -380,14 +380,14 @@ export const VerifyPrimitive = buildTool({
   },
 
   /**
-   * Dispatch verify call via real IPC bridge (T010 — stub replaced).
+   * Dispatch check call via real IPC bridge (T010 — stub replaced).
    *
    * I-D8 / FR-009: args forwarded verbatim — NO tool_id→family_hint translation
    * at TUI side. The backend's _VerifyInputForLLM pre-validator owns translation.
    */
   async call(input, context) {
     return dispatchPrimitive<Output>({
-      primitive: 'verify',
+      primitive: 'check',
       args: input as Record<string, unknown>,  // forwarded verbatim (I-D8)
       context,
       registry: getOrCreatePendingCallRegistry(),

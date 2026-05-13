@@ -13,7 +13,7 @@ Fix:
     invoke ``register_all_tools(registry, executor)`` exactly once per
     session, and ``_dispatch_primitive`` reuses those singletons.
 
-This test exercises the full IPC harness (no monkey-patch on ``lookup``)
+This test exercises the full IPC harness (no monkey-patch on ``find``)
 and asserts that a citizen weather query surfaces KMA adapters via BM25,
 proving the dispatcher is wired to the populated registry.
 """
@@ -126,7 +126,7 @@ class _LookupSearchOnceLLMClient:
                 type="tool_call_delta",
                 tool_call_index=0,
                 tool_call_id=call_id,
-                function_name="lookup",
+                function_name="find",
                 function_args_delta=args,
             )
             yield StreamEvent(type="done")
@@ -215,7 +215,7 @@ async def _run_lookup_search(
 async def test_dispatch_primitive_lookup_rejects_legacy_search_mode(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Spec 2521 (2026-05-01): the LLM-visible ``lookup`` surface is
+    """Spec 2521 (2026-05-01): the LLM-visible ``find`` surface is
     fetch-only.  BM25 adapter discovery is a backend-internal mechanism
     (auto-injected into the system prompt's ``<available_adapters>``
     dynamic suffix) — it is no longer a callable mode.
@@ -236,7 +236,7 @@ async def test_dispatch_primitive_lookup_rejects_legacy_search_mode(
     assert frames, "No IPC frames emitted"
 
     tool_results = [f for f in frames if f.get("kind") == "tool_result"]
-    lookup_results = [f for f in tool_results if f.get("envelope", {}).get("kind") == "lookup"]
+    lookup_results = [f for f in tool_results if f.get("envelope", {}).get("kind") == "find"]
     assert lookup_results, (
         f"expected at least one lookup tool_result frame; got kinds="
         f"{[f.get('envelope', {}).get('kind') for f in tool_results]}"

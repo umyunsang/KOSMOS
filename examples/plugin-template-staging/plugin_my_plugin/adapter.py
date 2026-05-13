@@ -24,7 +24,7 @@ def _build_tool() -> Any:
     from ummaya.tools.models import GovAPITool
 
     return GovAPITool(
-        id="plugin.my_plugin.lookup",
+        id="plugin.my_plugin.find",
         name_ko="my_plugin 조회",
         ministry="OTHER",
         category=["my_plugin"],
@@ -38,7 +38,7 @@ def _build_tool() -> Any:
         is_irreversible=False,
         dpa_reference=None,
         is_personal_data=False,
-        primitive="lookup",
+        primitive="find",
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",
     )

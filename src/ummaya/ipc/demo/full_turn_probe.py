@@ -69,7 +69,7 @@ def build_full_turn(session_id: str) -> list[object]:
         ts=_ts(),
         kind="tool_call",
         call_id=call_id,
-        name="lookup",
+        name="find",
         arguments={"tool_id": "koroad_accident_hazard_search", "q": "서울"},
         transaction_id=tx_id,
     )
@@ -80,7 +80,7 @@ def build_full_turn(session_id: str) -> list[object]:
         ts=_ts(),
         kind="tool_result",
         call_id=call_id,
-        envelope=ToolResultEnvelope(kind="lookup"),
+        envelope=ToolResultEnvelope(kind="find"),
         transaction_id=tx_id,
     )
     assistant_chunk = AssistantChunkFrame(

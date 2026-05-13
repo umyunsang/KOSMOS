@@ -2,7 +2,7 @@
 """T035 — Registry count breakdown assertion (SC-003).
 
 Boots the registry and asserts the active count breakdown from spec.md SC-003:
-  - Main ToolRegistry: 33 entries
+  - Main ToolRegistry: 38 entries
   - ummaya.primitives.verify._VERIFY_ADAPTERS: 10 families
   - ummaya.primitives.submit._ADAPTER_REGISTRY: 5 families
 
@@ -16,12 +16,12 @@ do NOT silently adjust the expected values.
 from __future__ import annotations
 
 # ---------------------------------------------------------------------------
-# Main ToolRegistry count — 33 total
+# Main ToolRegistry count — 38 total
 # ---------------------------------------------------------------------------
-# Epic η #2298 — extended from 16 to 18 by adding `verify` / `submit`
+# Epic η #2298 — extended from 16 to 18 by adding `check` / `send`
 # to mvp_surface as `is_core=True` GovAPITool entries (FR-021).
-# Without these, the LLM cannot emit the verify→lookup→submit chain because
-# `registry.export_core_tools_openai()` only returned [resolve_location, lookup].
+# Without these, the LLM cannot emit the check→find→send chain because
+# `registry.export_core_tools_openai()` only returned [locate, find].
 # The 3 new entries are the canonical primitives, not new agency adapters.
 
 # Epic ζ #2297 path B (live smoke 2026-04-30 follow-up) — extended from 18 to 33
@@ -32,14 +32,18 @@ from __future__ import annotations
 #   - 5 submit wrappers (mock_submit_module_{hometax_taxreturn,gov24_minwon,
 #     public_mydata_action} + mock_traffic_fine_pay_v1 + mock_welfare_application_submit_v1)
 # These wrappers are registered with is_core=False so the LLM's primary tool list
-# stays at active primitives + lookup-class Live; they participate in lookup(mode="search")
+# stays at active primitives + find-class Live; they participate in find(mode="search")
 # BM25 corpus so verify/submit candidates surface for citizen queries
 # (the gap that blocked η T011 + ζ T018 live smoke runs).
-_EXPECTED_MAIN_REGISTRY_COUNT = 33
+# Agentic locate refactor — extended from 33 to 38 by registering five
+# provider-specific locate adapters instead of hiding them behind a fused
+# locate primitive.
+_EXPECTED_MAIN_REGISTRY_COUNT = 38
 
 _EXPECTED_MAIN_REGISTRY_BREAKDOWN = {
     "live_adapters": 12,  # 12 Live: koroad ×2, kma ×6, hira ×1, nfa ×1, nmc ×1, mohw ×1
-    "mvp_surface": 2,  # lookup + resolve_location (main-verb surface)
+    "mvp_surface": 4,  # find + locate + check + send (main-verb surface)
+    "locate_adapters": 5,  # kakao/juso/provider-specific locate adapters
     "lookup_mocks": 2,  # mock_lookup_module_hometax_simplified + mock_lookup_module_gov24_certificate  # noqa: E501
 }
 
@@ -60,7 +64,7 @@ _EXPECTED_LIVE_TOOL_IDS = frozenset(
     }
 )
 
-_EXPECTED_MVP_SURFACE_IDS = frozenset({"lookup", "resolve_location", "verify", "submit"})
+_EXPECTED_MVP_SURFACE_IDS = frozenset({"find", "locate", "check", "send"})
 
 _EXPECTED_LOOKUP_MOCK_IDS = frozenset(
     {
@@ -71,7 +75,7 @@ _EXPECTED_LOOKUP_MOCK_IDS = frozenset(
 
 
 def test_main_registry_total_count() -> None:
-    """Main ToolRegistry must have exactly 16 entries after register_all_tools()."""
+    """Main ToolRegistry must have exactly 38 entries after register_all_tools()."""
     import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
     from ummaya.tools.executor import ToolExecutor
     from ummaya.tools.register_all import register_all_tools
@@ -109,7 +113,7 @@ def test_main_registry_live_tool_ids_present() -> None:
 
 
 def test_main_registry_mvp_surface_ids_present() -> None:
-    """The 2 MVP-surface tool IDs (lookup, resolve_location) must be registered."""
+    """The 4 MVP-surface tool IDs (find, locate, check, send) must be registered."""
     import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
     from ummaya.tools.executor import ToolExecutor
     from ummaya.tools.register_all import register_all_tools
@@ -302,9 +306,10 @@ def test_all_active_surface_counts_match_canonical() -> None:
         # Epic ζ #2297 path B (live smoke 2026-04-30) — main_registry extended
         # from 18 to 33 by discovery_bridge bridging 15 non-core mock adapters
         # (10 verify + 5 submit family wrappers) into the BM25
-        # corpus so lookup(mode="search") surfaces them. is_core=False so the
-        # primary LLM tool list stays at active primitives + lookup-class Live.
-        "main_registry": 33,
+        # corpus so find(mode="search") surfaces them. is_core=False so the
+        # primary LLM tool list stays at active primitives + find-class Live.
+        # Locate-provider adapters add five first-class registry entries.
+        "main_registry": 38,
         "verify_families": 10,
         "submit_adapters": 5,
     }

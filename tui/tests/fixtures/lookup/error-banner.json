@@ -5,7 +5,7 @@
   "kind": "tool_result",
   "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AK",
   "envelope": {
-    "kind": "lookup",
+    "kind": "find",
     "subtype": "error",
     "tool_id": "koroad_accident_hazard_search",
     "title": "Search Failed",

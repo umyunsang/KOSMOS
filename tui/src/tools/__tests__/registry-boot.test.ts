@@ -56,8 +56,8 @@ describe('verifyBootRegistry — full active-primitive registry (Case 1)', () =>
     const registry: readonly Tool[] = [
       LookupPrimitive,
       ResolveLocationPrimitive,
-      fakePrimitive('submit'),
-      fakePrimitive('verify'),
+      fakePrimitive('send'),
+      fakePrimitive('check'),
     ]
     const result = verifyBootRegistry(registry)
 
@@ -80,14 +80,14 @@ describe('verifyBootRegistry — missing renderToolResultMessage (Case 2)', () =
     // Codex P2 fix moved the "all active primitives present" check ahead
     // of the 9-member walk. The registry must contain all active primitive names
     // for the per-member walk to be reached.
-    const brokenLookup = fakePrimitive('lookup', {
+    const brokenLookup = fakePrimitive('find', {
       renderToolResultMessage: undefined,
     })
     const registry: readonly Tool[] = [
       brokenLookup,
-      fakePrimitive('resolve_location'),
-      fakePrimitive('submit'),
-      fakePrimitive('verify'),
+      fakePrimitive('locate'),
+      fakePrimitive('send'),
+      fakePrimitive('check'),
     ]
 
     const result = verifyBootRegistry(registry)
@@ -95,11 +95,11 @@ describe('verifyBootRegistry — missing renderToolResultMessage (Case 2)', () =
     expect(result.ok).toBe(false)
     if (result.ok) return // narrow type
 
-    expect(result.offendingTool).toBe('lookup')
+    expect(result.offendingTool).toBe('find')
     expect(result.missingMembers).toContain('renderToolResultMessage')
 
     // Diagnostic must name the tool, the 9-member contract, and Korean text
-    expect(result.diagnostic).toContain('lookup')
+    expect(result.diagnostic).toContain('find')
     expect(result.diagnostic).toContain('9-member')
     expect(result.diagnostic).toContain('UMMAYA는 9-member ToolDef 계약을')
   })
@@ -111,14 +111,14 @@ describe('verifyBootRegistry — missing renderToolResultMessage (Case 2)', () =
 
 describe('verifyBootRegistry — isMcp undefined (Case 3)', () => {
   test('returns ok === false, missingMembers contains isMcp', () => {
-    const brokenSubmit = fakePrimitive('submit', {
+    const brokenSubmit = fakePrimitive('send', {
       isMcp: undefined,
     })
     const registry: readonly Tool[] = [
-      fakePrimitive('lookup'),
-      fakePrimitive('resolve_location'),
+      fakePrimitive('find'),
+      fakePrimitive('locate'),
       brokenSubmit,
-      fakePrimitive('verify'),
+      fakePrimitive('check'),
     ]
 
     const result = verifyBootRegistry(registry)
@@ -139,10 +139,10 @@ describe('verifyBootRegistry — isMcp undefined (Case 3)', () => {
 describe('verifyBootRegistry — missing reserved primitive (Case 4 / Codex P2)', () => {
   test('returns ok === false when verify is missing from registry', () => {
     const registry: readonly Tool[] = [
-      fakePrimitive('lookup'),
-      fakePrimitive('resolve_location'),
-      fakePrimitive('submit'),
-      // 'verify' deliberately omitted
+      fakePrimitive('find'),
+      fakePrimitive('locate'),
+      fakePrimitive('send'),
+      // 'check' deliberately omitted
     ]
 
     const result = verifyBootRegistry(registry)
@@ -151,8 +151,8 @@ describe('verifyBootRegistry — missing reserved primitive (Case 4 / Codex P2)'
     if (result.ok) return // narrow type
 
     expect(result.offendingTool).toBe('<reserved-primitive-set>')
-    expect(result.missingMembers).toEqual(['verify'])
-    expect(result.diagnostic).toContain('verify')
+    expect(result.missingMembers).toEqual(['check'])
+    expect(result.diagnostic).toContain('check')
     expect(result.diagnostic).toContain('활성 primitive')
   })
 
@@ -165,10 +165,10 @@ describe('verifyBootRegistry — missing reserved primitive (Case 4 / Codex P2)'
     expect(result.offendingTool).toBe('<reserved-primitive-set>')
     // All active reserved names are missing.
     expect(result.missingMembers).toEqual([
-      'lookup',
-      'resolve_location',
-      'submit',
-      'verify',
+      'find',
+      'locate',
+      'send',
+      'check',
     ])
   })
 })

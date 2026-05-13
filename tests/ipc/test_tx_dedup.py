@@ -37,7 +37,7 @@ from ummaya.ipc.tx_cache import (
 
 SESSION = "sess-dedup-test"
 TOOL_SUBMIT = "gov24_submit"
-TOOL_LOOKUP = "lookup"
+TOOL_LOOKUP = "find"
 
 
 def _success_response(tool_id: str = TOOL_SUBMIT) -> ToolCallResponse:

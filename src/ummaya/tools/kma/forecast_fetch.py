@@ -26,7 +26,7 @@ Registration:
 from __future__ import annotations
 
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -53,9 +53,19 @@ logger = logging.getLogger(__name__)
 
 _BASE_URL = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst"
 
-_VALID_BASE_TIMES: frozenset[str] = frozenset(
-    {"0200", "0500", "0800", "1100", "1400", "1700", "2000", "2300"}
+_BASE_TIME_ORDER: tuple[str, ...] = (
+    "0200",
+    "0500",
+    "0800",
+    "1100",
+    "1400",
+    "1700",
+    "2000",
+    "2300",
 )
+_VALID_BASE_TIMES: frozenset[str] = frozenset(_BASE_TIME_ORDER)
+_NO_DATA_RESULT_CODE = "03"
+_MAX_BASE_SLOT_ATTEMPTS = 8
 
 # ---------------------------------------------------------------------------
 # Input schema (Pydantic v2 strict — no Any)
@@ -77,7 +87,7 @@ class KmaForecastFetchInput(BaseModel):
         description=(
             "WGS-84 latitude of the target location, in decimal degrees. "
             "For Korean locations this is typically 33–38. "
-            "Obtain from resolve_location(want='coords')."
+            "Obtain from a coordinate-producing locate adapter."
         ),
     )
     lon: float = Field(
@@ -86,7 +96,7 @@ class KmaForecastFetchInput(BaseModel):
         description=(
             "WGS-84 longitude of the target location, in decimal degrees. "
             "For Korean locations this is typically 126–130. "
-            "Obtain from resolve_location(want='coords')."
+            "Obtain from a coordinate-producing locate adapter."
         ),
     )
     base_date: str = Field(
@@ -175,12 +185,64 @@ def _normalize_items(raw: object) -> list[dict[str, object]]:
     return []
 
 
+def _previous_base_slot(base_date: str, base_time: str) -> tuple[str, str]:
+    """Return the previous KMA short-term forecast publication slot."""
+    idx = _BASE_TIME_ORDER.index(base_time)
+    if idx > 0:
+        return base_date, _BASE_TIME_ORDER[idx - 1]
+
+    base_day = datetime.strptime(base_date, "%Y%m%d").replace(tzinfo=_SEOUL_TZ)
+    prev_day = base_day - timedelta(days=1)
+    return prev_day.strftime("%Y%m%d"), _BASE_TIME_ORDER[-1]
+
+
+def _candidate_base_slots(
+    base_date: str,
+    base_time: str,
+    *,
+    max_attempts: int = _MAX_BASE_SLOT_ATTEMPTS,
+) -> list[tuple[str, str]]:
+    """Return current and prior KMA base slots for NO_DATA recovery."""
+    slots: list[tuple[str, str]] = []
+    current_date = base_date
+    current_time = base_time
+    for _ in range(max_attempts):
+        slots.append((current_date, current_time))
+        current_date, current_time = _previous_base_slot(current_date, current_time)
+    return slots
+
+
+def _extract_response_header(payload: dict[str, Any]) -> tuple[dict[str, Any], str, str]:
+    """Return (response body, resultCode, resultMsg) from a KMA envelope."""
+    resp_body = payload["response"]
+    header = resp_body["header"]
+    result_code = str(header["resultCode"])
+    result_msg = str(header.get("resultMsg", ""))
+    return resp_body, result_code, result_msg
+
+
+def _extract_item_list(resp_body: dict[str, Any]) -> list[dict[str, object]]:
+    """Extract and normalize KMA response body items."""
+    body = resp_body.get("body", {})
+    if not isinstance(body, dict):
+        return []
+
+    raw_items_container = body.get("items", {})
+    if not raw_items_container or isinstance(raw_items_container, str):
+        return []
+    if not isinstance(raw_items_container, dict):
+        return []
+
+    raw_items = raw_items_container.get("item")
+    return _normalize_items(raw_items)
+
+
 # ---------------------------------------------------------------------------
 # Core async handler
 # ---------------------------------------------------------------------------
 
 
-async def _fetch(
+async def _fetch(  # noqa: C901
     inp: KmaForecastFetchInput,
     *,
     client: httpx.AsyncClient | None = None,
@@ -195,7 +257,6 @@ async def _fetch(
         LookupTimeseries on success, LookupError on domain/upstream errors.
     """
     import uuid
-    from datetime import datetime
 
     # Validate base_time before touching the network
     if inp.base_time not in _VALID_BASE_TIMES:
@@ -206,6 +267,14 @@ async def _fetch(
                 f"base_time {inp.base_time!r} is not a valid KMA forecast base time. "
                 f"Must be one of: {', '.join(sorted(_VALID_BASE_TIMES))}."
             ),
+        )
+    try:
+        datetime.strptime(inp.base_date, "%Y%m%d")
+    except ValueError:
+        return LookupError(
+            kind="error",
+            reason=LookupErrorReason.invalid_params,
+            message=f"base_date {inp.base_date!r} is not a valid YYYYMMDD calendar date.",
         )
 
     # Project coordinates to KMA grid
@@ -230,18 +299,6 @@ async def _fetch(
 
     api_key = _require_env("UMMAYA_DATA_GO_KR_API_KEY")
 
-    query_params: dict[str, str | int] = {
-        "serviceKey": api_key,
-        "base_date": inp.base_date,
-        "base_time": inp.base_time,
-        "nx": nx,
-        "ny": ny,
-        "numOfRows": 290,
-        "pageNo": 1,
-        "dataType": "JSON",
-        "_type": "json",
-    }
-
     own_client = client is None
     # Spec 2521 (2026-05-01) — switch to the traced client so the verbose
     # tool view in the TUI can surface request/response JSON for the
@@ -253,24 +310,87 @@ async def _fetch(
 
     request_id = str(uuid.uuid4())
     t_start = datetime.now(tz=UTC)
+    resp_body: dict[str, Any] | None = None
+    used_base_date = inp.base_date
+    used_base_time = inp.base_time
+    no_data_slots: list[str] = []
 
     try:
-        response = await _client.get(_BASE_URL, params=query_params)
-        response.raise_for_status()
+        for base_date, base_time in _candidate_base_slots(inp.base_date, inp.base_time):
+            query_params: dict[str, str | int] = {
+                "serviceKey": api_key,
+                "base_date": base_date,
+                "base_time": base_time,
+                "nx": nx,
+                "ny": ny,
+                "numOfRows": 290,
+                "pageNo": 1,
+                "dataType": "JSON",
+                "_type": "json",
+            }
 
-        content_type = response.headers.get("content-type", "")
-        if "xml" in content_type.lower() and "json" not in content_type.lower():
+            response = await _client.get(_BASE_URL, params=query_params)
+            response.raise_for_status()
+
+            content_type = response.headers.get("content-type", "")
+            if "xml" in content_type.lower() and "json" not in content_type.lower():
+                return LookupError(
+                    kind="error",
+                    reason=LookupErrorReason.upstream_unavailable,
+                    message=(
+                        f"KMA API returned XML instead of JSON "
+                        f"(content-type={content_type!r}). "
+                        "Check UMMAYA_DATA_GO_KR_API_KEY validity."
+                    ),
+                )
+
+            payload: dict[str, Any] = response.json()
+
+            try:
+                current_resp_body, result_code, result_msg = _extract_response_header(payload)
+            except (KeyError, TypeError) as exc:
+                return LookupError(
+                    kind="error",
+                    reason=LookupErrorReason.upstream_unavailable,
+                    message=f"Unexpected KMA response structure: {exc}",
+                )
+
+            if result_code == "00":
+                item_list = _extract_item_list(current_resp_body)
+                if item_list:
+                    resp_body = current_resp_body
+                    used_base_date = base_date
+                    used_base_time = base_time
+                    break
+
+                no_data_slots.append(f"{base_date} {base_time}: empty item list")
+                continue
+
+            if result_code == _NO_DATA_RESULT_CODE:
+                no_data_slots.append(f"{base_date} {base_time}: {result_msg or 'NO_DATA'}")
+                continue
+
+            return LookupError(
+                kind="error",
+                reason=LookupErrorReason.upstream_unavailable,
+                message=f"KMA API error: resultCode={result_code!r} resultMsg={result_msg!r}",
+                upstream_code=result_code,
+                upstream_message=result_msg,
+            )
+
+        if resp_body is None:
+            attempted = ", ".join(no_data_slots)
             return LookupError(
                 kind="error",
                 reason=LookupErrorReason.upstream_unavailable,
                 message=(
-                    f"KMA API returned XML instead of JSON "
-                    f"(content-type={content_type!r}). "
-                    "Check UMMAYA_DATA_GO_KR_API_KEY validity."
+                    "KMA API returned no forecast data for the requested slot or prior slots. "
+                    f"attempted={attempted}"
                 ),
+                upstream_code=_NO_DATA_RESULT_CODE,
+                upstream_message="NO_DATA",
+                retryable=True,
             )
-
-        payload: dict[str, Any] = response.json()
 
     except httpx.HTTPStatusError as exc:
         return LookupError(
@@ -289,37 +409,13 @@ async def _fetch(
         if own_client:
             await _client.aclose()
 
-    # Parse envelope
-    try:
-        resp_body = payload["response"]
-        header = resp_body["header"]
-        result_code = str(header["resultCode"])
-        result_msg = str(header.get("resultMsg", ""))
-    except (KeyError, TypeError) as exc:
-        return LookupError(
-            kind="error",
-            reason=LookupErrorReason.upstream_unavailable,
-            message=f"Unexpected KMA response structure: {exc}",
-        )
-
-    if result_code != "00":
-        return LookupError(
-            kind="error",
-            reason=LookupErrorReason.upstream_unavailable,
-            message=f"KMA API error: resultCode={result_code!r} resultMsg={result_msg!r}",
-            upstream_code=result_code,
-            upstream_message=result_msg,
-        )
-
-    body = resp_body.get("body", {})
-    raw_items_container = body.get("items", {})
-    if not raw_items_container or isinstance(raw_items_container, str):
-        item_list: list[dict[str, object]] = []
-    else:
-        raw_items = raw_items_container.get("item")
-        item_list = _normalize_items(raw_items)
-
+    item_list = _extract_item_list(resp_body)
     points = _parse_forecast_items(item_list)
+    for point in points:
+        point.setdefault("base_date", used_base_date)
+        point.setdefault("base_time", used_base_time)
+        point.setdefault("nx", nx)
+        point.setdefault("ny", ny)
 
     elapsed_ms = int((datetime.now(tz=UTC) - t_start).total_seconds() * 1000)
 
@@ -377,12 +473,11 @@ KMA_FORECAST_FETCH_TOOL = GovAPITool(
             "어댑터 내부에서 lat/lon → nx/ny Lambert 격자 변환 자동 처리."
         ),
         input_quirk=(
-            "lat (WGS-84 위도, 한국 33-38), lon (WGS-84 경도, 한국 126-130). "
-            "base_date=YYYYMMDD, "
+            "lat/lon=WGS-84 한국 좌표. base_date=YYYYMMDD, "
             "base_time 유효값 8개: 0200/0500/0800/1100/1400/1700/2000/2300 (KST). "
-            "base_time 은 시스템 프롬프트의 '현재 KST 시각' 의 직전 정시 (HH00) 사용. "
-            "base_time 추측 금지 — 현재 KST 시각이 16:30 이면 1400, 11:50 이면 1100. "
-            "nx/ny 를 직접 입력하지 않음 — 어댑터가 내부에서 투영 변환."
+            "시스템 프롬프트의 '현재 KST 시각'을 기준으로 직전 발표 슬롯을 사용, 추측 금지. "
+            "NO_DATA 시 어댑터가 이전 발표 슬롯 자동 재시도. "
+            "nx/ny 입력 금지; 내부에서 투영 변환."
         ),
         short_reference=(
             "한국 대도시 위도/경도 참고: 서울=(37.57,126.98) 부산=(35.18,129.08) "
@@ -392,11 +487,13 @@ KMA_FORECAST_FETCH_TOOL = GovAPITool(
         domain_quirk=(
             "lat/lon 이 한국 KMA 도메인 밖이면 KMADomainError 반환. "
             "base_time 유효하지 않으면 invalid_params LookupError. "
+            "resultCode=03(NO_DATA)는 최대 8개 이전 슬롯 재시도. "
             "응답은 LookupTimeseries (hourly points) 형식."
         ),
         self_contained_decl=(
-            "REQUIRED: lat/lon 입력 필수. 지역명은 resolve_location(want='coords') 로 "
-            "lat/lon 받은 후 본 도구 호출. ORDERING: turn1=resolve_location, turn2=이 도구. "
+            "REQUIRED: lat/lon 입력 필수. 지역명은 locate(kakao_keyword_search 또는 "
+            "kakao_address_search)로 lat/lon 받은 후 본 도구 호출. "
+            "ORDERING: turn1=locate adapter, turn2=이 도구. "
             "좌표 추측 금지. nx/ny 변환은 어댑터 내부 자동 처리."
         ),
     ),
@@ -412,7 +509,7 @@ KMA_FORECAST_FETCH_TOOL = GovAPITool(
     rate_limit_per_minute=10,
     is_core=False,
     # Spec 031 T032/T033 dual-axis fields — None during pre-v1.2 compatibility window FR-028
-    primitive="lookup",
+    primitive="find",
     published_tier_minimum=None,
     nist_aal_hint=None,
     trigger_examples=[

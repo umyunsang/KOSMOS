@@ -44,7 +44,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["resolve_location", "lookup"]
+        "enum": ["locate", "find"]
       },
       "minItems": 1,
       "description": "Ordered names of tool calls dispatched. Happy path has length 6."
@@ -55,7 +55,7 @@
         "type": "string",
         "pattern": "^[a-z][a-z0-9_]*$"
       },
-      "description": "Ordered list of tool_ids invoked via lookup(mode='fetch'). Happy path is exactly ['koroad_accident_hazard_search', 'kma_forecast_fetch']."
+      "description": "Ordered list of tool_ids invoked via find(mode='fetch'). Happy path is exactly ['koroad_accident_hazard_search', 'kma_forecast_fetch']."
     },
     "final_response": {
       "type": ["string", "null"],
@@ -123,7 +123,7 @@
         },
         "tool_name": {
           "type": "string",
-          "enum": ["resolve_location", "lookup"]
+          "enum": ["locate", "find"]
         },
         "tool_call_id": {
           "type": ["string", "null"]
@@ -135,7 +135,7 @@
         },
         "adapter_id": {
           "type": ["string", "null"],
-          "description": "Value of ummaya.tool.adapter (FR-018). Present iff the span corresponds to lookup(mode='fetch')."
+          "description": "Value of ummaya.tool.adapter (FR-018). Present iff the span corresponds to find(mode='fetch')."
         },
         "error_type": {
           "type": ["string", "null"]

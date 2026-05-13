@@ -129,7 +129,7 @@ H1-H8 모두 follow-up 으로 분리 — 보안 hardening + sandbox + dir fsync 
    - C5: extract → re-hash 후 docs hash 일치 (parity test).
    - C1: install_e2e 가 `~/.ummaya/memdir/user/consent/` 에 receipt 작성 검증.
    - C2: `model_construct` 우회 시도 → `register_plugin_adapter` 가 거부.
-   - C3: `register(GovAPITool(id="plugin.foo.resolve_location"))` 거부.
+   - C3: `register(GovAPITool(id="plugin.foo.locate"))` 거부.
    - C6: `UMMAYA_PLUGIN_SLSA_SKIP=1` + `permission_layer=3` → exit 3.
    - D2: 잘못된 enum 값으로 manifest 파싱 → 명확한 에러.
    - D3: `uvx ummaya-plugin-validate .` 통과.

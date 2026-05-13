@@ -62,13 +62,13 @@ class KmaUltraShortTermForecastInput(BaseModel):
         ...,
         ge=1,
         le=149,
-        description="KMA 격자 X (1-149). resolve_location 으로 받아 그대로 전달.",
+        description="KMA 격자 X (1-149). locate 으로 받아 그대로 전달.",
     )
     ny: int = Field(
         ...,
         ge=1,
         le=253,
-        description="KMA 격자 Y (1-253). nx 와 함께 resolve_location 으로 받음.",
+        description="KMA 격자 Y (1-253). nx 와 함께 locate 으로 받음.",
     )
     num_of_rows: int = Field(
         default=60,
@@ -313,8 +313,8 @@ KMA_ULTRA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
         ),
         self_contained_decl=(
             "REQUIRED: nx/ny 입력 필수. 지역명 ('동아대학교', '부산 사하구 다대1동') 은 "
-            "resolve_location 으로 nx/ny 받은 후 본 도구 호출. "
-            "ORDERING: turn1=resolve_location(query), turn2=이 도구. 좌표 추측 금지."
+            "locate(kakao_keyword_search 또는 kakao_address_search)로 nx/ny 받은 후 "
+            "본 도구 호출. ORDERING: turn1=locate adapter, turn2=이 도구. 좌표 추측 금지."
         ),
     ),
     ministry="KMA",
@@ -337,7 +337,7 @@ KMA_ULTRA_SHORT_TERM_FORECAST_TOOL = GovAPITool(
     cache_ttl_seconds=600,
     rate_limit_per_minute=10,
     is_core=True,
-    primitive="lookup",
+    primitive="find",
     trigger_examples=[
         "한 시간 뒤 서울 비 와?",
         "지금 비 그칠까",

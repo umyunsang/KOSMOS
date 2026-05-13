@@ -1,10 +1,10 @@
 /**
  * UMMAYA-original — PointCard renderer.
  *
- * Displays a single point-of-interest result from a lookup tool call.
+ * Displays a single point-of-interest result from a find tool call.
  * Renders a title, optional subtitle, and a row of key/value fields.
  *
- * FR-017: lookup point-of-interest renderer.
+ * FR-017: find point-of-interest renderer.
  */
 import React from 'react'
 import { Box, Text } from 'ink'

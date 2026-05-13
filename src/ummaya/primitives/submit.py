@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
-"""T021/T022/T023 — ``submit`` primitive for the UMMAYA Five-Primitive Harness.
+"""T021/T022/T023 — ``send`` primitive for the UMMAYA Five-Primitive Harness.
 
-The ``submit`` primitive absorbs every write-transaction verb:
+The ``send`` primitive absorbs every write-transaction verb:
 - Traffic fine payment
 - Welfare application filing
 - Any other government-facing side-effecting operation
@@ -16,7 +16,7 @@ exclusively in adapter modules under ``src/ummaya/tools/mock/<ministry>/``.
 Architecture: the dispatcher holds an in-process ``_ADAPTER_REGISTRY``
 (``dict[str, AdapterRegistration]``) populated by adapter ``REGISTRATION``
 objects at module-import time. The global ``ToolRegistry`` singleton manages
-the older ``GovAPITool`` surface; ``submit`` uses a parallel lightweight
+the older ``GovAPITool`` surface; ``send`` uses a parallel lightweight
 mapping to avoid coupling the new envelope to the legacy BM25 / retrieval stack.
 
 T023 — deterministic ``transaction_id`` derivation:
@@ -25,7 +25,7 @@ T023 — deterministic ``transaction_id`` derivation:
     Same inputs always produce the same URN. The ``adapter_nonce`` is sourced
     from :attr:`ummaya.tools.registry.AdapterRegistration.nonce` so the
     dispatcher and the adapter body compute byte-identical transaction ids.
-    Submit adapters declare a stable ``nonce`` string (e.g.
+    Send adapters declare a stable ``nonce`` string (e.g.
     ``"mock_traffic_fine_pay_v1_nonce_v1"``) on their ``AdapterRegistration``;
     the dispatcher reads that value directly — ``None`` is the explicit
     opt-out signal for adapters that do not need nonce namespacing.
@@ -154,7 +154,7 @@ def register_submit_adapter(registration: AdapterRegistration, invoke_fn: Any) -
 
     Args:
         registration: ``AdapterRegistration`` metadata (must have
-            ``primitive == AdapterPrimitive.submit``).
+            ``primitive == AdapterPrimitive.send``).
         invoke_fn: Async callable ``async (params: <AdapterInput>) -> SubmitOutput``.
             The dispatcher passes the validated adapter input model as the sole arg.
 
@@ -214,7 +214,7 @@ def derive_transaction_id(
                        adapter to namespace its transaction space.
 
     Returns:
-        A ``urn:ummaya:submit:<sha256-hex>`` string (70 chars fixed length).
+        A ``urn:ummaya:submit:<sha256-hex>`` string (72 chars fixed length).
     """
     canonical_payload: dict[str, object] = {
         "tool_id": tool_id,
@@ -411,7 +411,7 @@ def check_tier_gate(
 
 
 # ---------------------------------------------------------------------------
-# T022 — Main submit() dispatcher
+# T022 — Main send() dispatcher
 # ---------------------------------------------------------------------------
 
 
@@ -424,7 +424,7 @@ async def submit(
 ) -> SubmitOutput | AdapterNotFoundError | AdapterInvocationError:
     """Dispatch a write-transaction to the registered adapter for ``tool_id``.
 
-    This is the main-surface entry point for the ``submit`` primitive.  It:
+    This is the main-surface entry point for the ``send`` primitive.  It:
 
     1. Resolves the ``AdapterRegistration`` for ``tool_id``.
     2. Checks the ``published_tier_minimum`` gate (SC-005).
@@ -458,25 +458,25 @@ async def submit(
         span.set_attribute("ummaya.submit.session_id", session_id)
 
         if not _SUBMIT_TOOL_ID_RE.fullmatch(requested_tool_id):
-            logger.warning("submit: invalid tool_id shape: %r", requested_tool_id)
+            logger.warning("send: invalid tool_id shape: %r", requested_tool_id)
             span.set_attribute("error.type", "invalid_tool_id")
             return AdapterNotFoundError(
                 tool_id=_INVALID_TOOL_ID_SENTINEL,
                 message=(
-                    "submit requires a non-empty registered adapter tool_id matching "
-                    "^[a-z][a-z0-9_]*$; call submit(tool_id=<adapter>, params={...})."
+                    "send requires a non-empty registered adapter tool_id matching "
+                    "^[a-z][a-z0-9_]*$; call send(tool_id=<adapter>, params={...})."
                 ),
             )
 
         # Step 1 — Resolve adapter
         if requested_tool_id not in _ADAPTER_REGISTRY:
-            logger.warning("submit: adapter not found: %s", requested_tool_id)
+            logger.warning("send: adapter not found: %s", requested_tool_id)
             span.set_attribute("error.type", "adapter_not_found")
             return AdapterNotFoundError(
                 tool_id=requested_tool_id,
                 message=(
-                    f"No submit adapter registered for tool_id={requested_tool_id!r}. "
-                    "Check that the adapter module is imported before calling submit()."
+                    f"No send adapter registered for tool_id={requested_tool_id!r}. "
+                    "Check that the adapter module is imported before calling send()."
                 ),
             )
 
@@ -486,7 +486,7 @@ async def submit(
         rejection = check_tier_gate(registration=registration, auth_context=auth_context)
         if rejection is not None:
             logger.info(
-                "submit: tier gate rejected invocation for %s: %s",
+                "send: tier gate rejected invocation for %s: %s",
                 requested_tool_id,
                 rejection.get("reason", ""),
             )
@@ -517,7 +517,7 @@ async def submit(
             result = await invoke_fn(params)
         except Exception as exc:  # noqa: BLE001
             logger.error(
-                "submit: adapter invocation failed for %s: %s: %s",
+                "send: adapter invocation failed for %s: %s: %s",
                 requested_tool_id,
                 type(exc).__name__,
                 exc,
@@ -541,7 +541,7 @@ async def submit(
 
         # Adapter returned something unexpected — wrap as failure (FR-005)
         logger.error(
-            "submit: adapter %s returned unexpected type %s (expected SubmitOutput)",
+            "send: adapter %s returned unexpected type %s (expected SubmitOutput)",
             requested_tool_id,
             type(result).__name__,
         )
@@ -556,6 +556,9 @@ async def submit(
         )
 
 
+send = submit
+
+
 __all__ = [
     "SubmitInput",
     "SubmitOutput",
@@ -563,5 +566,5 @@ __all__ = [
     "check_tier_gate",
     "derive_transaction_id",
     "register_submit_adapter",
-    "submit",
+    "send",
 ]

@@ -271,7 +271,7 @@ class TestDescriptionSection5ChainGuidance:
     picked the first half — refusing to call resolve_location and hallucinating
     coordinates ("동아대학교 → 부산 동래구 hospitals" frame, 2026-05-04).
 
-    The corrected assertion: section 5 MUST mention ``resolve_location`` AND
+    The corrected assertion: section 5 MUST mention ``locate`` AND
     a turn-ordering signal so the LLM gets unambiguous chain guidance.
     """
 
@@ -293,7 +293,7 @@ class TestDescriptionSection5ChainGuidance:
         # fall into shape (a). Asserting one OR the other prevents the
         # 2026-05-04 anti-pattern where a chain-required tool also claimed
         # to be self-contained, contradicting itself in the same paragraph.
-        is_chain_required = "resolve_location" in section5 and any(
+        is_chain_required = "locate" in section5 and any(
             tok in section5 for tok in self._ORDERING_TOKENS
         )
         is_chain_free = any(tok in section5 for tok in self._SELF_CONTAINED_TOKENS)
@@ -304,10 +304,10 @@ class TestDescriptionSection5ChainGuidance:
             f"for chain-free tools. Section 5 text: {section5[:200]!r}"
         )
         # Forbid the contradictory shape: a tool that claims BOTH "단독 호출" /
-        # "self-contained" AND "resolve_location" in the same section. That
+        # "self-contained" AND "locate" in the same section. That
         # combination is what K-EXAONE picked the wrong half of in the
         # donga-univ-poi-bug frame.
-        contradictory = "resolve_location" in section5 and any(
+        contradictory = "locate" in section5 and any(
             tok in section5 for tok in self._SELF_CONTAINED_TOKENS
         )
         assert not contradictory, (

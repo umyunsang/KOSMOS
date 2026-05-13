@@ -49,7 +49,7 @@ Ministry = Literal[
     "KEC",  # 한국교통안전공단 — vehicle inspection / e-signature
     "MFDS",  # 식품의약품안전처 — food & drug safety
     "GOV24",  # 정부24 — citizen submission portal (OPAQUE per feedback_mock_evidence_based)
-    "UMMAYA",  # harness-internal synthetic surface (resolve_location, lookup, mvp_surface)
+    "UMMAYA",  # harness-internal synthetic surface (locate, find, mvp_surface)
     "OTHER",  # transitional escape hatch — CI emits warning
 ]
 
@@ -81,7 +81,7 @@ class AdapterRealDomainPolicy(BaseModel):
         min_length=1,
         description="Korean citation from agency policy (text shown to citizen)",
     )
-    citizen_facing_gate: Literal["read-only", "login", "action", "sign", "submit"] = Field(
+    citizen_facing_gate: Literal["read-only", "login", "action", "sign", "send"] = Field(
         ...,
         description="Citizen-facing gate category — UI uses this value for PermissionRequest UX",
     )
@@ -198,7 +198,7 @@ class GovAPITool(BaseModel):
     Distinct from ``AdapterRegistration.source_mode`` (mirror fidelity axis)."""
 
     # Spec 031 T032 dual-axis fields — None during pre-v1.2 compatibility window FR-028
-    primitive: Literal["lookup", "resolve_location", "submit", "verify"] | None = None
+    primitive: Literal["find", "locate", "send", "check"] | None = None
     """Active primitive surface this adapter binds to (Spec 031 AdapterPrimitive).
 
     Set to the appropriate value during Spec 031 Phase 4 (T033).
@@ -254,26 +254,26 @@ class GovAPITool(BaseModel):
     def _validate_id(cls, v: str) -> str:
         # Spec 1636 P5 ADR-007 (revised by review eval C3):
         # plugin-namespaced ids may use ONLY the active plugin primitives
-        # (lookup / submit / verify). resolve_location is a
+        # (find / send / check). locate is a
         # host-reserved built-in primitive (Migration tree § L1-C C6) —
         # plugins cannot override it. The earlier regex permitted
-        # resolve_location at the GovAPITool layer for symmetry with
+        # locate at the GovAPITool layer for symmetry with
         # AdapterRegistration; that left a registry-layer bypass for
         # Q8-NO-ROOT-OVERRIDE since direct register(GovAPITool(...))
         # calls do not run PluginManifest._v_namespace. We now reject
-        # plugin.<id>.resolve_location at construction time so both
+        # plugin.<id>.locate at construction time so both
         # layers agree.
         if not re.fullmatch(
             r"^([a-z][a-z0-9_]*"
-            r"|plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify))$",
+            r"|plugin\.[a-z][a-z0-9_]*\.(find|send|check))$",
             v,
         ):
             raise ValueError(
                 f"Tool id {v!r} must match ^[a-z][a-z0-9_]*$ "
                 "(lowercase, start with a letter, underscores only) "
-                "OR ^plugin\\.<plugin_id>\\.(lookup|submit|verify)$ "
+                "OR ^plugin\\.<plugin_id>\\.(find|send|check)$ "
                 "for plugin-namespaced tools (ADR-007 + Q8-NO-ROOT-OVERRIDE). "
-                "resolve_location is a host-reserved primitive — plugins "
+                "locate is a host-reserved primitive — plugins "
                 "cannot override it."
             )
         return v
@@ -540,10 +540,10 @@ class SearchToolsOutput(BaseModel):
 
 
 class ResolveLocationInput(BaseModel):
-    """Input to the resolve_location tool.
+    """Input to the locate tool.
 
     Converts a free-text place query into typed location identifiers.
-    Field shapes and enum values are binding per contracts/resolve_location.input.schema.json.
+    Field shapes and enum values are binding per contracts/locate.input.schema.json.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -657,6 +657,18 @@ class POIResult(BaseModel):
     category: str
     lat: float
     lon: float
+    nx: int | None = Field(
+        default=None,
+        ge=1,
+        le=149,
+        description="KMA VilageFcst 5 km grid X coordinate derived from lat/lon when in domain.",
+    )
+    ny: int | None = Field(
+        default=None,
+        ge=1,
+        le=253,
+        description="KMA VilageFcst 5 km grid Y coordinate derived from lat/lon when in domain.",
+    )
     source: Literal["kakao"]
     address_name: str | None = None
     road_address_name: str | None = None
@@ -732,13 +744,13 @@ ResolveLocationOutputUnion = Annotated[
 # ---------------------------------------------------------------------------
 # Standardises the 4 mandatory output fields guaranteed by the Kakao backend.
 # JUSO / SGIS fallbacks are optional; when not configured they are skipped
-# (see resolve_location.py § _juso_adm_cd / _sgis_adm_cd).
+# (see locate.py § _juso_adm_cd / _sgis_adm_cd).
 # Evidence: /tmp/ummaya-evidence/geocoding-evidence.md (4 scenarios, Kakao only).
 # ---------------------------------------------------------------------------
 
 
 class ResolveLocationOutput(BaseModel):
-    """Flat v4 output for resolve_location — Kakao-guaranteed 4-field standard.
+    """Flat v4 output for locate — Kakao-guaranteed 4-field standard.
 
     All four fields are always present when Kakao returns a document.
     ``confidence`` and ``source`` are derived from the Kakao response meta.
@@ -778,7 +790,7 @@ class ResolveLocationOutput(BaseModel):
 
 
 class LookupSearchInput(BaseModel):
-    """Input for lookup(mode='search'): BM25 gate over adapter registry."""
+    """Input for find(mode='search'): BM25 gate over adapter registry."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -794,14 +806,14 @@ class LookupSearchInput(BaseModel):
 
 
 class LookupFetchInput(BaseModel):
-    """Input for lookup(mode='fetch'): typed invocation of a specific adapter."""
+    """Input for find: typed invocation of a specific adapter."""
 
     model_config = ConfigDict(extra="forbid")
 
     mode: Literal["fetch"]
     tool_id: str = Field(
         # Spec 1636 P5 ADR-007: snake_case OR plugin-namespaced.
-        pattern=r"^([a-z][a-z0-9_]*|plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify|resolve_location))$",
+        pattern=r"^([a-z][a-z0-9_]*|plugin\.[a-z][a-z0-9_]*\.(find|send|check))$",
     )
     """Must come from a previous `search` result. Never guess."""
 
@@ -824,7 +836,7 @@ LookupInput = Annotated[
 
 
 class LookupMeta(BaseModel):
-    """Metadata injected into every lookup(mode='fetch') response envelope."""
+    """Metadata injected into every find response envelope."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -852,7 +864,7 @@ class LookupMeta(BaseModel):
 
 
 class AdapterCandidate(BaseModel):
-    """A single search-result entry from lookup(mode='search').
+    """A single search-result entry from find(mode='search').
 
     Epic ζ #2297 path B (live smoke 2026-04-30 follow-up) — extended with
     full per-domain REST schema metadata so the LLM can read each adapter's
@@ -898,10 +910,7 @@ class AdapterCandidate(BaseModel):
     )
     primitive: str | None = Field(
         default=None,
-        description=(
-            "The primitive root this adapter binds to "
-            "(lookup / verify / submit / resolve_location)."
-        ),
+        description=("The primitive root this adapter binds to (find / check / send / locate)."),
     )
     real_classification_url: str | None = Field(
         default=None,
@@ -913,7 +922,7 @@ class AdapterCandidate(BaseModel):
 
 
 class LookupSearchResult(BaseModel):
-    """Result from lookup(mode='search'): ranked adapter candidates."""
+    """Result from find(mode='search'): ranked adapter candidates."""
 
     model_config = ConfigDict(extra="forbid")
 

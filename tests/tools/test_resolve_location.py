@@ -113,6 +113,16 @@ def test_keyword_relevance_accepts_seoul_city_hall_variant():
     assert _keyword_doc_matches_query("서울시청", doc)
 
 
+def test_keyword_relevance_accepts_university_abbreviation():
+    """Korean university abbreviations such as 동아대 must match official POI names."""
+    doc = MagicMock()
+    doc.place_name = "동아대학교 승학캠퍼스"
+    doc.address_name = "부산 사하구 하단동"
+    doc.road_address_name = ""
+
+    assert _keyword_doc_matches_query("동아대 승학캠퍼스", doc)
+
+
 # ---------------------------------------------------------------------------
 # want="coords"
 # ---------------------------------------------------------------------------

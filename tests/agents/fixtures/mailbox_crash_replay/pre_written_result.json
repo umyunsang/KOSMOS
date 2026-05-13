@@ -12,7 +12,7 @@
         "kind": "record",
         "item": {"address": "서울시 종로구", "procedure": "전입신고 완료"},
         "meta": {
-          "tool_id": "lookup",
+          "tool_id": "find",
           "fetched_at": "2026-04-18T00:00:00+00:00",
           "source_url": null,
           "cache_hit": false

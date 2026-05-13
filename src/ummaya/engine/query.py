@@ -117,7 +117,7 @@ async def dispatch_tool_calls(  # noqa: C901
     indexed: list[tuple[int, ToolCall, bool]] = []
     for i, tc in enumerate(tool_calls):
         try:
-            tool = tool_registry.lookup(tc.function.name)
+            tool = tool_registry.find(tc.function.name)
             is_safe = tool.is_concurrency_safe
         except ToolNotFoundError:
             is_safe = False  # unknown tools dispatch sequentially (fail-closed)

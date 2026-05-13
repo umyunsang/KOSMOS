@@ -3,7 +3,7 @@
   "tool_id": "mock_verify_ganpyeon_injeung",
   "citizen_prompt": "카카오/네이버 간편인증으로 본인확인해줘",
   "expected_first_tool_call": {
-    "name": "verify",
+    "name": "check",
     "arguments": {
       "tool_id": "mock_verify_ganpyeon_injeung",
       "params": {

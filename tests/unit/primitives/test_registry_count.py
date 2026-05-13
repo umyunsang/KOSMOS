@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import ummaya.primitives as primitives_module
 
-_EXPECTED_PRIMITIVES: frozenset[str] = frozenset({"lookup", "resolve_location", "submit", "verify"})
+_EXPECTED_PRIMITIVES: frozenset[str] = frozenset({"find", "locate", "send", "check"})
 
 
 def test_primitive_count_is_four() -> None:

@@ -107,7 +107,7 @@ plugin_op:complete   # install success, exit_code=0, receipt_id=rcpt-...
 plugin_op:complete   # list-after, exit_code=0, body has 1 entry (seoul-subway)
 chat_request         # echo
 assistant_chunk      # streamed model reply
-tool_use             # plugin.seoul_subway.lookup invoked
+tool_use             # plugin.seoul_subway.find invoked
 permission_request   # gauntlet consent for the tool call
 permission_response  # auto-allow in test rig
 tool_result          # subway-arrival mock response
@@ -186,7 +186,7 @@ $ grep -E '(📡|📦|🔐|🧪|📝|🔄|📜|✓ 설치 완료|plugin\.seoul_s
 🔄 등록 + BM25 색인 중…
 📜 동의 영수증 기록 중…
 ✓ 설치 완료
-plugin.seoul_subway.lookup
+plugin.seoul_subway.find
 ```
 
 ---

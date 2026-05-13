@@ -84,7 +84,7 @@ _ADAPTER_SOURCE = (
     )
 
     TOOL = GovAPITool(
-        id="plugin.demo_plugin.lookup",
+        id="plugin.demo_plugin.find",
         name_ko="데모 플러그인",
         ministry="OTHER",
         category=["demo"],
@@ -94,7 +94,7 @@ _ADAPTER_SOURCE = (
         output_schema=DemoLookupOutput,
         search_hint="데모 demo plugin",
         policy=_POLICY,
-        primitive="lookup",
+        primitive="find",
         published_tier_minimum="digital_onepass_level1_aal1",
         nist_aal_hint="AAL1",
     )
@@ -116,8 +116,8 @@ def _manifest_dict(*, plugin_id: str = "demo_plugin", tier: str = "live") -> dic
         "plugin_id": plugin_id,
         "version": "1.0.0",
         "adapter": {
-            "tool_id": f"plugin.{plugin_id}.lookup",
-            "primitive": "lookup",
+            "tool_id": f"plugin.{plugin_id}.find",
+            "primitive": "find",
             "module_path": "adapter",
             "input_model_ref": "adapter:DemoLookupInput",
             "source_mode": "OPENAPI",
@@ -142,7 +142,7 @@ def _manifest_dict(*, plugin_id: str = "demo_plugin", tier: str = "live") -> dic
         ),
         "otel_attributes": {"ummaya.plugin.id": plugin_id},
         "search_hint_ko": "데모 플러그인 조회",
-        "search_hint_en": "demo plugin lookup",
+        "search_hint_en": "demo plugin find",
         "permission_layer": 1,
     }
 
@@ -244,7 +244,7 @@ class TestInstallHappyPath:
         assert result.receipt_id is not None
         assert result.receipt_id.startswith("rcpt-")
         # Plugin is now in the registry + index rebuilt.
-        assert "plugin.demo_plugin.lookup" in registry
+        assert "plugin.demo_plugin.find" in registry
         # Bundle was extracted to install_root.
         install_dir = isolated_settings / "install" / "demo_plugin"
         assert (install_dir / "manifest.yaml").is_file()
@@ -354,7 +354,7 @@ class TestInstallDryRun:
         )
         assert result.exit_code == 0
         assert result.receipt_id is None
-        assert "plugin.demo_plugin.lookup" not in registry
+        assert "plugin.demo_plugin.find" not in registry
         install_dir = isolated_settings / "install" / "demo_plugin"
         assert not install_dir.exists()
         receipt_dir = isolated_settings / "memdir" / "user" / "consent"

@@ -589,15 +589,13 @@ class TestNmcDescriptionV4:
         ``specs/integration-verification/donga-univ-poi-bug/``, 2026-05-04).
 
         The corrected assertion: the description MUST reference
-        ``resolve_location`` and an ordering signal so K-EXAONE has
+        ``locate`` and an ordering signal so K-EXAONE has
         unambiguous chain guidance.
         """
         from ummaya.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
 
         desc = NMC_EMERGENCY_SEARCH_TOOL.llm_description
-        assert "resolve_location" in desc, (
-            "NMC description must reference resolve_location explicitly"
-        )
+        assert "locate" in desc, "NMC description must reference resolve_location explicitly"
         assert any(tok in desc for tok in ("turn1", "turn 1", "ORDERING", "ordering")), (
             "NMC description must declare resolve_location → this-tool turn ordering"
         )

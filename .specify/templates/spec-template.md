@@ -140,7 +140,7 @@
 
 <!--
   Items that will NEVER be part of this feature. Brief reason required.
-  Example: "Mobile native app — KOSMOS is a terminal-based platform"
+  Example: "Mobile native app — UMMAYA is a terminal-based platform"
 -->
 
 - [Item permanently excluded, with brief reason]

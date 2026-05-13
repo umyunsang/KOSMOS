@@ -1,6 +1,6 @@
 {
   "additionalProperties": false,
-  "description": "Input for lookup(mode='search'): BM25 gate over adapter registry.",
+  "description": "Input for find(mode='search'): BM25 gate over adapter registry.",
   "properties": {
     "domain": {
       "anyOf": [

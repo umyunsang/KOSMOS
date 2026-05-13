@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from ummaya.permissions.models import SessionContext
 
 from ummaya.engine.config import QueryEngineConfig
-from ummaya.llm.client import LLMClient
+from ummaya.llm.client import LLMClientRuntimeType as LLMClient
 from ummaya.llm.models import ChatMessage
 from ummaya.llm.usage import UsageTracker
 from ummaya.tools.executor import ToolExecutor

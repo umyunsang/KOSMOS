@@ -243,7 +243,7 @@ async def test_mailbox_span_correlation_id_attribute(
 
     cid = uuid4()
     meta = LookupMeta(
-        source="lookup",
+        source="find",
         fetched_at=_dt.datetime.now(_dt.UTC),
         request_id=str(uuid4()),
         elapsed_ms=1,

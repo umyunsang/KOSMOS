@@ -1,10 +1,10 @@
 /**
  * UMMAYA-original — AuthWarningBanner renderer.
  *
- * Failure banner shown when a verify primitive returns ok=false.
+ * Failure banner shown when a check primitive returns ok=false.
  * Displays the Korea tier, error code, message, and actionable remediation.
  *
- * FR-032: verify failure renderer.
+ * FR-032: check failure renderer.
  */
 import React from 'react'
 import { Box, Text } from 'ink'

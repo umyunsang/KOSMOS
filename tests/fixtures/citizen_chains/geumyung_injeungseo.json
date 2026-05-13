@@ -3,7 +3,7 @@
   "tool_id": "mock_verify_geumyung_injeungseo",
   "citizen_prompt": "금융인증서(KFTC)로 본인 인증해줘",
   "expected_first_tool_call": {
-    "name": "verify",
+    "name": "check",
     "arguments": {
       "tool_id": "mock_verify_geumyung_injeungseo",
       "params": {

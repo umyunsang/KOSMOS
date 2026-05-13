@@ -332,13 +332,13 @@ def check_premature_terminal_error(files: Sequence[CaptureFile], text: str) -> C
             details="No recoverable invalid-parameter error was visible.",
         )
 
-    saw_resolve = has_any((r"resolve_location",), text)
+    saw_resolve = has_any((r"locate",), text)
     saw_lookup_after_resolve = False
     resolve_index = next(
         (
             index
             for index, file in enumerate(files)
-            if re.search(r"resolve_location", file.text, re.I)
+            if re.search(r"locate", file.text, re.I)
         ),
         None,
     )

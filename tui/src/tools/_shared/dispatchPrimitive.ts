@@ -48,7 +48,7 @@ function _resolveTimeoutMs(override?: number): number {
 // ---------------------------------------------------------------------------
 
 export interface DispatchPrimitiveOpts {
-  primitive: 'lookup' | 'resolve_location' | 'verify' | 'submit'
+  primitive: 'find' | 'locate' | 'check' | 'send'
   /** Forwarded verbatim into tool_call frame arguments (FR-009). */
   args: Record<string, unknown>
   /** From CC SDK Tool.call signature. */
@@ -75,11 +75,11 @@ export function _resetCheckpointState(): void {
 }
 
 function _maybeEmitCheckpoint(
-  primitive: 'lookup' | 'resolve_location' | 'verify' | 'submit',
+  primitive: 'find' | 'locate' | 'check' | 'send',
   frame: ToolResultFrame,
 ): void {
   if (process.env['UMMAYA_SMOKE_CHECKPOINTS'] !== 'true') return
-  if (primitive !== 'submit') return
+  if (primitive !== 'send') return
   if (_checkpointEmitted) return
 
   // Check transaction_id on the frame first

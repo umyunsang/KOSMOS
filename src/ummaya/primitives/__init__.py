@@ -3,10 +3,10 @@
 
 Exports the active primitive symbols that make up the main-tool surface:
 
-- ``lookup``: read/search/fetch (re-exported from Spec 022, byte-identical).
-- ``resolve_location``: geocoding (re-exported from Spec 022, byte-identical).
-- ``submit``: write-transaction absorber (Spec 031 US1, T024).
-- ``verify``: delegation-only identity binding (Spec 031 US2, T042).
+- ``find``: read/search/fetch (re-exported from Spec 022).
+- ``locate``: geocoding (re-exported from Spec 022).
+- ``send``: write-transaction absorber (Spec 031 US1, T024).
+- ``check``: delegation-only identity binding (Spec 031 US2, T042).
 
 ``subscribe`` is intentionally not part of the active surface. National alert
 and notice subscriptions are app/phone push-notification concerns, not a CLI
@@ -18,10 +18,18 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from ummaya.primitives.submit import submit
-from ummaya.primitives.verify import verify
-from ummaya.tools.lookup import lookup
-from ummaya.tools.resolve_location import resolve_location
+from ummaya.primitives.submit import send
+from ummaya.primitives.verify import check
+from ummaya.tools.lookup import find
+from ummaya.tools.resolve_location import locate
+
+# Backward-compatible Spec 022 symbol. The active LLM-visible root verb is
+# `locate`; this alias is kept as the identical canonical coroutine for older
+# contracts and imports.
+lookup = find
+resolve_location = locate
+submit = send
+verify = check
 
 # Single-source-of-truth registry mapping each LLM-visible primitive name
 # to its async callable. Epic #2077 T010 (FR-003) — replaces the prior
@@ -34,41 +42,41 @@ from ummaya.tools.resolve_location import resolve_location
 # heterogeneous return shapes.
 # Call-shape adaptation lives in the IPC dispatcher, not here.
 PRIMITIVE_REGISTRY: dict[str, Callable[..., Any]] = {
-    "lookup": lookup,
-    "resolve_location": resolve_location,
-    "submit": submit,
-    "verify": verify,
+    "find": find,
+    "locate": locate,
+    "send": send,
+    "check": check,
 }
 
 # Subset of ``PRIMITIVE_REGISTRY`` whose invocation requires a Spec 033
 # permission decision before dispatch.
 #
 # ``GATED_PRIMITIVES`` — full set of primitives that enter the permission
-# bridge (verify / submit).
+# bridge (check / send).
 #
 # ``LIGHT_GATE_PRIMITIVES`` — subset that gets *light* permission treatment
-# (single-decision, risk_level="low"): verify, because it is a delegation-
+# (single-decision, risk_level="low"): check, because it is a delegation-
 # only identity binding (read-only from the citizen's data perspective, but
 # still requires explicit consent per Spec 031 § US2).
 #
 # ``HEAVY_GATE_PRIMITIVES`` — side-effecting primitives (Layer 2/3):
-# submit (irreversible write).
+# send (irreversible write).
 #
 # The complement (``PRIMITIVE_REGISTRY.keys() - GATED_PRIMITIVES``) is the
-# fully auto-allowed set: lookup / resolve_location.
-GATED_PRIMITIVES: frozenset[str] = frozenset({"verify", "submit"})
-LIGHT_GATE_PRIMITIVES: frozenset[str] = frozenset({"verify"})
-HEAVY_GATE_PRIMITIVES: frozenset[str] = frozenset({"submit"})
+# fully auto-allowed set: find / locate.
+GATED_PRIMITIVES: frozenset[str] = frozenset({"check", "send"})
+LIGHT_GATE_PRIMITIVES: frozenset[str] = frozenset({"check"})
+HEAVY_GATE_PRIMITIVES: frozenset[str] = frozenset({"send"})
 
 # ``__all__`` enumerates the LLM-visible primitive *surface* — the active root
 # verbs. The metadata constants ``PRIMITIVE_REGISTRY``
 # and ``GATED_PRIMITIVES`` live alongside but are explicitly imported by name
 # from downstream callers (``from ummaya.primitives import PRIMITIVE_REGISTRY``);
 __all__ = [
-    "lookup",
-    "resolve_location",
-    "submit",
-    "verify",
+    "find",
+    "locate",
+    "send",
+    "check",
 ]
 # Metadata constants (GATED_PRIMITIVES / LIGHT_GATE_PRIMITIVES /
 # HEAVY_GATE_PRIMITIVES / PRIMITIVE_REGISTRY) are intentionally NOT in __all__

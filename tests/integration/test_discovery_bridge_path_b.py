@@ -3,8 +3,8 @@
 
 Verifies:
   B-1: verify/submit mock adapters appear in the main ToolRegistry's
-       BM25 corpus (so lookup(mode="search") surfaces them alongside
-       lookup-class adapters).
+       BM25 corpus (so find(mode="search") surfaces them alongside
+       find-class adapters).
   B-2: AdapterCandidate exposes full per-domain REST schema metadata
        (input_schema_json with descriptions/types/patterns/constraints) so the
        LLM can fill params per domain without a second round-trip.
@@ -41,12 +41,12 @@ def test_b1_total_tool_count_includes_mocks(
 ) -> None:
     """Path B-1: bridge registers active non-core mock adapters into main registry.
 
-    Expected total: 33 after subscribe is deferred out of the active surface.
+    Expected total: 38 after locate provider adapters became first-class.
     """
     r, _ = loaded_registry
     total = len(r.all_tools())
-    assert total == 33, (
-        f"Expected 33 total tools after discovery_bridge runs; got {total}. "
+    assert total == 38, (
+        f"Expected 38 total tools after discovery_bridge runs; got {total}. "
         f"Verify the bridge registered the active mock adapters."
     )
 
@@ -91,7 +91,7 @@ def test_b1_submit_mocks_in_registry(
 
 
 # ---------------------------------------------------------------------------
-# B-1 + B-2 end-to-end: lookup(mode="search") returns verify/submit candidates
+# B-1 + B-2 end-to-end: find(mode="search") returns check/send candidates
 # with full schema metadata for the citizen tax-return query.
 # ---------------------------------------------------------------------------
 
@@ -206,12 +206,12 @@ def test_b1_mydata_verify_description_contains_canonical_action_scope(
     tool = r.lookup("mock_verify_mydata")
 
     assert tool.llm_description is not None
-    assert "verify(tool_id='mock_verify_mydata'" in tool.llm_description
-    assert "submit:public_mydata.action" in tool.llm_description
-    assert "submit:mydata.welfare_application" in tool.llm_description
-    assert "never include lookup:mohw.welfare_eligibility_search" in tool.llm_description
-    assert "submit:mock.welfare_application_submit_v1" in tool.llm_description
-    assert "never invent lookup:mydata.public.consent" in tool.llm_description
+    assert "check(tool_id='mock_verify_mydata'" in tool.llm_description
+    assert "send:public_mydata.action" in tool.llm_description
+    assert "send:mydata.welfare_application" in tool.llm_description
+    assert "never include find:mohw.welfare_eligibility_search" in tool.llm_description
+    assert "send:mock.welfare_application_submit_v1" in tool.llm_description
+    assert "never invent find:mydata.public.consent" in tool.llm_description
 
 
 def test_b1_identity_verify_descriptions_contain_canonical_scopes(
@@ -223,11 +223,11 @@ def test_b1_identity_verify_descriptions_contain_canonical_scopes(
     ganpyeon = r.lookup("mock_verify_ganpyeon_injeung")
 
     assert mobile.llm_description is not None
-    assert "verify:mobile_id.identity" in mobile.llm_description
-    assert "lookup:identity.info" in mobile.llm_description
-    assert "lookup:identity.verify" in mobile.llm_description
+    assert "check:mobile_id.identity" in mobile.llm_description
+    assert "find:identity.info" in mobile.llm_description
+    assert "find:identity.verify" in mobile.llm_description
     assert ganpyeon.llm_description is not None
-    assert "verify:ganpyeon.identity" in ganpyeon.llm_description
+    assert "check:ganpyeon.identity" in ganpyeon.llm_description
     assert "admin_service scopes" in ganpyeon.llm_description
 
 
@@ -306,4 +306,4 @@ def test_b2_verify_candidate_has_policy_url(
     assert target is not None, "modid verify not in search results"
     assert target.real_classification_url is not None
     assert target.real_classification_url.startswith("http")
-    assert target.primitive == "verify"
+    assert target.primitive == "check"

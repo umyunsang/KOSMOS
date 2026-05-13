@@ -155,7 +155,7 @@ async def invoke(params: dict[str, object]) -> SubmitOutput:
 
 REGISTRATION = AdapterRegistration(
     tool_id="mock_welfare_application_submit_v1",
-    primitive=AdapterPrimitive.submit,
+    primitive=AdapterPrimitive.send,
     module_path=__name__,
     input_model_ref=f"{__name__}.WelfareApplicationParams",
     source_mode=AdapterSourceMode.OOS,
@@ -180,7 +180,7 @@ REGISTRATION = AdapterRegistration(
             "마이데이터 복지 급여 신청 — 보건복지부 정책 / KFTC MyData "
             "v240930 기반 (Spec 1636 mandate)."
         ),
-        citizen_facing_gate="submit",
+        citizen_facing_gate="send",
         last_verified=datetime(2026, 5, 4, tzinfo=UTC),
     ),
 )

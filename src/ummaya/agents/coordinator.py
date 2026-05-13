@@ -55,7 +55,7 @@ logger = logging.getLogger(__name__)
 _tracer = trace.get_tracer(__name__)
 
 # The two facade tool IDs that workers may access
-_WORKER_TOOLS: frozenset[str] = frozenset({"lookup", "resolve_location"})
+_WORKER_TOOLS: frozenset[str] = frozenset({"find", "locate"})
 
 # Default max-workers semaphore value (overridden by UmmayaSettings)
 _DEFAULT_MAX_WORKERS: int = 4

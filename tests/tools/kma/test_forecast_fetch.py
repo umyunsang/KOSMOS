@@ -14,9 +14,11 @@ from pydantic import ValidationError
 from ummaya.tools.kma.forecast_fetch import (
     KMA_FORECAST_FETCH_TOOL,
     KmaForecastFetchInput,
+    _candidate_base_slots,
     _fetch,
     _normalize_items,
     _parse_forecast_items,
+    _previous_base_slot,
     register,
 )
 from ummaya.tools.models import LookupError, LookupTimeseries  # noqa: A004
@@ -37,6 +39,30 @@ def _make_mock_client(fixture_data: dict) -> httpx.AsyncClient:
     mock_client = AsyncMock(spec=httpx.AsyncClient)
     mock_client.get.return_value = mock_response
     return mock_client
+
+
+def _make_mock_client_sequence(payloads: list[dict]) -> httpx.AsyncClient:
+    responses = []
+    for fixture_data in payloads:
+        mock_response = MagicMock(spec=httpx.Response)
+        mock_response.status_code = 200
+        mock_response.headers = {"content-type": "application/json"}
+        mock_response.json.return_value = fixture_data
+        mock_response.raise_for_status = MagicMock()
+        responses.append(mock_response)
+
+    mock_client = AsyncMock(spec=httpx.AsyncClient)
+    mock_client.get.side_effect = responses
+    return mock_client
+
+
+def _no_data_payload(message: str = "NO_DATA") -> dict:
+    return {
+        "response": {
+            "header": {"resultCode": "03", "resultMsg": message},
+            "body": {},
+        }
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -150,6 +176,21 @@ class TestParseForecastItems:
         assert _parse_forecast_items([]) == []
 
 
+class TestBaseSlotRecovery:
+    def test_previous_slot_same_day(self) -> None:
+        assert _previous_base_slot("20260416", "1100") == ("20260416", "0800")
+
+    def test_previous_slot_wraps_to_previous_day(self) -> None:
+        assert _previous_base_slot("20260416", "0200") == ("20260415", "2300")
+
+    def test_candidate_slots_walk_back_in_order(self) -> None:
+        assert _candidate_base_slots("20260416", "0200", max_attempts=3) == [
+            ("20260416", "0200"),
+            ("20260415", "2300"),
+            ("20260415", "2000"),
+        ]
+
+
 # ---------------------------------------------------------------------------
 # _fetch: happy path
 # ---------------------------------------------------------------------------
@@ -238,6 +279,50 @@ class TestFetch:
         assert isinstance(result, LookupError)
         assert result.reason == "upstream_unavailable"
         assert result.upstream_code == "10"
+
+    @pytest.mark.asyncio
+    async def test_no_data_retries_previous_base_slot(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key")
+        fixture = _load_fixture("forecast_fetch_happy.json")
+        mock_client = _make_mock_client_sequence([_no_data_payload(), fixture])
+
+        inp = KmaForecastFetchInput(
+            lat=37.5665,
+            lon=127.0495,
+            base_date="20260416",
+            base_time="1100",
+        )
+        result = await _fetch(inp, client=mock_client)
+
+        assert isinstance(result, LookupTimeseries)
+        assert mock_client.get.await_count == 2
+        call_params = [call.kwargs["params"] for call in mock_client.get.await_args_list]
+        assert [params["base_time"] for params in call_params] == ["1100", "0800"]
+        assert all(point["base_time"] == "0800" for point in result.points)
+
+    @pytest.mark.asyncio
+    async def test_no_data_exhaustion_returns_retryable_error(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", "test-key")
+        mock_client = _make_mock_client_sequence([_no_data_payload()] * 8)
+
+        inp = KmaForecastFetchInput(
+            lat=37.5665,
+            lon=127.0495,
+            base_date="20260416",
+            base_time="0200",
+        )
+        result = await _fetch(inp, client=mock_client)
+
+        assert isinstance(result, LookupError)
+        assert result.reason == "upstream_unavailable"
+        assert result.upstream_code == "03"
+        assert result.retryable is True
+        assert mock_client.get.await_count == 8
+        assert "20260415 2300" in result.message
 
 
 # ---------------------------------------------------------------------------

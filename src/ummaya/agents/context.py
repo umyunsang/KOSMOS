@@ -21,7 +21,7 @@ class AgentContext(BaseModel):
     The coordinator constructs one AgentContext per worker. Workers receive
     it at construction and MUST NOT share it with other workers.
 
-    The tool_registry MUST be restricted to {"lookup", "resolve_location"}
+    The tool_registry MUST be restricted to {"find", "locate"}
     before AgentContext is constructed. This restriction is asserted in
     Coordinator.spawn_worker() (FR-011) rather than here, because
     ToolRegistry is not a Pydantic model and the set of registered tool IDs
@@ -50,7 +50,7 @@ class AgentContext(BaseModel):
     """Unique sender ID of this worker. Format: 'worker-<role>-<uuid4>'."""
 
     tool_registry: ToolRegistry
-    """Tool registry — MUST be restricted to {'lookup', 'resolve_location'}.
+    """Tool registry — MUST be restricted to {'find', 'locate'}.
 
     The restriction is asserted by Coordinator.spawn_worker() before AgentContext
     construction; AgentContext itself cannot validate this at __init__ time because

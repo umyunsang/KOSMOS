@@ -16,7 +16,7 @@
     },
     "name": {
       "type": "string",
-      "enum": ["lookup", "resolve_location", "submit", "subscribe", "verify"],
+      "enum": ["find", "locate", "send", "subscribe", "check"],
       "description": "Primitive name per Spec 031."
     },
     "arguments": {

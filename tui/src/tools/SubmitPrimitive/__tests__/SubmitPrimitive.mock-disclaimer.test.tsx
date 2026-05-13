@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-// Audit-2 P0 · SubmitPrimitive mock-disclaimer unit tests.
+// Audit-2 P0 · SendPrimitive mock-disclaimer unit tests.
 //
-// Citizen-safety: mock submit results MUST display 🧪 모의 prefix and
+// Citizen-safety: mock send results MUST display 🧪 모의 prefix and
 // "실제 행정 영향 없는 시연 결과입니다." caveat.
-// Live submit results MUST NOT show any mock prefix.
+// Live send results MUST NOT show any mock prefix.
 
 import { test, expect, describe } from 'bun:test'
 import { render } from 'ink-testing-library'
@@ -31,8 +31,8 @@ function renderSubmit(output: Output, opts: { verbose?: boolean } = {}): string 
 // Mock path — disclaimer required
 // ---------------------------------------------------------------------------
 
-describe('SubmitPrimitive renderToolResultMessage — mock disclaimer', () => {
-  test('mock submit (ok=true, _mode="mock" in result) shows 🧪 모의 prefix', () => {
+describe('SendPrimitive renderToolResultMessage — mock disclaimer', () => {
+  test('mock send (ok=true, _mode="mock" in result) shows 🧪 모의 prefix', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -53,7 +53,7 @@ describe('SubmitPrimitive renderToolResultMessage — mock disclaimer', () => {
     expect(frame).toContain('실제 행정 영향 없는 시연 결과입니다')
   })
 
-  test('mock submit shows actual endpoint footer when present', () => {
+  test('mock send shows actual endpoint footer when present', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -73,12 +73,16 @@ describe('SubmitPrimitive renderToolResultMessage — mock disclaimer', () => {
     expect(frame).toContain('https://api.hometax.go.kr/v1/submit')
   })
 
-  test('mock submit still shows receipt_id and status', () => {
+  test('mock send still shows receipt_id and status', () => {
     const output: Output = {
       ok: true,
       result: {
-        receipt_id: 'gov24-MOCK-2026-05-04',
-        status: 'accepted',
+        transaction_id: 'urn:ummaya:send:internal-dedup-id',
+        status: 'succeeded',
+        adapter_receipt: {
+          receipt_id: 'gov24-MOCK-2026-05-04',
+          status: '접수완료',
+        },
         _mode: 'mock',
         _reference_implementation: 'ax-infrastructure-callable-channel',
         _actual_endpoint_when_live: 'https://api.gov24.go.kr/v1/submit',
@@ -91,6 +95,8 @@ describe('SubmitPrimitive renderToolResultMessage — mock disclaimer', () => {
     const frame = renderSubmit(output)
     expect(frame).toContain('🧪 모의')
     expect(frame).toContain('gov24-MOCK-2026-05-04')
+    expect(frame).toContain('상태: 접수 완료')
+    expect(frame).not.toContain('urn:ummaya:send:internal-dedup-id')
   })
 })
 
@@ -98,8 +104,8 @@ describe('SubmitPrimitive renderToolResultMessage — mock disclaimer', () => {
 // Live path — NO mock disclaimer
 // ---------------------------------------------------------------------------
 
-describe('SubmitPrimitive renderToolResultMessage — live path (no mock disclaimer)', () => {
-  test('live submit (no _mode field) shows green ✓ without 🧪 prefix', () => {
+describe('SendPrimitive renderToolResultMessage — live path (no mock disclaimer)', () => {
+  test('live send (no _mode field) shows green ✓ without 🧪 prefix', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -115,7 +121,7 @@ describe('SubmitPrimitive renderToolResultMessage — live path (no mock disclai
     expect(frame).not.toContain('시연 결과')
   })
 
-  test('live submit with _mode="live" does NOT show mock disclaimer', () => {
+  test('live send with _mode="live" does NOT show mock disclaimer', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -135,7 +141,7 @@ describe('SubmitPrimitive renderToolResultMessage — live path (no mock disclai
 // Error path preserved
 // ---------------------------------------------------------------------------
 
-describe('SubmitPrimitive renderToolResultMessage — error path preserved', () => {
+describe('SendPrimitive renderToolResultMessage — error path preserved', () => {
   test('ok=false renders error message in red, no mock disclaimer', () => {
     const output: Output = {
       ok: false,

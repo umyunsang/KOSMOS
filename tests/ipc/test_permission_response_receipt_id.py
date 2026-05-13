@@ -193,14 +193,14 @@ async def test_backend_emits_receipt_id_on_allow_once(  # noqa: C901
     )
     from ummaya.primitives import GATED_PRIMITIVES
 
-    prim_risk: dict[str, str] = {"verify": "low", "submit": "high"}
+    prim_risk: dict[str, str] = {"check": "low", "send": "high"}
     prim_ko: dict[str, str] = {
-        "verify": "신원 확인을 위해 인증 위임을 요청합니다.",
-        "submit": "정부 API에 데이터를 제출합니다.",
+        "check": "신원 확인을 위해 인증 위임을 요청합니다.",
+        "send": "정부 API에 데이터를 제출합니다.",
     }
     prim_en: dict[str, str] = {
-        "verify": "Request identity delegation.",
-        "submit": "Submit data to a government API.",
+        "check": "Request identity delegation.",
+        "send": "Submit data to a government API.",
     }
 
     async def _simulated_check_gate(fname: str) -> bool:
@@ -310,7 +310,7 @@ async def test_backend_emits_receipt_id_on_allow_once(  # noqa: C901
         if fut and not fut.done():
             fut.set_result(resp)
 
-    gate_task = asyncio.create_task(_simulated_check_gate("submit"))
+    gate_task = asyncio.create_task(_simulated_check_gate("send"))
     resolver_task = asyncio.create_task(_resolver())
     result = await gate_task
     await resolver_task
@@ -369,9 +369,9 @@ async def test_backend_emits_receipt_id_on_allow_session(  # noqa: C901
     )
     from ummaya.primitives import GATED_PRIMITIVES
 
-    prim_risk: dict[str, str] = {"verify": "low", "submit": "high"}
-    prim_ko: dict[str, str] = {"submit": "정부 API에 데이터를 제출합니다."}
-    prim_en: dict[str, str] = {"submit": "Submit data to a government API."}
+    prim_risk: dict[str, str] = {"check": "low", "send": "high"}
+    prim_ko: dict[str, str] = {"send": "정부 API에 데이터를 제출합니다."}
+    prim_en: dict[str, str] = {"send": "Submit data to a government API."}
 
     async def _simulated_check_gate(fname: str) -> bool:
         if fname not in GATED_PRIMITIVES:
@@ -459,7 +459,7 @@ async def test_backend_emits_receipt_id_on_allow_session(  # noqa: C901
         if fut and not fut.done():
             fut.set_result(resp)
 
-    gate_task = asyncio.create_task(_simulated_check_gate("submit"))
+    gate_task = asyncio.create_task(_simulated_check_gate("send"))
     resolver_task = asyncio.create_task(_resolver())
     result = await gate_task
     await resolver_task

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // UMMAYA-original — [H1] mismatch_error mis-info guard test (2026-05-04)
 //
-// Citizen-safety-critical regression test: ensure that a verify primitive
+// Citizen-safety-critical regression test: ensure that a check primitive
 // payload carrying ``family: "mismatch_error"`` (e.g. when no auth adapter
 // is registered) renders as an ❌ rejection — NEVER as the legacy
 // ``결과 수신됨`` success fallback.
@@ -12,8 +12,8 @@
 import { test, expect, describe } from 'bun:test'
 import { render } from 'ink-testing-library'
 import type React from 'react'
-import { VerifyPrimitive } from './VerifyPrimitive.js'
-import type { Output } from './VerifyPrimitive.js'
+import { CheckPrimitive } from './CheckPrimitive.js'
+import type { Output } from './CheckPrimitive.js'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -25,7 +25,7 @@ function renderVerify(output: Output, opts: { verbose?: boolean } = {}): string 
     null,
     { verbose: opts.verbose ?? false },
   )
-  // VerifyPrimitive returns a React element directly (no string short-circuit
+  // CheckPrimitive returns a React element directly (no string short-circuit
   // on the success/error paths exercised here).
   if (typeof element === 'string') return element
   if (element === null || element === undefined) return ''
@@ -37,7 +37,7 @@ function renderVerify(output: Output, opts: { verbose?: boolean } = {}): string 
 // [H1] mismatch_error rejection rendering
 // ---------------------------------------------------------------------------
 
-describe('VerifyPrimitive renderToolResultMessage — [H1] mismatch_error guard', () => {
+describe('CheckPrimitive renderToolResultMessage — [H1] mismatch_error guard', () => {
   test('dispatcher-classified mismatch_error (ok=false) renders ❌ 인증 모듈 거부 with message', () => {
     // Shape after dispatchPrimitive [H1] inner-payload classification:
     //   { ok: false, error: { kind: "mismatch_error", message: "..." }, result: <inner> }
@@ -79,7 +79,7 @@ describe('VerifyPrimitive renderToolResultMessage — [H1] mismatch_error guard'
   test('legacy bypass — ok=true with inner family=mismatch_error STILL renders ❌ (defense in depth)', () => {
     // If any caller path bypasses the dispatcher classification (older
     // fixture, manual envelope, future regression), the renderer's own
-    // ``isMismatchHere`` guard at line ~270 of VerifyPrimitive.ts MUST
+    // ``isMismatchHere`` guard at line ~270 of CheckPrimitive.ts MUST
     // catch it. This test pins that defense — without the guard, the code
     // would fall through to ``String(rawStatus ?? '결과 수신됨')`` = mis-info.
     const output: Output = {
@@ -126,7 +126,7 @@ describe('VerifyPrimitive renderToolResultMessage — [H1] mismatch_error guard'
 // Verified success rendering preserved (regression guard)
 // ---------------------------------------------------------------------------
 
-describe('VerifyPrimitive renderToolResultMessage — verified success path preserved', () => {
+describe('CheckPrimitive renderToolResultMessage — verified success path preserved', () => {
   test('verified status renders 검증 결과: 인증 완료 (green)', () => {
     const output: Output = {
       ok: true,

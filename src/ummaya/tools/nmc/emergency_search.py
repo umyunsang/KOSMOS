@@ -71,9 +71,9 @@ class NmcEmergencySearchInput(BaseModel):
 
     mode: Literal["coordinate", "region"] = Field(
         description=(
-            "Official NMC operation selector. Use 'coordinate' for "
-            "getEgytLcinfoInqire with WGS84_LAT/WGS84_LON. Use 'region' for "
-            "getEgytListInfoInqire with q0/q1 from resolve_location(want='all')."
+            "Official NMC operation selector. For citizen place-name/station/"
+            "neighborhood ER searches use 'region' with q0/q1 from locate. "
+            "Use 'coordinate' only when the request explicitly supplies coordinates."
         ),
     )
     lat: float | None = Field(
@@ -82,7 +82,8 @@ class NmcEmergencySearchInput(BaseModel):
         le=90,
         description=(
             "Coordinate-mode latitude in decimal degrees (WGS-84). Required "
-            "when mode='coordinate'. Obtain from resolve_location(want='coords')."
+            "when mode='coordinate'. Obtain from a coordinate-producing locate adapter "
+            "such as kakao_keyword_search or kakao_address_search."
         ),
     )
     lon: float | None = Field(
@@ -91,7 +92,8 @@ class NmcEmergencySearchInput(BaseModel):
         le=180,
         description=(
             "Coordinate-mode longitude in decimal degrees (WGS-84). Required "
-            "when mode='coordinate'. Obtain from resolve_location(want='coords')."
+            "when mode='coordinate'. Obtain from a coordinate-producing locate adapter "
+            "such as kakao_keyword_search or kakao_address_search."
         ),
     )
     q0: str | None = Field(
@@ -100,7 +102,7 @@ class NmcEmergencySearchInput(BaseModel):
         max_length=40,
         description=(
             "Region-mode NMC Q0 시도 parameter, e.g. '부산광역시'. Required "
-            "when mode='region'. Populate from resolve_location(...).region.region_1depth_name."
+            "when mode='region'. Populate from kakao_coord_to_region.region_1depth_name."
         ),
     )
     q1: str | None = Field(
@@ -109,7 +111,7 @@ class NmcEmergencySearchInput(BaseModel):
         max_length=40,
         description=(
             "Region-mode NMC Q1 시군구 parameter, e.g. '사하구'. Required "
-            "when mode='region'. Populate from resolve_location(...).region.region_2depth_name."
+            "when mode='region'. Populate from kakao_coord_to_region.region_2depth_name."
         ),
     )
     qn: str | None = Field(
@@ -127,7 +129,7 @@ class NmcEmergencySearchInput(BaseModel):
         le=90,
         description=(
             "Optional original query latitude for distance sorting in region mode. "
-            "Populate from resolve_location(...).coords.lat when available."
+            "Populate from the prior coordinate-producing locate adapter when available."
         ),
     )
     origin_lon: float | None = Field(
@@ -136,15 +138,16 @@ class NmcEmergencySearchInput(BaseModel):
         le=180,
         description=(
             "Optional original query longitude for distance sorting in region mode. "
-            "Populate from resolve_location(...).coords.lon when available."
+            "Populate from the prior coordinate-producing locate adapter when available."
         ),
     )
     limit: int = Field(
+        default=5,
         ge=1,
         le=100,
         description=(
             "Maximum number of emergency institutions to return. Capped at 100 "
-            "per NMC API contract."
+            "per NMC API contract. Defaults to 5 for citizen-facing nearby searches."
         ),
     )
 
@@ -153,7 +156,7 @@ class NmcEmergencySearchInput(BaseModel):
         if self.mode == "coordinate" and (self.lat is None or self.lon is None):
             raise ValueError("mode='coordinate' requires lat and lon")
         if self.mode == "region" and (not self.q0 or not self.q1):
-            raise ValueError("mode='region' requires q0 and q1 from resolve_location region")
+            raise ValueError("mode='region' requires q0 and q1 from locate region")
         if (self.origin_lat is None) ^ (self.origin_lon is None):
             raise ValueError("origin_lat and origin_lon must be supplied together")
         return self
@@ -463,7 +466,7 @@ def _sort_region_items_by_origin(
         lon = _as_float(item.get("longitude"))
         if lat is None or lon is None:
             continue
-        item["distance"] = round(
+        distance_km = round(
             _haversine_km(
                 lat1=origin_lat,
                 lon1=origin_lon,
@@ -472,6 +475,9 @@ def _sort_region_items_by_origin(
             ),
             3,
         )
+        item["distance"] = distance_km
+        item["distance_km"] = distance_km
+        item["distance_unit"] = "km"
     items.sort(
         key=lambda item: (
             item.get("distance") is None,
@@ -643,9 +649,10 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
             "결과는 등록 응급의료기관이며 실시간 병상은 별도 endpoint."
         ),
         input_quirk=(
-            "하단역/동네/역 근처 응급실은 resolve_location(want='all') 먼저 호출 후 "
-            "mode='region', q0=region.region_1depth_name, q1=region.region_2depth_name, "
-            "origin_lat/lon=coords. 좌표 operation은 upstream 0건 가능. QZ 임의 설정 금지."
+            "근처/야간/역/동네 응급실은 locate adapter로 좌표를 얻고 "
+            "kakao_coord_to_region 후 region mode. "
+            "params={mode:'region', q0:<시도>, q1:<시군구>, origin_lat:<lat>, "
+            "origin_lon:<lon>, limit:5}. coordinate mode와 QZ 임의 설정 금지."
         ),
         short_reference=(
             "NMC Q0=시도, Q1=시군구, QN=기관명(optional), ORD=ADDR. "
@@ -659,9 +666,10 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
             "비인증 시 auth_required."
         ),
         self_contained_decl=(
-            "ORDERING: turn1 resolve_location(want='all'), turn2 본 도구. "
-            "역/동/주소 근처 검색은 region mode. 좌표만 알고 coordinate mode를 쓸 때도 "
-            "응급실 시간 답변은 '24시간 운영', outpatient_hours_display는 외래진료로만 설명."
+            "ORDERING: turn1 locate(kakao_keyword_search 또는 kakao_address_search), "
+            "turn2 locate(kakao_coord_to_region), turn3 본 도구. "
+            "응급실 시간은 '24시간 운영', "
+            "outpatient_hours_display는 외래진료로만 설명."
         ),
     ),
     search_hint=(
@@ -685,7 +693,7 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
     #   search_hint_ko = "응급실 실시간 병상 · 응급의료센터"
     #   search_hint_en = "emergency room bed availability nearest ER"
     # Spec 031 T032/T033 dual-axis fields — None during pre-v1.2 compatibility window FR-028
-    primitive="lookup",
+    primitive="find",
     published_tier_minimum=None,
     nist_aal_hint=None,
     trigger_examples=[

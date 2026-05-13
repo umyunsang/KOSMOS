@@ -2,9 +2,9 @@
  * UMMAYA-original — AdmCodeBadge renderer.
  *
  * Displays the administrative region code and name from the adm_cd slot
- * of a resolve_location result.
+ * of a locate result.
  *
- * FR-023: resolve_location administrative code renderer.
+ * FR-023: locate administrative code renderer.
  */
 import React from 'react'
 import { Box, Text } from 'ink'

@@ -44,7 +44,7 @@ def _minimal_record(**overrides) -> dict:
     """Return a dict that satisfies every required field with valid values."""
     base = {
         "record_version": "v1",
-        "tool_id": "lookup",
+        "tool_id": "find",
         "adapter_mode": "mock",
         "session_id": "session-001",
         "caller_identity": "citizen:abc123",
@@ -181,7 +181,7 @@ class TestInvariantI2:
     def test_i2_wrong_tool_id_raises(self):
         """public_path_marker=True with tool_id != 'check_eligibility' fails."""
         with pytest.raises(ValidationError, match="I2"):
-            ToolCallAuditRecord(**_public_path_record(tool_id="lookup"))
+            ToolCallAuditRecord(**_public_path_record(tool_id="find"))
 
     def test_i2_wrong_auth_level_raises(self):
         """public_path_marker=True with auth_level_presented != 'AAL1' fails."""
@@ -714,7 +714,7 @@ def test_model_validate_under_5ms_p_avg():
 
     canonical = {
         "record_version": "v1",
-        "tool_id": "lookup",
+        "tool_id": "find",
         "adapter_mode": "mock",
         "session_id": "perf-session-001",
         "caller_identity": "citizen:perf-test",

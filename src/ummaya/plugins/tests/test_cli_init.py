@@ -55,7 +55,7 @@ class TestRunInitHappyPath:
         manifest_path = result.out_dir / "manifest.yaml"  # type: ignore[union-attr]
         manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
         assert manifest["plugin_id"] == "demo_plugin"
-        assert manifest["adapter"]["tool_id"] == "plugin.demo_plugin.lookup"
+        assert manifest["adapter"]["tool_id"] == "plugin.demo_plugin.find"
         assert manifest["tier"] == "live"
         assert manifest["processes_pii"] is False
         assert manifest["pipa_trustee_acknowledgment"] is None

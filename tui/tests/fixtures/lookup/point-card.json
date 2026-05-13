@@ -5,7 +5,7 @@
   "kind": "tool_result",
   "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AG",
   "envelope": {
-    "kind": "lookup",
+    "kind": "find",
     "subtype": "point",
     "tool_id": "koroad_accident_hazard_search",
     "title": "Gangnam-gu Intersection Hazard Zone",

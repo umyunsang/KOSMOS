@@ -41,11 +41,11 @@ UMMAYA 는 6-layer harness 입니다 (`docs/vision.md`). 플러그인은 **Layer
 ```
 
 예시:
-- `plugin.busan_bike.lookup` ✓
-- `plugin.gov24_petition.submit` ✓
+- `plugin.busan_bike.find` ✓
+- `plugin.gov24_petition.send` ✓
 - `plugin.busan_bike.fetch` ✗ (verb 미허용)
-- `plugin.busan-bike.lookup` ✗ (하이픈 미허용)
-- `plugin.busan_bike.resolve_location` ✗ (Q8-NO-ROOT-OVERRIDE)
+- `plugin.busan-bike.find` ✗ (하이픈 미허용)
+- `plugin.busan_bike.locate` ✗ (Q8-NO-ROOT-OVERRIDE)
 
 ---
 
@@ -64,7 +64,7 @@ from ummaya.tools.models import GovAPITool
 from .schema import LookupInput, LookupOutput
 
 TOOL = GovAPITool(
-    id="plugin.busan_bike.lookup",
+    id="plugin.busan_bike.find",
     name_ko="부산 따릉이 조회",
     ministry="OTHER",
     # ... (전체 필드는 quickstart.ko.md § 단계 6 참고)

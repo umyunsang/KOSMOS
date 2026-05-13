@@ -213,7 +213,7 @@ export async function execHttpHook(
       // use — the proxy performs DNS for the target, and applying the
       // guard would instead validate the proxy's own IP, breaking
       // connections to corporate proxies on private networks.
-      lookup: sandboxProxy || envProxyActive ? undefined : ssrfGuardedLookup,
+      find: sandboxProxy || envProxyActive ? undefined : ssrfGuardedLookup,
     })
 
     cleanup()

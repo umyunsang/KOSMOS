@@ -39,9 +39,9 @@ _INTERNATIONAL_REF: Final = "Japan JPKI"
 
 ADAPTER_REGISTRATION = AdapterRegistration(
     tool_id="mock_verify_ganpyeon_injeung",
-    primitive=AdapterPrimitive.verify,
+    primitive=AdapterPrimitive.check,
     module_path="ummaya.tools.mock.verify_ganpyeon_injeung",
-    input_model_ref="ummaya.primitives.verify:VerifyInput",
+    input_model_ref="ummaya.primitives.check:VerifyInput",
     source_mode=AdapterSourceMode.OOS,
     published_tier_minimum="ganpyeon_injeung_kakao_aal2",
     nist_aal_hint="AAL2",

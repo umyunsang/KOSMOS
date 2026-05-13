@@ -52,7 +52,7 @@ class UmmayaSettings(BaseSettings):
     """SGIS API consumer secret (UMMAYA_SGIS_SECRET)."""
 
     data_go_kr_api_key: str = Field(default="")
-    """공공데이터포털 통합 API 키, shared by KOROAD / KMA / HIRA (UMMAYA_DATA_GO_KR_API_KEY)."""
+    """공공데이터포털 통합 API 키, shared by KOROAD / KMA / HIRA / NMC / NFA / MOHW."""
 
     # --- Safety pipeline (Epic #466) ---
     safety: SafetySettings = Field(default_factory=SafetySettings)

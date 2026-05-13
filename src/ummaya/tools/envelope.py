@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Envelope normalizer for ``lookup(mode='fetch')`` responses.
+"""Envelope normalizer for ``find`` responses.
 
 Every adapter handler output MUST pass through ``normalize()`` before being
 returned to the model.  ``normalize()`` validates the output against the

@@ -459,7 +459,7 @@ class ToolCallFrame(_BaseFrame):
 
     kind: Literal["tool_call"] = Field(default="tool_call", description="Frame discriminator.")
     call_id: str = Field(description="ULID correlating this call to its subsequent tool_result.")
-    name: Literal["lookup", "resolve_location", "submit", "verify"] = Field(
+    name: Literal["find", "locate", "send", "check"] = Field(
         description="Primitive name per Spec 031."
     )
     arguments: dict[str, object] = Field(
@@ -477,7 +477,7 @@ class ToolResultEnvelope(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="allow", populate_by_name=True)
 
-    kind: Literal["lookup", "resolve_location", "submit", "verify"] = Field(
+    kind: Literal["find", "locate", "send", "check"] = Field(
         description="Primitive kind discriminator per Spec 031."
     )
 
@@ -525,7 +525,7 @@ class WorkerStatusFrame(_BaseFrame):
     role_id: str = Field(
         description="Specialist label (e.g., transport-specialist, health-specialist)."
     )
-    current_primitive: Literal["lookup", "resolve_location", "submit", "verify"] = Field(
+    current_primitive: Literal["find", "locate", "send", "check"] = Field(
         description="Primitive currently being invoked by this worker."
     )
     status: Literal["idle", "running", "waiting_permission", "error"] = Field(
@@ -548,7 +548,7 @@ class PermissionRequestFrame(_BaseFrame):
         description="ULID; round-trips in the matching permission_response frame."
     )
     worker_id: str = Field(description="Worker requesting permission.")
-    primitive_kind: Literal["lookup", "resolve_location", "submit", "verify"] = Field(
+    primitive_kind: Literal["find", "locate", "send", "check"] = Field(
         description="The primitive the worker wants to invoke."
     )
     description_ko: str = Field(description="Korean-language description shown to the citizen.")
@@ -618,7 +618,7 @@ class PermissionResponseFrame(_BaseFrame):
     # `layer: 1, tool_name: 'unknown'` (UI-C-1 spec violation: Layer 2/3
     # submits were colour-coded green like a Layer 1 verify).
     # Both fields are optional so legacy backends remain wire-compatible.
-    primitive_kind: Literal["lookup", "resolve_location", "submit", "verify"] | None = Field(
+    primitive_kind: Literal["find", "locate", "send", "check"] | None = Field(
         default=None,
         description=(
             "The primitive that was authorised. The TUI feeds this into "
@@ -1169,7 +1169,7 @@ class AdapterManifestEntry(BaseModel):
         max_length=80,
         description="Human-readable display name; bilingual permitted.",
     )
-    primitive: Literal["lookup", "submit", "verify", "resolve_location"] = Field(
+    primitive: Literal["find", "send", "check", "locate"] = Field(
         description="Primitive verb the adapter is registered under (I6).",
     )
     policy_authority_url: str | None = Field(

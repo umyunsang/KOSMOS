@@ -196,20 +196,20 @@ def _build_multi_ministry_script():  # type: ignore[no-untyped-def]
     _u_synth = TokenUsage(input_tokens=900, output_tokens=180)
 
     event_sequences = [
-        _tce("resolve_location", _RESOLVE_GANGNAM_ARGS, "call_001", _u),
-        _tce("lookup", _SEARCH_KOROAD_ARGS, "call_002", _u),
-        _tce("lookup", _FETCH_KOROAD_ARGS, "call_003", _u),
-        _tce("lookup", _SEARCH_HIRA_ARGS, "call_004", _u),
-        _tce("lookup", _FETCH_HIRA_ARGS, "call_005", _u),
+        _tce("locate", _RESOLVE_GANGNAM_ARGS, "call_001", _u),
+        _tce("find", _SEARCH_KOROAD_ARGS, "call_002", _u),
+        _tce("find", _FETCH_KOROAD_ARGS, "call_003", _u),
+        _tce("find", _SEARCH_HIRA_ARGS, "call_004", _u),
+        _tce("find", _FETCH_HIRA_ARGS, "call_005", _u),
         _make_text_events(_MULTI_MINISTRY_SYNTHESIS, _u_synth),
     ]
 
     expected_tool_order = [
-        "resolve_location",
-        "lookup",
-        "lookup",
-        "lookup",
-        "lookup",
+        "locate",
+        "find",
+        "find",
+        "find",
+        "find",
     ]
 
     return event_sequences, expected_tool_order
@@ -309,19 +309,19 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:  # noqa: 
 
     assert tool_call_order, "Expected at least one tool call in multi-ministry scenario"
 
-    assert "resolve_location" in tool_call_order, (
+    assert "locate" in tool_call_order, (
         f"resolve_location missing from tool_call_order: {tool_call_order!r}"
     )
 
-    lookup_calls = [t for t in tool_call_order if t == "lookup"]
+    lookup_calls = [t for t in tool_call_order if t == "find"]
     assert len(lookup_calls) >= 4, (
         f"Expected ≥4 lookup calls (2 search + 2 fetch for KOROAD+HIRA), "
         f"got {len(lookup_calls)}: {tool_call_order!r}"
     )
 
     # resolve_location must precede the first lookup
-    first_lookup_idx = next(i for i, t in enumerate(tool_call_order) if t == "lookup")
-    last_resolve_idx = max(i for i, t in enumerate(tool_call_order) if t == "resolve_location")
+    first_lookup_idx = next(i for i, t in enumerate(tool_call_order) if t == "find")
+    last_resolve_idx = max(i for i, t in enumerate(tool_call_order) if t == "locate")
     assert last_resolve_idx < first_lookup_idx, (
         "All resolve_location calls must precede the first lookup call. "
         f"last_resolve_idx={last_resolve_idx}, first_lookup_idx={first_lookup_idx}"
@@ -354,7 +354,7 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:  # noqa: 
 
     session_id = str(uuid.uuid4())
     ipc_frames: list[IPCFrame] = []  # type: ignore[type-arg]
-    primitive_names = {"lookup", "resolve_location", "submit", "verify"}
+    primitive_names = {"find", "locate", "send", "check"}
 
     for event in collected_events:
         if event.type == "tool_use" and event.tool_name in primitive_names:
@@ -372,7 +372,7 @@ async def test_sc8_phase2_multi_ministry_ipc_frame_sequence() -> None:  # noqa: 
 
         elif event.type == "tool_result":
             # Derive envelope kind from preceding tool_use
-            envelope_kind = "lookup"
+            envelope_kind = "find"
             idx = collected_events.index(event)
             for prev in reversed(collected_events[:idx]):
                 if prev.type == "tool_use" and prev.tool_name in primitive_names:

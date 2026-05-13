@@ -4,7 +4,7 @@
  * Renders a numbered list of records.  Each item shows a left-padded index,
  * a title, and optional trailing metadata.
  *
- * FR-019: lookup collection list renderer.
+ * FR-019: find collection list renderer.
  */
 import React from 'react'
 import { Box, Text } from 'ink'

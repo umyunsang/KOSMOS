@@ -2,7 +2,7 @@
   "fixture_id": "geumyung_credit_lookup",
   "citizen_prompt": "내 신용정보 조회해줘",
   "expected_first_tool_call": {
-    "name": "verify",
+    "name": "check",
     "arguments": {
       "family_hint": "geumyung_module"
     }

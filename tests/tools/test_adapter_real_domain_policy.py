@@ -55,7 +55,7 @@ def test_url_non_empty() -> None:
 
 def test_gate_literal() -> None:
     """FR-003: citizen_facing_gate is Literal of 5 values — others rejected."""
-    valid_gates = ("read-only", "login", "action", "sign", "submit")
+    valid_gates = ("read-only", "login", "action", "sign", "send")
     for gate in valid_gates:
         AdapterRealDomainPolicy(
             real_classification_url="https://example.gov.kr/policy",
@@ -93,7 +93,7 @@ def test_18_adapters_have_policy() -> None:
     except Exception:  # noqa: BLE001, S110 — tolerate boot failure; the assertion below covers it
         pass
 
-    valid_gates = {"read-only", "login", "action", "sign", "submit"}
+    valid_gates = {"read-only", "login", "action", "sign", "send"}
     tools = registry.all_tools()
 
     # Threshold lowered to ≥14 (current register_all chain). The full ≥18 target

@@ -45,7 +45,7 @@ def _ctx(**overrides: object) -> PromptAssemblyContext:
     base: dict[str, object] = {
         "session_id": "0193f3c9-9eaf-7000-a000-000000000001",
         "session_started_at": datetime(2026, 4, 28, 12, 0, 0, tzinfo=UTC),
-        "tool_inventory": ("lookup", "resolve_location"),
+        "tool_inventory": ("find", "locate"),
         "dynamic_inputs": {},
     }
     base.update(overrides)

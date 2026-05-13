@@ -2,7 +2,7 @@
 """T014 — AdapterRegistration primitive-field contract tests.
 
 Proves the Spec 031 Phase 2 registry metadata model:
-1. Accepts the active primitive names (lookup, resolve_location, submit, verify).
+1. Accepts the active primitive names (find, locate, send, check).
 2. Rejects unknown primitives with a pydantic ValidationError.
 3. Enforces ``extra='forbid'`` / ``frozen=True`` invariants on the model_config.
 4. Accepts None on ``published_tier_minimum`` / ``nist_aal_hint`` during the
@@ -34,7 +34,7 @@ def _base_kwargs(**overrides: object) -> dict[str, object]:
     """
     base: dict[str, object] = {
         "tool_id": "fake_adapter",
-        "primitive": AdapterPrimitive.lookup,
+        "primitive": AdapterPrimitive.find,
         "module_path": "ummaya.tools.mock.data_go_kr.fake_adapter",
         "input_model_ref": "ummaya.tools.mock.data_go_kr.fake_adapter:FakeInput",
         "source_mode": AdapterSourceMode.OPENAPI,
@@ -48,7 +48,7 @@ def _base_kwargs(**overrides: object) -> dict[str, object]:
 
 @pytest.mark.parametrize(
     "primitive_value",
-    ["lookup", "resolve_location", "submit", "verify"],
+    ["find", "locate", "send", "check"],
 )
 def test_accepts_active_primitive_names(primitive_value: str) -> None:
     reg = AdapterRegistration(**_base_kwargs(primitive=primitive_value))

@@ -2,11 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // UMMAYA-original — FriendliAI session-auth CLI stubs.
 //
-// FriendliAI API keys are process-scoped in UMMAYA. The interactive TUI /login
-// command can place a key into the running process and its lazily spawned
-// Python backend. A standalone `ummaya auth login` process cannot mutate the
-// parent shell or an already running TUI without persisting a secret, so it
-// intentionally guides citizens back to the in-session command.
+// FriendliAI API keys are kept in the user memdir in UMMAYA. The interactive TUI
+// /login command stores a token so it is restored on next app launch and can be
+// cleared later via /logout.
 
 import {
   clearFriendliCredential,
@@ -25,7 +23,7 @@ export async function authLogin(_opts: {
   claudeai?: boolean
 } = {}): Promise<void> {
   process.stdout.write(
-    'UMMAYA FriendliAI login is session-scoped. Start the TUI and run /login; the API key is not saved to disk.\n',
+    'UMMAYA FriendliAI login stores the token in your local user store. Start the TUI and run /login; the token is stored locally and restored on the next launch.\n',
   )
   process.exit(0)
 }
@@ -41,7 +39,9 @@ export async function authStatus(opts: {
     if (loggedIn) {
       process.stdout.write(`FriendliAI API key: ${source}\n`)
     } else {
-      process.stdout.write('Not logged in. Start the UMMAYA TUI and run /login.\n')
+      process.stdout.write(
+        'Not logged in. Start the UMMAYA TUI and run /login to save your token locally.\n',
+      )
     }
   } else {
     process.stdout.write(
@@ -51,7 +51,7 @@ export async function authStatus(opts: {
           authMethod: loggedIn ? 'friendli_api_key' : 'none',
           apiProvider: 'friendliai',
           apiKeySource: loggedIn ? source : null,
-          persistence: 'process_env',
+          persistence: 'user_memdir',
         },
         null,
         2,
@@ -65,7 +65,7 @@ export async function authStatus(opts: {
 export async function authLogout(): Promise<void> {
   clearFriendliCredential()
   process.stdout.write(
-    'FriendliAI credential cleared from this process. In the TUI, run /logout to clear the active session key and close the backend bridge.\n',
+    'FriendliAI credential cleared from process state and local disk store. In the TUI, run /logout to clear the stored token and close the backend bridge.\n',
   )
   process.exit(0)
 }

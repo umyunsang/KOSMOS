@@ -8,7 +8,7 @@
       "response": {
         "toolCalls": [
           {
-            "name": "resolve_location",
+            "name": "locate",
             "arguments": {
               "query": "강남구",
               "want": "coords"
@@ -24,12 +24,12 @@
     },
     {
       "match": {
-        "userMessageContains": "resolve_location"
+        "userMessageContains": "locate"
       },
       "response": {
         "toolCalls": [
           {
-            "name": "lookup",
+            "name": "find",
             "arguments": {
               "tool_id": "hira_hospital_search",
               "params": {

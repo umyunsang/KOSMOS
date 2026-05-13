@@ -1,26 +1,60 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 220" fill="none">
+<svg
+  width="2172"
+  height="724"
+  viewBox="0 0 2172 724"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">UMMAYA</title>
+  <desc id="desc">
+    UMMAYA banner with Umma, a compact open-mouth cat mascot, and the
+    Unified Multi-Ministry Agent for Your Administration wordmark.
+  </desc>
+
   <defs>
-    <linearGradient id="home" x1="42" y1="32" x2="166" y2="188" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#fbbf24"/>
-      <stop offset="100%" stop-color="#ea580c"/>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#fb7185" flood-opacity="0.18"/>
+    </filter>
+    <linearGradient id="wordmarkInk" x1="896" y1="195" x2="1936" y2="361" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#020617"/>
     </linearGradient>
-    <linearGradient id="door" x1="70" y1="85" x2="138" y2="170" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#7c2d12"/>
-      <stop offset="100%" stop-color="#431407"/>
+    <linearGradient id="fur" x1="86" y1="110" x2="618" y2="518" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffe4c2"/>
+      <stop offset="100%" stop-color="#ffb86b"/>
     </linearGradient>
   </defs>
 
-  <rect width="720" height="220" rx="24" fill="#fff7ed"/>
-  <g transform="translate(34 24)">
-    <path d="M86 0 172 70H150V166H22V70H0L86 0Z" fill="url(#home)"/>
-    <rect x="48" y="76" width="76" height="88" rx="22" fill="url(#door)"/>
-    <text x="86" y="134" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="56" font-weight="800" fill="#ffedd5">U</text>
-    <path d="M40 18C54 4 70 -3 86 -3C102 -3 118 4 132 18" stroke="#fdba74" stroke-width="8" stroke-linecap="round"/>
-    <path d="M54 178H118" stroke="#fb923c" stroke-width="8" stroke-linecap="round"/>
-    <path d="M66 194H106" stroke="#34d399" stroke-width="6" stroke-linecap="round"/>
+  <rect width="2172" height="724" rx="48" fill="#fff7ed"/>
+  <path d="M0 532C135 497 232 523 302 610C382 710 509 696 604 637C746 550 883 581 986 724H0V532Z" fill="#ffe4ec"/>
+  <path d="M2172 420C2070 445 1995 515 1967 634C1947 718 1870 720 1815 665C1745 595 1624 628 1575 724H2172V420Z" fill="#ffe4ec"/>
+
+  <g transform="translate(88 138) scale(28)" shape-rendering="crispEdges" filter="url(#softShadow)">
+    <path fill="#1f1720" d="M7 0h1v1h-1zM11 0h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM10 1h1v1h-1zM12 1h1v1h-1zM5 2h1v1h-1zM8 2h1v1h-1zM9 2h1v1h-1zM12 2h1v1h-1zM4 3h1v1h-1zM13 3h1v1h-1zM3 4h1v1h-1zM6 4h1v1h-1zM11 4h1v1h-1zM14 4h1v1h-1zM3 5h1v1h-1zM6 5h1v1h-1zM11 5h1v1h-1zM14 5h1v1h-1zM3 6h1v1h-1zM14 6h1v1h-1zM2 7h1v1h-1zM7 7h1v1h-1zM10 7h1v1h-1zM15 7h1v1h-1zM2 8h1v1h-1zM7 8h1v1h-1zM10 8h1v1h-1zM15 8h1v1h-1zM2 9h1v1h-1zM7 9h1v1h-1zM10 9h1v1h-1zM15 9h1v1h-1zM2 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM15 10h1v1h-1zM3 11h1v1h-1zM13 11h1v1h-1zM3 12h1v1h-1zM13 12h1v1h-1zM4 13h1v1h-1zM13 13h1v1h-1zM5 14h1v1h-1zM6 14h1v1h-1zM7 14h1v1h-1zM8 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM11 14h1v1h-1z"/>
+    <path fill="url(#fur)" d="M7 3h1v1h-1zM8 3h1v1h-1zM9 3h1v1h-1zM10 3h1v1h-1zM4 4h1v1h-1zM5 4h1v1h-1zM7 4h1v1h-1zM8 4h1v1h-1zM9 4h1v1h-1zM10 4h1v1h-1zM12 4h1v1h-1zM13 4h1v1h-1zM4 5h1v1h-1zM5 5h1v1h-1zM12 5h1v1h-1zM13 5h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM11 6h1v1h-1zM12 6h1v1h-1zM13 6h1v1h-1zM3 7h1v1h-1zM4 7h1v1h-1zM5 7h1v1h-1zM6 7h1v1h-1zM11 7h1v1h-1zM12 7h1v1h-1zM13 7h1v1h-1zM14 7h1v1h-1zM3 8h1v1h-1zM4 8h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM11 8h1v1h-1zM12 8h1v1h-1zM13 8h1v1h-1zM14 8h1v1h-1zM3 9h1v1h-1zM4 9h1v1h-1zM5 9h1v1h-1zM6 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM13 9h1v1h-1zM14 9h1v1h-1zM3 10h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM11 10h1v1h-1zM12 10h1v1h-1zM13 10h1v1h-1zM14 10h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM6 11h1v1h-1zM7 11h1v1h-1zM8 11h1v1h-1zM9 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM12 11h1v1h-1zM4 12h1v1h-1zM5 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM8 12h1v1h-1zM9 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM12 12h1v1h-1zM5 13h1v1h-1zM6 13h1v1h-1zM7 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM10 13h1v1h-1zM11 13h1v1h-1zM12 13h1v1h-1z"/>
+    <path fill="#ff8aa0" d="M7 1h1v1h-1zM11 1h1v1h-1zM6 2h1v1h-1zM7 2h1v1h-1zM10 2h1v1h-1zM11 2h1v1h-1zM5 3h1v1h-1zM6 3h1v1h-1zM11 3h1v1h-1zM12 3h1v1h-1z"/>
+    <path fill="#7f1023" d="M8 7h1v1h-1zM9 7h1v1h-1zM8 8h1v1h-1zM9 8h1v1h-1z"/>
+    <path fill="#ff5f7f" d="M8 9h1v1h-1zM9 9h1v1h-1z"/>
   </g>
 
-  <text x="250" y="96" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="56" font-weight="800" fill="#111827">UMMAYA</text>
-  <text x="252" y="132" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="600" fill="#9a3412">UNIFIED MULTI-MINISTRY AGENT</text>
-  <text x="252" y="160" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="400" fill="#475569">for your administration</text>
+  <g transform="translate(610 78)">
+    <path d="M28 0H218C234 0 247 13 247 29V92C247 108 234 121 218 121H67L35 154V121H28C12 121 0 108 0 92V29C0 13 12 0 28 0Z" fill="#fff7ed" stroke="#ff5f7f" stroke-width="8"/>
+    <text x="124" y="78" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="50" font-weight="800" fill="#ff5f7f">엄마야</text>
+  </g>
+
+  <g transform="translate(842 156)">
+    <text x="0" y="164" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="182" font-weight="900" fill="url(#wordmarkInk)">UMMAYA</text>
+    <line x1="4" y1="228" x2="480" y2="228" stroke="#ff5f7f" stroke-width="6" stroke-linecap="round"/>
+    <path d="M562 212C562 191 591 184 602 203C613 184 642 191 642 212C642 237 602 260 602 260C602 260 562 237 562 212Z" fill="#ff5f7f"/>
+    <line x1="724" y1="228" x2="1194" y2="228" stroke="#ff5f7f" stroke-width="6" stroke-linecap="round"/>
+    <text x="4" y="315" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="46" font-weight="800" fill="#111827">Unified Multi-Ministry Agent for Your Administration</text>
+  </g>
+
+  <g fill="#ff8aa0" opacity="0.9">
+    <path d="M1992 129H2010V111H2023V129H2041V142H2023V160H2010V142H1992V129Z"/>
+    <path d="M2104 119C2127 111 2137 101 2145 78C2153 101 2163 111 2186 119C2163 127 2153 137 2145 160C2137 137 2127 127 2104 119Z"/>
+    <path d="M72 294H96V270H113V294H137V311H113V335H96V311H72V294Z"/>
+  </g>
 </svg>

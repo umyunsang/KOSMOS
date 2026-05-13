@@ -9,12 +9,52 @@
 >
   <title id="title">UMMAYA</title>
   <desc id="desc">
-    UMMAYA banner: Unified Multi-Ministry Agent for Your Administration, with a pixel cat mascot saying 엄마야.
+    Dark UMMAYA banner with Umma, a compact open-mouth cat mascot, and the
+    Unified Multi-Ministry Agent for Your Administration wordmark.
   </desc>
 
-  <image
-    width="2172"
-    height="724"
-    href="ummaya-banner-transparent.png"
-  />
+  <defs>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+    <linearGradient id="fur" x1="86" y1="110" x2="618" y2="518" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffe8ca"/>
+      <stop offset="100%" stop-color="#ffb86b"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="2172" y2="724" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="2172" height="724" rx="48" fill="url(#bg)"/>
+  <path d="M0 532C135 497 232 523 302 610C382 710 509 696 604 637C746 550 883 581 986 724H0V532Z" fill="#312033"/>
+  <path d="M2172 420C2070 445 1995 515 1967 634C1947 718 1870 720 1815 665C1745 595 1624 628 1575 724H2172V420Z" fill="#312033"/>
+
+  <g transform="translate(88 138) scale(28)" shape-rendering="crispEdges" filter="url(#softShadow)">
+    <path fill="#fff7ed" d="M7 0h1v1h-1zM11 0h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM10 1h1v1h-1zM12 1h1v1h-1zM5 2h1v1h-1zM8 2h1v1h-1zM9 2h1v1h-1zM12 2h1v1h-1zM4 3h1v1h-1zM13 3h1v1h-1zM3 4h1v1h-1zM6 4h1v1h-1zM11 4h1v1h-1zM14 4h1v1h-1zM3 5h1v1h-1zM6 5h1v1h-1zM11 5h1v1h-1zM14 5h1v1h-1zM3 6h1v1h-1zM14 6h1v1h-1zM2 7h1v1h-1zM7 7h1v1h-1zM10 7h1v1h-1zM15 7h1v1h-1zM2 8h1v1h-1zM7 8h1v1h-1zM10 8h1v1h-1zM15 8h1v1h-1zM2 9h1v1h-1zM7 9h1v1h-1zM10 9h1v1h-1zM15 9h1v1h-1zM2 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM15 10h1v1h-1zM3 11h1v1h-1zM13 11h1v1h-1zM3 12h1v1h-1zM13 12h1v1h-1zM4 13h1v1h-1zM13 13h1v1h-1zM5 14h1v1h-1zM6 14h1v1h-1zM7 14h1v1h-1zM8 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM11 14h1v1h-1z"/>
+    <path fill="url(#fur)" d="M7 3h1v1h-1zM8 3h1v1h-1zM9 3h1v1h-1zM10 3h1v1h-1zM4 4h1v1h-1zM5 4h1v1h-1zM7 4h1v1h-1zM8 4h1v1h-1zM9 4h1v1h-1zM10 4h1v1h-1zM12 4h1v1h-1zM13 4h1v1h-1zM4 5h1v1h-1zM5 5h1v1h-1zM12 5h1v1h-1zM13 5h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM11 6h1v1h-1zM12 6h1v1h-1zM13 6h1v1h-1zM3 7h1v1h-1zM4 7h1v1h-1zM5 7h1v1h-1zM6 7h1v1h-1zM11 7h1v1h-1zM12 7h1v1h-1zM13 7h1v1h-1zM14 7h1v1h-1zM3 8h1v1h-1zM4 8h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM11 8h1v1h-1zM12 8h1v1h-1zM13 8h1v1h-1zM14 8h1v1h-1zM3 9h1v1h-1zM4 9h1v1h-1zM5 9h1v1h-1zM6 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM13 9h1v1h-1zM14 9h1v1h-1zM3 10h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM11 10h1v1h-1zM12 10h1v1h-1zM13 10h1v1h-1zM14 10h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM6 11h1v1h-1zM7 11h1v1h-1zM8 11h1v1h-1zM9 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM12 11h1v1h-1zM4 12h1v1h-1zM5 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM8 12h1v1h-1zM9 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM12 12h1v1h-1zM5 13h1v1h-1zM6 13h1v1h-1zM7 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM10 13h1v1h-1zM11 13h1v1h-1zM12 13h1v1h-1z"/>
+    <path fill="#ff8aa0" d="M7 1h1v1h-1zM11 1h1v1h-1zM6 2h1v1h-1zM7 2h1v1h-1zM10 2h1v1h-1zM11 2h1v1h-1zM5 3h1v1h-1zM6 3h1v1h-1zM11 3h1v1h-1zM12 3h1v1h-1z"/>
+    <path fill="#7f1023" d="M8 7h1v1h-1zM9 7h1v1h-1zM8 8h1v1h-1zM9 8h1v1h-1z"/>
+    <path fill="#ff5f7f" d="M8 9h1v1h-1zM9 9h1v1h-1z"/>
+  </g>
+
+  <g transform="translate(610 78)">
+    <path d="M28 0H218C234 0 247 13 247 29V92C247 108 234 121 218 121H67L35 154V121H28C12 121 0 108 0 92V29C0 13 12 0 28 0Z" fill="#111827" stroke="#ff6b8a" stroke-width="8"/>
+    <text x="124" y="78" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="50" font-weight="800" fill="#ff8aa0">엄마야</text>
+  </g>
+
+  <g transform="translate(842 156)">
+    <text x="0" y="164" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="182" font-weight="900" fill="#fff7ed">UMMAYA</text>
+    <line x1="4" y1="228" x2="480" y2="228" stroke="#ff6b8a" stroke-width="6" stroke-linecap="round"/>
+    <path d="M562 212C562 191 591 184 602 203C613 184 642 191 642 212C642 237 602 260 602 260C602 260 562 237 562 212Z" fill="#ff6b8a"/>
+    <line x1="724" y1="228" x2="1194" y2="228" stroke="#ff6b8a" stroke-width="6" stroke-linecap="round"/>
+    <text x="4" y="315" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="46" font-weight="800" fill="#e5e7eb">Unified Multi-Ministry Agent for Your Administration</text>
+  </g>
+
+  <g fill="#ff8aa0" opacity="0.9">
+    <path d="M1992 129H2010V111H2023V129H2041V142H2023V160H2010V142H1992V129Z"/>
+    <path d="M2104 119C2127 111 2137 101 2145 78C2153 101 2163 111 2186 119C2163 127 2153 137 2145 160C2137 137 2127 127 2104 119Z"/>
+    <path d="M72 294H96V270H113V294H137V311H113V335H96V311H72V294Z"/>
+  </g>
 </svg>

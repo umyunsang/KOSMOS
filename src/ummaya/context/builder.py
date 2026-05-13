@@ -240,7 +240,7 @@ class ContextBuilder:
         active_ids = sorted(state.active_situational_tools)
         for tool_id in active_ids:
             try:
-                tool = self._registry.lookup(tool_id)
+                tool = self._registry.find(tool_id)
                 if not tool.is_core:
                     situational_defs.append(tool.to_openai_tool())
             except Exception:  # noqa: BLE001

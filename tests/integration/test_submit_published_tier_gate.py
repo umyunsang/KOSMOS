@@ -5,7 +5,7 @@ Registers a mock submit adapter with ``published_tier_minimum="ganpyeon_injeung_
 then invokes it with a mismatched AuthContext (or no AuthContext) and asserts a structured
 rejection is returned.
 
-SC-005: A ``submit`` adapter declaring ``published_tier_minimum`` must gate access based on
+SC-005: A ``send`` adapter declaring ``published_tier_minimum`` must gate access based on
 the caller's ``published_tier``. A mismatched tier returns status=rejected in SubmitOutput,
 not an unhandled exception.
 
@@ -75,7 +75,7 @@ def tier_gated_registration() -> AdapterRegistration:
         policy=AdapterRealDomainPolicy(
             real_classification_url="https://example.gov.kr/policy/submit",
             real_classification_text="테스트 등록 submit 정책",
-            citizen_facing_gate="submit",
+            citizen_facing_gate="send",
             last_verified=datetime(2026, 4, 29, tzinfo=UTC),
         ),
     )
@@ -178,7 +178,7 @@ async def test_submit_with_ax_aal3_tier_satisfies_aal2_requirement() -> None:
         policy=AdapterRealDomainPolicy(
             real_classification_url="https://example.gov.kr/policy/submit",
             real_classification_text="테스트 mydata submit 정책",
-            citizen_facing_gate="submit",
+            citizen_facing_gate="send",
             last_verified=datetime(2026, 4, 29, tzinfo=UTC),
         ),
     )
@@ -225,7 +225,7 @@ async def test_submit_no_tier_minimum_always_passes(
         policy=AdapterRealDomainPolicy(
             real_classification_url="https://example.gov.kr/policy/submit",
             real_classification_text="테스트 no-tier submit 정책",
-            citizen_facing_gate="submit",
+            citizen_facing_gate="send",
             last_verified=datetime(2026, 4, 29, tzinfo=UTC),
         ),
     )

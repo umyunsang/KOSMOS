@@ -52,7 +52,7 @@ class TestInvariant1PrimitiveDeclared:
 
     def test_all_primitives_within_closed_enum(self, live_registry):
         """Every declared primitive is one of the active reserved primitives."""
-        valid_primitives = frozenset({"lookup", "resolve_location", "submit", "verify"})
+        valid_primitives = frozenset({"find", "locate", "send", "check"})
         registry, _ = live_registry
         for tool_id, tool in registry._tools.items():
             assert tool.primitive in valid_primitives, (
@@ -179,8 +179,13 @@ class TestCheck7ToolListClosure:
 
     EXPECTED_REGISTERED_TOOL_IDS: frozenset[str] = frozenset(
         {
-            "resolve_location",
-            "lookup",
+            "locate",
+            "find",
+            "kakao_address_search",
+            "kakao_keyword_search",
+            "kakao_coord_to_region",
+            "juso_adm_cd_lookup",
+            "sgis_adm_cd_lookup",
             "koroad_accident_search",
             "koroad_accident_hazard_search",
             "kma_weather_alert_status",
@@ -204,8 +209,8 @@ class TestCheck7ToolListClosure:
             # mvp_surface.py so the LLM sees them in
             # registry.export_core_tools_openai(). Required for the
             # citizen-OPAQUE chain (verify→lookup→submit) to be emittable.
-            "verify",
-            "submit",
+            "check",
+            "send",
             # Epic ζ #2297 path B (live smoke 2026-04-30) — 15 non-core mock
             # adapter wrappers bridged into the BM25 corpus by discovery_bridge
             # so lookup(mode="search") surfaces verify/submit

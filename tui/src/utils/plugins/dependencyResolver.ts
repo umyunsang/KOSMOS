@@ -94,7 +94,7 @@ export type ResolutionResult =
  */
 export async function resolveDependencyClosure(
   rootId: PluginId,
-  lookup: (id: PluginId) => Promise<DependencyLookupResult | null>,
+  find: (id: PluginId) => Promise<DependencyLookupResult | null>,
   alreadyEnabled: ReadonlySet<PluginId>,
   allowedCrossMarketplaces: ReadonlySet<string> = new Set(),
 ): Promise<ResolutionResult> {

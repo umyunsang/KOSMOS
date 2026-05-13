@@ -28,9 +28,9 @@ def _compute_manifest_hash_for_test() -> str:
     entry = {
         "name": "Resolve Location",
         "policy_authority_url": None,
-        "primitive": "resolve_location",
+        "primitive": "locate",
         "source_mode": "internal",
-        "tool_id": "resolve_location",
+        "tool_id": "locate",
     }
     canonical = json.dumps([entry], sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
@@ -114,7 +114,7 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
         "frame_seq": 2,
         "ts": _TS,
         "call_id": "01HNMJ3Z000000000000000002",
-        "name": "lookup",
+        "name": "find",
         "arguments": {"mode": "search", "query": "서울 병원"},
     },
     "tool_result": {
@@ -126,7 +126,7 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
         "frame_seq": 3,
         "ts": _TS,
         "call_id": "01HNMJ3Z000000000000000002",
-        "envelope": {"kind": "lookup"},
+        "envelope": {"kind": "find"},
     },
     "coordinator_phase": {
         "kind": "coordinator_phase",
@@ -148,7 +148,7 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
         "ts": _TS,
         "worker_id": "worker-001",
         "role_id": "transport-specialist",
-        "current_primitive": "lookup",
+        "current_primitive": "find",
         "status": "running",
     },
     "permission_request": {
@@ -161,7 +161,7 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
         "ts": _TS,
         "request_id": "01HNMJ4Z000000000000000003",
         "worker_id": "worker-001",
-        "primitive_kind": "submit",
+        "primitive_kind": "send",
         "description_ko": "제출 권한이 필요합니다",
         "description_en": "Permission to submit required",
         "risk_level": "medium",
@@ -336,17 +336,17 @@ _MINIMAL_EXAMPLES: dict[str, dict[str, Any]] = {
         "ts": _TS,
         "entries": [
             {
-                "tool_id": "resolve_location",
+                "tool_id": "locate",
                 "name": "Resolve Location",
-                "primitive": "resolve_location",
+                "primitive": "locate",
                 "policy_authority_url": None,
                 "source_mode": "internal",
             }
         ],
         # Pre-computed SHA-256 of canonical JSON of the single entry above.
         # Recompute via: hashlib.sha256(json.dumps([{"name": "Resolve Location",
-        #   "policy_authority_url": null, "primitive": "resolve_location",
-        #   "source_mode": "internal", "tool_id": "resolve_location"}],
+        #   "policy_authority_url": null, "primitive": "locate",
+        #   "source_mode": "internal", "tool_id": "locate"}],
         #   sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()).hexdigest()
         "manifest_hash": _compute_manifest_hash_for_test(),
         "emitter_pid": 47823,
@@ -545,14 +545,14 @@ def test_chat_message_tool_calls_accepted_on_assistant() -> None:
                     {
                         "id": "call_001",
                         "type": "function",
-                        "function": {"name": "lookup", "arguments": '{"q":"서울"}'},
+                        "function": {"name": "find", "arguments": '{"q":"서울"}'},
                     }
                 ],
             },
             {
                 "role": "tool",
                 "content": '{"ok":true}',
-                "name": "lookup",
+                "name": "find",
                 "tool_call_id": "call_001",
             },
         ]
@@ -571,7 +571,7 @@ def test_chat_message_tool_calls_rejected_on_user() -> None:
                     {
                         "id": "call_x",
                         "type": "function",
-                        "function": {"name": "lookup", "arguments": "{}"},
+                        "function": {"name": "find", "arguments": "{}"},
                     }
                 ],
             },
@@ -593,20 +593,20 @@ def test_chat_message_tool_calls_rejected_on_tool() -> None:
                     {
                         "id": "call_x",
                         "type": "function",
-                        "function": {"name": "lookup", "arguments": "{}"},
+                        "function": {"name": "find", "arguments": "{}"},
                     }
                 ],
             },
             {
                 "role": "tool",
                 "content": "result",
-                "name": "lookup",
+                "name": "find",
                 "tool_call_id": "call_x",
                 "tool_calls": [
                     {
                         "id": "call_y",
                         "type": "function",
-                        "function": {"name": "lookup", "arguments": "{}"},
+                        "function": {"name": "find", "arguments": "{}"},
                     }
                 ],
             },
@@ -641,7 +641,7 @@ def test_chat_message_tool_calls_arguments_must_be_string() -> None:
                     {
                         "id": "call_x",
                         "type": "function",
-                        "function": {"name": "lookup", "arguments": {"q": "obj"}},
+                        "function": {"name": "find", "arguments": {"q": "obj"}},
                     }
                 ],
             },
@@ -664,7 +664,7 @@ def test_chat_message_role_tool_still_requires_name_and_call_id() -> None:
                     {
                         "id": "call_x",
                         "type": "function",
-                        "function": {"name": "lookup", "arguments": "{}"},
+                        "function": {"name": "find", "arguments": "{}"},
                     }
                 ],
             },
@@ -685,11 +685,11 @@ def test_chat_message_role_tool_still_requires_name_and_call_id() -> None:
                     {
                         "id": "call_x",
                         "type": "function",
-                        "function": {"name": "lookup", "arguments": "{}"},
+                        "function": {"name": "find", "arguments": "{}"},
                     }
                 ],
             },
-            {"role": "tool", "content": "r", "name": "lookup"},
+            {"role": "tool", "content": "r", "name": "find"},
         ]
     )
     with pytest.raises(ValidationError, match="non-empty 'tool_call_id'"):

@@ -19,7 +19,7 @@ import type { PermissionLayerT } from '../../schemas/ui-l2/permission.js'
  * UMMAYA active primitive verb identifiers. Aligns with L1-C C1 reserved
  * primitives declared in docs/requirements/ummaya-migration-tree.md.
  */
-export type UmmayaPrimitive = 'lookup' | 'verify' | 'submit'
+export type UmmayaPrimitive = 'find' | 'check' | 'send'
 
 /**
  * Map a UMMAYA primitive verb + optional irreversibility flag to a permission
@@ -37,11 +37,11 @@ export function aalToLayer(
   isIrreversible = false,
 ): PermissionLayerT | null {
   switch (primitive) {
-    case 'lookup':
+    case 'find':
       return null
-    case 'verify':
+    case 'check':
       return 1
-    case 'submit':
+    case 'send':
       return isIrreversible ? 3 : 2
   }
 }

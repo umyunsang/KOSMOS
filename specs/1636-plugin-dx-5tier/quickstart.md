@@ -70,7 +70,7 @@ Open `docs/plugins/architecture.md` (in this repo, vendored as a stub during sca
 - Live tier vs Mock tier — pick before you write code.
 
 For the busan-bike example, we'll use:
-- `tool_id`: `plugin.busan_bike.lookup`
+- `tool_id`: `plugin.busan_bike.find`
 - `tier`: `live` (Busan Open Data Plaza)
 - `permission_layer`: 1 (public bike availability — no PII)
 
@@ -84,7 +84,7 @@ The scaffolded `manifest.yaml` looks like:
 plugin_id: busan_bike
 version: 0.1.0
 adapter:
-  tool_id: plugin.busan_bike.lookup
+  tool_id: plugin.busan_bike.find
   primitive: lookup
   module_path: plugin_busan_bike.adapter
   input_model_ref: plugin_busan_bike.schema:BusanBikeQueryInput
@@ -150,7 +150,7 @@ def _build_tool() -> GovAPITool:
     """GovAPITool is a frozen Pydantic v2 BaseModel — instantiate via
     constructor, not class-attribute override (review eval D5)."""
     return GovAPITool(
-        id="plugin.busan_bike.lookup",
+        id="plugin.busan_bike.find",
         name_ko="부산 따릉이 대여소 잔여 자전거 조회",
         ministry="OTHER",   # post-Spec-1634 FR-010: `provider` field replaced by `ministry`
         category=["교통", "자전거"],
@@ -220,7 +220,7 @@ Rules:
 
 ## Step 7 — Update tests (3 min)
 
-`tests/test_adapter.py` ships with a synthetic fixture `tests/fixtures/plugin.busan_bike.lookup.json` and a happy-path test that monkey-patches `httpx.get` to return the fixture. Edit the fixture to match your `output_schema`:
+`tests/test_adapter.py` ships with a synthetic fixture `tests/fixtures/plugin.busan_bike.find.json` and a happy-path test that monkey-patches `httpx.get` to return the fixture. Edit the fixture to match your `output_schema`:
 
 ```json
 {

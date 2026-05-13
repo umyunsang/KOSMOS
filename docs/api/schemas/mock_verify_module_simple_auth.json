@@ -10,7 +10,7 @@
   "$id": "https://ummaya.example/api/schemas/mock_verify_module_simple_auth.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": true,
-  "description": "LLM-facing verify params — citizen-shape `{scope_list, purpose_ko, purpose_en}`.",
+  "description": "LLM-facing check params — citizen-shape `{scope_list, purpose_ko, purpose_en}`.",
   "properties": {
     "purpose_en": {
       "default": "",
@@ -25,7 +25,7 @@
       "type": "string"
     },
     "scope_list": {
-      "description": "List of '<verb>:<adapter_family>.<action>' scope strings the downstream lookup/submit calls will need. The verify ceremony issues a DelegationToken bound to exactly this scope set.",
+      "description": "List of '<verb>:<adapter_family>.<action>' scope strings the downstream find/send calls will need. The check ceremony issues a DelegationToken bound to exactly this scope set.",
       "items": {
         "type": "string"
       },

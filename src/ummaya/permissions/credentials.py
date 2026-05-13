@@ -57,12 +57,19 @@ _TOOL_PROVIDERS: dict[str, CredentialProvider] = {
     "address_to_grid": CredentialProvider.kakao,
     # KOROAD (data.go.kr)
     "koroad_accident_search": CredentialProvider.data_go_kr,
+    "koroad_accident_hazard_search": CredentialProvider.data_go_kr,
     # KMA (data.go.kr)
+    "kma_forecast_fetch": CredentialProvider.data_go_kr,
     "kma_weather_alert_status": CredentialProvider.data_go_kr,
     "kma_current_observation": CredentialProvider.data_go_kr,
     "kma_short_term_forecast": CredentialProvider.data_go_kr,
     "kma_ultra_short_term_forecast": CredentialProvider.data_go_kr,
     "kma_pre_warning": CredentialProvider.data_go_kr,
+    # HIRA / NMC / NFA / MOHW (data.go.kr)
+    "hira_hospital_search": CredentialProvider.data_go_kr,
+    "nmc_emergency_search": CredentialProvider.data_go_kr,
+    "nfa_emergency_info_service": CredentialProvider.data_go_kr,
+    "mohw_welfare_eligibility_search": CredentialProvider.data_go_kr,
 }
 
 # Global legacy fallback tried last when no provider-specific or

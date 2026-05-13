@@ -210,7 +210,7 @@ async def test_no_lateral_flow_between_workers() -> None:
     # Pre-seed so the receive() returns something to avoid infinite loop
     mailbox._pending[worker_id_a] = []
     granted = await asyncio.wait_for(
-        worker_a._request_permission("lookup", original_cid),
+        worker_a._request_permission("find", original_cid),
         timeout=1.0,
     )
 
@@ -249,7 +249,7 @@ async def test_permission_round_trip_under_one_second() -> None:
 
     start = time.monotonic()
     granted = await asyncio.wait_for(
-        worker._request_permission("lookup", correlation_id),
+        worker._request_permission("find", correlation_id),
         timeout=1.0,
     )
     elapsed = time.monotonic() - start

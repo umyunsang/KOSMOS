@@ -5,7 +5,7 @@
   "kind": "tool_result",
   "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AJ",
   "envelope": {
-    "kind": "lookup",
+    "kind": "find",
     "subtype": "detail",
     "tool_id": "nmc_emergency_search",
     "fields": [

@@ -5,7 +5,7 @@
   "kind": "tool_result",
   "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AI",
   "envelope": {
-    "kind": "lookup",
+    "kind": "find",
     "subtype": "collection",
     "tool_id": "hira_hospital_search",
     "items": [

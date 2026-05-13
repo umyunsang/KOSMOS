@@ -10,7 +10,7 @@ Adapter identity:
   primitive: submit
 
 Delegation contract (FR-009/010/011):
-  Requires scope ``"submit:public_mydata.action"`` in the caller's DelegationToken.
+  Requires scope ``"send:public_mydata.action"`` in the caller's DelegationToken.
   Validates expiry, scope, session binding, and revocation before executing.
   Appends a ``delegation_used`` ledger event on EVERY invocation (success or failure).
 
@@ -61,7 +61,7 @@ _POLICY_AUTHORITY: Final = "https://www.fsb.or.kr/kor.do"
 _INTERNATIONAL_REF: Final = "Estonia X-Road"
 
 # Required delegation scope for this adapter
-_REQUIRED_SCOPE: Final = "submit:public_mydata.action"
+_REQUIRED_SCOPE: Final = "send:public_mydata.action"
 
 # ---------------------------------------------------------------------------
 # Typed input model
@@ -240,7 +240,7 @@ async def invoke(params: dict[str, Any]) -> SubmitOutput:
 
 REGISTRATION = AdapterRegistration(
     tool_id="mock_submit_module_public_mydata_action",
-    primitive=AdapterPrimitive.submit,
+    primitive=AdapterPrimitive.send,
     module_path=__name__,
     input_model_ref=f"{__name__}.PublicMydataActionParams",
     source_mode=AdapterSourceMode.OOS,
@@ -264,7 +264,7 @@ REGISTRATION = AdapterRegistration(
         real_classification_text=(
             "마이데이터 액션 확장 — 금융보안원 마이데이터 표준 정책 (Spec 1636 mandate)."
         ),
-        citizen_facing_gate="submit",
+        citizen_facing_gate="send",
         last_verified=datetime(2026, 5, 4, tzinfo=UTC),
     ),
 )

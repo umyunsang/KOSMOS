@@ -91,7 +91,7 @@ def invoke(session_context: dict[str, Any]) -> GeumyungModuleContext:
     - ``purpose_en`` (str, optional): English purpose statement.
     - ``ledger_root`` (Path, optional): test override for ledger directory.
     """
-    scope_list: list[str] = session_context.get("scope_list", ["verify:geumyung.identity"])
+    scope_list: list[str] = session_context.get("scope_list", ["check:geumyung.identity"])
     scope_str = ",".join(scope_list)
     session_id: str = session_context.get("session_id", "mock-session-unknown")
     purpose_ko: str = session_context.get("purpose_ko", "금융인증서 신원확인")

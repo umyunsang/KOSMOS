@@ -54,6 +54,7 @@ import { configureGlobalAgents } from '../utils/proxy.js'
 // utils/telemetry/betaSessionTracing removed — UMMAYA does not use Anthropic beta tracing.
 const isBetaTracingEnabled = (): boolean => false
 import { getTelemetryAttributes } from '../utils/telemetryAttributes.js'
+import { bootstrapFriendliCredentialFromStorage } from '../utils/friendliAuth.js'
 import { setShellIfWindows } from '../utils/windowsPaths.js'
 
 // initialize1PEventLogging is dynamically imported to defer OpenTelemetry sdk-logs/resources
@@ -79,6 +80,7 @@ export const init = memoize(async (): Promise<void> => {
     // Full environment variables are applied after trust is established
     const envVarsStart = Date.now()
     applySafeConfigEnvironmentVariables()
+    bootstrapFriendliCredentialFromStorage()
 
     // Apply NODE_EXTRA_CA_CERTS from settings.json to process.env early,
     // before any TLS connections. Bun caches the TLS cert store at boot

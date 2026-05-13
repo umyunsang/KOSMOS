@@ -161,7 +161,7 @@ export function Spinner({ verb }) {
 //     blue   (lookup)  ·  orange (submit)  ·  red (verify)
 //     purple (plugin-namespaced verb). Subscribe was deferred until UMMAYA has
 //     an app/push-notification runtime.
-export function ToolUseBlock({ primitive = 'lookup', ministry, result, detail }) {
+export function ToolUseBlock({ primitive = 'find', ministry, result, detail }) {
   const dot = PRIMITIVE_DOT[primitive] ?? C.ring
   return h(Box, { flexDirection: 'column', marginLeft: 2 },
     h(Box, null,

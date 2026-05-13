@@ -5,7 +5,7 @@
   "kind": "tool_result",
   "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AT",
   "envelope": {
-    "kind": "verify",
+    "kind": "check",
     "tool_id": "digital_onepass_verify",
     "family": "digital_onepass",
     "ok": true,

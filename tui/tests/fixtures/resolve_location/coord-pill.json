@@ -5,7 +5,7 @@
   "kind": "tool_result",
   "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AL",
   "envelope": {
-    "kind": "resolve_location",
+    "kind": "locate",
     "tool_id": "resolve_location",
     "slots": {
       "coords": {

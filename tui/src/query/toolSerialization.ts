@@ -28,10 +28,10 @@ import { getAllBaseTools } from '../tools.js'
 // ---------------------------------------------------------------------------
 const PUBLISHED_NAMES: ReadonlySet<string> = new Set([
   // Active root primitives — Epic #2077 FR-003 single-source-of-truth.
-  'lookup',
-  'resolve_location',
-  'submit',
-  'verify',
+  'find',
+  'locate',
+  'send',
+  'check',
 ])
 
 /**

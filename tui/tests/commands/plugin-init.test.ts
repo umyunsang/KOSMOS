@@ -77,7 +77,7 @@ describe('runPluginInit — happy path', () => {
     expect(result.filesWritten).toContain('tests/test_adapter.py')
     expect(result.filesWritten).toContain('tests/conftest.py')
     expect(result.filesWritten).toContain(
-      'tests/fixtures/plugin.demo_plugin.lookup.json',
+      'tests/fixtures/plugin.demo_plugin.find.json',
     )
     expect(result.filesWritten).toContain('.github/workflows/plugin-validation.yml')
     expect(result.filesWritten).toContain('.github/workflows/release-with-slsa.yml')
@@ -92,7 +92,7 @@ describe('runPluginInit — happy path', () => {
     const manifest = yaml.parse(readFileSync(manifestPath, 'utf-8'))
 
     expect(manifest.plugin_id).toBe('demo_plugin')
-    expect(manifest.adapter.tool_id).toBe('plugin.demo_plugin.lookup')
+    expect(manifest.adapter.tool_id).toBe('plugin.demo_plugin.find')
     expect(manifest.adapter.primitive).toBe('lookup')
     expect(manifest.tier).toBe('live')
     expect(manifest.processes_pii).toBe(false)

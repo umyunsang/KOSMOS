@@ -212,7 +212,7 @@ class TestNegativeCases:
 
     def test_q8_namespace_wrong(self, scaffold: Path) -> None:
         manifest = _load_manifest(scaffold)
-        manifest["adapter"]["tool_id"] = "plugin.other_id.lookup"
+        manifest["adapter"]["tool_id"] = "plugin.other_id.find"
         _save_manifest(scaffold, manifest)
 
         outcomes = _outcomes_by_id(scaffold)
@@ -222,8 +222,8 @@ class TestNegativeCases:
 
     def test_q8_no_root_override(self, scaffold: Path) -> None:
         manifest = _load_manifest(scaffold)
-        manifest["adapter"]["tool_id"] = "plugin.my_plugin.resolve_location"
-        manifest["adapter"]["primitive"] = "resolve_location"
+        manifest["adapter"]["tool_id"] = "plugin.my_plugin.locate"
+        manifest["adapter"]["primitive"] = "locate"
         _save_manifest(scaffold, manifest)
 
         outcomes = _outcomes_by_id(scaffold)

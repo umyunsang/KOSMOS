@@ -49,7 +49,7 @@ _LOOKUP_UNREGISTERED_TOOL: list[StreamEvent] = [
         type="tool_call_delta",
         tool_call_index=0,
         tool_call_id="call_edge_001",
-        function_name="lookup",
+        function_name="find",
         function_args_delta=None,
     ),
     StreamEvent(
@@ -82,7 +82,7 @@ _LOOKUP_INVALID_ARGS: list[StreamEvent] = [
         type="tool_call_delta",
         tool_call_index=0,
         tool_call_id="call_edge_002",
-        function_name="lookup",
+        function_name="find",
         function_args_delta=None,
     ),
     StreamEvent(
@@ -103,7 +103,7 @@ _INFINITE_LOOKUP: list[StreamEvent] = [
         type="tool_call_delta",
         tool_call_index=0,
         tool_call_id="call_inf",
-        function_name="resolve_location",
+        function_name="locate",
         function_args_delta=None,
     ),
     StreamEvent(

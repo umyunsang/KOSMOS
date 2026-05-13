@@ -283,7 +283,7 @@ function SpinnerWithVerbInner({
           <MessageResponse>
             <TaskListV2 tasks={tasksV2} />
           </MessageResponse>
-        </Box> : nextTask || effectiveTip || budgetText ?
+        </Box> : nextTask || budgetText ?
     // IMPORTANT: we need this width="100%" to avoid an Ink bug where the
     // tip gets duplicated over and over while the spinner is running if
     // the terminal is very small. TODO: fix this in Ink.
@@ -291,9 +291,9 @@ function SpinnerWithVerbInner({
           {budgetText && <MessageResponse>
               <Text dimColor>{budgetText}</Text>
             </MessageResponse>}
-          {(nextTask || effectiveTip) && <MessageResponse>
+          {nextTask && <MessageResponse>
               <Text dimColor>
-                {nextTask ? `Next: ${nextTask.subject}` : `Tip: ${effectiveTip}`}
+                {`Next: ${nextTask.subject}`}
               </Text>
             </MessageResponse>}
         </Box> : null}

@@ -2,9 +2,9 @@
 // Spec 2294 — UmmayaPrimitivePermissionRequest component.
 //
 // Renders the UMMAYA permission gauntlet for the active reserved primitives:
-//   lookup  → bypassed (null layer — this component is never rendered)
-//   verify  → Layer 1 (green ⓵)
-//   submit  → Layer 2 (orange ⓶) or Layer 3 (red ⓷) based on isIrreversible
+//   find   → bypassed (null layer — this component is never rendered)
+//   check  → Layer 1 (green ⓵)
+//   send   → Layer 2 (orange ⓶) or Layer 3 (red ⓷) based on isIrreversible
 //
 // CC reference: .references/claude-code-sourcemap/restored-src/src/components/
 //   permissions/PermissionRequest.tsx:47-80 (permissionComponentForTool switch).
@@ -31,7 +31,7 @@ export type UmmayaPrimitivePermissionRequestProps = {
   /** Tool adapter name shown in the modal body. */
   toolName: string
   /**
-   * For `submit` primitives: whether the action cannot be reversed.
+   * For `send` primitives: whether the action cannot be reversed.
    * Escalates from Layer 2 to Layer 3. Ignored for other primitives.
    */
   isIrreversible?: boolean
@@ -70,7 +70,7 @@ export function UmmayaPrimitivePermissionRequest({
 }: UmmayaPrimitivePermissionRequestProps): React.ReactNode {
   const layer = aalToLayer(primitive, isIrreversible)
 
-  // lookup → null layer means bypass; component should not be rendered.
+  // find → null layer means bypass; component should not be rendered.
   // Guard defensively nonetheless.
   if (layer === null) {
     return null
@@ -85,16 +85,16 @@ export function UmmayaPrimitivePermissionRequest({
   let body: string
 
   switch (primitive) {
-    case 'verify':
+    case 'check':
       title = strings.verifyModalTitle
       body = strings.verifyModalBody(toolName)
       break
-    case 'submit':
+    case 'send':
       title = strings.submitModalTitle(isIrreversible)
       body = strings.submitModalBody(toolName, isIrreversible)
       break
     default:
-      // lookup — should not reach here
+      // find — should not reach here
       return null
   }
 

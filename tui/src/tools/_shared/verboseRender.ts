@@ -10,8 +10,8 @@
 //                tools/BashTool/UI.tsx:renderToolResultMessage(verbose)
 //
 // Citizen flow:
-//   non-verbose → "● lookup(kma_forecast_fetch)" + condensed result
-//   verbose     → "● lookup({\n  \"tool_id\": ..., \"params\": {...}\n})"
+//   non-verbose → "● find(kma_forecast_fetch)" + condensed result
+//   verbose     → "● find({\n  \"tool_id\": ..., \"params\": {...}\n})"
 //                 + ⎿ Response: { "ok": true, "result": {...} }
 //
 

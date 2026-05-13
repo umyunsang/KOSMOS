@@ -21,9 +21,9 @@ export interface DisplayField {
 // Lookup mode — subtype discriminated union
 // ---------------------------------------------------------------------------
 
-/** A single point-of-interest result from a lookup tool call. */
+/** A single point-of-interest result from a find tool call. */
 export interface LookupPointPayload {
-  kind: 'lookup'
+  kind: 'find'
   subtype: 'point'
   tool_id: string
   title: string
@@ -33,7 +33,7 @@ export interface LookupPointPayload {
 
 /** A timeseries of (timestamp, value) rows. */
 export interface LookupTimeseriesPayload {
-  kind: 'lookup'
+  kind: 'find'
   subtype: 'timeseries'
   tool_id: string
   unit?: string
@@ -42,7 +42,7 @@ export interface LookupTimeseriesPayload {
 
 /** A flat list of records with title + trailing metadata. */
 export interface LookupCollectionPayload {
-  kind: 'lookup'
+  kind: 'find'
   subtype: 'collection'
   tool_id: string
   items: Array<{ index: number; title: string; meta?: string }>
@@ -50,15 +50,15 @@ export interface LookupCollectionPayload {
 
 /** A key/value detail view for a single structured record. */
 export interface LookupDetailPayload {
-  kind: 'lookup'
+  kind: 'find'
   subtype: 'detail'
   tool_id: string
   fields: DisplayField[]
 }
 
-/** A lookup-level error result surfaced as a red banner. */
+/** A find-level error result surfaced as a red banner. */
 export interface LookupErrorPayload {
-  kind: 'lookup'
+  kind: 'find'
   subtype: 'error'
   tool_id: string
   title: string
@@ -115,11 +115,11 @@ export interface PoiSlot {
 }
 
 /**
- * resolve_location envelope — holds optional slots for each resolved
+ * locate envelope — holds optional slots for each resolved
  * representation.  At least one slot MUST be present.
  */
 export interface ResolveLocationPayload {
-  kind: 'resolve_location'
+  kind: 'locate'
   tool_id: string
   slots: {
     coords?: CoordsSlot
@@ -148,7 +148,7 @@ export type MockReason =
   | 'delegation_absent'
 
 export interface SubmitSuccessPayload {
-  kind: 'submit'
+  kind: 'send'
   tool_id: string
   family: SubmitFamily
   ok: true
@@ -159,7 +159,7 @@ export interface SubmitSuccessPayload {
 }
 
 export interface SubmitErrorPayload {
-  kind: 'submit'
+  kind: 'send'
   tool_id: string
   family: SubmitFamily
   ok: false
@@ -183,7 +183,7 @@ export type VerifyFamily =
   | 'mydata'
 
 export interface VerifySuccessPayload {
-  kind: 'verify'
+  kind: 'check'
   tool_id: string
   family: VerifyFamily
   ok: true
@@ -193,7 +193,7 @@ export interface VerifySuccessPayload {
 }
 
 export interface VerifyFailPayload {
-  kind: 'verify'
+  kind: 'check'
   tool_id: string
   family: VerifyFamily
   ok: false

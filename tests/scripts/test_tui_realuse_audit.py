@@ -51,12 +51,12 @@ def status_by_name(result: dict[str, object]) -> dict[str, str]:
 def test_passes_visible_resolve_lookup_trace(tmp_path: Path) -> None:
     write_capture(tmp_path, "final.txt", "UMMAYA final answer\noutbound_traces status_code url")
     write_capture(tmp_path, "frames/frame_0000_boot.txt", "UMMAYA boot")
-    write_capture(tmp_path, "frames/frame_0001_resolve.txt", "⏺ find(resolve_location)")
+    write_capture(tmp_path, "frames/frame_0001_locate.txt", "⏺ locate(kakao_keyword_search)")
     write_capture(tmp_path, "frames/frame_0002_lookup.txt", "⏺ find(kma_forecast_fetch)")
 
     result = run_audit(
         tmp_path,
-        expected_chain=["resolve_location", "kma_forecast_fetch"],
+        expected_chain=["locate", "kma_forecast_fetch"],
         require_expanded_trace=True,
         strict_frames=True,
     )
@@ -92,7 +92,7 @@ def test_fails_recoverable_invalid_params_without_retry(tmp_path: Path) -> None:
         "find(kma_forecast_fetch)\nInvalid parameters",
     )
 
-    result = run_audit(tmp_path, expected_chain=["resolve_location", "kma_forecast_fetch"])
+    result = run_audit(tmp_path, expected_chain=["locate", "kma_forecast_fetch"])
 
     statuses = status_by_name(result)
     assert result["overall"] == "fail"

@@ -7,7 +7,7 @@
       "response": {
         "toolCalls": [
           {
-            "name": "lookup",
+            "name": "find",
             "arguments": {
               "tool_id": "kma_forecast_fetch",
               "params": {

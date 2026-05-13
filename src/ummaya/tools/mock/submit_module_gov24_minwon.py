@@ -10,7 +10,7 @@ Adapter identity:
   primitive: submit
 
 Delegation contract (FR-009/010/011):
-  Requires scope ``"submit:gov24.minwon"`` in the caller's DelegationToken.
+  Requires scope ``"send:gov24.minwon"`` in the caller's DelegationToken.
   Validates expiry, scope, session binding, and revocation before executing.
   Appends a ``delegation_used`` ledger event on EVERY invocation (success or failure).
 
@@ -61,7 +61,7 @@ _POLICY_AUTHORITY: Final = "https://www.gov.kr/portal/service/serviceList"
 _INTERNATIONAL_REF: Final = "Singapore APEX"
 
 # Required delegation scope for this adapter
-_REQUIRED_SCOPE: Final = "submit:gov24.minwon"
+_REQUIRED_SCOPE: Final = "send:gov24.minwon"
 
 # ---------------------------------------------------------------------------
 # Typed input model
@@ -243,7 +243,7 @@ async def invoke(params: dict[str, Any]) -> SubmitOutput:
 
 REGISTRATION = AdapterRegistration(
     tool_id="mock_submit_module_gov24_minwon",
-    primitive=AdapterPrimitive.submit,
+    primitive=AdapterPrimitive.send,
     module_path=__name__,
     input_model_ref=f"{__name__}.Gov24MinwonParams",
     source_mode=AdapterSourceMode.OOS,
@@ -267,7 +267,7 @@ REGISTRATION = AdapterRegistration(
         real_classification_text=(
             "정부24 민원신청 — 행정안전부 공공서비스 포털 (Spec 1636 Live-channel mandate)."
         ),
-        citizen_facing_gate="submit",
+        citizen_facing_gate="send",
         last_verified=datetime(2026, 5, 4, tzinfo=UTC),
     ),
 )

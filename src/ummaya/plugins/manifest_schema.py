@@ -54,11 +54,11 @@ from ummaya.tools.registry import AdapterRegistration
 # H5 (review eval): tool_id MUST be ASCII to prevent Unicode confusable
 # attacks (e.g. Cyrillic 'о' replacing Latin 'o' in plugin_id).
 _TOOL_ID_ASCII_RE: Final = re.compile(
-    r"^plugin\.[a-z][a-z0-9_]*\.(lookup|submit|verify)$",
+    r"^plugin\.[a-z][a-z0-9_]*\.(find|send|check)$",
     flags=re.ASCII,
 )
 
-_ROOT_PRIMITIVE_VERBS: Final[frozenset[str]] = frozenset({"lookup", "submit", "verify"})
+_ROOT_PRIMITIVE_VERBS: Final[frozenset[str]] = frozenset({"find", "send", "check"})
 """The active reserved plugin primitive verbs.
 
 Plugin namespaces extend the registry via ``plugin.<id>.<verb>``; ADR-007

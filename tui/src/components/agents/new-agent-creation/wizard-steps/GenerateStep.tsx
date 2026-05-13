@@ -128,7 +128,7 @@ export function GenerateStep(): ReactNode {
       </WizardDialogLayout>;
   }
   return <WizardDialogLayout subtitle={subtitle} footerText={<Byline>
-          <ConfigurableShortcutHint action="confirm:yes" context="Confirmation" fallback="Enter" description="submit" />
+          <ConfigurableShortcutHint action="confirm:yes" context="Confirmation" fallback="Enter" description="send" />
           <ConfigurableShortcutHint action="chat:externalEditor" context="Chat" fallback="ctrl+g" description="open in editor" />
           <ConfigurableShortcutHint action="confirm:no" context="Settings" fallback="Esc" description="go back" />
         </Byline>}>

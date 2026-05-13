@@ -131,7 +131,7 @@ export interface KoreanIMEState {
   /** Visible in-flight glyph (precomposed partial syllable), or null */
   composition: string | null
   /** Call to finalise the buffer and emit it — clears both buffer and composition */
-  submit: () => string
+  send: () => string
   /** Call to clear the buffer and any in-flight composition without submitting */
   clear: () => void
   /**
