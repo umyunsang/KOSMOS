@@ -78,6 +78,11 @@ This prevents "ghost work" — deferred items that exist only in spec prose but 
 - Conventional Commits; branches: `feat/`, `fix/`, `docs/`, `refactor/`, `test/`, `chore/`
 - `uv run pytest` before every commit; `@pytest.mark.live` for real API tests (skipped in CI)
 - English source text only; Korean domain data is the sole exception
+- Release packaging MUST use registry-native Trusted Publishing/OIDC where available.
+  Do not reintroduce long-lived `NPM_TOKEN` publishing for npm. When configuring npm
+  Trusted Publishing for an account that uses WebAuthn/passkey/fingerprint 2FA, run
+  `npm trust` in an interactive TTY so the npm CLI can open the browser auth flow;
+  non-TTY execution degrades to repeated `EOTP`/masked URL failures.
 
 ## Issue and Spec Workflow
 
@@ -93,4 +98,4 @@ This prevents "ghost work" — deferred items that exist only in spec prose but 
 
 This constitution supersedes individual spec decisions. Any spec conflicting with these principles is a blocker — open an issue before proceeding. Amendments require an ADR under `docs/adr/` and user approval.
 
-**Version**: 1.1.1 | **Ratified**: 2026-04-12 | **Last Amended**: 2026-04-19
+**Version**: 1.1.2 | **Ratified**: 2026-04-12 | **Last Amended**: 2026-05-13

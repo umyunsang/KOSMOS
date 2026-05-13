@@ -128,6 +128,28 @@ do not store it in Infisical operator environments.
 
 Never commit `.env`, `secrets/`, local Codex config, or Claude local settings.
 
+## Release Packaging Operational Memory
+
+npm release publishing uses npm Trusted Publishing, not a long-lived `NPM_TOKEN`.
+If Trusted Publisher setup is required for `ummaya`, use an interactive TTY so npm can
+open the browser 2FA flow for WebAuthn/passkey/fingerprint accounts:
+
+```bash
+npx -y npm@11.14.1 trust github ummaya \
+  --file publish-npm.yml \
+  --repo umyunsang/UMMAYA \
+  --env npm \
+  --yes
+```
+
+Do not run that command through a non-TTY shell call. In non-TTY mode npm cannot invoke
+`webAuthOpener`, masks the `/auth/cli/...` URL, and fails with `EOTP`. If the user uses
+fingerprint/passkey 2FA, do not ask for an OTP first; open the TTY browser flow and have
+the user approve it in the browser.
+
+After the trust relationship exists, release through `.github/workflows/publish-npm.yml`
+and verify the exact package version with `npm view ummaya@<version> version`.
+
 ## Baseline Verification
 
 For non-TUI backend changes:
