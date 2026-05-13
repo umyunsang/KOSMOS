@@ -21,11 +21,15 @@ from typing import Any
 from ummaya.primitives.submit import send
 from ummaya.primitives.verify import check
 from ummaya.tools.lookup import find
-from ummaya.tools.resolve_location import locate, resolve_location
+from ummaya.tools.resolve_location import locate
 
 # Backward-compatible Spec 022 symbol. The active LLM-visible root verb is
 # `locate`; this alias is kept as the identical canonical coroutine for older
 # contracts and imports.
+lookup = find
+resolve_location = locate
+submit = send
+verify = check
 
 # Single-source-of-truth registry mapping each LLM-visible primitive name
 # to its async callable. Epic #2077 T010 (FR-003) — replaces the prior

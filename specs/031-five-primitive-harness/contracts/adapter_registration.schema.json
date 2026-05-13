@@ -31,7 +31,7 @@
     },
     "primitive": {
       "type": "string",
-      "enum": ["lookup", "resolve_location", "submit", "subscribe", "verify"]
+      "enum": ["find", "locate", "send", "subscribe", "check"]
     },
     "module_path": {
       "type": "string",
@@ -112,7 +112,7 @@
     "is_irreversible": {
       "type": "boolean",
       "default": false,
-      "description": "V1 invariant: primitive=submit ∧ pipa_class ∈ {personal_*} → is_irreversible=true unless explicit audit-preservation contract."
+      "description": "V1 invariant: primitive=send ∧ pipa_class ∈ {personal_*} → is_irreversible=true unless explicit audit-preservation contract."
     },
     "dpa_reference": {
       "type": ["string", "null"],

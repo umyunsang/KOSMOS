@@ -20,7 +20,7 @@
       "properties": {
         "kind": {
           "type": "string",
-          "enum": ["lookup", "resolve_location", "submit", "subscribe", "verify"]
+          "enum": ["find", "locate", "send", "subscribe", "check"]
         }
       },
       "description": "5-primitive discriminated union. Each arm MUST match the upstream Spec 022 / 031 output schema. Unknown kind values MUST fall through to UnrecognizedPayload renderer (FR-033)."

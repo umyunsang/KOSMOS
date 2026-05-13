@@ -37,14 +37,8 @@ def check_namespace(ctx: CheckContext) -> CheckOutcome:
     tool_id = ctx.manifest.adapter.tool_id
     if not _NAMESPACE_RE.fullmatch(tool_id):
         return failed(
-            ko=(
-                f"tool_id {tool_id!r} 가 plugin.<id>.<verb> 형식이 아님 "
-                "(verb ∈ find/send/check)"
-            ),
-            en=(
-                f"tool_id {tool_id!r} does not match plugin.<id>.<verb> "
-                "(verb ∈ find/send/check)"
-            ),
+            ko=(f"tool_id {tool_id!r} 가 plugin.<id>.<verb> 형식이 아님 (verb ∈ find/send/check)"),
+            en=(f"tool_id {tool_id!r} does not match plugin.<id>.<verb> (verb ∈ find/send/check)"),
         )
     return passed()
 

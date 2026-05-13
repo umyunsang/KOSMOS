@@ -8,6 +8,6 @@
   "ts": "2026-04-19T12:00:06.000Z",
   "worker_id": "worker-transport-01",
   "role_id": "transport-specialist",
-  "current_primitive": "lookup",
+  "current_primitive": "find",
   "status": "running"
 }

@@ -116,7 +116,7 @@ def _manifest_dict(*, plugin_id: str = "demo_plugin", tier: str = "live") -> dic
         "plugin_id": plugin_id,
         "version": "1.0.0",
         "adapter": {
-            "tool_id": f"plugin.{plugin_id}.lookup",
+            "tool_id": f"plugin.{plugin_id}.find",
             "primitive": "find",
             "module_path": "adapter",
             "input_model_ref": "adapter:DemoLookupInput",
@@ -142,7 +142,7 @@ def _manifest_dict(*, plugin_id: str = "demo_plugin", tier: str = "live") -> dic
         ),
         "otel_attributes": {"ummaya.plugin.id": plugin_id},
         "search_hint_ko": "데모 플러그인 조회",
-        "search_hint_en": "demo plugin lookup",
+        "search_hint_en": "demo plugin find",
         "permission_layer": 1,
     }
 

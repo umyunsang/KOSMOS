@@ -65,12 +65,6 @@ class TestToolRegistration:
             "koroad_accident_hazard_search",
             "kma_weather_alert_status",
             "kma_current_observation",
-            # Locate provider adapters
-            "kakao_address_search",
-            "kakao_keyword_search",
-            "kakao_coord_to_region",
-            "juso_adm_cd_lookup",
-            "sgis_adm_cd_lookup",
             # Stage 3 seed adapters (Epic #507)
             "nmc_emergency_search",
             "kma_forecast_fetch",

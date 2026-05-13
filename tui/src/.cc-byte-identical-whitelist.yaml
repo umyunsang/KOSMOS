@@ -174,6 +174,22 @@ entries:
     cause: W9,W1
     spec_ref: "#2521 (K-EXAONE thinking preview)"
     notes: "First non-empty reasoning_content line shown inline next to ∴ Thinking glyph."
+  - path: tui/src/components/messages/AssistantRedactedThinkingMessage.tsx
+    cause: W9,W14
+    spec_ref: "#2521 (K-EXAONE thinking preview), specs/realuse-audit-2026-05-05"
+    notes: "Visible thinking placeholder normalized for K-EXAONE stream rendering."
+  - path: tui/src/components/messages/SystemTextMessage.tsx
+    cause: W14
+    spec_ref: "specs/realuse-audit-2026-05-05"
+    notes: "Turn-completion wording aligned to UMMAYA terminal output."
+  - path: tui/src/components/permissions/AskUserQuestionPermissionRequest/QuestionNavigationBar.tsx
+    cause: W14
+    spec_ref: "specs/realuse-audit-2026-05-05"
+    notes: "Permission footer key label follows send primitive wording."
+  - path: tui/src/components/permissions/AskUserQuestionPermissionRequest/SubmitQuestionsView.tsx
+    cause: W14
+    spec_ref: "specs/realuse-audit-2026-05-05"
+    notes: "Question submission decision value follows send primitive wording."
 
   # ── W10: Korean IME hotfix ──
   - path: tui/src/components/BaseTextInput.tsx

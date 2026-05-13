@@ -527,7 +527,8 @@ _HIRA_DESCRIPTION = build_description_v4(
     ),
     self_contained_decl=(
         "REQUIRED: xPos/yPos. Citizen location ('동아대학교', '강남역') needs "
-        "locate(kakao_keyword_search 또는 kakao_address_search) first. ORDERING: turn1=locate adapter, "
+        "locate(kakao_keyword_search 또는 kakao_address_search) first. "
+        "ORDERING: turn1=locate adapter, "
         "turn2=this tool. When citizen says '근처 내과' / '강남역 소아과' / "
         "'큰 종합병원', map specialty/type to dgsbjt / clCd in the SAME call."
     ),

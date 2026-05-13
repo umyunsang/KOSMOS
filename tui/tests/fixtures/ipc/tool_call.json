@@ -7,7 +7,7 @@
   "frame_seq": 3,
   "ts": "2026-04-19T12:00:03.000Z",
   "call_id": "01HTESTCALL000000000000001",
-  "name": "lookup",
+  "name": "find",
   "arguments": {
     "mode": "search",
     "query": "버스 143번 노선"

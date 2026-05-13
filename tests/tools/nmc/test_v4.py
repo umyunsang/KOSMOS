@@ -595,9 +595,7 @@ class TestNmcDescriptionV4:
         from ummaya.tools.nmc.emergency_search import NMC_EMERGENCY_SEARCH_TOOL
 
         desc = NMC_EMERGENCY_SEARCH_TOOL.llm_description
-        assert "locate" in desc, (
-            "NMC description must reference resolve_location explicitly"
-        )
+        assert "locate" in desc, "NMC description must reference resolve_location explicitly"
         assert any(tok in desc for tok in ("turn1", "turn 1", "ORDERING", "ordering")), (
             "NMC description must declare resolve_location → this-tool turn ordering"
         )

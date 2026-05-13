@@ -35,6 +35,7 @@ from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
+from ummaya.primitives.delegation import _scope_matches
 from ummaya.tools.models import AdapterRealDomainPolicy, GovAPITool
 from ummaya.tools.transparency import stamp_mock_response
 
@@ -56,6 +57,7 @@ _INTERNATIONAL_REF: Final = "Estonia X-Road"
 
 # Required delegation scope when a DelegationContext is present.
 _REQUIRED_SCOPE: Final = "find:gov24.certificate"
+_LEGACY_REQUIRED_SCOPE: Final = "lookup:gov24.certificate"
 
 # ---------------------------------------------------------------------------
 # Certificate type literals
@@ -202,8 +204,7 @@ async def handle(
 
         if isinstance(delegation_context, DelegationContext):
             token_scope = delegation_context.token.scope
-            # Scope may be comma-joined multi-scope; match exact entry.
-            if _REQUIRED_SCOPE not in token_scope.split(","):
+            if not _scope_matches(token_scope, _REQUIRED_SCOPE):
                 logger.warning(
                     "mock_lookup_module_gov24_certificate: scope violation "
                     "(token_scope=%r required=%r)",
@@ -223,7 +224,8 @@ async def handle(
                     "reason": "auth_required",
                     "message": (
                         f"Delegation token scope {token_scope!r} does not "
-                        f"grant {_REQUIRED_SCOPE!r}."
+                        f"grant {_REQUIRED_SCOPE!r} "
+                        f"(legacy alias {_LEGACY_REQUIRED_SCOPE!r})."
                     ),
                     "retryable": False,
                 }

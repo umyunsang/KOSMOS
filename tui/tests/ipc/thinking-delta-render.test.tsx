@@ -2,8 +2,8 @@
 // Spec 2521 T004 — Layer 1b ink-testing-library scaffold for thinking_delta render.
 //
 // This test asserts that an assistant message containing a `{ type: 'thinking',
-// thinking: <text> }` content block renders as `∴ Thinking` (collapsed) or
-// full reasoning text (verbose) via the AssistantThinkingMessage component.
+// thinking: <text> }` content block renders as `∴ Processing...` via the
+// AssistantThinkingMessage component.
 //
 // Scaffold (T004): mount harness + skeleton assertions only — full assertions
 // implemented in T024 after Phase 3 US1 byte-copy + thinking handler verified.
@@ -29,13 +29,13 @@ import { AssistantThinkingMessage } from '../../src/components/messages/Assistan
 // runs of progressive narrowing (reorder + helper split + Bun pin).
 //
 // Skipping in CI only — local development still runs the test and
-// catches genuine ∴ Thinking render regressions. Tracking issue
+// catches genuine ∴ Processing render regressions. Tracking issue
 // will follow once reproducible against an installable Bun patch.
 const _isCI = !!(process.env.CI ?? process.env.GITHUB_ACTIONS)
 const _describe = _isCI ? describe.skip : describe
 
 _describe('thinking-delta-render (Spec 2521 T004 scaffold)', () => {
-  it('renders ∴ Thinking glyph in collapsed (non-verbose, non-transcript) mode', () => {
+  it('renders ∴ Processing glyph in collapsed (non-verbose, non-transcript) mode', () => {
     const { lastFrame } = render(
       <AssistantThinkingMessage
         param={{ type: 'thinking', thinking: '사용자가 부산 날씨를 물어보고 있습니다.' }}
@@ -45,12 +45,12 @@ _describe('thinking-delta-render (Spec 2521 T004 scaffold)', () => {
       />,
     )
     const frame = lastFrame() ?? ''
-    // Collapsed mode shows just `∴ Thinking` + the Ctrl+O hint.
-    expect(frame).toContain('Thinking')
+    // Collapsed mode shows the reasoning activity label.
+    expect(frame).toContain('Processing')
     expect(frame).toContain('∴')
   })
 
-  it('renders full reasoning text in verbose mode', () => {
+  it('keeps reasoning text hidden in verbose mode', () => {
     const reasoning =
       '사용자가 부산 날씨를 물어보고 있습니다. resolve_location → kma_forecast_fetch 순서로 호출.'
     const { lastFrame } = render(
@@ -62,8 +62,8 @@ _describe('thinking-delta-render (Spec 2521 T004 scaffold)', () => {
       />,
     )
     const frame = lastFrame() ?? ''
-    expect(frame).toContain('Thinking')
-    expect(frame).toContain('부산 날씨')
+    expect(frame).toContain('Processing')
+    expect(frame).not.toContain('부산 날씨')
   })
 
   it('returns null when hideInTranscript is true', () => {
@@ -77,7 +77,7 @@ _describe('thinking-delta-render (Spec 2521 T004 scaffold)', () => {
       />,
     )
     const frame = lastFrame() ?? ''
-    expect(frame).not.toContain('Thinking')
+    expect(frame).not.toContain('Processing')
     expect(frame).not.toContain('∴')
     expect(frame).not.toContain('hidden')
   })
@@ -92,6 +92,6 @@ _describe('thinking-delta-render (Spec 2521 T004 scaffold)', () => {
       />,
     )
     const frame = lastFrame() ?? ''
-    expect(frame).not.toContain('Thinking')
+    expect(frame).not.toContain('Processing')
   })
 })

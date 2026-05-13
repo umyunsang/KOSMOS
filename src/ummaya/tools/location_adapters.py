@@ -401,9 +401,7 @@ KAKAO_COORD_TO_REGION_TOOL = GovAPITool(
         "region_2depth_name/q1, or a 10-digit legal/admin code. "
         "Call as locate({tool_id:'kakao_coord_to_region', params:{lat:<lat>, lon:<lon>}})."
     ),
-    search_hint=(
-        "locate 지역 시도 시군구 행정동 법정동 q0 q1 coord2region reverse geocode kakao"
-    ),
+    search_hint=("locate 지역 시도 시군구 행정동 법정동 q0 q1 coord2region reverse geocode kakao"),
     policy=_provider_policy("Kakao", "https://www.kakao.com/policy/privacy"),
     is_concurrency_safe=True,
     cache_ttl_seconds=300,

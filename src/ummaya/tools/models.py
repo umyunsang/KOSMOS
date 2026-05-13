@@ -910,10 +910,7 @@ class AdapterCandidate(BaseModel):
     )
     primitive: str | None = Field(
         default=None,
-        description=(
-            "The primitive root this adapter binds to "
-            "(find / check / send / locate)."
-        ),
+        description=("The primitive root this adapter binds to (find / check / send / locate)."),
     )
     real_classification_url: str | None = Field(
         default=None,

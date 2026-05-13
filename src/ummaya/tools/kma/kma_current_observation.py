@@ -330,7 +330,7 @@ def _parse_response(payload: dict[str, object]) -> KmaCurrentObservationOutput:
 # ---------------------------------------------------------------------------
 
 
-async def _call(
+async def _call(  # noqa: C901
     params: KmaCurrentObservationInput,
     *,
     client: httpx.AsyncClient | None = None,
@@ -371,7 +371,10 @@ async def _call(
     try:
         assert client is not None  # noqa: S101 — guaranteed by branch above
         no_data_slots: list[str] = []
-        for base_date, base_time in _candidate_observation_slots(params.base_date, params.base_time):
+        for base_date, base_time in _candidate_observation_slots(
+            params.base_date,
+            params.base_time,
+        ):
             query_params: dict[str, str | int] = {
                 "serviceKey": api_key,
                 "base_date": base_date,
@@ -469,7 +472,8 @@ KMA_CURRENT_OBSERVATION_TOOL = GovAPITool(
         ),
         input_quirk=(
             "nx/ny 는 locate 결과의 KMA 격자 X/Y를 그대로 복사. "
-            "base_date=YYYYMMDD, base_time=HH00. 시스템 프롬프트의 '현재 KST 시각'을 기준으로 직전 정시 사용; "
+            "base_date=YYYYMMDD, base_time=HH00. "
+            "시스템 프롬프트의 '현재 KST 시각'을 기준으로 직전 정시 사용; "
             ":40 전이면 한 시간 더 이전이 안정. NO_DATA 시 이전 시간 자동 재시도. "
             "data_type=JSON, resultCode '00'=정상."
         ),

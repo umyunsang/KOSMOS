@@ -44,10 +44,15 @@ class AdapterPrimitive(StrEnum):
     Matches data-model.md § 4 verbatim.
     """
 
-    find = "find"
+    # Mirrors the public primitive verb despite the inherited str.find name.
+    find = "find"  # type: ignore[assignment]
     locate = "locate"
     send = "send"
     check = "check"
+    lookup = "find"
+    resolve_location = "locate"
+    submit = "send"
+    verify = "check"
 
 
 class AdapterSourceMode(StrEnum):

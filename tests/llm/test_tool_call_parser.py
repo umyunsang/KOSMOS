@@ -24,9 +24,7 @@ def test_no_markers_returns_text_unchanged() -> None:
 
 
 def test_format1_openai_shape_json() -> None:
-    text = (
-        '<tool_call>{"name": "locate", "arguments": {"location": "강남역"}}</tool_call>'
-    )
+    text = '<tool_call>{"name": "locate", "arguments": {"location": "강남역"}}</tool_call>'
     calls, cleaned = extract_textual_tool_calls(text)
     assert len(calls) == 1
     assert calls[0].name == "locate"

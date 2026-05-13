@@ -242,7 +242,7 @@ def _extract_item_list(resp_body: dict[str, Any]) -> list[dict[str, object]]:
 # ---------------------------------------------------------------------------
 
 
-async def _fetch(
+async def _fetch(  # noqa: C901
     inp: KmaForecastFetchInput,
     *,
     client: httpx.AsyncClient | None = None,

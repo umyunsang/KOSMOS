@@ -5,7 +5,7 @@
   "kind": "tool_result",
   "call_id": "01HWZK5P1XZ8Q4VNMJ2TRCB7AP",
   "envelope": {
-    "kind": "submit",
+    "kind": "send",
     "tool_id": "minwon_submit_application",
     "family": "submit_application",
     "ok": true,

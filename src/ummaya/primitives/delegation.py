@@ -36,14 +36,21 @@ logger = logging.getLogger(__name__)
 # Accepts single-scope strings AND comma-joined multi-scope strings for US1.
 # ---------------------------------------------------------------------------
 
-_SINGLE_SCOPE_PATTERN: re.Pattern[str] = re.compile(
-    r"^(find|send|check):[a-z0-9_]+\.[a-z0-9_-]+$"
-)
+_SCOPE_VERBS = r"find|locate|send|check|lookup|resolve_location|submit|verify"
+
+_SINGLE_SCOPE_PATTERN: re.Pattern[str] = re.compile(rf"^({_SCOPE_VERBS}):[a-z0-9_]+\.[a-z0-9_-]+$")
 
 _MULTI_SCOPE_PATTERN: re.Pattern[str] = re.compile(
-    r"^((find|send|check):[a-z0-9_]+\.[a-z0-9_-]+)"
-    r"(,(find|send|check):[a-z0-9_]+\.[a-z0-9_-]+)*$"
+    rf"^(({_SCOPE_VERBS}):[a-z0-9_]+\.[a-z0-9_-]+)"
+    rf"(,({_SCOPE_VERBS}):[a-z0-9_]+\.[a-z0-9_-]+)*$"
 )
+
+_SCOPE_VERB_ALIASES: dict[str, str] = {
+    "lookup": "find",
+    "resolve_location": "locate",
+    "submit": "send",
+    "verify": "check",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -76,7 +83,7 @@ class DelegationToken(BaseModel):
     delegation_token: str = Field(
         min_length=1,
         description=(
-    "Opaque bearer token consumed by send/find adapters. "
+            "Opaque bearer token consumed by send/find adapters. "
             "Must start with 'del_' and have >= 24 chars after the prefix."
         ),
     )
@@ -275,7 +282,16 @@ def _scope_matches(token_scope: str, required: str) -> bool:
         _scope_matches("find:hometax.simplified,send:hometax.tax-return",
                        "send:gov24.minwon") → False
     """
-    return required in token_scope.split(",")
+    return _canonical_scope_entry(required) in {
+        _canonical_scope_entry(entry) for entry in token_scope.split(",")
+    }
+
+
+def _canonical_scope_entry(scope: str) -> str:
+    verb, sep, rest = scope.partition(":")
+    if not sep:
+        return scope
+    return f"{_SCOPE_VERB_ALIASES.get(verb, verb)}:{rest}"
 
 
 # Session-scoped revocation store — Codex P1 #2445 fix.

@@ -406,7 +406,7 @@ class _VerifyInputForLLM(BaseModel):
 
             family = resolve_family(str(tool_id))
             if family is None:
-                raise ValueError(f"unknown check tool_id: {tool_id!r}")
+                raise ValueError(f"unknown verify tool_id: {tool_id!r}")
 
             # Build a fresh dict — never mutate caller's original (I-V8)
             data = dict(data)

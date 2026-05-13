@@ -51,7 +51,7 @@ def status_by_name(result: dict[str, object]) -> dict[str, str]:
 def test_passes_visible_resolve_lookup_trace(tmp_path: Path) -> None:
     write_capture(tmp_path, "final.txt", "UMMAYA final answer\noutbound_traces status_code url")
     write_capture(tmp_path, "frames/frame_0000_boot.txt", "UMMAYA boot")
-    write_capture(tmp_path, "frames/frame_0001_resolve.txt", "⏺ find(resolve_location)")
+    write_capture(tmp_path, "frames/frame_0001_locate.txt", "⏺ locate(kakao_keyword_search)")
     write_capture(tmp_path, "frames/frame_0002_lookup.txt", "⏺ find(kma_forecast_fetch)")
 
     result = run_audit(

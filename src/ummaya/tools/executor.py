@@ -129,7 +129,7 @@ class ToolExecutor:
         self._adapters[tool_id] = adapter
         logger.debug("Registered adapter for tool: %s", tool_id)
 
-    async def invoke_raw(
+    async def invoke_raw(  # noqa: C901
         self,
         tool_id: str,
         params: dict[str, object],

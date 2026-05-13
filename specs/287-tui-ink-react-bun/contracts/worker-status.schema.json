@@ -17,7 +17,7 @@
     },
     "current_primitive": {
       "type": "string",
-      "enum": ["lookup", "resolve_location", "submit", "subscribe", "verify"]
+      "enum": ["find", "locate", "send", "subscribe", "check"]
     },
     "status": {
       "type": "string",

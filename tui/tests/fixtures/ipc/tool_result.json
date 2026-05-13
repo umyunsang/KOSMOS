@@ -8,7 +8,7 @@
   "ts": "2026-04-19T12:00:04.000Z",
   "call_id": "01HTESTCALL000000000000001",
   "envelope": {
-    "kind": "lookup",
+    "kind": "find",
     "subtype": "LookupList",
     "items": [
       {

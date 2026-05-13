@@ -201,7 +201,7 @@ async def test_verify_emits_gen_ai_tool_loop_iteration_span(
 
         parity_span = next(s for s in spans if s.name == _SPAN_NAME)
         attrs = dict(parity_span.attributes or {})
-        assert attrs.get("gen_ai.tool.name") == f"verify:{family}"
+        assert attrs.get("gen_ai.tool.name") == f"check:{family}"
     finally:
         # Restore the original adapter (or remove ours if nothing was there).
         if _previous_adapter is not None:
