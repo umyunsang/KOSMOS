@@ -9,7 +9,7 @@ import {
   getFriendliCredentialSource,
   installFriendliCredential,
 } from '../../utils/friendliAuth.js'
-import { stripSignatureBlocks } from '../../utils/messages.js'
+import { stripSignatureBlocks } from '../../utils/messageSignatures.js'
 
 export async function call(
   onDone: LocalJSXCommandOnDone,
