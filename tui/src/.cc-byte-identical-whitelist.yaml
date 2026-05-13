@@ -182,9 +182,9 @@ entries:
     spec_ref: "#2521 (K-EXAONE multi-tool layout); .github/workflows/tui-boot-smoke.yml"
     notes: "suppressTopMargin prop added for adjacent blocks from one assistant turn; direct messageLookups.js import avoids Linux Bun evaluating the large messages.ts export surface."
   - path: tui/src/components/Messages.tsx
-    cause: W9,W12
-    spec_ref: "#2521 (multi-tool layout), #2294 (frame_commit OTEL Phase 4)"
-    notes: "createStreamingThinkingLayoutMessage + getStreamingThinkingInsertIndex + isSameAssistantToolStack inserted; useFrameCommitTracker hook for ummaya.tui.frame_commit event."
+    cause: W9,W12,W15
+    spec_ref: "#2521 (multi-tool layout), #2294 (frame_commit OTEL Phase 4); .github/workflows/tui-smoke.yml"
+    notes: "createStreamingThinkingLayoutMessage + getStreamingThinkingInsertIndex + isSameAssistantToolStack inserted; useFrameCommitTracker hook for ummaya.tui.frame_commit event; Linux Bun loader requires direct messagePredicates.js import for isNotEmptyMessage."
   - path: tui/src/components/messages/AssistantThinkingMessage.tsx
     cause: W9,W1
     spec_ref: "#2521 (K-EXAONE thinking preview)"
