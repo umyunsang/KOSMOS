@@ -11,7 +11,7 @@
 
 import React from 'react'
 import { z } from 'zod/v4'
-import { Box, Text } from '../../ink.js'
+import { Text } from '../../ink.js'
 import { MessageResponse } from '../../components/MessageResponse.js'
 import { buildTool, type ToolDef, type ToolUseContext } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
@@ -32,6 +32,10 @@ import {
   renderVerboseInputJson,
   renderVerboseOutputJson,
 } from '../_shared/verboseRender.js'
+import {
+  isPrimitiveResultPreviewTruncated,
+  renderCompactPrimitiveResult,
+} from '../_shared/compactPrimitiveResult.js'
 import { getOrCreateUmmayaBridge } from '../../ipc/bridgeSingleton.js'
 import { getOrCreatePendingCallRegistry } from '../../ipc/pendingCallSingleton.js'
 
@@ -162,20 +166,6 @@ function extractErrorMessage(message: string): string {
   return message
 }
 
-function truncateInline(value: string, maxLength: number): string {
-  return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value
-}
-
-function groupedFindLabel(input: unknown): string {
-  const record = asRecord(input)
-  if (!record) return 'find'
-  const label =
-    firstStringValue(record, ['tool_id', 'query', 'mode']) ??
-    firstStringValue(asRecord(record.params) ?? {}, ['tool_id', 'query', 'address', 'q']) ??
-    'find'
-  return truncateInline(label.replace(/\s+/g, ' '), 48)
-}
-
 function formatGenericCollectionItem(item: unknown, index: number): React.ReactNode[] {
   const record = asRecord(item)
   if (!record) {
@@ -200,7 +190,7 @@ function formatGenericCollectionItem(item: unknown, index: number): React.ReactN
       'title',
       'serviceName',
       'wlfareInfoNm',
-    ]) ?? `결과 ${index + 1}`
+    ]) ?? `Result ${index + 1}`
   const kind = firstStringValue(record, [
     'clCdNm',
     'dutyEmclsName',
@@ -242,7 +232,7 @@ function formatGenericCollectionItem(item: unknown, index: number): React.ReactN
       React.createElement(
         Text,
         { key: `generic-${index}-addr`, dimColor: true },
-        `     주소: ${address}`,
+        `     Address: ${address}`,
       ),
     )
   }
@@ -251,7 +241,7 @@ function formatGenericCollectionItem(item: unknown, index: number): React.ReactN
       React.createElement(
         Text,
         { key: `generic-${index}-phone`, dimColor: true },
-        `     전화: ${phone}`,
+        `     Phone: ${phone}`,
       ),
     )
   }
@@ -261,32 +251,32 @@ function formatGenericCollectionItem(item: unknown, index: number): React.ReactN
 function precipitationTypeLabel(code: number | null): string | null {
   switch (code) {
     case 0:
-      return '없음'
+      return 'none'
     case 1:
-      return '비'
+      return 'rain'
     case 2:
-      return '비/눈'
+      return 'rain/snow'
     case 3:
-      return '눈'
+      return 'snow'
     case 5:
-      return '빗방울'
+      return 'raindrops'
     case 6:
-      return '빗방울/눈날림'
+      return 'raindrops/snow flurries'
     case 7:
-      return '눈날림'
+      return 'snow flurries'
     default:
-      return code === null ? null : `코드 ${code}`
+      return code === null ? null : `code ${code}`
   }
 }
 
 function skyLabel(code: string | null): string | null {
   switch (code) {
     case '1':
-      return '맑음'
+      return 'clear'
     case '3':
-      return '구름 많음'
+      return 'mostly cloudy'
     case '4':
-      return '흐림'
+      return 'cloudy'
     default:
       return code === null ? null : `SKY ${code}`
   }
@@ -295,19 +285,19 @@ function skyLabel(code: string | null): string | null {
 function forecastCategoryLabel(category: string, value: string): string | null {
   switch (category) {
     case 'TMP':
-      return `기온 ${value}°C`
+      return `temperature ${value}°C`
     case 'POP':
-      return `강수확률 ${value}%`
+      return `precipitation chance ${value}%`
     case 'PTY':
-      return `강수형태 ${precipitationTypeLabel(Number(value)) ?? value}`
+      return `precipitation type ${precipitationTypeLabel(Number(value)) ?? value}`
     case 'PCP':
-      return `강수량 ${value}`
+      return `precipitation ${value}`
     case 'REH':
-      return `습도 ${value}%`
+      return `humidity ${value}%`
     case 'WSD':
-      return `풍속 ${value} m/s`
+      return `wind speed ${value} m/s`
     case 'SKY':
-      return `하늘 ${skyLabel(value) ?? value}`
+      return `sky ${skyLabel(value) ?? value}`
     default:
       return null
   }
@@ -347,11 +337,11 @@ function formatKmaShortTermForecast(item: Record<string, unknown>): React.ReactN
 
   const totalCount = numberValue(data, 'total_count')
   const summary: string[] = []
-  if (totalCount !== null) summary.push(`예보 항목: ${totalCount}건`)
+  if (totalCount !== null) summary.push(`Forecast items: ${totalCount}`)
   for (const [time, labels] of Array.from(byTime.entries()).slice(0, 5)) {
     summary.push(`${time}: ${labels.slice(0, 5).join(', ')}`)
   }
-  if (byTime.size > 5) summary.push(`외 ${byTime.size - 5}개 시간대`)
+  if (byTime.size > 5) summary.push(`${byTime.size - 5} more time slots`)
   return summary.map((row, i) => React.createElement(Text, { key: `kma-stf-${i}`, dimColor: i === 0 }, `  ${row}`))
 }
 
@@ -365,32 +355,168 @@ function formatKmaCurrentObservation(item: Record<string, unknown>): React.React
   const rows: string[] = []
   const baseDate = stringValue(data, 'base_date')
   const baseTime = stringValue(data, 'base_time')
-  if (baseDate && baseTime) rows.push(`관측 기준: ${baseDate} ${baseTime}`)
+  if (baseDate && baseTime) rows.push(`Observed at: ${baseDate} ${baseTime}`)
 
   const t1h = numberValue(data, 't1h')
-  if (t1h !== null) rows.push(`기온: ${t1h}°C`)
+  if (t1h !== null) rows.push(`Temperature: ${t1h}°C`)
 
   const rn1 = numberValue(data, 'rn1')
-  if (rn1 !== null) rows.push(`1시간 강수량: ${rn1} mm`)
+  if (rn1 !== null) rows.push(`Rainfall last 1h: ${rn1} mm`)
 
   const pty = numberValue(data, 'pty')
   const ptyLabel = precipitationTypeLabel(pty)
-  if (ptyLabel) rows.push(`강수형태: ${ptyLabel}`)
+  if (ptyLabel) rows.push(`Precipitation type: ${ptyLabel}`)
 
   const reh = numberValue(data, 'reh')
-  if (reh !== null) rows.push(`습도: ${reh}%`)
+  if (reh !== null) rows.push(`Humidity: ${reh}%`)
 
   const wsd = numberValue(data, 'wsd')
-  if (wsd !== null) rows.push(`풍속: ${wsd} m/s`)
+  if (wsd !== null) rows.push(`Wind speed: ${wsd} m/s`)
 
   const vec = numberValue(data, 'vec')
-  if (vec !== null) rows.push(`풍향: ${vec}°`)
+  if (vec !== null) rows.push(`Wind direction: ${vec}°`)
 
   const nx = numberValue(data, 'nx')
   const ny = numberValue(data, 'ny')
-  if (nx !== null && ny !== null) rows.push(`KMA 격자: X ${nx}, Y ${ny}`)
+  if (nx !== null && ny !== null) rows.push(`KMA grid: X ${nx}, Y ${ny}`)
 
   return rows.map((row, i) => React.createElement(Text, { key: `kma-${i}`, dimColor: i === 0 }, `  ${row}`))
+}
+
+function renderRowsForSearchResult(result: Record<string, unknown>): React.ReactNode {
+  const hits = Array.isArray(result.candidates) ? result.candidates : []
+  if (hits.length === 0) {
+    return React.createElement(
+      MessageResponse,
+      { height: 1 },
+      React.createElement(
+        Text,
+        { color: 'red' },
+        'No search results. Try a different tool such as locate, or answer the citizen directly.',
+      ),
+    )
+  }
+
+  const hitRows = hits.slice(0, 10).map((hit: unknown, i: number) => {
+    const h = hit as Record<string, unknown>
+    const toolId = typeof h.tool_id === 'string' ? h.tool_id : '(unknown)'
+    const score =
+      typeof h.score === 'number' ? ` [${h.score.toFixed(2)}]` : ''
+    const hint =
+      typeof h.search_hint === 'string' ? ` — ${h.search_hint}` : ''
+    return React.createElement(
+      Text,
+      { key: i },
+      `${i + 1}. ${toolId}${score}${hint}`,
+    )
+  })
+
+  return renderCompactPrimitiveResult([
+    React.createElement(Text, { key: 'search-heading', bold: true }, `Search results (${hits.length}):`),
+    ...hitRows,
+  ])
+}
+
+function buildFindResultRows(output: Output): React.ReactNode[] {
+  const result = output.ok ? (output.result as Record<string, unknown>) : null
+  if (!result) return []
+
+  const toolId =
+    typeof result?.tool_id === 'string'
+      ? result.tool_id
+      : typeof result?.kind === 'string'
+        ? result.kind
+        : '(unknown adapter)'
+  const adapterResult =
+    (result?.fields as unknown) ??
+    (result?.items as unknown) ??
+    (result?.points as unknown) ??
+    result
+  let countText = ''
+  let summaryRows: React.ReactNode[] = []
+
+  if (Array.isArray(adapterResult)) {
+    const totalCount = firstNumberValue(result, ['total_count', 'totalCount', 'total'])
+    countText =
+      totalCount !== null && totalCount > adapterResult.length
+        ? `${adapterResult.length} of ${totalCount} shown`
+        : `${adapterResult.length} results`
+    summaryRows = adapterResult
+      .slice(0, 5)
+      .flatMap((item: unknown, i: number) => formatGenericCollectionItem(item, i))
+    if (totalCount !== null && totalCount > adapterResult.length) {
+      summaryRows.push(
+        React.createElement(
+          Text,
+          { key: 'generic-more', dimColor: true },
+          `  ${Math.max(0, totalCount - adapterResult.length)} more`,
+        ),
+      )
+    } else if (adapterResult.length > 5) {
+      summaryRows.push(
+        React.createElement(
+          Text,
+          { key: 'generic-more', dimColor: true },
+          `  ${adapterResult.length - 5} more`,
+        ),
+      )
+    }
+  } else if (adapterResult !== null && adapterResult !== undefined) {
+    countText = '1 result'
+    const structuredRows = formatKmaCurrentObservation(result)
+    if (structuredRows) {
+      summaryRows = structuredRows
+    } else {
+      const forecastRows = formatKmaShortTermForecast(result)
+      if (forecastRows) {
+        summaryRows = forecastRows
+      } else {
+        const summary =
+          typeof adapterResult === 'object'
+            ? JSON.stringify(adapterResult).slice(0, 240)
+            : String(adapterResult).slice(0, 240)
+        summaryRows = [React.createElement(Text, { key: 0, dimColor: true }, `  ${summary}`)]
+      }
+    }
+  }
+
+  const mockMeta = extractMockMeta(output)
+  const isMock = mockMeta.isMock
+  const lookupHeading = isMock ? mockLabel('Search result') : toolId
+  const headingColor = isMock ? ('cyan' as const) : undefined
+
+  return [
+    React.createElement(
+      Text,
+      { key: 'heading' },
+      React.createElement(
+        Text,
+        { bold: true, color: headingColor, dimColor: isMock },
+        lookupHeading,
+      ),
+      !isMock && countText ? ` — ${countText}` : '',
+      isMock && countText ? ` (${toolId} — ${countText})` : '',
+    ),
+    ...(isMock
+      ? [
+          React.createElement(
+            Text,
+            { key: 'mock-disclaimer', dimColor: true },
+            'Demo-only result. No real administrative action was taken.',
+          ),
+        ]
+      : []),
+    ...summaryRows,
+    ...(isMock && mockMeta.actualEndpointWhenLive
+      ? [
+          React.createElement(
+            Text,
+            { key: 'mock-live-endpoint', dimColor: true },
+            `Live endpoint: ${mockMeta.actualEndpointWhenLive}`,
+          ),
+        ]
+      : []),
+  ]
 }
 
 // ---------------------------------------------------------------------------
@@ -456,8 +582,8 @@ export type Output = z.infer<OutputSchema>
 export const LookupPrimitive = buildTool({
   name: FIND_TOOL_NAME,
 
-  /** Bilingual keyword hint for ToolSearch deferred-tool discovery. */
-  searchHint: '조회 검색 find discover search adapter 공공 API 어댑터',
+  /** English keyword hint for ToolSearch deferred-tool discovery. */
+  searchHint: 'lookup search find discover public API adapter',
 
   maxResultSizeChars: 100_000,
 
@@ -510,9 +636,8 @@ export const LookupPrimitive = buildTool({
     }
   },
 
-  // UMMAYA hotfix #2518 follow-up — CC pattern (tools/BashTool/UI.tsx:renderToolUseMessage)
-  // 따라 args preview 반환. null 반환은 AssistantToolUseMessage가 tool block을 통째로
-  // 숨겨서 시민이 어떤 tool이 dispatch 됐는지 못 봄. CC byte-identical pattern.
+  // UMMAYA hotfix #2518 follow-up — CC pattern (tools/BashTool/UI.tsx:renderToolUseMessage).
+  // Return an args preview so the citizen can see which tool was dispatched.
   // Spec 2521 (2026-05-01) — fetch-only surface; legacy mode='search'
   // payloads from older sessions surface as the bare tool_id.
   // Spec 2521 (2026-05-01 evening) — verbose flag mirrors CC BashTool's
@@ -526,40 +651,6 @@ export const LookupPrimitive = buildTool({
       return renderVerboseInputJson(input)
     }
     return input.tool_id ?? input.query ?? ''
-  },
-
-  renderGroupedToolUse(toolUses) {
-    const total = toolUses.length
-    const resolved = toolUses.filter((item) => item.isResolved).length
-    const errors = toolUses.filter((item) => item.isError).length
-    const labels = Array.from(
-      new Set(toolUses.map((item) => groupedFindLabel(item.param.input))),
-    )
-    const visibleLabels = labels.slice(0, 3)
-    const more = labels.length > visibleLabels.length
-      ? ` 외 ${labels.length - visibleLabels.length}건`
-      : ''
-    const status =
-      errors > 0
-        ? `${errors}건 오류`
-        : resolved < total
-          ? `${resolved}/${total} 완료`
-          : `${total}회 완료`
-
-    return React.createElement(
-      MessageResponse,
-      null,
-      React.createElement(
-        Box,
-        { flexDirection: 'column' },
-        React.createElement(Text, { bold: true }, `find 호출 ${status}`),
-        React.createElement(
-          Text,
-          { dimColor: true },
-          `${visibleLabels.join(' · ')}${more}`,
-        ),
-      ),
-    )
   },
 
   // Epic γ #2294 · 9-member interface compliance.
@@ -596,7 +687,7 @@ export const LookupPrimitive = buildTool({
         if (!backendEntry.policy_authority_url) {
           return {
             result: false,
-            message: `'${input.tool_id}' 어댑터 정책 인용이 누락되었습니다 (Spec 024 invariant 위반).`,
+            message: `Adapter '${input.tool_id}' is missing a policy citation (Spec 024 invariant violation).`,
             errorCode: PrimitiveErrorCode.CitationMissing,
           }
         }
@@ -618,7 +709,7 @@ export const LookupPrimitive = buildTool({
       if (!citation) {
         return {
           result: false,
-          message: `'${input.tool_id}' 어댑터 정책 인용이 누락되었습니다 (Spec 024 invariant 위반).`,
+          message: `Adapter '${input.tool_id}' is missing a policy citation (Spec 024 invariant violation).`,
           errorCode: PrimitiveErrorCode.CitationMissing,
         }
       }
@@ -682,7 +773,7 @@ export const LookupPrimitive = buildTool({
         React.createElement(
           Text,
           { color: 'red' },
-          `오류가 발생했습니다: ${message}`,
+          `Error: ${message}`,
         ),
       )
     }
@@ -692,45 +783,7 @@ export const LookupPrimitive = buildTool({
     // search mode (LookupSearchResult, models.py:820):
     //   { kind: "search", candidates: [AdapterCandidate], total_registry_size, effective_top_k, reason }
     if (result?.kind === 'search') {
-      const hits = Array.isArray(result.candidates) ? result.candidates : []
-      if (hits.length === 0) {
-        return React.createElement(
-          MessageResponse,
-          { height: 1 },
-          React.createElement(
-            Text,
-            { color: 'red' },
-            '검색 결과가 없습니다 — 다른 도구(locate 등)를 시도하거나 시민에게 직접 안내하세요.',
-          ),
-        )
-      }
-      const hitRows = hits.slice(0, 10).map((hit: unknown, i: number) => {
-        const h = hit as Record<string, unknown>
-        const toolId = typeof h.tool_id === 'string' ? h.tool_id : '(알 수 없음)'
-        const score =
-          typeof h.score === 'number' ? ` [${h.score.toFixed(2)}]` : ''
-        const hint =
-          typeof h.search_hint === 'string' ? ` — ${h.search_hint}` : ''
-        return React.createElement(
-          Text,
-          { key: i },
-          `${i + 1}. ${toolId}${score}${hint}`,
-        )
-      })
-      return React.createElement(
-        MessageResponse,
-        null,
-        React.createElement(
-          Box,
-          { flexDirection: 'column' },
-          React.createElement(
-            Text,
-            { bold: true },
-            `검색 결과 (${hits.length}건):`,
-          ),
-          ...hitRows,
-        ),
-      )
+      return renderRowsForSearchResult(result)
     }
 
     // fetch error (LookupError, models.py — kind="error"):
@@ -746,7 +799,7 @@ export const LookupPrimitive = buildTool({
         React.createElement(
           Text,
           { color: 'red' },
-          `검색 오류: ${message}`,
+          `Search error: ${message}`,
         ),
       )
     }
@@ -755,106 +808,17 @@ export const LookupPrimitive = buildTool({
     //   record:    { kind: "record",     tool_id, fields }
     //   collection:{ kind: "collection", tool_id, items }
     //   timeseries:{ kind: "timeseries", tool_id, points }
-    const toolId =
-      typeof result?.tool_id === 'string'
-        ? result.tool_id
-        : typeof result?.kind === 'string'
-          ? result.kind
-          : '(어댑터 미상)'
-    const adapterResult =
-      (result?.fields as unknown) ??
-      (result?.items as unknown) ??
-      (result?.points as unknown) ??
-      result
-    let countText = ''
-    let summaryRows: React.ReactNode[] = []
+    return renderCompactPrimitiveResult(buildFindResultRows(output))
+  },
 
-    if (Array.isArray(adapterResult)) {
-      const totalCount = firstNumberValue(result, ['total_count', 'totalCount', 'total'])
-      countText =
-        totalCount !== null && totalCount > adapterResult.length
-          ? `총 ${totalCount}건 중 ${adapterResult.length}건 표시`
-          : `${adapterResult.length}건`
-      summaryRows = adapterResult
-        .slice(0, 5)
-        .flatMap((item: unknown, i: number) => formatGenericCollectionItem(item, i))
-      if (totalCount !== null && totalCount > adapterResult.length) {
-        summaryRows.push(
-          React.createElement(
-            Text,
-            { key: 'generic-more', dimColor: true },
-            `  외 ${totalCount - 5}건`,
-          ),
-        )
-      } else if (adapterResult.length > 5) {
-        summaryRows.push(
-          React.createElement(
-            Text,
-            { key: 'generic-more', dimColor: true },
-            `  외 ${adapterResult.length - 5}건`,
-          ),
-        )
-      }
-    } else if (adapterResult !== null && adapterResult !== undefined) {
-      countText = '1건'
-      const structuredRows = formatKmaCurrentObservation(result)
-      if (structuredRows) {
-        summaryRows = structuredRows
-      } else {
-        const forecastRows = formatKmaShortTermForecast(result)
-        if (forecastRows) {
-          summaryRows = forecastRows
-        } else {
-          const summary =
-            typeof adapterResult === 'object'
-              ? JSON.stringify(adapterResult).slice(0, 240)
-              : String(adapterResult).slice(0, 240)
-          summaryRows = [React.createElement(Text, { key: 0, dimColor: true }, `  ${summary}`)]
-        }
-      }
+  isResultTruncated(output: Output): boolean {
+    if (!output.ok) return false
+    const result = output.result as Record<string, unknown>
+    if (result?.kind === 'search') {
+      const hits = Array.isArray(result.candidates) ? result.candidates : []
+      return hits.length + 1 > 3
     }
-
-    // Audit-2 P0: check _mode === 'mock' from transparency stamp (Spec 024).
-    const mockMeta = extractMockMeta(output)
-    const isMock = mockMeta.isMock
-
-    const lookupHeading = isMock ? mockLabel('검색 결과') : toolId
-    const headingColor = isMock ? ('cyan' as const) : undefined
-
-    return React.createElement(
-      MessageResponse,
-      null,
-      React.createElement(
-        Box,
-        { flexDirection: 'column' },
-        React.createElement(
-          Text,
-          null,
-          React.createElement(
-            Text,
-            { bold: true, color: headingColor, dimColor: isMock },
-            lookupHeading,
-          ),
-          !isMock && countText ? ` — ${countText}` : '',
-          isMock && countText ? ` (${toolId} — ${countText})` : '',
-        ),
-        isMock
-          ? React.createElement(
-              Text,
-              { dimColor: true },
-              '실제 행정 영향 없는 시연 결과입니다.',
-            )
-          : null,
-        ...summaryRows,
-        isMock && mockMeta.actualEndpointWhenLive
-          ? React.createElement(
-              Text,
-              { dimColor: true },
-              `실제 엔드포인트 (운영 시): ${mockMeta.actualEndpointWhenLive}`,
-            )
-          : null,
-      ),
-    )
+    return isPrimitiveResultPreviewTruncated(buildFindResultRows(output))
   },
 
   /**

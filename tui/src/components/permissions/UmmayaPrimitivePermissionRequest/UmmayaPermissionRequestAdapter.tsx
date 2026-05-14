@@ -63,7 +63,7 @@ function resolveToolDisplayName(input: Record<string, unknown>): string {
     const entry = resolveAdapter(toolId)
     if (entry?.name) return entry.name
   }
-  return toolId || '알 수 없는 어댑터'
+  return toolId || 'Unknown adapter'
 }
 
 /**

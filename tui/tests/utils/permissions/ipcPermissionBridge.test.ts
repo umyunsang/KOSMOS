@@ -2,7 +2,7 @@
 // Epic FU-4 — ipcPermissionBridge unit tests.
 //
 // Tests:
-//   1. No setter → pushIpcPermissionRequest is a no-op (no crash)
+//   1. No setter → pushIpcPermissionRequest fail-closes with deny (no crash)
 //   2. Registered setter → pushIpcPermissionRequest calls setter with a ToolUseConfirm
 //   3. Synthesized ToolUseConfirm maps primitive_kind to correct Tool
 //   4. onAllow triggers a second setter call to remove the item from the queue
@@ -94,9 +94,14 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('ipcPermissionBridge — no setter registered', () => {
-  it('pushIpcPermissionRequest with no setter is a no-op (no throw)', () => {
+  it('pushIpcPermissionRequest with no setter sends deny (no throw)', () => {
     // No setter registered.
     expect(() => pushIpcPermissionRequest(makeFrame())).not.toThrow()
+    expect(sentFrames.length).toBe(1)
+    const sent = sentFrames[0] as Record<string, unknown>
+    expect(sent.kind).toBe('permission_response')
+    expect(sent.decision).toBe('deny')
+    expect(sent.request_id).toBe('req-fu4-001')
   })
 })
 
@@ -272,15 +277,18 @@ describe('ipcPermissionBridge — P0-8 NDJSON leak protection', () => {
 })
 
 describe('ipcPermissionBridge — unregister', () => {
-  it('registerIpcToolUseConfirmQueue(null) clears setter — subsequent push is a no-op', () => {
+  it('registerIpcToolUseConfirmQueue(null) clears setter — subsequent push fail-closes', () => {
     const { setter, calls } = captureQueue()
     registerIpcToolUseConfirmQueue(setter)
 
     // Unregister.
     registerIpcToolUseConfirmQueue(null)
 
-    // Should be no-op after unregistration.
+    // No queue mutation after unregistration; backend still receives fail-closed deny.
     expect(() => pushIpcPermissionRequest(makeFrame())).not.toThrow()
     expect(calls.length).toBe(0)
+    expect(sentFrames.length).toBe(1)
+    const sent = sentFrames[0] as Record<string, unknown>
+    expect(sent.decision).toBe('deny')
   })
 })

@@ -51,6 +51,7 @@ const permissionEn: PermissionI18nEn = {
   selectorDeny: 'Deny',
   acceptFeedbackPlaceholder: 'tell UMMAYA what to do next',
   rejectFeedbackPlaceholder: 'tell UMMAYA what to do differently',
+  permissionQuestion: (toolName) => `Allow "${toolName}" to run?`,
 
   // Toast
   toastAllowedOnce: (toolName) => `"${toolName}" allowed once`,

@@ -9,6 +9,7 @@ can still use the direct adapter route by setting ``UMMAYA_LIVE_ADAPTER_MODE``.
 
 from __future__ import annotations
 
+import asyncio
 import os
 from typing import Any, Literal
 from urllib.parse import quote, urlparse
@@ -31,6 +32,10 @@ _PROXYABLE_HOSTS = frozenset(
 )
 _PROXYABLE_PRIMITIVES = frozenset({"find", "locate"})
 _VALID_MODES = frozenset({"auto", "proxy", "direct"})
+_DEFAULT_PROXY_MAX_ATTEMPTS = 2
+_PROXY_RETRY_BASE_DELAY_SECONDS = 0.4
+_RETRYABLE_HTTP_STATUS_CODES = frozenset({500, 502, 503, 504})
+_RETRYABLE_GATEWAY_ERROR_REASONS = frozenset({"timeout", "upstream_unavailable"})
 
 
 class LiveAdapterProxyConfigurationError(UmmayaToolError):
@@ -118,17 +123,52 @@ async def invoke_live_adapter_proxy(
         payload["session_identity"] = str(session_identity)
 
     url = f"{base_url}/{quote(tool.id, safe='')}"
+    attempts = _configured_max_attempts()
+    last_retryable_result: dict[str, Any] | None = None
     async with httpx.AsyncClient(timeout=timeout) as client:
-        response = await client.post(url, json=payload, headers=headers)
-        response.raise_for_status()
+        for attempt in range(1, attempts + 1):
+            try:
+                result = await _post_gateway_once(
+                    client=client,
+                    url=url,
+                    payload=payload,
+                    headers=headers,
+                    tool_id=tool.id,
+                )
+            except (httpx.HTTPStatusError, httpx.TimeoutException, httpx.RequestError) as exc:
+                if not _should_retry_proxy_exception(exc, attempt=attempt, attempts=attempts):
+                    raise
+                await asyncio.sleep(_PROXY_RETRY_BASE_DELAY_SECONDS * attempt)
+                continue
 
+            if _is_retryable_gateway_result(result) and attempt < attempts:
+                last_retryable_result = result
+                await asyncio.sleep(_PROXY_RETRY_BASE_DELAY_SECONDS * attempt)
+                continue
+            return result
+
+    if last_retryable_result is not None:
+        return last_retryable_result
+    raise AssertionError("unreachable live adapter proxy retry loop exit")
+
+
+async def _post_gateway_once(
+    *,
+    client: httpx.AsyncClient,
+    url: str,
+    payload: dict[str, object],
+    headers: dict[str, str],
+    tool_id: str,
+) -> dict[str, Any]:
+    response = await client.post(url, json=payload, headers=headers)
+    response.raise_for_status()
     data = response.json()
     if not isinstance(data, dict):
-        raise ToolExecutionError(tool.id, "Live adapter proxy returned a non-object JSON payload.")
+        raise ToolExecutionError(tool_id, "Live adapter proxy returned a non-object JSON payload.")
 
     result = data.get("result") if data.get("ok") is True and "result" in data else data
     if not isinstance(result, dict):
-        raise ToolExecutionError(tool.id, "Live adapter proxy returned an invalid result payload.")
+        raise ToolExecutionError(tool_id, "Live adapter proxy returned an invalid result payload.")
     return result
 
 
@@ -159,3 +199,43 @@ def _configured_timeout(default_seconds: float) -> float:
             "UMMAYA_LIVE_ADAPTER_PROXY_TIMEOUT_SECONDS must be a positive number."
         )
     return parsed
+
+
+def _configured_max_attempts() -> int:
+    raw = os.environ.get("UMMAYA_LIVE_ADAPTER_PROXY_MAX_ATTEMPTS", "")
+    if not raw.strip():
+        return _DEFAULT_PROXY_MAX_ATTEMPTS
+    try:
+        parsed = int(raw)
+    except ValueError as exc:
+        raise LiveAdapterProxyConfigurationError(
+            "UMMAYA_LIVE_ADAPTER_PROXY_MAX_ATTEMPTS must be a positive integer."
+        ) from exc
+    if parsed <= 0:
+        raise LiveAdapterProxyConfigurationError(
+            "UMMAYA_LIVE_ADAPTER_PROXY_MAX_ATTEMPTS must be a positive integer."
+        )
+    return parsed
+
+
+def _is_retryable_gateway_result(result: dict[str, Any]) -> bool:
+    if result.get("kind") != "error":
+        return False
+    if result.get("retryable") is not True:
+        return False
+    reason = str(result.get("reason", ""))
+    return reason in _RETRYABLE_GATEWAY_ERROR_REASONS
+
+
+def _should_retry_proxy_exception(
+    exc: Exception,
+    *,
+    attempt: int,
+    attempts: int,
+) -> bool:
+    if attempt >= attempts:
+        return False
+    if isinstance(exc, httpx.HTTPStatusError):
+        status = exc.response.status_code if exc.response is not None else 0
+        return status in _RETRYABLE_HTTP_STATUS_CODES
+    return isinstance(exc, (httpx.TimeoutException, httpx.RequestError))

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Audit-2 P0 · SendPrimitive mock-disclaimer unit tests.
 //
-// Citizen-safety: mock send results MUST display 🧪 모의 prefix and
-// "실제 행정 영향 없는 시연 결과입니다." caveat.
+// Citizen-safety: mock send results MUST display a Mock prefix and
+// "Demo-only result" caveat.
 // Live send results MUST NOT show any mock prefix.
 
 import { test, expect, describe } from 'bun:test'
@@ -32,12 +32,12 @@ function renderSubmit(output: Output, opts: { verbose?: boolean } = {}): string 
 // ---------------------------------------------------------------------------
 
 describe('SendPrimitive renderToolResultMessage — mock disclaimer', () => {
-  test('mock send (ok=true, _mode="mock" in result) shows 🧪 모의 prefix', () => {
+  test('mock send (ok=true, _mode="mock" in result) shows Mock prefix', () => {
     const output: Output = {
       ok: true,
       result: {
         transaction_id: 'hometax-2026-05-04-RX-MOCK1',
-        ministry: '국세청',
+        ministry: 'NTS',
         status: 'accepted',
         _mode: 'mock',
         _reference_implementation: 'ax-infrastructure-callable-channel',
@@ -49,11 +49,11 @@ describe('SendPrimitive renderToolResultMessage — mock disclaimer', () => {
     }
 
     const frame = renderSubmit(output)
-    expect(frame).toContain('🧪 모의')
-    expect(frame).toContain('실제 행정 영향 없는 시연 결과입니다')
+    expect(frame).toContain('Mock Submission accepted')
+    expect(frame).toContain('Demo-only result')
   })
 
-  test('mock send shows actual endpoint footer when present', () => {
+  test('mock send hides actual endpoint behind compact preview when long', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -69,11 +69,11 @@ describe('SendPrimitive renderToolResultMessage — mock disclaimer', () => {
     }
 
     const frame = renderSubmit(output)
-    expect(frame).toContain('실제 엔드포인트 (운영 시):')
-    expect(frame).toContain('https://api.hometax.go.kr/v1/submit')
+    expect(frame).toContain('...')
+    expect(frame).not.toContain('https://api.hometax.go.kr/v1/submit')
   })
 
-  test('mock send still shows receipt_id and status', () => {
+  test('mock send truncates receipt/status details behind Ctrl+O when preview is long', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -81,7 +81,7 @@ describe('SendPrimitive renderToolResultMessage — mock disclaimer', () => {
         status: 'succeeded',
         adapter_receipt: {
           receipt_id: 'gov24-MOCK-2026-05-04',
-          status: '접수완료',
+          status: 'completed',
         },
         _mode: 'mock',
         _reference_implementation: 'ax-infrastructure-callable-channel',
@@ -93,10 +93,12 @@ describe('SendPrimitive renderToolResultMessage — mock disclaimer', () => {
     }
 
     const frame = renderSubmit(output)
-    expect(frame).toContain('🧪 모의')
-    expect(frame).toContain('gov24-MOCK-2026-05-04')
-    expect(frame).toContain('상태: 접수 완료')
+    expect(frame).toContain('Mock Submission accepted')
+    expect(frame).toContain('...')
+    expect(frame).not.toContain('gov24-MOCK-2026-05-04')
+    expect(frame).not.toContain('Status: completed')
     expect(frame).not.toContain('urn:ummaya:send:internal-dedup-id')
+    expect(SubmitPrimitive.isResultTruncated?.(output)).toBe(true)
   })
 })
 
@@ -105,20 +107,20 @@ describe('SendPrimitive renderToolResultMessage — mock disclaimer', () => {
 // ---------------------------------------------------------------------------
 
 describe('SendPrimitive renderToolResultMessage — live path (no mock disclaimer)', () => {
-  test('live send (no _mode field) shows green ✓ without 🧪 prefix', () => {
+  test('live send (no _mode field) shows green ✓ without Mock prefix', () => {
     const output: Output = {
       ok: true,
       result: {
         transaction_id: 'hometax-2026-05-04-RX-L001',
-        ministry: '국세청',
+        ministry: 'NTS',
         status: 'accepted',
       },
     }
 
     const frame = renderSubmit(output)
-    expect(frame).toContain('제출이 접수되었습니다')
-    expect(frame).not.toContain('🧪')
-    expect(frame).not.toContain('시연 결과')
+    expect(frame).toContain('Submission accepted')
+    expect(frame).not.toContain('Mock')
+    expect(frame).not.toContain('Demo-only result')
   })
 
   test('live send with _mode="live" does NOT show mock disclaimer', () => {
@@ -132,8 +134,8 @@ describe('SendPrimitive renderToolResultMessage — live path (no mock disclaime
     }
 
     const frame = renderSubmit(output)
-    expect(frame).not.toContain('🧪')
-    expect(frame).not.toContain('시연 결과')
+    expect(frame).not.toContain('Mock')
+    expect(frame).not.toContain('Demo-only result')
   })
 })
 
@@ -147,12 +149,12 @@ describe('SendPrimitive renderToolResultMessage — error path preserved', () =>
       ok: false,
       error: {
         kind: 'permission_denied',
-        message: '권한이 거부되었습니다.',
+        message: 'Permission was denied.',
       },
     }
 
     const frame = renderSubmit(output)
-    expect(frame).toContain('권한이 거부되었습니다')
-    expect(frame).not.toContain('🧪')
+    expect(frame).toContain('Permission was denied')
+    expect(frame).not.toContain('Mock')
   })
 })

@@ -6,7 +6,7 @@
 
 import React from 'react'
 import { z } from 'zod/v4'
-import { Box, Text } from '../../ink.js'
+import { Text } from '../../ink.js'
 import { MessageResponse } from '../../components/MessageResponse.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
@@ -20,6 +20,10 @@ import {
   renderVerboseInputJson,
   renderVerboseOutputJson,
 } from '../_shared/verboseRender.js'
+import {
+  isPrimitiveResultPreviewTruncated,
+  renderCompactPrimitiveResult,
+} from '../_shared/compactPrimitiveResult.js'
 import { getOrCreateUmmayaBridge } from '../../ipc/bridgeSingleton.js'
 import { getOrCreatePendingCallRegistry } from '../../ipc/pendingCallSingleton.js'
 
@@ -76,10 +80,10 @@ function summarizeLocationSlot(key: string, value: Record<string, unknown>): Rea
     const nx = numberField(value, 'nx')
     const ny = numberField(value, 'ny')
     if (lat !== null && lon !== null) {
-      rows.push(React.createElement(Text, { key: 'coords-latlon' }, `좌표: ${lat.toFixed(6)}, ${lon.toFixed(6)}`))
+      rows.push(React.createElement(Text, { key: 'coords-latlon' }, `Coordinates: ${lat.toFixed(6)}, ${lon.toFixed(6)}`))
     }
     if (nx !== null && ny !== null) {
-      rows.push(React.createElement(Text, { key: 'coords-grid' }, `KMA 격자: X ${nx}, Y ${ny}`))
+      rows.push(React.createElement(Text, { key: 'coords-grid' }, `KMA grid: X ${nx}, Y ${ny}`))
     }
     return rows
   }
@@ -93,7 +97,7 @@ function summarizeLocationSlot(key: string, value: Record<string, unknown>): Rea
         React.createElement(
           Text,
           { key: 'adm-code' },
-          `행정동: ${name ?? '이름 없음'}${code ? ` (${code})` : ''}${level ? ` · ${level}` : ''}`,
+          `Administrative district: ${name ?? 'unnamed'}${code ? ` (${code})` : ''}${level ? ` · ${level}` : ''}`,
         ),
       )
     }
@@ -104,7 +108,7 @@ function summarizeLocationSlot(key: string, value: Record<string, unknown>): Rea
     const name = stringField(value, 'address_name') ?? stringField(value, 'name')
     const code = stringField(value, 'code')
     if (name || code) {
-      rows.push(React.createElement(Text, { key: 'region' }, `지역: ${name ?? '이름 없음'}${code ? ` (${code})` : ''}`))
+      rows.push(React.createElement(Text, { key: 'region' }, `Region: ${name ?? 'unnamed'}${code ? ` (${code})` : ''}`))
     }
     return rows
   }
@@ -112,8 +116,8 @@ function summarizeLocationSlot(key: string, value: Record<string, unknown>): Rea
   if (key === 'address') {
     const road = stringField(value, 'road_address')
     const jibun = stringField(value, 'jibun_address')
-    if (road) rows.push(React.createElement(Text, { key: 'road' }, `도로명: ${road}`))
-    if (jibun) rows.push(React.createElement(Text, { key: 'jibun' }, `지번: ${jibun}`))
+    if (road) rows.push(React.createElement(Text, { key: 'road' }, `Road address: ${road}`))
+    if (jibun) rows.push(React.createElement(Text, { key: 'jibun' }, `Jibun address: ${jibun}`))
     return rows
   }
 
@@ -124,12 +128,12 @@ function summarizeLocationSlot(key: string, value: Record<string, unknown>): Rea
     const lon = numberField(value, 'lon')
     const nx = numberField(value, 'nx')
     const ny = numberField(value, 'ny')
-    if (name) rows.push(React.createElement(Text, { key: 'poi' }, `장소: ${name}${category ? ` · ${category}` : ''}`))
+    if (name) rows.push(React.createElement(Text, { key: 'poi' }, `Place: ${name}${category ? ` · ${category}` : ''}`))
     if (lat !== null && lon !== null) {
-      rows.push(React.createElement(Text, { key: 'poi-latlon' }, `좌표: ${lat.toFixed(6)}, ${lon.toFixed(6)}`))
+      rows.push(React.createElement(Text, { key: 'poi-latlon' }, `Coordinates: ${lat.toFixed(6)}, ${lon.toFixed(6)}`))
     }
     if (nx !== null && ny !== null) {
-      rows.push(React.createElement(Text, { key: 'poi-grid' }, `KMA 격자: X ${nx}, Y ${ny}`))
+      rows.push(React.createElement(Text, { key: 'poi-grid' }, `KMA grid: X ${nx}, Y ${ny}`))
     }
   }
   return rows
@@ -153,23 +157,23 @@ function summarizeLocationResult(result: unknown): React.ReactNode[] {
     }
     return rows.length > 0
       ? rows
-      : [React.createElement(Text, { key: 'empty', dimColor: true }, '해석 결과 없음')]
+      : [React.createElement(Text, { key: 'empty', dimColor: true }, 'No location result')]
   }
 
   const lat = numberField(obj, 'lat')
   const lon = numberField(obj, 'lon')
   if (lat !== null && lon !== null) {
-    rows.push(React.createElement(Text, { key: 'coords' }, `좌표: ${lat}, ${lon}`))
+    rows.push(React.createElement(Text, { key: 'coords' }, `Coordinates: ${lat}, ${lon}`))
   }
   const nx = numberField(obj, 'nx')
   const ny = numberField(obj, 'ny')
   if (nx !== null && ny !== null) {
-    rows.push(React.createElement(Text, { key: 'grid' }, `KMA 격자: X ${nx}, Y ${ny}`))
+    rows.push(React.createElement(Text, { key: 'grid' }, `KMA grid: X ${nx}, Y ${ny}`))
   }
 
   const code = stringField(obj, 'code') ?? stringField(obj, 'b_code') ?? stringField(obj, 'region_code')
   if (code) {
-    rows.push(React.createElement(Text, { key: 'code' }, `행정/법정 코드: ${code}`))
+    rows.push(React.createElement(Text, { key: 'code' }, `Administrative/legal code: ${code}`))
   }
 
   const name =
@@ -178,7 +182,7 @@ function summarizeLocationResult(result: unknown): React.ReactNode[] {
     stringField(obj, 'road_address') ??
     stringField(obj, 'jibun_address')
   if (name) {
-    rows.push(React.createElement(Text, { key: 'name' }, `위치명: ${name}`))
+    rows.push(React.createElement(Text, { key: 'name' }, `Location name: ${name}`))
   }
 
   const source = stringField(obj, 'source')
@@ -194,7 +198,7 @@ function summarizeLocationResult(result: unknown): React.ReactNode[] {
 export const ResolveLocationPrimitive = buildTool({
   name: LOCATE_TOOL_NAME,
 
-  searchHint: '위치 주소 좌표 행정동 법정동 locate geocode location',
+  searchHint: 'location address coordinates administrative district legal district locate geocode',
 
   maxResultSizeChars: 40_000,
 
@@ -252,20 +256,22 @@ export const ResolveLocationPrimitive = buildTool({
       return React.createElement(
         MessageResponse,
         null,
-        React.createElement(Text, { color: 'red' }, `위치 해석 오류: ${output.error.message}`),
+        React.createElement(Text, { color: 'red' }, `Location resolution error: ${output.error.message}`),
       )
     }
 
-    return React.createElement(
-      MessageResponse,
-      null,
-      React.createElement(
-        Box,
-        { flexDirection: 'column' },
-        React.createElement(Text, { bold: true }, '위치 해석 결과'),
-        ...summarizeLocationResult(output.result),
-      ),
-    )
+    return renderCompactPrimitiveResult([
+      React.createElement(Text, { key: 'heading', bold: true }, 'Location result'),
+      ...summarizeLocationResult(output.result),
+    ])
+  },
+
+  isResultTruncated(output: Output): boolean {
+    if (!output.ok) return false
+    return isPrimitiveResultPreviewTruncated([
+      React.createElement(Text, { key: 'heading', bold: true }, 'Location result'),
+      ...summarizeLocationResult(output.result),
+    ])
   },
 
   async checkPermissions(input) {

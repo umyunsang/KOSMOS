@@ -51,7 +51,7 @@ export function renderVerboseInputJson(input: unknown): string {
  */
 export function renderVerboseOutputJson(
   output: unknown,
-  label = '응답 envelope',
+  label = 'Response envelope',
 ): React.ReactNode {
   let body: string
   try {
@@ -73,7 +73,7 @@ export function renderVerboseOutputJson(
       React.createElement(
         Text,
         { bold: true, color: 'cyan', key: `trace-${idx}-h` },
-        `\n외부 API 요청 #${idx + 1} — ${trace.method ?? 'HTTP'} ${traceUrl}` +
+        `\nOutbound API request #${idx + 1} — ${trace.method ?? 'HTTP'} ${traceUrl}` +
           (typeof trace.response_status === 'number'
             ? ` → ${trace.response_status}`
             : '') +
@@ -87,7 +87,7 @@ export function renderVerboseOutputJson(
         React.createElement(
           Text,
           { dimColor: true, key: `trace-${idx}-rq-h` },
-          '요청 body:',
+          'Request body:',
         ),
         React.createElement(
           Text,
@@ -101,7 +101,7 @@ export function renderVerboseOutputJson(
         React.createElement(
           Text,
           { dimColor: true, key: `trace-${idx}-rs-h` },
-          '응답 body:',
+          'Response body:',
         ),
         React.createElement(
           Text,

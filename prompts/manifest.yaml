@@ -6,7 +6,7 @@ entries:
   path: compact_v1.md
 - prompt_id: session_guidance_v1
   version: 1
-  sha256: 2bdb618f64f9bad29801f9851e91c8ce877da2d4c9a69b3b314d04217f3b92a2
+  sha256: 063e92b54886d624a80170ae8c5f62498d2b7817daa2743db6753279578902b1
   path: session_guidance_v1.md
 - prompt_id: system_v1
   version: 1

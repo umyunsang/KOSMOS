@@ -34,6 +34,7 @@ Error mapping (all propagated directly for recovery classifier):
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
@@ -51,7 +52,54 @@ _COORD2REGION_BASE_URL = "https://dapi.kakao.com/v2/local/geo/coord2regioncode.j
 # Retained for backwards compatibility with callers that imported the
 # original module-level constant; aliases the address endpoint.
 _BASE_URL = _ADDRESS_BASE_URL
-_DEFAULT_TIMEOUT = 5.0  # seconds
+_DEFAULT_TIMEOUT = httpx.Timeout(10.0, connect=4.0)  # seconds
+_DEFAULT_MAX_ATTEMPTS = 2
+_RETRY_BASE_DELAY_SECONDS = 0.35
+_RETRYABLE_STATUS_CODES = frozenset({500, 502, 503, 504})
+
+
+async def _kakao_get_json_with_retry(
+    *,
+    client: httpx.AsyncClient,
+    url: str,
+    headers: dict[str, str],
+    params: dict[str, str | int | float],
+    endpoint_label: str,
+) -> dict[str, Any]:
+    """GET a Kakao Local endpoint with same-route retry for transient failures."""
+
+    for attempt in range(1, _DEFAULT_MAX_ATTEMPTS + 1):
+        try:
+            response = await client.get(url, headers=headers, params=params)
+            response.raise_for_status()
+            payload = response.json()
+            if not isinstance(payload, dict):
+                raise ValueError(f"Kakao {endpoint_label} returned non-object JSON")
+            return payload
+        except httpx.HTTPStatusError as exc:
+            status = exc.response.status_code if exc.response is not None else 0
+            if status not in _RETRYABLE_STATUS_CODES or attempt >= _DEFAULT_MAX_ATTEMPTS:
+                raise
+            logger.warning(
+                "Kakao %s returned HTTP %s; retrying same endpoint (%d/%d)",
+                endpoint_label,
+                status,
+                attempt + 1,
+                _DEFAULT_MAX_ATTEMPTS,
+            )
+        except (httpx.TimeoutException, httpx.RequestError) as exc:
+            if attempt >= _DEFAULT_MAX_ATTEMPTS:
+                raise
+            logger.warning(
+                "Kakao %s raised %s; retrying same endpoint (%d/%d)",
+                endpoint_label,
+                type(exc).__name__,
+                attempt + 1,
+                _DEFAULT_MAX_ATTEMPTS,
+            )
+        await asyncio.sleep(_RETRY_BASE_DELAY_SECONDS * attempt)
+
+    raise AssertionError("unreachable Kakao retry loop exit")
 
 
 # ---------------------------------------------------------------------------
@@ -229,7 +277,7 @@ async def search_address(
         "Authorization": f"KakaoAK {api_key}",
         "Accept": "application/json",
     }
-    request_params: dict[str, str | int] = {"query": query, "size": 2}
+    request_params: dict[str, str | int | float] = {"query": query, "size": 2}
 
     logger.debug("Kakao address search: query=%r", query)
 
@@ -239,14 +287,13 @@ async def search_address(
 
     try:
         assert client is not None
-        response = await client.get(_BASE_URL, headers=headers, params=request_params)
-
-        # Let httpx.HTTPStatusError propagate for ALL status codes (including
-        # 401 auth-expired, 429 rate-limit) so the recovery classifier can
-        # recognise them directly without unwrapping ToolExecutionError.
-        response.raise_for_status()
-
-        payload: dict[str, Any] = response.json()
+        payload = await _kakao_get_json_with_retry(
+            client=client,
+            url=_BASE_URL,
+            headers=headers,
+            params=request_params,
+            endpoint_label="search/address",
+        )
         result = KakaoSearchResult(**payload)
 
         logger.debug(
@@ -404,7 +451,7 @@ async def search_keyword(
         "Authorization": f"KakaoAK {api_key}",
         "Accept": "application/json",
     }
-    request_params: dict[str, str | int] = {"query": query, "size": 2}
+    request_params: dict[str, str | int | float] = {"query": query, "size": 2}
 
     logger.debug("Kakao keyword search: query=%r", query)
 
@@ -414,9 +461,13 @@ async def search_keyword(
 
     try:
         assert client is not None
-        response = await client.get(_KEYWORD_BASE_URL, headers=headers, params=request_params)
-        response.raise_for_status()
-        payload: dict[str, Any] = response.json()
+        payload = await _kakao_get_json_with_retry(
+            client=client,
+            url=_KEYWORD_BASE_URL,
+            headers=headers,
+            params=request_params,
+            endpoint_label="search/keyword",
+        )
         result = KakaoKeywordSearchResult(**payload)
         logger.debug("Kakao keyword search returned %d document(s)", result.meta.total_count)
         return result
@@ -460,13 +511,13 @@ async def coord_to_region_code(
 
     try:
         assert client is not None
-        response = await client.get(
-            _COORD2REGION_BASE_URL,
+        payload = await _kakao_get_json_with_retry(
+            client=client,
+            url=_COORD2REGION_BASE_URL,
             headers=headers,
             params=request_params,
+            endpoint_label="coord2regioncode",
         )
-        response.raise_for_status()
-        payload: dict[str, Any] = response.json()
         result = KakaoCoord2RegionResult(**payload)
         logger.debug(
             "Kakao coord2regioncode returned %d document(s)",

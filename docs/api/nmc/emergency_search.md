@@ -33,6 +33,8 @@ Queries the National Medical Center (국립중앙의료원) emergency medical in
 
 5. **Explicit operation contract, not fallback**: Pre-package curl validation on 2026-05-06 showed the coordinate operation accepts the configured key/params and returns `resultCode=00` but `totalCount=0` for the official Kakao-resolved Hadan Station coordinate. The regional list operation with `Q0=부산광역시`, `Q1=사하구`, `ORD=ADDR` returns `totalCount=1` (`큐병원`). Therefore the adapter now models both official operations through `mode`, instead of silently retrying one operation when the other returns 0.
 
+6. **Same-operation zero-result recheck**: Live TUI verification on 2026-05-14 observed a transient normal-service region response with `totalCount=0` for the same `Q0=부산광역시`, `Q1=사하구`, `ORD=ADDR` request that direct curl and adapter probes returned as `totalCount=1`. Region mode therefore rechecks the same endpoint/params once when NMC returns a normal but empty item set. This is not alternate-operation fallback and does not inject static institutions; if the second same-operation response is still empty, the adapter returns 0 items.
+
 ## Envelope
 
 **Input model**: `NmcEmergencySearchInput` defined at `src/ummaya/tools/nmc/emergency_search.py:41–77`.

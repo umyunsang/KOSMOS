@@ -5119,11 +5119,10 @@ export function REPL({
       void (async () => {
         try {
           // Width = terminal minus vim's line-number gutter (4 digits +
-          // space + slack). Floor at 80. PassThrough has no .columns so
-          // without this Ink defaults to 80. Trailing-space strip: right-
-          // aligned timestamps still leave a flexbox spacer run at EOL.
-          // eslint-disable-next-line custom-rules/prefer-use-terminal-size -- one-shot at keypress time, not a reactive render dep
-          const w = Math.max(80, (process.stdout.columns ?? 80) - 6);
+          // space + slack). Use the live TerminalSizeContext width so
+          // exported transcript text follows the user's current viewport
+          // instead of flooring narrow windows at 80 columns.
+          const w = Math.max(20, transcriptCols - 6);
           const raw = await renderMessagesToPlainText(deferredMessages, tools, w);
           const text = raw.replace(/[ \t]+$/gm, '');
           const path = join(tmpdir(), `cc-transcript-${Date.now()}.txt`);

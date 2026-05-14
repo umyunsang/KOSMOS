@@ -4,9 +4,9 @@
 
 export const SEND_TOOL_NAME = 'send'
 
-/** One-line Korean-primary description (≤ 240 chars). */
+/** One-line English description (<= 240 chars). */
 export const DESCRIPTION =
-  '공공 서비스에 시민 행위(신청·신고·제출)를 전송합니다. 부작용이 발생하며 되돌릴 수 없을 수 있습니다. 호출 전 <available_adapters> 후보에서 어댑터를 선택하세요.'
+  'Send a citizen action such as an application, report, or submission to a public-service adapter. This can have side effects; choose an adapter from <available_adapters>.'
 
 /** Extended prompt included in the system-prompt tool-use section. */
 export const SEND_TOOL_PROMPT = `Send a side-effecting citizen action to a registered UMMAYA adapter.

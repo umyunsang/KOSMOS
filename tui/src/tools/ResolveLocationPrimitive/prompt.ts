@@ -3,9 +3,9 @@
 
 export const LOCATE_TOOL_NAME = 'locate'
 
-/** Citizen-facing Korean description shown to the LLM. */
+/** Citizen-facing English description shown to the LLM. */
 export const DESCRIPTION =
-  '한국 위치 표현을 처리하는 locate 어댑터를 호출합니다. <available_adapters>에서 Kakao/JUSO/SGIS 어댑터를 고르고 해당 input_schema에 맞춰 params를 채우세요.'
+  'Invoke a locate adapter for Korean location expressions. Choose a Kakao, JUSO, or SGIS adapter from <available_adapters> and fill params from its input_schema.'
 
 /** Extended prompt included in the system-prompt tool-use section. */
 export const LOCATE_TOOL_PROMPT = `Resolve a Korean location phrase into structured location identifiers.

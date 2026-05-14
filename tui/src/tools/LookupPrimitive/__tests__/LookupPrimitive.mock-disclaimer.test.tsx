@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Audit-2 P0 · FindPrimitive mock-disclaimer unit tests.
 //
-// Citizen-safety: mock find results MUST display 🧪 모의 prefix and
-// "실제 행정 영향 없는 시연 결과입니다." caveat.
+// Citizen-safety: mock find results MUST display a Mock prefix and
+// "Demo-only result" caveat.
 // Live find results MUST NOT show any mock prefix.
 
 import { test, expect, describe } from 'bun:test'
@@ -32,7 +32,7 @@ function renderLookup(output: Output, opts: { verbose?: boolean } = {}): string 
 // ---------------------------------------------------------------------------
 
 describe('FindPrimitive renderToolResultMessage — mock disclaimer', () => {
-  test('mock find (ok=true, _mode="mock" in result) shows 🧪 모의 prefix', () => {
+  test('mock find (ok=true, _mode="mock" in result) shows Mock prefix', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -49,8 +49,8 @@ describe('FindPrimitive renderToolResultMessage — mock disclaimer', () => {
     }
 
     const frame = renderLookup(output)
-    expect(frame).toContain('🧪 모의')
-    expect(frame).toContain('실제 행정 영향 없는 시연 결과입니다')
+    expect(frame).toContain('Mock Search result')
+    expect(frame).toContain('Demo-only result')
   })
 
   test('mock lookup shows tool_id and count in parentheses', () => {
@@ -60,8 +60,8 @@ describe('FindPrimitive renderToolResultMessage — mock disclaimer', () => {
         tool_id: 'mock_hira_hospital_search',
         kind: 'collection',
         items: [
-          { name: '모의 병원 A', address: '서울시 강남구' },
-          { name: '모의 병원 B', address: '서울시 종로구' },
+          { name: 'Mock Hospital A', address: 'Busan Saha-gu' },
+          { name: 'Mock Hospital B', address: 'Busan Seo-gu' },
         ],
         _mode: 'mock',
         _reference_implementation: 'ax-infrastructure-callable-channel',
@@ -73,18 +73,18 @@ describe('FindPrimitive renderToolResultMessage — mock disclaimer', () => {
     }
 
     const frame = renderLookup(output)
-    expect(frame).toContain('🧪 모의')
+    expect(frame).toContain('Mock Search result')
     expect(frame).toContain('mock_hira_hospital_search')
-    expect(frame).toContain('2건')
+    expect(frame).toContain('2 results')
   })
 
-  test('mock lookup shows actual endpoint footer when present', () => {
+  test('mock lookup hides actual endpoint behind compact preview when long', () => {
     const output: Output = {
       ok: true,
       result: {
         tool_id: 'mock_lookup_module_gov24_certificate',
         kind: 'record',
-        fields: { certificate_type: '주민등록등본' },
+        fields: { certificate_type: 'resident-registration-copy' },
         _mode: 'mock',
         _reference_implementation: 'ax-infrastructure-callable-channel',
         _actual_endpoint_when_live: 'https://api.gov24.go.kr/v1/certificate',
@@ -95,8 +95,8 @@ describe('FindPrimitive renderToolResultMessage — mock disclaimer', () => {
     }
 
     const frame = renderLookup(output)
-    expect(frame).toContain('실제 엔드포인트 (운영 시):')
-    expect(frame).toContain('https://api.gov24.go.kr/v1/certificate')
+    expect(frame).toContain('...')
+    expect(frame).not.toContain('https://api.gov24.go.kr/v1/certificate')
   })
 })
 
@@ -105,7 +105,7 @@ describe('FindPrimitive renderToolResultMessage — mock disclaimer', () => {
 // ---------------------------------------------------------------------------
 
 describe('FindPrimitive renderToolResultMessage — live path (no mock disclaimer)', () => {
-  test('live find (no _mode field) shows tool_id without 🧪 prefix', () => {
+  test('live find (no _mode field) shows tool_id without Mock prefix', () => {
     const output: Output = {
       ok: true,
       result: {
@@ -117,8 +117,8 @@ describe('FindPrimitive renderToolResultMessage — live path (no mock disclaime
 
     const frame = renderLookup(output)
     expect(frame).toContain('kma_current_observation')
-    expect(frame).not.toContain('🧪')
-    expect(frame).not.toContain('시연 결과')
+    expect(frame).not.toContain('Mock')
+    expect(frame).not.toContain('Demo-only result')
   })
 
   test('live find with _mode="live" does NOT show mock disclaimer', () => {
@@ -127,14 +127,14 @@ describe('FindPrimitive renderToolResultMessage — live path (no mock disclaime
       result: {
         tool_id: 'koroad_accident_hazard_search',
         kind: 'collection',
-        items: [{ location: '서울시 강남구 테헤란로' }],
+        items: [{ location: 'Busan Saha-gu' }],
         _mode: 'live',
       },
     }
 
     const frame = renderLookup(output)
-    expect(frame).not.toContain('🧪')
-    expect(frame).not.toContain('시연 결과')
+    expect(frame).not.toContain('Mock')
+    expect(frame).not.toContain('Demo-only result')
   })
 })
 
@@ -148,13 +148,13 @@ describe('FindPrimitive renderToolResultMessage — error path preserved', () =>
       ok: false,
       error: {
         kind: 'tool_not_found',
-        message: "어댑터 'unknown_tool'을 찾을 수 없습니다.",
+        message: "Adapter 'unknown_tool' was not found.",
       },
     }
 
     const frame = renderLookup(output)
-    expect(frame).toContain('오류가 발생했습니다')
-    expect(frame).toContain("어댑터 'unknown_tool'을 찾을 수 없습니다")
-    expect(frame).not.toContain('🧪')
+    expect(frame).toContain('Error:')
+    expect(frame).toContain("Adapter 'unknown_tool' was not found")
+    expect(frame).not.toContain('Mock')
   })
 })

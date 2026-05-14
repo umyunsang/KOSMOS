@@ -198,7 +198,7 @@ export async function dispatchPrimitive<O = unknown>(
         opts.registry.reject(
           toolUseId,
           new Error(
-            `${opts.primitive} 요청 시간 초과 (${timeoutMs}ms) — 백엔드 처리가 지연되고 있습니다.`,
+            `${opts.primitive} request timed out (${timeoutMs}ms); backend processing is delayed.`,
           ),
         )
       }, timeoutMs)
@@ -273,7 +273,7 @@ export async function dispatchPrimitive<O = unknown>(
   // and the lookup mocks emit ``{ kind: "error", reason: "scope_violation",
   // message: ... }``. Without this branch, the dispatcher returns
   // ``{ok: true, result: <error payload>}`` and the per-primitive renderer
-  // falls back to ``String(rawStatus ?? '결과 수신됨')`` — citizens AND the
+  // falls back to ``String(rawStatus ?? 'Result received')`` — citizens AND the
   // LLM both read it as success. That mis-info is safety-critical for verify
   // (auth module rejection rendered as "verified") and breaks LLM cascade
   // accuracy for lookup (scope violation rendered as data).
@@ -281,10 +281,20 @@ export async function dispatchPrimitive<O = unknown>(
   // Classification rules (all OR'd, evaluated against ``inner`` only):
   //   - ``inner.family === "mismatch_error"`` — VerifyMismatchError dump.
   //   - ``inner.kind === "error"`` — lookup / submit error sentinel.
-  //   - ``inner.reason ∈ {family_mismatch, scope_violation, coercion_violation}``
-  //     — defense-in-depth: any adapter that emits a known-fatal reason code
-  //     is classified as failure even if it forgot to set ``kind``/``family``.
-  const FATAL_REASONS = new Set(['family_mismatch', 'scope_violation', 'coercion_violation'])
+  //   - ``inner.reason ∈ FATAL_REASONS`` — defense-in-depth: any adapter that
+  //     emits a known-fatal reason code is classified as failure even if it
+  //     forgot to set ``kind``/``family``.
+  const FATAL_REASONS = new Set([
+    'adapter_invocation_failed',
+    'adapter_not_found',
+    'auth_required',
+    'coercion_violation',
+    'family_mismatch',
+    'invalid_params',
+    'scope_violation',
+    'submit_already_succeeded',
+    'verify_tool_choice_mismatch',
+  ])
   const innerObj = (inner && typeof inner === 'object') ? (inner as Record<string, unknown>) : null
   if (innerObj) {
     const innerFamily = typeof innerObj['family'] === 'string' ? (innerObj['family'] as string) : null
@@ -297,8 +307,8 @@ export async function dispatchPrimitive<O = unknown>(
       const innerMessage = typeof innerObj['message'] === 'string'
         ? (innerObj['message'] as string)
         : (isMismatchError
-            ? '인증 모듈이 요청을 거부했습니다.'
-            : '도구 호출이 거부되었습니다.')
+            ? 'The authentication module rejected the request.'
+            : 'The tool call was rejected.')
       // Pick the most-specific kind label so renderers + audit logs can
       // distinguish dispatcher-level failure (envelope.error) from
       // primitive-payload failure (mismatch_error / scope_violation / ...).

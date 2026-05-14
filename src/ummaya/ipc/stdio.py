@@ -33,7 +33,7 @@ import signal
 import sys
 import time
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from datetime import UTC, datetime, timedelta
 from types import FrameType
 from typing import TYPE_CHECKING, Any, Final, Literal, cast
@@ -161,6 +161,27 @@ _SENSITIVE_LOOKUP_AUTH_REQUIREMENTS: Final[dict[str, dict[str, str]]] = {
         "purpose_en": "Hometax simplified year-end tax lookup",
     },
 }
+_FINAL_ANSWER_OBSERVATION_JSON_LIMIT: Final = 12_000
+_FINAL_ANSWER_OBSERVATION_LIST_LIMIT: Final = 12
+_FINAL_ANSWER_OBSERVATION_STR_LIMIT: Final = 2_000
+_FINAL_ANSWER_OBSERVATION_OMIT_KEYS: Final[frozenset[str]] = frozenset(
+    {
+        "outbound_traces",
+    }
+)
+_PRIMITIVE_ERROR_REASONS: Final[frozenset[str]] = frozenset(
+    {
+        "adapter_invocation_failed",
+        "adapter_not_found",
+        "auth_required",
+        "coercion_violation",
+        "family_mismatch",
+        "invalid_params",
+        "scope_violation",
+        "submit_already_succeeded",
+        "verify_tool_choice_mismatch",
+    }
+)
 _VERIFY_QUERY_REQUIREMENTS: Final[tuple[tuple[tuple[str, ...], dict[str, str]], ...]] = (
     (
         ("간편인증", "pass 인증", "kakao 인증", "naver 인증"),
@@ -399,6 +420,33 @@ def _remove_unneeded_mock_disclosure(text: str) -> str:
     return "\n".join(lines).strip()
 
 
+def _remove_unneeded_live_meta_disclosure(text: str) -> str:
+    """Strip live-answer meta disclaimers that discuss the demo/runtime itself."""
+    kept: list[str] = []
+    for line in text.splitlines():
+        normalized = " ".join(line.strip().split())
+        is_runtime_meta = (
+            "시각적 가상 시스템" in normalized
+            or "가상 시스템" in normalized
+            or "시연(모의)" in normalized
+            or "모의 결과" in normalized
+            or "시연 결과" in normalized
+            or "virtual system" in normalized.lower()
+            or "demo result" in normalized.lower()
+            or ("이 결과는 실제" in normalized and "기반" in normalized and "시스템" in normalized)
+            or ("실제 날씨 상황" in normalized and "다를 수" in normalized)
+            or (
+                "기상청 공식 채널" in normalized
+                and "최신 정보" in normalized
+                and "확인" in normalized
+            )
+        )
+        if is_runtime_meta:
+            continue
+        kept.append(line.rstrip())
+    return "\n".join(kept).strip()
+
+
 def _remove_internal_tool_id_lines(text: str) -> str:
     """Drop final prose lines that expose adapter ids as implementation detail."""
     kept: list[str] = []
@@ -494,11 +542,47 @@ def _final_answer_looks_like_pending_tool_plan(text: str) -> bool:
 
 
 def _final_answer_looks_like_recursive_tool_message(text: str) -> bool:
-    """Return true when final prose recursively quotes tool error wrappers."""
+    """Return true when final prose recursively quotes tool-result wrappers."""
     normalized = " ".join(text.strip().split())
     if not normalized:
         return False
-    return normalized.count("도구가 반환한 메시지") >= 3
+    return normalized.count("도구가 반환한 메시지") >= 2
+
+
+def _final_answer_looks_like_repeated_sections(text: str) -> bool:
+    """Return true when final prose repeats the same answer sections."""
+    headings: list[str] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        match = re.fullmatch(r"(?:#{1,6}\s*)?\*\*(?P<title>[^*\n]{2,90})\*\*", stripped)
+        if match is None:
+            continue
+        title = re.sub(r"\s+", "", match.group("title")).lower()
+        headings.append(title)
+
+    seen_headings: set[str] = set()
+    repeated_heading_count = 0
+    for title in headings:
+        if title in seen_headings:
+            repeated_heading_count += 1
+        else:
+            seen_headings.add(title)
+    if repeated_heading_count >= 2:
+        return True
+
+    paragraphs = [
+        re.sub(r"\s+", " ", paragraph).strip().lower() for paragraph in re.split(r"\n{2,}", text)
+    ]
+    seen_paragraphs: set[str] = set()
+    for paragraph in paragraphs:
+        if len(paragraph) < 60:
+            continue
+        if paragraph in seen_paragraphs:
+            return True
+        seen_paragraphs.add(paragraph)
+    return False
 
 
 def _final_answer_looks_like_unclosed_markdown(text: str) -> bool:
@@ -507,6 +591,25 @@ def _final_answer_looks_like_unclosed_markdown(text: str) -> bool:
     if not stripped:
         return False
     return stripped.endswith("**") and stripped.count("**") % 2 == 1
+
+
+def _final_answer_looks_like_incomplete_sentence(text: str) -> bool:
+    """Return true when final prose ends with a dangling connective."""
+    stripped = text.strip()
+    if not stripped:
+        return False
+    normalized = re.sub(r"\s+", " ", stripped)
+    dangling_suffixes = (
+        ",",
+        ":",
+        "에 따르면",
+        "에 따르면,",
+        "기준으로",
+        "기준으로,",
+        "자료에 따르면",
+        "자료에 따르면,",
+    )
+    return any(normalized.endswith(suffix) for suffix in dangling_suffixes)
 
 
 def _final_answer_looks_like_tool_call_narration(text: str) -> bool:
@@ -1125,23 +1228,30 @@ def _tool_call_arguments_dict(tool_call: object) -> dict[str, object]:
     return {str(key): value for key, value in parsed.items()}
 
 
+def _payload_dict_is_error_like(payload: dict[str, object]) -> bool:
+    """Return True when a primitive payload is a structured failure."""
+    if payload.get("kind") == "error" or payload.get("denied") is True:
+        return True
+    reason = payload.get("reason")
+    if isinstance(reason, str) and reason in _PRIMITIVE_ERROR_REASONS:
+        return True
+    structured = payload.get("structured")
+    if isinstance(structured, dict) and isinstance(structured.get("exception_type"), str):
+        return True
+    error = payload.get("error")
+    return isinstance(error, str) and bool(error)
+
+
 def _tool_result_payload_is_error(payload: object) -> bool:
     """Return True for structured tool-result payloads that are errors."""
     if not isinstance(payload, dict):
         return False
-    if payload.get("kind") == "error" or payload.get("denied") is True:
-        return True
-    error = payload.get("error")
-    if isinstance(error, str) and error:
+    if _payload_dict_is_error_like(payload):
         return True
     result = payload.get("result")
-    if isinstance(result, dict):
-        if result.get("kind") == "error":
-            return True
-        nested_error = result.get("error")
-        if isinstance(nested_error, str) and nested_error:
-            return True
-    return False
+    return isinstance(result, dict) and _payload_dict_is_error_like(
+        {str(key): value for key, value in result.items()}
+    )
 
 
 def _lookup_call_ids_for_tool(
@@ -1328,6 +1438,66 @@ def _primitive_payload_is_success(payload: object, *, primitive: str) -> bool:
     return True
 
 
+def _canonical_primitive_args(args: dict[str, object]) -> str:
+    """Stable signature for comparing repeated primitive calls."""
+    try:
+        return _stdlib_json.dumps(args, ensure_ascii=False, sort_keys=True, default=str)
+    except TypeError:
+        return repr(sorted(args.items()))
+
+
+def _conversation_has_successful_identical_primitive_call(  # noqa: C901
+    llm_messages: list[Any],
+    *,
+    primitive: str,
+    args: dict[str, object],
+) -> bool:
+    """Return True when the exact primitive call already succeeded in this turn.
+
+    This is a non-progress guard, not an alternate data path. If the model asks
+    for the same primitive and the same schema-valid arguments after a successful
+    result, dispatching it again can only burn quota and may push the loop into
+    a blank max-turn termination.
+    """
+    target_signature = _canonical_primitive_args(args)
+    matching_call_ids: set[str] = set()
+    for msg in llm_messages:
+        role = getattr(msg, "role", None) or (msg.get("role") if isinstance(msg, dict) else None)
+        if role != "assistant":
+            continue
+        tool_calls = getattr(msg, "tool_calls", None) or (
+            msg.get("tool_calls") if isinstance(msg, dict) else None
+        )
+        if not tool_calls:
+            continue
+        for tool_call in tool_calls:
+            call_fn = getattr(getattr(tool_call, "function", None), "name", None) or (
+                tool_call.get("function", {}).get("name") if isinstance(tool_call, dict) else None
+            )
+            if call_fn != primitive:
+                continue
+            call_id = getattr(tool_call, "id", None) or (
+                tool_call.get("id") if isinstance(tool_call, dict) else None
+            )
+            if not isinstance(call_id, str):
+                continue
+            if _canonical_primitive_args(_tool_call_arguments_dict(tool_call)) == target_signature:
+                matching_call_ids.add(call_id)
+
+    if not matching_call_ids:
+        return False
+
+    for msg in llm_messages:
+        payload = _tool_result_payload_for_primitive_call(
+            msg,
+            primitive=primitive,
+            matching_call_ids=matching_call_ids,
+        )
+        if payload is not None and _primitive_payload_is_success(payload, primitive=primitive):
+            return True
+    return False
+
+
 def _conversation_has_successful_primitive(
     llm_messages: list[Any],
     *,
@@ -1428,6 +1598,97 @@ def _latest_successful_primitive_result_for_tool(
         if isinstance(result, dict):
             return cast("dict[str, object]", result)
     return None
+
+
+def _scrub_tool_result_for_final_observation(value: object) -> object:
+    """Return a prompt-safe, bounded copy of a tool result payload.
+
+    This preserves the adapter-returned data shape for the next model turn
+    without turning it into a domain-specific answer. Large transport traces are
+    omitted because the model needs the observation, not HTTP debug evidence.
+    """
+    if isinstance(value, dict):
+        scrubbed: dict[str, object] = {}
+        for key, nested in value.items():
+            key_str = str(key)
+            if key_str in _FINAL_ANSWER_OBSERVATION_OMIT_KEYS:
+                continue
+            scrubbed[key_str] = _scrub_tool_result_for_final_observation(nested)
+        return scrubbed
+    if isinstance(value, list):
+        visible = [
+            _scrub_tool_result_for_final_observation(item)
+            for item in value[:_FINAL_ANSWER_OBSERVATION_LIST_LIMIT]
+        ]
+        omitted = len(value) - len(visible)
+        if omitted > 0:
+            visible.append({"__omitted_items__": omitted})
+        return visible
+    if isinstance(value, str) and len(value) > _FINAL_ANSWER_OBSERVATION_STR_LIMIT:
+        return value[:_FINAL_ANSWER_OBSERVATION_STR_LIMIT] + "...[truncated]"
+    return value
+
+
+def _latest_successful_primitive_observation(
+    llm_messages: list[Any],
+) -> dict[str, object] | None:
+    """Return the most recent successful primitive tool_result for prompt repair."""
+    for msg in reversed(llm_messages):
+        role = getattr(msg, "role", None) or (msg.get("role") if isinstance(msg, dict) else None)
+        if role != "tool":
+            continue
+        primitive = getattr(msg, "name", None) or (
+            msg.get("name") if isinstance(msg, dict) else None
+        )
+        if primitive not in {"find", "locate", "check", "send"}:
+            continue
+        payload = _tool_result_payload_for_primitive(msg, primitive=str(primitive))
+        if payload is None or not _primitive_payload_is_success(payload, primitive=str(primitive)):
+            continue
+        tool_call_id = getattr(msg, "tool_call_id", None) or (
+            msg.get("tool_call_id") if isinstance(msg, dict) else None
+        )
+        return {
+            "primitive": str(primitive),
+            "tool_call_id": str(tool_call_id) if isinstance(tool_call_id, str) else None,
+            "payload": _scrub_tool_result_for_final_observation(payload),
+        }
+    return None
+
+
+def _final_answer_observation_message(
+    *,
+    message: str,
+    latest_user_utt: str,
+    llm_messages: list[Any],
+) -> str:
+    """Build a generic final-answer repair prompt from observed tool data."""
+    observation = _latest_successful_primitive_observation(llm_messages)
+    observation_json = "{}"
+    if observation is not None:
+        observation_json = _stdlib_json.dumps(
+            observation,
+            ensure_ascii=False,
+            default=str,
+        )
+        if len(observation_json) > _FINAL_ANSWER_OBSERVATION_JSON_LIMIT:
+            observation_json = (
+                observation_json[:_FINAL_ANSWER_OBSERVATION_JSON_LIMIT] + "...[truncated]"
+            )
+
+    return (
+        "[UMMAYA FINAL ANSWER OBSERVATION]\n"
+        f"{message}\n\n"
+        "Citizen request:\n"
+        f"{latest_user_utt}\n\n"
+        "Latest successful primitive tool_result JSON:\n"
+        f"{observation_json}\n\n"
+        "Use only the observed tool_result data above and the prior tool_result "
+        "messages. Do not call another tool. Do not invent names, addresses, "
+        "phone numbers, timestamps, weather values, receipt IDs, or source "
+        "metadata that are not present in the observed result. Answer the "
+        "citizen directly in Korean."
+    )
 
 
 def _nonempty_str(value: object) -> str | None:
@@ -2073,12 +2334,19 @@ def _normalize_lookup_args_for_query(
     fname: str,
     args_obj: dict[str, object],
     user_query: str,
+    *,
+    adapter_param_names: Collection[str] | None = None,
 ) -> dict[str, object]:
     """Fill deterministic lookup filters already present in the citizen request."""
     if fname != "find":
         return args_obj
     args_obj = _canonicalize_lookup_tool_id_for_query(args_obj, user_query)
     args_obj = _normalize_hometax_lookup_args_for_query(args_obj, user_query)
+    args_obj = _normalize_lookup_result_count_args(
+        args_obj,
+        user_query,
+        adapter_param_names=adapter_param_names,
+    )
     if args_obj.get("tool_id") != "mohw_welfare_eligibility_search":
         return args_obj
     if not _query_contains_any(user_query, ("한부모가족", "한부모", "아동양육비")):
@@ -2104,6 +2372,75 @@ def _normalize_lookup_args_for_query(
         return args_obj
 
     normalized = dict(args_obj)
+    normalized["params"] = params
+    return normalized
+
+
+_KOREAN_COUNT_WORDS: Final[dict[str, int]] = {
+    "한": 1,
+    "두": 2,
+    "세": 3,
+    "네": 4,
+    "다섯": 5,
+    "여섯": 6,
+    "일곱": 7,
+    "여덟": 8,
+    "아홉": 9,
+    "열": 10,
+}
+_RESULT_COUNT_RE = re.compile(
+    r"(?P<count>\d{1,3}|한|두|세|네|다섯|여섯|일곱|여덟|아홉|열)\s*"
+    r"(?:곳|개|건|명|가지|rows?|results?)\s*(?:만|정도)?",
+    re.IGNORECASE,
+)
+
+
+def _explicit_result_count_from_query(user_query: str) -> int | None:
+    """Extract a citizen-stated result count such as '3곳만' or 'top 5'."""
+    match = _RESULT_COUNT_RE.search(user_query)
+    if match is None:
+        top_match = re.search(r"\btop\s+(?P<count>\d{1,3})\b", user_query, re.IGNORECASE)
+        if top_match is None:
+            return None
+        raw = top_match.group("count")
+    else:
+        raw = match.group("count")
+    if raw.isdigit():
+        count = int(raw)
+    else:
+        word_count = _KOREAN_COUNT_WORDS.get(raw)
+        if word_count is None:
+            return None
+        count = word_count
+    if 1 <= count <= 100:
+        return count
+    return None
+
+
+def _normalize_lookup_result_count_args(
+    args_obj: dict[str, object],
+    user_query: str,
+    *,
+    adapter_param_names: Collection[str] | None = None,
+) -> dict[str, object]:
+    """Preserve explicit citizen result counts using adapter schema field names."""
+    requested_count = _explicit_result_count_from_query(user_query)
+    if requested_count is None:
+        return args_obj
+    raw_params = args_obj.get("params")
+    params = dict(raw_params) if isinstance(raw_params, dict) else {}
+    field_names = set(adapter_param_names or ())
+    row_field: str | None = None
+    for candidate in ("numOfRows", "num_of_rows", "limit", "page_size", "pageSize"):
+        if candidate in field_names or candidate in params:
+            row_field = candidate
+            break
+    if row_field is None:
+        return args_obj
+    if params.get(row_field) == requested_count:
+        return args_obj
+    normalized = dict(args_obj)
+    params[row_field] = requested_count
     normalized["params"] = params
     return normalized
 
@@ -2476,6 +2813,37 @@ def _query_implies_location_resolution(user_query: str) -> bool:
     )
 
 
+def _maybe_reroute_locate_admin_keyword_args(
+    fname: str,
+    args_obj: dict[str, Any],
+) -> dict[str, Any]:
+    """Rewrite admin-area Kakao keyword calls to the documented address adapter."""
+
+    if fname != "locate" or args_obj.get("tool_id") != "kakao_keyword_search":
+        return args_obj
+    params = args_obj.get("params")
+    if not isinstance(params, dict):
+        return args_obj
+    query = params.get("query")
+    if not isinstance(query, str):
+        return args_obj
+
+    from ummaya.tools.location_adapters import (  # noqa: PLC0415
+        canonical_admin_area_query,
+        should_route_keyword_query_to_address,
+    )
+
+    if not should_route_keyword_query_to_address(query):
+        return args_obj
+
+    next_params = {**params, "query": canonical_admin_area_query(query)}
+    logger.info(
+        "locate: rerouted Kakao keyword admin-area query to address search: %r",
+        query,
+    )
+    return {**args_obj, "tool_id": "kakao_address_search", "params": next_params}
+
+
 def _effective_chat_max_tokens(requested: int) -> int:
     """Clamp interactive chat completions so bad tool-routing loops fail fast."""
     raw = os.getenv("UMMAYA_CHAT_MAX_TOKENS")
@@ -2805,90 +3173,11 @@ def _check_chain_prerequisite(  # noqa: C901
     )
 
 
-# ---------------------------------------------------------------------------
-# Follow-up find gate (G-class fabrication countermeasure — 2026-05-04)
-# ---------------------------------------------------------------------------
-# Citizen query keywords that signal "the LLM needs to call a follow-up
-# adapter via find after locate returns coordinates
-# or admcd". Without the follow-up, LLM fabricates the data from parametric
-# memory (the donga-univ-poi-bug 1-day-newer regression: snap-001 captured
-# 4.7°C drift / 61%p humidity drift between LLM-claimed values and the raw
-# KMA observation).  This list is the policy hint — adapter_id is decided
-# by BM25 from the available_adapters suffix.
-_FOLLOWUP_REQUIRED_KEYWORDS_KO: frozenset[str] = frozenset(
-    {
-        "날씨",
-        "기온",
-        "온도",
-        "습도",
-        "강수",
-        "비",
-        "눈",
-        "바람",
-        "풍속",
-        "예보",
-        "특보",
-        "폭염",
-        "한파",
-        "황사",
-        "미세먼지",
-        "병원",
-        "병의원",
-        "응급실",
-        "응급의료",
-        "의료기관",
-        "의원",
-        "진료",
-        "내과",
-        "피부과",
-        "소아과",
-        "정형외과",
-        "이비인후과",
-        "치과",
-        "한의원",
-        "클리닉",
-        "약국",
-        "사고",
-        "교통사고",
-        "위험",
-        "스쿨존",
-        "어린이보호구역",
-        "구급",
-        "119",
-        "소방서",
-        "재해",
-        "복지",
-        "급여",
-        "보조금",
-        "지원금",
-    }
-)
-_FOLLOWUP_REQUIRED_KEYWORDS_EN: frozenset[str] = frozenset(
-    {
-        "weather",
-        "temperature",
-        "humidity",
-        "rainfall",
-        "wind",
-        "forecast",
-        "warning",
-        "hospital",
-        "er",
-        "emergency",
-        "pharmacy",
-        "accident",
-        "traffic",
-        "hazard",
-        "ambulance",
-        "fire",
-        "disaster",
-        "welfare",
-        "benefit",
-        "subsidy",
-    }
-)
 _CURRENT_WEATHER_KEYWORDS_KO: frozenset[str] = frozenset(
-    {"날씨", "기온", "온도", "습도", "강수", "비", "눈", "바람", "풍속"}
+    {"날씨", "기온", "온도", "습도", "강수", "바람", "풍속"}
+)
+_CURRENT_WEATHER_PRECIP_KO_RE: Final = re.compile(
+    r"(?<![가-힣])(?:비|눈)(?:\s*(?:가|는|도|와|오|올|오는|올지|올까|내리|내릴|예보|소식)|$)"
 )
 _CURRENT_WEATHER_KEYWORDS_EN: frozenset[str] = frozenset(
     {"weather", "temperature", "humidity", "rainfall", "rain", "snow", "wind"}
@@ -2902,27 +3191,35 @@ _FUTURE_TIME_HINTS_KO: frozenset[str] = frozenset(
 )
 _FUTURE_TIME_HINTS_EN: frozenset[str] = frozenset({"tomorrow", "weekend", "next week", "forecast"})
 
+_AVAILABLE_ADAPTER_FIND_LINE_RE: Final = re.compile(
+    r"^\s*-\s+[A-Za-z0-9_.:-]+\s+\(primitive=find\)",
+    re.MULTILINE,
+)
 
-def _query_implies_followup_lookup(user_query: str) -> bool:
-    """Return True when the citizen query semantics require a follow-up
-    ``find(tool_id=...)`` after ``locate`` resolves
-    coordinates.
 
-    G-class chain enforcement: the integration-verification capture
-    ``snap-001-01-kma-now`` showed K-EXAONE calling ``locate`` twice
-    and then producing a fabricated weather answer (16°C / 84% humidity vs
-    raw KMA 20.7°C / 23%) without ever invoking ``find(kma_current_observation)``.
-    The fabrication mode is deterministic when the citizen query mentions a
-    location-bound observable (weather / hospital / accident / 119) — no
-    adapter shipped today answers those purely from coordinates.
-    """
-    if not user_query:
-        return False
-    q = user_query.lower()
-    for kw in _FOLLOWUP_REQUIRED_KEYWORDS_KO:
-        if kw in user_query:  # Korean — case is irrelevant
-            return True
-    return any(kw in q for kw in _FOLLOWUP_REQUIRED_KEYWORDS_EN)
+def _latest_available_adapters_block(llm_messages: list[Any]) -> str:
+    """Return the latest dynamic ``<available_adapters>`` block in context."""
+    for message in reversed(llm_messages):
+        role = getattr(message, "role", None) or (
+            message.get("role") if isinstance(message, dict) else None
+        )
+        if role != "system":
+            continue
+        content = getattr(message, "content", None) or (
+            message.get("content") if isinstance(message, dict) else None
+        )
+        if not isinstance(content, str) or "<available_adapters" not in content:
+            continue
+        start = content.rfind("<available_adapters")
+        end = content.find("</available_adapters>", start)
+        if start >= 0 and end >= 0:
+            return content[start : end + len("</available_adapters>")]
+    return ""
+
+
+def _available_adapters_block_has_find_candidate(block: str) -> bool:
+    """Return True when retrieval surfaced a non-locate follow-up adapter."""
+    return bool(block and _AVAILABLE_ADAPTER_FIND_LINE_RE.search(block))
 
 
 def _query_implies_current_weather_observation(user_query: str) -> bool:
@@ -2930,8 +3227,10 @@ def _query_implies_current_weather_observation(user_query: str) -> bool:
     if not user_query:
         return False
     q = user_query.lower()
-    has_weather = any(kw in user_query for kw in _CURRENT_WEATHER_KEYWORDS_KO) or any(
-        kw in q for kw in _CURRENT_WEATHER_KEYWORDS_EN
+    has_weather = (
+        any(kw in user_query for kw in _CURRENT_WEATHER_KEYWORDS_KO)
+        or _CURRENT_WEATHER_PRECIP_KO_RE.search(user_query) is not None
+        or any(kw in q for kw in _CURRENT_WEATHER_KEYWORDS_EN)
     )
     if not has_weather:
         return False
@@ -2939,7 +3238,7 @@ def _query_implies_current_weather_observation(user_query: str) -> bool:
         kw in q for kw in _CURRENT_TIME_HINTS_EN
     ):
         return True
-    # Bare "강남역 날씨 알려줘" is normally asking for current/today weather.
+    # Bare "<장소명> 날씨 알려줘" is normally asking for current/today weather.
     return not (
         any(kw in user_query for kw in _FUTURE_TIME_HINTS_KO)
         or any(kw in q for kw in _FUTURE_TIME_HINTS_EN)
@@ -3032,8 +3331,9 @@ def _check_resolve_terminated_without_followup(  # noqa: C901
        ``locate`` AND the corresponding ``role='tool'`` result.
     2. The conversation contains NO assistant turn that called ``find``
        (fetch-only; ``{tool_id, params}``) on a coord/admcd-input adapter.
-    3. The user query mentions a location-bound observable that demands a
-       follow-up find call (weather / hospital / ER / accident / 119 / welfare).
+    3. The per-turn dynamic ``<available_adapters>`` block, produced by the
+       registry retriever for the exact citizen query, contains at least one
+       ``primitive=find`` candidate.
 
     Returns ``None`` when the call is allowed; returns a descriptive
     error message that the caller injects as a synthetic tool_result so the
@@ -3046,7 +3346,8 @@ def _check_resolve_terminated_without_followup(  # noqa: C901
     coord-input tool too early", this is "stopped after resolve and never
     called the coord-input tool at all".
     """
-    if not _query_implies_followup_lookup(user_query):
+    available_adapters_block = _latest_available_adapters_block(llm_messages)
+    if not _available_adapters_block_has_find_candidate(available_adapters_block):
         return None
 
     resolve_succeeded = False
@@ -3109,12 +3410,12 @@ def _check_resolve_terminated_without_followup(  # noqa: C901
     return (
         "Chain incomplete: this conversation invoked locate but did NOT "
         "follow up with find(tool_id=<adapter>, params={...}) on "
-        "any coord/admcd-input adapter. The citizen query asks about an "
-        "observable (weather / hospital / accident / 119 / welfare) whose "
-        "authoritative value lives in an external agency API — answering from "
-        "coordinates alone IS fabrication (citizen-safety violation per "
-        "system_v1.md CRITICAL directive). RECOVERY: in the next turn, choose "
-        "the correct adapter from the <available_adapters> block and call "
+        "any adapter even though the dynamic <available_adapters> block for "
+        "this citizen query includes find candidates. Coordinates alone are "
+        "not the requested public-service answer when a registry-selected "
+        "find adapter is available; treating them as a final answer is a "
+        "fabrication risk. RECOVERY: in the next turn, choose the correct "
+        "adapter from the <available_adapters> block and call "
         "find(tool_id='<adapter>', params={lat: <resolved>, "
         "lon: <resolved>, ...}) using the coordinates returned by the prior "
         "locate turn. Do NOT produce a final answer this turn."
@@ -3904,6 +4205,12 @@ async def run(  # noqa: C901
             "규칙: 위 목록의 primitive에 맞는 루트 도구만 호출하세요: "
             'locate/find/check/send({"tool_id":"...", "params":{...}}). '
             "동일 tool_id 를 한 turn 안에서 반복 호출하지 마세요."
+        )
+        lines.append(
+            "호출 전 검증: 시민 발화의 명시 조건(개수, 반경/거리, 날짜/시간, 종류, "
+            "카테고리, 진료과/분야, 키워드, 행정구역 등)이 아래 schema 의 선택 "
+            "필드와 대응하면 그 필드를 반드시 params 에 포함하세요. 더 좁은 요청을 "
+            "넓은 무필터 조회로 실행하지 마세요."
         )
         lines.append(
             'params 는 위에 표시된 정확한 필드명만 사용하세요 — 일반적인 "location"/'
@@ -4840,11 +5147,9 @@ async def run(  # noqa: C901
 
         # G-class chain enforcement (2026-05-04) — top-level scope so the
         # follow-up-lookup gate inside the agentic loop can read the original
-        # citizen utterance to decide whether the conversation must end with a
-        # `find(...)` call (weather / hospital / accident /
-        # 119 / welfare queries) before the LLM is allowed to produce a final
-        # answer. Lifted out of the BM25 try-block so the variable survives
-        # the suffix-builder failure path.
+        # citizen utterance while the dynamic <available_adapters> block
+        # decides whether a registry-selected `find(...)` candidate must run
+        # before the LLM is allowed to produce a final answer.
         latest_user_utt = ""
 
         base_system = frame.system
@@ -5005,11 +5310,13 @@ async def run(  # noqa: C901
         force_verify_next_turn: str | None = None
         force_lookup_next_turn: str | None = None
         force_submit_next_turn: str | None = None
+        force_no_tools_next_turn = False
         continue_free_next_turn = False
         mock_disclosure_required = False
         mock_primitives_seen: set[str] = set()
         verify_choice_mismatch_count = 0
         empty_final_retry_count = 0
+        duplicate_nonprogress_count = 0
 
         for _turn in range(_AGENTIC_LOOP_MAX_TURNS):
             message_id = str(uuid.uuid4())
@@ -5051,6 +5358,25 @@ async def run(  # noqa: C901
                     reason,
                 )
 
+            def _append_final_answer_observation(reason: str, message: str) -> None:
+                """Ask the model to finish from observed results without more tools."""
+                nonlocal force_no_tools_next_turn
+                force_no_tools_next_turn = True
+                llm_messages.append(
+                    LLMChatMessage(
+                        role="user",
+                        content=_final_answer_observation_message(
+                            message=message,
+                            latest_user_utt=latest_user_utt,
+                            llm_messages=llm_messages,
+                        ),
+                    )
+                )
+                logger.warning(
+                    "_handle_chat_request: %s. Re-entering loop without tool definitions.",
+                    reason,
+                )
+
             # spec-multi-turn-contamination diagnostic — accumulate the K-EXAONE
             # reasoning_content stream so we can compare its first 1024 bytes
             # against [LATEST_USER_UTT]. If reasoning starts with text that
@@ -5065,7 +5391,13 @@ async def run(  # noqa: C901
             # primitive + adapter from tool descriptions and <available_adapters>;
             # runtime validation rejects mismatches.
             stream_tool_choice: str | dict[str, object] | None = None
-            if (
+            stream_tools: list[LLMToolDefinition] | None = llm_tools or None
+            no_tools_this_turn = False
+            if force_no_tools_next_turn:
+                stream_tools = None
+                no_tools_this_turn = True
+                force_no_tools_next_turn = False
+            elif (
                 force_locate_next_turn
                 or force_verify_next_turn is not None
                 or force_lookup_next_turn is not None
@@ -5083,7 +5415,7 @@ async def run(  # noqa: C901
             try:
                 async for event in client.stream(  # type: ignore[attr-defined]
                     messages=llm_messages,
-                    tools=llm_tools or None,
+                    tools=stream_tools,
                     temperature=frame.temperature,
                     top_p=frame.top_p,
                     max_tokens=_effective_chat_max_tokens(frame.max_tokens),
@@ -5147,6 +5479,8 @@ async def run(  # noqa: C901
                                 )
                             )
                     elif event_type == "tool_call_delta":
+                        if no_tools_this_turn:
+                            continue
                         idx = int(getattr(event, "tool_call_index", 0) or 0)
                         slot = tool_call_buf.setdefault(idx, {"id": "", "name": "", "args": ""})
                         cid = getattr(event, "tool_call_id", None)
@@ -5222,7 +5556,11 @@ async def run(  # noqa: C901
             # we record into the assistant history for the next turn.
             assistant_text_full = "".join(assistant_text_chunks)
             cleaned_text = assistant_text_full
-            if not tool_call_buf and "<tool_call>" in assistant_text_full:
+            if (
+                not no_tools_this_turn
+                and not tool_call_buf
+                and "<tool_call>" in assistant_text_full
+            ):
                 from ummaya.llm.tool_call_parser import (  # noqa: PLC0415
                     extract_textual_tool_calls,
                 )
@@ -5312,10 +5650,9 @@ async def run(  # noqa: C901
 
                 # ---- G-class fabrication gate (2026-05-04) ---------------
                 # Before emitting a final-answer turn, check whether the
-                # conversation invoked locate but never followed up
-                # with a coord/admcd-input lookup despite the citizen query
-                # demanding one (weather / hospital / accident / 119 /
-                # welfare). The donga-univ-poi-bug snap-001-01-kma-now
+                # conversation invoked locate but never followed up with a
+                # registry-selected find adapter from the dynamic
+                # <available_adapters> block. The donga-univ-poi-bug snap-001-01-kma-now
                 # capture (2026-05-04) showed K-EXAONE producing 16°C / 84%
                 # humidity by parametric memory — 4.7°C / 61%p drift versus
                 # the raw KMA observation — because the agentic loop allowed
@@ -5359,27 +5696,39 @@ async def run(  # noqa: C901
                     )
                 else:
                     merged_prose = _remove_unneeded_mock_disclosure(merged_prose)
+                    merged_prose = _remove_unneeded_live_meta_disclosure(merged_prose)
                 has_successful_tool_result = _conversation_has_successful_any_primitive_result(
                     llm_messages
                 )
                 if not merged_prose.strip() and has_successful_tool_result:
                     if empty_final_retry_count < 2:
                         empty_final_retry_count += 1
-                        _append_tool_routing_observation(
+                        _append_final_answer_observation(
                             "rejected empty final-answer turn after successful tool result",
                             (
                                 "The previous assistant turn produced no citizen-facing text "
                                 "after successful tool results. Produce a concise Korean final "
-                                "answer using the latest successful tool_result. Do not call "
-                                "another tool unless additional data is essential."
+                                "answer using the latest successful tool_result."
                             ),
                         )
                         buffered_visible.clear()
                         continue
-                    merged_prose = (
-                        "도구 조회는 완료됐지만 최종 응답 생성이 비어 있었습니다. "
-                        "위 도구 결과를 기준으로 확인해 주세요."
+                    await write_frame(
+                        ErrorFrame(
+                            session_id=frame.session_id,
+                            correlation_id=frame.correlation_id or str(uuid.uuid4()),
+                            role="backend",
+                            ts=_utcnow(),
+                            kind="error",
+                            code="empty_final_answer_after_tool_result",
+                            message=(
+                                "Model returned an empty final answer after successful "
+                                "tool results. No synthetic answer was generated."
+                            ),
+                            details={"retry_count": empty_final_retry_count},
+                        )
                     )
+                    return
                 if (
                     merged_prose.strip()
                     and has_successful_tool_result
@@ -5387,7 +5736,7 @@ async def run(  # noqa: C901
                     and empty_final_retry_count < 2
                 ):
                     empty_final_retry_count += 1
-                    _append_tool_routing_observation(
+                    _append_final_answer_observation(
                         "rejected generic retry final answer after successful tool result",
                         (
                             "The previous assistant turn ignored successful tool results "
@@ -5413,7 +5762,7 @@ async def run(  # noqa: C901
                     and empty_final_retry_count < 2
                 ):
                     empty_final_retry_count += 1
-                    _append_tool_routing_observation(
+                    _append_final_answer_observation(
                         "rejected current-weather final answer missing KMA values",
                         (
                             "The previous assistant turn had a successful "
@@ -5432,7 +5781,7 @@ async def run(  # noqa: C901
                     and empty_final_retry_count < 2
                 ):
                     empty_final_retry_count += 1
-                    _append_tool_routing_observation(
+                    _append_final_answer_observation(
                         "rejected pending-tool-plan final answer after successful tool result",
                         (
                             "The previous assistant turn described a future tool call "
@@ -5452,7 +5801,7 @@ async def run(  # noqa: C901
                     and empty_final_retry_count < 2
                 ):
                     empty_final_retry_count += 1
-                    _append_tool_routing_observation(
+                    _append_final_answer_observation(
                         "rejected recursive tool-message final answer after successful tool result",
                         (
                             "The previous assistant turn recursively quoted the phrase "
@@ -5471,7 +5820,7 @@ async def run(  # noqa: C901
                     and empty_final_retry_count < 2
                 ):
                     empty_final_retry_count += 1
-                    _append_tool_routing_observation(
+                    _append_final_answer_observation(
                         "rejected unclosed markdown final answer after successful tool result",
                         (
                             "The previous assistant turn ended with an unclosed Markdown "
@@ -5485,11 +5834,29 @@ async def run(  # noqa: C901
                 if (
                     merged_prose.strip()
                     and has_successful_tool_result
+                    and _final_answer_looks_like_incomplete_sentence(merged_prose)
+                    and empty_final_retry_count < 2
+                ):
+                    empty_final_retry_count += 1
+                    _append_final_answer_observation(
+                        "rejected incomplete final sentence after successful tool result",
+                        (
+                            "The previous assistant turn ended with a dangling "
+                            "connective or punctuation mark. Produce one concise "
+                            "Korean final answer using the latest successful "
+                            "tool_result, and finish the sentence cleanly."
+                        ),
+                    )
+                    buffered_visible.clear()
+                    continue
+                if (
+                    merged_prose.strip()
+                    and has_successful_tool_result
                     and _final_answer_looks_like_tool_call_narration(merged_prose)
                     and empty_final_retry_count < 2
                 ):
                     empty_final_retry_count += 1
-                    _append_tool_routing_observation(
+                    _append_final_answer_observation(
                         "rejected tool-call narration final answer after successful tool result",
                         (
                             "The previous assistant turn narrated internal tool calls "
@@ -5497,6 +5864,26 @@ async def run(  # noqa: C901
                             "starts with the requested result, not with tool-operation "
                             "history. You may cite official data sources, but do not say "
                             "which internal tools were called."
+                        ),
+                    )
+                    buffered_visible.clear()
+                    continue
+                if (
+                    merged_prose.strip()
+                    and has_successful_tool_result
+                    and _final_answer_looks_like_repeated_sections(merged_prose)
+                    and empty_final_retry_count < 2
+                ):
+                    empty_final_retry_count += 1
+                    _append_final_answer_observation(
+                        "rejected repeated-section final answer after successful tool result",
+                        (
+                            "The previous assistant turn repeated the same final-answer "
+                            "sections. Produce one concise Korean final answer using the "
+                            "latest successful tool_result. Do not repeat headings, "
+                            "summaries, or conclusion blocks, and do not include meta "
+                            "commentary about the runtime being real, simulated, virtual, "
+                            "or not virtual unless a mock disclosure is required."
                         ),
                     )
                     buffered_visible.clear()
@@ -5561,6 +5948,26 @@ async def run(  # noqa: C901
                     args_obj = {"_value": args_obj}
 
                 fname = slot["name"]
+                args_obj = _maybe_reroute_locate_admin_keyword_args(fname, args_obj)
+                args_obj = _normalize_lookup_args_for_query(fname, args_obj, latest_user_utt)
+                args_obj = _normalize_verify_args_for_query(fname, args_obj, latest_user_utt)
+                args_obj = _normalize_verify_tool_id_for_query(fname, args_obj, latest_user_utt)
+                args_obj = _normalize_submit_args_for_query(fname, args_obj, latest_user_utt)
+                if fname == "find":
+                    tool_id_for_schema = str(args_obj.get("tool_id") or "")
+                    adapter_param_names: set[str] | None = None
+                    if tool_id_for_schema:
+                        try:
+                            adapter_tool = registry.find(tool_id_for_schema)
+                            adapter_param_names = set(adapter_tool.input_schema.model_fields)
+                        except Exception:  # noqa: BLE001
+                            adapter_param_names = None
+                    args_obj = _normalize_lookup_args_for_query(
+                        fname,
+                        args_obj,
+                        latest_user_utt,
+                        adapter_param_names=adapter_param_names,
+                    )
                 # Epic #2077 FR-003 — registry-derived whitelist. spec.md
                 # § Out of Scope (Permanent) forbids hardcoded enumerations
                 # outside the registry; ``PRIMITIVE_REGISTRY`` is the single
@@ -5687,6 +6094,33 @@ async def run(  # noqa: C901
                         "call_id=%s after prior success",
                         call_id[:12],
                     )
+                    continue
+
+                if _conversation_has_successful_identical_primitive_call(
+                    llm_messages,
+                    primitive=fname,
+                    args=args_obj,
+                ):
+                    duplicate_nonprogress_count += 1
+                    logger.warning(
+                        "_handle_chat_request: suppressed duplicate non-progress "
+                        "%s call_id=%s after successful identical result",
+                        fname,
+                        call_id[:12],
+                    )
+                    _append_final_answer_observation(
+                        (
+                            "suppressed duplicate primitive call after successful "
+                            "identical tool_result"
+                        ),
+                        (
+                            "The same primitive call with the same arguments already "
+                            "returned a successful tool_result. Do not call it again. "
+                            "Produce the citizen-facing final answer from the latest "
+                            "successful tool_result."
+                        ),
+                    )
+                    continue_free_next_turn = True
                     continue
 
                 # Chain prerequisite gate — donga-univ-poi-bug Epic #2766.
@@ -5821,12 +6255,12 @@ async def run(  # noqa: C901
                             }
                         )
                         terminal_message = (
-                            "요청의 인증 도구와 권한 범위가 서로 맞지 않아 실행을 중단했습니다. "
-                            "이 흐름은 "
+                            "Stopped because the verification tool and permission scope "
+                            "do not match this request. This flow must use "
                             f"check(tool_id={verify_choice_gate['verify_tool_id']!r}, "
-                            f"scope_list={expected_scopes!r})"
-                            " 형태로 맞춰야 합니다. 인증 계열과 제출 scope를 섞은 상태로는 "
-                            "권한 위임을 만들 수 없습니다."
+                            f"scope_list={expected_scopes!r}). "
+                            "A delegation cannot be created while identity and submit "
+                            "scopes are mixed."
                         )
                         await write_frame(
                             AssistantChunkFrame(
@@ -6119,6 +6553,7 @@ async def run(  # noqa: C901
             # ---- Inject tool messages, continue agentic loop --------------
             terminal_permission_code: str | None = None
             verify_result_seen = False
+            latest_find_collection_count: int | None = None
             for (cid, fname), result in zip(issued_calls, results, strict=False):
                 if isinstance(result, BaseException):
                     payload = _json.dumps({"error": "tool_dispatch_failed", "detail": str(result)})
@@ -6130,6 +6565,12 @@ async def run(  # noqa: C901
                         if _contains_mock_marker(envelope_dump):
                             mock_disclosure_required = True
                             mock_primitives_seen.add(fname)
+                        if fname == "find":
+                            result_payload = envelope_dump.get("result")
+                            if isinstance(result_payload, dict):
+                                result_items = result_payload.get("items")
+                                if isinstance(result_items, list):
+                                    latest_find_collection_count = len(result_items)
                         payload = _json.dumps(
                             envelope_dump,
                             ensure_ascii=False,
@@ -6159,14 +6600,14 @@ async def run(  # noqa: C901
             if terminal_permission_code is not None:
                 if terminal_permission_code == "permission_timeout":
                     denial_message = (
-                        "권한 응답 시간이 초과되어 작업을 진행하지 않았습니다. "
-                        "후속 제출 또는 구독 작업은 실행되지 않았습니다. "
+                        "Permission response timed out. No follow-up submit or "
+                        "subscription action was executed. "
                         "(code: permission_timeout)"
                     )
                 else:
                     denial_message = (
-                        "권한 요청이 거부되어 작업을 진행하지 않았습니다. "
-                        "후속 제출 또는 구독 작업은 실행되지 않았습니다. "
+                        "Permission request was denied. No follow-up submit or "
+                        "subscription action was executed. "
                         "(code: permission_denied)"
                     )
                 logger.info(
@@ -6200,6 +6641,57 @@ async def run(  # noqa: C901
                 )
                 return
 
+            if any(fname == "find" for _, fname in issued_calls):
+                requested_result_count = _explicit_result_count_from_query(latest_user_utt)
+                if (
+                    requested_result_count is not None
+                    and latest_find_collection_count is not None
+                    and latest_find_collection_count >= requested_result_count
+                ):
+                    _append_final_answer_observation(
+                        "latest find result satisfies citizen-requested result count",
+                        (
+                            "The latest successful find tool_result already contains "
+                            f"at least the requested {requested_result_count} result(s). "
+                            "Answer with exactly that requested count from the latest "
+                            "tool_result, preserving returned names, addresses, phone "
+                            "numbers, distances, and source timestamps when present."
+                        ),
+                    )
+                    continue
+                call_summaries: list[dict[str, object]] = []
+                for tool_call in assistant_tool_calls:
+                    call_summaries.append(
+                        {
+                            "name": tool_call.function.name,
+                            "arguments": _tool_call_arguments_dict(tool_call),
+                        }
+                    )
+                last_tool_calls_json = _json.dumps(
+                    call_summaries,
+                    ensure_ascii=False,
+                    default=str,
+                )
+                checkpoint = (
+                    "Internal tool-use checkpoint before final answer. Compare the "
+                    "citizen_request with the just-completed tool call arguments and "
+                    "the selected adapter schema in <available_adapters>. If the "
+                    "citizen request includes an explicit narrowing condition and "
+                    "the adapter exposes a matching optional parameter, that condition "
+                    "must be present in params before final prose. Examples of "
+                    "narrowing conditions are requested result count, radius/distance, "
+                    "date/time, institution type, category, specialty/department, "
+                    "keyword, and administrative region. If the last find call was "
+                    "broader than the citizen request, do not answer from that broad "
+                    "collection; call the same adapter again with corrected "
+                    "schema-valid params. If the tool call already preserves all "
+                    "explicit citizen constraints, answer concisely from the latest "
+                    "tool_result only. "
+                    f"citizen_request={latest_user_utt!r}; "
+                    f"last_tool_calls={last_tool_calls_json}"
+                )
+                llm_messages.append(LLMChatMessage(role="system", content=checkpoint))
+
             if verify_result_seen:
                 submit_followup_gate = _check_submit_terminated_without_submit(
                     llm_messages,
@@ -6215,12 +6707,35 @@ async def run(  # noqa: C901
 
             # Loop back: re-invoke client.stream with extended history.
 
-        # Loop bound exhausted — emit terminal chunk anyway so the TUI
-        # un-spins; the model will not be re-invoked beyond the bound.
+        # Loop bound exhausted — terminate without synthesizing adapter-specific
+        # content. CC keeps recoverable failures in the tool loop; it does not
+        # fabricate a domain answer from tool_result payloads at this boundary.
         logger.warning(
-            "agentic loop hit UMMAYA_AGENTIC_LOOP_MAX_TURNS=%d; terminating",
+            "agentic loop hit UMMAYA_AGENTIC_LOOP_MAX_TURNS=%d; terminating "
+            "duplicate_nonprogress_count=%d",
             _AGENTIC_LOOP_MAX_TURNS,
+            duplicate_nonprogress_count,
         )
+        if _conversation_has_successful_any_primitive_result(llm_messages):
+            await write_frame(
+                ErrorFrame(
+                    session_id=frame.session_id,
+                    correlation_id=frame.correlation_id or str(uuid.uuid4()),
+                    role="backend",
+                    ts=_utcnow(),
+                    kind="error",
+                    code="final_answer_loop_exhausted",
+                    message=(
+                        "Final answer loop exhausted after successful tool results. "
+                        "No synthetic answer was generated."
+                    ),
+                    details={
+                        "max_turns": _AGENTIC_LOOP_MAX_TURNS,
+                        "duplicate_nonprogress_count": duplicate_nonprogress_count,
+                    },
+                )
+            )
+            return
         await write_frame(
             AssistantChunkFrame(
                 session_id=frame.session_id,

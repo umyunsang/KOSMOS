@@ -171,7 +171,7 @@ export function UmmayaPrimitivePermissionRequest({
         options={options}
         onSelect={handleSelect}
         onCancel={handleDismiss}
-        question={`"${toolName}" 실행을 허용하시겠습니까?`}
+        question={strings.permissionQuestion(toolName)}
       />
 
       {/* PIPA notice + optional receipt ID */}

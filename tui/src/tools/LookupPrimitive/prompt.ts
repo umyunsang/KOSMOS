@@ -9,9 +9,9 @@
 
 export const FIND_TOOL_NAME = 'find'
 
-/** Citizen-facing Korean description shown to the LLM (≤ 240 chars). */
+/** Citizen-facing English description shown to the LLM (<= 240 chars). */
 export const DESCRIPTION =
-  '한국 공공서비스 어댑터를 호출합니다. 시스템 프롬프트의 <available_adapters> 블록에 백엔드가 사용자 발화에 맞는 후보 어댑터를 자동으로 inject합니다 — 그 목록의 tool_id를 골라 find({tool_id, params})로 호출하세요.'
+  'Invoke a Korean public-service adapter. The backend injects matching candidate adapters into <available_adapters>; choose one listed tool_id and call find({tool_id, params}).'
 
 /** Extended prompt included in the system-prompt tool-use section. */
 export const FIND_TOOL_PROMPT = `Invoke Korean public-service adapters registered in the UMMAYA tool registry.

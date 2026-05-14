@@ -16,10 +16,10 @@ FR-024: Fail-closed defaults (non-auth tool — read-only gate per Epic δ #2295
         is_concurrency_safe=True, cache_ttl_seconds=0).
 FR-037: Adapter is an async coroutine.
 
-D + E fix (2026-05-04, snap-009 강남역 내과 lookup regression):
+D + E fix (2026-05-04, snap-009 distance/specialty lookup regression):
   D — HIRA's getHospBasisList returns ``distance`` (a high-precision decimal
       string in meters from the query xPos/yPos) but does NOT sort by it.
-      Live verification 2026-05-04: baseline call near 강남역 returned
+      Live verification 2026-05-04: a coordinate-radius baseline call returned
       d=829, 760, 479, 610, 757 (registration order, not distance ASC).
       We now sort items by distance ascending client-side after deserializing
       the upstream response.
@@ -49,6 +49,71 @@ from ummaya.tools.models import AdapterRealDomainPolicy, GovAPITool
 logger = logging.getLogger(__name__)
 
 _BASE_URL = "https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList"
+_LOCAL_PHONE_RE = re.compile(r"^\d{3,4}-\d{4}$")
+_AREA_CODE_BY_SIDO: dict[str, str] = {
+    "서울": "02",
+    "서울특별시": "02",
+    "부산": "051",
+    "부산광역시": "051",
+    "대구": "053",
+    "대구광역시": "053",
+    "인천": "032",
+    "인천광역시": "032",
+    "광주": "062",
+    "광주광역시": "062",
+    "대전": "042",
+    "대전광역시": "042",
+    "울산": "052",
+    "울산광역시": "052",
+    "세종": "044",
+    "세종특별자치시": "044",
+    "경기": "031",
+    "경기도": "031",
+    "강원": "033",
+    "강원특별자치도": "033",
+    "충북": "043",
+    "충청북도": "043",
+    "충남": "041",
+    "충청남도": "041",
+    "전북": "063",
+    "전북특별자치도": "063",
+    "전라북도": "063",
+    "전남": "061",
+    "전라남도": "061",
+    "경북": "054",
+    "경상북도": "054",
+    "경남": "055",
+    "경상남도": "055",
+    "제주": "064",
+    "제주특별자치도": "064",
+}
+
+
+def _infer_area_code(*, sido: str, addr: str) -> str | None:
+    """Infer Korean landline area code from HIRA region/address fields."""
+    candidates = [sido.strip(), addr.strip().split(maxsplit=1)[0] if addr.strip() else ""]
+    for candidate in candidates:
+        if not candidate:
+            continue
+        exact = _AREA_CODE_BY_SIDO.get(candidate)
+        if exact:
+            return exact
+        for region_name, area_code in _AREA_CODE_BY_SIDO.items():
+            if candidate.startswith(region_name):
+                return area_code
+    return None
+
+
+def _normalize_hira_telno(raw_telno: object, *, sido: str, addr: str) -> str:
+    """Prefix local HIRA landline numbers with the address-derived area code."""
+    telno = str(raw_telno or "").strip()
+    if not telno or telno.startswith("0") or not _LOCAL_PHONE_RE.fullmatch(telno):
+        return telno
+    area_code = _infer_area_code(sido=sido, addr=addr)
+    if not area_code:
+        return telno
+    return f"{area_code}-{telno}"
+
 
 # ---------------------------------------------------------------------------
 # Code maps (HIRA canonical 진료과목코드 + 종별코드, verified live 2026-05-04)
@@ -56,9 +121,9 @@ _BASE_URL = "https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList"
 
 # 진료과목코드 — HIRA dgsbjtCd. Source: 한국사회보장정보원 보건기관 진료과목 코드정보
 # (data.go.kr 15049696) cross-checked against live getHospBasisList probe near
-# 강남역 (37.498, 127.028, r=500) returning non-zero totals for 01–16, 19, 21,
+# a Seoul sample coordinate returning non-zero totals for 01–16, 19, 21,
 # 23, 24, 26, 80 on 2026-05-04. Aliases include common citizen vocabulary
-# (e.g. "이비인후과" / "ENT" → 24).
+# (e.g. "이비인후과" / "ENT" → 13).
 _DGSBJT_CODE_MAP: dict[str, str] = {
     # 01 내과
     "내과": "01",
@@ -321,11 +386,8 @@ class HiraHospitalSearchInput(BaseModel):
         default=2000,
         description=(
             "Search radius in meters. Default 2000 m (2 km). Max 10 000 m. "
-            "Citizen vocabulary mapping: '근처' / 'nearby' = 1500 m, "
-            "'주변' = 3000 m, '인근' = 2000 m, '한 5km 안' = 5000 m. "
-            "Do NOT inflate radius to grow result count — UMMAYA sorts results "
-            "client-side by distance ascending, so a tighter radius is more "
-            "relevant. Increasing radius only adds farther matches."
+            "When the citizen gives an explicit numeric radius or distance, "
+            "preserve that value. Otherwise use the default rather than guessing."
         ),
     )
     dgsbjt: str | None = Field(
@@ -340,7 +402,8 @@ class HiraHospitalSearchInput(BaseModel):
             "'dermatology' / 'orthopedics'. WHEN TO USE: citizen mentions a "
             "specific 진료과 ('근처 내과 알려줘' → dgsbjt='내과'). When omitted, "
             "all specialties returned. Without this filter '근처 병원' returns "
-            "성형외과, 안과, 정형외과 etc. mixed — usually NOT what citizens want. "
+            "mixed specialties. Do not invent a specialty code when the citizen "
+            "did not state one clearly. "
             "If the citizen asks for multiple specialties, pass comma-separated "
             "names/codes (e.g. '피부과,내과'); UMMAYA will fan out and merge."
         ),
@@ -352,12 +415,13 @@ class HiraHospitalSearchInput(BaseModel):
             "Accepts natural-language Korean or the 2-digit code. "
             "'의원' / 'clinic' → 31 (small primary care, single-specialty), "
             "'병원' / 'hospital' → 21 (mid-size), '종합병원' → 21, "
-            "'상급종합' / 'tertiary hospital' → 11 (large university hospitals "
-            "like 서울대병원, 세브란스), '치과병원' → 29, '한의원' → 81, "
+            "'상급종합' / 'tertiary hospital' → 11, "
+            "'치과병원' → 29, '한의원' → 81, "
             "'약국' / 'pharmacy' → 92, '보건소' → 51. WHEN TO USE: citizen "
             "specifies institution scale ('근처 종합병원', '큰 병원'). When "
             "omitted, all types returned mixed. Combine with dgsbjt for "
-            "best precision: dgsbjt='내과' + clCd='의원' = '내과의원'."
+            "best precision when the citizen explicitly asks for both specialty "
+            "and institution type."
         ),
     )
     pageNo: int = Field(  # noqa: N815
@@ -446,28 +510,36 @@ async def handle(  # noqa: C901
     """
     api_key = _require_env("UMMAYA_DATA_GO_KR_API_KEY")
 
+    requested_num_rows = inp.numOfRows
+    request_num_rows = requested_num_rows
+    if inp.dgsbjt is not None:
+        request_num_rows = min(100, max(request_num_rows, 50))
+
     params: dict[str, str | int | float] = {
         "serviceKey": api_key,
         "xPos": inp.xPos,
         "yPos": inp.yPos,
         "radius": inp.radius,
         "pageNo": inp.pageNo,
-        "numOfRows": inp.numOfRows,
+        "numOfRows": request_num_rows,
         "_type": "json",
     }
     dgsbjt_codes = inp.dgsbjt.split(",") if inp.dgsbjt else [None]
-    if inp.clCd is not None:
-        params["clCd"] = inp.clCd
+    effective_clcd = inp.clCd
+    if effective_clcd is not None:
+        params["clCd"] = effective_clcd
 
     logger.debug(
-        "hira_hospital_search: xPos=%.5f yPos=%.5f radius=%d page=%d rows=%d dgsbjt=%s clCd=%s",
+        "hira_hospital_search: xPos=%.5f yPos=%.5f radius=%d page=%d rows=%d "
+        "request_rows=%d dgsbjt=%s clCd=%s",
         inp.xPos,
         inp.yPos,
         inp.radius,
         inp.pageNo,
-        inp.numOfRows,
+        requested_num_rows,
+        request_num_rows,
         inp.dgsbjt,
-        inp.clCd,
+        effective_clcd,
     )
 
     own_client = client is None
@@ -526,22 +598,31 @@ async def handle(  # noqa: C901
             elif isinstance(raw_item, list):
                 item_list = raw_item
 
-        return [
-            {
-                "ykiho": item.get("ykiho", ""),
-                "yadmNm": item.get("yadmNm", ""),
-                "addr": item.get("addr", ""),
-                "telno": item.get("telno", ""),
-                "clCd": item.get("clCd", ""),
-                "clCdNm": item.get("clCdNm", ""),
-                "xPos": item.get("XPos"),
-                "yPos": item.get("YPos"),
-                "distance": item.get("distance"),
-                "sidoCdNm": item.get("sidoCdNm", ""),
-                "sgguCdNm": item.get("sgguCdNm", ""),
-            }
-            for item in item_list
-        ], total_count
+        normalized_items: list[dict[str, Any]] = []
+        for item in item_list:
+            addr = str(item.get("addr", "") or "")
+            sido = str(item.get("sidoCdNm", "") or "")
+            normalized_items.append(
+                {
+                    "ykiho": item.get("ykiho", ""),
+                    "yadmNm": item.get("yadmNm", ""),
+                    "addr": addr,
+                    "telno": _normalize_hira_telno(
+                        item.get("telno", ""),
+                        sido=sido,
+                        addr=addr,
+                    ),
+                    "clCd": item.get("clCd", ""),
+                    "clCdNm": item.get("clCdNm", ""),
+                    "xPos": item.get("XPos"),
+                    "yPos": item.get("YPos"),
+                    "distance": item.get("distance"),
+                    "sidoCdNm": sido,
+                    "sgguCdNm": item.get("sgguCdNm", ""),
+                }
+            )
+
+        return normalized_items, total_count
 
     try:
         items: list[dict[str, Any]] = []
@@ -566,11 +647,12 @@ async def handle(  # noqa: C901
             await _client.aclose()
 
     # D-fix: HIRA does NOT sort by distance server-side. Verified live
-    # 2026-05-04: baseline call near 강남역 (37.498, 127.028) returned
+    # 2026-05-04: a coordinate-radius baseline call returned
     # d=829, 760, 479, 610, 757 (registration order). Citizens expect
     # "근처 X" to mean the actually-closest match. Sort ascending by the
-    # `distance` string parsed as float; entries with missing/invalid
-    # distance sink to the end deterministically.
+    # `distance` string parsed as float. For specialty queries, HIRA returns
+    # every institution that offers the specialty; prefer names that visibly
+    # match the requested specialty before applying distance.
     def _distance_key(rec: dict[str, Any]) -> tuple[int, float]:
         raw = rec.get("distance")
         if raw is None or raw == "":
@@ -580,7 +662,18 @@ async def handle(  # noqa: C901
         except (TypeError, ValueError):
             return (1, 0.0)
 
-    items.sort(key=_distance_key)
+    def _specialty_name_rank(rec: dict[str, Any]) -> int:
+        display_name = str(rec.get("yadmNm") or "")
+        matched_names = rec.get("matchedDgsbjtNms")
+        if not isinstance(matched_names, list):
+            return 1
+        for matched_name in matched_names:
+            if isinstance(matched_name, str) and matched_name and matched_name in display_name:
+                return 0
+        return 1
+
+    items.sort(key=lambda rec: (_specialty_name_rank(rec), *_distance_key(rec)))
+    items = items[:requested_num_rows]
 
     return {
         "kind": "collection",
@@ -614,7 +707,7 @@ _HIRA_DESCRIPTION = build_description_v4(
     input_quirk=(
         "xPos = longitude (124–132). yPos = latitude (33–39). "
         "Citizen location → locate(kakao_keyword_search 또는 kakao_address_search) first. "
-        "radius: 1500m '근처' / 3000m '주변' / max 10000m. "
+        "radius is meters; preserve explicit numeric distance wording when present. "
         "dgsbjt + clCd are optional natural-language filters (see short_reference). "
         "For multiple specialties, pass comma-separated dgsbjt names/codes."
     ),
@@ -628,7 +721,7 @@ _HIRA_DESCRIPTION = build_description_v4(
         "CLCD: 의원→31, 병원/종합병원→21, 상급종합→11, 치과병원→29, 약국→92, 보건소→51.\n"
         "Multiple specialties: dgsbjt='피부과,내과' fans out and merges by distance; use "
         "matchedDgsbjtNms to group/list specialties correctly.\n"
-        "Without dgsbjt result mixes 성형/안과/내과 — citizen rarely wants that."
+        "Without dgsbjt, the result is an unfiltered mixed-specialty facility list."
     ),
     domain_quirk=(
         "JSON requires '_type=json' (underscore prefix). 'type=json' silently "
@@ -637,12 +730,12 @@ _HIRA_DESCRIPTION = build_description_v4(
         "first item is the closest. Response does NOT echo dgsbjtCd back."
     ),
     self_contained_decl=(
-        "REQUIRED: xPos/yPos. Citizen location ('동아대학교', '강남역') needs "
+        "REQUIRED: xPos/yPos. Citizen location text needs "
         "locate(kakao_keyword_search 또는 kakao_address_search) first. "
         "ORDERING: turn1=locate adapter, "
-        "turn2=this tool. When citizen says '근처 내과' / '강남역 소아과' / "
-        "'큰 종합병원', map specialty/type to dgsbjt / clCd in the SAME call. "
-        "For '피부과나 내과', use dgsbjt='피부과,내과'."
+        "turn2=this tool. When the citizen explicitly states a specialty or "
+        "institution type, preserve it as dgsbjt / clCd in the same call. "
+        "If multiple explicit specialties are stated, pass them comma-separated."
     ),
 )
 
@@ -658,7 +751,9 @@ HIRA_HOSPITAL_SEARCH_TOOL = GovAPITool(
     llm_description=_HIRA_DESCRIPTION,
     search_hint=(
         "병원 검색 진료과목 의료기관 정보 근처 병원 내과 외과 소아과 "
-        "hospital search medical specialty clinic nearby HIRA healthcare Korea"
+        "이비인후과 가정의학과 의원 "
+        "hospital search medical specialty "
+        "clinic nearby HIRA healthcare Korea"
     ),
     policy=AdapterRealDomainPolicy(
         real_classification_url="https://www.hira.or.kr/bbs/informationNotice.do?pgmid=HIRAA030011000000",
@@ -676,10 +771,9 @@ HIRA_HOSPITAL_SEARCH_TOOL = GovAPITool(
     nist_aal_hint=None,
     trigger_examples=[
         "근처 내과 병원",
-        "강남역 소아과",
+        "근처 소아과",
         "이비인후과 추천",
-        "동아대 근처 종합병원",
-        "성형외과 의원",
+        "근처 종합병원",
     ],
 )
 

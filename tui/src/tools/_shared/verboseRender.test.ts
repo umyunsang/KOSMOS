@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, test } from 'bun:test'
-import { formatTraceUrlForHeader } from './verboseRender.js'
+import { render } from 'ink-testing-library'
+import type React from 'react'
+import {
+  formatTraceUrlForHeader,
+  renderVerboseOutputJson,
+} from './verboseRender.js'
 
 describe('formatTraceUrlForHeader', () => {
   test('keeps detailed URL evidence bounded in the trace heading', () => {
@@ -18,5 +23,34 @@ describe('formatTraceUrlForHeader', () => {
 
   test('returns an empty string for non-string values', () => {
     expect(formatTraceUrlForHeader(null)).toBe('')
+  })
+})
+
+describe('renderVerboseOutputJson', () => {
+  test('renders English UI labels for transcript details', () => {
+    const node = renderVerboseOutputJson({
+      ok: true,
+      result: {
+        outbound_traces: [
+          {
+            method: 'GET',
+            url: 'https://apis.data.go.kr/example?serviceKey=***',
+            request_body: '{"q":"test"}',
+            response_status: 200,
+            response_body: '{"ok":true}',
+            elapsed_ms: 42,
+          },
+        ],
+      },
+    })
+    const { lastFrame } = render(node as React.ReactElement)
+    const frame = lastFrame() ?? ''
+
+    expect(frame).toContain('Response envelope:')
+    expect(frame).toContain('Outbound API request #1')
+    expect(frame).toContain('Request body:')
+    expect(frame).toContain('Response body:')
+    expect(frame).not.toContain('응답')
+    expect(frame).not.toContain('요청')
   })
 })

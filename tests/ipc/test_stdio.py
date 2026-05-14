@@ -63,6 +63,8 @@ from ummaya.ipc.frame_schema import (
     ChatMessage as IPCChatMessage,
 )
 from ummaya.ipc.frame_schema import (
+    ChatMessageFunctionCall,
+    ChatMessageToolCall,
     ChatRequestFrame,
     ToolDefinition,
     ToolDefinitionFunction,
@@ -605,6 +607,64 @@ class _EternalToolCallLLMClient(_BaseFakeLLMClient):
         yield StreamEvent(type="done")
 
 
+class _DuplicateHiraToolCallLLMClient(_BaseFakeLLMClient):
+    """LLM that repeats the exact HIRA find call after a successful result."""
+
+    recorded_calls: list[dict[str, Any]] = []
+    _class_turn: int = 0
+
+    def __init__(self, config: Any) -> None:
+        super().__init__(config)
+
+    async def stream(
+        self,
+        messages: list[Any],
+        *,
+        tools: list[Any] | None = None,
+        tool_choice: Any = None,
+        temperature: float = 1.0,
+        top_p: float = 0.95,
+        presence_penalty: float = 0.0,
+        max_tokens: int = 1024,
+        stop: Any = None,
+    ) -> AsyncIterator[StreamEvent]:
+        type(self)._class_turn += 1
+        type(self).recorded_calls.append({"messages": messages, "tools": tools})
+        if tools is None:
+            latest_content = str(getattr(messages[-1], "content", "") or "")
+            marker = "Latest successful primitive tool_result JSON:\n"
+            observed_json = latest_content.split(marker, 1)[-1].split("\n\n", 1)[0]
+            try:
+                observed = json.loads(observed_json)
+                item = observed["payload"]["result"]["items"][0]
+                yield StreamEvent(
+                    type="content_delta",
+                    content=(f"{item['yadmNm']} - 주소: {item['addr']} / 전화: {item['telno']}"),
+                )
+            except Exception:
+                yield StreamEvent(type="content_delta", content="확인된 병원 정보를 안내드립니다.")
+            yield StreamEvent(type="done")
+            return
+        yield StreamEvent(
+            type="tool_call_delta",
+            tool_call_index=0,
+            tool_call_id=f"call-{uuid.uuid4().hex[:8]}",
+            function_name="find",
+            function_args_delta=json.dumps(
+                {
+                    "tool_id": "hira_hospital_search",
+                    "params": {
+                        "xPos": 128.962741189119,
+                        "yPos": 35.0465263488422,
+                        "dgsbjt": "내과,이비인후과",
+                    },
+                },
+                ensure_ascii=False,
+            ),
+        )
+        yield StreamEvent(type="done")
+
+
 @pytest.mark.asyncio
 async def test_agentic_loop_max_turns_honored(
     monkeypatch: pytest.MonkeyPatch,
@@ -658,6 +718,137 @@ async def test_agentic_loop_max_turns_honored(
         "No terminal assistant_chunk (done=True) found in emitted frames. "
         "The agentic loop must emit a final done=True chunk when max turns are hit."
     )
+
+
+@pytest.mark.asyncio
+async def test_duplicate_hira_find_after_success_emits_grounded_answer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Identical successful find repeats terminate with visible grounded prose."""
+    hira_args = {
+        "tool_id": "hira_hospital_search",
+        "params": {
+            "xPos": 128.962741189119,
+            "yPos": 35.0465263488422,
+            "dgsbjt": "내과,이비인후과",
+        },
+    }
+    locate_call_id = "call_locate_success"
+    call_id = "call_hira_success"
+    frame = ChatRequestFrame(
+        session_id=str(uuid.uuid4()),
+        correlation_id=str(uuid.uuid4()),
+        role="tui",
+        ts=_ts(),
+        kind="chat_request",
+        messages=[
+            IPCChatMessage(
+                role="user",
+                content=(
+                    "다대1동 근처에서 오늘 전화해볼 만한 내과나 이비인후과가 "
+                    "있을까? 실제로 찾아진 곳만 주소랑 전화번호까지 알려줘."
+                ),
+            ),
+            IPCChatMessage(
+                role="assistant",
+                content="",
+                tool_calls=[
+                    ChatMessageToolCall(
+                        id=locate_call_id,
+                        type="function",
+                        function=ChatMessageFunctionCall(
+                            name="locate",
+                            arguments=json.dumps(
+                                {
+                                    "tool_id": "kakao_address_search",
+                                    "params": {"query": "부산 사하구 다대1동"},
+                                },
+                                ensure_ascii=False,
+                            ),
+                        ),
+                    )
+                ],
+            ),
+            IPCChatMessage(
+                role="tool",
+                name="locate",
+                tool_call_id=locate_call_id,
+                content=json.dumps(
+                    {
+                        "ok": True,
+                        "result": {
+                            "kind": "location",
+                            "name": "부산광역시 사하구 다대동",
+                            "x": 128.962741189119,
+                            "y": 35.0465263488422,
+                        },
+                    },
+                    ensure_ascii=False,
+                ),
+            ),
+            IPCChatMessage(
+                role="assistant",
+                content="",
+                tool_calls=[
+                    ChatMessageToolCall(
+                        id=call_id,
+                        type="function",
+                        function=ChatMessageFunctionCall(
+                            name="find",
+                            arguments=json.dumps(hira_args, ensure_ascii=False),
+                        ),
+                    )
+                ],
+            ),
+            IPCChatMessage(
+                role="tool",
+                name="find",
+                tool_call_id=call_id,
+                content=json.dumps(
+                    {
+                        "ok": True,
+                        "result": {
+                            "kind": "collection",
+                            "total_count": 33,
+                            "items": [
+                                {
+                                    "yadmNm": "서울성모내과의원",
+                                    "addr": "부산광역시 사하구 다대로 694, 6층 (다대동)",
+                                    "telno": "051-262-8575",
+                                    "clCdNm": "의원",
+                                    "matchedDgsbjtNm": "내과",
+                                    "distance": 283,
+                                }
+                            ],
+                        },
+                    },
+                    ensure_ascii=False,
+                ),
+            ),
+        ],
+        tools=[],
+        system="Base system prompt.",
+    )
+
+    buf, _ = await _run_with_frame(
+        frame,
+        _DuplicateHiraToolCallLLMClient,
+        monkeypatch=monkeypatch,
+        env_overrides={
+            "UMMAYA_TOOL_RESULT_TIMEOUT_SECONDS": "1",
+            "UMMAYA_AGENTIC_LOOP_MAX_TURNS": "3",
+        },
+    )
+
+    emitted = buf.as_frames()
+    assert not [f for f in emitted if f.get("kind") == "tool_call"]
+    assistant_text = "".join(
+        str(f.get("delta") or "") for f in emitted if f.get("kind") == "assistant_chunk"
+    )
+    assert "서울성모내과의원" in assistant_text
+    assert "부산광역시 사하구 다대로 694" in assistant_text
+    assert "051-262-8575" in assistant_text
+    assert [f for f in emitted if f.get("kind") == "assistant_chunk" and f.get("done") is True]
 
 
 # ---------------------------------------------------------------------------

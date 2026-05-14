@@ -4,6 +4,7 @@ import React, { useMemo, useRef } from 'react';
 import { useVoiceState } from '../context/voice.js';
 import { useClipboardImageHint } from '../hooks/useClipboardImageHint.js';
 import { useSettings } from '../hooks/useSettings.js';
+import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { useTextInput } from '../hooks/useTextInput.js';
 import { Box, color, useAnimationFrame, useTerminalFocus, useTheme } from '../ink.js';
 import type { BaseTextInputProps } from '../types/textInputTypes.js';
@@ -37,6 +38,8 @@ export type Props = BaseTextInputProps & {
 export default function TextInput(props: Props): React.ReactNode {
   const [theme] = useTheme();
   const isTerminalFocused = useTerminalFocus();
+  const { columns: terminalColumns } = useTerminalSize();
+  const inputColumns = Math.max(1, Math.min(props.columns, terminalColumns));
   // Hoisted to mount-time — this component re-renders on every keystroke.
   const accessibilityEnabled = useMemo(() => isEnvTruthy(process.env.CLAUDE_CODE_ACCESSIBILITY), []);
   const settings = useSettings();
@@ -106,7 +109,7 @@ export default function TextInput(props: Props): React.ReactNode {
     highlightPastedText: props.highlightPastedText,
     invert,
     themeText: color('text', theme),
-    columns: props.columns,
+    columns: inputColumns,
     maxVisibleLines: props.maxVisibleLines,
     onImagePaste: props.onImagePaste,
     disableCursorMovementForUpDownKeys: props.disableCursorMovementForUpDownKeys,

@@ -11,8 +11,7 @@
 
 import React from 'react'
 import { z } from 'zod/v4'
-import { Box, Text } from '../../ink.js'
-import { MessageResponse } from '../../components/MessageResponse.js'
+import { Text } from '../../ink.js'
 import { buildTool, type ToolDef, type ToolUseContext } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {
@@ -32,6 +31,10 @@ import {
   renderVerboseInputJson,
   renderVerboseOutputJson,
 } from '../_shared/verboseRender.js'
+import {
+  isPrimitiveResultPreviewTruncated,
+  renderCompactPrimitiveResult,
+} from '../_shared/compactPrimitiveResult.js'
 import { getOrCreateUmmayaBridge } from '../../ipc/bridgeSingleton.js'
 import { getOrCreatePendingCallRegistry } from '../../ipc/pendingCallSingleton.js'
 
@@ -88,6 +91,8 @@ type OutputSchema = ReturnType<typeof outputSchema>
 
 export type Output = z.infer<OutputSchema>
 
+const KOREAN_RECEIPT_NUMBER_KEY = '\uc811\uc218\ubc88\ud638'
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === 'object' && value !== null
     ? (value as Record<string, unknown>)
@@ -103,6 +108,96 @@ function firstString(record: Record<string, unknown> | null, keys: string[]): st
   return null
 }
 
+function buildSubmitSuccessRows(output: Extract<Output, { ok: true }>): React.ReactNode[] {
+  const result = asRecord(output.result)
+  const adapterReceipt = asRecord(result?.adapter_receipt)
+  const receiptId =
+    firstString(adapterReceipt, [
+      'receipt_id',
+      'receipt_number',
+      'confirmation_id',
+      KOREAN_RECEIPT_NUMBER_KEY,
+    ]) ?? firstString(result, ['receipt_id', 'receipt_number', 'confirmation_id'])
+  const ministry =
+    typeof result?.ministry === 'string' ? result.ministry : null
+  const status =
+    typeof result?.status === 'string' ? result.status : null
+  const handoffUrl =
+    typeof result?.agency_handoff_url === 'string'
+      ? result.agency_handoff_url
+      : null
+
+  const statusLabel =
+    status === 'accepted'
+      ? 'accepted'
+      : status === 'succeeded'
+        ? 'completed'
+        : status === 'pending'
+          ? 'pending'
+          : status === 'rejected'
+            ? 'rejected'
+            : status
+
+  const mockMeta = extractMockMeta(output)
+  const isMock = mockMeta.isMock
+  const successLabel = isMock
+    ? mockLabel('Submission accepted')
+    : `✓ ${ministry ? `[${ministry}] ` : ''}Submission accepted.`
+  const successColor = isMock ? ('cyan' as const) : ('green' as const)
+
+  return [
+    React.createElement(
+      Text,
+      { key: 'heading', color: successColor, dimColor: isMock },
+      isMock
+        ? `${successLabel}${ministry ? ` — [${ministry}]` : ''}`
+        : successLabel,
+    ),
+    ...(isMock
+      ? [
+          React.createElement(
+            Text,
+            { key: 'mock-disclaimer', dimColor: true },
+            'Demo-only result. No real administrative action was taken.',
+          ),
+        ]
+      : []),
+    ...(receiptId
+      ? [React.createElement(Text, { key: 'receipt', dimColor: true }, `Receipt ID: ${receiptId}`)]
+      : []),
+    ...(status
+      ? [React.createElement(Text, { key: 'status', dimColor: true }, `Status: ${statusLabel}`)]
+      : []),
+    ...(handoffUrl
+      ? [React.createElement(Text, { key: 'handoff', dimColor: true }, `Agency confirmation: ${handoffUrl}`)]
+      : []),
+    ...(isMock && mockMeta.actualEndpointWhenLive
+      ? [
+          React.createElement(
+            Text,
+            { key: 'mock-live-endpoint', dimColor: true },
+            `Live endpoint: ${mockMeta.actualEndpointWhenLive}`,
+          ),
+        ]
+      : []),
+  ]
+}
+
+function buildSubmitErrorRows(output: Extract<Output, { ok: false }>): React.ReactNode[] {
+  const handoffUrl =
+    typeof (output.error as Record<string, unknown>)?.agency_handoff_url ===
+    'string'
+      ? ((output.error as Record<string, unknown>).agency_handoff_url as string)
+      : null
+
+  return [
+    React.createElement(Text, { key: 'error', color: 'red' }, `✗ ${output.error.message}`),
+    ...(handoffUrl
+      ? [React.createElement(Text, { key: 'handoff', dimColor: true }, `Agency contact: ${handoffUrl}`)]
+      : []),
+  ]
+}
+
 // ---------------------------------------------------------------------------
 // Tool definition
 // ---------------------------------------------------------------------------
@@ -110,8 +205,8 @@ function firstString(record: Record<string, unknown> | null, keys: string[]): st
 export const SubmitPrimitive = buildTool({
   name: SEND_TOOL_NAME,
 
-  /** Bilingual keyword hint for ToolSearch deferred-tool discovery. */
-  searchHint: '제출 신청 신고 send apply report 공공 서비스 side-effect',
+  /** English keyword hint for ToolSearch deferred-tool discovery. */
+  searchHint: 'submit application report send apply public service side effect',
 
   maxResultSizeChars: 50_000,
 
@@ -204,7 +299,7 @@ export const SubmitPrimitive = buildTool({
         if (!backendEntry.policy_authority_url) {
           return {
             result: false as const,
-            message: `'${input.tool_id}' 어댑터 정책 인용이 누락되었습니다 (Spec 024 invariant 위반).`,
+            message: `Adapter '${input.tool_id}' is missing a policy citation (Spec 024 invariant violation).`,
             errorCode: PrimitiveErrorCode.CitationMissing,
           }
         }
@@ -227,7 +322,7 @@ export const SubmitPrimitive = buildTool({
       if (!citation) {
         return {
           result: false as const,
-          message: `'${input.tool_id}' 어댑터 정책 인용이 누락되었습니다 (Spec 024 invariant 위반).`,
+          message: `Adapter '${input.tool_id}' is missing a policy citation (Spec 024 invariant violation).`,
           errorCode: PrimitiveErrorCode.CitationMissing,
         }
       }
@@ -271,108 +366,22 @@ export const SubmitPrimitive = buildTool({
     // (transaction_id / ministry / status / agency_handoff_url) unwrapped
     // from ToolResultEnvelope.result.
     if (output.ok) {
-      const result = asRecord(output.result)
-      const adapterReceipt = asRecord(result?.adapter_receipt)
-      const receiptId =
-        firstString(adapterReceipt, [
-          'receipt_id',
-          'receipt_number',
-          'confirmation_id',
-          '접수번호',
-        ]) ?? firstString(result, ['receipt_id', 'receipt_number', 'confirmation_id'])
-      const ministry =
-        typeof result?.ministry === 'string' ? result.ministry : null
-      const status =
-        typeof result?.status === 'string' ? result.status : null
-      const handoffUrl =
-        typeof result?.agency_handoff_url === 'string'
-          ? result.agency_handoff_url
-          : null
-
-      const statusLabel =
-        status === 'accepted'
-          ? '접수됨'
-          : status === 'succeeded'
-            ? '접수 완료'
-          : status === 'pending'
-            ? '처리 중'
-            : status === 'rejected'
-              ? '반려됨'
-              : status
-
-      // UMMAYA hotfix #2519 — wrap in <MessageResponse> for the CC ⎿ prefix.
-      // Audit-2 P0: check _mode === 'mock' from transparency stamp (Spec 024).
-      const mockMeta = extractMockMeta(output)
-      const isMock = mockMeta.isMock
-
-      const successLabel = isMock
-        ? mockLabel('제출 접수')
-        : `✓ ${ministry ? `[${ministry}] ` : ''}제출이 접수되었습니다.`
-      const successColor = isMock ? ('cyan' as const) : ('green' as const)
-
-      return React.createElement(
-        MessageResponse,
-        null,
-        React.createElement(
-          Box,
-          { flexDirection: 'column' },
-          React.createElement(
-            Text,
-            { color: successColor, dimColor: isMock },
-            isMock
-              ? `${successLabel}${ministry ? ` — [${ministry}]` : ''}`
-              : successLabel,
-          ),
-          isMock
-            ? React.createElement(
-                Text,
-                { dimColor: true },
-                '실제 행정 영향 없는 시연 결과입니다.',
-              )
-            : null,
-          receiptId
-            ? React.createElement(Text, { dimColor: true }, `접수 번호: ${receiptId}`)
-            : null,
-          status
-            ? React.createElement(Text, { dimColor: true }, `상태: ${statusLabel}`)
-            : null,
-          handoffUrl
-            ? React.createElement(Text, { dimColor: true }, `기관 확인: ${handoffUrl}`)
-            : null,
-          isMock && mockMeta.actualEndpointWhenLive
-            ? React.createElement(
-                Text,
-                { dimColor: true },
-                `실제 엔드포인트 (운영 시): ${mockMeta.actualEndpointWhenLive}`,
-              )
-            : null,
-        ),
-      )
+      return renderCompactPrimitiveResult(buildSubmitSuccessRows(output))
     }
 
-    // Error branch
-    const handoffUrl =
-      typeof (output.error as Record<string, unknown>)?.agency_handoff_url ===
-      'string'
-        ? ((output.error as Record<string, unknown>).agency_handoff_url as string)
-        : null
+    return renderCompactPrimitiveResult(buildSubmitErrorRows(output))
+  },
 
-    return React.createElement(
-      MessageResponse,
-      null,
-      React.createElement(
-        Box,
-        { flexDirection: 'column' },
-        React.createElement(Text, { color: 'red' }, `✗ ${output.error.message}`),
-        handoffUrl
-          ? React.createElement(Text, { dimColor: true }, `기관 문의: ${handoffUrl}`)
-          : null,
-      ),
+  isResultTruncated(output: Output): boolean {
+    return isPrimitiveResultPreviewTruncated(
+      output.ok
+        ? buildSubmitSuccessRows(output)
+        : buildSubmitErrorRows(output),
     )
   },
 
   /**
-   * send is a side-effecting citizen action (신청, 신고, etc.) that may
+   * send is a side-effecting citizen action (application, report, etc.) that may
    * be irreversible. Always ask for citizen permission before proceeding.
    * Spec 024 invariant: adapters cite agency policy; the permission gauntlet
    * surfaces that citation via context.ummayaCitations (set in validateInput).
@@ -380,7 +389,7 @@ export const SubmitPrimitive = buildTool({
   async checkPermissions(_input) {
     return {
       behavior: 'ask' as const,
-      message: '권한 위임 필요: 행정 기관에 제출 요청을 전송합니다. 진행하시겠습니까?',
+      message: 'Permission delegation required: send a submission request to the agency. Continue?',
     }
   },
 

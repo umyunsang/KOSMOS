@@ -15,7 +15,7 @@
 //
 // Usage in every primitive renderer:
 //   const mock = extractMockMeta(result)
-//   if (mock.isMock) { ... render with 🧪 모의 prefix and dim-cyan color }
+//   if (mock.isMock) { ... render with Mock prefix and dim-cyan color }
 
 // ---------------------------------------------------------------------------
 // Types
@@ -99,15 +99,15 @@ export function extractMockMeta(payload: unknown): MockMeta {
 // Mock label helpers (stateless, no React import — primitives stay in .ts)
 // ---------------------------------------------------------------------------
 
-/** Korean prefix for all mock tool results. */
-export const MOCK_PREFIX = '🧪 모의'
+/** English prefix for all mock tool results. */
+export const MOCK_PREFIX = 'Mock'
 
 /**
- * Return the mock-prefixed Korean label for a primitive success action.
+ * Return the mock-prefixed English label for a primitive success action.
  *
  * Examples:
- *   mockLabel('인증 완료')  → '🧪 모의 인증 완료'
- *   mockLabel('제출 접수')  → '🧪 모의 제출 접수'
+ *   mockLabel('Verification complete')  → 'Mock Verification complete'
+ *   mockLabel('Submission accepted')    → 'Mock Submission accepted'
  */
 export function mockLabel(label: string): string {
   return `${MOCK_PREFIX} ${label}`

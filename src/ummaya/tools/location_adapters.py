@@ -13,6 +13,7 @@ pre-processing citizen queries inside the primitive dispatcher.
 from __future__ import annotations
 
 import logging
+import re
 from datetime import UTC, datetime
 from typing import Any
 
@@ -33,6 +34,25 @@ from ummaya.tools.models import (
 )
 
 logger = logging.getLogger(__name__)
+
+_ADMIN_AREA_TOKEN_RE = re.compile(r"(?:^|\s)[0-9A-Za-z가-힣]+(?:동|읍|면|리)(?:$|\s)")
+_ADMIN_AREA_TAIL_RE = re.compile(r"(?:^|\s)[0-9A-Za-z가-힣]+(?:구|군|시|도)$")
+_POI_HINT_RE = re.compile(
+    r"(대학교|캠퍼스|초등학교|중학교|고등학교|학교|역|터미널|공항|해수욕장|해변|시장|"
+    r"공원|병원|의원|약국|주민센터|보건소|도서관|박물관|카페|마트|백화점)"
+)
+_TRAILING_LOCATION_WORDS = (
+    "근처",
+    "주변",
+    "인근",
+    "부근",
+    "일대",
+    "쪽",
+    "에서",
+    "으로",
+    "기준",
+    "주소",
+)
 
 
 class _LocateOutput(RootModel[object]):
@@ -150,6 +170,33 @@ def _confidence(total: int) -> str:
     return "low"
 
 
+def canonical_admin_area_query(query: str) -> str:
+    """Return a cleaned administrative-area query for Kakao address search."""
+
+    cleaned = " ".join(query.strip().split())
+    changed = True
+    while changed:
+        changed = False
+        for word in _TRAILING_LOCATION_WORDS:
+            if cleaned.endswith(word) and len(cleaned) > len(word):
+                cleaned = cleaned[: -len(word)].strip()
+                changed = True
+    return cleaned
+
+
+def should_route_keyword_query_to_address(query: str) -> bool:
+    """Return True when a keyword-search query is really an admin-area address."""
+
+    cleaned = canonical_admin_area_query(query)
+    if not cleaned or not re.search(r"[가-힣]", cleaned):
+        return False
+    if _POI_HINT_RE.search(cleaned):
+        return False
+    if _ADMIN_AREA_TOKEN_RE.search(f" {cleaned} "):
+        return True
+    return bool(" " in cleaned and _ADMIN_AREA_TAIL_RE.search(cleaned))
+
+
 async def _kakao_address_search(inp: KakaoAddressSearchInput) -> ResolveBundle | ResolveError:
     from ummaya.tools.geocoding.kakao_client import search_address
 
@@ -203,8 +250,15 @@ async def _kakao_address_search(inp: KakaoAddressSearchInput) -> ResolveBundle |
     )
 
 
-async def _kakao_keyword_search(inp: KakaoKeywordSearchInput) -> POIResult | ResolveError:
+async def _kakao_keyword_search(
+    inp: KakaoKeywordSearchInput,
+) -> POIResult | ResolveBundle | ResolveError:
     from ummaya.tools.geocoding.kakao_client import search_keyword
+
+    if should_route_keyword_query_to_address(inp.query):
+        return await _kakao_address_search(
+            KakaoAddressSearchInput(query=canonical_admin_area_query(inp.query))
+        )
 
     result = await search_keyword(inp.query)
     if not result.documents:
@@ -344,13 +398,15 @@ KAKAO_ADDRESS_SEARCH_TOOL = GovAPITool(
     output_schema=_LocateOutput,
     llm_description=(
         "Locate adapter for Kakao Local search/address. Use for structured road or "
-        "jibun addresses and administrative district text. Returns a bundle containing "
+        "jibun addresses and administrative district text. Prefer this over keyword "
+        "search for bare Korean admin-area wording like '부산 다대1동', '사하구 하단동', "
+        "or any query ending in 동/읍/면/구 without a named POI. Returns a bundle containing "
         "address, coordinates, KMA nx/ny when in domain, and Kakao b_code when present. "
         "Call as locate({tool_id:'kakao_address_search', params:{query:'...'}})."
     ),
     search_hint=(
-        "locate 위치 주소 도로명 지번 행정동 좌표 geocode kakao address "
-        "서울 강남구 부산 사하구 테헤란로"
+        "locate 위치 주소 도로명 지번 행정동 법정동 동 읍 면 구 좌표 geocode kakao address "
+        "서울 강남구 부산 사하구 다대1동 하단동 테헤란로"
     ),
     policy=_provider_policy("Kakao", "https://www.kakao.com/policy/privacy"),
     is_concurrency_safe=True,
@@ -371,9 +427,11 @@ KAKAO_KEYWORD_SEARCH_TOOL = GovAPITool(
     llm_description=(
         "Locate adapter for Kakao Local search/keyword. Use for named places, campuses, "
         "stations, landmarks, hospitals, businesses, and POIs such as '동아대학교 승학캠퍼스' "
-        "or '강남역'. Returns POI name/category, WGS-84 lat/lon, and KMA nx/ny "
-        "when in domain. If a downstream adapter needs q0/q1 region names, follow with "
-        "locate({tool_id:'kakao_coord_to_region', params:{lat:<lat>, lon:<lon>}})."
+        "or '강남역'. Do not use for bare administrative districts like '부산 다대1동'; "
+        "use kakao_address_search for those. Returns POI name/category, WGS-84 "
+        "lat/lon, and KMA nx/ny when in domain. If a downstream adapter needs q0/q1 "
+        "region names, follow with locate({tool_id:'kakao_coord_to_region', "
+        "params:{lat:<lat>, lon:<lon>}})."
     ),
     search_hint=(
         "locate 위치 장소 키워드 POI 랜드마크 캠퍼스 역 병원 좌표 kakao keyword "

@@ -3,11 +3,13 @@
 
 from __future__ import annotations
 
+import httpx
 import pytest
+import respx
 from pydantic import BaseModel
 
 from ummaya.tools.executor import ToolExecutor
-from ummaya.tools.live_proxy import should_use_live_adapter_proxy
+from ummaya.tools.live_proxy import invoke_live_adapter_proxy, should_use_live_adapter_proxy
 from ummaya.tools.models import GovAPITool, LookupRecord
 from ummaya.tools.registry import ToolRegistry
 
@@ -112,3 +114,49 @@ async def test_executor_direct_mode_calls_local_adapter(
 
     assert isinstance(result, LookupRecord)
     assert result.item == {"value": "direct"}
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_invoke_live_adapter_proxy_retries_retryable_gateway_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("UMMAYA_LIVE_ADAPTER_PROXY_URL", "https://gateway.example/v1/adapters")
+    monkeypatch.setenv("UMMAYA_LIVE_ADAPTER_PROXY_MAX_ATTEMPTS", "2")
+    monkeypatch.setattr("ummaya.tools.live_proxy.asyncio.sleep", _noop_sleep)
+
+    tool = _make_proxyable_tool()
+    route = respx.post("https://gateway.example/v1/adapters/kma_current_observation").mock(
+        side_effect=[
+            httpx.Response(
+                200,
+                json={
+                    "ok": True,
+                    "result": {
+                        "kind": "error",
+                        "reason": "timeout",
+                        "message": "Adapter timed out.",
+                        "retryable": True,
+                    },
+                },
+            ),
+            httpx.Response(
+                200,
+                json={"ok": True, "result": {"kind": "record", "item": {"value": "proxied"}}},
+            ),
+        ],
+    )
+
+    result = await invoke_live_adapter_proxy(
+        tool=tool,
+        params={"q": "다대포"},
+        request_id="req-proxy-retry",
+        session_identity="session-1",
+    )
+
+    assert result == {"kind": "record", "item": {"value": "proxied"}}
+    assert route.call_count == 2
+
+
+async def _noop_sleep(_: float) -> None:
+    return None

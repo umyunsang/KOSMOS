@@ -166,7 +166,7 @@ export class Cursor {
     selection: number = 0,
   ): Cursor {
     // make MeasuredText on less than columns width, to account for cursor
-    return new Cursor(new MeasuredText(text, columns - 1), offset, selection)
+    return new Cursor(new MeasuredText(text, Math.max(1, columns - 1)), offset, selection)
   }
 
   getViewportStartLine(maxVisibleLines?: number): number {

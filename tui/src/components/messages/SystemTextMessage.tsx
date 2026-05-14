@@ -814,7 +814,7 @@ function BridgeStatusMessage(t0) {
   }
   let t7;
   if ($[9] !== bg || $[10] !== t1 || $[11] !== t6) {
-    t7 = <Box flexDirection="row" marginTop={t1} backgroundColor={bg} width={999}>{t2}{t6}</Box>;
+    t7 = <Box flexDirection="row" marginTop={t1} backgroundColor={bg} width="100%">{t2}{t6}</Box>;
     $[9] = bg;
     $[10] = t1;
     $[11] = t6;

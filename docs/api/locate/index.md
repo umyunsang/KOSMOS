@@ -67,4 +67,8 @@ UMMAYA: uses those live results as inputs to downstream `find` adapters.
 - Do not invent coordinates, KMA grid values, region names, or administrative codes.
 - Use `kakao_keyword_search` for named places and POIs.
 - Use `kakao_address_search` or `juso_adm_cd_lookup` for structured addresses or district text.
+- If a model sends bare administrative text such as `다대1동`, `사하구 하단동`, or `부산 사하구`
+  to `kakao_keyword_search`, the runtime reroutes that call to `kakao_address_search` before
+  adapter execution. This prevents POI matches such as beaches or landmarks from replacing
+  the intended administrative-area coordinate.
 - Use `kakao_coord_to_region` or `sgis_adm_cd_lookup` only after a coordinate-producing adapter has returned lat/lon.

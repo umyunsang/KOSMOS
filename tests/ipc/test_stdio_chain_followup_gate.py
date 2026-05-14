@@ -8,7 +8,8 @@ invoking ``lookup(kma_current_observation)``. The fix adds
 ``_check_resolve_terminated_without_followup`` which runs at the
 ``if not tool_call_buf:`` boundary and rejects the final-answer turn when
 the conversation invoked resolve_location but did not follow up with a
-coord/admcd-input lookup despite the citizen query implying one.
+coord/admcd-input lookup despite the dynamic available_adapters block
+surfacing a registry-selected find candidate.
 
 Pure-function tests — no LLM harness required, no event loop, no monkeypatch.
 The handler-level integration is exercised indirectly by the existing
@@ -27,6 +28,7 @@ from types import SimpleNamespace
 from typing import Any
 
 from ummaya.ipc.stdio import (
+    _available_adapters_block_has_find_candidate,
     _build_verify_session_context,
     _check_chain_prerequisite,
     _check_current_weather_terminated_without_observation,
@@ -38,25 +40,28 @@ from ummaya.ipc.stdio import (
     _check_submit_terminated_without_submit,
     _check_verify_terminated_without_verify,
     _check_verify_tool_choice_prerequisite,
+    _conversation_has_successful_identical_primitive_call,
     _conversation_has_successful_lookup,
     _conversation_has_successful_primitive,
     _effective_chat_max_tokens,
     _final_answer_looks_like_generic_retry_after_success,
+    _final_answer_looks_like_incomplete_sentence,
     _final_answer_looks_like_recursive_tool_message,
     _final_answer_looks_like_tool_call_narration,
     _final_answer_looks_like_unclosed_markdown,
     _final_answer_missing_current_weather_observation_values,
     _location_independent_resolve_redirect_for_query,
+    _maybe_reroute_locate_admin_keyword_args,
     _normalize_lookup_args_for_query,
     _normalize_nmc_lookup_args_from_prior_locate,
     _normalize_submit_args_for_query,
     _normalize_verify_args_for_query,
     _normalize_verify_tool_id_for_query,
     _query_implies_current_weather_observation,
-    _query_implies_followup_lookup,
     _query_implies_location_resolution,
     _sensitive_lookup_verify_redirect_for_query,
     _submit_requirement_for_query,
+    _tool_result_payload_is_error,
 )
 from ummaya.llm.models import (
     ChatMessage as LLMChatMessage,
@@ -69,54 +74,70 @@ from ummaya.llm.models import (
 )
 
 # ---------------------------------------------------------------------------
-# _query_implies_followup_lookup
+# Dynamic available_adapters follow-up signal
 # ---------------------------------------------------------------------------
 
 
-def test_weather_query_implies_followup() -> None:
-    """Korean weather keywords trigger the follow-up requirement."""
-    assert _query_implies_followup_lookup("지금 부산 사하구 다대1동 날씨 어때")
-    assert _query_implies_followup_lookup("내일 서울 기온 알려줘")
-    assert _query_implies_followup_lookup("오늘 강수량 예보")
+def test_available_adapters_find_candidate_triggers_followup_signal() -> None:
+    """Registry-selected find candidates, not static keywords, trigger follow-up."""
+    block = "\n".join(
+        [
+            '<available_adapters query="다대1동 근처 내과">',
+            "- hira_hospital_search (primitive=find) [18.40] — 병원 검색",
+            "- kakao_keyword_search (primitive=locate) [12.00] — 장소 검색",
+            "</available_adapters>",
+        ]
+    )
+    assert _available_adapters_block_has_find_candidate(block)
+
+
+def test_locate_only_available_adapters_do_not_trigger_followup_signal() -> None:
+    """Pure locate candidate blocks stay out of the follow-up gate."""
+    block = "\n".join(
+        [
+            '<available_adapters query="부산 사하구 다대1동 주소">',
+            "- kakao_address_search (primitive=locate) [12.00] — 주소 검색",
+            "- kakao_coord_to_region (primitive=locate) [8.00] — 좌표 역변환",
+            "</available_adapters>",
+        ]
+    )
+    assert not _available_adapters_block_has_find_candidate(block)
 
 
 def test_current_weather_query_requires_observation() -> None:
     """Current/today weather should use current observation before final prose."""
-    assert _query_implies_current_weather_observation("강남역 오늘 날씨 알려줘")
+    assert _query_implies_current_weather_observation("다대포해수욕장 오늘 날씨 알려줘")
     assert _query_implies_current_weather_observation("부산 지금 기온")
+    assert _query_implies_current_weather_observation("다대포 산책 가도 될까? 비 오는지만 봐줘")
     assert not _query_implies_current_weather_observation("내일 서울 날씨 예보")
-
-
-def test_hospital_query_implies_followup() -> None:
-    """Hospital / ER / pharmacy keywords trigger the follow-up requirement."""
-    assert _query_implies_followup_lookup("강남역 근처 응급실")
-    assert _query_implies_followup_lookup("부산 내과 병원 찾아줘")
-    assert _query_implies_followup_lookup(
-        "동아대학교 승학캠퍼스 근처 피부과나 내과 가까운 순서로 찾아줘"
+    assert not _query_implies_current_weather_observation(
+        "다대1동에서 오늘 전화해볼 만한 내과나 이비인후과 3곳 알려줘"
     )
-    assert _query_implies_followup_lookup("다대1동 주변 의원 진료 가능한 곳")
-    assert _query_implies_followup_lookup("서울역 약국 위치")
 
 
-def test_accident_query_implies_followup() -> None:
-    """Traffic accident / hazard keywords trigger the follow-up requirement."""
-    assert _query_implies_followup_lookup("강남역 사고다발지")
-    assert _query_implies_followup_lookup("서울시 어린이보호구역 위험")
+def test_locate_admin_keyword_args_reroute_to_address_adapter() -> None:
+    """Bare 행정동 text must paint and execute as Kakao address search."""
+    args = {
+        "tool_id": "kakao_keyword_search",
+        "params": {"query": "부산 사하구 다대1동에서"},
+    }
+
+    rerouted = _maybe_reroute_locate_admin_keyword_args("locate", args)
+
+    assert rerouted == {
+        "tool_id": "kakao_address_search",
+        "params": {"query": "부산 사하구 다대1동"},
+    }
 
 
-def test_english_query_keywords() -> None:
-    """English fallback keywords also trigger the follow-up requirement."""
-    assert _query_implies_followup_lookup("weather in Seoul today")
-    assert _query_implies_followup_lookup("emergency hospital nearby")
+def test_locate_poi_keyword_args_are_not_rerouted() -> None:
+    """POI names such as beaches still use Kakao keyword search."""
+    args = {
+        "tool_id": "kakao_keyword_search",
+        "params": {"query": "다대포해수욕장"},
+    }
 
-
-def test_non_followup_query_does_not_trigger() -> None:
-    """Pure address resolution / verify-class queries do NOT trigger."""
-    assert not _query_implies_followup_lookup("부산 사하구 다대1동 주소가 어디?")
-    assert not _query_implies_followup_lookup("종합소득세 신고해줘")
-    assert not _query_implies_followup_lookup("정부24 등본 발급")
-    assert not _query_implies_followup_lookup("")
-    assert not _query_implies_followup_lookup("안녕하세요")
+    assert _maybe_reroute_locate_admin_keyword_args("locate", args) == args
 
 
 def test_recursive_tool_message_final_answer_is_rejected() -> None:
@@ -237,6 +258,24 @@ def _msg_tool_result(name: str, payload: dict[str, Any]) -> LLMChatMessage:
     )
 
 
+def _msg_available_adapters(*, find: bool = True) -> LLMChatMessage:
+    candidate = (
+        "- kma_current_observation (primitive=find) [18.40] — 기상청 현재 관측"
+        if find
+        else "- kakao_address_search (primitive=locate) [12.00] — 주소 검색"
+    )
+    return LLMChatMessage(
+        role="system",
+        content="\n".join(
+            [
+                '<available_adapters query="테스트">',
+                candidate,
+                "</available_adapters>",
+            ]
+        ),
+    )
+
+
 def _auth_with_scope(scope: str) -> SimpleNamespace:
     return SimpleNamespace(delegation_context=SimpleNamespace(token=SimpleNamespace(scope=scope)))
 
@@ -247,6 +286,86 @@ def _hometax_lookup_args() -> dict[str, object]:
         "tool_id": "mock_lookup_module_hometax_simplified",
         "params": {"year": 2025, "resident_id_prefix": "000000"},
     }
+
+
+# ---------------------------------------------------------------------------
+# Duplicate primitive non-progress guard
+# ---------------------------------------------------------------------------
+
+
+def _hira_lookup_args() -> dict[str, object]:
+    return {
+        "tool_id": "hira_hospital_search",
+        "params": {
+            "xPos": 128.962741189119,
+            "yPos": 35.0465263488422,
+            "dgsbjt": "내과,이비인후과",
+        },
+    }
+
+
+def _successful_hira_messages() -> list[LLMChatMessage]:
+    return [
+        _msg_assistant_tool_call("find", _hira_lookup_args()),
+        _msg_tool_result(
+            "find",
+            {
+                "ok": True,
+                "result": {
+                    "kind": "collection",
+                    "total_count": 33,
+                    "items": [
+                        {
+                            "yadmNm": "서울성모내과의원",
+                            "addr": "부산광역시 사하구 다대로 694, 6층 (다대동)",
+                            "telno": "051-262-8575",
+                            "clCdNm": "의원",
+                            "matchedDgsbjtNm": "내과",
+                            "distance": 283,
+                        },
+                        {
+                            "yadmNm": "다대원이비인후과의원",
+                            "addr": "부산광역시 사하구 다대로 702, 6층 (다대동)",
+                            "telno": "051-265-7555",
+                            "clCdNm": "의원",
+                            "matchedDgsbjtNm": "이비인후과",
+                            "distance": 392,
+                        },
+                    ],
+                },
+            },
+        ),
+    ]
+
+
+def test_duplicate_primitive_call_detects_successful_identical_result() -> None:
+    """Repeated same-args primitive calls after success are non-progress."""
+    messages = _successful_hira_messages()
+
+    assert _conversation_has_successful_identical_primitive_call(
+        messages,
+        primitive="find",
+        args=_hira_lookup_args(),
+    )
+    assert not _conversation_has_successful_identical_primitive_call(
+        messages,
+        primitive="find",
+        args={
+            "tool_id": "hira_hospital_search",
+            "params": {
+                "xPos": 128.962741189119,
+                "yPos": 35.0465263488422,
+                "dgsbjt": "소아청소년과",
+            },
+        },
+    )
+
+
+def test_incomplete_final_sentence_is_rejected_after_tool_success() -> None:
+    """A dangling final sentence should be routed back through the model loop."""
+    assert _final_answer_looks_like_incomplete_sentence("기상청 현재관측 자료에 따르면,")
+    assert _final_answer_looks_like_incomplete_sentence("조회 결과는 다음과 같습니다:")
+    assert not _final_answer_looks_like_incomplete_sentence("비는 오지 않습니다.")
 
 
 # ---------------------------------------------------------------------------
@@ -353,6 +472,21 @@ def test_hometax_lookup_generic_tool_id_is_canonicalized_from_query() -> None:
 
     assert normalized["tool_id"] == "mock_lookup_module_hometax_simplified"
     assert normalized["params"] == {"year": 2025, "resident_id_prefix": "000000"}
+
+
+def test_lookup_result_count_uses_adapter_schema_field_name() -> None:
+    """Citizen-stated counts are preserved through the adapter input schema."""
+    normalized = _normalize_lookup_args_for_query(
+        "find",
+        {
+            "tool_id": "hira_hospital_search",
+            "params": {"xPos": 128.971316, "yPos": 35.059152},
+        },
+        "부산 사하구 다대1동에서 가까운 내과 3곳만 알려줘",
+        adapter_param_names={"xPos", "yPos", "numOfRows", "pageNo"},
+    )
+
+    assert normalized["params"]["numOfRows"] == 3
 
 
 def test_non_sensitive_lookup_does_not_trigger_auth_gate() -> None:
@@ -989,6 +1123,44 @@ def test_gov24_submit_args_are_filled_from_citizen_query() -> None:
     assert "delegation_context" in params
 
 
+def test_gov24_submit_args_are_filled_for_natural_demo_request() -> None:
+    """Gov24 submit calls get schema-required fields even when the model emits only auth."""
+    args = _normalize_submit_args_for_query(
+        "send",
+        {
+            "tool_id": "mock_submit_module_gov24_minwon",
+            "params": {"delegation_context": {"token": {"scope": "send:gov24.minwon"}}},
+        },
+        "정부24에서 주민등록등본 온라인 발급 신청을 진행해줘. 접수번호가 나오면 알려줘.",
+    )
+
+    params = args["params"]
+    assert isinstance(params, dict)
+    assert params["minwon_type"] == "주민등록등본"
+    assert params["applicant_name"] == "MOCK_APPLICANT"
+    assert params["delivery_method"] == "online"
+    assert params["session_id"] == "GOV24-MINWON-SESSION-001"
+    assert "delegation_context" in params
+
+
+def test_adapter_invocation_failed_tool_result_is_error() -> None:
+    """Adapter validation failures must not be interpreted as successful tool results."""
+    assert _tool_result_payload_is_error(
+        {
+            "kind": "send",
+            "result": {
+                "reason": "adapter_invocation_failed",
+                "tool_id": "mock_submit_module_gov24_minwon",
+                "structured": {
+                    "exception_type": "ValidationError",
+                    "message": "missing required fields",
+                },
+                "message": "Adapter raised ValidationError.",
+            },
+        }
+    )
+
+
 def test_gov24_generic_submit_tool_id_is_canonicalized() -> None:
     """The model must not burn a permission decision on primitive-name-as-tool-id."""
     args = _normalize_submit_args_for_query(
@@ -1597,10 +1769,10 @@ def test_chain_complete_passes_through() -> None:
 def test_today_weather_forecast_only_is_rejected_until_current_observation() -> None:
     """Forecast alone must not justify current/today weather final prose."""
     msgs: list[Any] = [
-        LLMChatMessage(role="user", content="강남역 오늘 날씨 알려줘"),
+        LLMChatMessage(role="user", content="다대포해수욕장 오늘 날씨 알려줘"),
         _msg_assistant_tool_call(
             "locate",
-            {"tool_id": "kakao_keyword_search", "params": {"query": "강남역"}},
+            {"tool_id": "kakao_keyword_search", "params": {"query": "다대포해수욕장"}},
         ),
         _msg_tool_result(
             "locate",
@@ -1623,7 +1795,7 @@ def test_today_weather_forecast_only_is_rejected_until_current_observation() -> 
 
     msg = _check_current_weather_terminated_without_observation(
         msgs,
-        "강남역 오늘 날씨 알려줘",
+        "다대포해수욕장 오늘 날씨 알려줘",
     )
 
     assert msg is not None
@@ -1642,7 +1814,7 @@ def test_today_weather_forecast_only_is_rejected_until_current_observation() -> 
     assert (
         _check_current_weather_terminated_without_observation(
             msgs,
-            "강남역 오늘 날씨 알려줘",
+            "다대포해수욕장 오늘 날씨 알려줘",
         )
         is None
     )
@@ -1651,6 +1823,7 @@ def test_today_weather_forecast_only_is_rejected_until_current_observation() -> 
 def test_resolve_only_then_terminate_is_rejected() -> None:
     """G-class regression: resolve called but no follow-up lookup → reject."""
     msgs: list[Any] = [
+        _msg_available_adapters(find=True),
         LLMChatMessage(role="user", content="지금 부산 사하구 다대1동 날씨 어때"),
         _msg_assistant_tool_call(
             "locate",
@@ -1671,8 +1844,9 @@ def test_resolve_only_then_terminate_is_rejected() -> None:
 
 
 def test_resolve_only_with_non_observable_query_passes() -> None:
-    """When the query doesn't imply a follow-up, the gate stays out of the way."""
+    """When retrieval returns only locate candidates, the gate stays out of the way."""
     msgs: list[Any] = [
+        _msg_available_adapters(find=False),
         LLMChatMessage(role="user", content="부산 사하구 다대1동 주소"),
         _msg_assistant_tool_call("locate", {"query": "부산 사하구 다대1동"}),
         _msg_tool_result("locate", {"lat": 35.05915, "lon": 128.97132}),
@@ -1683,9 +1857,10 @@ def test_resolve_only_with_non_observable_query_passes() -> None:
 def test_no_resolve_call_no_gate() -> None:
     """No resolve_location → gate doesn't fire even on observable queries."""
     msgs: list[Any] = [
-        LLMChatMessage(role="user", content="강남역 응급실"),
+        _msg_available_adapters(find=True),
+        LLMChatMessage(role="user", content="동아대학교 응급실"),
     ]
-    assert _check_resolve_terminated_without_followup(msgs, "강남역 응급실") is None
+    assert _check_resolve_terminated_without_followup(msgs, "동아대학교 응급실") is None
 
 
 def test_lookup_without_fetch_mode_still_counts() -> None:

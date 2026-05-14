@@ -121,14 +121,17 @@ function primitiveKindToTool(kind: PrimitiveKind): Tool {
  * frame via the ummaya bridge's write channel (process.stdout NDJSON).
  *
  * Must be called AFTER registerIpcToolUseConfirmQueue has been called by REPL.
- * If no setter is registered (e.g. REPL unmounted), logs a warning and no-ops.
+ * If no setter is registered (e.g. print/headless mode or REPL unmounted),
+ * fail closed by denying the request immediately so the backend never waits
+ * for an impossible modal response.
  */
 export function pushIpcPermissionRequest(frame: PermissionRequestFrame): void {
   const setter = _registeredSetter
   if (setter === null) {
     console.warn(
-      `[ummaya.ipc.permission] no setter registered — cannot present permission modal for request_id=${frame.request_id}. Is REPL mounted?`,
+      `[ummaya.ipc.permission] no setter registered — denying permission_request=${frame.request_id} because no permission UI is mounted.`,
     )
+    _sendPermissionResponse(frame, 'deny')
     return
   }
 

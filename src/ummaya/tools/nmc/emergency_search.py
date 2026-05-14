@@ -23,11 +23,13 @@ automatic percent-encoding for all parameter values.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import math
 from datetime import UTC, datetime
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
+import httpx
 from pydantic import BaseModel, ConfigDict, Field, RootModel, model_validator
 
 from ummaya.tools._description_template import build_description_v4
@@ -453,6 +455,89 @@ def _build_request(
     return _LIST_URL, params, "getEgytListInfoInqire"
 
 
+def _response_has_zero_items(data: dict[str, Any]) -> bool:
+    """Return True when NMC responds normally but with an empty item set."""
+    body = data.get("response", {}).get("body", {})
+    raw_items = _normalize_items(body.get("items", []))
+    try:
+        total_count = int(body.get("totalCount", 0))
+    except (TypeError, ValueError):
+        total_count = 0
+    return total_count == 0 and not raw_items
+
+
+def _lookup_error(
+    *,
+    reason: LookupErrorReason,
+    message: str,
+    retryable: bool,
+) -> dict[str, Any]:
+    return {
+        "kind": "error",
+        "reason": reason,
+        "message": message,
+        "retryable": retryable,
+    }
+
+
+async def _fetch_nmc_json(
+    *,
+    client: httpx.AsyncClient,
+    endpoint: str,
+    params: dict[str, str | int | float],
+) -> dict[str, Any]:
+    resp = await client.get(
+        endpoint,
+        params=params,
+        headers={"Accept": "application/json"},
+    )
+    resp.raise_for_status()
+
+    content_type = resp.headers.get("content-type", "")
+    if "json" not in content_type.lower():
+        return _lookup_error(
+            reason=LookupErrorReason.upstream_unavailable,
+            message=f"NMC API returned non-JSON content-type: {content_type!r}",
+            retryable=True,
+        )
+
+    try:
+        payload = resp.json()
+    except ValueError:
+        return _lookup_error(
+            reason=LookupErrorReason.upstream_unavailable,
+            message="NMC API returned invalid JSON body",
+            retryable=True,
+        )
+    if not isinstance(payload, dict):
+        return _lookup_error(
+            reason=LookupErrorReason.upstream_unavailable,
+            message="NMC API returned non-object JSON body",
+            retryable=True,
+        )
+    return cast("dict[str, Any]", payload)
+
+
+async def _fetch_nmc_json_with_same_route_retry(
+    *,
+    client: httpx.AsyncClient,
+    endpoint: str,
+    params: dict[str, str | int | float],
+    mode: Literal["coordinate", "region"],
+) -> dict[str, Any]:
+    data = await _fetch_nmc_json(client=client, endpoint=endpoint, params=params)
+    if "kind" in data or mode != "region" or not _response_has_zero_items(data):
+        return data
+
+    await asyncio.sleep(0.4)
+    retry_data = await _fetch_nmc_json(client=client, endpoint=endpoint, params=params)
+    if "kind" in retry_data:
+        return retry_data
+    if not _response_has_zero_items(retry_data):
+        return retry_data
+    return data
+
+
 def _sort_region_items_by_origin(
     items: list[dict[str, Any]],
     *,
@@ -510,12 +595,11 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
     from ummaya.settings import settings
 
     if not settings.data_go_kr_api_key:
-        return {
-            "kind": "error",
-            "reason": LookupErrorReason.upstream_unavailable,
-            "message": "UMMAYA_DATA_GO_KR_API_KEY is not configured",
-            "retryable": False,
-        }
+        return _lookup_error(
+            reason=LookupErrorReason.upstream_unavailable,
+            message="UMMAYA_DATA_GO_KR_API_KEY is not configured",
+            retryable=False,
+        )
 
     endpoint, params, operation = _build_request(
         inp,
@@ -523,31 +607,14 @@ async def handle(inp: NmcEmergencySearchInput) -> dict[str, Any]:
     )
 
     async with traced_async_client(timeout=10.0) as client:
-        resp = await client.get(
-            endpoint,
+        data = await _fetch_nmc_json_with_same_route_retry(
+            client=client,
+            endpoint=endpoint,
             params=params,
-            headers={"Accept": "application/json"},
+            mode=inp.mode,
         )
-        resp.raise_for_status()
-
-        content_type = resp.headers.get("content-type", "")
-        if "json" not in content_type.lower():
-            return {
-                "kind": "error",
-                "reason": LookupErrorReason.upstream_unavailable,
-                "message": f"NMC API returned non-JSON content-type: {content_type!r}",
-                "retryable": True,
-            }
-
-        try:
-            data = resp.json()
-        except ValueError:
-            return {
-                "kind": "error",
-                "reason": LookupErrorReason.upstream_unavailable,
-                "message": "NMC API returned invalid JSON body",
-                "retryable": True,
-            }
+        if "kind" in data:
+            return data
 
     header = data.get("response", {}).get("header", {})
     result_code = header.get("resultCode", "")

@@ -304,6 +304,25 @@ describe('dispatchPrimitive — [H1] inner-payload error classification', () => 
     expect(result.data.error?.message).toContain('OPAQUE')
   })
 
+  test('send: adapter_invocation_failed reason → ok=false', async () => {
+    const envelope = {
+      kind: 'send',
+      result: {
+        reason: 'adapter_invocation_failed',
+        tool_id: 'mock_submit_module_gov24_minwon',
+        structured: {
+          exception_type: 'ValidationError',
+          message: 'minwon_type field required',
+        },
+        message: 'Adapter raised ValidationError.',
+      },
+    }
+    const result = await dispatchAndInjectFrame('send', envelope)
+    expect(result.data.ok).toBe(false)
+    expect(result.data.error?.kind).toBe('adapter_invocation_failed')
+    expect(result.data.error?.message).toContain('ValidationError')
+  })
+
   test('find: success envelope with normal result still flips ok=true (regression guard)', async () => {
     // The classifier must NOT over-trigger — a benign result with no
     // family/kind/reason fields should pass through as ok=true.

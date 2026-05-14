@@ -34,6 +34,7 @@ export interface PermissionI18nKo {
   selectorDeny: string
   acceptFeedbackPlaceholder: string
   rejectFeedbackPlaceholder: string
+  permissionQuestion: (toolName: string) => string
 
   // Post-decision toast messages
   toastAllowedOnce: (toolName: string) => string
@@ -80,6 +81,7 @@ const permissionKo: PermissionI18nKo = {
   selectorDeny: '거부',
   acceptFeedbackPlaceholder: '추가로 전달할 요청을 입력하세요',
   rejectFeedbackPlaceholder: '거부 사유나 변경 요청을 입력하세요',
+  permissionQuestion: (toolName) => `"${toolName}" 실행을 허용하시겠습니까?`,
 
   // Toast
   toastAllowedOnce: (toolName) => `"${toolName}" 한 번 허용됨`,

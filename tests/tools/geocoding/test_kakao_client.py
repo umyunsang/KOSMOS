@@ -14,11 +14,13 @@ from ummaya.tools.errors import ConfigurationError
 from ummaya.tools.geocoding.kakao_client import (
     KakaoAddressDocument,
     KakaoCoord2RegionResult,
+    KakaoKeywordSearchResult,
     KakaoRegionDocument,
     KakaoSearchMeta,
     KakaoSearchResult,
     coord_to_region_code,
     search_address,
+    search_keyword,
 )
 
 _FIXTURE_DIR = Path(__file__).parent / "fixtures"
@@ -202,11 +204,56 @@ class TestSearchAddress:
     @pytest.mark.asyncio
     async def test_timeout_propagates_as_httpx_exception(self, monkeypatch):
         monkeypatch.setenv("UMMAYA_KAKAO_API_KEY", "test-key")
+        monkeypatch.setattr(
+            "ummaya.tools.geocoding.kakao_client.asyncio.sleep",
+            AsyncMock(),
+        )
         mock_client = AsyncMock(spec=httpx.AsyncClient)
         mock_client.get.side_effect = httpx.TimeoutException("timed out")
 
         with pytest.raises(httpx.TimeoutException):
             await search_address("서울 강남구", client=mock_client)
+        assert mock_client.get.call_count == 2
+
+
+class TestSearchKeyword:
+    @pytest.mark.asyncio
+    async def test_keyword_timeout_retries_same_endpoint_then_succeeds(self, monkeypatch):
+        monkeypatch.setenv("UMMAYA_KAKAO_API_KEY", "test-key-123")
+        monkeypatch.setattr(
+            "ummaya.tools.geocoding.kakao_client.asyncio.sleep",
+            AsyncMock(),
+        )
+        payload = {
+            "meta": {"total_count": 1, "pageable_count": 1, "is_end": True},
+            "documents": [
+                {
+                    "id": "place-1",
+                    "place_name": "다대포해수욕장",
+                    "category_name": "여행 > 관광,명소 > 해수욕장,해변",
+                    "category_group_code": "",
+                    "category_group_name": "",
+                    "phone": "",
+                    "address_name": "부산 사하구 다대동",
+                    "road_address_name": "",
+                    "x": "128.962741189119",
+                    "y": "35.0465263488422",
+                    "place_url": "https://place.map.kakao.com/1",
+                    "distance": "",
+                }
+            ],
+        }
+        mock_client = AsyncMock(spec=httpx.AsyncClient)
+        mock_client.get.side_effect = [
+            httpx.ReadTimeout("timed out"),
+            _make_mock_client(payload).get.return_value,
+        ]
+
+        result = await search_keyword("다대포해수욕장", client=mock_client)
+
+        assert isinstance(result, KakaoKeywordSearchResult)
+        assert result.documents[0].place_name == "다대포해수욕장"
+        assert mock_client.get.call_count == 2
 
 
 class TestCoordToRegionCode:
