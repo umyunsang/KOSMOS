@@ -1,4 +1,4 @@
-<img alt="UMMAYA banner with the Umma mascot and Unified Multi-Ministry Agent for Your Administration wordmark" src="https://raw.githubusercontent.com/umyunsang/UMMAYA/main/assets/ummaya-banner-light.png" width="100%">
+<img alt="UMMAYA banner with the Umma mascot and Unified Multi-Ministry Agent for Your Administration wordmark" src="https://raw.githubusercontent.com/umyunsang/UMMAYA/main/assets/ummaya-readme-banner.png" width="100%">
 
 <a href="https://github.com/umyunsang/UMMAYA/blob/main/assets/ummaya-demo.mp4">
   <img src="https://raw.githubusercontent.com/umyunsang/UMMAYA/main/assets/ummaya-demo.gif" alt="UMMAYA terminal demo showing public-service prompts, separated tool calls, compact tool results, and final assistant answers" width="100%">
@@ -201,6 +201,7 @@ This is not a separate safety pitch. It is part of how `check` and `send` work.
 UMMAYA currently uses `LGAI-EXAONE/K-EXAONE-236B-A23B` through FriendliAI Serverless for LLM responses.
 
 - Model: [K-EXAONE-236B-A23B](https://huggingface.co/LGAI-EXAONE/K-EXAONE-236B-A23B)
+- Thinking channel: `UMMAYA_K_EXAONE_THINKING` default `false`; set it to `true` only for reasoning-channel diagnostics or benchmark runs.
 - Model license: [K-EXAONE AI Model License Agreement](https://huggingface.co/LGAI-EXAONE/K-EXAONE-236B-A23B/blob/main/LICENSE)
 - Project license: [Apache License 2.0](LICENSE)
 
