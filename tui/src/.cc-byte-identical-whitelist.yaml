@@ -197,6 +197,10 @@ entries:
     cause: W14
     spec_ref: "specs/realuse-audit-2026-05-05"
     notes: "Turn-completion wording aligned to UMMAYA terminal output."
+  - path: tui/src/components/TextInput.tsx
+    cause: W14
+    spec_ref: "docs/requirements/ummaya-migration-tree.md § UI-B; tui/src/utils/__tests__/Cursor.responsive-width.test.ts"
+    notes: "Clamp input columns to the current terminal width so REPL input reflows on resize without changing text semantics."
   - path: tui/src/components/permissions/AskUserQuestionPermissionRequest/QuestionNavigationBar.tsx
     cause: W14
     spec_ref: "specs/realuse-audit-2026-05-05"
