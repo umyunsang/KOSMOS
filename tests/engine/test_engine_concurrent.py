@@ -14,9 +14,12 @@ added for documentation clarity.
 
 from __future__ import annotations
 
+import json
 import time
+from datetime import UTC, datetime
 
 import pytest
+from pydantic import BaseModel, Field
 
 from ummaya.engine.config import QueryEngineConfig
 from ummaya.engine.events import StopReason
@@ -29,6 +32,8 @@ from ummaya.llm.client import LLMClient  # noqa: F401
 from ummaya.llm.models import ChatMessage, FunctionCall, ToolCall
 from ummaya.llm.usage import UsageTracker
 from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.models import AdapterRealDomainPolicy, GovAPITool
+from ummaya.tools.mvp_surface import register_mvp_surface
 from ummaya.tools.registry import ToolRegistry
 
 QueryContext.model_rebuild()
@@ -42,6 +47,42 @@ QueryContext.model_rebuild()
 def _tc(call_id: str, tool_name: str, args: str = '{"query": "test"}') -> ToolCall:
     """Shorthand to build a ToolCall."""
     return ToolCall(id=call_id, function=FunctionCall(name=tool_name, arguments=args))
+
+
+class _PrimitiveTargetInput(BaseModel):
+    query: str | None = None
+    page_no: int = Field(default=1, ge=1)
+
+
+class _PrimitiveTargetOutput(BaseModel):
+    kind: str
+    items: list[dict[str, object]]
+    total_count: int
+
+
+def _read_only_policy() -> AdapterRealDomainPolicy:
+    return AdapterRealDomainPolicy(
+        real_classification_url="https://www.data.go.kr/policy/privacyPolicy.do",
+        real_classification_text="test read-only policy",
+        citizen_facing_gate="read-only",
+        last_verified=datetime(2026, 5, 16, tzinfo=UTC),
+    )
+
+
+def _primitive_target_tool(tool_id: str, *, primitive: str) -> GovAPITool:
+    return GovAPITool(
+        id=tool_id,
+        name_ko=tool_id,
+        ministry="UMMAYA" if primitive == "locate" else "BFC",
+        category=[primitive, "test"],
+        endpoint=f"internal://{tool_id}",
+        auth_type="public",
+        input_schema=_PrimitiveTargetInput,
+        output_schema=_PrimitiveTargetOutput,
+        search_hint=f"{tool_id} {primitive}",
+        policy=_read_only_policy(),
+        primitive=primitive,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -114,6 +155,78 @@ class TestDispatchToolCallsSingleSafe:
         assert len(results) == 1
         assert results[0].tool_id == "traffic_accident_search"
         assert results[0].success is True
+
+
+class TestDispatchToolCallsRootPrimitives:
+    """Root primitive calls fan out to their selected adapter ids."""
+
+    @pytest.mark.asyncio
+    async def test_find_root_primitive_invokes_selected_lookup_adapter(self) -> None:
+        registry = ToolRegistry()
+        register_mvp_surface(registry)
+        registry.register(_primitive_target_tool("bfc_funeral_area_fee", primitive="find"))
+        executor = ToolExecutor(registry)
+
+        async def _adapter(inp: _PrimitiveTargetInput) -> dict[str, object]:
+            return {
+                "kind": "collection",
+                "items": [{"record": {"query": inp.query, "faName": "영락공원"}}],
+                "total_count": 1,
+            }
+
+        executor.register_adapter("bfc_funeral_area_fee", _adapter)
+        results = await dispatch_tool_calls(
+            [
+                _tc(
+                    "call_find",
+                    "find",
+                    '{"tool_id":"bfc_funeral_area_fee","params":{"query":"부산 장례식장"}}',
+                )
+            ],
+            registry,
+            executor,
+        )
+
+        assert len(results) == 1
+        assert results[0].tool_id == "find"
+        assert results[0].success is True
+        assert results[0].data is not None
+        assert results[0].data["kind"] == "collection"
+        json.dumps(results[0].data)
+
+    @pytest.mark.asyncio
+    async def test_locate_root_primitive_invokes_selected_locate_adapter(self) -> None:
+        registry = ToolRegistry()
+        register_mvp_surface(registry)
+        registry.register(_primitive_target_tool("kakao_keyword_search", primitive="locate"))
+        executor = ToolExecutor(registry)
+
+        async def _adapter(inp: _PrimitiveTargetInput) -> dict[str, object]:
+            return {
+                "kind": "collection",
+                "items": [{"record": {"query": inp.query, "lat": 35.18, "lon": 129.07}}],
+                "total_count": 1,
+            }
+
+        executor.register_adapter("kakao_keyword_search", _adapter)
+        results = await dispatch_tool_calls(
+            [
+                _tc(
+                    "call_locate",
+                    "locate",
+                    '{"tool_id":"kakao_keyword_search","params":{"query":"부산광역시"}}',
+                )
+            ],
+            registry,
+            executor,
+        )
+
+        assert len(results) == 1
+        assert results[0].tool_id == "locate"
+        assert results[0].success is True
+        assert results[0].data is not None
+        assert results[0].data["kind"] == "collection"
+        json.dumps(results[0].data)
 
 
 class TestDispatchToolCallsTwoSafe:

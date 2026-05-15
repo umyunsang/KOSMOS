@@ -15,8 +15,10 @@ Covers the US1 acceptance scenarios:
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from datetime import UTC, datetime
 
 import pytest
+from pydantic import BaseModel
 
 from ummaya.context.builder import ContextBuilder
 from ummaya.context.models import SystemPromptConfig
@@ -29,9 +31,11 @@ from ummaya.engine.models import QueryContext, SessionBudget
 # QueryContext.model_rebuild() can resolve the forward reference and accept
 # mock objects for the llm_client field.
 from ummaya.llm.client import LLMClient  # noqa: F401
-from ummaya.llm.models import ChatMessage
+from ummaya.llm.models import ChatMessage, StreamEvent
 from ummaya.llm.usage import UsageTracker
 from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.models import AdapterRealDomainPolicy, GovAPITool
+from ummaya.tools.mvp_surface import register_mvp_surface
 from ummaya.tools.registry import ToolRegistry
 
 QueryContext.model_rebuild()
@@ -118,6 +122,115 @@ class _FailingMockClient(_MockLLMClientBase):
         """Raise immediately to simulate a catastrophic LLM failure."""
         raise RuntimeError("Simulated LLM failure")
         yield  # pragma: no cover — makes this an async generator
+
+
+class _CapturingToolsClient(_MockLLMClientBase):
+    """Mock LLM client that records provider tool definitions."""
+
+    def __init__(self) -> None:
+        self._usage = UsageTracker(budget=100_000)
+        self.tools_seen: object | None = None
+
+    @property
+    def usage(self) -> UsageTracker:  # type: ignore[override]
+        return self._usage
+
+    async def stream(  # type: ignore[override]
+        self,
+        messages: list[ChatMessage],
+        **kwargs: object,
+    ) -> AsyncIterator[object]:
+        self.tools_seen = kwargs.get("tools")
+        yield StreamEvent(type="content_delta", content="ok")
+
+
+class _AdapterContextInput(BaseModel):
+    page_no: int = 1
+
+
+class _AdapterContextOutput(BaseModel):
+    kind: str
+    items: list[dict[str, object]]
+
+
+def _adapter_context_tool() -> GovAPITool:
+    return GovAPITool(
+        id="bfc_funeral_area_fee",
+        name_ko="부산시설공단 장례식장 시설 사용료",
+        ministry="BFC",
+        category=["public-data", "funeral"],
+        endpoint="https://apis.data.go.kr/example",
+        auth_type="api_key",
+        input_schema=_AdapterContextInput,
+        output_schema=_AdapterContextOutput,
+        search_hint="부산 장례식장 시설 사용료 funeral area fee public data",
+        policy=AdapterRealDomainPolicy(
+            real_classification_url="https://www.data.go.kr/policy/privacyPolicy.do",
+            real_classification_text="test read-only policy",
+            citizen_facing_gate="read-only",
+            last_verified=datetime(2026, 5, 16, tzinfo=UTC),
+        ),
+        primitive="find",
+        llm_description="부산광역시 장례식장 시설 사용료 공개 데이터를 조회한다.",
+    )
+
+
+def test_available_adapters_context_includes_retrieved_adapter() -> None:
+    """Rich REPL QueryEngine must inject BM25 adapter candidates for the turn."""
+    registry = ToolRegistry()
+    register_mvp_surface(registry)
+    registry.register(_adapter_context_tool())
+    executor = ToolExecutor(registry)
+    engine = QueryEngine(
+        llm_client=_FailingMockClient(),
+        tool_registry=registry,
+        tool_executor=executor,
+    )
+
+    message = engine._build_available_adapters_message(  # noqa: SLF001
+        "부산광역시 장례식장 시설 사용료 목록을 조회해줘"
+    )
+
+    assert message is not None
+    assert message.role == "system"
+    assert "<available_adapters>" in (message.content or "")
+    assert "bfc_funeral_area_fee" in (message.content or "")
+    assert "find({tool_id, params})" in (message.content or "")
+    assert "Do not call locate just because" in (message.content or "")
+    assert "call_hint: find(" in (message.content or "")
+
+
+@pytest.mark.asyncio
+async def test_available_adapters_context_constrains_public_data_turn_to_find() -> None:
+    """Location-independent public data turns should not expose locate."""
+    registry = ToolRegistry()
+    register_mvp_surface(registry)
+    registry.register(_adapter_context_tool())
+    executor = ToolExecutor(registry)
+    client = _CapturingToolsClient()
+    engine = QueryEngine(
+        llm_client=client,
+        tool_registry=registry,
+        tool_executor=executor,
+    )
+
+    events = [
+        event async for event in engine.run("부산광역시 장례식장 시설 사용료 목록을 조회해줘")
+    ]
+
+    assert events[-1].type == "stop"
+    assert isinstance(client.tools_seen, list)
+    tool_names: list[str] = []
+    for tool in client.tools_seen:
+        if not isinstance(tool, dict):
+            continue
+        function = tool.get("function")
+        if not isinstance(function, dict):
+            continue
+        name = function.get("name")
+        if isinstance(name, str):
+            tool_names.append(name)
+    assert tool_names == ["find"]
 
 
 # ---------------------------------------------------------------------------

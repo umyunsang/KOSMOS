@@ -120,6 +120,14 @@ class QueryContext(BaseModel):
     when the engine is driven outside the stdio bridge (unit tests / REPL).
     """
 
+    allowed_core_tool_ids: frozenset[str] | None = None
+    """Optional per-turn provider tool allow-list for root primitives.
+
+    Used by the Rich REPL path when BM25 has already selected location-independent
+    public-data adapters. It keeps the exposed provider surface aligned with the
+    selected adapter primitive instead of letting unrelated root primitives race.
+    """
+
 
 # ---------------------------------------------------------------------------
 # SessionBudget
