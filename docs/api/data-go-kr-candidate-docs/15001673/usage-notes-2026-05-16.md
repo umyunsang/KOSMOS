@@ -63,7 +63,7 @@ Response fields:
 ## Curl Shape
 ```bash
 curl --get 'https://apis.data.go.kr/B551182/pharmacyInfoService/getParmacyBasisList' \
-  --data-urlencode 'ServiceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "ServiceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=10' \
   --data-urlencode 'sidoCd=110000' \

@@ -76,7 +76,7 @@ The application form repeats the location-information warning. The adapter shoul
 ## Curl Shape
 ```bash
 curl --get 'https://apis.data.go.kr/1192136/roms/GetRomsApiService' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'type=json' \
   --data-urlencode 'ymin=39.59335' \
   --data-urlencode 'ymax=40.19335' \
@@ -88,7 +88,7 @@ curl --get 'https://apis.data.go.kr/1192136/roms/GetRomsApiService' \
 
 ```bash
 curl --get 'https://apis.data.go.kr/1192136/roms/GetRomsApiService' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'type=json' \
   --data-urlencode 'ymin=39.59335' \
   --data-urlencode 'ymax=40.19335' \

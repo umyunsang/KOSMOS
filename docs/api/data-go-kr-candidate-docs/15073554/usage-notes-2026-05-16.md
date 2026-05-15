@@ -114,7 +114,7 @@ Detail responses vary by endpoint, but most include safety-inspection fields suc
 Facility search:
 ```bash
 curl --get 'https://apis.data.go.kr/1741000/FcltsSafetyInfoService2025/getFcltsInfoSearch_4' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'resultType=json' \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=10' \
@@ -124,9 +124,9 @@ curl --get 'https://apis.data.go.kr/1741000/FcltsSafetyInfoService2025/getFcltsI
 Safety detail lookup:
 ```bash
 curl --get 'https://apis.data.go.kr/1741000/FcltsSafetyInfoService2025/getHotelSafetyInfoSearch_4' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'resultType=json' \
-  --data-urlencode 'fclts_cd=$FACILITY_KEY'
+  --data-urlencode "fclts_cd=${FACILITY_KEY}"
 ```
 
 ## Implementation Cautions

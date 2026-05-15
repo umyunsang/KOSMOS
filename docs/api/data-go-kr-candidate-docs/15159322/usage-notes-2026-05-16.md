@@ -69,7 +69,7 @@ The application form shows the public-data location-information warning. For UMM
 ## Curl Shape
 ```bash
 curl --get 'https://apis.data.go.kr/B552584/udgdScnAutoMntnwRltmUlfdInfoService/getUlfdInfo' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=10' \
   --data-urlencode 'returnType=json'
@@ -79,7 +79,7 @@ Optional filtered example:
 
 ```bash
 curl --get 'https://apis.data.go.kr/B552584/udgdScnAutoMntnwRltmUlfdInfoService/getUlfdInfo' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=10' \
   --data-urlencode 'returnType=json' \

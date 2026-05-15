@@ -66,13 +66,13 @@ Additional request parameters:
 ## Curl Shape
 ```bash
 curl --get 'https://apis.data.go.kr/B552587/ParkingInfoService_v2/getParkingList_v2' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=10' \
   --data-urlencode 'resultType=json'
 
 curl --get 'https://apis.data.go.kr/B552587/ParkingInfoService_v2/getParkingInfoList_v2' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=10' \
   --data-urlencode 'pParkGCd=<parking_code>' \

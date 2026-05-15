@@ -112,7 +112,7 @@ The application form shows the public-data location-information warning. The ada
 ## Curl Shape
 ```bash
 curl --get 'https://apis.data.go.kr/1741000/cctv_info/info' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=100' \
   --data-urlencode 'returnType=JSON' \
@@ -121,7 +121,7 @@ curl --get 'https://apis.data.go.kr/1741000/cctv_info/info' \
 
 ```bash
 curl --get 'https://apis.data.go.kr/1741000/cctv_info/info' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=50' \
   --data-urlencode 'returnType=JSON' \
@@ -130,7 +130,7 @@ curl --get 'https://apis.data.go.kr/1741000/cctv_info/info' \
 
 ```bash
 curl --get 'https://apis.data.go.kr/1741000/cctv_info/history' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=100' \
   --data-urlencode 'returnType=JSON' \

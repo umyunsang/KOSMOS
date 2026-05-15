@@ -104,7 +104,7 @@ Use after key propagation; do not commit the real key.
 
 ```bash
 curl --get 'https://apis.data.go.kr/B551011/DataLabService/metcoRegnVisitrDDList' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'MobileOS=ETC' \
   --data-urlencode 'MobileApp=UMMAYA' \
   --data-urlencode 'startYmd=20210513' \

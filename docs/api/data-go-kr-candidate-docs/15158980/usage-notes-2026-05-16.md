@@ -64,7 +64,7 @@ The portal description names major Daegu treatment plants including:
 ## Curl Shape
 ```bash
 curl --get 'https://apis.data.go.kr/6270000/openData/WtrQuality' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'searchDate=2025'
 ```
 

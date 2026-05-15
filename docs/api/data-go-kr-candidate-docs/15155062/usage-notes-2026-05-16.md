@@ -94,7 +94,7 @@ The supplementary workbook provides local-government code values. Examples from 
 ## Curl Shape
 ```bash
 curl --get 'https://apis.data.go.kr/1741000/free_wifi_info/info' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=100' \
   --data-urlencode 'returnType=JSON' \
@@ -103,7 +103,7 @@ curl --get 'https://apis.data.go.kr/1741000/free_wifi_info/info' \
 
 ```bash
 curl --get 'https://apis.data.go.kr/1741000/free_wifi_info/info' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=50' \
   --data-urlencode 'returnType=JSON' \

@@ -87,7 +87,7 @@ The response example in the official document returns `items.item` as an array. 
 ## Curl Shape
 ```bash
 curl --get 'https://apis.data.go.kr/1262000/SptravelWarningServiceV2/getSptravelWarningListV2' \
-  --data-urlencode 'ServiceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "ServiceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'returnType=JSON' \
   --data-urlencode 'numOfRows=10' \
   --data-urlencode 'pageNo=1' \
@@ -96,7 +96,7 @@ curl --get 'https://apis.data.go.kr/1262000/SptravelWarningServiceV2/getSptravel
 
 ```bash
 curl --get 'https://apis.data.go.kr/1262000/SptravelWarningServiceV2/getSptravelWarningListV2' \
-  --data-urlencode 'ServiceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "ServiceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'returnType=JSON' \
   --data-urlencode 'numOfRows=10' \
   --data-urlencode 'pageNo=1' \

@@ -71,7 +71,7 @@ The application form shows the public-data location-information warning. The ada
 ## Curl Shape
 ```bash
 curl --get 'https://apis.data.go.kr/1360000/LivingWthrIdxServiceV5/getUVIdxV5' \
-  --data-urlencode 'ServiceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "ServiceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=10' \
   --data-urlencode 'dataType=JSON' \
@@ -81,7 +81,7 @@ curl --get 'https://apis.data.go.kr/1360000/LivingWthrIdxServiceV5/getUVIdxV5' \
 
 ```bash
 curl --get 'https://apis.data.go.kr/1360000/LivingWthrIdxServiceV5/getAirDiffusionIdxV5' \
-  --data-urlencode 'ServiceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "ServiceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=10' \
   --data-urlencode 'dataType=JSON' \

@@ -89,7 +89,7 @@ The official guide also includes code tables for `searchYearCd`, `siDo`, and `gu
 ## Curl Shape
 ```bash
 curl --get 'http://apis.data.go.kr/B552061/lgStat/getRestLgStat' \
-  --data-urlencode 'ServiceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "ServiceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'searchYearCd=2019' \
   --data-urlencode 'siDo=1100' \
   --data-urlencode 'guGun=1116' \

@@ -108,25 +108,25 @@ Operation-specific required request parameters:
 ## Curl Shape
 ```bash
 curl --get 'https://apis.data.go.kr/6290000/gj_bis/lineInfo' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'resultType=json'
 
 curl --get 'https://apis.data.go.kr/6290000/gj_bis/stationInfo' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'resultType=json'
 
 curl --get 'https://apis.data.go.kr/6290000/gj_bis/lineStationInfo' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'LINE_ID=1' \
   --data-urlencode 'resultType=json'
 
 curl --get 'https://apis.data.go.kr/6290000/gj_bis/arriveInfo' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'BUSSTOP_ID=2873' \
   --data-urlencode 'resultType=json'
 
 curl --get 'https://apis.data.go.kr/6290000/gj_bis/busLocationInfo' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'LINE_ID=213' \
   --data-urlencode 'resultType=json'
 ```

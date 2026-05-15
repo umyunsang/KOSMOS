@@ -104,7 +104,7 @@ Use after key propagation; do not commit the real key.
 
 ```bash
 curl --get 'https://apis.data.go.kr/B551182/hospAsmInfoService1/getHospAsmInfo1' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=10'
 ```
@@ -113,7 +113,7 @@ With an encrypted institution identifier:
 
 ```bash
 curl --get 'https://apis.data.go.kr/B551182/hospAsmInfoService1/getHospAsmInfo1' \
-  --data-urlencode 'serviceKey=$DATA_GO_KR_SERVICE_KEY' \
+  --data-urlencode "serviceKey=${DATA_GO_KR_SERVICE_KEY}" \
   --data-urlencode 'pageNo=1' \
   --data-urlencode 'numOfRows=10' \
   --data-urlencode 'ykiho=<ENCRYPTED_YKIHO_FROM_HIRA_HOSPITAL_BASIC_LIST>'
