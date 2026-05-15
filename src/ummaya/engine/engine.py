@@ -77,6 +77,22 @@ def _contains_location_dependent_key(value: object) -> bool:
     return False
 
 
+def _allowed_core_tools_for_available_adapters(
+    included_candidates: list[tuple[str | None, bool]],
+    visible_primitives: set[str],
+    has_location_dependent_schema: bool,
+) -> frozenset[str] | None:
+    """Constrain root primitive exposure for location-independent find turns."""
+
+    if included_candidates:
+        primary_primitive, primary_requires_location = included_candidates[0]
+        if primary_primitive == "find" and not primary_requires_location:
+            return frozenset({"find"})
+    if visible_primitives == {"find"} and not has_location_dependent_schema:
+        return frozenset({"find"})
+    return None
+
+
 class QueryEngine:
     """Per-session orchestrator for the UMMAYA query engine.
 
@@ -293,6 +309,7 @@ class QueryEngine:
         adapter_lines: list[str] = []
         visible_primitives: set[str] = set()
         has_location_dependent_schema = False
+        included_candidates: list[tuple[str | None, bool]] = []
         visible_count = 0
         for candidate in candidates:
             try:
@@ -303,11 +320,18 @@ class QueryEngine:
                 continue
             if isinstance(candidate.primitive, str):
                 visible_primitives.add(candidate.primitive)
-            if _schema_requires_location_resolution(
+            requires_location = _schema_requires_location_resolution(
                 candidate.input_schema_json,
                 candidate.required_params,
-            ):
+            )
+            if requires_location:
                 has_location_dependent_schema = True
+            included_candidates.append(
+                (
+                    candidate.primitive if isinstance(candidate.primitive, str) else None,
+                    requires_location,
+                )
+            )
             schema_json = json.dumps(
                 candidate.input_schema_json,
                 ensure_ascii=False,
@@ -332,9 +356,11 @@ class QueryEngine:
         if not adapter_lines:
             return None, None
 
-        allowed_core_tool_ids: frozenset[str] | None = None
-        if visible_primitives == {"find"} and not has_location_dependent_schema:
-            allowed_core_tool_ids = frozenset({"find"})
+        allowed_core_tool_ids = _allowed_core_tools_for_available_adapters(
+            included_candidates,
+            visible_primitives,
+            has_location_dependent_schema,
+        )
 
         content = "\n".join(
             [

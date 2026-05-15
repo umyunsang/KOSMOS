@@ -19,7 +19,7 @@ from ummaya.engine.query import query
 # QueryContext.model_rebuild() can resolve the forward reference and accept
 # mock objects for the llm_client field.
 from ummaya.llm.client import LLMClient  # noqa: F401
-from ummaya.llm.models import ChatMessage
+from ummaya.llm.models import ChatMessage, StreamEvent, TokenUsage
 from ummaya.llm.usage import UsageTracker
 from ummaya.tools.executor import ToolExecutor
 from ummaya.tools.registry import ToolRegistry
@@ -113,6 +113,216 @@ async def test_single_tool_call_loop(
     # Verify a tool result message was appended to state.messages
     roles = [m.role for m in ctx.state.messages]
     assert "tool" in roles
+
+
+@pytest.mark.asyncio
+async def test_successful_tool_result_retries_generic_final_answer(
+    mock_llm_client,
+    tool_executor_with_mocks,
+    populated_registry,
+    sample_config,
+):
+    """A retry/handoff answer after a successful tool result must not reach the terminal."""
+
+    client = mock_llm_client.__class__(
+        responses=[
+            [
+                StreamEvent(
+                    type="tool_call_delta",
+                    tool_call_index=0,
+                    tool_call_id="call_001",
+                    function_name="traffic_accident_search",
+                    function_args_delta='{"query": "서울 강남구 교통사고"}',
+                ),
+                StreamEvent(
+                    type="usage",
+                    usage=TokenUsage(input_tokens=100, output_tokens=50),
+                ),
+                StreamEvent(type="done"),
+            ],
+            [
+                StreamEvent(
+                    type="content_delta",
+                    content=(
+                        "도구가 반환한 메시지: 컬렉션 아이템 배열의 길이가 0이 아닙니다.\n\n"
+                        "다른 검색어로 재시도하시겠습니까?"
+                    ),
+                ),
+                StreamEvent(
+                    type="usage",
+                    usage=TokenUsage(input_tokens=200, output_tokens=80),
+                ),
+                StreamEvent(type="done"),
+            ],
+            [
+                StreamEvent(
+                    type="content_delta",
+                    content="서울 강남구 교통사고 조회 결과: Mock result for 서울 강남구 교통사고",
+                ),
+                StreamEvent(
+                    type="usage",
+                    usage=TokenUsage(input_tokens=230, output_tokens=40),
+                ),
+                StreamEvent(type="done"),
+            ],
+        ],
+    )
+    ctx = _make_ctx(client, tool_executor_with_mocks, populated_registry, sample_config)
+
+    events = await _collect(ctx)
+    visible_text = "".join(e.content or "" for e in events if e.type == "text_delta")
+
+    assert client.call_count == 3
+    assert "다른 검색어로 재시도" not in visible_text
+    assert "컬렉션 아이템 배열" not in visible_text
+    assert "Mock result for 서울 강남구 교통사고" in visible_text
+
+
+@pytest.mark.asyncio
+async def test_final_answer_repair_suppresses_duplicate_tool_call(
+    mock_llm_client,
+    tool_executor_with_mocks,
+    populated_registry,
+    sample_config,
+):
+    """A repair turn must not dispatch another tool after one already succeeded."""
+
+    client = mock_llm_client.__class__(
+        responses=[
+            [
+                StreamEvent(
+                    type="tool_call_delta",
+                    tool_call_index=0,
+                    tool_call_id="call_001",
+                    function_name="traffic_accident_search",
+                    function_args_delta='{"query": "서울 강남구 교통사고"}',
+                ),
+                StreamEvent(type="done"),
+            ],
+            [
+                StreamEvent(
+                    type="content_delta",
+                    content="다른 검색어로 재시도하시겠습니까?",
+                ),
+                StreamEvent(type="done"),
+            ],
+            [
+                StreamEvent(
+                    type="tool_call_delta",
+                    tool_call_index=0,
+                    tool_call_id="call_duplicate",
+                    function_name="traffic_accident_search",
+                    function_args_delta='{"query": "서울 강남구 교통사고"}',
+                ),
+                StreamEvent(type="done"),
+            ],
+            [
+                StreamEvent(
+                    type="content_delta",
+                    content="최종 조회 결과: Mock result for 서울 강남구 교통사고",
+                ),
+                StreamEvent(type="done"),
+            ],
+        ],
+    )
+    ctx = _make_ctx(client, tool_executor_with_mocks, populated_registry, sample_config)
+
+    events = await _collect(ctx)
+    tool_uses = [e for e in events if e.type == "tool_use"]
+    tool_results = [e for e in events if e.type == "tool_result"]
+    visible_text = "".join(e.content or "" for e in events if e.type == "text_delta")
+
+    assert client.call_count == 4
+    assert len(tool_uses) == 1
+    assert len(tool_results) == 1
+    assert tool_uses[0].tool_call_id == "call_001"
+    assert "call_duplicate" not in {m.tool_call_id for m in ctx.state.messages}
+    assert "최종 조회 결과" in visible_text
+
+
+@pytest.mark.asyncio
+async def test_successful_tool_result_removes_generic_retry_footer(
+    mock_llm_client,
+    tool_executor_with_mocks,
+    populated_registry,
+    sample_config,
+):
+    """A concrete final answer should keep the data and drop only the retry footer."""
+
+    client = mock_llm_client.__class__(
+        responses=[
+            [
+                StreamEvent(
+                    type="tool_call_delta",
+                    tool_call_index=0,
+                    tool_call_id="call_001",
+                    function_name="traffic_accident_search",
+                    function_args_delta='{"query": "서울 강남구 교통사고"}',
+                ),
+                StreamEvent(type="done"),
+            ],
+            [
+                StreamEvent(
+                    type="content_delta",
+                    content=(
+                        "서울 강남구 교통사고 조회 결과: Mock result for 서울 강남구 교통사고\n\n"
+                        "다른 검색어 / 다른 지역 / 다른 도구로 재시도하시겠습니까?"
+                    ),
+                ),
+                StreamEvent(type="done"),
+            ],
+        ],
+    )
+    ctx = _make_ctx(client, tool_executor_with_mocks, populated_registry, sample_config)
+
+    events = await _collect(ctx)
+    visible_text = "".join(e.content or "" for e in events if e.type == "text_delta")
+
+    assert client.call_count == 2
+    assert "Mock result for 서울 강남구 교통사고" in visible_text
+    assert "재시도하시겠습니까" not in visible_text
+
+
+@pytest.mark.asyncio
+async def test_successful_live_tool_result_strips_unneeded_mock_disclosure(
+    mock_llm_client,
+    tool_executor_with_mocks,
+    populated_registry,
+    sample_config,
+):
+    """Live successful tool results must not be described as mock/simulation output."""
+
+    client = mock_llm_client.__class__(
+        responses=[
+            [
+                StreamEvent(
+                    type="tool_call_delta",
+                    tool_call_index=0,
+                    tool_call_id="call_001",
+                    function_name="traffic_accident_search",
+                    function_args_delta='{"query": "서울 강남구 교통사고"}',
+                ),
+                StreamEvent(type="done"),
+            ],
+            [
+                StreamEvent(
+                    type="content_delta",
+                    content=(
+                        "서울 강남구 교통사고 조회 결과입니다.\n\n"
+                        "[참고: 이 결과는 공개 데이터 기준의 시연(모의) 결과입니다.]"
+                    ),
+                ),
+                StreamEvent(type="done"),
+            ],
+        ],
+    )
+    ctx = _make_ctx(client, tool_executor_with_mocks, populated_registry, sample_config)
+
+    events = await _collect(ctx)
+    visible_text = "".join(e.content or "" for e in events if e.type == "text_delta")
+
+    assert "서울 강남구 교통사고 조회 결과입니다." in visible_text
+    assert "시연(모의)" not in visible_text
 
 
 # ---------------------------------------------------------------------------
