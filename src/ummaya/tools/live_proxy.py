@@ -26,8 +26,10 @@ _PROXYABLE_HOSTS = frozenset(
         "openapi.data.go.kr",
         "dapi.kakao.com",
         "business.juso.go.kr",
+        "bigdata.kepco.co.kr",
         "sgisapi.kostat.go.kr",
         "sgisapi.mods.go.kr",
+        "www.reb.or.kr",
     }
 )
 _PROXYABLE_PRIMITIVES = frozenset({"find", "locate"})
