@@ -61,6 +61,10 @@ export default defineConfig({
         },
       ],
       customCss: ['./src/styles/custom.css'],
+      components: {
+        ThemeProvider: './src/components/DarkThemeProvider.astro',
+        ThemeSelect: './src/components/NoThemeSelect.astro',
+      },
       editLink: {
         baseUrl: 'https://github.com/umyunsang/UMMAYA/edit/main/docs-site/',
       },

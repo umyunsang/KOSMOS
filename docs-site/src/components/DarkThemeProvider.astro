@@ -1,0 +1,16 @@
+---
+---
+
+<script is:inline>
+	window.StarlightThemeProvider = {
+		updatePickers() {
+			document.documentElement.dataset.theme = 'dark';
+			document.documentElement.style.colorScheme = 'dark';
+		},
+	};
+	document.documentElement.dataset.theme = 'dark';
+	document.documentElement.style.colorScheme = 'dark';
+	try {
+		localStorage.setItem('starlight-theme', 'dark');
+	} catch {}
+</script>
