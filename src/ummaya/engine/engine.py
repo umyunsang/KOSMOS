@@ -8,6 +8,7 @@ the standalone ``query()`` async generator.
 
 from __future__ import annotations
 
+import json
 import logging
 from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING
@@ -19,6 +20,7 @@ from ummaya.engine.models import QueryContext, QueryState, SessionBudget
 from ummaya.engine.query import query
 from ummaya.llm.client import LLMClient
 from ummaya.llm.models import ChatMessage
+from ummaya.tools.errors import ToolNotFoundError
 from ummaya.tools.executor import ToolExecutor
 from ummaya.tools.registry import ToolRegistry
 
@@ -26,6 +28,53 @@ if TYPE_CHECKING:
     from ummaya.permissions.models import SessionContext
 
 logger = logging.getLogger(__name__)
+
+_LOCATION_DEPENDENT_SCHEMA_KEYS = frozenset(
+    {
+        "adm_cd",
+        "admcd",
+        "admin_code",
+        "administrative_code",
+        "latitude",
+        "lat",
+        "longitude",
+        "lon",
+        "lng",
+        "nx",
+        "ny",
+        "q0",
+        "q1",
+        "region_cd",
+        "region_code",
+    }
+)
+
+
+def _schema_requires_location_resolution(
+    input_schema_json: object,
+    required_params: object,
+) -> bool:
+    """Return True when an adapter schema needs prior locate output."""
+
+    return _contains_location_dependent_key(input_schema_json) or _contains_location_dependent_key(
+        required_params
+    )
+
+
+def _contains_location_dependent_key(value: object) -> bool:
+    """Recursively detect coordinate/admin-code schema fields."""
+
+    if isinstance(value, dict):
+        for key, nested in value.items():
+            if str(key).lower() in _LOCATION_DEPENDENT_SCHEMA_KEYS:
+                return True
+            if _contains_location_dependent_key(nested):
+                return True
+    elif isinstance(value, list):
+        return any(_contains_location_dependent_key(item) for item in value)
+    elif isinstance(value, str):
+        return value.lower() in _LOCATION_DEPENDENT_SCHEMA_KEYS
+    return False
 
 
 class QueryEngine:
@@ -156,6 +205,12 @@ class QueryEngine:
                 ChatMessage(role="user", content=assembled.turn_attachment.content),
             )
 
+        dynamic_adapter_message, allowed_core_tool_ids = self._build_available_adapters_context(
+            user_message
+        )
+        if dynamic_adapter_message is not None:
+            self._state.messages.append(dynamic_adapter_message)
+
         # Append user message to history
         self._state.messages.append(
             ChatMessage(role="user", content=user_message),
@@ -169,6 +224,7 @@ class QueryEngine:
             tool_registry=self._tool_registry,
             config=self._config,
             session_context=self._permission_session,
+            allowed_core_tool_ids=allowed_core_tool_ids,
         )
 
         # Delegate to per-turn query loop
@@ -183,6 +239,11 @@ class QueryEngine:
                 stop_message=f"Unexpected error: {exc}",
             )
         finally:
+            if dynamic_adapter_message is not None:
+                try:
+                    self._state.messages.remove(dynamic_adapter_message)
+                except ValueError:
+                    logger.debug("Dynamic adapter context already absent from state")
             self._state.turn_count += 1
             logger.info(
                 "Turn %d completed: tokens_used=%d, messages=%d",
@@ -204,6 +265,92 @@ class QueryEngine:
             messages=[system_msg],
         )
         logger.info("QueryEngine reset: conversation cleared")
+
+    def _build_available_adapters_message(self, user_message: str) -> ChatMessage | None:
+        """Inject BM25 adapter candidates for the current citizen utterance."""
+
+        message, _allowed_core_tool_ids = self._build_available_adapters_context(user_message)
+        return message
+
+    def _build_available_adapters_context(
+        self, user_message: str
+    ) -> tuple[ChatMessage | None, frozenset[str] | None]:
+        """Build dynamic adapter context and per-turn primitive exposure."""
+
+        try:
+            from ummaya.tools.search import search  # noqa: PLC0415
+
+            candidates = search(
+                user_message,
+                self._tool_registry.bm25_index,
+                self._tool_registry,
+                top_k=15,
+            )
+        except Exception:  # noqa: BLE001
+            logger.exception("available_adapters auto-inject failed")
+            return None, None
+
+        adapter_lines: list[str] = []
+        visible_primitives: set[str] = set()
+        has_location_dependent_schema = False
+        visible_count = 0
+        for candidate in candidates:
+            try:
+                tool = self._tool_registry.find(candidate.tool_id)
+            except ToolNotFoundError:
+                continue
+            if tool.is_core or tool.ministry == "UMMAYA":
+                continue
+            if isinstance(candidate.primitive, str):
+                visible_primitives.add(candidate.primitive)
+            if _schema_requires_location_resolution(
+                candidate.input_schema_json,
+                candidate.required_params,
+            ):
+                has_location_dependent_schema = True
+            schema_json = json.dumps(
+                candidate.input_schema_json,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            adapter_lines.extend(
+                [
+                    f"- tool_id: {candidate.tool_id}",
+                    f"  primitive: {candidate.primitive}",
+                    f"  description: {candidate.llm_description or tool.name_ko}",
+                    f"  required_params: {candidate.required_params}",
+                    f"  input_schema_json: {schema_json}",
+                    f"  call_hint: {candidate.primitive}("
+                    f'{{"tool_id":"{candidate.tool_id}","params":{{...}}}})',
+                    f"  policy_url: {candidate.real_classification_url or ''}",
+                ]
+            )
+            visible_count += 1
+            if visible_count >= 5:
+                break
+
+        if not adapter_lines:
+            return None, None
+
+        allowed_core_tool_ids: frozenset[str] | None = None
+        if visible_primitives == {"find"} and not has_location_dependent_schema:
+            allowed_core_tool_ids = frozenset({"find"})
+
+        content = "\n".join(
+            [
+                "<available_adapters>",
+                "Use these adapter candidates for this citizen request. "
+                "For public-data lookup/list/statistics requests, call "
+                "find({tool_id, params}) with a tool_id from this block. "
+                "Do not call locate just because the citizen text contains a "
+                "city/province name; treat that as the dataset/filter term. "
+                "Call locate only when the selected adapter schema requires "
+                "coordinates, administrative codes, or a place-to-region conversion.",
+                *adapter_lines,
+                "</available_adapters>",
+            ]
+        )
+        return ChatMessage(role="system", content=content), allowed_core_tool_ids
 
     def set_permission_session(self, session: SessionContext | None) -> None:
         """Update the permission-pipeline session used for subsequent turns.

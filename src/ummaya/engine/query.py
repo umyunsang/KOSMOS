@@ -14,11 +14,12 @@ import json
 import logging
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from opentelemetry import context as _otel_context
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
+from pydantic import ValidationError
 
 from ummaya.engine.events import QueryEvent, StopReason
 from ummaya.engine.models import QueryContext
@@ -80,6 +81,18 @@ def _assemble_tool_calls(
     ]
 
 
+def _tool_definition_name(tool_def: ToolDefinition | dict[str, object]) -> str | None:
+    """Extract a root primitive name from an OpenAI tool definition."""
+
+    if isinstance(tool_def, ToolDefinition):
+        return tool_def.function.name
+    function = tool_def.get("function")
+    if not isinstance(function, dict):
+        return None
+    name = function.get("name")
+    return name if isinstance(name, str) else None
+
+
 # ---------------------------------------------------------------------------
 # Concurrent tool dispatch (partition-sort algorithm, R-004)
 # ---------------------------------------------------------------------------
@@ -130,6 +143,13 @@ async def dispatch_tool_calls(  # noqa: C901
 
     async def _dispatch_one(tc: ToolCall) -> ToolResult:
         """Dispatch a single tool call via the executor."""
+        if tc.function.name in {"find", "locate"}:
+            return await _dispatch_root_primitive(
+                tc,
+                tool_registry,
+                tool_executor,
+                session_context=session_context,
+            )
         return await tool_executor.dispatch(tc.function.name, tc.function.arguments)
 
     async def _flush_group(items: list[tuple[int, ToolCall]], safe: bool) -> None:
@@ -157,6 +177,95 @@ async def dispatch_tool_calls(  # noqa: C901
         await _flush_group(group, group_safe)
 
     return [r for r in results if r is not None]
+
+
+async def _dispatch_root_primitive(
+    tc: ToolCall,
+    tool_registry: ToolRegistry,
+    tool_executor: ToolExecutor,
+    *,
+    session_context: SessionContext | None,
+) -> ToolResult:
+    """Fan out an LLM-visible primitive call to the selected adapter id."""
+
+    primitive = tc.function.name
+    try:
+        primitive_tool = tool_registry.find(primitive)
+    except ToolNotFoundError as exc:
+        return ToolResult(
+            tool_id=primitive,
+            success=False,
+            error=str(exc),
+            error_type="not_found",
+        )
+
+    try:
+        raw_args = json.loads(tc.function.arguments)
+        validated = primitive_tool.input_schema.model_validate(raw_args)
+    except (TypeError, json.JSONDecodeError, ValidationError) as exc:
+        return ToolResult(
+            tool_id=primitive,
+            success=False,
+            error=str(exc),
+            error_type="validation",
+        )
+
+    target_tool_id = getattr(validated, "tool_id", None)
+    params = getattr(validated, "params", None)
+    if not isinstance(target_tool_id, str) or not isinstance(params, dict):
+        return ToolResult(
+            tool_id=primitive,
+            success=False,
+            error=f"{primitive} requires tool_id and params.",
+            error_type="validation",
+        )
+    if target_tool_id == primitive:
+        return ToolResult(
+            tool_id=primitive,
+            success=False,
+            error=f"{primitive} cannot target itself.",
+            error_type="validation",
+        )
+
+    request_id = tc.id or f"{primitive}-call"
+    if primitive == "find":
+        output = await tool_executor.invoke(
+            target_tool_id,
+            params,
+            request_id=request_id,
+            session_identity=session_context,
+        )
+    else:
+        output = await tool_executor.invoke_raw(
+            target_tool_id,
+            params,
+            request_id=request_id,
+            session_identity=session_context,
+        )
+
+    data = _primitive_output_dict(output)
+    if data.get("kind") == "error":
+        return ToolResult(
+            tool_id=primitive,
+            success=False,
+            error=str(data.get("message") or data),
+            error_type="execution",
+        )
+    return ToolResult(tool_id=primitive, success=True, data=data)
+
+
+def _primitive_output_dict(output: object) -> dict[str, object]:
+    """Convert primitive facade output to ToolResult data."""
+
+    model_dump = getattr(output, "model_dump", None)
+    if callable(model_dump):
+        dumped = model_dump(mode="json")
+        if isinstance(dumped, dict):
+            return cast("dict[str, object]", dumped)
+        return {"result": dumped}
+    if isinstance(output, dict):
+        return output
+    return {"result": output}
 
 
 # ---------------------------------------------------------------------------
@@ -261,6 +370,12 @@ async def _query_inner(ctx: QueryContext) -> AsyncIterator[QueryEvent]:  # noqa:
 
         # --- Export tool definitions (sorted for cache stability) ---
         raw_defs = ctx.tool_registry.export_core_tools_openai()
+        if ctx.allowed_core_tool_ids is not None:
+            raw_defs = [
+                tool_def
+                for tool_def in raw_defs
+                if _tool_definition_name(tool_def) in ctx.allowed_core_tool_ids
+            ]
         tool_defs: list[ToolDefinition | dict[str, object]] | None = list(raw_defs) or None
 
         # --- Stream LLM completion ---

@@ -261,6 +261,41 @@ async def test_complete_with_tools(
 
 
 @respx.mock
+async def test_complete_strips_internal_trigger_phrase_from_raw_tool_dict(
+    _clean_env: None,
+    sample_messages: list[ChatMessage],
+    mock_completion_response: dict,
+) -> None:
+    """Raw registry tool dicts must be normalized before sending to FriendliAI."""
+    captured_request: list[httpx.Request] = []
+
+    def _capture(request: httpx.Request) -> httpx.Response:
+        captured_request.append(request)
+        return httpx.Response(200, json=mock_completion_response)
+
+    respx.post(CHAT_COMPLETIONS_URL).mock(side_effect=_capture)
+
+    raw_tool = {
+        "type": "function",
+        "function": {
+            "name": "find",
+            "description": "Search and fetch public data adapters.",
+            "parameters": {"type": "object", "properties": {}},
+            "trigger_phrase": "UMMAYA-only routing hint for the system prompt.",
+        },
+    }
+
+    config = LLMClientConfig()
+    async with LLMClient(config) as client:
+        await client.complete(sample_messages, tools=[raw_tool])
+
+    assert len(captured_request) == 1
+    payload = json.loads(captured_request[0].content)
+    assert payload["tools"][0]["function"]["name"] == "find"
+    assert "trigger_phrase" not in payload["tools"][0]["function"]
+
+
+@respx.mock
 async def test_complete_tool_result_continuation(
     _clean_env: None,
 ) -> None:

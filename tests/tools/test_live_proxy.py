@@ -22,13 +22,15 @@ class _ProxyOutput(BaseModel):
     value: str
 
 
-def _make_proxyable_tool() -> GovAPITool:
+def _make_proxyable_tool(
+    endpoint: str = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst",
+) -> GovAPITool:
     return GovAPITool(
         id="kma_current_observation",
         name_ko="기상청 현재 관측",
         ministry="KMA",
         category=["weather"],
-        endpoint="https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst",
+        endpoint=endpoint,
         auth_type="api_key",
         input_schema=_ProxyInput,
         output_schema=_ProxyOutput,
@@ -43,6 +45,23 @@ def test_auto_mode_routes_packaged_proxyable_tool(monkeypatch: pytest.MonkeyPatc
     monkeypatch.setenv("UMMAYA_PACKAGE_ROOT", "/opt/homebrew/Caskroom/ummaya/0.1.1/package")
 
     assert should_use_live_adapter_proxy(_make_proxyable_tool()) is True
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        "https://bigdata.kepco.co.kr/openapi/v1/powerUsage/contractType.do",
+        "https://www.reb.or.kr/r-one/openapi/SttsApiTbl.do",
+    ],
+)
+def test_auto_mode_routes_packaged_verified_non_data_go_hosts(
+    monkeypatch: pytest.MonkeyPatch,
+    endpoint: str,
+) -> None:
+    monkeypatch.delenv("UMMAYA_LIVE_ADAPTER_MODE", raising=False)
+    monkeypatch.setenv("UMMAYA_PACKAGE_ROOT", "/opt/homebrew/Caskroom/ummaya/0.1.1/package")
+
+    assert should_use_live_adapter_proxy(_make_proxyable_tool(endpoint=endpoint)) is True
 
 
 def test_auto_mode_keeps_source_tree_direct(monkeypatch: pytest.MonkeyPatch) -> None:

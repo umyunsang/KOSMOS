@@ -1004,7 +1004,7 @@ class LLMClient:
         if stop is not None:
             payload["stop"] = stop
         if tools is not None:
-            tool_payloads = [t.model_dump() if isinstance(t, ToolDefinition) else t for t in tools]
+            tool_payloads = [self._serialize_tool_definition(t) for t in tools]
             payload["tools"] = tool_payloads
             if tool_payloads:
                 # UMMAYA citizen flows require one observed tool result before
@@ -1017,6 +1017,19 @@ class LLMClient:
             payload["stream"] = True
             payload["stream_options"] = {"include_usage": True}
         return payload
+
+    @staticmethod
+    def _serialize_tool_definition(tool: ToolDefinition | dict[str, object]) -> dict[str, object]:
+        """Return the provider-safe OpenAI tool payload.
+
+        Registry exports may carry UMMAYA-only metadata such as
+        ``function.trigger_phrase`` for system-prompt construction. Normalizing
+        through ``ToolDefinition`` applies field exclusions before the payload
+        reaches FriendliAI's strict OpenAI-compatible validator.
+        """
+        if isinstance(tool, ToolDefinition):
+            return cast(dict[str, object], tool.model_dump())
+        return cast(dict[str, object], ToolDefinition.model_validate(tool).model_dump())
 
     # ------------------------------------------------------------------
     # Private retry helpers (T015)
