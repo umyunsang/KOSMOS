@@ -23,7 +23,54 @@ Secret handling: no plaintext credentials are recorded here; HTTP error URLs mus
 | `대전역에서 시청역까지 지하철 요금과 시간 알려줘.` | `djtc_subway_segment_fare_time_check` | `find` | `djtc_subway_segment_fare_time_check` | Success; returned distance, fare, and travel time. | None after registration. |
 | `2025년 4월 장단기 체류외국인 수를 알려줘.` | `moj_stay_person_counter` | `find` | `moj_stay_person_counter` | Success after endpoint fix; returned three MOJ stay-person categories and total. | `https://` endpoint returned data.go.kr 502; direct curl proved `http://` succeeds with the same approved key and params, so the manifest endpoint was corrected. |
 
+## TUI UX Tool-Use Smoke
+
+Date: 2026-05-16
+Command:
+
+```bash
+env CLAUBBIT=1 \
+  UMMAYA_FRIENDLI_SESSION_ACTIVE=1 \
+  UMMAYA_TUI_LOG_LEVEL=DEBUG \
+  UMMAYA_QUERY_TRACE=1 \
+  UMMAYA_DEBUG_COLS=180 \
+  UMMAYA_DEBUG_ROWS=60 \
+  UMMAYA_PTY_MAX_FRAMES=2200 \
+  bun scripts/bun-pty-capture.ts \
+  specs/2798-data-go-kr-live-expansion/tui-captures/live-tool-use-smoke-2026-05-16-r7 \
+  specs/2798-data-go-kr-live-expansion/scripts/tui-live-tool-use-smoke.ts
+```
+
+| UX stage | Evidence | Result |
+|---|---|---|
+| Boot and input accepted | `snap-000-boot-or-import-gate.txt`, `snap-001-input-submitted.txt` | UMMAYA TUI booted and accepted the Korean citizen prompt. |
+| Tool-use display | `snap-002-tool-use-visible.txt` | TUI rendered `find(mfds_easy_drug_info_lookup)`. |
+| Tool-result display | `snap-003-tool-result-visible.txt` | TUI rendered `collection — 7 results` with the collapsed result row. |
+| Final answer | `snap-004-final-answer.txt` | TUI rendered an MFDS e약은요-based answer for Tylenol efficacy and precautions. |
+| Frame stream | `frames/timeline.tsv` | 173 distinct frame states were captured. |
+
+Audit command:
+
+```bash
+python3 scripts/tui-realuse-audit.py \
+  --expect-chain 'find\(mfds_easy_drug_info_lookup\),collection,타이레놀' \
+  --require-regex 'mfds_easy_drug_info_lookup' \
+  --require-regex 'collection\s*—\s*7\s*results|collection.*7.*results' \
+  --require-regex '타이레놀|아세트아미노펜|acetaminophen' \
+  --forbid-regex '신원 확인 권한 요청|check\(|mock_verify|Traceback|ValidationError|Unknown tool|serviceKey|UMMAYA_FRIENDLI|UMMAYA_DATA|flp_|7e0a' \
+  specs/2798-data-go-kr-live-expansion/tui-captures/live-tool-use-smoke-2026-05-16-r7
+```
+
+Audit result: `overall: pass`. The audit verified the visible tool chain, required final-answer terms, absence of the unrequested identity permission UI, absence of `check(...)` / `mock_verify`, absence of runtime exceptions, and absence of credential-like tokens in captured text.
+
 ## Debug Fixes Proven During Smoke
+
+### Read-only public-data lookup boundary
+
+- Root cause: a real TUI run showed that after a successful public `find(mfds_easy_drug_info_lookup)` result, the model could still attempt an unrelated `check(mock_verify_module_modid)` call and render an identity permission prompt for a read-only drug-information query.
+- Impact: users could see a spurious permission ceremony even though the request did not ask for authentication, identity verification, consent, submission, filing, or payment.
+- Fix: the dynamic adapter suffix now states the find-only boundary, the static system prompt states the same public-data boundary, and stdio suppresses unrequested `check` calls after a successful public `find` result by feeding a final-answer recovery observation back into the loop.
+- Regression: `tests/ipc/test_public_lookup_verify_gate.py`.
 
 ### AED primitive selection
 
