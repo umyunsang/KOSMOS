@@ -267,13 +267,25 @@ def _xml_record(element: ET.Element) -> dict[str, object]:
     for child in list(element):
         tag = _strip_namespace(child.tag)
         if list(child):
-            record[tag] = _xml_record(child)
+            value: object = _xml_record(child)
         else:
-            record[tag] = child.text.strip() if child.text is not None else ""
+            value = child.text.strip() if child.text is not None else ""
+        _append_xml_field(record, tag, value)
     if not record:
         text = element.text.strip() if element.text is not None else ""
         record[_strip_namespace(element.tag)] = text
     return record
+
+
+def _append_xml_field(record: dict[str, object], tag: str, value: object) -> None:
+    existing = record.get(tag)
+    if existing is None and tag not in record:
+        record[tag] = value
+        return
+    if isinstance(existing, list):
+        existing.append(value)
+        return
+    record[tag] = [existing, value]
 
 
 def _strip_namespace(tag: str) -> str:
