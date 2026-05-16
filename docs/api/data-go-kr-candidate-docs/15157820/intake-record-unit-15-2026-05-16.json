@@ -1,0 +1,94 @@
+{
+  "unit": 15,
+  "collected_at": "2026-05-16",
+  "portal": "data.go.kr",
+  "candidate_id": "15157820",
+  "title": "중소벤처기업부_중소기업 지원사업 공고 조회 서비스",
+  "provider": "중소벤처기업부",
+  "classification": "산업·통상·중소기업 - 산업·중소기업일반",
+  "category_seen": "산업고용",
+  "portal_url": "https://www.data.go.kr/data/15157820/openapi.do",
+  "api_type": "REST",
+  "formats": [
+    "JSON",
+    "XML"
+  ],
+  "base_url": "https://apis.data.go.kr/1421000/bizinfo",
+  "operation": {
+    "method": "GET",
+    "path": "/pblancBsnsService",
+    "summary": "중소기업 지원사업 공고 조회 서비스"
+  },
+  "required_parameters": [
+    "serviceKey"
+  ],
+  "optional_parameters": [
+    "dataType",
+    "pageNo",
+    "numOfRows",
+    "searchLclasId",
+    "hashtags",
+    "pblancId",
+    "registDe",
+    "updtPnttm"
+  ],
+  "response_fields": [
+    "pblancNm",
+    "pblancUrl",
+    "pblancId",
+    "jrsdInsttNm",
+    "excInsttNm",
+    "bsnsSumryCn",
+    "pldirSportRealmLclasCodeNm",
+    "creatPnttm",
+    "reqstBeginEndDe",
+    "updtPnttm",
+    "trgetNm",
+    "inqireCo",
+    "flpthNm",
+    "fileNm",
+    "printFlpthNm",
+    "printFileNm",
+    "hashtags",
+    "reqstMthPapersCn",
+    "refrncNm",
+    "rceptEngnHmpgUrl"
+  ],
+  "ummaya_primitive": "lookup",
+  "citizen_query_fit": [
+    "내 업종에 맞는 정부 지원사업 찾아줘",
+    "소상공인이 지금 신청할 수 있는 지원 공고 알려줘",
+    "최근 수정된 중소기업 지원사업 공고만 보여줘",
+    "이 지원사업 공고의 신청방법과 문의처 알려줘"
+  ],
+  "selection_rationale": "Official SME and small-business support notices expose target, period, application method, contact, and application URL, making the API suitable for UMMAYA lookup responses to citizen and small-business discovery queries.",
+  "application": {
+    "submitted": true,
+    "status": "approved",
+    "application_date": "2026-05-16",
+    "expiry_date": "2028-05-16",
+    "application_reference": "115979411",
+    "uddi": "uddi:9b643802-810b-453c-ad7b-81bbace31ff3_202603261059",
+    "account_type": "development",
+    "submitted_purpose": "UMMAYA 조회 어댑터: 업종, 해시태그, 공고ID, 등록일, 수정일, 지원대상, 신청URL 기준으로 중소기업·소상공인 지원사업 공고를 찾는 시민 질의 대응."
+  },
+  "traffic": {
+    "development_daily": 10000,
+    "operating_note": "Portal says operating traffic can be increased after use-case registration."
+  },
+  "license_notes": [
+    "Detail page displayed: 공공저작물 : 출처표시, 변경금지 (제 3유형).",
+    "Application form displayed: 이용허락범위 제한 없음.",
+    "Adapter notes should preserve source attribution and avoid mutating official notice text."
+  ],
+  "saved_artifacts": [
+    "data-go-kr-detail.html",
+    "openapi-schemaorg.json",
+    "dcat-metadata.rdf.xml",
+    "swagger.json",
+    "gateway_swagger_guide.pdf",
+    "pre-application-screening-2026-05-16-unit-15.md",
+    "usage-notes-2026-05-16-unit-15.md"
+  ],
+  "live_api_probe": false
+}

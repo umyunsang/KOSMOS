@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:dct="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcat="http://www.w3.org/ns/dcat#" xmlns:vcard="http://www.w3.org/2006/vcard/ns#">
+    <dcat:Catalog>
+        
+
+        <dcat:service>
+            <dcat:DataService>
+                <dcat:contactPoint>
+                    <vcard:Organization>
+                        <vcard:organization-unit>중소기업제도과</vcard:organization-unit>
+                        <vcard:hasTelephone rdf:resource="044-204-7455"/>
+                    </vcard:Organization>
+                </dcat:contactPoint>
+                <dct:description>중소벤처기업부에서 운영중인 중소기업지원 정책정보 통합안내시스템(기업마당)에서 제공중인 중앙행정기관, 지방자치단체체, 유관기관의 최신 지원사업 공고정보 데이터 입니다. 
+
+해시태그, 분야, 공고ID, 등록일자, 수정일자 파라미터로 데이터를 조회할 수 있으며, 본 데이터의 주요 내용은 공고명, 공고URL, 공고ID, 소관명, 수행기관명, 사업개요내용, 분야, 신청기간, 지원대상, 파일경로명, 파일명, 본문출력파일경로명, 본문출력파일명, 해시태그, 사업신청방법내용, 문의처, 사업신청URL 정보로 구성되어 있습니다. 
+
+중소기업 지원사업공고 조회 서비스는 기업, 연구자, 지원기관등 국민 누구나 활용하실 수 있습니다</dct:description>
+                <dct:title>중소벤처기업부_중소기업 지원사업 공고 조회 서비스</dct:title>
+                <dct:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2026-03-25</dct:issued>
+                <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2026-04-27</dct:modified>
+                <dct:publisher>
+                    <foaf:Organization>
+                        <foaf:name>중소벤처기업부</foaf:name>
+                    </foaf:Organization>
+                </dct:publisher>
+                <dcat:format>JSON+XML</dcat:format>
+                <dcat:theme>산업·통상·중소기업 - 산업·중소기업일반</dcat:theme>
+                <dcat:keyword>중소기업지원,중소기업지원사업,중소기업지원사업공고,소상공인지원,소상공인지원사업,소상공인지원사업공고,정부지원,정부지원사업</dcat:keyword>
+                <dcat:keyword>Support for SMEs,SME Support Program,Announcement of SME Support Programs,Support for small business owners,Small Business Support Program,Small Business Support Program Announcement,Government support,Government support projects</dcat:keyword>
+                <dct:rights >공공저작물_출처표시 + 변경금지</dct:rights>
+                <dcat:landingPage rdf:resource="https://www.data.go.kr/data/15157820/openapi.do"/>
+                <dcat:endpointURL/>
+                <dcat:accessURL/>
+                <dct:spatial>대한민국 전국</dct:spatial>
+                <dct:temporal>당해년도</dct:temporal>
+            </dcat:DataService>
+        </dcat:service>
+    </dcat:Catalog>
+</rdf:RDF>

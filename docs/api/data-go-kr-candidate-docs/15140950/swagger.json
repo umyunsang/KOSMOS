@@ -1,0 +1,1333 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "헌법재판소 발간자료 조회 서비스는 헌법재판소에서 제공하는 각종 발간자료를 검색하고 조회할 수 있는 오픈API 서비스로, 헌법 관련 연구와 정보를 활용하는 데 도움을 줍니다.",
+    "version": "1.0.0",
+    "title": "헌법재판소_발간자료 조회 서비스"
+  },
+  "host": "apis.data.go.kr/9750000/PubDocsService",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getSerialPublicationList": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETERS_ERROR - 필수요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "데이터 타입",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "seqNo": {
+                              "type": "string",
+                              "description": "책일련번호",
+                              "properties": {}
+                            },
+                            "title": {
+                              "type": "string",
+                              "description": "서명",
+                              "properties": {}
+                            },
+                            "pubFreq": {
+                              "type": "string",
+                              "description": "간행빈도",
+                              "properties": {}
+                            },
+                            "pubDate": {
+                              "type": "string",
+                              "description": "권·연차사항",
+                              "properties": {}
+                            },
+                            "bookImg": {
+                              "type": "string",
+                              "description": "책이미지링크주소",
+                              "properties": {}
+                            },
+                            "content": {
+                              "type": "string",
+                              "description": "내용",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "주요 연속 간행물 목록 조회",
+        "description": "제목,내용을 입력하여 주요 연속 간행물 목록을 출력하는 기능 제공",
+        "operationId": "getSerialPublicationList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 발급 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답결과 출력형식(xml,json) 기본값:xml",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "fields",
+          "description": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "title",
+          "description": "서명",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "content",
+          "description": "내용",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getSerialPublicationDetail": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETERS_ERROR - 필수요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "데이터 타입",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "seqNo": {
+                              "type": "string",
+                              "description": "조회를 요청한 책일련번호",
+                              "properties": {}
+                            },
+                            "subSeq": {
+                              "type": "string",
+                              "description": "책권호수일련번호",
+                              "properties": {}
+                            },
+                            "title": {
+                              "type": "string",
+                              "description": "서명 + 권호수",
+                              "properties": {}
+                            },
+                            "fileLink1": {
+                              "type": "string",
+                              "description": "해당자료를 문헌으로 발간 시 사용했던 원본파일 자료",
+                              "properties": {}
+                            },
+                            "fileLink2": {
+                              "type": "string",
+                              "description": "자료의 이해를 돕기 위해 원본파일의 한문 표기를 한글로 변환한 자료 ",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과수",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "주요 연속간행물 상세 조회",
+        "description": "책일련번호를 입력하여 주요 연속간행물의 상세 목록을 조회",
+        "operationId": "getSerialPublicationDetail",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답결과 출력형식(xml,json) 기본값:xml",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "fields",
+          "description": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "seqNo",
+          "description": "주요연속간행물 목록에서 조회한 책일련번호 입력",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getPblctLtrtreList": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETERS_ERROR - 필수요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "데이터 타입",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "bookInfoSeq": {
+                              "type": "string",
+                              "description": "문헌일련번호",
+                              "properties": {}
+                            },
+                            "title": {
+                              "type": "string",
+                              "description": "제목",
+                              "properties": {}
+                            },
+                            "book": {
+                              "type": "string",
+                              "description": "총서",
+                              "properties": {}
+                            },
+                            "bookReporter": {
+                              "type": "string",
+                              "description": "저자",
+                              "properties": {}
+                            },
+                            "bookSection": {
+                              "type": "string",
+                              "description": "분류",
+                              "properties": {}
+                            },
+                            "volumeInfo": {
+                              "type": "string",
+                              "description": "문헌정보",
+                              "properties": {}
+                            },
+                            "publisher": {
+                              "type": "string",
+                              "description": "출판사",
+                              "properties": {}
+                            },
+                            "pressDate": {
+                              "type": "string",
+                              "description": "출판일자",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과수",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "발간문헌 목록 조회",
+        "description": "제목/서명,총서,저자를 입력하여 발간문헌 검색 목록을 조회하는 기능 제공",
+        "operationId": "getPblctLtrtreList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답결과 출력형식(xml,json) 기본값:xml",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "fields",
+          "description": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "title",
+          "description": "발간문헌 제목/서명 조회시 입력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "book",
+          "description": "발간문헌 총서로 조회시 입력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "bookReporter",
+          "description": "발간문헌 저자로 조회시 입력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "xmlContent",
+          "description": "내용",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getPblctLtrtreDetail": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETERS_ERROR - 필수요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "데이터 타입",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "xmlContent": {
+                              "type": "string",
+                              "description": "xml내용",
+                              "properties": {}
+                            },
+                            "bookInfoSeq": {
+                              "type": "string",
+                              "description": "문헌일련번호",
+                              "properties": {}
+                            },
+                            "title": {
+                              "type": "string",
+                              "description": "제목",
+                              "properties": {}
+                            },
+                            "book": {
+                              "type": "string",
+                              "description": "총서",
+                              "properties": {}
+                            },
+                            "bookReporter": {
+                              "type": "string",
+                              "description": "저자",
+                              "properties": {}
+                            },
+                            "publisher": {
+                              "type": "string",
+                              "description": "출판사",
+                              "properties": {}
+                            },
+                            "pressDate": {
+                              "type": "string",
+                              "description": "출판일자",
+                              "properties": {}
+                            },
+                            "bookSection": {
+                              "type": "string",
+                              "description": "분류",
+                              "properties": {}
+                            },
+                            "volumeInfo": {
+                              "type": "string",
+                              "description": "문헌정보",
+                              "properties": {}
+                            },
+                            "seriesInfo": {
+                              "type": "string",
+                              "description": "회차/호",
+                              "properties": {}
+                            },
+                            "startPage": {
+                              "type": "string",
+                              "description": "시작페이지",
+                              "properties": {}
+                            },
+                            "endPage": {
+                              "type": "string",
+                              "description": "끝페이지",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과수",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "발간문헌 상세 조회",
+        "description": "문헌일련번호를 입력하여 발간문헌 검색 상세내용을 조회하는 기능 제공",
+        "operationId": "getPblctLtrtreDetail",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답결과 출력형식(xml,json) 기본값:xml",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "fields",
+          "description": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "bookInfoSeq",
+          "description": "발간문헌 검색목록에서 조회한 문헌일련번호 입력",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "getSerialPublicationDetail_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "type": {
+              "type": "string",
+              "description": "데이터 타입"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "seqNo": {
+                      "type": "string",
+                      "description": "조회를 요청한 책일련번호"
+                    },
+                    "subSeq": {
+                      "type": "string",
+                      "description": "책권호수일련번호"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "서명 + 권호수"
+                    },
+                    "fileLink1": {
+                      "type": "string",
+                      "description": "해당자료를 문헌으로 발간 시 사용했던 원본파일 자료"
+                    },
+                    "fileLink2": {
+                      "type": "string",
+                      "description": "자료의 이해를 돕기 위해 원본파일의 한문 표기를 한글로 변환한 자료 "
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과수"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getPblctLtrtreList_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "type": {
+              "type": "string",
+              "description": "데이터 타입"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "bookInfoSeq": {
+                      "type": "string",
+                      "description": "문헌일련번호"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "제목"
+                    },
+                    "book": {
+                      "type": "string",
+                      "description": "총서"
+                    },
+                    "bookReporter": {
+                      "type": "string",
+                      "description": "저자"
+                    },
+                    "bookSection": {
+                      "type": "string",
+                      "description": "분류"
+                    },
+                    "volumeInfo": {
+                      "type": "string",
+                      "description": "문헌정보"
+                    },
+                    "publisher": {
+                      "type": "string",
+                      "description": "출판사"
+                    },
+                    "pressDate": {
+                      "type": "string",
+                      "description": "출판일자"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과수"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getPblctLtrtreDetail_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "type": {
+              "type": "string",
+              "description": "데이터 타입"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "xmlContent": {
+                      "type": "string",
+                      "description": "xml내용"
+                    },
+                    "bookInfoSeq": {
+                      "type": "string",
+                      "description": "문헌일련번호"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "제목"
+                    },
+                    "book": {
+                      "type": "string",
+                      "description": "총서"
+                    },
+                    "bookReporter": {
+                      "type": "string",
+                      "description": "저자"
+                    },
+                    "publisher": {
+                      "type": "string",
+                      "description": "출판사"
+                    },
+                    "pressDate": {
+                      "type": "string",
+                      "description": "출판일자"
+                    },
+                    "bookSection": {
+                      "type": "string",
+                      "description": "분류"
+                    },
+                    "volumeInfo": {
+                      "type": "string",
+                      "description": "문헌정보"
+                    },
+                    "seriesInfo": {
+                      "type": "string",
+                      "description": "회차/호"
+                    },
+                    "startPage": {
+                      "type": "string",
+                      "description": "시작페이지"
+                    },
+                    "endPage": {
+                      "type": "string",
+                      "description": "끝페이지"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과수"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getSerialPublicationList_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "type": {
+              "type": "string",
+              "description": "데이터 타입"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "seqNo": {
+                      "type": "string",
+                      "description": "책일련번호"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "서명"
+                    },
+                    "pubFreq": {
+                      "type": "string",
+                      "description": "간행빈도"
+                    },
+                    "pubDate": {
+                      "type": "string",
+                      "description": "권·연차사항"
+                    },
+                    "bookImg": {
+                      "type": "string",
+                      "description": "책이미지링크주소"
+                    },
+                    "content": {
+                      "type": "string",
+                      "description": "내용"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과수"
+            }
+          }
+        }
+      }
+    }
+  },
+  "swaggerOprtinVOs": [
+    {
+      "oprtinUrl": "https://opendata.ccourt.go.kr/opendata/services/PubDocsService/getPblctLtrtreDetail",
+      "oprtinNm": "발간문헌 상세 조회",
+      "oprtinDc": "문헌일련번호를 입력하여 발간문헌 검색 상세내용을 조회하는 기능 제공",
+      "gwSvcNm": "getPblctLtrtreDetail",
+      "operationId": "getPblctLtrtreDetail",
+      "publicDataTyDetailCode": "PRDE02",
+      "reqList": [
+        {
+          "paramtrNm": "serviceKey",
+          "paramtrDc": "공공데이터포털에서 받은 인증키",
+          "paramtrBassValue": "-",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "pageNo",
+          "paramtrDc": "페이지번호",
+          "paramtrBassValue": "1",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "numOfRows",
+          "paramtrDc": "한 페이지 결과 수",
+          "paramtrBassValue": "10",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "type",
+          "paramtrDc": "응답결과 출력형식(xml,json) 기본값:xml",
+          "paramtrBassValue": "xml",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "fields",
+          "paramtrDc": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "paramtrBassValue": "",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "bookInfoSeq",
+          "paramtrDc": "발간문헌 검색목록에서 조회한 문헌일련번호 입력",
+          "paramtrBassValue": "13834",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        }
+      ],
+      "resList": [
+        {
+          "paramtrNm": "header",
+          "paramtrDc": "header",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/oper-1-header",
+          "subDefNm": "oper-1-header",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "resultMsg",
+              "paramtrDc": "결과메세지",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "resultCode",
+              "paramtrDc": "결과코드",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        },
+        {
+          "paramtrNm": "body",
+          "paramtrDc": "body",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/oper-1-body",
+          "subDefNm": "oper-1-body",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "pageNo",
+              "paramtrDc": "페이지 번호",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "type",
+              "paramtrDc": "데이터 타입",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "items",
+              "paramtrDc": "items",
+              "arrayYn": "N",
+              "paramtrDefNm": "#/definitions/oper-1-items",
+              "subDefNm": "oper-1-items",
+              "paramtrTy": "object",
+              "paramtrDivision": "필수",
+              "ck": true,
+              "subParam": [
+                {
+                  "paramtrNm": "item",
+                  "paramtrDc": "item",
+                  "arrayYn": "N",
+                  "paramtrDefNm": "#/definitions/oper-1-item",
+                  "subDefNm": "oper-1-item",
+                  "paramtrTy": "object",
+                  "paramtrDivision": "필수",
+                  "ck": true,
+                  "subParam": [
+                    {
+                      "paramtrNm": "xmlContent",
+                      "paramtrDc": "xml내용",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "bookInfoSeq",
+                      "paramtrDc": "문헌일련번호",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "title",
+                      "paramtrDc": "제목",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "book",
+                      "paramtrDc": "총서",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "bookReporter",
+                      "paramtrDc": "저자",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "publisher",
+                      "paramtrDc": "출판사",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "pressDate",
+                      "paramtrDc": "출판일자",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "bookSection",
+                      "paramtrDc": "분류",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "volumeInfo",
+                      "paramtrDc": "문헌정보",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "seriesInfo",
+                      "paramtrDc": "회차/호",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "startPage",
+                      "paramtrDc": "시작페이지",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "endPage",
+                      "paramtrDc": "끝페이지",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "paramtrNm": "totalCount",
+              "paramtrDc": "전체 결과수",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "numOfRows",
+              "paramtrDc": "한 페이지 결과 수",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

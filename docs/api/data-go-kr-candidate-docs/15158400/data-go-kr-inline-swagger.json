@@ -1,0 +1,1518 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "한국국제협력단(KOICA)의 ODA 개발협력사업 관련 주요 통계 정보를 제공하는 API입니다. 성과지표, 수원국 지원현황, 사업 유형별 분포 등 다양한 통계를 통해 KOICA의 사업성과와 국제개발협력의 흐름을 정량적으로 파악할 수 있습니다. 연도별, 분야별, 지역별 통계 자료는 정책 수립, 성과 평가, 국제 비교 분석 등에 유용하며, 시각화 도구나 대시보드와의 연계를 통해 활용성을 더욱 높일 수 있습니다. 해당 API는 인증키(serviceKey), 페이지 번호(pageNo), 페이지당 호출건수(numOfRows) 등 기본적인 요청변수를 사용하며 연도, 국가명, 국가코드, 언어모드 등의 필터 파라미터를 추가로 설정할 수 있습니다. 출력결과에는 사업분야명, 사업년도, 지원액 원화금액, 지원액 달러금액, 연도별합계, 소득수준코드 등의 항목이 포함되며, 각 항목에 대한 데이터는 XML 형식으로 반환됩니다.",
+    "version": "1.0.0",
+    "title": "한국국제협력단_통계정보조회"
+  },
+  "host": "apis.data.go.kr/B260003/StatV2Service",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getStatBsnsRecipRankTableList": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "HEADER": {
+                  "type": "object",
+                  "description": "HEADER",
+                  "properties": {
+                    "RESULT_CODE": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "RESULT_MSG": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "BODY": {
+                  "type": "object",
+                  "description": "BODY",
+                  "properties": {
+                    "ITEMS": {
+                      "type": "object",
+                      "description": "ITEMS",
+                      "properties": {
+                        "ITEM": {
+                          "type": "object",
+                          "description": "ITEM",
+                          "properties": {
+                            "SAMT_RATE_TOT": {
+                              "type": "number",
+                              "description": "전체사업 비율",
+                              "properties": {}
+                            },
+                            "TOT_CNT": {
+                              "type": "number",
+                              "description": "총건수",
+                              "properties": {}
+                            },
+                            "TO_RANK_CNT": {
+                              "type": "string",
+                              "description": "순위노출갯수",
+                              "properties": {}
+                            },
+                            "FONTCOLOR": {
+                              "type": "string",
+                              "description": "합계표시구분색깔",
+                              "properties": {}
+                            },
+                            "NATION_NM_01": {
+                              "type": "string",
+                              "description": "프로젝트",
+                              "properties": {}
+                            },
+                            "NATION_NM_02": {
+                              "type": "string",
+                              "description": "개발컨설팅",
+                              "properties": {}
+                            },
+                            "NATION_NM_03": {
+                              "type": "string",
+                              "description": "봉사단 ",
+                              "properties": {}
+                            },
+                            "NATION_NM_04": {
+                              "type": "string",
+                              "description": "연수생초청사업 ",
+                              "properties": {}
+                            },
+                            "NATION_NM_05": {
+                              "type": "string",
+                              "description": "소규모무상원조 ",
+                              "properties": {}
+                            },
+                            "NATION_NM_06": {
+                              "type": "string",
+                              "description": "전문가파견 ",
+                              "properties": {}
+                            },
+                            "NATION_NM_07": {
+                              "type": "string",
+                              "description": "민관협력사업 ",
+                              "properties": {}
+                            },
+                            "NATION_NM_08": {
+                              "type": "string",
+                              "description": "인도적지원 ",
+                              "properties": {}
+                            },
+                            "NATION_NM_09": {
+                              "type": "string",
+                              "description": "국제 기구협력사업",
+                              "properties": {}
+                            },
+                            "NATION_NM": {
+                              "type": "string",
+                              "description": "국가명 ",
+                              "properties": {}
+                            },
+                            "SAMT_DLR_01": {
+                              "type": "number",
+                              "description": "프로젝트 지원액 달러금액",
+                              "properties": {}
+                            },
+                            "SAMT_DLR_02": {
+                              "type": "number",
+                              "description": "개발컨설팅 지원액 달러금액",
+                              "properties": {}
+                            },
+                            "SAMT_DLR_03": {
+                              "type": "number",
+                              "description": "봉사단 지원액 달러 금액",
+                              "properties": {}
+                            },
+                            "SAMT_DLR_04": {
+                              "type": "number",
+                              "description": "연수생초청사업 지원액 달러금액",
+                              "properties": {}
+                            },
+                            "SAMT_DLR_05": {
+                              "type": "number",
+                              "description": "소규모무상원조 지원액 달러금액",
+                              "properties": {}
+                            },
+                            "SAMT_DLR_06": {
+                              "type": "number",
+                              "description": "전문가파견 지원액 달러금액",
+                              "properties": {}
+                            },
+                            "SAMT_DLR_07": {
+                              "type": "number",
+                              "description": "민관협력사업 지원액 달러금액",
+                              "properties": {}
+                            },
+                            "SAMT_DLR_08": {
+                              "type": "number",
+                              "description": "인도적지원 지원액 달러금액",
+                              "properties": {}
+                            },
+                            "SAMT_DLR_09": {
+                              "type": "number",
+                              "description": "국제기구협력사업 지원액 달러금액",
+                              "properties": {}
+                            },
+                            "SAMT_DLR_TOT": {
+                              "type": "number",
+                              "description": "전체사업 지원액 달러금액",
+                              "properties": {}
+                            },
+                            "SAMT_RATE_01": {
+                              "type": "string",
+                              "description": "프로젝트 비율",
+                              "properties": {}
+                            },
+                            "SAMT_RATE_02": {
+                              "type": "string",
+                              "description": "개발컨설팅 비율",
+                              "properties": {}
+                            },
+                            "SAMT_RATE_03": {
+                              "type": "string",
+                              "description": "봉사단 비율",
+                              "properties": {}
+                            },
+                            "SAMT_RATE_04": {
+                              "type": "string",
+                              "description": "연수생 초청 사업 비율",
+                              "properties": {}
+                            },
+                            "SAMT_RATE_05": {
+                              "type": "string",
+                              "description": "소규모 무상 원조 비율",
+                              "properties": {}
+                            },
+                            "SAMT_RATE_06": {
+                              "type": "string",
+                              "description": "전문가 파견 비율",
+                              "properties": {}
+                            },
+                            "SAMT_RATE_07": {
+                              "type": "string",
+                              "description": "민관협력사업 비율",
+                              "properties": {}
+                            },
+                            "SAMT_RATE_08": {
+                              "type": "string",
+                              "description": "인도적지원 비율",
+                              "properties": {}
+                            },
+                            "SAMT_RATE_09": {
+                              "type": "string",
+                              "description": "국제기구협력사업 비율",
+                              "properties": {}
+                            },
+                            "SAMT_WON_04": {
+                              "type": "number",
+                              "description": "연수생초청 사업지원액 원화금액",
+                              "properties": {}
+                            },
+                            "SAMT_WON_05": {
+                              "type": "number",
+                              "description": "소규모무상원조 지원액 원화금액",
+                              "properties": {}
+                            },
+                            "SAMT_WON_06": {
+                              "type": "number",
+                              "description": "전문가파견 지원액 원화금액",
+                              "properties": {}
+                            },
+                            "SAMT_WON_07": {
+                              "type": "number",
+                              "description": "민관협력사업 지원액 원화금액",
+                              "properties": {}
+                            },
+                            "SAMT_WON_TOT": {
+                              "type": "number",
+                              "description": "전체사업 지원액 원화 금액",
+                              "properties": {}
+                            },
+                            "RNUM": {
+                              "type": "number",
+                              "description": "행번호",
+                              "properties": {}
+                            },
+                            "SAMT_WON_02": {
+                              "type": "number",
+                              "description": "개발컨설팅 지원액 원화금액",
+                              "properties": {}
+                            },
+                            "SAMT_WON_08": {
+                              "type": "number",
+                              "description": "인도적지원 지원액 원화금액",
+                              "properties": {}
+                            },
+                            "SAMT_WON_09": {
+                              "type": "number",
+                              "description": "국제기구협력사업지원액 원화금액",
+                              "properties": {}
+                            },
+                            "SAMT_WON_01": {
+                              "type": "number",
+                              "description": "프로젝트 지원액 원화금액 ",
+                              "properties": {}
+                            },
+                            "SAMT_WON_03": {
+                              "type": "number",
+                              "description": "봉사단 지원액 원화금액",
+                              "properties": {}
+                            },
+                            "RANK_TOT": {
+                              "type": "number",
+                              "description": "순위",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "totalCount": {
+                  "type": "string",
+                  "description": "전체 결과 수\\t",
+                  "properties": {}
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "유형별 수원 상위표 통계 정보",
+        "description": "통계정보 기준년도(시작, 종료년도), 순위를 기준으로 순위, 전체사업, 사업유형별(프로젝트, 개발컨설팅, 봉사단, 연수생초청사업, 소규모무상원조, 전문가파견, 민관협력사업, 인도적지원, 국제기구협력사업) 국가, 지원액, 비율을 순위별로 조회하는 유형별 수원 상위표 통계 정보 서비스",
+        "operationId": "getStatBsnsRecipRankTableList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_START_YEAR",
+          "description": "시작년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_END_YEAR",
+          "description": "종료년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "M_LANG_MODE",
+          "description": "언어모드.한글/영문 구분(한글:KO,영문:EN)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_RANK_CNT",
+          "description": "순위 조회 범위값. 기본값 20으로 20위까지 조회 됨. 30위까지 조회하고자 하면 30으로 기술하면 됨.",
+          "type": "number",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getStatAreaList": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "HEADER": {
+                  "type": "object",
+                  "description": "HEADER",
+                  "properties": {
+                    "RESULT_MSG": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    },
+                    "RESULT_CODE": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "BODY": {
+                  "type": "object",
+                  "description": "BODY",
+                  "properties": {
+                    "ITEMS": {
+                      "type": "object",
+                      "description": "ITEMS",
+                      "properties": {
+                        "ITEM": {
+                          "type": "object",
+                          "description": "ITEM",
+                          "properties": {
+                            "DIV": {
+                              "type": "string",
+                              "description": "구분",
+                              "properties": {}
+                            },
+                            "DIV_[year]": {
+                              "type": "number",
+                              "description": "조회 기간에 따라 동적으로 생성 ex) 조회기간: 2020 ~ 2022 시,  DIV_2020, DIV_2021, DIV_2022",
+                              "properties": {}
+                            },
+                            "DIV_TOT": {
+                              "type": "string",
+                              "description": "총합계",
+                              "properties": {}
+                            },
+                            "FONTCOLOR": {
+                              "type": "string",
+                              "description": "폰트색깔 ",
+                              "properties": {}
+                            },
+                            "KOICA_AREA_SE_CD": {
+                              "type": "string",
+                              "description": "코이카지역코드",
+                              "properties": {}
+                            },
+                            "KOICA_AREA_SE_NM": {
+                              "type": "string",
+                              "description": "코이카지역명",
+                              "properties": {}
+                            },
+                            "ORDR_NO": {
+                              "type": "number",
+                              "description": "데이터 순서",
+                              "properties": {}
+                            },
+                            "RNUM": {
+                              "type": "number",
+                              "description": "행번호",
+                              "properties": {}
+                            },
+                            "TOT_CNT": {
+                              "type": "number",
+                              "description": "데이터 총 건수",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "totalCount": {
+                  "type": "number",
+                  "description": "데이터 총건수",
+                  "properties": {}
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "지역별 통계 정보",
+        "description": "통계정보 기준년도(시작,종료년도), 지역을 기준으로 지역, 구분(금액, 전년대비증감, 국가수, 기구수, 건수, 인원수), 연도별합계, 각 연도별 구분값을 조회하는 지역별 통계 정보 서비스",
+        "operationId": "getStatAreaList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_START_YEAR",
+          "description": "조회시작년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_END_YEAR",
+          "description": "조회종료연도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "M_LANG_MODE",
+          "description": "언어모드.한글/영문 구분(한글:KO,영문:EN)\\t",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getStatBsrList": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "HEADER": {
+                  "type": "object",
+                  "description": "HEADER",
+                  "properties": {
+                    "RESULT_MSG": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    },
+                    "RESULT_CODE": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "BODY": {
+                  "type": "object",
+                  "description": "BODY",
+                  "properties": {
+                    "ITEMS": {
+                      "type": "object",
+                      "description": "ITEMS",
+                      "properties": {
+                        "ITEM": {
+                          "type": "object",
+                          "description": "ITEM",
+                          "properties": {
+                            "TOT_CNT": {
+                              "type": "number",
+                              "description": "데이터 총건수",
+                              "properties": {}
+                            },
+                            "DIV": {
+                              "type": "string",
+                              "description": "구분",
+                              "properties": {}
+                            },
+                            "DIV_[year]": {
+                              "type": "number",
+                              "description": "조회 기간에 따라 동적으로 생성 ex) 조회기간: 2020 ~ 2022 시,  DIV_2020, DIV_2021, DIV_2022",
+                              "properties": {}
+                            },
+                            "DIV_TOT": {
+                              "type": "number",
+                              "description": "총합계",
+                              "properties": {}
+                            },
+                            "FONTCOLOR": {
+                              "type": "string",
+                              "description": "합계표시 구분색깔",
+                              "properties": {}
+                            },
+                            "ORDR_NO": {
+                              "type": "number",
+                              "description": "정렬순서",
+                              "properties": {}
+                            },
+                            "RNUM": {
+                              "type": "number",
+                              "description": "행번호",
+                              "properties": {}
+                            },
+                            "SPORT_REALM_CD": {
+                              "type": "string",
+                              "description": "사업분야코드",
+                              "properties": {}
+                            },
+                            "SPORT_REALM_NM": {
+                              "type": "string",
+                              "description": "사업분야명",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "totalCount": {
+                  "type": "string",
+                  "description": "전체 결과 수 ",
+                  "properties": {}
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "사업분야별 통계 정보",
+        "description": "통계정보 기준년도(시작,종료년도), 국가를 기준으로 사업분야, 구분(금액, 국가수, 기구수, 건수, 인원수), 연도별합계 , 각연도별 사업분야 구분값를 조회하는 사업분야별 통계 정보 서비스",
+        "operationId": "getStatBsrList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_START_YEAR",
+          "description": "시작년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_END_YEAR",
+          "description": "종료년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "M_LANG_MODE",
+          "description": "한글/영문 구분 (한글:KO, 영문:EN)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getStatBtypList": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "HEADER": {
+                  "type": "object",
+                  "description": "HEADER",
+                  "properties": {}
+                },
+                "BODY": {
+                  "type": "object",
+                  "description": "BODY",
+                  "properties": {
+                    "ITEMS": {
+                      "type": "object",
+                      "description": "ITEMS",
+                      "properties": {
+                        "ITEM": {
+                          "type": "object",
+                          "description": "ITEM",
+                          "properties": {
+                            "BSNS_STLE_NM": {
+                              "type": "string",
+                              "description": "사업구분",
+                              "properties": {}
+                            },
+                            "BTYP_CD": {
+                              "type": "string",
+                              "description": "사업구분코드",
+                              "properties": {}
+                            },
+                            "DIV": {
+                              "type": "string",
+                              "description": "구분",
+                              "properties": {}
+                            },
+                            "DIV_[year]": {
+                              "type": "number",
+                              "description": "조회 기간에 따라 동적으로 생성 ex) 조회기간: 2020 ~ 2022 시,  DIV_2020, DIV_2021, DIV_2022",
+                              "properties": {}
+                            },
+                            "FONTCOLOR": {
+                              "type": "string",
+                              "description": "합계표시 구분색깔",
+                              "properties": {}
+                            },
+                            "ORDR_NO": {
+                              "type": "number",
+                              "description": "조회순서",
+                              "properties": {}
+                            },
+                            "RNUM": {
+                              "type": "number",
+                              "description": "행번호",
+                              "properties": {}
+                            },
+                            "TOT_CNT": {
+                              "type": "number",
+                              "description": "데이터 총건수",
+                              "properties": {}
+                            },
+                            "DIV_TOT": {
+                              "type": "string",
+                              "description": "합계",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "totalCount": {
+                  "type": "string",
+                  "description": "데이터 총건수",
+                  "properties": {}
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "사업유형별 통계 정보",
+        "description": "통계정보 기준년도(시작,종료년도), 국가를 기준으로 사업유형별, 구분(금액, 국가수, 기구수, 건수, 인원수), 연도별합계, 각연도별 사업유형 구분값를 조회하는 사업유형별 통계 정보 서비스",
+        "operationId": "getStatBtypList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_START_YEAR",
+          "description": "시작년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_END_YEAR",
+          "description": "종료년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "M_LANG_MODE",
+          "description": "한글/영문 구분(한글:KO,영문:EN)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getStatIncomeLevelList": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "HEADER": {
+                  "type": "object",
+                  "description": "HEADER",
+                  "properties": {
+                    "RESULT_MSG": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    },
+                    "RESULT_CODE": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "BODY": {
+                  "type": "object",
+                  "description": "BODY",
+                  "properties": {
+                    "ITEMS": {
+                      "type": "object",
+                      "description": "ITEMS",
+                      "properties": {
+                        "ITEM": {
+                          "type": "object",
+                          "description": "ITEM",
+                          "properties": {
+                            "TOT_CNT": {
+                              "type": "number",
+                              "description": "총건수",
+                              "properties": {}
+                            },
+                            "BSNS_STLE_NM": {
+                              "type": "string",
+                              "description": "소득수준구분",
+                              "properties": {}
+                            },
+                            "FONTCOLOR": {
+                              "type": "string",
+                              "description": "합계표시 구분색깔",
+                              "properties": {}
+                            },
+                            "ORDR_YEAR": {
+                              "type": "string",
+                              "description": "년도",
+                              "properties": {}
+                            },
+                            "RNUM": {
+                              "type": "number",
+                              "description": "행번호",
+                              "properties": {}
+                            },
+                            "SAMT_DLR": {
+                              "type": "string",
+                              "description": "지원액 달러금액",
+                              "properties": {}
+                            },
+                            "SAMT_RATE": {
+                              "type": "number",
+                              "description": "비율",
+                              "properties": {}
+                            },
+                            "SAMT_WON": {
+                              "type": "string",
+                              "description": "지원액 원화금액",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "totalCount": {
+                  "type": "number",
+                  "description": "데이터 총건수",
+                  "properties": {}
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "소득수준별 통계 정보",
+        "description": "통계정보 기준년도(시작,종료년도)를 기준으로 연도, 사업유형, 지원액(원,달러), 비율, 국가(기구포함)수, 전체,신규건수, 전체,신규 인원수를 조회하는 소득수준별 통계 정보 서비스",
+        "operationId": "getStatIncomeLevelList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "M_TOT_CNT",
+          "description": "합계 항목명",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "M_ALL_TOT_CNT",
+          "description": "총합계 항목명",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "M_LANG_MODE",
+          "description": "한글/영문 구분 (한글:KO, 영문:EN)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_START_YEAR",
+          "description": "시작년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_END_YEAR",
+          "description": "종료년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "getStatBsnsRecipRankTableList_response": {
+      "type": "object",
+      "properties": {
+        "HEADER": {
+          "type": "object",
+          "description": "HEADER",
+          "properties": {
+            "RESULT_CODE": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "RESULT_MSG": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "BODY": {
+          "type": "object",
+          "description": "BODY",
+          "properties": {
+            "ITEMS": {
+              "type": "object",
+              "description": "ITEMS",
+              "properties": {
+                "ITEM": {
+                  "type": "object",
+                  "description": "ITEM",
+                  "properties": {
+                    "SAMT_RATE_TOT": {
+                      "type": "number",
+                      "description": "전체사업 비율"
+                    },
+                    "TOT_CNT": {
+                      "type": "number",
+                      "description": "총건수"
+                    },
+                    "TO_RANK_CNT": {
+                      "type": "string",
+                      "description": "순위노출갯수"
+                    },
+                    "FONTCOLOR": {
+                      "type": "string",
+                      "description": "합계표시구분색깔"
+                    },
+                    "NATION_NM_01": {
+                      "type": "string",
+                      "description": "프로젝트"
+                    },
+                    "NATION_NM_02": {
+                      "type": "string",
+                      "description": "개발컨설팅"
+                    },
+                    "NATION_NM_03": {
+                      "type": "string",
+                      "description": "봉사단 "
+                    },
+                    "NATION_NM_04": {
+                      "type": "string",
+                      "description": "연수생초청사업 "
+                    },
+                    "NATION_NM_05": {
+                      "type": "string",
+                      "description": "소규모무상원조 "
+                    },
+                    "NATION_NM_06": {
+                      "type": "string",
+                      "description": "전문가파견 "
+                    },
+                    "NATION_NM_07": {
+                      "type": "string",
+                      "description": "민관협력사업 "
+                    },
+                    "NATION_NM_08": {
+                      "type": "string",
+                      "description": "인도적지원 "
+                    },
+                    "NATION_NM_09": {
+                      "type": "string",
+                      "description": "국제 기구협력사업"
+                    },
+                    "NATION_NM": {
+                      "type": "string",
+                      "description": "국가명 "
+                    },
+                    "SAMT_DLR_01": {
+                      "type": "number",
+                      "description": "프로젝트 지원액 달러금액"
+                    },
+                    "SAMT_DLR_02": {
+                      "type": "number",
+                      "description": "개발컨설팅 지원액 달러금액"
+                    },
+                    "SAMT_DLR_03": {
+                      "type": "number",
+                      "description": "봉사단 지원액 달러 금액"
+                    },
+                    "SAMT_DLR_04": {
+                      "type": "number",
+                      "description": "연수생초청사업 지원액 달러금액"
+                    },
+                    "SAMT_DLR_05": {
+                      "type": "number",
+                      "description": "소규모무상원조 지원액 달러금액"
+                    },
+                    "SAMT_DLR_06": {
+                      "type": "number",
+                      "description": "전문가파견 지원액 달러금액"
+                    },
+                    "SAMT_DLR_07": {
+                      "type": "number",
+                      "description": "민관협력사업 지원액 달러금액"
+                    },
+                    "SAMT_DLR_08": {
+                      "type": "number",
+                      "description": "인도적지원 지원액 달러금액"
+                    },
+                    "SAMT_DLR_09": {
+                      "type": "number",
+                      "description": "국제기구협력사업 지원액 달러금액"
+                    },
+                    "SAMT_DLR_TOT": {
+                      "type": "number",
+                      "description": "전체사업 지원액 달러금액"
+                    },
+                    "SAMT_RATE_01": {
+                      "type": "string",
+                      "description": "프로젝트 비율"
+                    },
+                    "SAMT_RATE_02": {
+                      "type": "string",
+                      "description": "개발컨설팅 비율"
+                    },
+                    "SAMT_RATE_03": {
+                      "type": "string",
+                      "description": "봉사단 비율"
+                    },
+                    "SAMT_RATE_04": {
+                      "type": "string",
+                      "description": "연수생 초청 사업 비율"
+                    },
+                    "SAMT_RATE_05": {
+                      "type": "string",
+                      "description": "소규모 무상 원조 비율"
+                    },
+                    "SAMT_RATE_06": {
+                      "type": "string",
+                      "description": "전문가 파견 비율"
+                    },
+                    "SAMT_RATE_07": {
+                      "type": "string",
+                      "description": "민관협력사업 비율"
+                    },
+                    "SAMT_RATE_08": {
+                      "type": "string",
+                      "description": "인도적지원 비율"
+                    },
+                    "SAMT_RATE_09": {
+                      "type": "string",
+                      "description": "국제기구협력사업 비율"
+                    },
+                    "SAMT_WON_04": {
+                      "type": "number",
+                      "description": "연수생초청 사업지원액 원화금액"
+                    },
+                    "SAMT_WON_05": {
+                      "type": "number",
+                      "description": "소규모무상원조 지원액 원화금액"
+                    },
+                    "SAMT_WON_06": {
+                      "type": "number",
+                      "description": "전문가파견 지원액 원화금액"
+                    },
+                    "SAMT_WON_07": {
+                      "type": "number",
+                      "description": "민관협력사업 지원액 원화금액"
+                    },
+                    "SAMT_WON_TOT": {
+                      "type": "number",
+                      "description": "전체사업 지원액 원화 금액"
+                    },
+                    "RNUM": {
+                      "type": "number",
+                      "description": "행번호"
+                    },
+                    "SAMT_WON_02": {
+                      "type": "number",
+                      "description": "개발컨설팅 지원액 원화금액"
+                    },
+                    "SAMT_WON_08": {
+                      "type": "number",
+                      "description": "인도적지원 지원액 원화금액"
+                    },
+                    "SAMT_WON_09": {
+                      "type": "number",
+                      "description": "국제기구협력사업지원액 원화금액"
+                    },
+                    "SAMT_WON_01": {
+                      "type": "number",
+                      "description": "프로젝트 지원액 원화금액 "
+                    },
+                    "SAMT_WON_03": {
+                      "type": "number",
+                      "description": "봉사단 지원액 원화금액"
+                    },
+                    "RANK_TOT": {
+                      "type": "number",
+                      "description": "순위"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "totalCount": {
+          "type": "string",
+          "description": "전체 결과 수\\t"
+        }
+      }
+    },
+    "getStatAreaList_response": {
+      "type": "object",
+      "properties": {
+        "HEADER": {
+          "type": "object",
+          "description": "HEADER",
+          "properties": {
+            "RESULT_MSG": {
+              "type": "string",
+              "description": "결과메세지"
+            },
+            "RESULT_CODE": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "BODY": {
+          "type": "object",
+          "description": "BODY",
+          "properties": {
+            "ITEMS": {
+              "type": "object",
+              "description": "ITEMS",
+              "properties": {
+                "ITEM": {
+                  "type": "object",
+                  "description": "ITEM",
+                  "properties": {
+                    "DIV": {
+                      "type": "string",
+                      "description": "구분"
+                    },
+                    "DIV_[year]": {
+                      "type": "number",
+                      "description": "조회 기간에 따라 동적으로 생성 ex) 조회기간: 2020 ~ 2022 시,  DIV_2020, DIV_2021, DIV_2022"
+                    },
+                    "DIV_TOT": {
+                      "type": "string",
+                      "description": "총합계"
+                    },
+                    "FONTCOLOR": {
+                      "type": "string",
+                      "description": "폰트색깔 "
+                    },
+                    "KOICA_AREA_SE_CD": {
+                      "type": "string",
+                      "description": "코이카지역코드"
+                    },
+                    "KOICA_AREA_SE_NM": {
+                      "type": "string",
+                      "description": "코이카지역명"
+                    },
+                    "ORDR_NO": {
+                      "type": "number",
+                      "description": "데이터 순서"
+                    },
+                    "RNUM": {
+                      "type": "number",
+                      "description": "행번호"
+                    },
+                    "TOT_CNT": {
+                      "type": "number",
+                      "description": "데이터 총 건수"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "totalCount": {
+          "type": "number",
+          "description": "데이터 총건수"
+        }
+      }
+    },
+    "getStatBsrList_response": {
+      "type": "object",
+      "properties": {
+        "HEADER": {
+          "type": "object",
+          "description": "HEADER",
+          "properties": {
+            "RESULT_MSG": {
+              "type": "string",
+              "description": "결과메세지"
+            },
+            "RESULT_CODE": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "BODY": {
+          "type": "object",
+          "description": "BODY",
+          "properties": {
+            "ITEMS": {
+              "type": "object",
+              "description": "ITEMS",
+              "properties": {
+                "ITEM": {
+                  "type": "object",
+                  "description": "ITEM",
+                  "properties": {
+                    "TOT_CNT": {
+                      "type": "number",
+                      "description": "데이터 총건수"
+                    },
+                    "DIV": {
+                      "type": "string",
+                      "description": "구분"
+                    },
+                    "DIV_[year]": {
+                      "type": "number",
+                      "description": "조회 기간에 따라 동적으로 생성 ex) 조회기간: 2020 ~ 2022 시,  DIV_2020, DIV_2021, DIV_2022"
+                    },
+                    "DIV_TOT": {
+                      "type": "number",
+                      "description": "총합계"
+                    },
+                    "FONTCOLOR": {
+                      "type": "string",
+                      "description": "합계표시 구분색깔"
+                    },
+                    "ORDR_NO": {
+                      "type": "number",
+                      "description": "정렬순서"
+                    },
+                    "RNUM": {
+                      "type": "number",
+                      "description": "행번호"
+                    },
+                    "SPORT_REALM_CD": {
+                      "type": "string",
+                      "description": "사업분야코드"
+                    },
+                    "SPORT_REALM_NM": {
+                      "type": "string",
+                      "description": "사업분야명"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "totalCount": {
+          "type": "string",
+          "description": "전체 결과 수 "
+        }
+      }
+    },
+    "getStatBtypList_response": {
+      "type": "object",
+      "properties": {
+        "HEADER": {
+          "type": "object",
+          "description": "HEADER"
+        },
+        "BODY": {
+          "type": "object",
+          "description": "BODY",
+          "properties": {
+            "ITEMS": {
+              "type": "object",
+              "description": "ITEMS",
+              "properties": {
+                "ITEM": {
+                  "type": "object",
+                  "description": "ITEM",
+                  "properties": {
+                    "BSNS_STLE_NM": {
+                      "type": "string",
+                      "description": "사업구분"
+                    },
+                    "BTYP_CD": {
+                      "type": "string",
+                      "description": "사업구분코드"
+                    },
+                    "DIV": {
+                      "type": "string",
+                      "description": "구분"
+                    },
+                    "DIV_[year]": {
+                      "type": "number",
+                      "description": "조회 기간에 따라 동적으로 생성 ex) 조회기간: 2020 ~ 2022 시,  DIV_2020, DIV_2021, DIV_2022"
+                    },
+                    "FONTCOLOR": {
+                      "type": "string",
+                      "description": "합계표시 구분색깔"
+                    },
+                    "ORDR_NO": {
+                      "type": "number",
+                      "description": "조회순서"
+                    },
+                    "RNUM": {
+                      "type": "number",
+                      "description": "행번호"
+                    },
+                    "TOT_CNT": {
+                      "type": "number",
+                      "description": "데이터 총건수"
+                    },
+                    "DIV_TOT": {
+                      "type": "string",
+                      "description": "합계"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "totalCount": {
+          "type": "string",
+          "description": "데이터 총건수"
+        }
+      }
+    },
+    "getStatIncomeLevelList_response": {
+      "type": "object",
+      "properties": {
+        "HEADER": {
+          "type": "object",
+          "description": "HEADER",
+          "properties": {
+            "RESULT_MSG": {
+              "type": "string",
+              "description": "결과메세지"
+            },
+            "RESULT_CODE": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "BODY": {
+          "type": "object",
+          "description": "BODY",
+          "properties": {
+            "ITEMS": {
+              "type": "object",
+              "description": "ITEMS",
+              "properties": {
+                "ITEM": {
+                  "type": "object",
+                  "description": "ITEM",
+                  "properties": {
+                    "TOT_CNT": {
+                      "type": "number",
+                      "description": "총건수"
+                    },
+                    "BSNS_STLE_NM": {
+                      "type": "string",
+                      "description": "소득수준구분"
+                    },
+                    "FONTCOLOR": {
+                      "type": "string",
+                      "description": "합계표시 구분색깔"
+                    },
+                    "ORDR_YEAR": {
+                      "type": "string",
+                      "description": "년도"
+                    },
+                    "RNUM": {
+                      "type": "number",
+                      "description": "행번호"
+                    },
+                    "SAMT_DLR": {
+                      "type": "string",
+                      "description": "지원액 달러금액"
+                    },
+                    "SAMT_RATE": {
+                      "type": "number",
+                      "description": "비율"
+                    },
+                    "SAMT_WON": {
+                      "type": "string",
+                      "description": "지원액 원화금액"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "totalCount": {
+          "type": "number",
+          "description": "데이터 총건수"
+        }
+      }
+    }
+  }
+}

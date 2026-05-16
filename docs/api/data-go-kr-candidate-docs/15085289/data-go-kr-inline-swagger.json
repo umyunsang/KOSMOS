@@ -1,0 +1,924 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "꽃가루농도위험지수(참나무/소나무/잡초류), 감기가능지수 등의 정보를 조회할 수 있는 기상청 보건기상지수 조회 서비스입니다. 봄·여름·가을철 주요 꽃가루 발생 시기와 연계하여 알레르기, 호흡기 질환, 기관지 천식 등 건강관리 정보를 사전에 확인할 수 있으며, 일상생활이나 야외활동 계획, 취약계층 돌봄 서비스에도 활용 가능합니다. 특히 어린이, 노약자, 알레르기 환자 등 건강 취약계층의 안전한 생활 지원에 기여합니다.\\n\\n목록명 변경 안내: 검색 및 활용 편의성을 높이기 위해 '보건기상지수 조회서비스'를 '꽃가루농도위험지수 조회서비스'로 수정하여 제공합니다. (2023.5.2.)",
+    "version": "1.0.0",
+    "title": "기상청_꽃가루농도위험지수 조회서비스(3.0)"
+  },
+  "host": "apis.data.go.kr/1360000/HealthWthrIdxServiceV3",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getPinePollenRiskIdxV3": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "응답메시지 내용",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "응답메시지 코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "dataType": {
+                      "type": "string",
+                      "description": "응답자료형식",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "description": "지수코드",
+                              "properties": {}
+                            },
+                            "areaNo": {
+                              "type": "string",
+                              "description": "지점코드",
+                              "properties": {}
+                            },
+                            "date": {
+                              "type": "string",
+                              "description": "발표시간",
+                              "properties": {}
+                            },
+                            "today": {
+                              "type": "string",
+                              "description": "오늘 예측값",
+                              "properties": {}
+                            },
+                            "tomorrow": {
+                              "type": "string",
+                              "description": "내일 예측값",
+                              "properties": {}
+                            },
+                            "dayaftertomorrow": {
+                              "type": "string",
+                              "description": "모레 예측값",
+                              "properties": {}
+                            },
+                            "todaysaftertomorrow": {
+                              "type": "string",
+                              "description": "글피 예측값",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "데이터 총 개수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "꽃가루농도위험지수(소나무)조회",
+        "description": "지점코드, 발표시간으로 현재일자로부터 3일 이내의 오늘, 내일, 모레, 글피의 예측값을 조회하는 기능(제공: 3월~6월)",
+        "operationId": "getPinePollenRiskIdxV3",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 발급받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수 Default: 10",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호 Default: 1",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "dataType",
+          "description": "요청자료형식(XML/JSON) Default: XML",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "areaNo",
+          "description": "서울지점 공백일때: 전체지점조회",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "time",
+          "description": "‘21년7월6일 18시 발표",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getWeedsPollenRiskndxV3": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "$ref": "#/definitions/header_getWeedsPollenRiskndxV3"
+                },
+                "body": {
+                  "$ref": "#/definitions/body_getWeedsPollenRiskndxV3"
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "NORMAL_SERVICE": {
+            "description": "정상"
+          },
+          "APPLICATION_ERROR": {
+            "description": "어플리케이션 에러"
+          },
+          "DB_ERROR": {
+            "description": "데이터베이스 에러"
+          },
+          "NODATA_ERROR": {
+            "description": "데이터 없음 에러"
+          },
+          "SERVICETIME_OUT": {
+            "description": "서비스 연결실패 에러"
+          },
+          "INVALID_REQUEST_PARAMETER_ERROR": {
+            "description": "잘못된 요청 파라메터 에러"
+          },
+          "NO_MANDATORY_REQUEST_PARAMETER_ERROR": {
+            "description": "필수요청 파라메타가 없음"
+          },
+          "UNKNOWN_ERROR": {
+            "description": "기타에러"
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "꽃가루농도위험지수(잡초류)조회",
+        "description": "지점코드, 발표시간으로 현재일자로부터 3일 이내의 오늘, 내일, 모레, 글피의 예측값을 조회하는 기능(제공: 8월~10월)",
+        "operationId": "getWeedsPollenRiskndxV3",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 발급받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수 Default: 10",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호 Default: 1",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "dataType",
+          "description": "요청자료형식(XML/JSON) Default: XML",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "areaNo",
+          "description": "서울지점 공백일때: 전체지점조회",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "time",
+          "description": "21년 7월 6일 18시 발표",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getOakPollenRiskIdxV3": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "응답메시지 코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "응답메시지 내용",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "dataType": {
+                      "type": "string",
+                      "description": "응답자료형식",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "description": "지수코드",
+                              "properties": {}
+                            },
+                            "areaNo": {
+                              "type": "string",
+                              "description": "지점코드",
+                              "properties": {}
+                            },
+                            "date": {
+                              "type": "string",
+                              "description": "발표시간",
+                              "properties": {}
+                            },
+                            "today": {
+                              "type": "string",
+                              "description": "오늘 예측값",
+                              "properties": {}
+                            },
+                            "tomorrow": {
+                              "type": "string",
+                              "description": "내일 예측값",
+                              "properties": {}
+                            },
+                            "dayaftertomorrow": {
+                              "type": "string",
+                              "description": "모레 예측값",
+                              "properties": {}
+                            },
+                            "todaysaftertomorrow": {
+                              "type": "string",
+                              "description": "글피 예측값",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "데이터 총 개수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "꽃가루농도위험지수(참나무)조회",
+        "description": "지점코드, 발표시간으로 현재일자로부터 3일 이내의 오늘, 내일, 모레, 글피의 예측값을 조회하는 기능(제공: 3월~6월)",
+        "operationId": "getOakPollenRiskIdxV3",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 발급받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수 Default: 10",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호 Default: 1",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "dataType",
+          "description": "요청자료형식(XML/JSON) Default: XML",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "areaNo",
+          "description": "서울지점 공백일때: 전체지점조회",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "time",
+          "description": "‘21년7월6일 18시 발표",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "header_getPinePollenRiskIdxV3": {
+      "type": "object",
+      "properties": {
+        "resultMsg": {
+          "type": "string",
+          "description": "응답메시지 내용"
+        },
+        "resultCode": {
+          "type": "string",
+          "description": "응답메시지 코드"
+        }
+      }
+    },
+    "body_getPinePollenRiskIdxV3": {
+      "type": "object",
+      "properties": {
+        "dataType": {
+          "type": "string",
+          "description": "응답자료형식"
+        },
+        "items": {
+          "$ref": "#/definitions/items_getPinePollenRiskIdxV3"
+        },
+        "numOfRows": {
+          "type": "string",
+          "description": "한 페이지 결과 수"
+        },
+        "pageNo": {
+          "type": "string",
+          "description": "페이지 번호"
+        },
+        "totalCount": {
+          "type": "string",
+          "description": "데이터 총 개수"
+        }
+      }
+    },
+    "items_getPinePollenRiskIdxV3": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/item_getPinePollenRiskIdxV3"
+        }
+      }
+    },
+    "item_getPinePollenRiskIdxV3": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "지수코드"
+        },
+        "areaNo": {
+          "type": "string",
+          "description": "지점코드"
+        },
+        "date": {
+          "type": "string",
+          "description": "발표시간"
+        },
+        "today": {
+          "type": "string",
+          "description": "오늘 예측값"
+        },
+        "tomorrow": {
+          "type": "string",
+          "description": "내일 예측값"
+        },
+        "dayaftertomorrow": {
+          "type": "string",
+          "description": "모레 예측값"
+        },
+        "todaysaftertomorrow": {
+          "type": "string",
+          "description": "글피 예측값"
+        }
+      }
+    },
+    "header_getWeedsPollenRiskndxV3": {
+      "type": "object",
+      "properties": {
+        "resultCode": {
+          "type": "string",
+          "description": "응답메시지 코드"
+        },
+        "resultMsg": {
+          "type": "string",
+          "description": "응답메시지 내용"
+        }
+      }
+    },
+    "body_getWeedsPollenRiskndxV3": {
+      "type": "object",
+      "properties": {
+        "dataType": {
+          "type": "string",
+          "description": "응답자료형식"
+        },
+        "items": {
+          "$ref": "#/definitions/items_getWeedsPollenRiskndxV3"
+        },
+        "numOfRows": {
+          "type": "string",
+          "description": "한 페이지 결과 수"
+        },
+        "pageNo": {
+          "type": "string",
+          "description": "페이지 번호"
+        },
+        "totalCount": {
+          "type": "string",
+          "description": "데이터 총 개수"
+        }
+      }
+    },
+    "items_getWeedsPollenRiskndxV3": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/item_getWeedsPollenRiskndxV3"
+        }
+      }
+    },
+    "item_getWeedsPollenRiskndxV3": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "지수코드"
+        },
+        "areaNo": {
+          "type": "string",
+          "description": "지점코드"
+        },
+        "date": {
+          "type": "string",
+          "description": "발표시간"
+        },
+        "today": {
+          "type": "string",
+          "description": "오늘 예측값"
+        },
+        "tomorrow": {
+          "type": "string",
+          "description": "내일 예측값"
+        },
+        "dayaftertomorrow": {
+          "type": "string",
+          "description": "모레 예측값"
+        },
+        "todaysaftertomorrow": {
+          "type": "string",
+          "description": "글피 예측값"
+        }
+      }
+    },
+    "header_getOakPollenRiskIdxV3": {
+      "type": "object",
+      "properties": {
+        "resultCode": {
+          "type": "string",
+          "description": "응답메시지 코드"
+        },
+        "resultMsg": {
+          "type": "string",
+          "description": "응답메시지 내용"
+        }
+      }
+    },
+    "body_getOakPollenRiskIdxV3": {
+      "type": "object",
+      "properties": {
+        "dataType": {
+          "type": "string",
+          "description": "응답자료형식"
+        },
+        "items": {
+          "$ref": "#/definitions/items_getOakPollenRiskIdxV3"
+        },
+        "numOfRows": {
+          "type": "string",
+          "description": "한 페이지 결과 수"
+        },
+        "pageNo": {
+          "type": "string",
+          "description": "페이지 번호"
+        },
+        "totalCount": {
+          "type": "string",
+          "description": "데이터 총 개수"
+        }
+      }
+    },
+    "items_getOakPollenRiskIdxV3": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/item_getOakPollenRiskIdxV3"
+        }
+      }
+    },
+    "item_getOakPollenRiskIdxV3": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "지수코드"
+        },
+        "areaNo": {
+          "type": "string",
+          "description": "지점코드"
+        },
+        "date": {
+          "type": "string",
+          "description": "발표시간"
+        },
+        "today": {
+          "type": "string",
+          "description": "오늘 예측값"
+        },
+        "tomorrow": {
+          "type": "string",
+          "description": "내일 예측값"
+        },
+        "dayaftertomorrow": {
+          "type": "string",
+          "description": "모레 예측값"
+        },
+        "todaysaftertomorrow": {
+          "type": "string",
+          "description": "글피 예측값"
+        }
+      }
+    },
+    "getPinePollenRiskIdxV3_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "응답메시지 내용"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "응답메시지 코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "dataType": {
+              "type": "string",
+              "description": "응답자료형식"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "지수코드"
+                    },
+                    "areaNo": {
+                      "type": "string",
+                      "description": "지점코드"
+                    },
+                    "date": {
+                      "type": "string",
+                      "description": "발표시간"
+                    },
+                    "today": {
+                      "type": "string",
+                      "description": "오늘 예측값"
+                    },
+                    "tomorrow": {
+                      "type": "string",
+                      "description": "내일 예측값"
+                    },
+                    "dayaftertomorrow": {
+                      "type": "string",
+                      "description": "모레 예측값"
+                    },
+                    "todaysaftertomorrow": {
+                      "type": "string",
+                      "description": "글피 예측값"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "데이터 총 개수"
+            }
+          }
+        }
+      }
+    },
+    "getOakPollenRiskIdxV3_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "응답메시지 코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "응답메시지 내용"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "dataType": {
+              "type": "string",
+              "description": "응답자료형식"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "지수코드"
+                    },
+                    "areaNo": {
+                      "type": "string",
+                      "description": "지점코드"
+                    },
+                    "date": {
+                      "type": "string",
+                      "description": "발표시간"
+                    },
+                    "today": {
+                      "type": "string",
+                      "description": "오늘 예측값"
+                    },
+                    "tomorrow": {
+                      "type": "string",
+                      "description": "내일 예측값"
+                    },
+                    "dayaftertomorrow": {
+                      "type": "string",
+                      "description": "모레 예측값"
+                    },
+                    "todaysaftertomorrow": {
+                      "type": "string",
+                      "description": "글피 예측값"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "데이터 총 개수"
+            }
+          }
+        }
+      }
+    }
+  },
+  "swaggerOprtinVOs": [
+    {
+      "oprtinUrl": "http://newsky3.kma.go.kr/openAPI/HealthWthrIdxServiceV3/getOakPollenRiskIdxV3",
+      "oprtinNm": "꽃가루농도위험지수(참나무)조회",
+      "oprtinDc": "지점코드, 발표시간으로 현재일자로부터 3일 이내의 오늘, 내일, 모레, 글피의 예측값을 조회하는 기능(제공: 4월~6월)",
+      "gwSvcNm": "getOakPollenRiskIdxV3",
+      "operationId": "getOakPollenRiskIdxV3",
+      "publicDataTyDetailCode": "PRDE02",
+      "reqList": [
+        {
+          "paramtrNm": "serviceKey",
+          "paramtrDc": "공공데이터포털에서 발급받은 인증키",
+          "paramtrBassValue": "인증키 (URL Encode)",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "numOfRows",
+          "paramtrDc": "한 페이지 결과 수 Default: 10",
+          "paramtrBassValue": "10",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "pageNo",
+          "paramtrDc": "페이지 번호 Default: 1",
+          "paramtrBassValue": "1",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "dataType",
+          "paramtrDc": "요청자료형식(XML/JSON) Default: XML",
+          "paramtrBassValue": "XML",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "areaNo",
+          "paramtrDc": "서울지점 공백일때: 전체지점조회",
+          "paramtrBassValue": "1100000000",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "time",
+          "paramtrDc": "‘21년7월6일 18시 발표",
+          "paramtrBassValue": "2021070618",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        }
+      ],
+      "resList": [
+        {
+          "paramtrNm": "header",
+          "paramtrDc": "header",
+          "paramtrDefNm": "#/definitions/header_getOakPollenRiskIdxV3",
+          "subDefNm": "header_getOakPollenRiskIdxV3",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "body",
+          "paramtrDc": "body",
+          "paramtrDefNm": "#/definitions/body_getOakPollenRiskIdxV3",
+          "subDefNm": "body_getOakPollenRiskIdxV3",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true
+        }
+      ]
+    }
+  ]
+}

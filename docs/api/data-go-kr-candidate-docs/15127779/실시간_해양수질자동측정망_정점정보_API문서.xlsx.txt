@@ -1,0 +1,39 @@
+# Sheet: 해양수질자동측정망 정점 정보
+정점명(코드)	정점명(한글명)
+SEA1002	시화조력
+SEA1005	시화반월
+SEA1006	인천송도
+SEA1007	인천강화
+SEA2004	마산삼귀
+SEA2005	마산봉암
+SEA2006	마산양덕
+SEA2007	마산월영
+SEA3003	부산수영
+SEA5001	광양망덕
+SEA5002	광양초남
+SEA5003	광양적량
+SEA7001	울산온산
+
+# Sheet: 요청메시지정보
+항목명(영문)	설명	항목유형	구분	샘플
+rtm_wq_wtch_sta_cd	실시간수질관측정점코드	문자열	옵션	SEA2006
+wtch_dt_start	실시간수질관측상세시작일시	문자열	옵션	2/5/20
+wtch_dt_end	실시간수질관측상세종료일시	문자열	옵션	2/7/20
+_type	페이지 문서 형태	문자열	필수	xml
+numOfRows	페이지 크기	숫자형	필수	10
+pageNo	페이지 번호	숫자형	필수	1
+serviceKey	공공데이터포털에서 발급받은 인증키	문자열	필수	-
+
+# Sheet: 결과 오브젝트 정보
+항목명(영문)	설명	배열	항목유형	오브젝트명(영문)	구분
+rtmWqSlnty	실시간수질염분	N	문자열		필수
+num	순번	N	문자열		필수
+rtmWqWtchStaCd	실시간수질관측정점코드	N	문자열		필수
+rtmWqWtchDtlDt	실시간수질관측상세일시	N	문자열		필수
+rtmWtchWtem	실시간관측수온	N	문자열		필수
+rtmWqCndctv	실시간수질전기전도도	N	문자열		필수
+ph	수소이온농도	N	문자열		필수
+rtmWqDoxn	실시간수질용존산소량	N	문자열		필수
+rtmWqTu	실시간수질탁도	N	문자열		필수
+rtmWqBgalgsQy	실시간수질남조류량	N	문자열		필수
+rtmWqChpla	실시간수질클로로필	N	문자열		필수

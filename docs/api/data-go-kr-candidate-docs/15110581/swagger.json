@@ -1,0 +1,308 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "국토교통부에서 제공하는 마이홈포털 공공임대주택 단지정보 조회 서비스입니다. 오퍼레이션 파라미터를 기준으로 공공임대주택 단지정보 조회하는 서비스 (유의)조회하는 시점에 따라 ‘응답 메시지’가 달라질 수 있습니다. API는 활용신청을 통해 받은 인증키를 사용하여 접속할 수 있습니다. 데이터는 시도 등의 지역 정보를 포함하고 있으며, 공공임대주택 정보를 제공하고 있습니다. 공공임대주택으로는 국민임대, 영구임대, 행복주택 등의 유형을 구분하여 제공중입니다. 자세한 파라미터는 참고문서 파일을 참고해주십시오.",
+    "version": "1.0.0",
+    "title": "국토교통부_마이홈포털 공공임대주택 단지정보 조회 서비스"
+  },
+  "host": "apis.data.go.kr/1613000/HWSPR04",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/rentalHouseGwList": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "필수 요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "$ref": "#/definitions/oper-1-header"
+                },
+                "body": {
+                  "$ref": "#/definitions/oper-1-body"
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "999": {
+            "description": "기타 에러"
+          },
+          "00": {
+            "description": "정상 호출"
+          },
+          "02": {
+            "description": "데이터베이스 에러"
+          },
+          "03": {
+            "description": "데이터 없음 에러"
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "공공임대주택 단지정보  조회",
+        "description": "광역시도, 시군구 기준으로 공공임대주택 단지정보 조회하는 서비스",
+        "operationId": "rentalHouseGwList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "brtcCode",
+          "description": "광역시도 코드",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "signguCode",
+          "description": "시군구 코드",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "조회될 목록의 페이지당 데이터 개수 (기본값:10)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "조회될 페이지의 번호 (기본값:1)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "oper-1-header": {
+      "type": "object",
+      "properties": {
+        "resultCode": {
+          "type": "string",
+          "description": "결과코드"
+        },
+        "resultMsg": {
+          "type": "string",
+          "description": "결과메세지"
+        }
+      }
+    },
+    "oper-1-body": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": "string",
+          "description": "전체 결과수"
+        },
+        "numOfRows": {
+          "type": "string",
+          "description": "페이지당 데이터 개수"
+        },
+        "pageNo": {
+          "type": "string",
+          "description": "페이지 번호"
+        },
+        "item": {
+          "$ref": "#/definitions/oper-item"
+        }
+      }
+    },
+    "oper-item": {
+      "type": "object",
+      "properties": {
+        "hsmpSn": {
+          "type": "number",
+          "description": "단지 식별자"
+        },
+        "insttNm": {
+          "type": "string",
+          "description": "기관 명"
+        },
+        "brtcCode": {
+          "type": "string",
+          "description": "광역시도 코드"
+        },
+        "brtcNm": {
+          "type": "string",
+          "description": "광역시도 명"
+        },
+        "signguCode": {
+          "type": "string",
+          "description": "시군구 코드"
+        },
+        "signguNm": {
+          "type": "string",
+          "description": "시군구 명"
+        },
+        "hsmpNm": {
+          "type": "string",
+          "description": "단지 명"
+        },
+        "rnAdres": {
+          "type": "string",
+          "description": "도로명 주소"
+        },
+        "pnu": {
+          "type": "string",
+          "description": "pnu"
+        },
+        "competDe": {
+          "type": "string",
+          "description": "준공 일자"
+        },
+        "hshldCo": {
+          "type": "number",
+          "description": "세대 수"
+        },
+        "suplyTyNm": {
+          "type": "string",
+          "description": "공급 유형 명"
+        },
+        "styleNm": {
+          "type": "string",
+          "description": "형 명"
+        },
+        "suplyPrvuseAr": {
+          "type": "number",
+          "description": "공급 전용 면적"
+        },
+        "suplyCmnuseAr": {
+          "type": "number",
+          "description": "공급 공용 면적"
+        },
+        "houseTyNm": {
+          "type": "string",
+          "description": "주택 유형 명"
+        },
+        "heatMthdDetailNm": {
+          "type": "string",
+          "description": "난방 방식"
+        },
+        "buldStleNm": {
+          "type": "string",
+          "description": "건물 형태"
+        },
+        "elvtrInstlAtNm": {
+          "type": "string",
+          "description": "승강기 설치여부"
+        },
+        "parkngCo": {
+          "type": "number",
+          "description": "주차수"
+        },
+        "bassRentGtn": {
+          "type": "number",
+          "description": "기본 임대보증금"
+        },
+        "bassMtRntchrg": {
+          "type": "number",
+          "description": "기본 월임대료"
+        },
+        "bassCnvrsGtnLmt": {
+          "type": "number",
+          "description": "기본 전환보증금"
+        }
+      }
+    }
+  },
+  "swaggerOprtinVOs": [
+    {
+      "oprtinUrl": "https://data.myhome.go.kr/rentalHouseGwList",
+      "oprtinNm": "공공임대주택 단지정보  조회",
+      "oprtinDc": "광역시도, 시군구 기준으로 공공임대주택 단지정보 조회하는 서비스",
+      "gwSvcNm": "rentalHouseGwList",
+      "operationId": "rentalHouseGwList",
+      "publicDataTyDetailCode": "PRDE02",
+      "reqList": [
+        {
+          "paramtrNm": "serviceKey",
+          "paramtrDc": "공공데이터포털에서 받은 인증키",
+          "paramtrBassValue": "-",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "brtcCode",
+          "paramtrDc": "광역시도 코드",
+          "paramtrBassValue": "43",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "signguCode",
+          "paramtrDc": "시군구 코드",
+          "paramtrBassValue": "750",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "numOfRows",
+          "paramtrDc": "조회될 목록의 페이지당 데이터 개수 (기본값:10)",
+          "paramtrBassValue": "10",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "pageNo",
+          "paramtrDc": "조회될 페이지의 번호 (기본값:1)",
+          "paramtrBassValue": "1",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        }
+      ],
+      "resList": [
+        {
+          "paramtrNm": "header",
+          "paramtrDc": "header",
+          "paramtrDefNm": "#/definitions/oper-1-header",
+          "subDefNm": "oper-1-header",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "body",
+          "paramtrDc": "body",
+          "paramtrDefNm": "#/definitions/oper-1-body",
+          "subDefNm": "oper-1-body",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true
+        }
+      ],
+      "oprtinNo": 1
+    }
+  ]
+}

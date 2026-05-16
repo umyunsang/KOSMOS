@@ -1,0 +1,224 @@
+{
+  "unit": 8,
+  "collected_at": "2026-05-16",
+  "dataset_id": "15127779",
+  "title": "해양수산부_실시간 해양수질자동측정망 관측소 측정자료정보",
+  "portal_url": "https://www.data.go.kr/data/15127779/openapi.do",
+  "provider": "해양수산부",
+  "classification": "환경 - 해양환경",
+  "department": "해양환경정책과",
+  "provider_phone": "051-773-5290",
+  "data_format": "XML",
+  "api_type": "REST",
+  "fee": "free",
+  "license": "이용허락범위 제한 없음",
+  "update_cycle": "realtime",
+  "approval_type": "개발단계 자동승인 / 운영단계 자동승인",
+  "traffic": {
+    "development_daily_limit": 10000,
+    "operation_approval": "자동승인"
+  },
+  "application": {
+    "submitted": true,
+    "status": "approved",
+    "application_ref": "115976412",
+    "application_date": "2026-05-16",
+    "expiry_date": "2028-05-16",
+    "purpose": "UMMAYA R&D. Build citizen marine water quality check adapter for coastal stations using official MOF realtime measurements. Cite agency source. No resale."
+  },
+  "candidate_adapter": {
+    "id": "mof_ocean_water_quality_check",
+    "primitive": "check",
+    "fit": "pass",
+    "fit_reason": "Citizens can ask natural-language status questions about coastal water quality. The API returns official realtime station measurements for water temperature, conductivity, pH, dissolved oxygen, turbidity, algae quantity, chlorophyll-a, and salinity.",
+    "usage_frequency_estimate": "moderate",
+    "caveat": "If UMMAYA later uses user GPS to resolve the nearest station, the portal location-information warning should be reflected in permission UX and legal review."
+  },
+  "citizen_queries": [
+    {
+      "query": "마산만 해양 수질 지금 괜찮아?",
+      "handling": "Resolve the place query to a station such as SEA2006 or nearby Masan stations, call /OceansWemoObvpRtmInfo, then summarize official pH, dissolved oxygen, turbidity, salinity, and measurement time."
+    },
+    {
+      "query": "부산 수영 쪽 바닷물 pH랑 용존산소 최근 값 알려줘.",
+      "handling": "Map 부산 수영 to station SEA3003, call the endpoint with rtm_wq_wtch_sta_cd=SEA3003 and recent date filters if supplied, then return pH and rtmWqDoxn values."
+    },
+    {
+      "query": "광양만 실시간 해양수질 관측값을 날짜 범위로 확인해줘.",
+      "handling": "Map 광양 to available station codes such as SEA5001, SEA5002, or SEA5003, apply wtch_dt_start/wtch_dt_end, and return paginated official measurements."
+    }
+  ],
+  "api_contract": {
+    "base_url": "https://apis.data.go.kr/1192000/OceansWemoObvpRtmInfoService",
+    "produces": "application/xml",
+    "operations": [
+      {
+        "operation": "GET /OceansWemoObvpRtmInfo",
+        "endpoint": "https://apis.data.go.kr/1192000/OceansWemoObvpRtmInfoService/OceansWemoObvpRtmInfo",
+        "required_query_parameters": [
+          {
+            "name": "serviceKey",
+            "description": "공공데이터포털 인증키"
+          },
+          {
+            "name": "_type",
+            "description": "page document type, sample xml"
+          },
+          {
+            "name": "numOfRows",
+            "description": "페이지 크기, sample 10"
+          },
+          {
+            "name": "pageNo",
+            "description": "페이지 번호, sample 1"
+          }
+        ],
+        "optional_query_parameters": [
+          {
+            "name": "rtm_wq_wtch_sta_cd",
+            "description": "실시간 수질 관측소 코드, sample SEA2006"
+          },
+          {
+            "name": "wtch_dt_start",
+            "description": "관측 시작 일시"
+          },
+          {
+            "name": "wtch_dt_end",
+            "description": "관측 종료 일시"
+          }
+        ],
+        "parameter_caveat": "Portal inline Swagger shows rtm_wq_wtch_sta_cd with a trailing space, but the downloaded XLSX uses rtm_wq_wtch_sta_cd without the trailing space. The adapter should expose the normalized XLSX spelling."
+      }
+    ],
+    "response_fields": [
+      {
+        "name": "resultCode",
+        "description": "결과코드"
+      },
+      {
+        "name": "resultMsg",
+        "description": "결과메시지"
+      },
+      {
+        "name": "num",
+        "description": "번호"
+      },
+      {
+        "name": "rtmWqWtchStaCd",
+        "description": "실시간 수질 관측소 코드"
+      },
+      {
+        "name": "rtmWqWtchDtlDt",
+        "description": "실시간 수질 관측 상세 일시"
+      },
+      {
+        "name": "rtmWtchWtem",
+        "description": "수온"
+      },
+      {
+        "name": "rtmWqCndctv",
+        "description": "전기전도도"
+      },
+      {
+        "name": "ph",
+        "description": "pH"
+      },
+      {
+        "name": "rtmWqDoxn",
+        "description": "용존산소"
+      },
+      {
+        "name": "rtmWqTu",
+        "description": "탁도"
+      },
+      {
+        "name": "rtmWqBgalgsQy",
+        "description": "남조류량"
+      },
+      {
+        "name": "rtmWqChpla",
+        "description": "클로로필-a"
+      },
+      {
+        "name": "rtmWqSlnty",
+        "description": "염분"
+      },
+      {
+        "name": "numOfRows",
+        "description": "페이지 크기"
+      },
+      {
+        "name": "pageNo",
+        "description": "페이지 번호"
+      },
+      {
+        "name": "totalCount",
+        "description": "전체 결과 수"
+      }
+    ],
+    "station_code_seeds": [
+      {
+        "code": "SEA1002",
+        "name": "시화조력"
+      },
+      {
+        "code": "SEA1005",
+        "name": "시화반월"
+      },
+      {
+        "code": "SEA1006",
+        "name": "인천송도"
+      },
+      {
+        "code": "SEA1007",
+        "name": "인천강화"
+      },
+      {
+        "code": "SEA2004",
+        "name": "마산삼귀"
+      },
+      {
+        "code": "SEA2005",
+        "name": "마산봉암"
+      },
+      {
+        "code": "SEA2006",
+        "name": "마산양덕"
+      },
+      {
+        "code": "SEA2007",
+        "name": "마산월영"
+      },
+      {
+        "code": "SEA3003",
+        "name": "부산수영"
+      },
+      {
+        "code": "SEA5001",
+        "name": "광양망덕"
+      },
+      {
+        "code": "SEA5002",
+        "name": "광양초남"
+      },
+      {
+        "code": "SEA5003",
+        "name": "광양적량"
+      },
+      {
+        "code": "SEA7001",
+        "name": "울산온산"
+      }
+    ]
+  },
+  "saved_artifacts": [
+    "data-go-kr-detail.html",
+    "gateway_swagger_guide.pdf",
+    "openapi-schemaorg.json",
+    "data-go-kr-inline-swagger.json",
+    "실시간_해양수질자동측정망_정점정보_API문서.xlsx",
+    "실시간_해양수질자동측정망_정점정보_API문서.xlsx.txt",
+    "pre-application-screening-2026-05-16-unit-08.md",
+    "usage-notes-2026-05-16-unit-08.md"
+  ]
+}

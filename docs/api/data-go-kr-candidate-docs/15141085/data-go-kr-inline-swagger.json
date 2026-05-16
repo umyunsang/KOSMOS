@@ -1,0 +1,2922 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "헌법재판소 판례정보 조회 서비스는 공보에 수록된 판례, 분야별 주요판례 목록 및 상세 정보, 한글·영문판례 목록 및 상세 정보, 판례요지집 목록 및 상세 정보 등 다양한 판례 정보를 검색 및 조회할 수 있는 API를 제공합니다.",
+    "version": "1.0.0",
+    "title": "헌법재판소_판례정보 조회 서비스"
+  },
+  "host": "apis.data.go.kr/9750000/PrecedentInfomationService",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getOcprPrcdntList": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETERS_ERROR - 필수요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과수",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "데이터 타입",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "atchFilePath2": {
+                              "type": "string",
+                              "description": "판례파일 다운로드 링크 주소",
+                              "properties": {}
+                            },
+                            "title": {
+                              "type": "string",
+                              "description": "공보(호수)",
+                              "properties": {}
+                            },
+                            "exeCnt": {
+                              "type": "string",
+                              "description": "판례목록 리스트 개수",
+                              "properties": {}
+                            },
+                            "adjudgeYm": {
+                              "type": "string",
+                              "description": "선고년월(yyyyMM)",
+                              "properties": {}
+                            },
+                            "atchFileNm1": {
+                              "type": "string",
+                              "description": "공보파일명",
+                              "properties": {}
+                            },
+                            "atchFilePath1": {
+                              "type": "string",
+                              "description": "공보파일 다운로드 링크 주소",
+                              "properties": {}
+                            },
+                            "atchFileNm2": {
+                              "type": "string",
+                              "description": "판례파일명",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "공보수록 판례 조회",
+        "description": "공보,선고년월을 입력하여 공보에 수록된 판례를 조회하는 기능 제공",
+        "operationId": "getOcprPrcdntList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답결과 출력형식(xml,json) 기본값:xml",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "fields",
+          "description": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "title",
+          "description": "공보(호수)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "adjudgeYm",
+          "description": "선고년월 (yyyyMM)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getRealmMainPrcdntList": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETERS_ERROR - 필수요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "데이터 타입",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "chgDate": {
+                              "type": "string",
+                              "description": "수정일",
+                              "properties": {}
+                            },
+                            "seq": {
+                              "type": "string",
+                              "description": "일련번호",
+                              "properties": {}
+                            },
+                            "nick": {
+                              "type": "string",
+                              "description": "별칭",
+                              "properties": {}
+                            },
+                            "title": {
+                              "type": "string",
+                              "description": "사건명",
+                              "properties": {}
+                            },
+                            "eventNo": {
+                              "type": "string",
+                              "description": "사건번호",
+                              "properties": {}
+                            },
+                            "classNm": {
+                              "type": "string",
+                              "description": "클래스명",
+                              "properties": {}
+                            },
+                            "adjudgeDt": {
+                              "type": "string",
+                              "description": "종국일자",
+                              "properties": {}
+                            },
+                            "regDate": {
+                              "type": "string",
+                              "description": "등록일",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과수",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "분야별 주요판례 목록 조회",
+        "description": "분류,사건명,결정문을 입력하여 분야별주요판례 목록을 조회하는 기능 제공",
+        "operationId": "getRealmMainPrcdntList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답결과 출력형식(xml,json) 기본값:xml",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "fields",
+          "description": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "code",
+          "description": " 분류(0 : 전체 1: 정치·선거관계에 관한 결정, 3: 언론 등 정신적 자유에 관한 결정, 4: 경제·재산권·조세관계에 관한 결정, 5: 가족·노동 등 사회관계에 관한 결정, 6: 절차적 기본권 및 형사관계에 관한 결정, 7: 헌법위원회 및 대법원 헌법판례)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "eventNm",
+          "description": "사건명(별칭)에서 찾을 단어를 검색어로 입력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "decisionNm",
+          "description": "결정문에서 찾을 단어를 검색어로 입력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getRealmMainPrcdntDetail": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETERS_ERROR - 필수요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "데이터 타입",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "chgDate": {
+                              "type": "string",
+                              "description": "수정일",
+                              "properties": {}
+                            },
+                            "eventNo": {
+                              "type": "string",
+                              "description": "사건번호",
+                              "properties": {}
+                            },
+                            "eventNm": {
+                              "type": "string",
+                              "description": "사건명",
+                              "properties": {}
+                            },
+                            "nick": {
+                              "type": "string",
+                              "description": "별칭",
+                              "properties": {}
+                            },
+                            "codeName": {
+                              "type": "string",
+                              "description": "분류코드명",
+                              "properties": {}
+                            },
+                            "adjudgeDt": {
+                              "type": "string",
+                              "description": "종국일자",
+                              "properties": {}
+                            },
+                            "adjudgeResult": {
+                              "type": "string",
+                              "description": "종국결과",
+                              "properties": {}
+                            },
+                            "exeBook": {
+                              "type": "string",
+                              "description": "판례집",
+                              "properties": {}
+                            },
+                            "atchNm": {
+                              "type": "string",
+                              "description": "결정문 파일명",
+                              "properties": {}
+                            },
+                            "atchFilePath": {
+                              "type": "string",
+                              "description": "결정문 파일링크",
+                              "properties": {}
+                            },
+                            "content": {
+                              "type": "string",
+                              "description": "결정문 내용",
+                              "properties": {}
+                            },
+                            "regDate": {
+                              "type": "string",
+                              "description": "등록일",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과수",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "분야별 주요판례 상세 조회",
+        "description": "일련번호를 입력하여 분야별주요판례상세내용을 조회하는 기능 제공",
+        "operationId": "getRealmMainPrcdntDetail",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답결과 출력형식(xml,json) 기본값:xml",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "fields",
+          "description": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "seq",
+          "description": "게시물 번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getKorPrcdntList": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETERS_ERROR - 필수요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "데이터 타입",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "rstaDate": {
+                              "type": "string",
+                              "description": "종국일자",
+                              "properties": {}
+                            },
+                            "eventNum": {
+                              "type": "string",
+                              "description": "사건일련번호",
+                              "properties": {}
+                            },
+                            "eventNo": {
+                              "type": "string",
+                              "description": "사건번호",
+                              "properties": {}
+                            },
+                            "eventNm": {
+                              "type": "string",
+                              "description": "사건명",
+                              "properties": {}
+                            },
+                            "panreType": {
+                              "type": "string",
+                              "description": "판례유형",
+                              "properties": {}
+                            },
+                            "eventType": {
+                              "type": "string",
+                              "description": "사건유형",
+                              "properties": {}
+                            },
+                            "jgdmtCort": {
+                              "type": "string",
+                              "description": "재판부",
+                              "properties": {}
+                            },
+                            "rstaRsta": {
+                              "type": "string",
+                              "description": "종국결과",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과수",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "한글판례 목록 조회",
+        "description": "판례유형 및 사건정보,종국결과,종국일자등을 입력하여 한글 판례검색 목록을 조회하는 기능 제공",
+        "operationId": "getKorPrcdntList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답결과 출력형식(xml,json) 기본값:xml",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "fields",
+          "description": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "panreType",
+          "description": "01: 결정문, 02: 공보, 03: 판례집",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "eventNo",
+          "description": "사건번호(절대적으로 일치해야함)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "eventNm",
+          "description": "사건명(사건번호와 달리 일부분만 입력 가능)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "eventType",
+          "description": "사건유형(전체, 헌가,헌나,헌다,헌라,헌마,헌바,헌사,헌아)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "jgdmtCort",
+          "description": "재판부(전체, 전원재판부, 지정재판부)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "rstaResult",
+          "description": "종국결과(전체, 위헌, 헌법불합치, 한정위헌, 한정합헌, 인용, 합헌, 기각, 각하, 취하, 선정, 기타)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "rstaStartDate",
+          "description": "종국일자 검색 시작일 → yyyyMMdd 형식",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "rstaEndDate",
+          "description": "종국일자 검색 종료일 → yyyyMMdd 형식",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getKorPrcdntDetail": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETERS_ERROR - 필수요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "데이터 타입",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "eventType": {
+                              "type": "string",
+                              "description": "사건유형",
+                              "properties": {}
+                            },
+                            "eventNum": {
+                              "type": "string",
+                              "description": "판례일련번호",
+                              "properties": {}
+                            },
+                            "panreType": {
+                              "type": "string",
+                              "description": "판례유형",
+                              "properties": {}
+                            },
+                            "eventNo": {
+                              "type": "string",
+                              "description": "사건번호",
+                              "properties": {}
+                            },
+                            "eventNm": {
+                              "type": "string",
+                              "description": "사건명",
+                              "properties": {}
+                            },
+                            "panreTitle": {
+                              "type": "string",
+                              "description": "판례제목",
+                              "properties": {}
+                            },
+                            "panreInfo": {
+                              "type": "string",
+                              "description": "판례정보",
+                              "properties": {}
+                            },
+                            "pansiMatt": {
+                              "type": "string",
+                              "description": "판시사항",
+                              "properties": {}
+                            },
+                            "decisionGst": {
+                              "type": "string",
+                              "description": "결정요지",
+                              "properties": {}
+                            },
+                            "adjobtTxt": {
+                              "type": "string",
+                              "description": "심판대상조문",
+                              "properties": {}
+                            },
+                            "refrnPrvsn": {
+                              "type": "string",
+                              "description": "참조조문",
+                              "properties": {}
+                            },
+                            "refrnPrcdnt": {
+                              "type": "string",
+                              "description": "참조판례",
+                              "properties": {}
+                            },
+                            "event": {
+                              "type": "string",
+                              "description": "사건/당사자",
+                              "properties": {}
+                            },
+                            "eventCol1": {
+                              "type": "string",
+                              "description": "제청법원/청구인/신청인",
+                              "properties": {}
+                            },
+                            "eventCol2": {
+                              "type": "string",
+                              "description": "제청신청인/피청구인",
+                              "properties": {}
+                            },
+                            "eventCol3": {
+                              "type": "string",
+                              "description": "당해사건/보조참가인/보안사건/재심대상결정",
+                              "properties": {}
+                            },
+                            "eventCol4": {
+                              "type": "string",
+                              "description": "선고일/결정일",
+                              "properties": {}
+                            },
+                            "textOfDecision": {
+                              "type": "string",
+                              "description": "주문",
+                              "properties": {}
+                            },
+                            "reason": {
+                              "type": "string",
+                              "description": "이유",
+                              "properties": {}
+                            },
+                            "volumeInfo": {
+                              "type": "string",
+                              "description": "권",
+                              "properties": {}
+                            },
+                            "seriesInfo": {
+                              "type": "string",
+                              "description": "집",
+                              "properties": {}
+                            },
+                            "pages": {
+                              "type": "string",
+                              "description": "쪽",
+                              "properties": {}
+                            },
+                            "jgdmtCort": {
+                              "type": "string",
+                              "description": "재판부",
+                              "properties": {}
+                            },
+                            "rstaRsta": {
+                              "type": "string",
+                              "description": "종국결과",
+                              "properties": {}
+                            },
+                            "rstaDate": {
+                              "type": "string",
+                              "description": "종국일자",
+                              "properties": {}
+                            },
+                            "eventSummary": {
+                              "type": "string",
+                              "description": "사건개요",
+                              "properties": {}
+                            },
+                            "abjObt": {
+                              "type": "string",
+                              "description": "심판대상",
+                              "properties": {}
+                            },
+                            "relatedProvision": {
+                              "type": "string",
+                              "description": "관련조항",
+                              "properties": {}
+                            },
+                            "caseRelatedOpinion": {
+                              "type": "string",
+                              "description": "사건관계인의 의견",
+                              "properties": {}
+                            },
+                            "judgement": {
+                              "type": "string",
+                              "description": "판단",
+                              "properties": {}
+                            },
+                            "conclusion": {
+                              "type": "string",
+                              "description": "결론",
+                              "properties": {}
+                            },
+                            "otherOpinions": {
+                              "type": "string",
+                              "description": "기타의견",
+                              "properties": {}
+                            },
+                            "enclsr": {
+                              "type": "string",
+                              "description": "별지",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "한글판례 상세 조회",
+        "description": "판례일련번호로 판례상세내용을 조회하는 기능 제공",
+        "operationId": "getKorPrcdntDetail",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답결과 출력형식(xml,json) 기본값:xml",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "fields",
+          "description": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "eventNum",
+          "description": "한글판례 검색 목록 조회에서 얻은 사건일련번호(eventNum)를 통해 상세 검색",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "panreType",
+          "description": "01 : 결정문, 02 : 공보, 03 : 판례집",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getEngPrcdntList": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETERS_ERROR - 필수요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "데이터 타입",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "rstaDate": {
+                              "type": "string",
+                              "description": "종국일자(영문)",
+                              "properties": {}
+                            },
+                            "eventNum": {
+                              "type": "string",
+                              "description": "사건일련번호",
+                              "properties": {}
+                            },
+                            "eventNo": {
+                              "type": "string",
+                              "description": "사건번호(한글)",
+                              "properties": {}
+                            },
+                            "eventNm": {
+                              "type": "string",
+                              "description": "사건명(한글)",
+                              "properties": {}
+                            },
+                            "engEventNo": {
+                              "type": "string",
+                              "description": "영문사건번호",
+                              "properties": {}
+                            },
+                            "engEventName": {
+                              "type": "string",
+                              "description": "영문사건명",
+                              "properties": {}
+                            },
+                            "rstaRsta": {
+                              "type": "string",
+                              "description": "종국결과(영문)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과수",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "영문판례 목록 조회",
+        "description": "사건명,사건유형,종국결과를 입력하여 영문 판례검색 목록을 조회하는 기능 제공",
+        "operationId": "getEngPrcdntList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답결과 출력형식(xml,json) 기본값:xml",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "fields",
+          "description": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "eventNo",
+          "description": "사건번호(영문 / 절대적으로 일치해야함)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "eventNm",
+          "description": "사건명(영문/ 사건번호와 달리 일부분만 입력 가능)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "eventType",
+          "description": "사건유형(영문 / All, Hun-Ka, Hun-Na, Hun-Da, Hun-Ra, Hun-Ma, ",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "rstaResult",
+          "description": "종국결과(영문 / All, unconstitutional, nonconforming to the Constitution,    conditionally unconstitutional, conditionally constitutional,    upheld, constitutional, rejected, dismissed, withdrawn, others))",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getEngPrcdntDetail": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETERS_ERROR - 필수요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "데이터 타입",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "xmlContent": {
+                              "type": "string",
+                              "description": "xml내용",
+                              "properties": {}
+                            },
+                            "eventNum": {
+                              "type": "string",
+                              "description": "판례일련번호",
+                              "properties": {}
+                            },
+                            "eventNo": {
+                              "type": "string",
+                              "description": "사건번호",
+                              "properties": {}
+                            },
+                            "eventNm": {
+                              "type": "string",
+                              "description": "사건명",
+                              "properties": {}
+                            },
+                            "engEventNo": {
+                              "type": "string",
+                              "description": "영문사건번호",
+                              "properties": {}
+                            },
+                            "engEventName": {
+                              "type": "string",
+                              "description": "영문사건명",
+                              "properties": {}
+                            },
+                            "volumeInfo": {
+                              "type": "string",
+                              "description": "권",
+                              "properties": {}
+                            },
+                            "seriesInfo": {
+                              "type": "string",
+                              "description": "집(시리즈)",
+                              "properties": {}
+                            },
+                            "pages": {
+                              "type": "string",
+                              "description": "쪽",
+                              "properties": {}
+                            },
+                            "eventCtgry": {
+                              "type": "string",
+                              "description": "카테고리",
+                              "properties": {}
+                            },
+                            "jgdmtCort": {
+                              "type": "string",
+                              "description": "재판부",
+                              "properties": {}
+                            },
+                            "rstaRsta": {
+                              "type": "string",
+                              "description": "종국결과",
+                              "properties": {}
+                            },
+                            "rstaDate": {
+                              "type": "string",
+                              "description": "종국일자",
+                              "properties": {}
+                            },
+                            "eventType": {
+                              "type": "string",
+                              "description": "사건유형",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과수",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "영문판례 상세 조회",
+        "description": "판례일련번호를 입력하여 영문 판례검색 상세내용을 조회하는 기능 제공",
+        "operationId": "getEngPrcdntDetail",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답결과 출력형식(xml,json) 기본값:xml",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "fields",
+          "description": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "eventNum",
+          "description": "판례 검색 상세 조회를 위한 사건 일련번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getOcprOutlineList": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETERS_ERROR - 필수요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "데이터 타입",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "chgDate": {
+                              "type": "string",
+                              "description": "수정일",
+                              "properties": {}
+                            },
+                            "seqNo": {
+                              "type": "string",
+                              "description": "판례요지번호",
+                              "properties": {}
+                            },
+                            "title": {
+                              "type": "string",
+                              "description": "판례요지제목",
+                              "properties": {}
+                            },
+                            "cntntpth": {
+                              "type": "string",
+                              "description": "판례경로",
+                              "properties": {}
+                            },
+                            "regDate": {
+                              "type": "string",
+                              "description": "등록일",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과수",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "판례요지집 목록 조회",
+        "description": "판례요지내용,사건번호,판례요지제목을 입력하여 판례요지집 검색 목록 정보를 조회하는 기능 제공",
+        "operationId": "getOcprOutlineList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답결과 출력형식(xml,json) 기본값:xml",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "fields",
+          "description": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "content",
+          "description": "판례요지내용에서 검색",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "eventNo",
+          "description": "판례요지에 연관된 사건번호 검색",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "title",
+          "description": "판례요지 제목에서 검색",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getOcprOutlineDetail": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETERS_ERROR - 필수요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "데이터 타입",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "chgDate": {
+                              "type": "string",
+                              "description": "수정일",
+                              "properties": {}
+                            },
+                            "seqNo": {
+                              "type": "string",
+                              "description": "판례요지번호",
+                              "properties": {}
+                            },
+                            "title": {
+                              "type": "string",
+                              "description": "제목",
+                              "properties": {}
+                            },
+                            "content": {
+                              "type": "string",
+                              "description": "내용",
+                              "properties": {}
+                            },
+                            "cntntpth": {
+                              "type": "string",
+                              "description": "판례경로",
+                              "properties": {}
+                            },
+                            "eventNo": {
+                              "type": "string",
+                              "description": "연관사건번호",
+                              "properties": {}
+                            },
+                            "regDate": {
+                              "type": "string",
+                              "description": "등록일",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과수",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "판례요지집 상세 조회",
+        "description": "판례요지번호를 입력하여 판례요지집 검색 상세 정보를 조회하는 기능 제공",
+        "operationId": "getOcprOutlineDetail",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답결과 출력형식(xml,json) 기본값:xml",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "fields",
+          "description": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "seqNo",
+          "description": "판례요지집 검색 목록에서 조회된 판례요지번호를 입력",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "getOcprPrcdntList_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과수"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "type": {
+              "type": "string",
+              "description": "데이터 타입"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "atchFilePath2": {
+                      "type": "string",
+                      "description": "판례파일 다운로드 링크 주소"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "공보(호수)"
+                    },
+                    "exeCnt": {
+                      "type": "string",
+                      "description": "판례목록 리스트 개수"
+                    },
+                    "adjudgeYm": {
+                      "type": "string",
+                      "description": "선고년월(yyyyMM)"
+                    },
+                    "atchFileNm1": {
+                      "type": "string",
+                      "description": "공보파일명"
+                    },
+                    "atchFilePath1": {
+                      "type": "string",
+                      "description": "공보파일 다운로드 링크 주소"
+                    },
+                    "atchFileNm2": {
+                      "type": "string",
+                      "description": "판례파일명"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getRealmMainPrcdntList_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "type": {
+              "type": "string",
+              "description": "데이터 타입"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "chgDate": {
+                      "type": "string",
+                      "description": "수정일"
+                    },
+                    "seq": {
+                      "type": "string",
+                      "description": "일련번호"
+                    },
+                    "nick": {
+                      "type": "string",
+                      "description": "별칭"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "사건명"
+                    },
+                    "eventNo": {
+                      "type": "string",
+                      "description": "사건번호"
+                    },
+                    "classNm": {
+                      "type": "string",
+                      "description": "클래스명"
+                    },
+                    "adjudgeDt": {
+                      "type": "string",
+                      "description": "종국일자"
+                    },
+                    "regDate": {
+                      "type": "string",
+                      "description": "등록일"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과수"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getRealmMainPrcdntDetail_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "type": {
+              "type": "string",
+              "description": "데이터 타입"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "chgDate": {
+                      "type": "string",
+                      "description": "수정일"
+                    },
+                    "eventNo": {
+                      "type": "string",
+                      "description": "사건번호"
+                    },
+                    "eventNm": {
+                      "type": "string",
+                      "description": "사건명"
+                    },
+                    "nick": {
+                      "type": "string",
+                      "description": "별칭"
+                    },
+                    "codeName": {
+                      "type": "string",
+                      "description": "분류코드명"
+                    },
+                    "adjudgeDt": {
+                      "type": "string",
+                      "description": "종국일자"
+                    },
+                    "adjudgeResult": {
+                      "type": "string",
+                      "description": "종국결과"
+                    },
+                    "exeBook": {
+                      "type": "string",
+                      "description": "판례집"
+                    },
+                    "atchNm": {
+                      "type": "string",
+                      "description": "결정문 파일명"
+                    },
+                    "atchFilePath": {
+                      "type": "string",
+                      "description": "결정문 파일링크"
+                    },
+                    "content": {
+                      "type": "string",
+                      "description": "결정문 내용"
+                    },
+                    "regDate": {
+                      "type": "string",
+                      "description": "등록일"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과수"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getKorPrcdntList_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "type": {
+              "type": "string",
+              "description": "데이터 타입"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "rstaDate": {
+                      "type": "string",
+                      "description": "종국일자"
+                    },
+                    "eventNum": {
+                      "type": "string",
+                      "description": "사건일련번호"
+                    },
+                    "eventNo": {
+                      "type": "string",
+                      "description": "사건번호"
+                    },
+                    "eventNm": {
+                      "type": "string",
+                      "description": "사건명"
+                    },
+                    "panreType": {
+                      "type": "string",
+                      "description": "판례유형"
+                    },
+                    "eventType": {
+                      "type": "string",
+                      "description": "사건유형"
+                    },
+                    "jgdmtCort": {
+                      "type": "string",
+                      "description": "재판부"
+                    },
+                    "rstaRsta": {
+                      "type": "string",
+                      "description": "종국결과"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과수"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getKorPrcdntDetail_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "type": {
+              "type": "string",
+              "description": "데이터 타입"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "eventType": {
+                      "type": "string",
+                      "description": "사건유형"
+                    },
+                    "eventNum": {
+                      "type": "string",
+                      "description": "판례일련번호"
+                    },
+                    "panreType": {
+                      "type": "string",
+                      "description": "판례유형"
+                    },
+                    "eventNo": {
+                      "type": "string",
+                      "description": "사건번호"
+                    },
+                    "eventNm": {
+                      "type": "string",
+                      "description": "사건명"
+                    },
+                    "panreTitle": {
+                      "type": "string",
+                      "description": "판례제목"
+                    },
+                    "panreInfo": {
+                      "type": "string",
+                      "description": "판례정보"
+                    },
+                    "pansiMatt": {
+                      "type": "string",
+                      "description": "판시사항"
+                    },
+                    "decisionGst": {
+                      "type": "string",
+                      "description": "결정요지"
+                    },
+                    "adjobtTxt": {
+                      "type": "string",
+                      "description": "심판대상조문"
+                    },
+                    "refrnPrvsn": {
+                      "type": "string",
+                      "description": "참조조문"
+                    },
+                    "refrnPrcdnt": {
+                      "type": "string",
+                      "description": "참조판례"
+                    },
+                    "event": {
+                      "type": "string",
+                      "description": "사건/당사자"
+                    },
+                    "eventCol1": {
+                      "type": "string",
+                      "description": "제청법원/청구인/신청인"
+                    },
+                    "eventCol2": {
+                      "type": "string",
+                      "description": "제청신청인/피청구인"
+                    },
+                    "eventCol3": {
+                      "type": "string",
+                      "description": "당해사건/보조참가인/보안사건/재심대상결정"
+                    },
+                    "eventCol4": {
+                      "type": "string",
+                      "description": "선고일/결정일"
+                    },
+                    "textOfDecision": {
+                      "type": "string",
+                      "description": "주문"
+                    },
+                    "reason": {
+                      "type": "string",
+                      "description": "이유"
+                    },
+                    "volumeInfo": {
+                      "type": "string",
+                      "description": "권"
+                    },
+                    "seriesInfo": {
+                      "type": "string",
+                      "description": "집"
+                    },
+                    "pages": {
+                      "type": "string",
+                      "description": "쪽"
+                    },
+                    "jgdmtCort": {
+                      "type": "string",
+                      "description": "재판부"
+                    },
+                    "rstaRsta": {
+                      "type": "string",
+                      "description": "종국결과"
+                    },
+                    "rstaDate": {
+                      "type": "string",
+                      "description": "종국일자"
+                    },
+                    "eventSummary": {
+                      "type": "string",
+                      "description": "사건개요"
+                    },
+                    "abjObt": {
+                      "type": "string",
+                      "description": "심판대상"
+                    },
+                    "relatedProvision": {
+                      "type": "string",
+                      "description": "관련조항"
+                    },
+                    "caseRelatedOpinion": {
+                      "type": "string",
+                      "description": "사건관계인의 의견"
+                    },
+                    "judgement": {
+                      "type": "string",
+                      "description": "판단"
+                    },
+                    "conclusion": {
+                      "type": "string",
+                      "description": "결론"
+                    },
+                    "otherOpinions": {
+                      "type": "string",
+                      "description": "기타의견"
+                    },
+                    "enclsr": {
+                      "type": "string",
+                      "description": "별지"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과수"
+            }
+          }
+        }
+      }
+    },
+    "getEngPrcdntList_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "type": {
+              "type": "string",
+              "description": "데이터 타입"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "rstaDate": {
+                      "type": "string",
+                      "description": "종국일자(영문)"
+                    },
+                    "eventNum": {
+                      "type": "string",
+                      "description": "사건일련번호"
+                    },
+                    "eventNo": {
+                      "type": "string",
+                      "description": "사건번호(한글)"
+                    },
+                    "eventNm": {
+                      "type": "string",
+                      "description": "사건명(한글)"
+                    },
+                    "engEventNo": {
+                      "type": "string",
+                      "description": "영문사건번호"
+                    },
+                    "engEventName": {
+                      "type": "string",
+                      "description": "영문사건명"
+                    },
+                    "rstaRsta": {
+                      "type": "string",
+                      "description": "종국결과(영문)"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과수"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getEngPrcdntDetail_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "데이터 타입"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "xmlContent": {
+                      "type": "string",
+                      "description": "xml내용"
+                    },
+                    "eventNum": {
+                      "type": "string",
+                      "description": "판례일련번호"
+                    },
+                    "eventNo": {
+                      "type": "string",
+                      "description": "사건번호"
+                    },
+                    "eventNm": {
+                      "type": "string",
+                      "description": "사건명"
+                    },
+                    "engEventNo": {
+                      "type": "string",
+                      "description": "영문사건번호"
+                    },
+                    "engEventName": {
+                      "type": "string",
+                      "description": "영문사건명"
+                    },
+                    "volumeInfo": {
+                      "type": "string",
+                      "description": "권"
+                    },
+                    "seriesInfo": {
+                      "type": "string",
+                      "description": "집(시리즈)"
+                    },
+                    "pages": {
+                      "type": "string",
+                      "description": "쪽"
+                    },
+                    "eventCtgry": {
+                      "type": "string",
+                      "description": "카테고리"
+                    },
+                    "jgdmtCort": {
+                      "type": "string",
+                      "description": "재판부"
+                    },
+                    "rstaRsta": {
+                      "type": "string",
+                      "description": "종국결과"
+                    },
+                    "rstaDate": {
+                      "type": "string",
+                      "description": "종국일자"
+                    },
+                    "eventType": {
+                      "type": "string",
+                      "description": "사건유형"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과수"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            }
+          }
+        }
+      }
+    },
+    "getOcprOutlineList_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "type": {
+              "type": "string",
+              "description": "데이터 타입"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "chgDate": {
+                      "type": "string",
+                      "description": "수정일"
+                    },
+                    "seqNo": {
+                      "type": "string",
+                      "description": "판례요지번호"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "판례요지제목"
+                    },
+                    "cntntpth": {
+                      "type": "string",
+                      "description": "판례경로"
+                    },
+                    "regDate": {
+                      "type": "string",
+                      "description": "등록일"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과수"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getOcprOutlineDetail_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "type": {
+              "type": "string",
+              "description": "데이터 타입"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "chgDate": {
+                      "type": "string",
+                      "description": "수정일"
+                    },
+                    "seqNo": {
+                      "type": "string",
+                      "description": "판례요지번호"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "제목"
+                    },
+                    "content": {
+                      "type": "string",
+                      "description": "내용"
+                    },
+                    "cntntpth": {
+                      "type": "string",
+                      "description": "판례경로"
+                    },
+                    "eventNo": {
+                      "type": "string",
+                      "description": "연관사건번호"
+                    },
+                    "regDate": {
+                      "type": "string",
+                      "description": "등록일"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과수"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    }
+  },
+  "swaggerOprtinVOs": [
+    {
+      "oprtinUrl": "https://opendata.ccourt.go.kr/opendata/services/PrecedentInfomationService/getOcprOutlineDetail",
+      "oprtinNm": "판례요지집 상세 조회",
+      "oprtinDc": "판례요지번호를 입력하여 판례요지집 검색 상세 정보를 조회하는 기능 제공",
+      "gwSvcNm": "getOcprOutlineDetail",
+      "operationId": "getOcprOutlineDetail",
+      "publicDataTyDetailCode": "PRDE02",
+      "reqList": [
+        {
+          "paramtrNm": "serviceKey",
+          "paramtrDc": "공공데이터포털에서 받은 인증키",
+          "paramtrBassValue": "-",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "pageNo",
+          "paramtrDc": "페이지번호",
+          "paramtrBassValue": "1",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "numOfRows",
+          "paramtrDc": "한 페이지 결과 수",
+          "paramtrBassValue": "10",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "type",
+          "paramtrDc": "응답결과 출력형식(xml,json) 기본값:xml",
+          "paramtrBassValue": "xml",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "fields",
+          "paramtrDc": "응답에 노출할 필드명 콤마(,)로 구분해서 입력, 기본 : 모든필드 출력",
+          "paramtrBassValue": "",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "seqNo",
+          "paramtrDc": "판례요지집 검색 목록에서 조회된 판례요지번호를 입력",
+          "paramtrBassValue": "1304",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        }
+      ],
+      "resList": [
+        {
+          "paramtrNm": "header",
+          "paramtrDc": "header",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/oper-1-header",
+          "subDefNm": "oper-1-header",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "resultMsg",
+              "paramtrDc": "결과메세지",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "resultCode",
+              "paramtrDc": "결과코드",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        },
+        {
+          "paramtrNm": "body",
+          "paramtrDc": "body",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/oper-1-body",
+          "subDefNm": "oper-1-body",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "pageNo",
+              "paramtrDc": "페이지 번호",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "type",
+              "paramtrDc": "데이터 타입",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "items",
+              "paramtrDc": "items",
+              "arrayYn": "N",
+              "paramtrDefNm": "#/definitions/oper-1-items",
+              "subDefNm": "oper-1-items",
+              "paramtrTy": "object",
+              "paramtrDivision": "필수",
+              "ck": true,
+              "subParam": [
+                {
+                  "paramtrNm": "item",
+                  "paramtrDc": "item",
+                  "arrayYn": "N",
+                  "paramtrDefNm": "#/definitions/oper-1-item",
+                  "subDefNm": "oper-1-item",
+                  "paramtrTy": "object",
+                  "paramtrDivision": "필수",
+                  "ck": true,
+                  "subParam": [
+                    {
+                      "paramtrNm": "chgDate",
+                      "paramtrDc": "수정일",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "seqNo",
+                      "paramtrDc": "판례요지번호",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "title",
+                      "paramtrDc": "제목",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "content",
+                      "paramtrDc": "내용",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "cntntpth",
+                      "paramtrDc": "판례경로",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "eventNo",
+                      "paramtrDc": "연관사건번호",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "regDate",
+                      "paramtrDc": "등록일",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "paramtrNm": "totalCount",
+              "paramtrDc": "전체 결과수",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "numOfRows",
+              "paramtrDc": "한 페이지 결과 수",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

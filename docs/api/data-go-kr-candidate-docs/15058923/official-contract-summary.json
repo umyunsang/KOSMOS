@@ -1,0 +1,84 @@
+{
+  "source": {
+    "portal_url": "https://www.data.go.kr/data/15058923/openapi.do",
+    "downloaded_reference_document": "축산물품질평가원_OpenAPI활용가이드_축산물통합이력정보조회_v2.10.docx",
+    "portal_embedded_swagger_json": "empty"
+  },
+  "service": {
+    "name": "축산물품질평가원_축산물통합이력정보",
+    "operation_name": "축산물이력정보조회",
+    "method": "GET",
+    "endpoint": "http://data.ekape.or.kr/openapi-data/service/user/animalTrace/traceNoSearch",
+    "response_format": "XML"
+  },
+  "parameters": [
+    {
+      "name": "traceNo",
+      "required": true,
+      "sample": "L01709271277007",
+      "description": "개체/이력/묶음번호"
+    },
+    {
+      "name": "serviceKey",
+      "required": true,
+      "sample": "-",
+      "description": "공공데이터포털에서 받은 인증키"
+    },
+    {
+      "name": "optionNo",
+      "required": false,
+      "sample": "9",
+      "description": "조회하려는 정보 옵션값"
+    },
+    {
+      "name": "corpNo",
+      "required": false,
+      "sample": "1178522046",
+      "description": "묶음을 구성한 업소의 사업자 번호"
+    }
+  ],
+  "option_no_values": {
+    "1": "개체(소), 사육(돼지)",
+    "2": "출생 등 신고(소)",
+    "3": "도축(소/돼지)",
+    "4": "포장(소/돼지)",
+    "5": "구제역백신(소)",
+    "6": "질병정보(소)",
+    "7": "브루셀라(소)",
+    "8": "묶음 기본정보(묶음)",
+    "9": "묶음구성내역(묶음)"
+  },
+  "response_fields": [
+    "resultCode",
+    "resultMsg",
+    "traceNoType",
+    "infoType",
+    "birthYmd",
+    "farmAddr",
+    "farmNo",
+    "farmUniqueNo",
+    "farmerNm",
+    "mngrNm",
+    "cattleNo",
+    "pigNo",
+    "histNo",
+    "lotNo",
+    "lsTypeNm",
+    "sexNm",
+    "butcheryPlaceNm",
+    "butcheryPlaceAddr",
+    "butcheryYmd",
+    "gradeNm",
+    "inspectPassYn",
+    "processPlaceNm",
+    "processPlaceAddr",
+    "processYmd",
+    "corpNo",
+    "weight"
+  ],
+  "notes": [
+    "Portal request table lists serviceKey but DOCX examples use ServiceKey casing.",
+    "The live adapter must validate endpoint, credential, parameter casing, and XML shape with direct curl before any runtime implementation claim.",
+    "The attempted DCAT metadata download returned a data.go.kr error HTML page, saved as dcat-metadata-download-error.html."
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "15098826",
+  "url": "https://www.data.go.kr/data/15098826/openapi.do",
+  "source_kind": "category",
+  "source_value": "사회복지",
+  "category": "사회복지",
+  "provider_type": "국가행정기관",
+  "org": "보건복지부",
+  "title_hint": "보건복지부_보건·복지현황_독거장애인 서비스 지원 현황",
+  "description": "보건복지부에서 관리하는 보건복지현황 중 2017년~2024년까지 독거장애인 활동지원 및 응급안전안심서비스 현황 조사한 데이터를 취합하여 독거장애인 서비스 지원 현황(활동지원서비스 남, 여, 계, 응급안전서비스 남, 여, 계 등)에 대한 정보를 제공 합니다. <통계 이용 시 주의사항> * 응급안전서비스는 독거 및 취약가구 등 상시 보호가 필요한 장애인 포함 * 독거장애인：장애인 1인 가구 * 활동지원：장애인 1인 독거에 따른 추가급여를 받는 활동지원수급자 * 응급안전：장애인 1인 독거 등 상시 보호가 필요한 장애인",
+  "modified_date": "2026-05-07",
+  "view_count": "3675",
+  "application_count": "42",
+  "keywords": "서비스지원,취약계층지원,독거,성별,데이터,장애인",
+  "selection_reason": "Main-page category '사회복지' REST OpenAPI, non-duplicate, update-sorted.",
+  "og_title": "보건복지부_보건·복지현황_독거장애인 서비스 지원 현황",
+  "og_description": "보건복지부에서 관리하는 보건복지현황 중 2017년~2024년까지 독거장애인 활동지원 및 응급안전안심서비스 현황 조사한 데이터를 취합하여 독거장애인 서비스 지원 현황(활동지원서비스 남, 여, 계, 응급안전서비스 남, 여, 계 등)에 대한 정보를 제공 합니다. <통계 이용 시 주의사항> * 응급안전서비스는 독거 및 취약가구 등 상시 보호가 필요한 장애인 포함 * 독거장애인：장애인 1인 가구 * 활동지원：장애인 1인 독거에 따른 추가급여를 받는 활동지원수급자 * 응급안전：장애인 1인 독거 등 상시 보호가 필요한 장애인",
+  "swagger_url": "",
+  "has_inline_swagger": false,
+  "downloaded_docs": [
+    "OpenAPI 활용가이드(보건·복지현황_독거장애인 서비스 지원 현황).hwp"
+  ],
+  "primitive_candidate": "find",
+  "captured_at": "2026-05-16",
+  "application_status": "not_submitted_confirmation_required"
+}

@@ -1,0 +1,478 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "한국농업기술진흥원에서 지원하는 기술사업화 및 창업지원 보육업체 정보를 제공하는 API 데이터이다. 본 데이터는 농식품 및 농산업 분야의 기술사업화 창업지원 프로그램에 참여하고 있는 보육업체의 기본현황과 상세 정보를 포함하고 있으며, 업체명, 업체소개, 주요 사업내용, 홈페이지 정보 등 창업기업 및 보육업체 관련 정보를 제공한다. 또한 보육업체 목록 조회와 상세 조회 기능을 통해 농식품 분야 창업기업의 현황과 기술사업화 지원 정보를 확인할 수 있도록 구성되어 있다. 본 데이터는 농식품 분야 창업 활성화와 기술사업화 촉진, 창업기업 홍보 및 민간 서비스 개발 등에 활용할 수 있으며, 공공기관, 연구기관, 민간기업 및 일반 국민 등이 농식품 분야 창업 및 보육기업 정보를 효율적으로 탐색하고 활용할 수 있도록 지원하는 공공데이터 서비스이다.",
+    "version": "1.0.0",
+    "title": "한국농업기술진흥원_보육업체소개_GW"
+  },
+  "host": "apis.data.go.kr/B554729/careBusiness",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/careBusinessList": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "companyAddr": {
+                              "type": "string",
+                              "description": "회사주소",
+                              "properties": {}
+                            },
+                            "companyItem": {
+                              "type": "string",
+                              "description": "회사 주요품목",
+                              "properties": {}
+                            },
+                            "companyLogo": {
+                              "type": "string",
+                              "description": "회사로고",
+                              "properties": {}
+                            },
+                            "companyName": {
+                              "type": "string",
+                              "description": "회사명",
+                              "properties": {}
+                            },
+                            "companyType": {
+                              "type": "string",
+                              "description": "회사타입",
+                              "properties": {}
+                            },
+                            "homePage": {
+                              "type": "string",
+                              "description": "홈페이지",
+                              "properties": {}
+                            },
+                            "manager": {
+                              "type": "string",
+                              "description": "대표자명",
+                              "properties": {}
+                            },
+                            "managerTel": {
+                              "type": "string",
+                              "description": "대표자 연락처",
+                              "properties": {}
+                            },
+                            "seq": {
+                              "type": "string",
+                              "description": "순번",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "기술사업화 창업지원 보육업체 목록",
+        "description": "기술 사업화 창업지원 보육업체 목록을를 조회",
+        "operationId": "careBusinessList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/careBusinessView": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "companyAddr": {
+                              "type": "string",
+                              "description": "회사주소",
+                              "properties": {}
+                            },
+                            "companyIntro": {
+                              "type": "string",
+                              "description": "회사 상세소개",
+                              "properties": {}
+                            },
+                            "companyLogo": {
+                              "type": "string",
+                              "description": "회사로고",
+                              "properties": {}
+                            },
+                            "companyName": {
+                              "type": "string",
+                              "description": "회사명",
+                              "properties": {}
+                            },
+                            "homePage": {
+                              "type": "string",
+                              "description": "홈페이지",
+                              "properties": {}
+                            },
+                            "manager": {
+                              "type": "string",
+                              "description": "대표자명",
+                              "properties": {}
+                            },
+                            "managerTel": {
+                              "type": "string",
+                              "description": "대표자 연락처",
+                              "properties": {}
+                            },
+                            "seq": {
+                              "type": "string",
+                              "description": "순번",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "기술 사업화 창업지원 보육업체 상세 조회",
+        "description": "기술 사업화 창업지원 보육업체 내역을 조회",
+        "operationId": "careBusinessView",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "seq",
+          "description": "글번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "careBusinessList_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "companyAddr": {
+                      "type": "string",
+                      "description": "회사주소"
+                    },
+                    "companyItem": {
+                      "type": "string",
+                      "description": "회사 주요품목"
+                    },
+                    "companyLogo": {
+                      "type": "string",
+                      "description": "회사로고"
+                    },
+                    "companyName": {
+                      "type": "string",
+                      "description": "회사명"
+                    },
+                    "companyType": {
+                      "type": "string",
+                      "description": "회사타입"
+                    },
+                    "homePage": {
+                      "type": "string",
+                      "description": "홈페이지"
+                    },
+                    "manager": {
+                      "type": "string",
+                      "description": "대표자명"
+                    },
+                    "managerTel": {
+                      "type": "string",
+                      "description": "대표자 연락처"
+                    },
+                    "seq": {
+                      "type": "string",
+                      "description": "순번"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "careBusinessView_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "companyAddr": {
+                      "type": "string",
+                      "description": "회사주소"
+                    },
+                    "companyIntro": {
+                      "type": "string",
+                      "description": "회사 상세소개"
+                    },
+                    "companyLogo": {
+                      "type": "string",
+                      "description": "회사로고"
+                    },
+                    "companyName": {
+                      "type": "string",
+                      "description": "회사명"
+                    },
+                    "homePage": {
+                      "type": "string",
+                      "description": "홈페이지"
+                    },
+                    "manager": {
+                      "type": "string",
+                      "description": "대표자명"
+                    },
+                    "managerTel": {
+                      "type": "string",
+                      "description": "대표자 연락처"
+                    },
+                    "seq": {
+                      "type": "string",
+                      "description": "순번"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

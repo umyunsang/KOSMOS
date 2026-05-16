@@ -1,0 +1,15 @@
+HTTP/1.1 200 OK
+Cache-Control: max-age=86400
+Content-Language: ko-KR
+Content-Security-Policy: script-src 'self' 'unsafe-eval' 'unsafe-inline' ; script-src-elem 'self' 'unsafe-inline' https://*; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://* ; connect-src 'self'; child-src 'unsafe-inline'; object-src 'self'
+Content-Type: application/json;charset=UTF-8
+Date: Sat, 16 May 2026 08:07:08 GMT
+Expires: Sun, 17 May 2026 08:07:08 GMT
+Server: nginx
+Set-Cookie: <redacted>
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1;mode=block
+Content-Length: 747
+

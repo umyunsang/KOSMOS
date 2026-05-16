@@ -1,0 +1,6 @@
+HTTP/1.1 400 Bad Request
+Content-Type: text/html
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+Date: Sat, 16 May 2026 08:29:13 GMT
+Content-Length: 147
+

@@ -1,0 +1,5261 @@
+조달청 공공데이터 개방
+OpenAPI 참고자료
+1. 서비스 명세4
+1.1 나라장터 종합쇼핑몰 품목정보 서비스4
+가. 서비스 개요4
+나. 오퍼레이션 목록5
+개정 이력
+버 전
+변경일
+변경 구분
+변경사유
+1.0
+2025
+최초 개정
+최초 개정
+1. 서비스 명세
+1.1 나라장터 종합쇼핑몰 품목정보 서비스
+서비스 개요
+서비스 정보
+서비스 ID
+ShoppingMallPrdctInfoService05
+서비스명(국문)
+나라장터 종합쇼핑몰 품목정보 서비스
+서비스명(영문)
+ShoppingMallPrdctInfoService05
+서비스 설명
+조달청에서 운영하는 종합쇼핑몰에 등록되어 있는 품목의 계약정보, 인증정보 등을 조회
+(종합쇼핑몰: 국가를 당사자로하는 계약에 관한법률 제22조의 규정에 따라 조달청 및 이용(수요)기관이 체결하는 단가계약(조달사업에관한법률시행령 제7조에 따라 체결하는 제3자를 위한 단가계약 포함)상품을 등록하여 이를 수요기관에서 전자적인 방법으로 구매할 수 있는 쇼핑몰).
+서비스 보안
+서비스 인증/권한
+[O] 서비스 Key[ ] 인증서 (GPKI)
+[] Basic (ID/PW) [ ] 없음
+[ ]WS-Security
+메시지 레벨 암호화
+[  ] 전자서명[ ] 암호화[O] 없음
+전송 레벨 암호화
+[  ] SSL[ O] 없음
+적용 기술 수준
+인터페이스 표준
+[  ] SOAP 1.2
+(RPC-Encoded, Document Literal, Document Literal Wrapped)
+[ O ] REST (GET)
+[ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타
+교환 데이터 표준
+[ O ] XML[ O ] JSON[ ] MIME[ ] MTOM
+서비스 URL
+개발환경
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05
+운영환경
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05
+서비스 WADL
+개발환경
+N/A
+운영환경
+N/A
+서비스 배포 정보
+서비스 버전
+1.0
+서비스 시작일
+2025-01-06
+배포 일자
+2025-01-06
+서비스 이력
+N/A
+메시지 교환 유형
+[O] Request-Response[ ] Publish-Subscribe
+[ ] Fire-and-Forgot[ ] Notification
+메시지 로깅 수준
+성공
+[O] Header [ ] Body
+실패
+[O] Header [O} Body
+사용 제약 사항 (비고)
+N/A
+서비스 제공자
+안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr
+데이터 갱신주기
+수시
+오퍼레이션 목록
+일련번호
+서비스명(국문)
+오퍼레이션명(영문)
+오퍼레이션명(국문)
+메시지명(영문)
+1
+나라장터 종합쇼핑몰 품목정보 서비스
+getMASCntrctPrdctInfoList
+다수공급자계약 품목정보 조회
+N/A
+2
+getUcntrctPrdctInfoList
+일반단가계약 품목정보 조회
+N/A
+3
+getThptyUcntrctPrdctInfoList
+제3자단가계약 품목정보 조회
+N/A
+4
+getDlvrReqInfoList
+종합쇼핑몰 납품요구정보 현황 목록조회
+N/A
+5
+getDlvrReqDtlInfoList
+종합쇼핑몰 납품요구상세 현황 목록조회
+N/A
+6
+getShoppingMallPrdctInfoList
+종합쇼핑몰 품목 정보 목록 조회
+N/A
+7
+getVntrPrdctOrderDealDtlsInfoList
+벤처나라 물품 주문거래 내역 조회
+N/A
+[다수공급자계약 품목정보 조회] 오퍼레이션 명세
+오퍼레이션 정보
+오퍼레이션 번호
+1
+오퍼레이션명(국문)
+다수공급자계약 품목정보 조회
+오퍼레이션 유형
+조회(목록)
+오퍼레이션명(영문)
+getMASCntrctPrdctInfoList
+오퍼레이션 설명
+종합 쇼핑몰의 다수공급자계약 품목정보(계약정보, 업체정보, 규격서첨부파일) 등을 조회. 단, 거래정지 및 해지 건은 제공되지 않음
+다수공급자계약이란 각 공공기관의 다양한 수요를 충족하기 위하여 품질, 성능, 효율 등에서 동등하거나 유사한 종류의 물품을 수요기관이 선택할 수 있도록 2인 이상을 계약상대자로 하는 계약방법으로 납품실적, 경영상태 등이 일정한 기준에 적합한 자를 대상으로 협상을 통해 계약을 체결하고 수요고객이 직접 나라장터 종합쇼핑몰(https://shopping.g2b.go.kr/) 에서 자유롭게 물품을 선택하여 사용
+*파라미터 미입력 및 파라미터 오류시 등록일시 기준 현재 시점부터 하루분 데이터가 조회
+Call Back URL
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/getMASCntrctPrdctInfoList
+최대 메시지 사이즈
+[ 4000bytes]
+평균 응답 시간
+[ 500ms]
+초당 최대 트랜잭션
+[ 30tps]
+요청 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+ServiceKey
+서비스키
+400
+1
+공공데이터포털에서 받은 인증키
+공공데이터포털에서 받은 인증키
+type
+타입
+4
+0
+json
+오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정
+rgstDtBgnDt
+등록일시시작일시
+12
+0
+202404010000
+계약상품의 등록일시범위 (시작일시) 'YYYYMMDDHH24M'
+(등록일시 범위는 1년 로 제한)
+rgstDtEndDt
+등록일시종료일시
+12
+0
+202404302359
+계약상품의 등록일시범위 (종료일시) 'YYYYMMDDHH24M'
+(등록일시 범위는 1년 로 제한)
+prdctClsfcNoNm
+품명
+200
+0
+조립식철근콘크리트암거블록
+조회하고자 하는 품명 검색
+prdctIdntNo
+물품식별번호
+8
+0
+23277843
+조회하고자 하는 물품식별번호 검색
+cntrctCorpNm
+계약업체명
+100
+0
+삼화케익블럭
+조회하고자 하는 계약업체명으로 Like 검색
+chgDtBgnDt
+변경일시시작일시
+12
+0
+202404010000
+계약상품의 변경일시범위 (시작일시) 'YYYYMMDDHH24M'
+(변경일시 범위는 1년 로 제한)
+chgDtEndDt
+변경일시종료일시
+12
+0
+202404302359
+계약상품의 변경일시범위 (종료일시) 'YYYYMMDDHH24M'
+(변경일시 범위는 1년 로 제한)
+prodctCertYn
+제품인증여부
+1
+0
+Y
+계약상품의 제품인증존재 여부(등록일시 시작일시,등록일시 종료일시 필수)
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+resultCode
+결과코드
+2
+1
+00
+결과코드
+resultMsg
+결과메세지
+50
+1
+정상
+결과메세지
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+totalCount
+데이터 총 개수
+4
+1
+17
+데이터 총 개수
+prdctImgUrl
+상품이미지URL
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZMOK/item_image/2007/03/29/20070329210520-43.jpg
+계약상품 이미지 링크로 제공(물품대이미지파일명)
+cntrctCorpNm
+계약업체명
+100
+1
+우전화학
+상품의 계약업체명
+entrprsDivNm
+기업구분명
+100
+0
+중소기업
+기업구분을 대기업,중소기업,비영리법인및기타,중견기업의 분류로 표기
+drctPrdctnCnfrmCertHoldCorpYn
+직접생산확인증명서보유업체여부
+1
+1
+N
+직접생산확인증명서보유업체여부
+entrprsDivInfrmtn
+기업구분안내
+100
+1
+기업규모(대기업, 중견기업, 중소기업, 비영리법인 등 기타)는 실시간 정보와 상이할 수 있으므로 신용정보사에 재확인 후 업무처리하시기 바랍니다.
+기업규모(대기업, 중견기업, 중소기업, 비영리법인 등 기타)는 실시간 정보와 상이할 수 있으므로 신용정보사에 재확인 후 업무처리하시기 바랍니다.
+cntrctMthdNm
+계약방법명
+100
+0
+다수 공급자 계약
+계약방법 : 일반계약, 다수공급자계약,제3자계약
+prdctSpecNm
+물품규격명
+500
+0
+쓰레기봉투, 우전화학, WJ-G001, 위조방지, 1종, 1L, 음식물전용/HDPE
+물품규격명
+exclncPrcrmntPrdctYn
+우수조달물품여부
+1
+1
+N
+우수조달물품여부
+bndeFlawGrntyPrdctYn
+일괄하자보증물품여부
+1
+1
+N
+일괄하자보증물품여부
+smetprCmptProdctYn
+중소기업자간경쟁제품여부
+1
+1
+Y
+중소기업자간경쟁제품여부
+cntrctPrceAmt
+계약가격금액
+30
+0
+17
+계약가격금액의 원화금액
+orderCalclPrceAmt
+주문산정가격금액
+30
+0
+17
+주문산정가격금액의 원화금액, 세부품명번호가 6012149901,3912110301,3912110101, 3912110401 일경우
+dscntAmt
+할인금액
+30
+0
+330
+할인금액이 있을 경우 표기
+prdctUnit
+물품단위
+100
+0
+매
+물품단위
+prdctOrgplceNm
+물품원산지명
+50
+0
+대한민국
+물품의 원산지명
+orgplceMainCmpnt1Cntnts
+원산지주요부품1내용
+100
+0
+CPU
+물품의 원산지 주요부품1내용
+orgplceMainCmpnt1Nm
+원산지주요부품1명
+100
+0
+말레이지아
+주요부품1의 원산지명
+orgplceMainCmpnt2Cntnts
+원산지주요부품2내용
+100
+0
+M/B
+물품의 원산지 주요부품2내용
+orgplceMainCmpnt2Nm
+원산지주요부품2명
+100
+0
+중국
+주요부품2의 원산지명
+orgplceCoreCmpntCntnts
+원산지핵심부품내용
+100
+0
+PCB
+물품의 원산지 핵심부품내용
+orgplceCoreCmpntNm
+원산지핵심부품명
+100
+0
+대한민국
+핵심부품의 원산지명
+assmblCntryMainCmpnt1Cntnts
+조립국가주요부품1내용
+100
+0
+CPU
+물품의 조립국가주요부품1내용
+assmblCntryMainCmpnt1Nm
+조립국가주요부품1명
+100
+0
+말레이지아
+주요부품1의 조립국가명
+assmblCntryMainCmpnt2Cntnts
+조립국가주요부품2내용
+100
+0
+메모리
+물품의 조립국가 주요부품2내용
+assmblCntryMainCmpnt2Nm
+조립국가주요부품2명
+100
+0
+태국
+주요부품2명의 조립국가명
+assmblCntryCoreCmpntCntnts
+조립국가핵심부품내용
+100
+0
+메인보드
+물품의 조립국가 핵심부품내용
+assmblCntryCoreCmpntNm
+조립국가핵심부품명
+100
+0
+미국
+핵심부품의 조립국가명
+prdctMakrNm
+물품제조사명
+200
+0
+우전화학
+물품의 제조사명
+prdctDlvrPlceNm
+물품납품장소명
+500
+0
+수요기관 지정장소
+물품의 납품장소명
+prdctDlvryCndtnNm
+물품인도조건명
+200
+0
+납품장소 하차도
+물품의 인도조건명
+prdctSplyRgnNm
+물품공급지역명
+200
+0
+전지역
+물품의 공급지역명
+vatAplDivNm
+부가가치세적용구분명
+100
+0
+부가가치세포함
+부가가치세 적용 구분명
+dlvrTmlmtDaynum
+납품기한일수
+10
+0
+40
+납품기한은 일(DAY)단위 임
+dlvrTmlmtDscrpt
+납품기한설명
+50
+1
+납품요구일로부터
+세부물품분류번호에 따라 "소요량 통보서 접수일로 부터", "납품요구일로부터-실제납품기한은 과업지시서에 한함", 나머지는 "납품요구일로부터" 표기됨
+prcrmntFeeInclsnCntnts
+조달수수료포함내용
+100
+0
+조달수수료 별도
+부가가치세에 대한 구분 명 예) 부가가치세 별도, 부가가치세포함(특소,교육세면세)
+dscntBgnDate
+할인시작일자
+10
+0
+2016-05-01
+할인 진행 중 일 경우 이벤트시작일자('YYYY-MM-DD')
+dscntEndDate
+할인종료일자
+10
+0
+2016-05-30
+할인 진행 중 일 경우 이벤트종료일자('YYYY-MM-DD')
+remndrQty
+잔여수량
+100
+0
+10
+할인적용수량에서 주문수량을 뺀 값을 표기함
+specDocAtchFileNm1
+규격문서첨부파일명1
+500
+0
+2016/07/01_00166108400-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp'
+계약시 첨부되는 파일명
+specDocAtchFileNm2
+규격문서첨부파일명2
+500
+0
+2016/07/01_00166108400-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp'
+계약시 첨부되는 파일명
+specDocAtchFileNm3
+규격문서첨부파일명3
+500
+0
+2016/07/01_00166108400-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp'
+계약시 첨부되는 파일명
+specDocAtchFileNm4
+규격문서첨부파일명4
+500
+0
+2016/07/01_00166108400-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp'
+계약시 첨부되는 파일명
+specDocAtchFileNm5
+규격문서첨부파일명5
+500
+0
+2016/07/01_00166108400-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp'
+계약시 첨부되는 파일명
+specDocAtchFileNmUrl1
+규격문서첨부파일명URL1
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/07/01_00166108400-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp'
+계약시 첨부되는 파일을 URL링크로 제공
+specDocAtchFileNmUrl2
+규격문서첨부파일명URL2
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/07/01_00166108400-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp'
+계약시 첨부되는 파일을 URL링크로 제공
+specDocAtchFileNmUrl3
+규격문서첨부파일명URL3
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/07/01_00166108400-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp'
+계약시 첨부되는 파일을 URL링크로 제공
+specDocAtchFileNmUrl4
+규격문서첨부파일명URL4
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/07/01_00166108400-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp'
+계약시 첨부되는 파일을 URL링크로 제공
+specDocAtchFileNmUrl5
+규격문서첨부파일명URL5
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/07/01_00166108400-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp'
+계약시 첨부되는 파일을 URL링크로 제공
+prdctLrgclsfcCd
+물품대분류코드
+2
+0
+05
+계약상품의 물품대분류코드
+prdctLrgclsfcNm
+물품대분류명
+100
+0
+섬유.고무.위생
+계약상품의 물품대분류코드명
+prdctMidclsfcCd
+물품중분류코드
+4
+0
+04
+계약상품의 물품중분류코드
+prdctMidclsfcNm
+물품중분류명
+100
+0
+쓰레기봉투
+계약상품의 물품중분류코드명
+prdctClsfcNo
+물품분류번호
+8
+1
+47121701
+UNSPSC 물품분류체계를 기반으로 하는 4단계 계층구조로 이루어진 8자리 번호
+prdctClsfcNoNm
+품명
+200
+1
+오물봉지
+물품분류번호 8자리에 해당하는 물품의 한글이름
+dtilPrdctClsfcNo
+세부품명번호
+10
+1
+4712170101
+UNSPSC에서 분류된 세뷴류의 품명보다 세분화가 필요한 품명에 부여한 10자리 번호
+prdctIdntNo
+물품식별번호
+8
+1
+20983622
+품목 고유번호인 8자리 번호
+shopngCntrctNo
+쇼핑계약번호
+11
+1
+12161045800
+쇼핑계약번호는 쇼핑계약번호(9자리)+차수(2자리)로 구성됨. ※ 데이터의 유일성을 보장하는 키는  쇼핑계약번호_+쇼핑계약순번.
+shopngCntrctSno
+쇼핑계약순번
+22
+1
+14
+쇼핑계약순번.※ 데이터의 유일성을 보장하는 키는  쇼핑계약번호_+쇼핑계약순번
+levDivNm
+징수구분명
+100
+1
+후징수
+징수구분코드가 1:선징수 나머지는 후징수
+qltyRltnCertInfo
+품질관련인증정보
+400
+1
+KCC, K마크
+품질관련인증정보 (우선구매대상인증과중복될 수 있음)
+avrgDlvyTime
+평균배송일
+300
+0
+관련정보없음
+평균배송일
+prefrpurchsObjCertNm
+우선구매대상인증명
+400
+1
+환경표지제품
+우선구매대상이 되는 인증명
+dutyPurchsObjCertNm
+의무구매대상인증명
+400
+1
+환경표지제품
+의무구매대상이 되는 인증명
+qltyMngmtPrgnCorpYn
+품질경영모범업체여부
+1
+0
+N
+품질경영 모범업체여부
+hdoffceLocplc
+본사소재지
+300
+0
+경기도 광주시 광여로99번길
+계약업체의 본사소재지
+fctryLocplc
+공장소재지
+300
+0
+경기도 광주시 광여로99번길
+계약업체의 공장소재지
+refeMtr
+참고사항
+4000
+0
+용역계약일반조건(150101), 일반용역계약특수조건(2014.7.25-정보기술용역과-7723호),  체험활동_서비스품질관리특수조건(2015.2.27)을 적용한다.
+물품계약의 참고사항
+cntrctDate
+계약일자
+10
+0
+2016-05-04
+물품의 계약일자는 'YYYY-MM-DD'
+splyJrsdctRgnNm
+공급관할지역명
+200
+0
+전지역
+관할지역
+cntrctBgnDate
+계약시작일자
+10
+0
+2016-05-04
+계약시작일자('YYYY-MM-DD')
+cntrctEndDate
+계약종료일자
+10
+0
+2018-03-31
+계약종료일자('YYYY-MM-DD')
+cntrctDeptNm
+계약부서명
+100
+0
+서울지방조달청 자재구매과
+조달청의 계약부서명
+cntrctDeptTelNo
+계약부서전화번호
+40
+0
+070-4056-8757
+조달청의 계약부서전화번호
+cntrctOfclNm
+계약담당자명
+100
+0
+이해지
+조달청의 계약담당자명
+cntrctOfclEmail
+계약담당자이메일
+200
+0
+hj01@korea.kr
+조달청의 계약담당자이메일
+splyTmlmtCntnts
+공급기한내용
+100
+0
+차기계약시까지
+물품의 공급기한내용
+splyCorpChrgDeptNm
+공급업체담당부서명
+100
+0
+수요기관
+물품 공급업체의 담당부서명
+splyCorpChrgDeptTelNo
+공급업체담당부서전화번호
+40
+0
+070-123-1234
+물품 공급부서의 전화번호
+acptncInsttNm
+검수기관명
+200
+0
+수요기관
+물품의 검수기관명
+inspctInsttNm
+검사기관명
+200
+0
+기타기관
+물품의 검사기관명
+publicProcurementOfficeInfrmtn
+조달청안내
+500
+1
+조달업체가 등록한 '상품상세정보'의 내용(제품에 대한 기능, 성능, 품질 등)이 위 '제품상세정보'의 '첨부화일'에 있는 '규격문서(시방서)'의 내용과 일치하지 않아 허위 또는 과장 광고로 판명될 경우, 조달청은 관련규정에 의거 종합쇼핑몰의 상품등록을 정지시킵니다.
+조달업체가 등록한 '상품상세정보'의 내용(제품에 대한 기능, 성능, 품질 등)이 위 '제품상세정보'의 '첨부화일'에 있는 '규격문서(시방서)'의 내용과 일치하지 않아 허위 또는 과장 광고로 판명될 경우, 조달청은 관련규정에 의거 종합쇼핑몰의 상품등록을 정지시킵니다.
+prdctDtlInfo
+물품상세정보(상품상세정보)
+4000
+0
+특허(제10-0699093호)가 적용된 위조방지 음식물쓰레기종량제봉투로써 제조일련번호와 잔여수량의 숫자 조합으로 암호화되어 있으며 개개의 봉투가 각기 다른 숫자의 조합으로 이루어져 있어 관할관청담당자와 당사담당자 이외에는 암호화된 부분을 해석할 수 없어 불법적 위조행위가 불가능함
+물품의 상세정보. 내용 중 &lt; 는 "<" &gt; 는 ">" 로 전환
+cntrctSpcmntMtr
+계약특기사항
+4000
+0
+1. 다수공급자계약특수조건의 기재사항은 다음과 같이 한다. - 제12조 물가변동으로 인한 계약금액 조정방법은 품목조정율 적용 - 단가계약의 경우 1회 최대납품수량 100분의 20 2. 물품구매계약품질관리특수조건의 기재사항은 다음과 같이 한다. - 제18조 하자보수기간 : 1년 3. 기타사항 - 분할납품요구 및 통보서는 C126158154101(으)로 전송됩니다. ※본 계약은 전문기관검사조건부 계약입니다. 조달청에서 고시한 업무규정(조달청고시 제2013-12호)과 조달청 조달품질원에서 공고한 실시기준에 따라 전문기관검사를 실시하며, 실시대상일 경우 전문기관검사 조건으로 납품요구 되오니 납품요구서의 검사조건을 확인하시기 바랍니다.(검사에 필요한 모든 비용은 계약상대자의부담임)
+계약상품설명정보
+prodctChrInfoIntrcn
+제품특성정보소개
+2000
+0
+특허(제10-0699093호)가 적용된 위조방지 음식물쓰레기종량제봉투로써 제조일련번호와 잔여수량의 숫자 조합으로 암호화되어 있으며 개개의 봉투가 각기 다른 숫자의 조합으로 이루어져 있어 관할관청담당자와 당사담당자 이외에는 암호화된 부분을 해석할 수 없어 불법적 위조행위가 불가능함
+물품관리시스템의 계약상품설명
+prodctCertList
+제품인증목록
+4000
+0
+에너지절약,Q마크,공공조달 최소녹색기준제품,녹색기술인증,KC인증
+나라장터 종합쇼핑몰에 등록된 해당 제품이 취득한 인증목록
+cntrctCorpNo
+계약업체번호
+15
+0
+CN0100000144459
+조달업체를 관리하기 위한 식별번호
+rgstDt
+등록일시
+16
+1
+2016-05-03 07:27
+물품계약건이 등록된 일시
+chgDt
+변경일시
+16
+0
+2016-05-04 11:32
+물품계약건이 변경된 일시
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+요청 / 응답 메시지 예제
+REST(URI)
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/getMASCntrctPrdctInfoList?rgstDtBgnDt=20150501&rgstDtEndDt=201705300000&cntrctCorpNm=에스&pageNo=1&numOfRows=10&ServiceKey=인증키
+응답 메시지
+<response>
+<header>
+<resultCode>00</resultCode>
+<resultMsg>정상</resultMsg>
+</header>
+<body>
+<items>
+<prdctImgUrl>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZMOK/item_image/2013/06/18/B201306181653827-1895.jpg</prdctImgUrl>
+<cntrctCorpNm>주식회사 청목이알에스</cntrctCorpNm>
+<entrprsDivNm>중소기업</entrprsDivNm>
+<drctPrdctnCnfrmCertHoldCorpYn>N</drctPrdctnCnfrmCertHoldCorpYn>
+<entrprsDivInfrmtn>기업규모(대기업, 중견기업, 중소기업, 비영리법인 등 기타)는 실시간 정보와 상이할 수 있으므로 신용정보사에 재확인 후 업무처리하시기 바랍니다.</entrprsDivInfrmtn>
+<cntrctMthdNm>다수 공급자 계약</cntrctMthdNm>
+<prdctSpecNm>식생매트, 청목이알에스, CM-AM109, 1000×1000×t18~22mm</prdctSpecNm>
+<exclncPrcrmntPrdctYn>N</exclncPrcrmntPrdctYn>
+<bndeFlawGrntyPrdctYn>N</bndeFlawGrntyPrdctYn>
+<smetprCmptProdctYn>N</smetprCmptProdctYn>
+<cntrctPrceAmt>38900</cntrctPrceAmt>
+<orderCalclPrceAmt />
+<dscntAmt />
+<prdctUnit>㎡</prdctUnit>
+<prdctOrgplceNm>대한민국</prdctOrgplceNm>
+<orgplceMainCmpnt1Cntnts />
+<orgplceMainCmpnt1Nm />
+<orgplceMainCmpnt2Cntnts />
+<orgplceMainCmpnt2Nm />
+<orgplceCoreCmpntCntnts />
+<orgplceCoreCmpntNm />
+<assmblCntryMainCmpnt1Cntnts />
+<assmblCntryMainCmpnt1Nm />
+<assmblCntryMainCmpnt2Cntnts />
+<assmblCntryMainCmpnt2Nm />
+<assmblCntryCoreCmpntCntnts />
+<assmblCntryCoreCmpntNm />
+<prdctMakrNm>주식회사 청목이알에스</prdctMakrNm>
+<prdctDlvrPlceNm>수요기관 지정장소</prdctDlvrPlceNm>
+<prdctDlvryCndtnNm>납품장소 하차도</prdctDlvryCndtnNm>
+<prdctSplyRgnNm>전지역</prdctSplyRgnNm>
+<vatAplDivNm>부가가치세포함</vatAplDivNm>
+<dlvrTmlmtDaynum>30</dlvrTmlmtDaynum>
+<dlvrTmlmtDscrpt>납품요구일로부터</dlvrTmlmtDscrpt>
+<prcrmntFeeInclsnCntnts>조달수수료 별도</prcrmntFeeInclsnCntnts>
+<dscntBgnDate />
+<dscntEndDate />
+<remndrQty />
+<specDocAtchFileNm1>2014/07/01_00145107500-물품구매(제조)계약일반조건.hwp</specDocAtchFileNm1>
+<specDocAtchFileNm2>2014/07/02_00145107500-다수공급자계약특수조건(14.03.24).hwp</specDocAtchFileNm2>
+<specDocAtchFileNm3>2014/07/03_00145107500-물품구매계약품질관리특수조건(2013.09.01).hwp</specDocAtchFileNm3>
+<specDocAtchFileNm4>2014/07/04_00145107500-식생매트규격서(청목이알에스).hwp</specDocAtchFileNm4>
+<specDocAtchFileNm5 />   <specDocAtchFileNmUrl1>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2014/07/01_00145107500-물품구매(제조)계약일반조건.hwp</specDocAtchFileNmUrl1
+<specDocAtchFileNmUrl2>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2014/07/02_00145107500-다수공급자계약특수조건(14.03.24).hwp</specDocAtchFileNmUrl2>
+<specDocAtchFileNmUrl3>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2014/07/03_00145107500-물품구매계약품질관리특수조건(2013.09.01).hwp</specDocAtchFileNmUrl3
+<specDocAtchFileNmUrl4>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2014/07/04_00145107500-식생매트규격서(청목이알에스).hwp</specDocAtchFileNmUrl4>
+<specDocAtchFileNmUrl5 />
+<prdctLrgclsfcCd>12</prdctLrgclsfcCd>
+<prdctLrgclsfcNm>도로시설.철도.기타</prdctLrgclsfcNm>
+<prdctMidclsfcCd>99</prdctMidclsfcCd>
+<prdctMidclsfcNm>기타</prdctMidclsfcNm>
+<prdctClsfcNo>30121785</prdctClsfcNo>
+<prdctClsfcNoNm>식생매트</prdctClsfcNoNm>
+<dtilPrdctClsfcNo>3012178501</dtilPrdctClsfcNo>
+<prdctIdntNo>22549709</prdctIdntNo>
+<shopngCntrctNo>00145107500</shopngCntrctNo>
+<shopngCntrctSno>9</shopngCntrctSno>
+<levDivNm>후징수</levDivNm>
+<qltyRltnCertInfo>해당 없음</qltyRltnCertInfo>
+<avrgDlvyTime>관련정보없음</avrgDlvyTime>
+<prefrpurchsObjCertNm>해당 없음</prefrpurchsObjCertNm>
+<dutyPurchsObjCertNm>해당 없음</dutyPurchsObjCertNm>
+<qltyMngmtPrgnCorpYn>N</qltyMngmtPrgnCorpYn>
+<hdoffceLocplc>경상북도 문경시 중앙로</hdoffceLocplc>
+<fctryLocplc>경상북도 문경시 중앙로</fctryLocplc>
+<refeMtr />
+<cntrctDate>2014-07-30</cntrctDate>
+<splyJrsdctRgnNm>전지역</splyJrsdctRgnNm>
+<cntrctBgnDate>2014-07-30</cntrctBgnDate>
+<cntrctEndDate>2016-08-31</cntrctEndDate>
+<cntrctDeptNm>조달청 쇼핑몰기획과</cntrctDeptNm>
+<cntrctDeptTelNo>070-4056-7220</cntrctDeptTelNo>
+<cntrctOfclNm>도미영</cntrctOfclNm>
+<cntrctOfclEmail>sky97@korea.kr</cntrctOfclEmail>
+<splyTmlmtCntnts>차기계약시까지</splyTmlmtCntnts>
+<splyCorpChrgDeptNm />
+<splyCorpChrgDeptTelNo />
+<acptncInsttNm>수요기관</acptncInsttNm>
+<inspctInsttNm />
+<publicProcurementOfficeInfrmtn>조달업체가 등록한 '상품상세정보'의 내용(제품에 대한 기능, 성능, 품질 등)이 위 '제품상세정보'의 '첨부화일'에 있는 '규격서(시방서)'의 내용과 일치하지 않아 허위 또는 과장 광고로 판명될 경우, 조달청은 관련규정에 의거 종합쇼핑몰의 상품등록을 정지시킵니다.</publicProcurementOfficeInfrmtn>
+<prdctDtlInfo />
+<cntrctSpcmntMtr>1. 다수공급자계약특수조건의 기재사항은 다음과 같이 한다. - 제12조 물가변동으로 인한 계약금액 조정방법은 품목조정율 적용 - 단가계약의 경우 1회 최대납품수량 100분의 20 2. 물품구매계약품질관리특수조건의 기재사항은 다음과 같이 한다. - 제18조 하자보수기간 : 1년 3. 기타사항 - 분할납품요구 및 통보서는 C511812014501(으)로 전송됩니다. ※본 계약은 전문기관검사조건부 계약입니다. 조달청에서 고시한 업무규정(조달청고시 제2013-12호)과 조달청 조달품질원에서 공고한 실시기준에 따라 전문기관검사를 실시하며, 실시대상일 경우 전문기관검사 조건으로 납품요구 되오니 납품요구서의 검사조건을 확인하시기 바랍니다.(검사에 필요한 모든 비용은 계약상대자의부담임) ※전문검사기관 :한국건설생활환경시험연구원(02-3415-8878)</cntrctSpcmntMtr>
+<prodctChrInfoIntrcn />
+<prodctCertList/>
+<rgstDt>2014-07-29 17:21</rgstDt>
+<chgDt>2016-06-30 08:14</chgDt>
+</item>
+<items>
+<prdctImgUrl>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZMOK/item_image/2013/06/18/B201306181653827-1895.jpg</prdctImgUrl>
+<cntrctCorpNm>주식회사 청목이알에스</cntrctCorpNm>
+<entrprsDivNm>중소기업</entrprsDivNm>
+<drctPrdctnCnfrmCertHoldCorpYn>N</drctPrdctnCnfrmCertHoldCorpYn>
+<entrprsDivInfrmtn>기업규모(대기업, 중견기업, 중소기업, 비영리법인 등 기타)는 실시간 정보와 상이할 수 있으므로 신용정보사에 재확인 후 업무처리하시기 바랍니다.</entrprsDivInfrmtn>
+<cntrctMthdNm>다수 공급자 계약</cntrctMthdNm>
+<prdctSpecNm>식생매트, 청목이알에스, CM-AM109, 1000×1000×t18~22mm</prdctSpecNm>
+<exclncPrcrmntPrdctYn>N</exclncPrcrmntPrdctYn>
+<bndeFlawGrntyPrdctYn>N</bndeFlawGrntyPrdctYn>
+<smetprCmptProdctYn>N</smetprCmptProdctYn>
+<cntrctPrceAmt>38900</cntrctPrceAmt>
+<orderCalclPrceAmt />
+<dscntAmt />
+<prdctUnit>㎡</prdctUnit>
+<prdctOrgplceNm>대한민국</prdctOrgplceNm>
+<orgplceMainCmpnt1Cntnts />
+<orgplceMainCmpnt1Nm />
+<orgplceMainCmpnt2Cntnts />
+<orgplceMainCmpnt2Nm />
+<orgplceCoreCmpntCntnts />
+<orgplceCoreCmpntNm />
+<assmblCntryMainCmpnt1Cntnts />
+<assmblCntryMainCmpnt1Nm />
+<assmblCntryMainCmpnt2Cntnts />
+<assmblCntryMainCmpnt2Nm />
+<assmblCntryCoreCmpntCntnts />
+<assmblCntryCoreCmpntNm />
+<prdctMakrNm>주식회사 청목이알에스</prdctMakrNm>
+<prdctDlvrPlceNm>수요기관 지정장소</prdctDlvrPlceNm>
+<prdctDlvryCndtnNm>납품장소 하차도</prdctDlvryCndtnNm>
+<prdctSplyRgnNm>전지역</prdctSplyRgnNm>
+<vatAplDivNm>부가가치세포함</vatAplDivNm>
+<dlvrTmlmtDaynum>30</dlvrTmlmtDaynum>
+<dlvrTmlmtDscrpt>납품요구일로부터</dlvrTmlmtDscrpt>
+<prcrmntFeeInclsnCntnts>조달수수료 별도</prcrmntFeeInclsnCntnts>
+<dscntBgnDate />
+<dscntEndDate />
+<remndrQty />
+<specDocAtchFileNm1>2014/07/01_00145107500-물품구매(제조)계약일반조건.hwp</specDocAtchFileNm1>
+<specDocAtchFileNm2>2014/07/02_00145107500-다수공급자계약특수조건(14.03.24).hwp</specDocAtchFileNm2>
+<specDocAtchFileNm3>2014/07/03_00145107500-물품구매계약품질관리특수조건(2013.09.01).hwp</specDocAtchFileNm3>
+<specDocAtchFileNm4>2014/07/04_00145107500-식생매트규격서(청목이알에스).hwp</specDocAtchFileNm4>
+<specDocAtchFileNm5 />   <specDocAtchFileNmUrl1>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2014/07/01_00145107500-물품구매(제조)계약일반조건.hwp</specDocAtchFileNmUrl1
+<specDocAtchFileNmUrl2>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2014/07/02_00145107500-다수공급자계약특수조건(14.03.24).hwp</specDocAtchFileNmUrl2>
+<specDocAtchFileNmUrl3>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2014/07/03_00145107500-물품구매계약품질관리특수조건(2013.09.01).hwp</specDocAtchFileNmUrl3
+<specDocAtchFileNmUrl4>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2014/07/04_00145107500-식생매트규격서(청목이알에스).hwp</specDocAtchFileNmUrl4>
+<specDocAtchFileNmUrl5 />
+<prdctLrgclsfcCd>12</prdctLrgclsfcCd>
+<prdctLrgclsfcNm>도로시설.철도.기타</prdctLrgclsfcNm>
+<prdctMidclsfcCd>99</prdctMidclsfcCd>
+<prdctMidclsfcNm>기타</prdctMidclsfcNm>
+<prdctClsfcNo>30121785</prdctClsfcNo>
+<prdctClsfcNoNm>식생매트</prdctClsfcNoNm>
+<dtilPrdctClsfcNo>3012178501</dtilPrdctClsfcNo>
+<prdctIdntNo>22549709</prdctIdntNo>
+<shopngCntrctNo>00145107500</shopngCntrctNo>
+<shopngCntrctSno>9</shopngCntrctSno>
+<levDivNm>후징수</levDivNm>
+<qltyRltnCertInfo>해당 없음</qltyRltnCertInfo>
+<avrgDlvyTime>관련정보없음</avrgDlvyTime>
+<prefrpurchsObjCertNm>해당 없음</prefrpurchsObjCertNm>
+<dutyPurchsObjCertNm>해당 없음</dutyPurchsObjCertNm>
+<qltyMngmtPrgnCorpYn>N</qltyMngmtPrgnCorpYn>
+<hdoffceLocplc>경상북도 문경시 중앙로</hdoffceLocplc>
+<fctryLocplc>경상북도 문경시 중앙로</fctryLocplc>
+<refeMtr />
+<cntrctDate>2014-07-30</cntrctDate>
+<splyJrsdctRgnNm>전지역</splyJrsdctRgnNm>
+<cntrctBgnDate>2014-07-30</cntrctBgnDate>
+<cntrctEndDate>2016-08-31</cntrctEndDate>
+<cntrctDeptNm>조달청 쇼핑몰기획과</cntrctDeptNm>
+<cntrctDeptTelNo>070-4056-7220</cntrctDeptTelNo>
+<cntrctOfclNm>도미영</cntrctOfclNm>
+<cntrctOfclEmail>sky97@korea.kr</cntrctOfclEmail>
+<splyTmlmtCntnts>차기계약시까지</splyTmlmtCntnts>
+<splyCorpChrgDeptNm />
+<splyCorpChrgDeptTelNo />
+<acptncInsttNm>수요기관</acptncInsttNm>
+<inspctInsttNm />
+<publicProcurementOfficeInfrmtn>조달업체가 등록한 '상품상세정보'의 내용(제품에 대한 기능, 성능, 품질 등)이 위 '제품상세정보'의 '첨부화일'에 있는 '규격서(시방서)'의 내용과 일치하지 않아 허위 또는 과장 광고로 판명될 경우, 조달청은 관련규정에 의거 종합쇼핑몰의 상품등록을 정지시킵니다.</publicProcurementOfficeInfrmtn>
+<prdctDtlInfo />
+<cntrctSpcmntMtr>1. 다수공급자계약특수조건의 기재사항은 다음과 같이 한다. - 제12조 물가변동으로 인한 계약금액 조정방법은 품목조정율 적용 - 단가계약의 경우 1회 최대납품수량 100분의 20 2. 물품구매계약품질관리특수조건의 기재사항은 다음과 같이 한다. - 제18조 하자보수기간 : 1년 3. 기타사항 - 분할납품요구 및 통보서는 C511812014501(으)로 전송됩니다. ※본 계약은 전문기관검사조건부 계약입니다. 조달청에서 고시한 업무규정(조달청고시 제2013-12호)과 조달청 조달품질원에서 공고한 실시기준에 따라 전문기관검사를 실시하며, 실시대상일 경우 전문기관검사 조건으로 납품요구 되오니 납품요구서의 검사조건을 확인하시기 바랍니다.(검사에 필요한 모든 비용은 계약상대자의부담임) ※전문검사기관 :한국건설생활환경시험연구원(02-3415-8878)</cntrctSpcmntMtr>
+<prodctChrInfoIntrcn />
+<prodctCertList/>
+<cntrctCorpNo>CN0100000144459</cntrctCorpNo>
+<rgstDt>2014-07-29 17:21</rgstDt>
+<chgDt>2016-06-30 08:14</chgDt>
+</item>
+</items>
+<numOfRows>10</numOfRows>
+<pageNo>1</pageNo>
+<totalCount>1404</totalCount>
+</body>
+</response>
+[일반단가계약 품목정보 조회] 오퍼레이션 명세
+오퍼레이션 정보
+오퍼레이션 번호
+1
+오퍼레이션명(국문)
+일반단가계약 품목정보 조회
+오퍼레이션 유형
+조회(목록)
+오퍼레이션명(영문)
+getUcntrctPrdctInfoList
+오퍼레이션 설명
+종합 쇼핑몰의 일반단가계약 품목정보(계약정보, 업체정보, 규격서첨부파일) 등을 조회. 단, 거래정지 및 해지 건은 제공되지 않음
+일반단가계약은 다수 기관에서 공통적으로 사용하고 수요빈도가 많은 품목에 대하여 단가에 의하여 입찰 및 수의시담 하고 예정 수량을 명시하여 체결하는 계약[국가계약법 제22조]방법으로 단가계약물품은 정형화된 규격에 의하여 제조∙공급되는 물품. (철근, 시멘트, 레미콘, 아스콘 등 계약물량을 조정.통제할 필요가 있는 물품)
+*파라미터 미입력 및 파라미터 오류시 등록일시 기준 현재 시점부터 하루분 데이터가 조회
+Call Back URL
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/getUcntrctPrdctInfoList
+최대 메시지 사이즈
+[ 4000bytes]
+평균 응답 시간
+[ 500ms]
+초당 최대 트랜잭션
+[ 30tps]
+요청 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+ServiceKey
+서비스키
+400
+1
+공공데이터포털에서 받은 인증키
+공공데이터포털에서 받은 인증키
+type
+타입
+4
+0
+json
+오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정
+rgstDtBgnDt
+등록일시시작일시
+12
+0
+202207010000
+계약상품의 등록일시범위 (시작일시) 'YYYYMMDDHH24M'
+(등록일시 범위는 1년 로 제한)
+rgstDtEndDt
+등록일시종료일시
+12
+0
+202207302359
+계약상품의 등록일시범위 (종료일시) 'YYYYMMDDHH24M'
+(등록일시 범위는 1년 로 제한)
+prdctClsfcNoNm
+품명
+200
+0
+동양제붓
+조회하고자 하는 품명 검색
+prdctIdntNo
+물품식별번호
+8
+0
+23610379
+조회하고자 하는 물품식별번호 검색
+cntrctCorpNm
+계약업체명
+100
+0
+경춘필방
+조회하고자 하는 계약업체명으로 Like 검색
+chgDtBgnDt
+변경일시시작일시
+12
+0
+202207010000
+계약상품의 변경일시범위 (시작일시) 'YYYYMMDDHH24M'
+(변경일시 범위는 1년 로 제한)
+chgDtEndDt
+변경일시종료일시
+12
+0
+202207302359
+계약상품의 변경일시범위 (종료일시) 'YYYYMMDDHH24M'
+(변경일시 범위는 1년 로 제한)
+prodctCertYn
+제품인증여부
+1
+0
+N
+계약상품의 제품인증존재 여부(등록일시 시작일시,등록일시 종료일시 필수)
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+resultCode
+결과코드
+2
+1
+00
+결과코드
+resultMsg
+결과메세지
+50
+1
+정상
+결과메세지
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+totalCount
+데이터 총 개수
+4
+1
+17
+데이터 총 개수
+prdctImgUrl
+상품이미지URL
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZMOK/item_image/2016/03/14/20160314131811-66.jpg
+계약상품 이미지 링크로 제공(물품대이미지파일명)
+cntrctCorpNm
+계약업체명
+100
+1
+중구효문화마을관리원
+상품의 계약업체명
+entrprsDivNm
+기업구분명
+100
+0
+비영리법인및기타
+기업구분을 대기업,중소기업,비영리법인및기타,중견기업의 분류로 표기
+drctPrdctnCnfrmCertHoldCorpYn
+직접생산확인증명서보유업체여부
+1
+1
+N
+직접생산확인증명서보유업체여부
+entrprsDivInfrmtn
+기업구분안내
+100
+1
+기업규모(대기업, 중견기업, 중소기업, 비영리법인 등 기타)는 실시간 정보와 상이할 수 있으므로 신용정보사에 재확인 후 업무처리하시기 바랍니다.
+기업규모(대기업, 중견기업, 중소기업, 비영리법인 등 기타)는 실시간 정보와 상이할 수 있으므로 신용정보사에 재확인 후 업무처리하시기 바랍니다.
+cntrctMthdNm
+계약방법명
+100
+0
+일반단가계약
+계약방법 : 일반계약, 다수공급자계약,제3자계약
+prdctSpecNm
+물품규격명
+500
+0
+여행서비스(대전중구), 중구효문화마을관리원, 효야같이놀자당일코스, 효문화체험, 초/중/고/단체
+물품규격명
+exclncPrcrmntPrdctYn
+우수조달물품여부
+1
+1
+N
+우수조달물품여부
+bndeFlawGrntyPrdctYn
+일괄하자보증물품여부
+1
+1
+N
+일괄하자보증물품여부
+smetprCmptProdctYn
+중소기업자간경쟁제품여부
+1
+1
+N
+중소기업자간경쟁제품여부
+cntrctPrceAmt
+계약가격금액
+30
+0
+6000
+계약가격금액의 원화금액
+orderCalclPrceAmt
+주문산정가격금액
+30
+0
+45000
+주문산정가격금액의 원화금액세부품명번호가 6012149901,3912110301,3912110101, 3912110401 일경우
+dscntAmt
+할인금액
+30
+0
+8000
+할인금액이 있을 경우 표기
+prdctUnit
+물품단위
+100
+0
+인
+물품단위
+prdctOrgplceNm
+물품원산지명
+50
+0
+대한민국
+물품의 원산지명
+orgplceMainCmpnt1Cntnts
+원산지주요부품1내용
+100
+0
+CPU
+물품의 원산지 주요부품1내용
+orgplceMainCmpnt1Nm
+원산지주요부품1명
+100
+0
+말레이지아
+주요부품1의 원산지명
+orgplceMainCmpnt2Cntnts
+원산지주요부품2내용
+100
+0
+M/B
+물품의 원산지 주요부품2내용
+orgplceMainCmpnt2Nm
+원산지주요부품2명
+100
+0
+중국
+주요부품2의 원산지명
+orgplceCoreCmpntCntnts
+원산지핵심부품내용
+100
+0
+PCB
+물품의 원산지 핵심부품내용
+orgplceCoreCmpntNm
+원산지핵심부품명
+100
+0
+대한민국
+핵심부품의 원산지명
+assmblCntryMainCmpnt1Cntnts
+조립국가주요부품1내용
+100
+0
+CPU
+물품의 조립국가 주요부품1내용
+assmblCntryMainCmpnt1Nm
+조립국가주요부품1명
+100
+0
+말레이지아
+주요부품1의 조립국가명
+assmblCntryMainCmpnt2Cntnts
+조립국가주요부품2내용
+100
+0
+메모리
+물품의 조립국가 주요부품2내용
+assmblCntryMainCmpnt2Nm
+조립국가주요부품2명
+100
+0
+태국
+주요부품2의 조립국가명
+assmblCntryCoreCmpntCntnts
+조립국가핵심부품내용
+100
+0
+메모리
+물품의 조립국가 핵심부품내용
+assmblCntryCoreCmpntNm
+조립국가핵심부품명
+100
+0
+태국
+핵심부품의 조립국가명
+prdctMakrNm
+물품제조사명
+200
+0
+효문화마을관리원
+물품의 제조사명
+prdctDlvrPlceNm
+물품납품장소명
+500
+0
+중구효문화마을관리원
+물품의 납품장소명
+prdctDlvryCndtnNm
+물품인도조건명
+200
+0
+과업내역에 따름
+물품의 인도조건명
+prdctSplyRgnNm
+물품공급지역명
+200
+0
+전지역
+물품의 공급지역명
+vatAplDivNm
+부가가치세적용구분명
+100
+0
+부가가치세포함
+부가가치세 적용 구분명
+dlvrTmlmtDaynum
+납품기한일수
+10
+0
+20
+납품기한은 일(DAY)단위 임
+dlvrTmlmtDscrpt
+납품기한설명
+50
+1
+납품요구일로부터
+세부물품분류번호에 따라 "소요량 통보서 접수일로 부터", "납품요구일로부터-실제납품기한은 과업지시서에 한함", 나머지는 "납품요구일로부터" 표기됨
+prcrmntFeeInclsnCntnts
+조달수수료포함내용
+100
+0
+조달수수료 별도
+부가가치세에 대한 구분 명 예) 부가가치세 별도, 부가가치세포함(특소,교육세면세)
+dscntBgnDate
+할인시작일자
+10
+0
+2016-06-01
+할인 진행 중 일 경우 이벤트시작일자('YYYY-MM-DD')
+dscntEndDate
+할인종료일자
+10
+0
+2016-06-03
+할인 진행 중 일 경우  이벤트종료일자('YYYY-MM-DD')
+remndrQty
+잔여수량
+100
+0
+50
+할인적용수량에서 주문수량을 뺀 값을 표기함
+specDocAtchFileNm1
+규격문서첨부파일명1
+500
+0
+2016/05/01_25163097400-(계약예규)용역계약일반조건(2016.1.1).hwp'
+계약시 첨부되는 파일명
+specDocAtchFileNm2
+규격문서첨부파일명2
+500
+0
+2016/05/02_25163097400-일반용역계약특수조건(20151014).hwp
+계약시 첨부되는 파일명
+specDocAtchFileNm3
+규격문서첨부파일명3
+500
+0
+2016/05/03_25163097400-구매규격서.zip
+계약시 첨부되는 파일명
+specDocAtchFileNm4
+규격문서첨부파일명4
+500
+0
+2016/05/02_25163097400-일반용역계약특수조건(20151014).hwp
+계약시 첨부되는 파일명
+specDocAtchFileNm5
+규격문서첨부파일명5
+500
+0
+2016/05/03_25163097400-구매규격서.zip
+계약시 첨부되는 파일명
+specDocAtchFileNmUrl1
+규격문서첨부파일명URL1
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/05/01_25163097400-(계약예규)용역계약일반조건(2016.1.1).hwp
+규격문서첨부파일명URL1
+specDocAtchFileNmUrl2
+규격문서첨부파일명URL2
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/05/02_25163097400-일반용역계약특수조건(20151014).hwp
+규격문서첨부파일명URL2
+specDocAtchFileNmUrl3
+규격문서첨부파일명URL3
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/05/03_25163097400-구매규격서.zip
+규격문서첨부파일명URL3
+specDocAtchFileNmUrl4
+규격문서첨부파일명URL4
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/05/02_25163097400-일반용역계약특수조건(20151014).hwp
+규격문서첨부파일명URL4
+specDocAtchFileNmUrl5
+규격문서첨부파일명URL5
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/05/03_25163097400-구매규격서.zip
+규격문서첨부파일명URL5
+prdctLrgclsfcCd
+물품대분류코드
+2
+0
+19
+계약상품의 물품대분류코드
+prdctLrgclsfcNm
+물품대분류명
+100
+0
+수학여행,수련,체험활동
+계약상품의 물품대분류코드명
+prdctMidclsfcCd
+물품중분류코드
+4
+0
+06
+계약상품의 물품중분류코드
+prdctMidclsfcNm
+물품중분류명
+100
+0
+지역 여행상품
+계약상품의 물품중분류코드명
+prdctClsfcNo
+물품분류번호
+8
+1
+90121599
+UNSPSC 물품분류체계를 기반으로 하는 4단계 계층구조로 이루어진 8자리 번호
+prdctClsfcNoNm
+품명
+200
+1
+여행서비스
+물품분류번호 8자리에 해당하는 물품의 한글이름
+dtilPrdctClsfcNo
+세부품명번호
+10
+1
+9012159916
+UNSPSC에서 분류된 세뷴류의 품명보다 세분화가 필요한 품명에 부여한 10자리 번호
+prdctIdntNo
+물품식별번호
+8
+1
+23006216
+품목 고유번호인 8자리 번호
+shopngCntrctNo
+쇼핑계약번호
+11
+1
+25163097400
+쇼핑계약번호는 쇼핑계약번호(9자리)+차수(2자리)로 구성됨 ※ 데이터의 유일성을 보장하는 키는  쇼핑계약번호_+쇼핑계약순번
+shopngCntrctSno
+쇼핑계약순번
+22
+1
+1
+쇼핑계약순번 ※ 데이터의 유일성을 보장하는 키는  쇼핑계약번호_+쇼핑계약순번
+levDivNm
+징수구분명
+100
+1
+후징수
+징수구분코드가 1:선징수 나머지는 후징수
+qltyRltnCertInfo
+품질관련인증정보
+400
+1
+해당없음
+품질관련인증정보 (우선구매대상인증과중복될 수 있음)
+avrgDlvyTime
+평균배송일
+300
+0
+관련정보없음
+평균배송일
+prefrpurchsObjCertNm
+우선구매대상인증명
+400
+1
+해당없음
+우선구매대상이 되는 인증명
+dutyPurchsObjCertNm
+의무구매대상인증명
+400
+1
+해당없음
+의무구매대상이 되는 인증명
+qltyMngmtPrgnCorpYn
+품질경영모범업체여부
+1
+0
+N
+품질경영 모범업체여부
+hdoffceLocplc
+본사소재지
+300
+0
+대전광역시 중구 뿌리공원로
+계약업체의 본사소재지
+fctryLocplc
+공장소재지
+300
+0
+대전광역시 중구 뿌리공원로
+계약업체의 공장소재지
+refeMtr
+참고사항
+4000
+0
+용역계약일반조건(150101), 일반용역계약특수조건(2014.7.25-정보기술용역과-7723호),  체험활동_서비스품질관리특수조건(2015.2.27)을 적용한다.
+물품계약의 참고사항
+cntrctDate
+계약일자
+10
+0
+2016-05-03
+물품의 계약일자는 'YYYY-MM-DD'
+splyJrsdctRgnNm
+공급관할지역명
+300
+0
+전지역
+관할지역
+cntrctBgnDate
+계약시작일자
+10
+0
+2016-05-03
+계약시작일자('YYYY-MM-DD')
+cntrctEndDate
+계약종료일자
+10
+0
+2018-05-03
+계약종료일자('YYYY-MM-DD')
+cntrctDeptNm
+계약부서명
+100
+0
+대전지방조달청 장비구매팀
+조달청의 계약부서명
+cntrctDeptTelNo
+계약부서전화번호
+40
+0
+070-4056-8391
+조달청의 계약부서전화번호
+cntrctOfclNm
+계약담당자명
+100
+0
+이승한
+조달청의 계약담당자명
+cntrctOfclEmail
+계약담당자이메일
+200
+0
+africay@korea.kr
+조달청의 계약담당자이메일
+splyTmlmtCntnts
+공급기한내용
+100
+0
+차기계약시까지
+물품의 공급기한내용
+splyCorpChrgDeptNm
+공급업체담당부서명
+100
+0
+수요기관
+물품 공급업체의 담당부서명
+splyCorpChrgDeptTelNo
+공급업체담당부서전화번호
+40
+0
+070-123-1234
+물품 공급부서의 전화번호
+acptncInsttNm
+검수기관명
+200
+0
+수요기관
+물품의 검수기관명
+inspctInsttNm
+검사기관명
+200
+0
+수요기관
+물품의 검사기관명
+publicProcurementOfficeInfrmtn
+조달청안내
+500
+1
+조달업체가 등록한 '상품상세정보'의 내용(제품에 대한 기능, 성능, 품질 등)이 위 '제품상세정보'의 '첨부화일'에 있는 '규격문서(시방서)'의 내용과 일치하지 않아 허위 또는 과장 광고로 판명될 경우, 조달청은 관련규정에 의거 종합쇼핑몰의 상품등록을 정지시킵니다.
+조달업체가 등록한 '상품상세정보'의 내용(제품에 대한 기능, 성능, 품질 등)이 위 '제품상세정보'의 '첨부화일'에 있는 '규격문서(시방서)'의 내용과 일치하지 않아 허위 또는 과장 광고로 판명될 경우, 조달청은 관련규정에 의거 종합쇼핑몰의 상품등록을 정지시킵니다.
+prdctDtlInfo
+물품상세정보 (상품상세정보)
+4000
+0
+특허(제10-0699093호)가 적용된 위조방지 음식물쓰레기종량제봉투로써 제조일련번호와 잔여수량의 숫자 조합으로 암호화되어 있으며 개개의 봉투가 각기 다른 숫자의 조합으로 이루어져 있어 관할관청담당자와 당사담당자 이외에는 암호화된 부분을 해석할 수 없어 불법적 위조행위가 불가능함
+물품의 상세정보, 내용 중 &lt; 는 "<" &gt;는 ">" 로 전환
+cntrctSpcmntMtr
+계약특기사항
+4000
+0
+* 계약자가 면세사업자인데 부가가치세를 포함하여 계약을 체결한 경우, 계약대금 지급 시 부가가치세를 정산하고 지급함 1. 일반용역구매계약특수조건의 기재사항은 다음과 같이 한다. - 제12조 물가변동으로 인한 계약금액 조정방법은 품목조정율 - 제15조 하자보수기간 해당없음 2. 기타사항 ※하자조치 불이행으로 공개된 업체는 수요기관의 요구가 있을 경우 하자보수보증금을 징수할 수 있습니다. ※물품계약서 상 지급방법이 대지급으로 계약체결한 후 발주기관이 직불로 집행하고자 하는 경우 반드시 수정계약 체결 후 집행하여야 합니다. - 분할납품요구 및 통보서는 C305830442801(으)로 전송됩니다
+계약상품설명정보
+prodctChrInfoIntrcn
+제품특성정보소개
+2000
+0
+특허(제10-0699093호)가 적용된 위조방지 음식물쓰레기종량제봉투로써 제조일련번호와 잔여수량의 숫자 조합으로 암호화되어 있으며 개개의 봉투가 각기 다른 숫자의 조합으로 이루어져 있어 관할관청담당자와 당사담당자 이외에는 암호화된 부분을 해석할 수 없어 불법적 위조행위가 불가능함
+물품관리시스템의 계약상품설명
+prodctCertList
+제품인증목록
+4000
+0
+에너지절약,Q마크,공공조달 최소녹색기준제품,녹색기술인증,KC인증
+나라장터 종합쇼핑몰에 등록된 해당 제품이 취득한 인증목록
+cntrctCorpNo
+계약업체번호
+15
+0
+CN0100000487763
+조달업체를 관리하기 위한 식별번호
+rgstDt
+등록일시
+16
+1
+2016-05-04 10:46
+물품계약건이 등록된 일시
+chgDt
+변경일시
+16
+0
+2016-05-04 10:46
+물품계약건이 변경된 일시
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+요청 / 응답 메시지 예제
+REST(URI)
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/getUcntrctPrdctInfoList?rgstDtBgnDt=201605010000&rgstDtEndDt=201605052359&pageNo=1&numOfRows=10&ServiceKey=인증키
+응답 메시지
+<response>
+<header><resultCode>00</resultCode><resultMsg>정상</resultMsg></header>
+<body><items>
+<item>
+<prdctImgUrl>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZMOK/item_image/2016/03/14/20160314131811-66.jpg</prdctImgUrl>
+<cntrctCorpNm>중구효문화마을관리원</cntrctCorpNm>
+<entrprsDivNm>비영리법인및기타</entrprsDivNm>
+<drctPrdctnCnfrmCertHoldCorpYn>N</drctPrdctnCnfrmCertHoldCorpYn>
+<entrprsDivInfrmtn>기업규모(대기업, 중견기업, 중소기업, 비영리법인 등 기타)는 실시간 정보와 상이할 수 있으므로 신용정보사에 재확인 후 업무처리하시기 바랍니다.</entrprsDivInfrmtn>
+<cntrctMthdNm>일반단가계약</cntrctMthdNm>
+<prdctSpecNm>여행서비스(대전중구), 중구효문화마을관리원, 효야같이놀자당일코스, 효문화체험, 초/중/고/단체</prdctSpecNm>
+<exclncPrcrmntPrdctYn>N</exclncPrcrmntPrdctYn>
+<bndeFlawGrntyPrdctYn>N</bndeFlawGrntyPrdctYn>
+<smetprCmptProdctYn>N</smetprCmptProdctYn>
+<cntrctPrceAmt>6000</cntrctPrceAmt>
+<orderCalclPrceAmt/>
+<dscntAmt/>
+<prdctUnit>인</prdctUnit>
+<prdctOrgplceNm>대한민국</prdctOrgplceNm>
+<orgplceMainCmpnt1Cntnts/>
+<orgplceMainCmpnt1Nm/>
+<orgplceMainCmpnt2Cntnts/>
+<orgplceMainCmpnt2Nm/>
+<orgplceCoreCmpntCntnts/>
+<orgplceCoreCmpntNm>대한민국</orgplceCoreCmpntNm>
+<assmblCntryMainCmpnt1Cntnts/><assmblCntryMainCmpnt1Nm/>
+<assmblCntryMainCmpnt2Cntnts/><assmblCntryMainCmpnt2Nm/>
+<assmblCntryCoreCmpntCntnts/><assmblCntryCoreCmpntNm/>
+<prdctMakrNm>효문화마을관리원</prdctMakrNm>
+<prdctDlvrPlceNm>중구효문화마을관리원</prdctDlvrPlceNm>
+<prdctDlvryCndtnNm>과업내역에 따름</prdctDlvryCndtnNm>
+<prdctSplyRgnNm>전지역</prdctSplyRgnNm>
+<vatAplDivNm>부가가치세포함</vatAplDivNm>
+<dlvrTmlmtDaynum>20</dlvrTmlmtDaynum>
+<dlvrTmlmtDscrpt>납품요구일로부터</dlvrTmlmtDscrpt><prcrmntFeeInclsnCntnts>조달수수료 별도</prcrmntFeeInclsnCntnts>
+<dscntBgnDate/>
+<dscntEndDate/>
+<remndrQty/>
+<specDocAtchFileNm1>2016/05/01_25163097400-(계약예규)용역계약일반조건(2016.1.1).hwp</specDocAtchFileNm1>
+<specDocAtchFileNm2>2016/05/02_25163097400-일반용역계약특수조건(20151014).hwp</specDocAtchFileNm2>
+<specDocAtchFileNm3>2016/05/03_25163097400-구매규격서.zip</specDocAtchFileNm3>
+<specDocAtchFileNm4/>
+<specDocAtchFileNm5/>
+<specDocAtchFileNmUrl1>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/05/01_25163097400-(계약예규)용역계약일반조건(2016.1.1).hwp</specDocAtchFileNmUrl1>
+<specDocAtchFileNmUrl2>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/05/02_25163097400-일반용역계약특수조건(20151014).hwp</specDocAtchFileNmUrl2>
+<specDocAtchFileNmUrl3>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/05/03_25163097400-구매규격서.zip</specDocAtchFileNmUrl3>
+<specDocAtchFileNmUrl4/>
+<specDocAtchFileNmUrl5/>
+<prdctLrgclsfcCd>19</prdctLrgclsfcCd>
+<prdctLrgclsfcNm>수학여행,수련,체험활동</prdctLrgclsfcNm>
+<prdctMidclsfcCd>06</prdctMidclsfcCd>
+<prdctMidclsfcNm>지역 여행상품</prdctMidclsfcNm>
+<prdctClsfcNo>90121599</prdctClsfcNo>
+<prdctClsfcNoNm>여행서비스(대전중구)</prdctClsfcNoNm>
+<dtilPrdctClsfcNo>9012159916</dtilPrdctClsfcNo>
+<prdctIdntNo>23006216</prdctIdntNo>
+<shopngCntrctNo>25163097400</shopngCntrctNo>
+<shopngCntrctSno>1</shopngCntrctSno>
+<levDivNm>후징수</levDivNm>
+<qltyRltnCertInfo>해당 없음</qltyRltnCertInfo>
+<avrgDlvyTime>관련정보없음</avrgDlvyTime>
+<prefrpurchsObjCertNm>해당 없음</prefrpurchsObjCertNm>
+<dutyPurchsObjCertNm>해당 없음</dutyPurchsObjCertNm>
+<qltyMngmtPrgnCorpYn>N</qltyMngmtPrgnCorpYn>
+<hdoffceLocplc>대전광역시 중구 뿌리공원로</hdoffceLocplc>
+<fctryLocplc/>
+<refeMtr/>
+<cntrctDate>2016-05-03</cntrctDate>
+<splyJrsdctRgnNm>전지역</splyJrsdctRgnNm>
+<cntrctBgnDate>2016-05-03</cntrctBgnDate><cntrctEndDate>2018-05-03</cntrctEndDate>
+<cntrctDeptNm>대전지방조달청 장비구매팀</cntrctDeptNm>
+<cntrctDeptTelNo>070-4056-8391</cntrctDeptTelNo>
+<cntrctOfclNm>이승한</cntrctOfclNm>
+<cntrctOfclEmail>africay@korea.kr</cntrctOfclEmail>
+<splyTmlmtCntnts>차기계약시까지</splyTmlmtCntnts>
+<splyCorpChrgDeptNm/>
+<splyCorpChrgDeptTelNo/>
+<acptncInsttNm/>
+<inspctInsttNm/>
+<publicProcurementOfficeInfrmtn>조달업체가 등록한 '상품상세정보'의 내용(제품에 대한 기능, 성능, 품질 등)이 위 '제품상세정보'의 '첨부화일'에 있는 '규격서(시방서)'의 내용과 일치하지 않아 허위 또는 과장 광고로 판명될 경우, 조달청은 관련규정에 의거 종합쇼핑몰의 상품등록을 정지시킵니다.</publicProcurementOfficeInfrmtn>
+<prdctDtlInfo/>
+<cntrctSpcmntMtr>* 계약자가 면세사업자인데 부가가치세를 포함하여 계약을 체결한 경우, 계약대금 지급 시 부가가치세를 정산하고 지급함 1. 일반용역구매계약특수조건의 기재사항은 다음과 같이 한다. - 제12조 물가변동으로 인한 계약금액 조정방법은 품목조정율 - 제15조 하자보수기간 해당없음 2. 기타사항 ※하자조치 불이행으로 공개된 업체는 수요기관의 요구가 있을 경우 하자보수보증금을 징수할 수 있습니다. ※물품계약서 상 지급방법이 대지급으로 계약체결한 후 발주기관이 직불로 집행하고자 하는 경우 반드시 수정계약 체결 후 집행하여야 합니다. - 분할납품요구 및 통보서는 C305830442801(으)로 전송됩니다.</cntrctSpcmntMtr>
+<prodctChrInfoIntrcn/>
+<prodctCertList/>
+<rgstDt>2016-05-04 10:46</rgstDt>
+<chgDt/>
+</item>
+<item>
+<prdctImgUrl>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZMOK/item_image/2016/03/11/20160311172534-100.jpg</prdctImgUrl>
+<cntrctCorpNm>중구효문화마을관리원</cntrctCorpNm>
+<entrprsDivNm>비영리법인및기타</entrprsDivNm>
+<drctPrdctnCnfrmCertHoldCorpYn>N</drctPrdctnCnfrmCertHoldCorpYn>
+<entrprsDivInfrmtn>기업규모(대기업, 중견기업, 중소기업, 비영리법인 등 기타)는 실시간 정보와 상이할 수 있으므로 신용정보사에 재확인 후 업무처리하시기 바랍니다.</entrprsDivInfrmtn>
+<cntrctMthdNm>일반단가계약</cntrctMthdNm>
+<prdctSpecNm>여행서비스(대전중구), 중구효문화마을관리원, 효와함께하는1박2일이야기, 1박2일, 초/중/고/단체</prdctSpecNm>
+<exclncPrcrmntPrdctYn>N</exclncPrcrmntPrdctYn>
+<bndeFlawGrntyPrdctYn>N</bndeFlawGrntyPrdctYn>
+<smetprCmptProdctYn>N</smetprCmptProdctYn>
+<cntrctPrceAmt>26500</cntrctPrceAmt>
+<orderCalclPrceAmt/>
+<dscntAmt/>
+<prdctUnit>인</prdctUnit>
+<prdctOrgplceNm>대한민국</prdctOrgplceNm>
+<orgplceMainCmpnt1Cntnts/>
+<orgplceMainCmpnt1Nm/>
+<orgplceMainCmpnt2Cntnts/>
+<orgplceMainCmpnt2Nm/>
+<orgplceCoreCmpntCntnts/>
+<orgplceCoreCmpntNm>대한민국</orgplceCoreCmpntNm>
+<assmblCntryMainCmpnt1Cntnts/>
+<assmblCntryMainCmpnt1Nm/>
+<assmblCntryMainCmpnt2Cntnts/>
+<assmblCntryMainCmpnt2Nm/>
+<assmblCntryCoreCmpntCntnts/>
+<assmblCntryCoreCmpntNm/>
+<prdctMakrNm>중구 효문화마을관리원</prdctMakrNm>
+<prdctDlvrPlceNm>중구효문화마을관리원</prdctDlvrPlceNm>
+<prdctDlvryCndtnNm>과업내역에 따름</prdctDlvryCndtnNm>
+<prdctSplyRgnNm>전지역</prdctSplyRgnNm>
+<vatAplDivNm>부가가치세포함</vatAplDivNm>
+<dlvrTmlmtDaynum>20</dlvrTmlmtDaynum>
+<dlvrTmlmtDscrpt>납품요구일로부터</dlvrTmlmtDscrpt>
+<prcrmntFeeInclsnCntnts>조달수수료 별도</prcrmntFeeInclsnCntnts>
+<dscntBgnDate/>
+<dscntEndDate/>
+<remndrQty/>
+<specDocAtchFileNm1>2016/05/01_25163097400-(계약예규)용역계약일반조건(2016.1.1).hwp</specDocAtchFileNm1>
+<specDocAtchFileNm2>2016/05/02_25163097400-일반용역계약특수조건(20151014).hwp</specDocAtchFileNm2>
+<specDocAtchFileNm3>2016/05/03_25163097400-구매규격서.zip</specDocAtchFileNm3>
+<specDocAtchFileNm4/>
+<specDocAtchFileNm5/>
+<specDocAtchFileNmUrl1>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/05/01_25163097400-(계약예규)용역계약일반조건(2016.1.1).hwp</specDocAtchFileNmUrl1>
+<specDocAtchFileNmUrl2>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/05/02_25163097400-일반용역계약특수조건(20151014).hwp</specDocAtchFileNmUrl2>
+<specDocAtchFileNmUrl3>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/05/03_25163097400-구매규격서.zip</specDocAtchFileNmUrl3>
+<specDocAtchFileNmUrl4/>
+<specDocAtchFileNmUrl5/>
+<prdctLrgclsfcCd>19</prdctLrgclsfcCd>
+<prdctLrgclsfcNm>수학여행,수련,체험활동</prdctLrgclsfcNm>
+<prdctMidclsfcCd>06</prdctMidclsfcCd>
+<prdctMidclsfcNm>지역 여행상품</prdctMidclsfcNm>
+<prdctClsfcNo>90121599</prdctClsfcNo>
+<prdctClsfcNoNm>여행서비스(대전중구)</prdctClsfcNoNm>
+<dtilPrdctClsfcNo>9012159916</dtilPrdctClsfcNo>
+<prdctIdntNo>23006066</prdctIdntNo>
+<shopngCntrctNo>25163097400</shopngCntrctNo>
+<shopngCntrctSno>2</shopngCntrctSno>
+<levDivNm>후징수</levDivNm>
+<qltyRltnCertInfo>해당 없음</qltyRltnCertInfo>
+<avrgDlvyTime>관련정보없음</avrgDlvyTime>
+<prefrpurchsObjCertNm>해당 없음</prefrpurchsObjCertNm>
+<dutyPurchsObjCertNm>해당 없음</dutyPurchsObjCertNm>
+<qltyMngmtPrgnCorpYn>N</qltyMngmtPrgnCorpYn>
+<hdoffceLocplc>대전광역시 중구 뿌리공원로</hdoffceLocplc>
+<fctryLocplc/>
+<refeMtr/>
+<cntrctDate>2016-05-03</cntrctDate>
+<splyJrsdctRgnNm>전지역</splyJrsdctRgnNm>
+<cntrctBgnDate>2016-05-03</cntrctBgnDate>
+<cntrctEndDate>2018-05-03</cntrctEndDate>
+<cntrctDeptNm>대전지방조달청 장비구매팀</cntrctDeptNm><cntrctDeptTelNo>070-4056-8391</cntrctDeptTelNo>
+<cntrctOfclNm>이승한</cntrctOfclNm>
+<cntrctOfclEmail>africay@korea.kr</cntrctOfclEmail>
+<splyTmlmtCntnts>차기계약시까지</splyTmlmtCntnts>
+<splyCorpChrgDeptNm/>
+<splyCorpChrgDeptTelNo/>
+<acptncInsttNm/>
+<inspctInsttNm/>
+<publicProcurementOfficeInfrmtn>조달업체가 등록한 '상품상세정보'의 내용(제품에 대한 기능, 성능, 품질 등)이 위 '제품상세정보'의 '첨부화일'에 있는 '규격서(시방서)'의 내용과 일치하지 않아 허위 또는 과장 광고로 판명될 경우, 조달청은 관련규정에 의거 종합쇼핑몰의 상품등록을 정지시킵니다.</publicProcurementOfficeInfrmtn>
+<prdctDtlInfo/>
+<cntrctSpcmntMtr>* 계약자가 면세사업자인데 부가가치세를 포함하여 계약을 체결한 경우, 계약대금 지급 시 부가가치세를 정산하고 지급함 1. 일반용역구매계약특수조건의 기재사항은 다음과 같이 한다. - 제12조 물가변동으로 인한 계약금액 조정방법은 품목조정율 - 제15조 하자보수기간 해당없음 2. 기타사항 ※하자조치 불이행으로 공개된 업체는 수요기관의 요구가 있을 경우 하자보수보증금을 징수할 수 있습니다. ※물품계약서 상 지급방법이 대지급으로 계약체결한 후 발주기관이 직불로 집행하고자 하는 경우 반드시 수정계약 체결 후 집행하여야 합니다. - 분할납품요구 및 통보서는 C305830442801(으)로 전송됩니다.</cntrctSpcmntMtr>
+<prodctChrInfoIntrcn/>
+<prodctCertList/>
+<cntrctCorpNo>CN0100000487763</cntrctCorpNo>
+<rgstDt>2016-05-04 10:46</rgstDt>
+<chgDt/>
+</item>
+</items>
+<numOfRows>10</numOfRows>
+<pageNo>1</pageNo>
+<totalCount>3</totalCount>
+</body>
+</response>
+[제3자계약 품목정보 조회] 오퍼레이션 명세
+오퍼레이션 정보
+오퍼레이션 번호
+3
+오퍼레이션명(국문)
+제3자단가계약 품목정보 조회
+오퍼레이션 유형
+조회(목록)
+오퍼레이션명(영문)
+getThptyUcntrctPrdctInfoList
+오퍼레이션 설명
+종합 쇼핑몰의 제3자단가계약 품목정보(계약정보, 업체정보, 규격서첨부파일) 등을 조회. 단, 거래정지 및 해지 건은 제공되지 않음
+제3자단가계약이란 수요기관에서 공통적으로 소요되고 신속공급이 필요한 물자의 제조∙구매 및 가공등의 계약에 관하여 미리 단가만을 정하여 공고하고 각 수요기관에서 계약상대자에게 직접 납품요구하여 구매하는 계약[조달사업에관한법률 제5조, 동법 시행령 제7조]방법으로 3자단가계약물품은 행정사무자동화 기기, 우수제품 등 계약자 규격물품으로 제조∙공급되는 물품. (컴퓨터, 차량, 전자복사기, FAX 등)
+*파라미터 미입력 및 파라미터 오류시 등록일시 기준 현재 시점부터 하루분 데이터가 조회
+Call Back URL
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/getThptyUcntrctPrdctInfoList
+최대 메시지 사이즈
+[ 4000bytes]
+평균 응답 시간
+[ 500ms]
+초당 최대 트랜잭션
+[ 30tps]
+요청 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+ServiceKey
+서비스키
+400
+1
+공공데이터포털에서 받은 인증키
+공공데이터포털에서 받은 인증키
+type
+타입
+4
+0
+json
+오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정
+rgstDtBgnDt
+등록일시시작일시
+12
+0
+202409010000
+계약상품의 등록일시범위 (시작일시) 'YYYYMMDDHH24M
+(등록일시 범위는 1년 로 제한)  '
+rgstDtEndDt
+등록일시종료일시
+12
+0
+202409302359
+계약상품의 등록일시범위 (종료일시) 'YYYYMMDDHH24M'
+(등록일시 범위는 1년 로 제한)
+prdctClsfcNoNm
+품명
+200
+0
+LED실내조명등
+조회하고자 하는 품명 검색
+prdctIdntNo
+물품식별번호
+8
+0
+23974652
+조회하고자 하는 물품식별번호 검색
+cntrctCorpNm
+계약업체명
+100
+0
+선일일렉콤
+조회하고자 하는 계약업체명으로 Like 검색
+chgDtBgnDt
+변경일시시작일시
+12
+0
+202409010000
+계약상품의 변경일시범위 (시작일시) 'YYYYMMDDHH24M'
+(변경일시 범위는 1년 로 제한)
+chgDtEndDt
+변경일시종료일시
+12
+0
+202409302359
+계약상품의 변경일시범위 (종료일시) 'YYYYMMDDHH24M'
+(변경일시 범위는 1년 로 제한)
+prodctCertYn
+제품인증여부
+1
+0
+Y
+계약상품의 제품인증존재 여부(등록일시 시작일시,등록일시 종료일시 필수)
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+resultCode
+결과코드
+2
+1
+00
+결과코드
+resultMsg
+결과메세지
+50
+1
+정상
+결과메세지
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+totalCount
+데이터 총 개수
+4
+1
+17
+데이터 총 개수
+prdctImgUrl
+상품이미지URL
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZMOK/item_image/2016/04/28/20160428192913-40.jpg
+계약상품 이미지 링크로 제공(물품대이미지파일명)
+cntrctCorpNm
+계약업체명
+100
+1
+주식회사동국세라믹
+상품의 계약업체명
+entrprsDivNm
+기업구분명
+100
+0
+중소기업
+기업구분을 대기업,중소기업,비영리법인및기타,중견기업의 분류로 표기
+drctPrdctnCnfrmCertHoldCorpYn
+직접생산확인증명서보유업체여부
+1
+1
+N
+직접생산확인증명서보유업체여부
+entrprsDivInfrmtn
+기업구분안내
+100
+1
+기업규모(대기업, 중견기업, 중소기업, 비영리법인 등 기타)는 실시간 정보와 상이할 수 있으므로 신용정보사에 재확인 후 업무처리하시기 바랍니다.
+기업규모(대기업, 중견기업, 중소기업, 비영리법인 등 기타)는 실시간 정보와 상이할 수 있으므로 신용정보사에 재확인 후 업무처리하시기 바랍니다.
+cntrctMthdNm
+계약방법명
+200
+0
+3자단가계약
+계약방법 : 일반계약, 다수공급자계약,제3자계약
+prdctSpecNm
+물품규격명
+500
+0
+미장벽돌, 동국세라믹, UT-801, 190×90×57mm, 점토
+물품규격명
+exclncPrcrmntPrdctYn
+우수조달물품여부
+1
+1
+N
+우수조달물품여부
+bndeFlawGrntyPrdctYn
+일괄하자보증물품여부
+1
+1
+N
+일괄하자보증물품여부
+smetprCmptProdctYn
+중소기업자간경쟁제품여부
+1
+1
+Y
+중소기업자간경쟁제품여부
+cntrctPrceAmt
+계약가격금액
+30
+0
+280
+계약가격금액의 원화금액
+orderCalclPrceAmt
+주문산정가격금액
+30
+0
+5000
+주문산정가격금액의 원화금액세부품명번호가 6012149901,3912110301,3912110101, 3912110401 일경우
+dscntAmt
+할인금액
+30
+0
+4500
+할인금액이 있을 경우 표기
+prdctUnit
+물품단위
+100
+0
+식
+물품단위
+prdctOrgplceNm
+물품원산지명
+50
+0
+대한민국
+물품의 원산지명
+orgplceMainCmpnt1Cntnts
+원산지주요부품1내용
+100
+0
+CPU
+물품의 원산지 주요부품1내용
+orgplceMainCmpnt1Nm
+원산지주요부품1명
+100
+0
+말레이지아
+주요부품1의 원산지명
+orgplceMainCmpnt2Cntnts
+원산지주요부품2내용
+100
+0
+M/B
+물품의 원산지 주요부품2내용
+orgplceMainCmpnt2Nm
+원산지주요부품2명
+100
+0
+중국
+주요부품2의 원산지명
+orgplceCoreCmpntCntnts
+원산지핵심부품내용
+100
+0
+PCB
+물품의 원산지핵심부품내용
+orgplceCoreCmpntNm
+원산지핵심부품명
+100
+0
+대한민국
+핵심부품의 원산지명
+assmblCntryMainCmpnt1Cntnts
+조립국가주요부품1내용
+100
+0
+CPU
+물품의 조립국가 주요부품1내용
+assmblCntryMainCmpnt1Nm
+조립국가주요부품1명
+100
+0
+말레이지아
+주요부품1의 조립국가명
+assmblCntryMainCmpnt2Cntnts
+조립국가주요부품2내용
+50100
+0
+메모리
+물품의 조립국가 주요부품2내용
+assmblCntryMainCmpnt2Nm
+조립국가주요부품2명
+100
+0
+태국
+주요부품2의 조립국가명
+assmblCntryCoreCmpntCntnts
+조립국가핵심부품내용
+100
+0
+메모리
+물품의 조립국가 핵심부품내용
+assmblCntryCoreCmpntNm
+조립국가핵심부품명
+100
+0
+태국
+핵심부품의 조립국가명
+prdctMakrNm
+물품제조사명
+200
+0
+주식회사동국세라믹
+물품의 제조사명
+prdctDlvrPlceNm
+물품납품장소명
+500
+0
+수요기관 지정장소
+물품의 납품장소명
+prdctDlvryCndtnNm
+물품인도조건명
+200
+0
+납품장소 하차도
+물품의 인도조건명
+prdctSplyRgnNm
+물품공급지역명
+200
+0
+전지역
+물품의 공급지역명
+vatAplDivNm
+부가가치세적용구분명
+100
+0
+부가가치세포함
+부가가치세 적용 구분명
+dlvrTmlmtDaynum
+납품기한일수
+10
+0
+30
+납품기한은 일(DAY)단위 임
+dlvrTmlmtDscrpt
+납품기한설명
+50
+1
+납품요구일로부터
+세부물품분류번호에 따라 "소요량 통보서 접수일로 부터", "납품요구일로부터-실제납품기한은 과업지시서에 한함", 나머지는 "납품요구일로부터" 표기됨
+prcrmntFeeInclsnCntnts
+조달수수료포함내용
+100
+0
+조달수수료 별도
+부가가치세에 대한 구분 명 예) 부가가치세 별도 , 부가가치세포함(특소,교육세면세)
+dscntBgnDate
+할인시작일자
+10
+0
+2016-06-01
+할인 진행 중 일 경우 이벤트시작일자('YYYY-MM-DD')
+dscntEndDate
+할인종료일자
+10
+0
+2016-06-03
+할인 진행 중 일 경우  이벤트종료일자('YYYY-MM-DD')
+remndrQty
+잔여수량
+100
+0
+50
+할인적용수량에서 주문수량을 뺀 값을 표기함
+specDocAtchFileNm1
+규격문서첨부파일명1
+500
+0
+2016/03/01_00167011400-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp
+계약시 첨부되는 파일명
+specDocAtchFileNm2
+규격문서첨부파일명2
+500
+0
+2016/03/02_00167011400-물품구매(제조)계약특수조건(20150820).hwp2016/03/03_00167011400-물품구매계약품질관리특수조건(2015.4.14.).hwp
+계약시 첨부되는 파일명
+specDocAtchFileNm3
+규격문서첨부파일명3
+500
+0
+2016/03/03_00167011400-물품구매계약품질관리특수조건(2015.4.14.).hwp
+계약시 첨부되는 파일명
+specDocAtchFileNm4
+규격문서첨부파일명4
+500
+0
+2016/03/04_00167011400-★물품구매(제조)계약추가특수조건_우수조달물품(2016.3.2).hwp
+계약시 첨부되는 파일명
+specDocAtchFileNm5
+규격문서첨부파일명5
+500
+0
+2016/03/05_00167011400-규격서(게시용).pdf
+계약시 첨부되는 파일명
+specDocAtchFileNmUrl1
+규격문서첨부파일명URL1
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/03/01_00167011400-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp
+계약시 첨부되는 파일을 URL링크로 제공
+specDocAtchFileNmUrl2
+규격문서첨부파일명URL2
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/03/02_00167011400-물품구매(제조)계약특수조건(20150820).hwp
+계약시 첨부되는 파일을 URL링크로 제공
+specDocAtchFileNmUrl3
+규격문서첨부파일명URL3
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/03/03_00167011400-물품구매계약품질관리특수조건(2015.4.14.).hwp
+계약시 첨부되는 파일을 URL링크로 제공
+specDocAtchFileNmUrl4
+규격문서첨부파일명URL4
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/03/04_00167011400-★물품구매(제조)계약추가특수조건_우수조달물품(2016.3.2).hwp
+계약시 첨부되는 파일을 URL링크로 제공
+specDocAtchFileNmUrl5
+규격문서첨부파일명URL5
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/03/05_00167011400-규격서(게시용).pdf
+계약시 첨부되는 파일을 URL링크로 제공
+prdctLrgclsfcCd
+물품대분류코드
+2
+0
+11
+계약상품의 물품대분류코드
+prdctLrgclsfcNm
+물품대분류명
+100
+0
+토목.건축
+계약상품의 물품대분류코드명
+prdctMidclsfcCd
+물품중분류코드
+4
+0
+09
+계약상품의 물품중분류코드
+prdctMidclsfcNm
+물품중분류명
+100
+0
+경계석,판석,블록,벽돌,타일
+계약상품의 물품중분류코드명
+prdctClsfcNo
+물품분류번호
+8
+1
+30131602
+UNSPSC 물품분류체계를 기반으로 하는 4단계 계층구조로 이루어진 8자리 번호
+prdctClsfcNoNm
+품명
+200
+1
+미장벽돌
+물품분류번호 8자리에 해당하는 물품의 한글이름
+dtilPrdctClsfcNo
+세부품명번호
+10
+1
+3013160202
+UNSPSC에서 분류된 세뷴류의 품명보다 세분화가 필요한 품명에 부여한 10자리 번호
+prdctIdntNo
+물품식별번호
+8
+1
+22545061
+품목 고유번호인 8자리 번호
+shopngCntrctNo
+쇼핑계약번호
+11
+1
+00167011400
+쇼핑계약번호는 쇼핑계약번호(9자리)+차수(2자리)로 구성됨 ※ 데이터의 유일성을 보장하는 키는  쇼핑계약번호_+쇼핑계약순번
+shopngCntrctSno
+쇼핑계약순번
+22
+1
+1
+쇼핑계약순번 ※ 데이터의 유일성을 보장하는 키는  쇼핑계약번호_+쇼핑계약순번
+levDivNm
+징수구분명
+100
+1
+후징수
+징수구분코드가 1:선징수 나머지는 후징수
+qltyRltnCertInfo
+품질관련인증정보
+400
+1
+성능인증제품
+품질관련인증정보 (우선구매대상인증과중복될 수 있음)
+avrgDlvyTime
+평균배송일
+300
+0
+관련정보없음
+평균배송일
+prefrpurchsObjCertNm
+우선구매대상인증명
+400
+1
+조달우수제품,성능인증제품,우수발명품,녹색기술인증
+우선구매대상이 되는 인증명
+dutyPurchsObjCertNm
+의무구매대상인증명
+400
+1
+해당 없음
+의무구매대상이 되는 인증명
+qltyMngmtPrgnCorpYn
+품질경영모범업체여부
+1
+0
+N
+품질경영 모범업체여부
+hdoffceLocplc
+본사소재지
+300
+0
+경상북도 상주시 중화로 2096
+계약업체의 본사소재지
+fctryLocplc
+공장소재지
+300
+0
+경상북도 상주시 화서면 중화로 2096
+계약업체의 공장소재지
+refeMtr
+참고사항
+4000
+0
+용역계약일반조건(150101), 일반용역계약특수조건(2014.7.25-정보기술용역과-7723호),  체험활동_서비스품질관리특수조건(2015.2.27)을 적용한다.
+물품계약의 참고사항
+cntrctDate
+계약일자
+10
+0
+2016-03-18
+물품의 계약일자는 'YYYY-MM-DD'
+splyJrsdctRgnNm
+공급관할지역명
+300
+0
+전지역
+관할지역
+cntrctBgnDate
+계약시작일자
+10
+0
+2016-03-18
+계약시작일자('YYYY-MM-DD')
+cntrctEndDate
+계약종료일자
+10
+0
+2018-03-17
+계약종료일자('YYYY-MM-DD')
+cntrctDeptNm
+계약부서명
+100
+0
+조달청 우수제품구매과
+조달청의 계약부서명
+cntrctDeptTelNo
+계약부서전화번호
+40
+0
+070-4056-7241
+조달청의 계약부서전화번호
+cntrctOfclNm
+계약담당자명
+100
+0
+조홍철
+조달청의 계약담당자명
+cntrctOfclEmail
+계약담당자이메일
+200
+0
+hccho6@korea.kr
+조달청의 계약담당자이메일
+splyTmlmtCntnts
+공급기한내용
+100
+0
+차기계약시까지
+물품의 공급기한내용
+splyCorpChrgDeptNm
+공급업체담당부서명
+100
+0
+수요기관
+물품 공급업체의 담당부서명
+splyCorpChrgDeptTelNo
+공급업체담당부서전화번호
+40
+0
+070-123-1234
+물품 공급부서의 전화번호
+acptncInsttNm
+검수기관명
+200
+0
+수요기관
+물품의 검수기관명
+inspctInsttNm
+검사기관명
+200
+0
+수요기관
+물품의 검사기관명
+publicProcurementOfficeInfrmtn
+조달청안내
+500
+1
+조달업체가 등록한 '상품상세정보'의 내용(제품에 대한 기능, 성능, 품질 등)이 위 '제품상세정보'의 '첨부화일'에 있는 '규격문서(시방서)'의 내용과 일치하지 않아 허위 또는 과장 광고로 판명될 경우, 조달청은 관련규정에 의거 종합쇼핑몰의 상품등록을 정지시킵니다.
+조달업체가 등록한 '상품상세정보'의 내용(제품에 대한 기능, 성능, 품질 등)이 위 '제품상세정보'의 '첨부화일'에 있는 '규격문서(시방서)'의 내용과 일치하지 않아 허위 또는 과장 광고로 판명될 경우, 조달청은 관련규정에 의거 종합쇼핑몰의 상품등록을 정지시킵니다.
+prdctDtlInfo
+물품상세정보 (상품상세정보)
+4000
+0
+특허(제10-0699093호)가 적용된 위조방지 음식물쓰레기종량제봉투로써 제조일련번호와 잔여수량의 숫자 조합으로 암호화되어 있으며 개개의 봉투가 각기 다른 숫자의 조합으로 이루어져 있어 관할관청담당자와 당사담당자 이외에는 암호화된 부분을 해석할 수 없어 불법적 위조행위가 불가능함
+물품의 상세정보. 내용 중 &lt; 는 "<" &gt;는 ">"  로 전환
+cntrctSpcmntMtr
+계약특기사항
+4000
+0
+. 물품구매(제조)계약 특수조건의 기재사항은 다음과 같다. - 제19조 물가변동으로 인한 계약금액 조정방법 : 품목조정율 - 제21조 단가계약의 경우 1회 최대납품요구금액 100분의 20 2. 물품구매계약품질관리 특수조건의 기재사항은 다음과 같다. - 제18조 하자보수기간 : 1년 3 기타사항 * 구매물품의 세부규격은 조달우수제품 지정규격(지정번호 2015200)에 의함 ※하자조치 불이행으로 공개된 업체는 수요기관의 요구가 있을 경우 하자보수보증금을 징수할 수 있습니다. ※물품계약서 상 지급방법이 대지급으로 계약체결한 후 발주기관이 직불로 집행하고자 하는 경우 반드시 수정계약 체결 후 집행하여야 합니다. - 분할납품요구 및 통보서는 C511810189001(으)로 전송됩니다. ※ 본 제품은 조달청이 지정한 우수조달물품(지정번호: 2015200, 제품명: 비연속 소성기술로 부피비중을 최소화시킨 친환경점토벽돌)임 ※본 계약은 전문기관검사조건부 계약입니다. 조달청에서 고시한 업무규정(조달청고시 제2013-12호)과 조달청 조달품질원에서 공고한 실시기준에 따라 전문기관검사를 실시하며, 실시대상일 경우 전문기관검사 조건으로 납품요구 되오니 납품요구서의 검사조건을 확인하시기 바랍니다.(검사에 필요한 모든 비용은 계약상대자의부담임) ※전문검사기관 :한국화학융합시험연구원(02-2164-0172
+계약상품설명정보
+prodctChrInfoIntrcn
+제품특성정보소개
+2000
+0
+흙과 불의 화려한 만남으로 자연스런 색채 질감 벽돌
+물품관리시스템의 계약상품설명
+prodctCertList
+제품인증목록
+4000
+0
+에너지절약,Q마크,공공조달 최소녹색기준제품,녹색기술인증,KC인증
+나라장터 종합쇼핑몰에 등록된 해당 제품이 취득한 인증목록
+cntrctCorpNo
+계약업체번호
+15
+0
+CN0100000160177
+조달업체를 관리하기 위한 식별번호
+rgstDt
+등록일시
+16
+1
+2016-03-18 08:54
+물품계약건이 등록된 일시
+chgDt
+변경일시
+16
+0
+2016-05-02 15:59
+물품계약건이 변경된 일시
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+요청 / 응답 메시지 예제
+REST(URI)
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/getThptyUcntrctPrdctInfoList?rgstDtBgnDt=20150501&rgstDtEndDt=201705300000&cntrctCorpNm=에스&pageNo=1&numOfRows=10&ServiceKey=인증키
+응답 메시지
+<response>
+<header>
+<resultCode>00</resultCode>
+<resultMsg>정상</resultMsg>
+</header>
+<body>
+<items>
+<item>
+<prdctImgUrl>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZMOK/item_image/2007/07/25/20070725180432-88.jpg</prdctImgUrl>
+<cntrctCorpNm>(주)선일로에스</cntrctCorpNm>
+<entrprsDivNm>중소기업</entrprsDivNm>
+<drctPrdctnCnfrmCertHoldCorpYn>N</drctPrdctnCnfrmCertHoldCorpYn>
+<entrprsDivInfrmtn>기업규모(대기업, 중견기업, 중소기업, 비영리법인 등 기타)는 실시간 정보와 상이할 수 있으므로 신용정보사에 재확인 후 업무처리하시기 바랍니다.</entrprsDivInfrmtn>
+<cntrctMthdNm>3자단가계약</cntrctMthdNm>
+<prdctSpecNm>미장벽돌, 선일로에스, SI 7001, 재활용점토벽돌, 190×90×57mm, 레드,다채색</prdctSpecNm>
+<exclncPrcrmntPrdctYn>N</exclncPrcrmntPrdctYn>
+<bndeFlawGrntyPrdctYn>N</bndeFlawGrntyPrdctYn>
+<smetprCmptProdctYn>Y</smetprCmptProdctYn>
+<cntrctPrceAmt>270</cntrctPrceAmt>
+<orderCalclPrceAmt/>
+<dscntAmt/>
+<prdctUnit>매</prdctUnit>
+<prdctOrgplceNm>대한민국</prdctOrgplceNm>
+<orgplceMainCmpnt1Cntnts/>
+<orgplceMainCmpnt1Nm/>
+<orgplceMainCmpnt2Cntnts/>
+<orgplceMainCmpnt2Nm/>
+<orgplceCoreCmpntCntnts/>
+<orgplceCoreCmpntNm/>
+<assmblCntryMainCmpnt1Cntnts/>
+<assmblCntryMainCmpnt1Nm/>
+<assmblCntryMainCmpnt2Cntnts/>
+<assmblCntryMainCmpnt2Nm/>
+<assmblCntryCoreCmpntCntnts/>
+<assmblCntryCoreCmpntNm/>
+<prdctMakrNm>(주)선일로에스</prdctMakrNm>
+<prdctDlvrPlceNm>수요기관지정장소</prdctDlvrPlceNm>
+<prdctDlvryCndtnNm>납품장소 하차도</prdctDlvryCndtnNm>
+<prdctSplyRgnNm>전지역</prdctSplyRgnNm>
+<vatAplDivNm>부가가치세포함</vatAplDivNm>
+<dlvrTmlmtDaynum>25</dlvrTmlmtDaynum>
+<dlvrTmlmtDscrpt>납품요구일로부터</dlvrTmlmtDscrpt>
+<prcrmntFeeInclsnCntnts>조달수수료 별도</prcrmntFeeInclsnCntnts>
+<dscntBgnDate/>
+<dscntEndDate/>
+<remndrQty/>
+<specDocAtchFileNm1>2016/06/01_00147023103-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp</specDocAtchFileNm1>
+<specDocAtchFileNm2>2016/06/02_00147023103-물품구매(제조)계약특수조건(20160425).hwp</specDocAtchFileNm2>
+<specDocAtchFileNm3>2016/06/03_00147023103-물품구매계약품질관리특수조건(2015.4.14.).hwp</specDocAtchFileNm3>
+<specDocAtchFileNm4>2016/06/04_00147023103-★물품구매(제조)계약추가특수조건_우수조달물품(2015.10.01).hwp</specDocAtchFileNm4>
+<specDocAtchFileNm5>2016/06/05_00147023103-추가규격서(2015.10.15일).hwp</specDocAtchFileNm5>
+<specDocAtchFileNmUrl1>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/06/01_00147023103-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp</specDocAtchFileNmUrl1>
+<specDocAtchFileNmUrl2>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/06/02_00147023103-물품구매(제조)계약특수조건(20160425).hwp</specDocAtchFileNmUrl2>
+<specDocAtchFileNmUrl3>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/06/03_00147023103-물품구매계약품질관리특수조건(2015.4.14.).hwp</specDocAtchFileNmUrl3>
+<specDocAtchFileNmUrl4>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/06/04_00147023103-★물품구매(제조)계약추가특수조건_우수조달물품(2015.10.01).hwp</specDocAtchFileNmUrl4>
+<specDocAtchFileNmUrl5>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/06/05_00147023103-추가규격서(2015.10.15일).hwp</specDocAtchFileNmUrl5>
+<prdctLrgclsfcCd>11</prdctLrgclsfcCd>
+<prdctLrgclsfcNm>토목.건축</prdctLrgclsfcNm>
+<prdctMidclsfcCd>09</prdctMidclsfcCd>
+<prdctMidclsfcNm>경계석,판석,블록,벽돌,타일</prdctMidclsfcNm>
+<prdctClsfcNo>30131602</prdctClsfcNo>
+<prdctClsfcNoNm>미장벽돌</prdctClsfcNoNm>
+<dtilPrdctClsfcNo>3013160202</dtilPrdctClsfcNo>
+<prdctIdntNo>20604324</prdctIdntNo>
+<shopngCntrctNo>00147023103</shopngCntrctNo>
+<shopngCntrctSno>38</shopngCntrctSno>
+<levDivNm>후징수</levDivNm>
+<qltyRltnCertInfo>해당 없음</qltyRltnCertInfo>
+<avrgDlvyTime>관련정보없음</avrgDlvyTime>
+<prefrpurchsObjCertNm>해당 없음</prefrpurchsObjCertNm>
+<dutyPurchsObjCertNm>해당 없음</dutyPurchsObjCertNm>
+<qltyMngmtPrgnCorpYn>N</qltyMngmtPrgnCorpYn>
+<hdoffceLocplc>대구광역시 달성군 논공읍 비슬로361길 69</hdoffceLocplc>
+<fctryLocplc>대구광역시 달성군 논공읍 비슬로361길 69</fctryLocplc>
+<refeMtr/>
+<cntrctDate>2016-06-10</cntrctDate>
+<splyJrsdctRgnNm>전지역</splyJrsdctRgnNm>
+<cntrctBgnDate>2014-06-30</cntrctBgnDate>
+<cntrctEndDate>2016-06-29</cntrctEndDate>
+<cntrctDeptNm>조달청 우수제품구매과</cntrctDeptNm>
+<cntrctDeptTelNo>070-4056-7241</cntrctDeptTelNo>
+<cntrctOfclNm>조홍철</cntrctOfclNm>
+<cntrctOfclEmail>hccho6@korea.kr</cntrctOfclEmail>
+<splyTmlmtCntnts>차기계약시까지</splyTmlmtCntnts>
+<splyCorpChrgDeptNm/>
+<splyCorpChrgDeptTelNo/>
+<acptncInsttNm>수요기관</acptncInsttNm>
+<inspctInsttNm/>
+<publicProcurementOfficeInfrmtn>조달업체가 등록한 '상품상세정보'의 내용(제품에 대한 기능, 성능, 품질 등)이 위 '제품상세정보'의 '첨부화일'에 있는 '규격서(시방서)'의 내용과 일치하지 않아 허위 또는 과장 광고로 판명될 경우, 조달청은 관련규정에 의거 종합쇼핑몰의 상품등록을 정지시킵니다.</publicProcurementOfficeInfrmtn>
+<prdctDtlInfo>&nbsp;&lt;A name=&quot;[문서의 처음]&quot;&gt;&lt;/A&gt; & lt;P style=&quot;FONT-SIZE: 12px; MARGIN: 0px; COLOR: #000000; TEXT-INDENT: 0px; LINE-HEIGHT: 19px; FONT-FAMILY: '굴림'; TEXT-ALIGN: justify&quot;&gt;&lt;SPAN style=&quot;FONT-WEIGHT: bold; FONT-SIZE: 12px; COLOR: #000000; LINE-HEIGHT: 19px; FONT-FAMILY: '굴림'; TEXT-ALIGN: justify&quot;&gt;1. 회사소개&lt;/SPAN&gt; &lt;/P&gt;& lt;P style=&quot;FONT-SIZE: 12px; MARGIN: 0px; COLOR: #000000; TEXT-INDENT: 0px; LINE-HEIGHT: 19px; FONT-FAMILY: '굴림'; TEXT-ALIGN: justify&quot;&gt;&lt;SPAN style=&quot;FONT-SIZE: 12px; COLOR: #000000; LINE-HEIGHT: 19px; FONT-FAMILY: '굴림'; TEXT-ALIGN: justify&quot;&gt;&nbsp;(1)본&nbsp;&nbsp;&nbsp; 사 : 대구시 동구 신천3동 77 선일B/D 5층&lt;/SPAN&gt; &lt;/P&gt;& lt;Pjustify&quot;&gt;&lt;/P&gt;</prdctDtlInfo>
+<cntrctSpcmntMtr>1. 물품구매(제조)계약 특수조건의 기재사항은 다음과 같다. - 제19조 물가변동으로 인한 계약금액 조정방법 : 품목조정률 - 제21조 단가계약의 경우 1회 최대납품요구금액 100분의 30 2. 물품구매계약품질관리 특수조건의 기재사항은 다음과 같다. - 제18조 하자보수기간 : 1년 3. 기타사항 * 구매물품의 세부규격은 조달우수제품 지정규격(지정번호 2014039)에 의함. ※하자조치 불이행으로 공개된 업체는 수요기관의 요구가 있을 경우 하자보수보증금을 징수할 수 있습니다. ※물품계약서 상 지급방법이 대지급으로 계약체결한 후 발주기관이 직불로 집행하고자 하는 경우 반드시 수정계약 체결 후 집행하여야 합니다. - 분할납품요구 및 통보서는 C514816422001(으)로 전송됩니다. ※ 본 제품은 조달청이 지정한 우수조달물품(지정번호: 2014039, 제품명: 친환경 재활용점토벽돌)임 ※본 계약은 전문기관검사조건부 계약입니다. 조달청에서 고시한 업무규정(조달청고시 제2013-12호)과 조달청 조달품질원에서 공고한 실시기준에 따라 전문기관검사를 실시하며, 실시대상일 경우 전문기관검사 조건으로 납품요구 되오니 납품요구서의 검사조건을 확인하시기 바랍니다.(검사에 필요한 모든 비용은 계약상대자의부담임) ※전문검사기관 :한국건설생활환경시험연구원(02-3415-8878)</cntrctSpcmntMtr>
+<prodctChrInfoIntrcn/>
+<prodctCertList/>
+<rgstDt>2016-06-09 09:25</rgstDt>
+<chgDt>2016-06-13 08:43</chgDt>
+</item>
+<item>
+<prdctImgUrl>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZMOK/item_image/2007/07/25/20070725181024-10.jpg</prdctImgUrl>
+<cntrctCorpNm>(주)선일로에스</cntrctCorpNm>
+<entrprsDivNm>중소기업</entrprsDivNm>
+<drctPrdctnCnfrmCertHoldCorpYn>N</drctPrdctnCnfrmCertHoldCorpYn>
+<entrprsDivInfrmtn>기업규모(대기업, 중견기업, 중소기업, 비영리법인 등 기타)는 실시간 정보와 상이할 수 있으므로 신용정보사에 재확인 후 업무처리하시기 바랍니다.</entrprsDivInfrmtn>
+<cntrctMthdNm>3자단가계약</cntrctMthdNm>
+<prdctSpecNm>미장벽돌, 선일로에스, SI 7006, 190×90×57mm, 재활용점토벽돌, 아이보리, 핑크</prdctSpecNm>
+<exclncPrcrmntPrdctNm/>
+<bndeFlawGrntyPrdctYn>N</bndeFlawGrntyPrdctYn>
+<smetprCmptProdctYn>Y</smetprCmptProdctYn>
+<cntrctPrceAmt>330</cntrctPrceAmt>
+<orderCalclPrceAmt/><dscntAmt/>
+<prdctUnit>매</prdctUnit>
+<prdctOrgplceNm>대한민국</prdctOrgplceNm>
+<orgplceMainCmpnt1Cntnts/>
+<orgplceMainCmpnt1Nm/>
+<orgplceMainCmpnt2Cntnts/>
+<orgplceMainCmpnt2Nm/>
+<orgplceCoreCmpntCntnts/>
+<orgplceCoreCmpntNm/>
+<assmblCntryMainCmpnt1Cntnts/>
+<assmblCntryMainCmpnt1Nm/>
+<assmblCntryMainCmpnt2Cntnts/>
+<assmblCntryMainCmpnt2Nm/>
+<assmblCntryCoreCmpntCntnts/>
+<assmblCntryCoreCmpntNm/>
+<prdctMakrNm>(주)선일로에스</prdctMakrNm>
+<prdctDlvrPlceNm>수요기관지정장소</prdctDlvrPlceNm>
+<prdctDlvryCndtnNm>납품장소 하차도</prdctDlvryCndtnNm>
+<prdctSplyRgnNm>전지역</prdctSplyRgnNm>
+<vatAplDivNm>부가가치세포함</vatAplDivNm>
+<dlvrTmlmtDaynum>25</dlvrTmlmtDaynum>
+<dlvrTmlmtDscrpt>납품요구일로부터</dlvrTmlmtDscrpt>
+<prcrmntFeeInclsnCntnts>조달수수료 별도</prcrmntFeeInclsnCntnts>
+<dscntBgnDate/>
+<dscntEndDate/>
+<remndrQty/>
+<specDocAtchFileNm1>2016/06/01_00147023103-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp</specDocAtchFileNm1>
+<specDocAtchFileNm2>2016/06/02_00147023103-물품구매(제조)계약특수조건(20160425).hwp</specDocAtchFileNm2>
+<specDocAtchFileNm3>2016/06/03_00147023103-물품구매계약품질관리특수조건(2015.4.14.).hwp</specDocAtchFileNm3>
+<specDocAtchFileNm4>2016/06/04_00147023103-★물품구매(제조)계약추가특수조건_우수조달물품(2015.10.01).hwp</specDocAtchFileNm4>
+<specDocAtchFileNm5>2016/06/05_00147023103-추가규격서(2015.10.15일).hwp</specDocAtchFileNm5>
+<specDocAtchFileNmUrl1>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/06/01_00147023103-(계약예규)물품구매(제조)계약일반조건(기재부예규253호20150921).hwp</specDocAtchFileNmUrl1>
+<specDocAtchFileNmUrl2>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/06/02_00147023103-물품구매(제조)계약특수조건(20160425).hwp</specDocAtchFileNmUrl2>
+<specDocAtchFileNmUrl3>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/06/03_00147023103-물품구매계약품질관리특수조건(2015.4.14.).hwp</specDocAtchFileNmUrl3>
+<specDocAtchFileNmUrl4>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/06/04_00147023103-★물품구매(제조)계약추가특수조건_우수조달물품(2015.10.01).hwp</specDocAtchFileNmUrl4>
+<specDocAtchFileNmUrl5>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZCON/doc/2016/06/05_00147023103-추가규격서(2015.10.15일).hwp</specDocAtchFileNmUrl5>
+<prdctLrgclsfcCd>11</prdctLrgclsfcCd>
+<prdctLrgclsfcNm>토목.건축</prdctLrgclsfcNm>
+<prdctMidclsfcCd>09</prdctMidclsfcCd>
+<prdctMidclsfcNm>경계석,판석,블록,벽돌,타일</prdctMidclsfcNm>
+<prdctClsfcNo>30131602</prdctClsfcNo>
+<prdctClsfcNoNm>미장벽돌</prdctClsfcNoNm>
+<dtilPrdctClsfcNo>3013160202</dtilPrdctClsfcNo>
+<prdctIdntNo>20684539</prdctIdntNo>
+<shopngCntrctNo>00147023103</shopngCntrctNo>
+<shopngCntrctSno>40</shopngCntrctSno>
+<levDivNm>후징수</levDivNm>
+<qltyRltnCertInfo>해당 없음</qltyRltnCertInfo>
+<avrgDlvyTime>관련정보없음</avrgDlvyTime>
+<prefrpurchsObjCertNm>해당 없음</prefrpurchsObjCertNm>
+<dutyPurchsObjCertNm>해당 없음</dutyPurchsObjCertNm>
+<qltyMngmtPrgnCorpYn>N</qltyMngmtPrgnCorpYn>
+<hdoffceLocplc>대구광역시 달성군 논공읍 비슬로361길 69</hdoffceLocplc>
+<fctryLocplc>대구광역시 달성군 논공읍 비슬로361길 69</fctryLocplc>
+<refeMtr/>
+<cntrctDate>2016-06-10</cntrctDate>
+<splyJrsdctRgnNm>전지역</splyJrsdctRgnNm>
+<cntrctBgnDate>2014-06-30</cntrctBgnDate>
+<cntrctEndDate>2016-06-29</cntrctEndDate>
+<cntrctDeptNm>조달청 우수제품구매과</cntrctDeptNm>
+<cntrctDeptTelNo>070-4056-7241</cntrctDeptTelNo>
+<cntrctOfclNm>조홍철</cntrctOfclNm>
+<cntrctOfclEmail>hccho6@korea.kr</cntrctOfclEmail>
+<splyTmlmtCntnts>차기계약시까지</splyTmlmtCntnts>
+<splyCorpChrgDeptNm/><splyCorpChrgDeptTelNo/>
+<acptncInsttNm>수요기관</acptncInsttNm>
+<inspctInsttNm/>
+<publicProcurementOfficeInfrmtn>조달업체가 등록한 '상품상세정보'의 내용(제품에 대한 기능, 성능, 품질 등)이 위 '제품상세정보'의 '첨부화일'에 있는 '규격서(시방서)'의 내용과 일치하지 않아 허위 또는 과장 광고로 판명될 경우, 조달청은 관련규정에 의거 종합쇼핑몰의 상품등록을 정지시킵니다.</publicProcurementOfficeInfrmtn>
+<prdctDtlInfo>&nbsp;&lt;A name=&quot;[문서의 처음]&quot;&gt;&lt;/A&gt; & lt;P style=&quot;FONT-SIZE: 12px; MARGIN: 0px; COLOR: #000000; TEXT-INDENT: 0px; LINE-HEIGHT: 19px; FONT-FAMILY: '굴림'; TEXT-ALIGN: justify&quot;&gt;&lt;SPAN style=&quot;FONT-WEIGHT: bold; FONT-SIZE: 12px; COLOR: #000000; LINE-HEIGHT: 19px; FONT-FAMILY: '굴림'; TEXT-ALIGN: justify&quot;&gt;1. 회사소개&lt;/SPAN&gt; &lt;/P&gt;& lt;P style=&quot;FONT-SIZE: 12px; MARGIN: 0px; COLOR: #000000; TEXT-INDENT: 0px; LINE-HEIGHT: 19px; FONT-FAMILY: '굴림'; TEXT-ALIGN: justify&quot;&gt;&lt;SPAN style=&quot;FONT-SIZE: 12px; COLOR: #000000; LINE-HEIGHT: 19px; FONT-FAMILY: '굴림'; TEXT-ALIGN: justify&quot;&gt;&nbsp;(1)본&nbsp;&nbsp;&nbsp; 사 : 대구시 동구 신천3동 77 선일B/D 5층&lt;/SPAN&gt; &lt;/P&gtjustify&quot;&gt;&lt;/P&gt;</prdctDtlInfo>
+<cntrctSpcmntMtr>1. 물품구매(제조)계약 특수조건의 기재사항은 다음과 같다. - 제19조 물가변동으로 인한 계약금액 조정방법 : 품목조정률 - 제21조 단가계약의 경우 1회 최대납품요구금액 100분의 30 2. 물품구매계약품질관리 특수조건의 기재사항은 다음과 같다. - 제18조 하자보수기간 : 1년 3. 기타사항 * 구매물품의 세부규격은 조달우수제품 지정규격(지정번호 2014039)에 의함. ※하자조치 불이행으로 공개된 업체는 수요기관의 요구가 있을 경우 하자보수보증금을 징수할 수 있습니다. ※물품계약서 상 지급방법이 대지급으로 계약체결한 후 발주기관이 직불로 집행하고자 하는 경우 반드시 수정계약 체결 후 집행하여야 합니다. - 분할납품요구 및 통보서는 C514816422001(으)로 전송됩니다. ※ 본 제품은 조달청이 지정한 우수조달물품(지정번호: 2014039, 제품명: 친환경 재활용점토벽돌)임 ※본 계약은 전문기관검사조건부 계약입니다. 조달청에서 고시한 업무규정(조달청고시 제2013-12호)과 조달청 조달품질원에서 공고한 실시기준에 따라 전문기관검사를 실시하며, 실시대상일 경우 전문기관검사 조건으로 납품요구 되오니 납품요구서의 검사조건을 확인하시기 바랍니다.(검사에 필요한 모든 비용은 계약상대자의부담임) ※전문검사기관 :한국건설생활환경시험연구원(02-3415-8878)</cntrctSpcmntMtr>
+<prodctChrInfoIntrcn> 유럽풍 파스텔톤의 부드러운 분위기의 색감을 느끼실 수 있는 제품입니다.</prodctChrInfoIntrcn>
+<prodctCertList/>
+<cntrctCorpNo>CN0100000160177</cntrctCorpNo>
+<rgstDt>2016-06-09 09:25</rgstDt>
+<chgDt>2016-06-13 08:43</chgDt></item>
+</items>
+<numOfRows>10</numOfRows>
+<pageNo>1</pageNo>
+<totalCount>1404</totalCount>
+</body>
+</response>
+[종합쇼핑몰 납품요구정보 현황 목록조회] 오퍼레이션 명세
+오퍼레이션 정보
+오퍼레이션 번호
+4
+오퍼레이션명(국문)
+종합쇼핑몰 납품요구정보 현황 목록조회
+오퍼레이션 유형
+조회(목록)
+오퍼레이션명(영문)
+getDlvrReqInfoList
+오퍼레이션 설명
+납품요구는 단가계약(일반단가, 제3자단가, 다수공급자계약)으로 체결후 나라장터 종합쇼핑몰에 등록 된 물품을 수요기관이 계약업체에 해당 물품을 납품할 것을 요청하며 조달청은 납품요구서를 계약업체에 발행하여 납품기한 이내에 납품을 업무로 검색조건을 납품요구접수일자, 납품요구번호, 계약번호를 통해 납품요구서의 정보를 조회
+* 수요기관이 나라장터 종합쇼핑몰에서 납품요구한 정보 제공
+*현재일로부터 납품요구접수일자 하루전 데이터 제공
+Call Back URL
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/getDlvrReqInfoList
+최대 메시지 사이즈
+[ 4000bytes]
+평균 응답 시간
+[ 500ms]
+초당 최대 트랜잭션
+[ 30tps]
+요청 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+ServiceKey
+서비스키
+400
+1
+공공데이터포털에서 받은 인증키
+공공데이터포털에서 받은 인증키
+type
+타입
+4
+0
+json
+오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정함
+inqryDiv
+조회구분
+1
+1
+1
+검색하고자하는 조회구분 입력1: 납품요구접수일자 검색2: 납품요구번호 검색 3: 계약번호 검색
+inqryBgnDate
+조회기준시작일자
+8
+0
+20190101
+검색하고자하는 납품요구접수일자 기준 조회시작일자 "YYYYMMDD"
+*조회구분 1인 경우 필수이며 범위는 최대 1개월로 제한 *입력값이 없을 경우 현재일로 부터 하루기준 조회
+inqryEndDate
+조회기준종료일자
+8
+0
+20190131
+검색하고자하는 납품요구접수일자 기준 조회종료일자 "YYYYMMDD
+*조회구분 1인 경우 필수이며 범위는 최대 1개월로 제한 *입력값이 없을 경우 현재일로 부터 하루기준 조회
+dlvrReqNo
+납품요구번호
+10
+0
+1220100120
+검색하고자하는 납품요구번호
+*조회구분이 2인 경우 필수
+cntrctNo
+계약번호
+11
+0
+121710662
+검색하고자하는 계약번호
+*조회구분이 3인 경우 필수
+dminsttCd
+수요기관코드
+7
+0
+7652298
+검색하고자하는 수요기관코드
+dminsttNm
+수요기관명
+200
+0
+경기도교육청
+검색하고자하는 수요기관명
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 예제
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+resultCode
+결과코드
+2
+1
+00
+결과코드
+resultMsg
+결과메세지
+50
+1
+정상
+결과메세지
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+totalCount
+전체 결과 수
+4
+1
+1
+전체 결과 수
+dlvrReqNo
+납품요구번호
+10
+1
+1220100120
+나라장터에서 단가계약되어 있는 물품 등을 종합쇼핑몰에서 구매시 생성되는 번호로 최초 등록시 생성됨
+dlvrReqChgOrd
+납품요구변경차수
+2
+1
+00
+납품요구 건에 대한 변경 이력 관리를 위하여 부여되는 2자리수이며, 변경 발생 시마다 순차적으로 1씩 증가
+dlvrReqRcptDate
+납품요구접수일자
+10
+1
+2020-01-02
+납품요구서를 조달청에서 접수한 일자
+dlvrReqNm
+납품요구건명
+100
+1
+남양주다산중 학급증설 내부비품 구입
+납품요구 내용을 요약한 납품요구건의 명칭
+dlvrReqQty
+납품요구수량
+25
+1
+13
+납품요구 물품별 납품요구수량의 합
+dlvrReqAmt
+납품요구금액
+25
+1
+2210000
+납품요구번호, 변경차수 등에 해당하는 납품요구금액
+dminsttCd
+수요기관코드
+7
+1
+7652298
+수요기관코드로 행자부코드(행정자치부에서 부여한 기관코드)가 있는 경우 행자부코드가 행자부코드가 없는 경우 조달청에서 부여한 수요기관 코드가 표기됨
+dminsttNm
+수요기관명
+200
+1
+경기도교육청 경기도구리남양주교육지원청 남양주다산중학교
+중앙조달인 경우 조달사업에 관한 법률 제2조(정의)에 따라 수요물자의 구매 공급 또는 시설공사 계약의 체결을 조달청장에게 요청할 수 있도록 조달청장이 인정하여 등록한 기관 또는 자체전자조달시스템을 이용하는 기관인 경우 계약을 의뢰한 기관의 명으로 공고기관과 수요기관이 동일할 수 있음
+dmndInsttDivNm
+수요기관구분명
+200
+0
+교육기관
+수요기관이 국가기관인지 지자체인지 등을 구분하는 명
+dminsttRgnNm
+수요기관지역명
+100
+0
+경기도 남양주시
+수요기관의 관할 지역명
+corpNm
+업체명
+100
+1
+주식회사 크로바가구
+납품 업체명
+corpEntrprsDivNmNm
+업체기업구분명
+200
+0
+중소기업
+기업구분을 대기업,중소기업,비영리법인및기타,중견기업의 분류로 표기
+rprsntPrdctClsfcNo
+대표물품분류번호
+8
+0
+56101708
+계약 또는 납품요구 등에서 서로다른 물품분류번호가 있는 경우에 대표로 지정된 물품분류번호
+rprsntPrdctClsfcNoNm
+대표품명
+200
+0
+이동형파일서랍
+대표 물품의 품명(분류명)
+rprsntDtilPrdctClsfcNo
+대표세부물품분류번호
+10
+0
+5610170801
+계약 또는 납품요구 등에서 서로다른 세부물품분류번호가 있는 경우에 대표로 지정된 세부물품분류번호
+rprsntDtilPrdctClsfcNoNm
+대표세부품명
+200
+0
+이동형파일서랍
+대표세부물품분류번호의 품명
+maxDlvrTmlmtDate
+최대납품기한일자
+10
+0
+2020-02-01
+서로 다른 물품의 납품기한 중 최대 납품(이행완료)되어야하는 기한
+cntrctCnclsStleNm
+계약체결형태명
+50
+0
+제3자단가
+계약의 체결형태를 구분하는 명으로 총액계약, 단가계약,제3자단가계약등으로 구분함
+cntrctNo
+계약번호
+11
+1
+121710662
+계약서를 식별하기 위한 관리번호
+cntrctChgOrd
+계약변경차수
+2
+1
+05
+계약에 대한 변경 이력 관리를 위하여 부여되는 2자리수이며, 변경 발생 시마다 순차적으로 1씩 증가
+masYn
+다수공급자계약여부
+1
+0
+Y
+다수공급자 계약 체결 여부
+exclcProdctYn
+우수제품여부
+2
+0
+N
+조달물품우수제품여부
+「조달사업에 관한 법률 시행령」 제18조
+*우수제품실적 추출 기준 : '15년부터 우수제품조항호 기준으로 함.
+fnlDlvrReqYn
+최종납품요구여부
+1
+0
+Y
+해당 납품요구건이 최종 납품요구 변경차수인지에 대한 여부
+dlvrReqIncdecQty
+증감납품요구수량
+25
+0
+13
+본 납품요구의 차수와 직전차수를 비교하여 얼마만큼 증가 또는 감소했는지에 따라 수량이 결정되는 것으로       조회기간동안에 가감된 수량을 의미
+dlvrReqIncdecAmt
+증감납품요구금액
+25
+0
+2210000
+본 납품요구의 차수와 직전차수를 비교하여 얼마만큼 증가 또는 감소했는지에 따라 금액이 결정되는 것으로 조회기간동안에 가감된 금액을 의미.
+corpBizno
+업체사업자등록번호
+10
+0
+1278639798
+납품 업체 사업자등록번호
+요청 / 응답 메시지 예제
+REST(URI)
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/getDlvrReqInfoList?inqryDiv=2&dlvrReqNo =1220100120&pageNo=1&numOfRows=10&ServiceKey=인증키
+응답 메시지
+<response>
+<header>
+<resultCode>00</resultCode>
+<resultMsg>정상</resultMsg>
+</header>
+<body>
+<items>
+<item>
+<dlvrReqNo>1220100120</dlvrReqNo>
+<dlvrReqChgOrd>00</dlvrReqChgOrd>
+<dlvrReqRcptDate>2020-01-02</dlvrReqRcptDate>
+<dlvrReqNm>남양주다산중 학급증설 내부비품 구입</dlvrReqNm>
+<dlvrReqQty>13</dlvrReqQty>
+<dlvrReqAmt>2210000</dlvrReqAmt>
+<dminsttCd>7652298</dminsttCd>
+<dminsttNm>경기도교육청 경기도구리남양주교육지원청 남양주다산중학교</dminsttNm>
+<dmndInsttDivNm>교육기관</dmndInsttDivNm>
+<dminsttRgnNm>경기도 남양주시</dminsttRgnNm>
+<corpNm>주식회사 크로바가구</corpNm>
+<corpEntrprsDivNm>중소기업</corpEntrprsDivNm>
+<rprsntPrdctClsfcNo>56101708</rprsntPrdctClsfcNo>
+<rprsntPrdctClsfcNoNm>이동형파일서랍</rprsntPrdctClsfcNoNm>
+<rprsntDtilPrdctClsfcNo>5610170801</rprsntDtilPrdctClsfcNo>
+<rprsntDtilPrdctClsfcNoNm>이동형파일서랍</rprsntDtilPrdctClsfcNoNm>
+<maxDlvrTmlmtDate>2020-02-01</maxDlvrTmlmtDate>
+<cntrctCnclsStleNm>제3자단가</cntrctCnclsStleNm>
+<cntrctNo>121710662</cntrctNo>
+<cntrctChgOrd>05</cntrctChgOrd>
+<masYn>Y</masYn>
+<exclcProdctYn>N</exclcProdctYn>
+<fnlDlvrReqYn>Y</ fnlDlvrReqYn>
+<dlvrReqIncdecQty>13</dlvrReqIncdecQty>
+<dlvrReqIncdecAmt>2210000</dlvrReqIncdecAmt>
+<corpBizno>1278639798</corpBizno>
+</item>
+</items>
+<numOfRows>10</numOfRows>
+<pageNo>1</pageNo>
+<totalCount>1</totalCount>
+</body>
+</response>
+[종합쇼핑몰 납품요구상세 현황 목록조회] 오퍼레이션 명세
+오퍼레이션 정보
+오퍼레이션 번호
+5
+오퍼레이션명(국문)
+종합쇼핑몰 납품요구상세 현황 목록조회
+오퍼레이션 유형
+조회(목록)
+오퍼레이션명(영문)
+getDlvrReqDtlInfoList
+오퍼레이션 설명
+납품요구정보의 물품 세품 납품요구내역으로 검색조건을 납품요구접수일자, 납품요구번호, 계약번호 , 물품분류명, 세부품명, 품목명을통해 납품요구 물품의 세부 정보를 조회
+* 수요기관이 나라장터 종합쇼핑몰에서 납품요구한 물품의 세부정보 제공
+*현재일로부터 납품요구접수일자 하루전 데이터 제공
+Call Back URL
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/getDlvrReqDtlInfoList
+최대 메시지 사이즈
+[ 4000bytes]
+평균 응답 시간
+[ 500ms]
+초당 최대 트랜잭션
+[ 30tps]
+요청 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+ServiceKey
+서비스키
+400
+1
+공공데이터포털에서 받은 인증키
+공공데이터포털에서 받은 인증키
+type
+타입
+4
+0
+json
+오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정함
+inqryDiv
+조회구분
+1
+1
+1
+검색하고자하는 조회구분 입력1: 납품요구접수일자 검색2: 납품요구번호 검색 3: 계약번호 검색
+inqryBgnDate
+조회기준시작일자
+8
+0
+20190101
+검색하고자하는 납품요구접수일자 기준 조회시작일자 "YYYYMMDD"
+*조회구분 1인 경우 필수이며 범위는 최대 1개월로 제한 *입력값이 없을 경우 현재일로 부터 하루기준 조회
+inqryEndDate
+조회기준종료일자
+8
+0
+20190131
+검색하고자하는 납품요구접수일자 기준 조회종료일자 "YYYYMMDD
+*조회구분 1인 경우 필수이며 범위는 최대 1개월로 제한 *입력값이 없을 경우 현재일로 부터 하루기준 조회
+dlvrReqNo
+납품요구번호
+10
+0
+1220100120
+검색하고자하는 납품요구번호
+*조회구분이 2인 경우 필수
+cntrctNo
+계약번호
+11
+0
+121710662
+검색하고자하는 계약번호
+*조회구분이 3인 경우 필수
+prdctClsfcNoNm
+품명
+100
+0
+이동형파일서랍
+검색하고자 하는 품명(물품분류명)* 조회구분 1의 경우에만 제공
+dtilPrdctClsfcNoNm
+세부품명
+100
+0
+이동형파일서랍
+검색하고자 하는 세부분류품명* 조회구분 1의 경우에만 제공
+prdctIdntNoNm
+물품규격명
+200
+0
+크로바가구
+검색하고자 하는 품목명(식별명)* 조회구분 1의 경우에만 제공
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 예제
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+resultCode
+결과코드
+2
+1
+00
+결과코드
+resultMsg
+결과메세지
+50
+1
+정상
+결과메세지
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+totalCount
+전체 결과 수
+4
+1
+1
+전체 결과 수
+dlvrReqNo
+납품요구번호
+10
+1
+1220100120
+나라장터에서 단가계약되어 있는 물품 등을 종합쇼핑몰에서 구매시 생성되는 번호로 최초 등록시 생성됨
+dlvrReqChgOrd
+납품요구변경차수
+2
+1
+00
+납품요구 건에 대한 변경 이력 관리를 위하여 부여되는 2자리수이며, 변경 발생 시마다 순차적으로 1씩 증가
+dlvrReqRcptDate
+납품요구접수일자
+10
+1
+2020-01-02
+납품요구서를 조달청에서 접수한 일자
+prdctSno
+물품순번
+6
+1
+1
+납품요구된 물품 순번
+prdctClsfcNo
+물품분류번호
+8
+1
+56101708
+UNSPSC 물품분류체계를 기반으로 하는 4단계 계층구조로 이루어진 8자리 번호
+prdctClsfcNoNm
+품명
+200
+0
+이동형파일서랍
+물품분류번호 해당하는 물품의 한글이름
+dtilPrdctClsfcNo
+세부품명번호
+10
+0
+5610170801
+UNSPSC에서 분류된 세뷴류의 품명보다 세분화가 필요한 품명에 부여한 10자리 번호
+dtilPrdctClsfcNoNm
+세부품명
+200
+0
+이동형파일서랍
+세부품명번호 10자리에 대한 한글명
+prdctIdntNo
+물품식별번호
+8
+1
+21070542
+품목에 대한 고유번호로서 8자리로 표시
+prdctIdntNoNm
+물품규격명
+200
+1
+이동형파일서랍, 크로바가구, CLV-2040B, 403×575×580mm, 다이얼키
+세부품명, 제조업체명, 제작국/모델명, 특성값 등 기본전인 규격사항등이 기록된 품목의 명칭
+prdctUprc
+물품단가
+18
+1
+170000
+물품의 단가
+prdctUnit
+물품단위
+10
+0
+개
+물품의 단위
+prdctQty
+물품수량
+25
+1
+13
+물품의 수량
+prdctAmt
+물품금액
+25
+1
+2210000
+물품의 금액
+dlvrTmlmtDate
+납품기한일자
+10
+0
+2020-02-01
+물품 등이 납품되어야 하는 기한
+cntrctCnclsStleNm
+계약체결형태명
+50
+0
+제3자단가
+계약의 체결형태를 구분하는 명으로 총액계약, 단가계약,제3자단가계약등으로 구분함
+exclcProdctYn
+우수제품여부
+1
+0
+N
+조달물품우수제품여부
+「조달사업에 관한 법률 시행령」 제18조*우수제품실적 추출 기준 : '15년부터 우수제품조항호 기준으로 함.
+optnDivCdNm
+옵션구분코드명
+100
+1
+대표품목
+종합쇼핑몰의
+대표품목, 선택사양(별도구매), 동시구매, 제외품목, 보류품목, 일반상품(값이 없는 경우) 물품의 옵션 상태
+dminsttCd
+수요기관코드
+7
+1
+7652298
+수요기관코드로 행자부코드(행정자치부에서 부여한 기관코드)가 있는 경우 행자부코드가 행자부코드가 없는 경우 조달청에서 부여한 수요기관 코드가 표기됨
+dminsttNm
+수요기관명
+200
+1
+경기도교육청 경기도구리남양주교육지원청 남양주다산중학교
+중앙조달인 경우 조달사업에 관한 법률 제2조(정의)에 따라 수요물자의 구매 공급 또는 시설공사 계약의 체결을 조달청장에게 요청할 수 있도록 조달청장이 인정하여 등록한 기관 또는 자체전자조달시스템을 이용하는 기관인 경우 계약을 의뢰한 기관의 명으로 공고기관과 수요기관이 동일할 수 있음
+dmndInsttDivNm
+수요기관구분명
+200
+0
+교육기관
+수요기관이 국가기관인지 지자체인지 등을 구분하는 명
+dminsttRgnNm
+수요기관지역명
+100
+0
+경기도 남양주시
+수요기관의 관할 지역명
+corpNm
+업체명
+100
+1
+주식회사 크로바가구
+납품 업체명
+fnlDlvrReqYn
+최종납품요구여부
+1
+0
+Y
+해당 납품요구건이 최종 납품요구 변경차수인지에 대한 여부
+incdecQty
+증감수량
+25
+0
+13
+본 납품요구의 차수와 직전차수의 물품을 비교하여 얼마만큼 증가 또는 감소했는지에 따라 수량이 결정되는 것으로       조회기간동안에 가감된 수량을 의미
+incdecAmt
+증감금액
+25
+0
+2210000
+본 납품요구의 차수와 직전차수의 물품을 비교하여 얼마만큼 증가 또는 감소했는지에 따라 금액이 결정되는 것으로 조회기간동안에 가감된 금액을 의미.
+cntrctCorpBizno
+계약업체 사업자등록번호
+10
+0
+1278639798
+납품(계약) 업체 사업자 등록번호
+dlvrReqNm
+납품요구건명
+100
+남양주다산중 학급증설 내부비품 구입
+납품요구 내용을 요약한 납품요구건의 명칭
+cntrctNo
+계약번호
+11
+1
+121710662
+계약서를 식별하기 위한 관리번호
+cntrctChgOrd
+계약변경차수
+2
+1
+05
+계약에 대한 변경 이력 관리를 위하여 부여되는 2자리수이며, 변경 발생 시마다 순차적으로
+masYn
+다수공급자계약여부
+1
+0
+Y
+다수공급자 계약 체결 여부
+cnstwkMtrlDrctPurchsObjYn
+공사용자재직접구매대상여부
+1
+0
+Y
+"※ 중소기업청 고시에 따른 공사용자재직접구매대상 품목 여부(Y/N)
+* 2009.01.01 ~ 2012.12.31 사이의 계약 및 납품요구 건은 물품분류번호(8자리) 기준
+* 2013.01.01일 이후로 계약 및 납품요구 건은 세부품명번호(10자리) 기준
+"
+smetprCmptProdctYn
+중소기업자간경쟁제품여부
+1
+0
+Y
+중소기업자간경쟁제품여부
+IntlCntrctDlvrReqDate
+최초계약(납품요구)일자
+8
+0
+20200102
+계약(납품요구) 최초 차수의 계약 (납품요구)일자
+dlvrReqQty
+납품요구수량
+0
+13
+납품요구 물품별 납품요구수량의 합
+dlvrReqAmt
+납품요구금액
+25
+0
+2210000
+납품요구번호, 변경차수 등에 해당하는 납품요구금액
+corpEntrprsDivNmNm
+업체기업구분명
+200
+0
+중소기업
+기업구분을 대기업,중소기업,비영리법인및기타,중견기업의 분류로 표기
+brnofceNm
+지청명
+200
+0
+서울지방조달청
+조달요청서를 접수한 담당자의 소속 지청명
+요청 / 응답 메시지 예제
+REST(URI)
+http://apis.data.go.kr/1230000/at/ ShoppingMallPrdctInfoService05/ getDlvrReqDtlInfoList?inqryDiv=2&dlvrReqNo =27112703&pageNo=1&numOfRows=10&ServiceKey=인증키
+응답 메시지
+<response>
+<header>
+<resultCode>00</resultCode>
+<resultMsg>정상</resultMsg>
+</header>
+<body>
+<items>
+<item>
+<dlvrReqNo>2217431045</dlvrReqNo>
+<dlvrReqChgOrd>00</dlvrReqChgOrd>
+<dlvrReqRcptDate>2017-12-06</dlvrReqRcptDate>
+<prdctSno>1</prdctSno>
+<prdctClsfcNo>56122002</prdctClsfcNo>
+<prdctClsfcNoNm>실험실용보관장또는보조용품</prdctClsfcNoNm>
+<dtilPrdctClsfcNo>5612200201</dtilPrdctClsfcNo>
+<dtilPrdctClsfcNoNm>실험기구진열장</dtilPrdctClsfcNoNm>
+<prdctIdntNo>21226988</prdctIdntNo>
+<prdctIdntNoNm>실험기구진열장, 크로바가구, CLV-807G, 800×600×1060mm</prdctIdntNoNm>
+<prdctUprc>185000</prdctUprc>
+<prdctUnit>개</prdctUnit>
+<prdctQty>8</prdctQty>
+<prdctAmt>1480000</prdctAmt>
+<dlvrTmlmtDate>2018-01-05</dlvrTmlmtDate>
+<cntrctCnclsStleNm>제3자단가</cntrctCnclsStleNm>
+<exclcProdctYn>N</exclcProdctYn>
+<optnDivCdNm>대표품목</optnDivCdNm>
+<dminsttCd>7750234</dminsttCd>
+<dminsttNm>경기도교육청 경기도용인교육청 보라중학교</dminsttNm>
+<dmndInsttDivNm>교육기관</dmndInsttDivNm>
+<dminsttRgnNm>경기도 용인시 기흥구</dminsttRgnNm>
+<corpNm>주식회사 크로바가구</corpNm>
+<fnlDlvrReqYn>Y</fnlDlvrReqYn>
+<incdecQty>8</incdecQty>
+<incdecAmt>1480000</incdecAmt>
+<cntrctCorpBizno/>
+<dlvrReqNm>과학실 교구보관용 진열장 구입</dlvrReqNm>
+<cntrctNo>121710662</cntrctNo>
+<cntrctChgOrd>00</cntrctChgOrd>
+<masYn>Y</masYn>
+<cnstwkMtrlDrctPurchsObjYn>Y</cnstwkMtrlDrctPurchsObjYn>
+<IntlCntrctDlvrReqDate>20171206</IntlCntrctDlvrReqDate>
+<dlvrReqQty>14</dlvrReqQty>
+<dlvrReqAmt>4884000</dlvrReqAmt>
+<smetprCmptProdctYn>Y</smetprCmptProdctYn>
+<corpEntrprsDivNmNm>중소기업</corpEntrprsDivNmNm>
+<brnofceNm>인천지방조달청</brnofceNm>
+</item>
+<item>
+<dlvrReqNo>2217431045</dlvrReqNo>
+<dlvrReqChgOrd>00</dlvrReqChgOrd>
+<dlvrReqRcptDate>2017-12-06</dlvrReqRcptDate>
+<prdctSno>2</prdctSno>
+<prdctClsfcNo>56122002</prdctClsfcNo>
+<prdctClsfcNoNm>실험실용보관장또는보조용품</prdctClsfcNoNm>
+<dtilPrdctClsfcNo>5612200201</dtilPrdctClsfcNo>
+<dtilPrdctClsfcNoNm>실험기구진열장</dtilPrdctClsfcNoNm>
+<prdctIdntNo>21861264</prdctIdntNo>
+<prdctIdntNoNm>실험기구진열장, 크로바가구, CLV-813G, 800×600×800mm</prdctIdntNoNm>
+<prdctUprc>502000</prdctUprc>
+<prdctUnit>개</prdctUnit>
+<prdctQty>2</prdctQty>
+<prdctAmt>1004000</prdctAmt>
+<dlvrTmlmtDate>2018-01-05</dlvrTmlmtDate>
+<cntrctCnclsStleNm>제3자단가</cntrctCnclsStleNm>
+<exclcProdctYn>N</exclcProdctYn>
+<optnDivCdNm>대표품목</optnDivCdNm>
+<dminsttCd>7750234</dminsttCd>
+<dminsttNm>경기도교육청 경기도용인교육청 보라중학교</dminsttNm>
+<dmndInsttDivNm>교육기관</dmndInsttDivNm>
+<dminsttRgnNm>경기도 용인시 기흥구</dminsttRgnNm>
+<corpNm>주식회사 크로바가구</corpNm>
+<fnlDlvrReqYn>Y</fnlDlvrReqYn>
+<incdecQty>2</incdecQty>
+<incdecAmt>1004000</incdecAmt>
+<cntrctCorpBizno/>
+<dlvrReqNm>과학실 교구보관용 진열장 구입</dlvrReqNm>
+<cntrctNo>121710662</cntrctNo>
+<cntrctChgOrd>00</cntrctChgOrd>
+<masYn>Y</masYn>
+<cnstwkMtrlDrctPurchsObjYn>Y</cnstwkMtrlDrctPurchsObjYn>
+<IntlCntrctDlvrReqDate>20171206</IntlCntrctDlvrReqDate>
+<dlvrReqQty>14</dlvrReqQty>
+<dlvrReqAmt>4884000</dlvrReqAmt>
+<smetprCmptProdctYn>Y</smetprCmptProdctYn>
+<corpEntrprsDivNmNm>중소기업</corpEntrprsDivNmNm>
+<brnofceNm>인천지방조달청</brnofceNm>
+</item>
+<item>
+<dlvrReqNo>2217431045</dlvrReqNo>
+<dlvrReqChgOrd>00</dlvrReqChgOrd>
+<dlvrReqRcptDate>2017-12-06</dlvrReqRcptDate>
+<prdctSno>3</prdctSno>
+<prdctClsfcNo>56122002</prdctClsfcNo>
+<prdctClsfcNoNm>실험실용보관장또는보조용품</prdctClsfcNoNm>
+<dtilPrdctClsfcNo>5612200201</dtilPrdctClsfcNo>
+<dtilPrdctClsfcNoNm>실험기구진열장</dtilPrdctClsfcNoNm>
+<prdctIdntNo>22215610</prdctIdntNo>
+<prdctIdntNoNm>실험기구진열장, 크로바가구, CLV-811ST, 1200×600×800mm</prdctIdntNoNm>
+<prdctUprc>600000</prdctUprc>
+<prdctUnit>개</prdctUnit>
+<prdctQty>4</prdctQty>
+<prdctAmt>2400000</prdctAmt>
+<dlvrTmlmtDate>2018-01-05</dlvrTmlmtDate>
+<cntrctCnclsStleNm>제3자단가</cntrctCnclsStleNm>
+<exclcProdctYn>N</exclcProdctYn>
+<optnDivCdNm>대표품목</optnDivCdNm>
+<dminsttCd>7750234</dminsttCd>
+<dminsttNm>경기도교육청 경기도용인교육청 보라중학교</dminsttNm>
+<dmndInsttDivNm>교육기관</dmndInsttDivNm>
+<dminsttRgnNm>경기도 용인시 기흥구</dminsttRgnNm>
+<corpNm>주식회사 크로바가구</corpNm>
+<fnlDlvrReqYn>Y</fnlDlvrReqYn>
+<incdecQty>4</incdecQty>
+<incdecAmt>2400000</incdecAmt>
+<cntrctCorpBizno/>
+<dlvrReqNm>과학실 교구보관용 진열장 구입</dlvrReqNm>
+<cntrctNo>121710662</cntrctNo>
+<cntrctChgOrd>00</cntrctChgOrd>
+<masYn>Y</masYn>
+<cnstwkMtrlDrctPurchsObjYn>Y</cnstwkMtrlDrctPurchsObjYn>
+<IntlCntrctDlvrReqDate>20171206</IntlCntrctDlvrReqDate>
+<dlvrReqQty>14</dlvrReqQty>
+<dlvrReqAmt>4884000</dlvrReqAmt>
+<smetprCmptProdctYn>Y</smetprCmptProdctYn>
+<corpEntrprsDivNmNm>중소기업</corpEntrprsDivNmNm>
+<brnofceNm>인천지방조달청</brnofceNm>
+</item>
+</items>
+<numOfRows>10</numOfRows>
+<pageNo>1</pageNo>
+<totalCount>3</totalCount>
+</body>
+</response>
+[종합쇼핑몰 품목 등록 내역 조회] 오퍼레이션 명세
+오퍼레이션 정보
+오퍼레이션 번호
+6
+오퍼레이션명(국문)
+종합쇼핑몰 품목 정보 목록 조회
+오퍼레이션 유형
+조회(목록)
+오퍼레이션명(영문)
+getShoppingMallPrdctInfoList
+오퍼레이션 설명
+종합쇼핑몰에 등록된 품목을 검색조건을 등록일자,물품분류명,세부물품분류명,식별명을 통해 품목정보를 조회
+*현재일로부터 등록일자 하루전 데이터 제공
+Call Back URL
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/getShoppingMallPrdctInfoList
+최대 메시지 사이즈
+[ 4000bytes]
+평균 응답 시간
+[ 500ms]
+초당 최대 트랜잭션
+[ 30tps]
+요청 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+ServiceKey
+서비스키
+400
+1
+공공데이터포털에서 받은 인증키
+공공데이터포털에서 받은 인증키
+type
+타입
+4
+0
+json
+오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정함
+inqryDiv
+조회구분
+1
+1
+1
+검색하고자하는 조회구분 입력1: 등록일자 검색2: 쇼핑계약번호
+inqryBgnDate
+조회기준시작일자
+8
+0
+20190101
+검색하고자하는 등록일자 기준 조회시작일자 "YYYYMMDD"
+*조회구분 1인 경우 필수이며 범위는 최대 12개월로 제한 *입력값이 없을 경우 현재일로 부터 하루기준 조회
+inqryEndDate
+조회기준종료일자
+8
+0
+20190103
+검색하고자하는 등록일자 기준 조회종료일자 "YYYYMMDD
+*조회구분 1인 경우 필수이며 범위는 최대 12개월로 제한 *입력값이 없을 경우 현재일로 부터 하루기준 조회
+prdctClsfcNoNm
+품명
+100
+0
+이동형파일서랍
+검색하고자 하는 품명(물품분류명)
+dtilPrdctClsfcNoNm
+세부품명
+100
+0
+이동형파일서랍
+검색하고자 하는 세부분류품명
+prdctIdntNoNm
+물품규격명
+200
+0
+크로바가구
+검색하고자 하는 품목명(식별명)
+exclcProdctYn
+우수제품여부
+1
+0
+N
+검색하고자하는 상품의 우수제품 여부
+masYn
+다수공급경쟁자여부
+1
+0
+Y
+검색하고자하는 상품의 다수공급경쟁자여부
+prodctCertYn
+제품인증여부
+1
+0
+Y
+검색하고자하는 상품의 제품인증여부
+shopngCntrctNo
+쇼핑계약번호
+11
+1
+121710662_1
+검색하고자하는 계약번호 입력계약번호(9자리)+차수(2자리)로 구성됨 *조회구분 2인 경우 필수
+regtCncelYn
+등록해지여부
+1
+0
+Y
+검색하고자 하는 품목이 쇼핑몰에 등록 해지된 상품 포함 여부 *입력값이 없거나 ‘N’일경우 현재등재된 품목조회
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 예제
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+resultCode
+결과코드
+2
+1
+00
+결과코드
+resultMsg
+결과메세지
+50
+1
+정상
+결과메세지
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+totalCount
+데이터 총 개수
+4
+1
+17
+데이터 총 개수
+prdctImgUrl
+상품이미지URL
+500
+0
+https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZMOK/item_image/2007/03/29/20070329210520-43.jpg
+계약상품 이미지 링크로 제공(물품대이미지파일명)
+cntrctCorpNm
+계약업체명
+100
+1
+우전화학
+상품의 계약업체명
+entrprsDivNm
+기업구분명
+100
+0
+중소기업
+기업구분을 대기업,중소기업,비영리법인및기타,중견기업의 분류로 표기
+cntrctMthdNm
+계약방법명
+100
+1
+다수 공급자 계약
+계약방법 : 일반계약, 다수공급자계약,제3자계약
+exclncPrcrmntPrdctYn
+우수조달물품여부
+1
+0
+N
+우수조달물품여부
+masYn
+다수공급경쟁자여부
+1
+0
+N
+다수공급경쟁자여부
+smetprCmptProdctYn
+중소기업자간경쟁제품여부
+1
+1
+Y
+중소기업자간경쟁제품여부
+cntrctPrceAmt
+계약가격금액
+30
+0
+17
+계약가격금액의 원화금액
+prdctUnit
+물품단위
+100
+0
+매
+물품단위
+prdctMakrNm
+물품제조사명
+200
+0
+우전화학
+물품의 제조사명
+prdctDlvrPlceNm
+물품납품장소명
+500
+0
+수요기관 지정장소
+물품의 납품장소명
+prdctDlvryCndtnNm
+물품인도조건명
+200
+0
+납품장소 하차도
+물품의 인도조건명
+prdctSplyRgnNm
+물품공급지역명
+200
+0
+전지역
+물품의 공급지역명
+dlvrTmlmtDaynum
+납품기한일수
+10
+0
+40
+납품기한은 일(DAY)단위 임
+prdctLrgclsfcCd
+물품대분류코드
+2
+0
+05
+계약상품의 물품대분류코드
+prdctLrgclsfcNm
+물품대분류명
+100
+0
+섬유.고무.위생
+계약상품의 물품대분류코드명
+prdctMidclsfcCd
+물품중분류코드
+4
+0
+04
+계약상품의 물품중분류코드
+prdctMidclsfcNm
+물품중분류명
+100
+0
+쓰레기봉투
+계약상품의 물품중분류코드명
+prdctClsfcNo
+물품분류번호
+8
+1
+47121701
+UNSPSC 물품분류체계를 기반으로 하는 4단계 계층구조로 이루어진 8자리 번호
+prdctClsfcNoNm
+품명
+200
+1
+오물봉지
+물품분류번호 8자리에 해당하는 물품의 한글이름
+dtilPrdctClsfcNo
+세부품명번호
+10
+1
+4712170101
+UNSPSC에서 분류된 세뷴류의 품명보다 세분화가 필요한 품명에 부여한 10자리 번호
+dtilPrdctClsfcNoNm
+세부품명
+200
+1
+쓰레기봉투
+세부품명번호 10자리에 대한 한글명
+prdctIdntNo
+물품식별번호
+8
+1
+20983622
+품목 고유번호인 8자리 호
+prdctSpecNm
+물품규격명
+500
+0
+쓰레기봉투, 우전화학, WJ-G001, 위조방지, 1종, 1L, 음식물전용/HDPE
+물품에 대한 식별명
+shopngCntrctNo
+쇼핑계약번호
+11
+1
+12161045800
+쇼핑계약번호는 쇼핑계약번호(9자리)+차수(2자리)로 구성됨. ※ 데이터의 유일성을 보장하는 키는  쇼핑계약번호_+쇼핑계약순번.
+shopngCntrctSno
+쇼핑계약순번
+22
+1
+14
+쇼핑계약순번.※ 데이터의 유일성을 보장하는 키는  쇼핑계약번호_+쇼핑계약순번
+cntrctDate
+계약일자
+10
+0
+2016-05-04
+물품의 계약일자는 'YYYYMMDD'
+cntrctBgnDate
+계약시작일자
+10
+0
+2016-05-04
+계약시작일자
+’YYYYMMDD’
+cntrctEndDate
+계약종료일자
+10
+0
+2018-03-31
+계약종료일자
+’YYYYMMDD’
+cntrctDeptNm
+계약부서명
+100
+0
+서울지방조달청 자재구매과
+조달청의 계약부서명
+prodctCertList
+제품인증목록
+4000
+0
+에너지절약,Q마크,공공조달 최소녹색기준제품,녹색기술인증,KC인증
+나라장터 종합쇼핑몰에 등록된 해당 제품이 취득한 인증목록
+rgstDt
+등록일시
+16
+1
+2016-05-03 07:27
+물품계약건이 등록된 일시
+cntrctCorpBizno
+계약업체 사업자등록번호
+10
+0
+1261581541
+상품의 계약업체사업자등록번호
+요청 / 응답 메시지 예제
+REST(URI)
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/getShoppingMallPrdctInfoList?numOfRows=10&pageNo=1&inqryDiv=1&inqryBgnDate=20190101&inqryEndDate=20190103&ServiceKey=인증키
+응답 메시지
+<response>
+<header>
+<resultCode>00</resultCode>
+<resultMsg>정상</resultMsg>
+</header>
+<body>
+<items>
+<item>
+<prdctImgUrl>https://img.g2b.go.kr:7073/Resource/CataAttach/XezCatalog/XZMOK/item_image/2014/07/24/20140724112158-67.jpg</prdctImgUrl>
+<cntrctCorpNm>주식회사 지란지교소프트</cntrctCorpNm>
+<entrprsDivNm>중소기업</entrprsDivNm>
+<cntrctMthdNm>제3자단가</cntrctMthdNm>
+<exclncPrcrmntPrdctYn>N</exclncPrcrmntPrdctYn>
+<masYn>N</masYn>
+<smetprCmptProdctYn>N</smetprCmptProdctYn>
+<cntrctPrceAmt>24900000</cntrctPrceAmt>
+<prdctUnit>조</prdctUnit>
+<prdctMakrNm>(주) 지란지교소프트</prdctMakrNm>
+<prdctDlvrPlceNm>수요기관 지정장소</prdctDlvrPlceNm>
+<prdctDlvryCndtnNm>현장설치도</prdctDlvryCndtnNm>
+<prdctSplyRgnNm>전지역</prdctSplyRgnNm>
+<dlvrTmlmtDaynum>30</dlvrTmlmtDaynum>
+<prdctLrgclsfcCd/>
+<prdctLrgclsfcNm>소프트웨어</prdctLrgclsfcNm>
+<prdctMidclsfcCd/>
+<prdctMidclsfcNm>보안 및 백신S/W</prdctMidclsfcNm>
+<prdctClsfcNo>43233205</prdctClsfcNo>
+<prdctClsfcNoNm>보안소프트웨어</prdctClsfcNoNm>
+<dtilPrdctClsfcNo>4323320501</dtilPrdctClsfcNo>
+<dtilPrdctClsfcNoNm>보안소프트웨어</dtilPrdctClsfcNoNm>
+<prdctIdntNo>22748946</prdctIdntNo>
+<prdctSpecNm>보안소프트웨어, 지란지교소프트, 서버필터(ServerFilter) v1.0, 4~6Server/서버개인정보진단/기록물관리</prdctSpecNm>
+<shopngCntrctNo>00165140602</shopngCntrctNo>
+<shopngCntrctSno>2</shopngCntrctSno>
+<cntrctDate>20190107</cntrctDate>
+<cntrctBgnDate>20161128</cntrctBgnDate>
+<cntrctEndDate>20191127</cntrctEndDate>
+<cntrctDeptNm>조달청 기술서비스총괄과</cntrctDeptNm>
+<prodctCertList/>
+<rgstDt>20190102</rgstDt>
+<cntrctCorpBizno>1261581541</cntrctCorpBizno>
+</item>
+</items>
+<numOfRows>10</numOfRows>
+<pageNo>1</pageNo>
+<totalCount>121683</totalCount>
+</body>
+</response>
+[벤처나라 물품 주문거래 내역 조회] 오퍼레이션 명세
+오퍼레이션 정보
+오퍼레이션 번호
+7
+오퍼레이션명(국문)
+벤처나라 물품 주문거래 내역 조회
+오퍼레이션 유형
+조회(목록)
+오퍼레이션명(영문)
+getVntrPrdctOrderDealDtlsInfoList
+오퍼레이션 설명
+벤처나라 거래물품 정보 및 주문 실적, 기관 소재지 창업·벤처기업 물품 거래현황 제공
+*현재일로부터 등록일자 하루전 데이터 제공
+Call Back URL
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/getVntrPrdctOrderDealDtlsInfoList
+최대 메시지 사이즈
+[ 4000bytes]
+평균 응답 시간
+[ 500ms]
+초당 최대 트랜잭션
+[ 30tps]
+요청 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+ServiceKey
+서비스키
+400
+1
+공공데이터포털에서 받은 인증키
+공공데이터포털에서 받은 인증키
+type
+타입
+4
+0
+json
+오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정함
+inqryDiv
+조회구분
+1
+1
+1
+검색하고자하는 조회구분 입력1: 주문일자 검색
+inqryBgnDate
+조회기준시작일자
+8
+0
+20240101
+검색하고자하는 등록일자 기준 조회시작일자 "YYYYMMDD"
+*조회구분 1인 경우 필수이며 범위는 최대 36개월로 제한 *입력값이 없을 경우 현재일로 부터 하루기준 조회
+inqryEndDate
+조회기준종료일자
+8
+0
+20240731
+검색하고자하는 등록일자 기준 조회종료일자 "YYYYMMDD
+*조회구분 1인 경우 필수이며 범위는 최대 36개월로 제한 *입력값이 없을 경우 현재일로 부터 하루기준 조회
+prdctClsfcNoNm
+품명
+100
+0
+손세정제
+검색하고자 하는 품명(물품분류명)
+dtilPrdctClsfcNoNm
+세부품명
+100
+0
+손세정제
+검색하고자 하는 세부분류품명
+prdctIdntNoNm
+물품규격명
+200
+0
+손세정제
+검색하고자 하는 품목명(식별명)
+dminsttNm
+수요기관명
+200
+0
+경상북도
+검색하고자하는 수요기관명
+dminsttRgnNm
+수요기관지역명
+100
+0
+경상북도
+수요기관의 관할 지역명
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 예제
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+resultCode
+결과코드
+2
+1
+00
+결과코드
+resultMsg
+결과메세지
+50
+1
+정상
+결과메세지
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+totalCount
+데이터 총 개수
+4
+1
+17
+데이터 총 개수
+dminsttNm
+수요기관명
+200
+1
+충청남도교육청 충청남도아산교육지원청 용화초등학교
+중앙조달인 경우 조달사업에 관한 법률 제2조(정의)에 따라 수요물자의 구매 공급 또는 시설공사 계약의 체결을 조달청장에게 요청할 수 있도록 조달청장이 인정하여 등록한 기관 또는 자체전자조달시스템을 이용하는 기관인 경우 계약을 의뢰한 기관의 명으로 공고기관과 수요기관이 동일할 수 있음
+dminsttRgnNm
+수요기관지역명
+100
+0
+충청남도 아산시
+수요기관의 관할 지역명
+corpBizno
+업체사업자등록번호
+10
+0
+8927600097
+주문납품 업체 사업자등록번호
+corpNm
+업체명
+100
+0
+서현라이프
+업체명
+prdctClsfcNo
+물품분류번호
+8
+1
+55121903
+UNSPSC 물품분류체계를 기반으로 하는 4단계 계층구조로 이루어진 8자리 번호
+prdctClsfcNoNm
+품명
+200
+1
+전광판
+물품분류번호 8자리에 해당하는 물품의 한글이름
+dtilPrdctClsfcNo
+세부품명번호
+10
+1
+5512190302
+UNSPSC에서 분류된 세뷴류의 품명보다 세분화가 필요한 품명에 부여한 10자리 번호
+dtilPrdctClsfcNoNm
+세부품명
+200
+1
+기상전광판
+세부품명번호 10자리에 대한 한글명
+prdctIdntNo
+물품식별번호
+8
+1
+23568307
+품목 고유번호인 8자리 호
+prdctIdntNoNm
+물품규격명
+200
+0
+기상전광판, 서현라이프, BOMI-1000NS, 330×115×80mm
+물품에 대한 식별명
+vntrPrdctNm
+벤처물품명
+100
+0
+미세먼지알리미
+벤처물품명
+corpLocplcNm
+업체소재지명
+100
+0
+경기도
+업체소재지명
+orderDt
+주문일자
+8
+1
+20200109
+벤처물품 주문일자
+orderSumAmt
+주문합계금액
+21
+1
+253000
+벤처 주문물품의 합계금액 (원,원화)
+요청 / 응답 메시지 예제
+REST(URI)
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/getVntrPrdctOrderDealDtlsInfoList?numOfRows=10&pageNo=1&inqryDiv=1&inqryBgnDate=20200101&inqryEndDate=20200731&dminsttNm=충청남도교육청&dminsttRgnNm=아산시&prdctClsfcNoNm=전광판&ServiceKey=인증키
+응답 메시지
+<response>
+<header>
+<resultCode>00</resultCode>
+<resultMsg>정상</resultMsg>
+</header>
+<body>
+<items>
+<item>
+<dminsttNm>충청남도교육청 충청남도아산교육지원청 용화초등학교</dminsttNm>
+<dminsttRgnNm>충청남도 아산시</dminsttRgnNm>
+<corpBizno>8927600097</corpBizno>
+<corpNm>서현라이프</corpNm>
+<prdctClsfcNo>55121903</prdctClsfcNo>
+<prdctClsfcNoNm>전광판</prdctClsfcNoNm>
+<dtilPrdctClsfcNo>5512190302</dtilPrdctClsfcNo>
+<dtilPrdctClsfcNoNm>기상전광판</dtilPrdctClsfcNoNm>
+<prdctIdntNo>23568307</prdctIdntNo>
+<prdctIdntNoNm>기상전광판, 서현라이프, BOMI-1000NS, 330×115×80mm</prdctIdntNoNm>
+<vntrPrdctNm>미세먼지알리미</vntrPrdctNm>
+<corpLocplcNm>경기도</corpLocplcNm>
+<orderDt>20200109</orderDt>
+<orderSumAmt>253000</orderSumAmt>
+</item>
+</items>
+<numOfRows>10</numOfRows>
+<pageNo>1</pageNo>
+<totalCount>1</totalCount>
+</body>
+</response>
+[특정품목조달내역 목록 조회] 오퍼레이션 명세
+오퍼레이션 정보
+오퍼레이션 번호
+8
+오퍼레이션명(국문)
+특정품목조달내역 목록 조회
+오퍼레이션 유형
+조회(목록)
+오퍼레이션명(영문)
+getSpcifyPrdlstPrcureInfoList
+오퍼레이션 설명
+나라장터 총액계약 및 납품요구 구매실적 정보를 특정물품정보를 통해 물품.일반용역의 현황 제공
+*현재일로부터 등록일자 하루전 데이터 제공
+Call Back URL
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/ getSpcifyPrdlstPrcureInfoList
+최대 메시지 사이즈
+[ 4000bytes]
+평균 응답 시간
+[ 500ms]
+초당 최대 트랜잭션
+[ 30tps]
+요청 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+ServiceKey
+서비스키
+400
+1
+공공데이터포털에서 받은 인증키
+공공데이터포털에서 받은 인증키
+Type
+타입
+4
+0
+json
+오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정함
+inqryDiv
+조회구분
+1
+1
+1
+검색하고자하는 조회구분 입력1: 계약납품요구일자 검색
+2: 최초계약납품요구일자
+inqryBgnDate
+조회기준시작일자
+8
+1
+20200101
+검색하고자하는 등록일자 기준 조회시작일자 "YYYYMMDD"
+*조회구분 1인 경우 필수이며 범위는 최대 12개월로 제한
+inqryEndDate
+조회기준종료일자
+8
+1
+20200131
+검색하고자하는 등록일자 기준 조회종료일자 "YYYYMMDD
+*조회구분 1인 경우 필수이며 범위는 최대 12개월로 제한
+inqryPrdctDiv
+조회물품구분
+1
+1
+1
+1:품명 조회
+2:세부품명 조회
+3:물품규격명 조회
+prdctClsfcNo
+물품분류번호
+8
+0
+56101703
+조회하고자 하는 물품분류번호
+*조회물품구분 1인 경우, 물품분류번호, 품명 둘 중 하나 필수
+prdctClsfcNoNm
+품명
+100
+0
+책상
+검색하고자 하는 품명(물품분류명)
+*조회물품구분 1인 경우, 물품분류번호, 품명 둘 중 하나 필수
+dtilPrdctClsfcNo
+세부품명번호
+10
+0
+5612150601
+조회하고자 하는 세부품명번호
+*조회물품구분 2인 경우 세부품명번호, 세부품명 둘 중 하나 필수
+dtilPrdctClsfcNoNm
+세부품명
+100
+0
+책상
+검색하고자 하는 세부분류품명
+*조회물품구분 2인 경우 세부품명번호, 세부품명 둘 중 하나 필수
+prdctIdntNo
+물품식별번호
+8
+0
+21621739
+조회하고자 하는 물품식별번호 검색
+*조회물품구분 3인 경우 물품식별번호, 물품규격명 둘 중 하나 필수
+prdctIdntNoNm
+물품규격명
+200
+0
+책상
+검색하고자 하는 품목명(식별명)
+*조회물품구분 3인 경우 물품식별번호, 물품규격명 둘 중 하나 필수
+prcrmntDiv
+조달구분
+1
+0
+C
+검색하고자 하는 조달방식 구분
+C:중앙조달
+S:자체조달
+dminsttcD
+수요기관코드
+7
+0
+8151225
+검색하고자하는 수요기관코드행자부코드(행정자치부에서 부여한 기관코드)가 있는 경우 행자부코드 입력행자부코드가 없는 경우 조달청에서 부여한 수요기관 코드 입력
+dminsttNm
+수요기관명
+200
+0
+충청남도교육청
+검색하고자하는 수요기관명
+bizRegNo
+업체사업자번호
+10
+0
+1258133492
+검색하고자 하는 사업자등록번호
+corpNm
+업체명
+100
+0
+1258133492
+검색하고자 하는 업체명
+fnlCntrctDlvrReqChgOrdYn
+최종변경차수여부
+1
+0
+Y
+최종내역:Y
+최종 내역 제외 :N
+변경내역포함 :값없음
+dmndInsttDivCd
+수요기관구분코드
+2
+0
+03
+검색하고자하는 수요기관구분
+01:국가기관 02:지자체 03:교육기관 51:공기업 52:준정부기관 53:기타공공기관 71:지방공기업 72:기타기관 81:지자체 출자출연기관
+dminsttRgnNm
+수요기관지역명
+100
+0
+충청남도
+검색하고자하는 수요기관의 지역명
+cntrctMthdCd
+계약방법코드
+1
+0
+1
+검색하고자하는 계약체결 방법
+1:일반경쟁 2:제한경쟁 3:지명경쟁 4:수의계약
+exclcProdctYn
+우수제품여부
+1
+0
+N
+검색하고자하는 상품의 우수제품 여부
+cnstwkMtrlDrctPurchsObjYn
+공사용자재직접구매대상여부
+1
+0
+Y
+검색하고자 하는 공사용자재직접구매대상 여부
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 예제
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+resultCode
+결과코드
+2
+1
+00
+결과코드
+resultMsg
+결과메세지
+50
+1
+정상
+결과메세지
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+totalCount
+데이터 총 개수
+4
+1
+17
+데이터 총 개수
+prcrmntDivNm
+조달구분명
+50
+1
+중앙조달
+조달방식 구분명으로 중앙조달, 자체조달으로 구분함
+- 중앙조달 : 시설공사 등에 대하여 수요기관에서 조달청에 총액계약을 의뢰하거나, 단가계약된 물품 등을              나라장터 종합쇼핑몰을 통해 구매하는 방식
+- 자체조달 : 수요기관에서 자체적으로 나라장터 입찰공고 등을 통하여 시설공사 계약, 물품 등을 조달하는 방식
+cntrctDivNm
+계약구분명
+50
+0
+총액계약
+계약의 체결형태를 구분하는 명으로 총액계약, 단가계약,제3자단가계약등으로 구분함.
+- 총액계약 : 계약목적물 전체에 대하여 총금액을 기준으로 입찰 등을 진행하고 계약을 체결하는 계약방법
+- 단가계약 : 일정 기간 동안 지속적이고 반복적으로 구매가 필요하고 수요량이 확정되지 않은 물품에 대하여 단가를 정하여 계약을 체결하는 방법
+- 제3자단가계약 : 각 수요기관에서 공통적으로 필요로 하는 수요물자를 계약시 미리 단가만을 정하여 계약을 체결하고                            각 수요기관에서 직접 납품요구하는 계약형태
+cntrctDlvrDivNm
+계약납품구분명
+50
+0
+납품요구
+총액계약과 납품요구을 구분하는 명칭
+cntrctDlvrReqDate
+계약납품요구일자
+8
+1
+20211021
+계약일자 또는 납품요구접수일자
+cntrctDlvrReqNo
+계약납품요구번호
+13
+1
+002260205
+계약 또는 납품요구 건을 효과적으로 관리하기 위하여 부여되는 번호
+cntrctDlvrReqChgOrd
+변경차수
+2
+1
+00
+계약 또는 납품요구번호의 변경을 관리하는 차수
+fnlCntrctDlvrReqChgOrdYn
+최종변경차수여부
+1
+0
+N
+최종변경차수여부
+dminsttNm
+수요기관명
+200
+1
+조달청
+중앙조달인 경우 조달사업에 관한 법률 제2조(정의)에 따라 수요물자의 구매 공급 또는 시설공사 계약의 체결을 조달청장에게 요청할 수 있도록 조달청장이 인정하여 등록한 기관 또는 기타 전자조달시스템을 이용하는 기관인 경우 계약을 의뢰한 기관의 명으로 공고기관과 수요기관이 동일할 수 있음
+dmndInsttDivNm
+수요기관구분명
+200
+0
+국가기관
+조달사업 수요기관 기준(조달청고시)에 따른 기관 분류
+dminsttRgnNm
+수요기관지역명
+100
+0
+대전
+수요기관의 관할 지역명
+dminsttCd
+수요기관코드
+7
+1
+1230000
+수요기관코드 행자부코드(행정자치부에서 부여한 기관코드)가 있는 경우 행자부코드가 행자부코드가 없는 경우 조달청에서 부여한 수요기관 코드가 표기됨
+prdctClsfcNo
+물품분류번호
+8
+1
+56101703
+품명에 대한 분류번호로서 8자리로 표시
+prdctClsfcNoNm
+품명
+200
+1
+책상
+물품분류번호 8자리에 해당하는 물품의 한글이름
+dtilPrdctClsfcNo
+세부물품분류번호
+10
+1
+5610170301
+품명에 대한 분류번호로서 10자리로 표시
+dtilPrdctClsfcNoNm
+세부품명
+200
+1
+책상
+세부품명번호 10자리에 대한 한글명
+prdctIdntNo
+물품식별번호
+8
+1
+22763298
+품목에 대한 고유번호로서 8자리로 표시
+prdctIdntNoNm
+물품규격명
+200
+1
+책상, 나누리가구, NAD1201, 1200×700×720mm
+세부품명, 제조업체명, 제작국/모델명, 특성값 등 기본전인 규격사항등이 기록된 품목의 명칭
+prdctUprc
+단가
+18
+0
+175000
+물품의 단가(원화, 원)
+prdctQty
+수량
+18
+0
+10
+물품의 수량
+prdctUnit
+단위
+30
+0
+개
+공고의 물품단위
+prdctAmt
+금액
+25
+0
+1750000
+물품 조달요청의 물품금액(원화, 원)
+bizno
+업체사업자등록번호
+10
+0
+2018208300
+업체 사업자등록번호
+corpNm
+업체명
+100
+0
+사단법인 한국장애인고용창출협회
+업체명
+corpEntrprsDivNmNm
+업체기업구분명
+200
+0
+중소기업
+기업구분을 대기업,중소기업,비영리법인및기타,중견기업의 분류로 표기
+cntrctDlvrReqNm
+계약명
+100
+0
+물품 구입
+공사명 또는 사업명이라고도 하며 계약내용을 요약한 이름
+exclcProdctYn
+우수제품여부
+1
+0
+N
+조달물품우수제품여부 「조달사업에 관한 법률 시행령」 제18조*우수제품실적 추출 기준 : ‘15년부터 우수제품조항호 기준으로 함.
+cnstwkMtrlDrctPurchsObjYn
+공사용자재직접구매대상여부
+1
+0
+Y
+※ 중소기업청 고시에 따른 공사용자재직접구매대상 품목 여부(Y/N)
+* 2009.01.01 ~ 2012.12.31 사이의 계약 및 납품요구 건은 물품분류번호(8자리) 기준
+* 2013.01.01일 이후로 계약 및 납품요구 건은 세부품명번호(10자리) 기준
+masYn
+다수공급자계약여부
+1
+0
+Y
+다수공급자 계약 체결 여부
+masCntrct2StepYn
+다수공급자계약2단계진행여부
+1
+0
+Y
+다수공급자계약2단계진행여부
+uprcCntrctNo
+단가계약번호
+13
+0
+122011038
+단가계약으로 계약의 계약번호
+uprcCntrctCngOrd
+단가계약변경차수
+2
+0
+00
+단가계약으로 계약의 계약변경차수
+IntlCntrctDlvrReqDate
+최초계약(납품요구)일자
+10
+0
+20210707
+단가계약으로 계약의 계약번호
+cntrctMthdNm
+계약체결방법명
+100
+0
+다수 공급자 계약
+계약체결의 방법을 구분하는 명
+- 일반경쟁 , 제한경쟁 ,지명경쟁 , 수의계약
+incdecQty
+증감수량
+25
+0
+10
+본 납품요구의 차수와 직전차수를 비교하여 얼마만큼 증가 또는 감소했는지에 따라 수량이 결정되는 것으로       조회기간동안에 가감된 수량을 의미(최종변경차수여부 N일경우에만 제공)
+incdecAmt
+증감금액
+25
+0
+1750000
+본 납품요구의 차수와 직전차수의 물품을 비교하여 얼마만큼 증가 또는 감소했는지에 따라 금액이 결정되는 것으로 조회기간동안에 가감된 금액을 의미. (최종변경차수여부 N일경우에만 제공)
+dlvrPlceNm
+납품장소명
+256
+0
+수요기관 지정장소
+납품장소명
+dlvrTmlmtDate
+납품기한일자
+10
+0
+20210806
+물품 등이 납품되어야 하는 기한
+dlvryCndtnNm
+인도조건명
+200
+0
+현장설치도
+인도 받을 장소
+요청 / 응답 메시지 예제
+REST(URI)
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/ getSpcifyPrdlstPrcureInfoList?numOfRows=10&pageNo=1&inqryDiv=1&inqryBgnDate=20220101&inqryEndDate=20220430&inqryPrdctDiv=1&prdctClsfcNoNm=책상&ServiceKey=인증키
+응답 메시지
+<response>
+<header>
+<resultCode>00</resultCode>
+<resultMsg>정상</resultMsg>
+</header>
+<body>
+<items>
+<item>
+<prcrmntDivNm>중앙조달</prcrmntDivNm>
+<cntrctDivNm>총액계약</cntrctDivNm>
+<cntrctDlvrDivNm>총액계약</cntrctDlvrDivNm>
+<cntrctDlvrReqDate>20220316</cntrctDlvrReqDate>
+<cntrctDlvrReqNo>122210105</cntrctDlvrReqNo>
+<cntrctDlvrReqChgOrd/>
+<fnlCntrctDlvrReqChgOrdYn/>
+<dminsttNm>국회 국회도서관</dminsttNm>
+<dmndInsttDivNm>국가기관</dmndInsttDivNm>
+<dminsttRgnNm>서울특별시 영등포구</dminsttRgnNm>
+<dminsttCd>9720000</dminsttCd>
+<prdctClsfcNo>56101703</prdctClsfcNo>
+<prdctClsfcNoNm>책상</prdctClsfcNoNm>
+<dtilPrdctClsfcNo>5610170301</dtilPrdctClsfcNo>
+<dtilPrdctClsfcNoNm>책상</dtilPrdctClsfcNoNm>
+<prdctIdntNo>20268688</prdctIdntNo>
+<prdctIdntNoNm>책상, 기타물품포함, 수요기관규격</prdctIdntNoNm>
+<prdctUprc>282282000</prdctUprc>
+<prdctUnit>1</prdctUnit>
+<prdctQty>식</prdctQty>
+<prdctAmt>282282000</prdctAmt>
+<corpNm>(주) 솔비앤솔비니</corpNm>
+<corpEntrprsDivNmNm>중소기업</corpEntrprsDivNmNm>
+<cntrctDlvrReqNm>국회부산도서관 열람공간 가구 구입·설치 사업</cntrctDlvrReqNm>
+<exclcProdctYn>N</exclcProdctYn>
+<cnstwkMtrlDrctPurchsObjYn>Y</cnstwkMtrlDrctPurchsObjYn>
+<masYn>N</masYn>
+<masCntrct2StepYn/>
+<uprcCntrctNo/>
+<uprcCntrctCngOrd/>
+<IntlCntrctDlvrReqDate>20220316</IntlCntrctDlvrReqDate>
+<cntrctMthdNm>제한경쟁</cntrctMthdNm>
+<incdecQty>1</incdecQty>
+<incdecAmt>282282000</incdecAmt>
+<dlvrPlceNm>부산 강서구 명지국제1로 161 국회부산도서관</dlvrPlceNm>
+<dlvrTmlmtDate>20220516</dlvrTmlmtDate>
+<bizno>1278144317</bizno>1
+<dlvryCndtnNm>과업내역에 따름</dlvryCndtnNm>
+</item>
+</items>
+<numOfRows>10</numOfRows>
+<pageNo>1</pageNo>
+<totalCount>23337</totalCount>
+</body>
+</response>
+[특정품목조달내역 목록 조회] 오퍼레이션 명세
+오퍼레이션 정보
+오퍼레이션 번호
+9
+오퍼레이션명(국문)
+특정품목조달집계 목록 조회
+오퍼레이션 유형
+조회(목록)
+오퍼레이션명(영문)
+getSpcifyPrdlstPrcureTotList
+오퍼레이션 설명
+나라장터 총액계약 및 납품요구 구매실적 정보를 특정물품정보를 통해 물품.일반용역의 가격에  대한 조달 집계*현재일로부터 등록일자 하루전 데이터 제공
+Call Back URL
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05
+최대 메시지 사이즈
+[ 4000bytes]
+평균 응답 시간
+[ 500ms]
+초당 최대 트랜잭션
+[ 30tps]
+요청 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+ServiceKey
+서비스키
+400
+1
+공공데이터포털에서 받은 인증키
+공공데이터포털에서 받은 인증키
+Type
+타입
+4
+0
+json
+오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정함
+inqryDiv
+조회구분
+1
+1
+1
+검색하고자하는 조회구분 입력1: 계약납품요구일자 검색
+2: 최초계약납품요구일자
+inqryBgnDate
+조회기준시작일자
+8
+1
+20200101
+검색하고자하는 등록일자 기준 조회시작일자 "YYYYMMDD"
+*조회구분 1인 경우 필수이며 범위는 최대 12개월로 제한
+inqryEndDate
+조회기준종료일자
+8
+1
+20200131
+검색하고자하는 등록일자 기준 조회종료일자 "YYYYMMDD
+*조회구분 1인 경우 필수이며 범위는 최대 12개월로 제한
+inqryPrdctDiv
+조회물품구분
+1
+1
+1
+1:품명 조회
+2:세부품명 조회
+3:물품규격명 조회
+prdctClsfcNo
+물품분류번호
+8
+0
+56101703
+조회하고자 하는 물품분류번호
+*조회물품구분 1인 경우, 물품분류번호, 품명 둘 중 하나 필수
+prdctClsfcNoNm
+품명
+100
+0
+책상
+검색하고자 하는 품명(물품분류명)
+*조회물품구분 1인 경우, 물품분류번호, 품명 둘 중 하나 필수
+dtilPrdctClsfcNo
+세부품명번호
+10
+0
+5612150601
+조회하고자 하는 세부품명번호
+*조회물품구분 2인 경우 세부품명번호, 세부품명 둘 중 하나 필수
+dtilPrdctClsfcNoNm
+세부품명
+100
+0
+책상
+검색하고자 하는 세부분류품명
+*조회물품구분 2인 경우 세부품명번호, 세부품명 둘 중 하나 필수
+prdctIdntNo
+물품식별번호
+8
+0
+21621739
+조회하고자 하는 물품식별번호 검색
+*조회물품구분 3인 경우 물품식별번호, 물품규격명 둘 중 하나 필수
+prdctIdntNoNm
+물품규격명
+200
+0
+책상
+검색하고자 하는 품목명(식별명)
+*조회물품구분 3인 경우 물품식별번호, 물품규격명 둘 중 하나 필수
+prcrmntDiv
+조달구분
+1
+0
+C
+검색하고자 하는 조달방식 구분
+C:중앙조달
+S:자체조달
+cntrctDlvrDiv
+계약구분코드
+4
+0
+0020
+계약을 구분하는 코드1:총액계약그 외:납품요구
+dminsttCd
+수요기관코드
+7
+0
+8151225
+검색하고자하는 수요기관코드행자부코드(행정자치부에서 부여한 기관코드)가 있는 경우 행자부코드 입력행자부코드가 없는 경우 조달청에서 부여한 수요기관 코드 입력
+dminsttNm
+수요기관명
+200
+0
+충청남도교육청
+검색하고자하는 수요기관명
+bizno
+업체사업자번호
+10
+0
+1258133492
+검색하고자 하는 사업자등록번호
+corpNm
+업체명
+100
+0
+아스타
+검색하고자 하는 업체명
+fnlCntrctDlvrReqChgOrdYn
+최종변경차수여부
+1
+0
+Y
+최종내역:Y
+변경내역포함 :N
+* 값이 없을 경우 기본 N으로 셋팅
+dmndInsttDivCd
+수요기관구분코드
+2
+0
+03
+검색하고자하는 수요기관구분
+01:국가기관 02:지자체 03:교육기관 51:공기업 52:준정부기관 53:기타공공기관 71:지방공기업 72:기타기관 81:지자체 출자출연기관
+dminsttRgnNm
+수요기관지역명
+100
+0
+충청남도
+검색하고자하는 수요기관의 지역명
+cntrctMthdCd
+계약방법코드
+1
+0
+1
+검색하고자하는 계약체결 방법
+1:일반경쟁 2:제한경쟁 3:지명경쟁 4:수의계약
+exclcProdctYn
+우수제품여부
+1
+0
+N
+검색하고자하는 상품의 우수제품 여부
+cnstwkMtrlDrctPurchsObjYn
+공사용자재직접구매대상여부
+1
+0
+Y
+검색하고자 하는 공사용자재직접구매대상 여부
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 예제
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+resultCode
+결과코드
+2
+1
+00
+결과코드
+resultMsg
+결과메세지
+50
+1
+정상
+결과메세지
+numOfRows
+한 페이지 결과 수
+4
+1
+10
+한 페이지 결과 수
+pageNo
+페이지 번호
+4
+1
+1
+페이지 번호
+totalCount
+데이터 총 개수
+4
+1
+17
+데이터 총 개수
+totYm
+집계년월
+6
+0
+202201
+집계년월
+prcrmntDivNm
+조달구분명
+50
+0
+중앙조달
+조달구분명
+cntrctDlvrDivNm
+계약납품구분명
+50
+0
+납품요구
+총액계약과 납품요구을 구분하는 명칭
+prdctClsfcNo
+물품분류번호
+8
+1
+56101703
+품명에 대한 분류번호로서 8자리로 표시
+prdctClsfcNoNm
+품명
+200
+1
+책상
+물품분류번호 8자리에 해당하는 물품의 한글이름
+dtilPrdctClsfcNo
+세부물품분류번호
+10
+1
+5610170301
+품명에 대한 분류번호로서 10자리로 표시
+dtilPrdctClsfcNoNm
+세부품명
+200
+1
+책상
+세부품명번호 10자리에 대한 한글명
+prdctIdntNo
+물품식별번호
+8
+1
+22763298
+품목에 대한 고유번호로서 8자리로 표시
+prdctIdntNoNm
+물품규격명
+200
+1
+책상, 나누리가구, NAD1201, 1200×700×720mm
+세부품명, 제조업체명, 제작국/모델명, 특성값 등 기본전인 규격사항등이 기록된 품목의 명칭
+dminsttNm
+수요기관명
+200
+0
+조달청
+중앙조달인 경우 조달사업에 관한 법률 제2조(정의)에 따라 수요물자의 구매 공급 또는 시설공사 계약의 체결을 조달청장에게 요청할 수 있도록 조달청장이 인정하여 등록한 기관 또는 기타 전자조달시스템을 이용하는 기관인 경우 계약을 의뢰한 기관의 명으로 공고기관과 수요기관이 동일할 수 있음
+dminsttCd
+수요기관코드
+7
+1
+1230000
+수요기관코드 행자부코드(행정자치부에서 부여한 기관코드)가 있는 경우 행자부코드가 행자부코드가 없는 경우 조달청에서 부여한 수요기관 코드가 표기됨
+dmndInsttDivNm
+수요기관구분명
+200
+0
+국가기관
+조달사업 수요기관 기준(조달청고시)에 따른 기관 분류
+dmndInsttDivNm
+수요기관구분코드
+2
+0
+01
+조달사업 수요기관 기준(조달청고시)에 따른 기관을 분류하는 코드
+dminsttRgnNm
+수요기관지역명
+100
+0
+대전
+수요기관의 관할 지역명
+corpNm
+업체명
+100
+0
+사단법인 한국장애인고용창출협회
+업체명
+bizno
+업체사업자등록번호
+10
+0
+2018208300
+업체 사업자등록번호
+fnlCntrctDlvrReqChgOrdYn
+최종변경차수여부
+1
+0
+N
+최종변경차수여부
+exclcProdctYn
+우수제품여부
+1
+0
+N
+조달물품우수제품여부 「조달사업에 관한 법률 시행령」 제18조*우수제품실적 추출 기준 : ‘15년부터 우수제품조항호 기준으로 함.
+cnstwkMtrlDrctPurchsObjYn
+공사용자재직접구매대상여부
+1
+0
+Y
+※ 중소기업청 고시에 따른 공사용자재직접구매대상 품목 여부(Y/N)
+* 2009.01.01 ~ 2012.12.31 사이의 계약 및 납품요구 건은 물품분류번호(8자리) 기준
+* 2013.01.01일 이후로 계약 및 납품요구 건은 세부품명번호(10자리) 기준
+cntrctMthdCd
+계약방법코드
+1
+0
+2
+검색하고자하는 계약체결 방법
+1:일반경쟁 2:제한경쟁 3:지명경쟁 4:수의계약
+sumAmt
+합계금액
+25
+1
+42570000
+합계금액
+sumQty
+합계수량
+25
+1
+20
+합계수량
+요청 / 응답 메시지 예제
+REST(URI)
+http://apis.data.go.kr/1230000/at/ShoppingMallPrdctInfoService05/ getSpcifyPrdlstPrcureTotList?numOfRows=10&pageNo=1&inqryBgnDate=20220401&inqryEndDate=20220430&inqryPrdctDiv=1&prdctClsfcNo=50467001&ServiceKey=인증키
+응답 메시지
+<response>
+<header>
+<resultCode>00</resultCode>
+<resultMsg>정상</resultMsg>
+</header>
+<body>
+<items>
+<item>
+<totYm>2022년 04월</totYm>
+<prcrmntDivNm/>
+<cntrctDlvrDivNm/>
+<prdctClsfcNo>50467001</prdctClsfcNo>
+<prdctClsfcNoNm>배추김치</prdctClsfcNoNm>
+<dtilPrdctClsfcNo/>
+<dtilPrdctClsfcNoNm/>
+<prdctIdntNo/>
+<prdctIdntNoNm/>
+<dminsttNm/>
+<dminsttCd/>
+<dmndInsttDivNm/>
+<dmndInsttDivCd/>
+<dminsttRgnNm/>
+<corpEntrprsDivNmNm/>
+<corpNm/>
+<bizno/>
+<exclcProdctYn/>
+<cnstwkMtrlDrctPurchsObjYn/>
+<cntrctMthdCd/>
+<sumAmt>408920834</sumAmt>
+<sumQty>149630</sumQty>
+</item>
+<item>
+<totYm/>
+<prcrmntDivNm/>
+<cntrctDlvrDivNm/>
+<prdctClsfcNo/>
+<prdctClsfcNoNm/>
+<dtilPrdctClsfcNo/>
+<dtilPrdctClsfcNoNm/>
+<prdctIdntNo/>
+<prdctIdntNoNm/>
+<dminsttNm/>
+<dminsttCd/>
+<dmndInsttDivNm/>
+<dmndInsttDivCd/>
+<dminsttRgnNm/>
+<corpEntrprsDivNmNm/>
+<corpNm/>
+<bizno/>
+<exclcProdctYn/>
+<cnstwkMtrlDrctPurchsObjYn/>
+<cntrctMthdCd/>
+<sumAmt>408920834</sumAmt>
+<sumQty>149630</sumQty>
+</item>
+</items>
+<numOfRows>10</numOfRows>
+<pageNo>1</pageNo>
+<totalCount>2</totalCount>
+</body>
+</response>
+OPEN API 에러코드별 조치방안
+Code
+코드값
+설명
+조치방안
+01
+Application Error
+제공기관 서비스 제공 상태가 원할하지 않습니다.
+서비스 제공기관의 관리자에게 문의하시기 바랍니다.
+02
+DB Error
+제공기관 서비스 제공 상태가 원할하지 않습니다.
+서비스 제공기관의 관리자에게 문의하시기 바랍니다.
+03
+No Data
+데이터 없음 에러
+04
+HTTP Error
+제공기관 서비스 제공 상태가 원할하지 않습니다.
+서비스 제공기관의 관리자에게 문의하시기 바랍니다.
+05
+service time out
+제공기관 서비스 제공 상태가 원할하지 않습니다
+서비스 제공기관의 관리자에게 문의하시기 바랍니다.
+06
+날짜Format 에러
+날짜 Default, Format Error
+날짜형식을 확인 하시기 바랍니다.
+07
+입력범위값 초과 에러
+요청하신 OpenAPI의 파라미터 입력값 범위가 초과 되었습니다.
+기술문서를 다시 한번 확인하여 주시기 바랍니다.
+08
+필수값 입력 에러
+요청하신 OpenAPI의 필수 파라미터가 누락되었습니다.
+기술문서를 다시 한번 확인하여 주시기 바랍니다.
+10
+잘못된 요청 파라미터 에러
+OpenAPI 요청시 ServiceKey 파라미터가 없음
+-OpenAPI 요청시 ServiceKey 파라미터가 누락되었습니다.
+-OpenAPI 요청 URL을 확인하시기 바랍니다.
+11
+필수 요청 파라미터가 없음
+요청하신 OpenAPI의 필수 파라미터가 누락되었습니다.
+기술문서를 다시 한번 확인하시어 주시기 바랍니다.
+12
+해당 오픈API 서비스가 없거나 폐기됨
+OpenAPI 호출시 URL이 잘못됨
+-제공기관 관리자에게 폐기된 서비스인지 확인바랍니다.
+폐기된 서비스가 아니면 개발가이드에서 OpenAPI요청 URL을 다시 확인하시기 바랍니다.
+20
+서비스 접근 거부
+활용승인이 되지 않은 OpenAPI호출
+-OpenAPI활용신청정보의 승인상태를 확인하시기 바랍니다.
+-활용신청에 대해 제공기관 담당자가 확인 후 '승인'이후 부터 사용할 수 있습니다.
+-신청 후 2~3일 소요되고 결과는 회원가입 시 등록한 e-mail로 발송됩니다.
+22
+서비스 요청 제한 횟수 초과 에러
+일일 활용건수가 초과함(활용건수 증가 필요)
+-OpenAPI활용신청정보의 서비스 상세기능별 일일 트래픽량을 확인하시기 바랍니다.
+-개발계정의 경우 제공기관에서 정의한 트래픽을 초과하여 활용할 수 없습니다.
+-운영계정의 경우 변경신청을 통해서 일일트래픽량을 변경 할 수 있습니다.
+30
+등록되지 않은 서비스 키
+잘못된 서비스키를 사용하였거나 서비스키를 URL인코딩하지
+-OpenAPI활용신청정보의 발급받은 서비스키를 다시 확인하시기 바랍니다.
+- 서비스키 값이 같다면 서비스키가 URL 인코등 되었는지 다시 확인하시기 바랍니다.
+31
+기한 만료된 서비스 키
+OpenAPI 사용기간이 만료됨
+(활용연장신청 후 사용가능)
+-OpenAPI 활용신청정보의 활용기간을 확인합니다.
+-활용기간이 지난 서비스는 이용할 수 없으며 연장신청을 통해 승인 받은 후 다시 이용가능 합니다.
+32
+등록되지 않은 도메인명 또는 IP주소
+활용신청한 서버의 IP와 실제 OpenAPI호출한 서버가 다를 경우
+-OpenAPI 활용신청정보의 등록된 도메인명이나 IP주소를 다시 확인합니다.
+-IP나 도메인의 정보를 변경하기 위해 변경신청을 할 수 있습니다.

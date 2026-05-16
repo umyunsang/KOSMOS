@@ -1,0 +1,82 @@
+공공데이터 오픈API 활용가이드
+1. 서비스 명세	3
+1.1 공공데이터 OpenAPI 조회 서비스	3
+가. API 서비스 개요	3
+나. 상세기능 목록	3
+다. 상세기능내역	4
+1) [예시목록조회] 상세기능명세	4
+2) [예시상세조회] 상세기능명세	5
+2. OpenAPI 에러 코드정리	7
+1. 서비스 명세
+1.1 공공데이터 오픈API 조회 서비스
+가. API 서비스 개요
+나. 상세기능 목록
+다. 상세기능내역
+1) [예시목록조회] 상세기능명세
+a) 상세기능정보
+b) 요청 메시지 명세 
+※ 항목구분 : 필수(1), 옵션(0) 
+c) 응답 메시지 명세
+※ 항목구분 : 필수(1), 옵션(0)
+d) 요청/응답 메시지 예제
+2. OpenAPI 에러 코드정리
+API 서비스 정보	API명(영문)	PostTrackInfo	PostTrackInfo	PostTrackInfo
+API 서비스 정보	API명(국문)	우체국통합배송조회	우체국통합배송조회	우체국통합배송조회
+API 서비스 정보	API 설명	우체국 등기번호를 이용하여 배송조회 할 수 있는 서비스	우체국 등기번호를 이용하여 배송조회 할 수 있는 서비스	우체국 등기번호를 이용하여 배송조회 할 수 있는 서비스
+API 서비스 보안적용 기술 수준	서비스 인증/권한	[O] serviceKey    [ ] 인증서 (GPKI/NPKI) [ ] Basic (ID/PW)  [ ] 없음	[O] serviceKey    [ ] 인증서 (GPKI/NPKI) [ ] Basic (ID/PW)  [ ] 없음	[O] serviceKey    [ ] 인증서 (GPKI/NPKI) [ ] Basic (ID/PW)  [ ] 없음
+API 서비스 보안적용 기술 수준	메시지 레벨 암호화	[ ] 전자서명   [ ] 암호화   [O] 없음	[ ] 전자서명   [ ] 암호화   [O] 없음	[ ] 전자서명   [ ] 암호화   [O] 없음
+API 서비스 보안적용 기술 수준	전송 레벨 암호화	[ ] SSL   [O] 없음	[ ] SSL   [O] 없음	[ ] SSL   [O] 없음
+API 서비스 보안적용 기술 수준	인터페이스 표준	[ ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [O] REST (GET) [ ] RSS 1.0   [ ] RSS 2.0   [ ] Atom 1.0   [ ] 기타	[ ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [O] REST (GET) [ ] RSS 1.0   [ ] RSS 2.0   [ ] Atom 1.0   [ ] 기타	[ ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [O] REST (GET) [ ] RSS 1.0   [ ] RSS 2.0   [ ] Atom 1.0   [ ] 기타
+API 서비스 보안적용 기술 수준	교환 데이터 표준 (중복선택가능)	[O] XML   [] JSON   [ ] MIME   [ ] MTOM	[O] XML   [] JSON   [ ] MIME   [ ] MTOM	[O] XML   [] JSON   [ ] MIME   [ ] MTOM
+API 서비스 배포정보	서비스 URL	http://openapi.epost.go.kr/trace/retrieveLongitudinalCombinedService/retrieveLongitudinalCombinedService/getLongitudinalCombinedList	http://openapi.epost.go.kr/trace/retrieveLongitudinalCombinedService/retrieveLongitudinalCombinedService/getLongitudinalCombinedList	http://openapi.epost.go.kr/trace/retrieveLongitudinalCombinedService/retrieveLongitudinalCombinedService/getLongitudinalCombinedList
+API 서비스 배포정보	서비스 명세 URL (WSDL 또는 WADL)	N/A	N/A	N/A
+API 서비스 배포정보	서비스 버전	1.0	1.0	1.0
+API 서비스 배포정보	서비스 시작일	2018-03-08	서비스 배포일	2018-03-08
+API 서비스 배포정보	서비스 이력	2018-03-08 : 서비스 시작	2018-03-08 : 서비스 시작	2018-03-08 : 서비스 시작
+API 서비스 배포정보	메시지 교환유형	[O] Request-Response   [ ] Publish-Subscribe [ ] Fire-and-Forgot   [ ] Notification	[O] Request-Response   [ ] Publish-Subscribe [ ] Fire-and-Forgot   [ ] Notification	[O] Request-Response   [ ] Publish-Subscribe [ ] Fire-and-Forgot   [ ] Notification
+API 서비스 배포정보	서비스 제공자	김정목 / 우정사업정보센터 인터넷우체국팀 / 061-338-2226 / themoka@korea.kr	김정목 / 우정사업정보센터 인터넷우체국팀 / 061-338-2226 / themoka@korea.kr	김정목 / 우정사업정보센터 인터넷우체국팀 / 061-338-2226 / themoka@korea.kr
+API 서비스 배포정보	데이터 갱신주기	일 1회	일 1회	일 1회
+번호	API명(국문)	상세기능명(영문)	상세기능명(국문)
+1	우체국 통합 배송조회	getLongitudinalCombinedList	우체국 통합 배송조회
+상세기능 번호	1	상세기능 유형	조회 (목록)
+상세기능명(국문)	우체국 통합 배송조회	우체국 통합 배송조회	우체국 통합 배송조회
+상세기능 설명	우체국 등기번호를 이용하여 국내,국제의 배송 내역을 조회하는 기능	우체국 등기번호를 이용하여 국내,국제의 배송 내역을 조회하는 기능	우체국 등기번호를 이용하여 국내,국제의 배송 내역을 조회하는 기능
+Call Back URL	http://openapi.epost.go.kr/trace/retrieveLongitudinalCombinedService/retrieveLongitudinalCombinedService/getLongitudinalCombinedList	http://openapi.epost.go.kr/trace/retrieveLongitudinalCombinedService/retrieveLongitudinalCombinedService/getLongitudinalCombinedList	http://openapi.epost.go.kr/trace/retrieveLongitudinalCombinedService/retrieveLongitudinalCombinedService/getLongitudinalCombinedList
+최대 메시지 사이즈	[4000] byte	[4000] byte	[4000] byte
+평균 응답 시간	[500] ms	초당 최대 트랙잭션	[30] tps
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+serviceKey	인증키	100	1	인증키 (URL Encode)	공공데이터포털에서 발급받은 인증키
+rgist	등기번호	13	1	8690770027579	등기번호
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+requestRegiNo	등기번호	13	1	8690770027579	API 요청 등기번호
+responseTime	응답 시간	20	1	yyyy-mm-dd hh:mm:ss	API 응답 시간
+successYN	성공 여부	1	1	Y	API 성공 여부
+errorMessage	에러 메세지	100	0	조회 결과가 없습니다.	API 에러 메세지
+regiNo	등기번호	13	1	8690770027579	조회된 등기번호
+senderName	보낸 사람	50	1	김*목	발신인명
+senderData	보낸 날자	10	1	2018-12-03	발신날자
+receiveName	받는 사람	50	1	손*진	받는 사람
+receiveDate	받은 날자	10	1	2018-12-04	받은 날자
+trackState	배달 상태	10	1	배달완료/미배달등	배달 상태
+expressType	서비스종류	10	1	EMS	국제우편인 경우에 해당 서비스 종류가 표기
+sortNo	정렬순서	1	1건이상 복수건(1..n)	1	배송진행 사항에 대한 정렬 순서
+date	처리일시	1	1건이상 복수건(1..n)	2018-12-03	배송 진행 처리 일시
+time	처리시간	1	1건이상 복수건(1..n)	10:55	배송 진행 처리 시간
+Statue	처리상태	1	1건이상 복수건(1..n)	접수	배송 진행 상태
+location	처리장소	1	1건이상 복수건(1..n)	상주공검우체국	배송 처리 장소
+remark	상세설명	500	1건이상 복수건(1..n)	발송국 : KRSELB(서울국제) 도착예정 교환국 : USORDA 발송횟수 : 68 운송편명 : OZ236	국제우편인 상세한 설명이 표기
+					
+요청메시지
+http://openapi.epost.go.kr/trace/retrieveLongitudinalCombinedService/retrieveLongitudinalCombinedService/getLongitudinalCombinedList?ServiceKey=TEST_SERVICE_KEY&rgist=EM430859672KR
+응답메시지
+<response> <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>  - <response> - <header>   <requestRegiNo>EM430859672KR</requestRegiNo>    <responseTime>2019-03-06 09:09:08</responseTime>    <successYN>Y</successYN>    <errorMessage />    </header> - <trackInfo>   <regiNo>EM430859672KR</regiNo>    <senderName>J*** ***** **o</senderName>    <senderData>2019-01-24</senderData>    <receiveName>R****** ****g</receiveName>    <receiveDate>2019-01-28</receiveDate>    <trackState>배달완료</trackState>    <expressType>EMS</expressType>  - <detaileTrackList>   <sortNo>0</sortNo>    <date>2019-01-24</date>    <time>11:40</time>    <statue>접수</statue>    <locaiont>강릉우체국</locaiont>    <remark>접수우체국우편번호 : 25550 접수우체국전화번호 : 033 -610-9711 중계국 또는 도착국가 : 미국(US)</remark>    </detaileTrackList> - <detaileTrackList>   <sortNo>1</sortNo>    <date>2019-01-24</date>    <time>18:13</time>    <statue>발송</statue>    <locaiont>강릉우체국</locaiont>    <remark />    </detaileTrackList> - <detaileTrackList>   <sortNo>2</sortNo>    <date>2019-01-24</date>    <time>18:42</time>    <statue>도착</statue>    <locaiont>강릉우편집중국</locaiont>    <remark />    </detaileTrackList> - <detaileTrackList>   <sortNo>3</sortNo>    <date>2019-01-24</date>    <time>20:46</time>    <statue>발송</statue>    <locaiont>강릉우편집중국</locaiont>    <remark />    </detaileTrackList> - <detaileTrackList>   <sortNo>4</sortNo>    <date>2019-01-25</date>    <time>00:29</time>    <statue>도착</statue>    <locaiont>대전교환센터</locaiont>    <remark />    </detaileTrackList> - <detaileTrackList>   <sortNo>5</sortNo>    <date>2019-01-25</date>    <time>01:54</time>    <statue>발송</statue>    <locaiont>대전교환센터</locaiont>    <remark />    </detaileTrackList> - <detaileTrackList>   <sortNo>6</sortNo>    <date>2019-01-25</date>    <time>03:51</time>    <statue>발송교환국에 도착</statue>    <locaiont>국제우편물류센터</locaiont>    <remark />    </detaileTrackList> - <detaileTrackList>   <sortNo>7</sortNo>    <date>2019-01-25</date>    <time>07:57</time>    <statue>발송준비</statue>    <locaiont>국제우편물류센터</locaiont>    <remark>발송국 : KRSELB(서울국제) 도착예정 교환국 : USORDA 발송횟수 : 68 운송편명 : OZ236</remark>    </detaileTrackList> - <detaileTrackList>   <sortNo>8</sortNo>    <date>2019-01-25</date>    <time>08:09</time>    <statue>항공사 인수</statue>    <locaiont>INCHEON</locaiont>    <remark />    </detaileTrackList> - <detaileTrackList>   <sortNo>9</sortNo>    <date>2019-01-25</date>    <time>08:09</time>    <statue>운송사 인계</statue>    <locaiont>INCHEON</locaiont>    <remark>항공편 : OZ236</remark>    </detaileTrackList> - <detaileTrackList>   <sortNo>10</sortNo>    <date>2019-01-25</date>    <time>20:10</time>    <statue>항공기 출발(예정,한국시간)</statue>    <locaiont>INCHEON</locaiont>    <remark />    </detaileTrackList> - <detaileTrackList>   <sortNo>11</sortNo>    <date>2019-01-25</date>    <time>18:25</time>    <statue>상대국 도착</statue>    <locaiont>CHICAGO</locaiont>    <remark />    </detaileTrackList> - <detaileTrackList>   <sortNo>12</sortNo>    <date>2019-01-25</date>    <time>18:55</time>    <statue>상대국 인계</statue>    <locaiont>CHICAGO</locaiont>    <remark />    </detaileTrackList> - <detaileTrackList>   <sortNo>13</sortNo>    <date>2019-01-26</date>    <time>11:59</time>    <statue>교환국 도착</statue>    <locaiont>USORDA</locaiont>    <remark />    </detaileTrackList> - <detaileTrackList>   <sortNo>14</sortNo>    <date>2019-01-28</date>    <time>08:01</time>    <statue>도착</statue>    <locaiont />    <remark />    </detaileTrackList> - <detaileTrackList>   <sortNo>15</sortNo>    <date>2019-01-28</date>    <time>14:50</time>    <statue>배달완료</statue>    <locaiont>77055</locaiont>    <remark />    </detaileTrackList>   </trackInfo>   </response>
+에러코드	에러메시지	설명
+1	APPLICATION_ERROR	어플리케이션 에러
+10	INVALID_REQUEST_PARAMETER_ERROR	잘못된 요청 파라메터 에러
+12	NO_OPENAPI_SERVICE_ERROR	해당 오픈API서비스가 없거나 폐기됨
+20	SERVICE_ACCESS_DENIED_ERROR	서비스 접근거부
+22	LIMITED_NUMBER_OF_SERVICE_REQUESTS_EXCEEDS_ERROR	서비스 요청제한횟수 초과에러
+30	SERVICE_KEY_IS_NOT_REGISTERED_ERROR	등록되지 않은 서비스키
+31	DEADLINE_HAS_EXPIRED_ERROR	기한만료된 서비스키
+32	UNREGISTERED_IP_ERROR	등록되지 않은 IP
+99	UNKNOWN_ERROR	기타에러

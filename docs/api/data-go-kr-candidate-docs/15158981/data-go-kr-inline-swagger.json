@@ -1,0 +1,337 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "대구광역시상수도사업본부 유량정보(년도별유수율실적정보, 정수장운영년보정보)를 조회하기 위한 서비스로 유량정보(년도별유수율실적정보, 정수장운영년보정보)를 조회할 수 있습니다. 대구광역시는 상수도 운영과 수자원 관리를 체계적으로 수행하기 위해 다양한 유량 정보를 수집·공개하고 있습니다. 이 유량 정보는 수돗물의 생산, 공급, 누수율 등과 밀접하게 관련되어 있으며, 특히 유수율(전체 생산량 중 실제 요금 부과가 가능한 물의 비율)은 대구시 상수도 운영의 효율성을 보여주는 핵심 지표입니다.자세한 유량 정보나 특정 정수장의 실적이 필요할 경우, 대구광역시 상수도사업본부의 홈페이지(dgwater.go.kr)에서 직접 확인가능합니다.",
+    "version": "1.0.0",
+    "title": "대구광역시_유량정보 조회 서비스_GW"
+  },
+  "host": "apis.data.go.kr/6270000/openData_2",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/FltpltYearData": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "rsMsg": {
+                  "type": "object",
+                  "description": "결과정보",
+                  "properties": {
+                    "statusCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "header": {
+                  "type": "string",
+                  "description": "항목구분",
+                  "properties": {}
+                },
+                "list": {
+                  "type": "object",
+                  "description": "목록",
+                  "properties": {
+                    "gubun": {
+                      "type": "string",
+                      "description": "용수구분",
+                      "properties": {}
+                    },
+                    "deptnm": {
+                      "type": "string",
+                      "description": "정수장명",
+                      "properties": {}
+                    },
+                    "month": {
+                      "type": "string",
+                      "description": "월",
+                      "properties": {}
+                    },
+                    "intake": {
+                      "type": "string",
+                      "description": "취수량",
+                      "properties": {}
+                    },
+                    "out": {
+                      "type": "string",
+                      "description": "송수량",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "정수장운영년보 정보 조회",
+        "description": "정수장운영년보 정보를 제공하는 서비스",
+        "operationId": "FltpltYearData",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "searchDate",
+          "description": "년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "deptId",
+          "description": "정수장",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/WaterRateByYear": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "rsMsg": {
+                  "type": "object",
+                  "description": "결과정보",
+                  "properties": {
+                    "statusCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "header": {
+                  "type": "string",
+                  "description": "항목구분",
+                  "properties": {}
+                },
+                "list": {
+                  "type": "object",
+                  "description": "목록",
+                  "properties": {
+                    "year": {
+                      "type": "string",
+                      "description": "년도",
+                      "properties": {}
+                    },
+                    "month": {
+                      "type": "string",
+                      "description": "월",
+                      "properties": {}
+                    },
+                    "supplyamt": {
+                      "type": "string",
+                      "description": "생산량(㎥)",
+                      "properties": {}
+                    },
+                    "ctlamt": {
+                      "type": "string",
+                      "description": "조정량(㎥)",
+                      "properties": {}
+                    },
+                    "fluxrate": {
+                      "type": "string",
+                      "description": "유수율(%)",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "년도별유수율실적 정보 조회",
+        "description": "년도별유수율실적 정보를 제공하는 서비스",
+        "operationId": "WaterRateByYear",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "searchDate",
+          "description": "년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "startMonth",
+          "description": "시작월",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "endMonth",
+          "description": "종료월",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "FltpltYearData_response": {
+      "type": "object",
+      "properties": {
+        "rsMsg": {
+          "type": "object",
+          "description": "결과정보",
+          "properties": {
+            "statusCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "message": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "header": {
+          "type": "string",
+          "description": "항목구분"
+        },
+        "list": {
+          "type": "object",
+          "description": "목록",
+          "properties": {
+            "gubun": {
+              "type": "string",
+              "description": "용수구분"
+            },
+            "deptnm": {
+              "type": "string",
+              "description": "정수장명"
+            },
+            "month": {
+              "type": "string",
+              "description": "월"
+            },
+            "intake": {
+              "type": "string",
+              "description": "취수량"
+            },
+            "out": {
+              "type": "string",
+              "description": "송수량"
+            }
+          }
+        }
+      }
+    },
+    "WaterRateByYear_response": {
+      "type": "object",
+      "properties": {
+        "rsMsg": {
+          "type": "object",
+          "description": "결과정보",
+          "properties": {
+            "statusCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "message": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "header": {
+          "type": "string",
+          "description": "항목구분"
+        },
+        "list": {
+          "type": "object",
+          "description": "목록",
+          "properties": {
+            "year": {
+              "type": "string",
+              "description": "년도"
+            },
+            "month": {
+              "type": "string",
+              "description": "월"
+            },
+            "supplyamt": {
+              "type": "string",
+              "description": "생산량(㎥)"
+            },
+            "ctlamt": {
+              "type": "string",
+              "description": "조정량(㎥)"
+            },
+            "fluxrate": {
+              "type": "string",
+              "description": "유수율(%)"
+            }
+          }
+        }
+      }
+    }
+  }
+}

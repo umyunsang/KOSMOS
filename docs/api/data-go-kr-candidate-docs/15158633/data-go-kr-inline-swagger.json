@@ -1,0 +1,279 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "대전교통공사에서 운영 및 관리하고 있는 대전도시철도 1호선에서 발생한 부정승차 정보를 제공하는 데이터입니다.\\n조회 기간을 설정하여 해당 기간 동안 발생한 부정승차 유형, 발생일, 발생 장소 등 주요 항목별 정보를 포함하고 있습니다.\\n본 데이터를 활용하면 대전도시철도 내 부정승차 발생 현황과 유형별 추이를 파악할 수 있으며, 대중교통 부정승차 예방 연구, 승차권 운임 수입 손실 분석, 역사별 단속 강화 정책 수립을 위한 기초 자료 등 다양한 분야에서 활용이 가능합니다.\\n부정승차 현황을 투명하게 공개함으로써 시민의 올바른 대중교통 이용 문화 정착과 공정한 운임 체계 유지에도 기여합니다.\\n\\n(본 데이터는 오픈API 형태로 제공되며, 데이터 활용을 위해서는 사전에 활용 신청을 완료하고 인증키를 발급받아야 합니다.)",
+    "version": "1.0.0",
+    "title": "대전교통공사_부정승차정보 조회 서비스"
+  },
+  "host": "apis.data.go.kr/B554695/UnlawfulEntrySVC",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getUnlawfulEntry01": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "businessDay": {
+                              "type": "string",
+                              "description": "영업일자",
+                              "properties": {}
+                            },
+                            "stationNo": {
+                              "type": "string",
+                              "description": "역번호(별첨 문서 참조)",
+                              "properties": {}
+                            },
+                            "inputNo": {
+                              "type": "number",
+                              "description": "일련번호",
+                              "properties": {}
+                            },
+                            "regType": {
+                              "type": "string",
+                              "description": "단속계도유형(별첨 문서 참조)",
+                              "properties": {}
+                            },
+                            "regEntryType": {
+                              "type": "string",
+                              "description": "부정승차유형(별첨 문서 참조)",
+                              "properties": {}
+                            },
+                            "enstationNo": {
+                              "type": "string",
+                              "description": "승차역(별첨 문서 참조)",
+                              "properties": {}
+                            },
+                            "exstationNo": {
+                              "type": "string",
+                              "description": "하차역(별첨 문서 참조)",
+                              "properties": {}
+                            },
+                            "payAmt": {
+                              "type": "number",
+                              "description": "납부운임",
+                              "properties": {}
+                            },
+                            "addAmt": {
+                              "type": "number",
+                              "description": "납부부가운임",
+                              "properties": {}
+                            },
+                            "totalPayAmt": {
+                              "type": "number",
+                              "description": "납부금액",
+                              "properties": {}
+                            },
+                            "payType": {
+                              "type": "string",
+                              "description": "납부유형(별첨 문서 참조)",
+                              "properties": {}
+                            },
+                            "payDay": {
+                              "type": "string",
+                              "description": "납부일자",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "부정승차정보 조회",
+        "description": "기간을 설정하여 부정승차정보를 조회",
+        "operationId": "getUnlawfulEntry01",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "sDate",
+          "description": "시작날짜",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "eDate",
+          "description": "끝날짜",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "getUnlawfulEntry01_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "businessDay": {
+                      "type": "string",
+                      "description": "영업일자"
+                    },
+                    "stationNo": {
+                      "type": "string",
+                      "description": "역번호(별첨 문서 참조)"
+                    },
+                    "inputNo": {
+                      "type": "number",
+                      "description": "일련번호"
+                    },
+                    "regType": {
+                      "type": "string",
+                      "description": "단속계도유형(별첨 문서 참조)"
+                    },
+                    "regEntryType": {
+                      "type": "string",
+                      "description": "부정승차유형(별첨 문서 참조)"
+                    },
+                    "enstationNo": {
+                      "type": "string",
+                      "description": "승차역(별첨 문서 참조)"
+                    },
+                    "exstationNo": {
+                      "type": "string",
+                      "description": "하차역(별첨 문서 참조)"
+                    },
+                    "payAmt": {
+                      "type": "number",
+                      "description": "납부운임"
+                    },
+                    "addAmt": {
+                      "type": "number",
+                      "description": "납부부가운임"
+                    },
+                    "totalPayAmt": {
+                      "type": "number",
+                      "description": "납부금액"
+                    },
+                    "payType": {
+                      "type": "string",
+                      "description": "납부유형(별첨 문서 참조)"
+                    },
+                    "payDay": {
+                      "type": "string",
+                      "description": "납부일자"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            }
+          }
+        }
+      }
+    }
+  }
+}

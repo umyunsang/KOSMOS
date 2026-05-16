@@ -1,0 +1,78 @@
+{
+  "unit": 17,
+  "target_goal_new_api_count": 100,
+  "session_completed_submission_count_after_unit": 15,
+  "collected_at": "2026-05-16",
+  "collected_timezone": "Asia/Seoul",
+  "portal": "data.go.kr",
+  "portal_url": "https://www.data.go.kr/data/15140950/openapi.do",
+  "data_go_kr_id": "15140950",
+  "title": "헌법재판소_발간자료 조회 서비스",
+  "provider": "헌법재판소",
+  "managing_department": "정보화기획과",
+  "managing_department_phone": "02-708-3882",
+  "main_page_category": "법률",
+  "detail_classification": "공공질서및안전 - 법무및검찰",
+  "api_type": "REST",
+  "data_format": "JSON+XML",
+  "keywords": [
+    "발간목록",
+    "연속간행물",
+    "발간문헌상세"
+  ],
+  "registered_date": "2025-01-13",
+  "modified_date": "2025-02-26",
+  "cost": "무료",
+  "traffic": {
+    "development": "1,000/day",
+    "operation": "운영계정은 활용사례 등록시 신청하면 트래픽 증가 가능"
+  },
+  "update_cycle": "실시간",
+  "review_type": {
+    "development": "자동승인",
+    "operation": "심의승인"
+  },
+  "license": "이용허락범위 제한 없음 / 공공저작물 출처표시 제1유형",
+  "application": {
+    "submitted": true,
+    "submitted_by": "Computer Use browser UI",
+    "status_on_mypage": "승인",
+    "application_ref": "115980348",
+    "uddi": "uddi:402ddf2e-c615-44fc-8c34-c23ebeddb09e",
+    "application_date": "2026-05-16",
+    "expiry_date": "2028-05-16",
+    "purpose_type": "웹 사이트 개발",
+    "purpose_text": "UMMAYA 법률자료 lookup 어댑터: 제목, 저자, 내용으로 헌법재판소 발간문헌과 연속간행물을 검색하고 식별자로 원문 링크와 상세 메타데이터를 조회해 시민 법률정보 질의에 대응.",
+    "selected_functions": [
+      "주요 연속 간행물 목록 조회",
+      "주요 연속간행물 상세 조회",
+      "발간문헌 목록 조회",
+      "발간문헌 상세 조회"
+    ]
+  },
+  "ummaya_fit": {
+    "primitive": "lookup",
+    "adapter_candidate": "ccourt_publication_documents",
+    "fit_decision": "selected",
+    "citizen_queries": [
+      "헌법재판소에서 발간한 기본권 관련 자료 찾아줘.",
+      "헌재 발간문헌 중 선거제도 관련 문헌 제목과 저자 알려줘.",
+      "헌법재판소 연속간행물 원문 링크가 있어?",
+      "문헌일련번호로 헌재 발간문헌 상세정보 조회해줘."
+    ],
+    "reason": "Official Constitutional Court publication and serial-publication retrieval supports evidence-grounded legal information lookup without performing legal advice or submissions."
+  },
+  "saved_artifacts": [
+    "data-go-kr-detail.html",
+    "openapi-schemaorg.json",
+    "dcat-metadata.rdf.xml",
+    "swagger.json",
+    "gateway_swagger_guide.pdf",
+    "pre-application-screening-2026-05-16-unit-17.md",
+    "usage-notes-2026-05-16-unit-17.md",
+    "official-contract-summary.json"
+  ],
+  "live_api_probe": false,
+  "notes": "Embedded Swagger in the official detail page was saved as swagger.json. No API-specific reference document target was exposed beyond the embedded Swagger and generic gateway Swagger guide."
+}
+

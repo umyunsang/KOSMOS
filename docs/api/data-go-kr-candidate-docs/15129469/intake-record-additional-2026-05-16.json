@@ -1,0 +1,26 @@
+{
+  "id": "15129469",
+  "url": "https://www.data.go.kr/data/15129469/openapi.do",
+  "source_kind": "category",
+  "source_value": "공공행정",
+  "category": "공공행정",
+  "provider_type": "국가행정기관",
+  "org": "조달청",
+  "title_hint": "조달청_누리장터 민간계약정보 서비스 Update",
+  "description": "민간계약정보를 제공하는 서비스로 계약현황조회 ,변경이력조회, 삭제이력조회등 민간계약의 현황정보를 제공. 또한, 나라장터 검색조건인 계약체결일자, 확정계약번호, 요청번호, 공고번호, 기관명(계약기관, 수요기관), 품명, 계약방법, 계약참조번호에 따른 계약현황정보를 제공 ※ 나라장터에 수요기관으로 등록할 수 없는 '수요기관 외의 자'가 전자조달시스템을 이용하여 전자입찰을 실시하고자 하는 경우 '누리장터'를 이용할 수 있습니다. 민간계약정보는 누리장터에 등록된 민간계약건의 계약 관련 정보를 제공합니다.",
+  "modified_date": "",
+  "view_count": "3940",
+  "application_count": "162",
+  "keywords": "민간,계약,정보,아파트,누리장터,품명,서비스,전자조달",
+  "selection_reason": "Main-page category '공공행정' REST OpenAPI, non-duplicate, update-sorted.",
+  "og_title": "조달청_누리장터 민간계약정보 서비스",
+  "og_description": "민간계약정보를 제공하는 서비스로 계약현황조회 ,변경이력조회, 삭제이력조회등 민간계약의 현황정보를 제공. 또한, 나라장터 검색조건인 계약체결일자, 확정계약번호, 요청번호, 공고번호, 기관명(계약기관, 수요기관), 품명, 계약방법, 계약참조번호에 따른 계약현황정보를 제공 ※ 나라장터에 수요기관으로 등록할 수 없는 '수요기관 외의 자'가 전자조달시스템을 이용하여 전자입찰을 실시하고자 하는 경우 '누리장터'를 이용할 수 있습니다. 민간계약정보는 누리장터에 등록된 민간계약건의 계약 관련 정보를 제공합니다.",
+  "swagger_url": "",
+  "has_inline_swagger": true,
+  "downloaded_docs": [
+    "조달청_OpenAPI참고자료_누리장터_민간계약정보서비스_1.0.docx"
+  ],
+  "primitive_candidate": "find",
+  "captured_at": "2026-05-16",
+  "application_status": "not_submitted_confirmation_required"
+}

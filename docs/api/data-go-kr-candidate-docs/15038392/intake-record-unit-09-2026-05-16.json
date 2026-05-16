@@ -1,0 +1,127 @@
+{
+  "unit": 9,
+  "collected_at": "2026-05-16",
+  "dataset_id": "15038392",
+  "title": "한국대학교육협의회_대학알리미 재정 현황",
+  "portal_url": "https://www.data.go.kr/data/15038392/openapi.do",
+  "provider": "한국대학교육협의회",
+  "classification": "교육 - 고등교육",
+  "department": "대학정보공시센터",
+  "provider_phone": "02-6919-3891",
+  "format": "XML",
+  "license": "이용허락범위 제한 없음",
+  "application": {
+    "submitted": true,
+    "status": "승인",
+    "submitted_at": "2026-05-16",
+    "expires_at": "2028-05-16",
+    "application_reference": "115976918",
+    "account_type": "개발",
+    "portal_completion_message": "신청이 완료되었습니다. 신청된 API는 1~2시간 후 호출 가능합니다. 일부 API에서 24시간 후 인증이 가능한 API가 있습니다.",
+    "purpose_entered": "UMMAYA R&D. Citizen university finance looku adater for tuition, scholarshis, student loans, and education-investment questions using official AcademyInfo data. No resale."
+  },
+  "ummaya": {
+    "candidate_adapter_id": "kcue_academyinfo_finance_lookup",
+    "candidate_primitive": "lookup",
+    "fit": "Citizen-facing university finance lookup for tuition, scholarships, per-student education investment, student-loan status, and student-loan usage-ratio questions.",
+    "expected_usage": "Moderate overall; high during admissions, scholarship, transfer, enrollment-payment, and education-policy analysis seasons.",
+    "natural_language_mappings": [
+      {
+        "query": "연세대 등록금 현황 알려줘.",
+        "handling": "Resolve the university name to schlId with AcademyInfo code lookup, call getComparisonTuitionCrntSt with svyYr and schlId, then summarize official indicator values."
+      },
+      {
+        "query": "OO대 장학금 수혜 현황이 어때?",
+        "handling": "Resolve the university name, call the scholarship benefit operation documented in the guide, then return official scholarship benefit fields with source citation."
+      },
+      {
+        "query": "이 대학 학자금 대출 이용 비율 확인해줘.",
+        "handling": "Call the student-loan usage-ratio operation and explain the official ratio by year and school."
+      },
+      {
+        "query": "부산 지역 대학 등록금 비교해줘.",
+        "handling": "Use the regional tuition operation family with school-type or region filters, then compare official regional values."
+      }
+    ]
+  },
+  "primary_operation": {
+    "base_url": "http://openapi.academyinfo.go.kr/openapi/service/rest/FinancesService",
+    "path": "/getComparisonTuitionCrntSt",
+    "method": "GET",
+    "request_parameters": [
+      {
+        "name": "ServiceKey",
+        "required": true,
+        "description": "Issued service key; portal table uses ServiceKey while guide examples use serviceKey."
+      },
+      {
+        "name": "schlId",
+        "required": true,
+        "sample": "0000149",
+        "description": "AcademyInfo school id."
+      },
+      {
+        "name": "svyYr",
+        "required": true,
+        "sample": "2018",
+        "description": "Disclosure year."
+      },
+      {
+        "name": "pageNo",
+        "required": false,
+        "sample": "1",
+        "description": "Page number."
+      },
+      {
+        "name": "numOfRows",
+        "required": false,
+        "sample": "999",
+        "description": "Rows per page."
+      }
+    ],
+    "response_fields": [
+      "resultCode",
+      "resultMsg",
+      "numOfRows",
+      "pageNo",
+      "totalCount",
+      "Items",
+      "Item",
+      "indctId",
+      "indctVal1",
+      "schlDivNm",
+      "schlEstbNm",
+      "schlId",
+      "schlKrnNm",
+      "svyYr"
+    ]
+  },
+  "related_operations_from_docx": [
+    "FinancesService/getComparisonTuitionCrntSt",
+    "FinancesService/getRegionalTuitionCrntSt",
+    "FinancesService/getComparisonScholarshipBenefitCrntSt",
+    "FinancesService/getRegionalScholarshipBenefitCrntSt",
+    "FinancesService/getRegionalEducationalExpensesReductionCrntSt",
+    "FinancesService/getComparisonEducationExpensesLoanCrntSt",
+    "FinancesService/getRegionalEducationExpensesLoanCrntSt",
+    "FinancesService/getComparisonEducationExpensesLoanUseStudentRatioTuition",
+    "FinancesService/getRegionalEducationExpensesLoanUseStudentRatioTuition",
+    "BasicInformationService/getUniversityCode"
+  ],
+  "saved_files": [
+    "data-go-kr-detail.html",
+    "openapi-schemaorg.json",
+    "dcat-metadata.rdf.xml",
+    "gateway_swagger_guide.pdf",
+    "IROS4_OA_DV_0401_OpenAPI활용가이드_25.한국대학교육협의회(대학공시정보)_v2.00.docx",
+    "IROS4_OA_DV_0401_OpenAPI활용가이드_25.한국대학교육협의회(대학공시정보)_v2.00.docx.txt",
+    "pre-application-screening-2026-05-16-unit-09.md",
+    "usage-notes-2026-05-16-unit-09.md"
+  ],
+  "caveats": [
+    "The completion dialog says calls may work after 1-2 hours, with some APIs requiring up to 24 hours.",
+    "The application form displayed a generic location-information warning, although this dataset is university finance data.",
+    "The DOCX appears to repeat getComparisonTuitionCrntSt in one education-expense comparison example; verify exact expansion operation names with direct curl probes after key activation.",
+    "Never save the issued service key in repository files."
+  ]
+}

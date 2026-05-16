@@ -1,0 +1,26 @@
+{
+  "id": "15155028",
+  "url": "https://www.data.go.kr/data/15155028/openapi.do",
+  "source_kind": "category",
+  "source_value": "식품건강",
+  "category": "식품건강",
+  "provider_type": "국가행정기관",
+  "org": "행정안전부",
+  "title_hint": "행정안전부_기타_담배도매업 조회서비스",
+  "description": "기타_담배도매업 데이터는 제조업자 또는 수입판매업자로부터 담배를 매입하여 다른 도매업자 또는 소매인에게 판매하는 담배도매업 데이터로 인허가일자, 영업상태, 사업장명, 소재지주소 등의 데이터를 제공합니다. - 공공데이터 제공 표준 기준, 전국 자치단체에서 관리하는 담배도매업 인허가 정보를 일괄 취합하여 전국 데이터로 제공 - 자료는 동일한 서식과 용어로 정리하여 인허가 현황을 일관되게 안내 - 해당 데이터에 대한 추가적인 자료 요청시 지자체 및 소관기관 담당자에게 문의 - 해당 데이터 법령 소관기관 및 문의처 : 재정경제부 출자관리과 / 044-215-5176 * 좌표계 : 보정계수 안들어간 Bessel 중부원점TM(EPSG:5174)",
+  "modified_date": "2026-04-16",
+  "view_count": "475",
+  "application_count": "64",
+  "keywords": "담배,담배도매,담배유통,담배업,담배판매",
+  "selection_reason": "Main-page category '식품건강' REST OpenAPI, non-duplicate, update-sorted.",
+  "og_title": "행정안전부_기타_담배도매업 조회서비스",
+  "og_description": "기타_담배도매업 데이터는 제조업자 또는 수입판매업자로부터 담배를 매입하여 다른 도매업자 또는 소매인에게 판매하는 담배도매업 데이터로 인허가일자, 영업상태, 사업장명, 소재지주소 등의 데이터를 제공합니다. - 공공데이터 제공 표준 기준, 전국 자치단체에서 관리하는 담배도매업 인허가 정보를 일괄 취합하여 전국 데이터로 제공 - 자료는 동일한 서식과 용어로 정리하여 인허가 현황을 일관되게 안내 - 해당 데이터에 대한 추가적인 자료 요청시 지자체 및 소관기관 담당자에게 문의 - 해당 데이터 법령 소관기관 및 문의처 : 재정경제부 출자관리과 / 044-215-5176 * 좌표계 : 보정계수 안들어간 Bessel 중부원점TM(EPSG:5174)",
+  "swagger_url": "",
+  "has_inline_swagger": true,
+  "downloaded_docs": [
+    "개방자치단체코드_영업상태코드.xlsx"
+  ],
+  "primitive_candidate": "locate/find",
+  "captured_at": "2026-05-16",
+  "application_status": "not_submitted_confirmation_required"
+}

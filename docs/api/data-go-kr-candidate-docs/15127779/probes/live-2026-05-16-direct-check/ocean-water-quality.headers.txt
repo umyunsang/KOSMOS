@@ -1,0 +1,9 @@
+HTTP/1.1 200 OK
+Content-Language: en-US
+Content-Type: application/xml;charset=utf-8
+Date: Sat, 16 May 2026 08:07:09 GMT
+Server: JBCS httpd
+Set-Cookie: <redacted>
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+Content-Length: 1980
+

@@ -1,0 +1,8 @@
+HTTP/1.1 200 OK
+Content-Language: ko-KR
+Content-Type: application/json;charset=UTF-8
+Date: Sat, 16 May 2026 08:06:46 GMT
+Set-Cookie: <redacted>
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+Transfer-Encoding: chunked
+

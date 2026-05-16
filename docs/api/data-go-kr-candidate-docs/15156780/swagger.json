@@ -1,0 +1,1584 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "본 서비스는 대한민국 공공부문 취업을 희망하는 구직자들에게 필수적인 정보를 제공하는 통합 일자리 정보 시스템입니다. 인사혁신처가 운영하는 '나라일터' 플랫폼과 연계하여, 중앙부처, 지방자치단체, 시·도 교육청 및 각종 공공기관의 현직 채용 담당자가 직접 등록한 신뢰도 높은 채용 공고를 실시간으로 조회할 수 있습니다.\\n\\n사용자는 개별 기관의 홈페이지를 일일이 방문하는 번거로움 없이, 이 서비스를 통해 행정, 기술, 연구 등 다양한 분야의 최신 채용 정보를 한곳에서 빠르고 편리하게 확인할 수 있습니다. 특히 데이터의 원천이 되는 기관에서 직접 입력한 정보를 기반으로 하므로 정보의 정확성이 보장되며, 투명한 공공 채용 시장을 형성하는 데 기여합니다. 국민 누구나 쉽고 공평하게 양질의 공공 일자리 정보에 접근할 수 있도록 돕는 정보의 허브 역할을 수행합니다.",
+    "version": "1.0.0",
+    "title": "인사혁신처_공공취업정보 조회 서비스"
+  },
+  "host": "apis.data.go.kr/1760000/PblJobService",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getItem": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "item": {
+                      "type": "object",
+                      "description": "item",
+                      "properties": {
+                        "idx": {
+                          "type": "number",
+                          "description": "공공취업정보일련번호",
+                          "properties": {}
+                        },
+                        "title": {
+                          "type": "string",
+                          "description": "제목",
+                          "properties": {}
+                        },
+                        "type01": {
+                          "type": "string",
+                          "description": "공고유형1 (:전체, g01:국가공무원 채용, g02:지방공무원 채용, g03:공공기관 채용, g04:교육청 채용)",
+                          "properties": {}
+                        },
+                        "type02": {
+                          "type": "string",
+                          "description": "공고유형2 (e01:공개경쟁채용, e02:경력경쟁채용, e03:계약직, e04:행정지원인력, e06:공모직위, e07:전입공모, e08:공공기관 채용)",
+                          "properties": {}
+                        },
+                        "contents": {
+                          "type": "string",
+                          "description": "내용",
+                          "properties": {}
+                        },
+                        "link01": {
+                          "type": "string",
+                          "description": "링크01 URL",
+                          "properties": {}
+                        },
+                        "link02": {
+                          "type": "string",
+                          "description": "링크02 URL",
+                          "properties": {}
+                        },
+                        "link03": {
+                          "type": "string",
+                          "description": "링크03 URL",
+                          "properties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "공공취업정보 상세조회",
+        "description": "공공취업정보등록번호로 공공취업정보 개별건의 상세정보를 조회하는 기능",
+        "operationId": "getItem",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "idx",
+          "description": "공공취업정보일련번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getClsfList": {
+      "get": {
+        "responses": {
+          "99": {
+            "description": "기타 오류"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "array",
+                      "description": "items",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "item": {
+                            "type": "object",
+                            "description": "item",
+                            "properties": {
+                              "codename": {
+                                "type": "string",
+                                "description": "직급명",
+                                "properties": {}
+                              },
+                              "codefullname": {
+                                "type": "string",
+                                "description": "직급전체명",
+                                "properties": {}
+                              },
+                              "code": {
+                                "type": "string",
+                                "description": "직급코드",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "01": {
+            "description": "인증 실패"
+          },
+          "02": {
+            "description": "인증키 오류"
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "채용직급 목록조회",
+        "description": "직급명을 검색 조건으로하여 채용직급정보 목록을 조회하는 기능",
+        "operationId": "getClsfList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "Clsf_nm",
+          "description": "직급",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getItemFile": {
+      "get": {
+        "responses": {
+          "99": {
+            "description": "기타 오류"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "array",
+                          "description": "item",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "sort": {
+                                "type": "string",
+                                "description": "정렬순서",
+                                "properties": {}
+                              },
+                              "idx": {
+                                "type": "string",
+                                "description": "첨부파일 일련번호",
+                                "properties": {}
+                              },
+                              "parentidx": {
+                                "type": "string",
+                                "description": "공공취업정보번호",
+                                "properties": {}
+                              },
+                              "filepath": {
+                                "type": "string",
+                                "description": "파일저장url",
+                                "properties": {}
+                              },
+                              "filename": {
+                                "type": "string",
+                                "description": "파일명",
+                                "properties": {}
+                              },
+                              "filesize": {
+                                "type": "string",
+                                "description": "파일사이즈",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "01": {
+            "description": "인증 실패"
+          },
+          "02": {
+            "description": "인증키 오류"
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "파일 목록 조회",
+        "description": "검색 고유값에 해당하는 파일목록을 조회 한다.",
+        "operationId": "getItemFile",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "idx",
+          "description": "공공취업정보일련번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getItemPosition": {
+      "get": {
+        "responses": {
+          "99": {
+            "description": "기타 오류"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "array",
+                          "description": "item",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "cnt": {
+                                "type": "string",
+                                "description": "채용인원",
+                                "properties": {}
+                              },
+                              "idx": {
+                                "type": "string",
+                                "description": "공공취업정보일련번호",
+                                "properties": {}
+                              },
+                              "parentidx": {
+                                "type": "string",
+                                "description": "직급 부모코드",
+                                "properties": {}
+                              },
+                              "code": {
+                                "type": "string",
+                                "description": "직급 코드",
+                                "properties": {}
+                              },
+                              "name": {
+                                "type": "string",
+                                "description": "직급 이름",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "01": {
+            "description": "인증 실패"
+          },
+          "02": {
+            "description": "인증키 오류"
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "채용직급 조회",
+        "description": "검색 고유값에 해당하는 채용직급을조회한다.",
+        "operationId": "getItemPosition",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "idx",
+          "description": "공공취업정보일련번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getInsttList": {
+      "get": {
+        "responses": {
+          "99": {
+            "description": "기타 오류"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "array",
+                          "description": "item",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "insttname": {
+                                "type": "string",
+                                "description": "기관명",
+                                "properties": {}
+                              },
+                              "insttcode": {
+                                "type": "string",
+                                "description": "기관코드",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "조회된 정보의 총 건수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한페이지의결과수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "02": {
+            "description": "인증키 오류"
+          },
+          "01": {
+            "description": "인증 실패"
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "채용기관 목록조회",
+        "description": "기관명을 검색조건으로하여 등록된 공공채용기관 목록을 조회하는 기능",
+        "operationId": "getInsttList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "Instt_nm",
+          "description": "기관명 검색어",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getList": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "array",
+                          "description": "item",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "type02": {
+                                "type": "string",
+                                "description": "공고유형2 (e01:공개경쟁채용, e02:경력경쟁채용, e03:계약직, e04:행정지원인력, e06:공모직위, e07:전입공모)",
+                                "properties": {}
+                              },
+                              "insttname": {
+                                "type": "string",
+                                "description": "기관명",
+                                "properties": {}
+                              },
+                              "enddate": {
+                                "type": "string",
+                                "description": "마감일(yyyymmdd)",
+                                "properties": {}
+                              },
+                              "idx": {
+                                "type": "string",
+                                "description": "공공취업정보일렬번호",
+                                "properties": {}
+                              },
+                              "moddate": {
+                                "type": "string",
+                                "description": "수정일(yyyymmdd)",
+                                "properties": {}
+                              },
+                              "regdate": {
+                                "type": "string",
+                                "description": "등록일(yyyymmdd)",
+                                "properties": {}
+                              },
+                              "title": {
+                                "type": "string",
+                                "description": "제목",
+                                "properties": {}
+                              },
+                              "areacode": {
+                                "type": "string",
+                                "description": "지역코드",
+                                "properties": {}
+                              },
+                              "readnum": {
+                                "type": "string",
+                                "description": "조회수",
+                                "properties": {}
+                              },
+                              "type01": {
+                                "type": "string",
+                                "description": "공고유형1 (:전체, g01:국가공무원, g02:지방공무원, g03:공공기관 채용, g04:교육청 채용)",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "공공취업정보 목록조회",
+        "description": "공고유형, 기관구분/기관명, 지역, 공고일자등의 검색조건에 의해 공공취업정보의 목록을 조회하는 기능",
+        "operationId": "getList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "Pblanc_ty",
+          "description": "공고유형 (e01:공개경쟁채용, e02:경력경쟁채용, e03:계약직, e04:행정지원인력,  e06:공모직위)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "Instt_se",
+          "description": "기관구분 (:전체, g01:국가공무원 채용, g02:지방공무원 채용, g03:공공기관 채용, g04:교육청 채용)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "Instt_nm",
+          "description": "기관명 검색어",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "Begin_de",
+          "description": "공고등록검색 시작일 (yyyy-mm-dd)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "End_de",
+          "description": "공고등록검색 종료일 (yyyy-mm-dd)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "Kwrd",
+          "description": "키워드 검색어",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "Sort_order",
+          "description": "정렬방향 (오름차순,내림차순)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "getItemPosition_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "array",
+                  "description": "item",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "cnt": {
+                        "type": "string",
+                        "description": "채용인원"
+                      },
+                      "idx": {
+                        "type": "string",
+                        "description": "공공취업정보일련번호"
+                      },
+                      "parentidx": {
+                        "type": "string",
+                        "description": "직급 부모코드"
+                      },
+                      "code": {
+                        "type": "string",
+                        "description": "직급 코드"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "직급 이름"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            }
+          }
+        }
+      }
+    },
+    "getInsttList_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "array",
+                  "description": "item",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "insttname": {
+                        "type": "string",
+                        "description": "기관명"
+                      },
+                      "insttcode": {
+                        "type": "string",
+                        "description": "기관코드"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "조회된 정보의 총 건수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한페이지의결과수"
+            }
+          }
+        }
+      }
+    },
+    "getList_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "array",
+                  "description": "item",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type02": {
+                        "type": "string",
+                        "description": "공고유형2 (e01:공개경쟁채용, e02:경력경쟁채용, e03:계약직, e04:행정지원인력, e06:공모직위, e07:전입공모)"
+                      },
+                      "insttname": {
+                        "type": "string",
+                        "description": "기관명"
+                      },
+                      "enddate": {
+                        "type": "string",
+                        "description": "마감일(yyyymmdd)"
+                      },
+                      "idx": {
+                        "type": "string",
+                        "description": "공공취업정보일렬번호"
+                      },
+                      "moddate": {
+                        "type": "string",
+                        "description": "수정일(yyyymmdd)"
+                      },
+                      "regdate": {
+                        "type": "string",
+                        "description": "등록일(yyyymmdd)"
+                      },
+                      "title": {
+                        "type": "string",
+                        "description": "제목"
+                      },
+                      "areacode": {
+                        "type": "string",
+                        "description": "지역코드"
+                      },
+                      "readnum": {
+                        "type": "string",
+                        "description": "조회수"
+                      },
+                      "type01": {
+                        "type": "string",
+                        "description": "공고유형1 (:전체, g01:국가공무원, g02:지방공무원, g03:공공기관 채용, g04:교육청 채용)"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            }
+          }
+        }
+      }
+    },
+    "getItemFile_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "array",
+                  "description": "item",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "sort": {
+                        "type": "string",
+                        "description": "정렬순서"
+                      },
+                      "idx": {
+                        "type": "string",
+                        "description": "첨부파일 일련번호"
+                      },
+                      "parentidx": {
+                        "type": "string",
+                        "description": "공공취업정보번호"
+                      },
+                      "filepath": {
+                        "type": "string",
+                        "description": "파일저장url"
+                      },
+                      "filename": {
+                        "type": "string",
+                        "description": "파일명"
+                      },
+                      "filesize": {
+                        "type": "string",
+                        "description": "파일사이즈"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            }
+          }
+        }
+      }
+    },
+    "getItem_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "item": {
+              "type": "object",
+              "description": "item",
+              "properties": {
+                "idx": {
+                  "type": "number",
+                  "description": "공공취업정보일련번호"
+                },
+                "title": {
+                  "type": "string",
+                  "description": "제목"
+                },
+                "type01": {
+                  "type": "string",
+                  "description": "공고유형1 (:전체, g01:국가공무원 채용, g02:지방공무원 채용, g03:공공기관 채용, g04:교육청 채용)"
+                },
+                "type02": {
+                  "type": "string",
+                  "description": "공고유형2 (e01:공개경쟁채용, e02:경력경쟁채용, e03:계약직, e04:행정지원인력, e06:공모직위, e07:전입공모, e08:공공기관 채용)"
+                },
+                "contents": {
+                  "type": "string",
+                  "description": "내용"
+                },
+                "link01": {
+                  "type": "string",
+                  "description": "링크01 URL"
+                },
+                "link02": {
+                  "type": "string",
+                  "description": "링크02 URL"
+                },
+                "link03": {
+                  "type": "string",
+                  "description": "링크03 URL"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getClsfList_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "items": {
+              "type": "array",
+              "description": "items",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "item": {
+                    "type": "object",
+                    "description": "item",
+                    "properties": {
+                      "codename": {
+                        "type": "string",
+                        "description": "직급명"
+                      },
+                      "codefullname": {
+                        "type": "string",
+                        "description": "직급전체명"
+                      },
+                      "code": {
+                        "type": "string",
+                        "description": "직급코드"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    }
+  },
+  "swaggerOprtinVOs": [
+    {
+      "oprtinUrl": "http://openapi.mpm.go.kr/openapi/service/PblJobService/getList",
+      "oprtinNm": "공공취업정보 목록조회",
+      "oprtinDc": "공고유형, 기관구분/기관명, 지역, 공고일자등의 검색조건에 의해 공공취업정보의 목록을 조회하는 기능",
+      "gwSvcNm": "getList",
+      "operationId": "getList",
+      "publicDataTyDetailCode": "PRDE02",
+      "reqList": [
+        {
+          "paramtrNm": "serviceKey",
+          "paramtrDc": "공공데이터포털에서 받은 인증키",
+          "paramtrBassValue": "-",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "pageNo",
+          "paramtrDc": "페이지번호",
+          "paramtrBassValue": "1",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "numOfRows",
+          "paramtrDc": "한 페이지 결과 수",
+          "paramtrBassValue": "10",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "Pblanc_ty",
+          "paramtrDc": "공고유형 (e01:공개경쟁채용정보 e02:특별채용 e03:별정직/계약직 e04:행정지원인력 e05:개방형직위 e06:공모직위 e07:전입공모 e08:공공기관공모)",
+          "paramtrBassValue": "e01",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "Instt_se",
+          "paramtrDc": "기관구분 (:전체 g01:국가직, g02:지방직, g03:공공기관)",
+          "paramtrBassValue": "g01",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "Instt_nm",
+          "paramtrDc": "기관명 검색어",
+          "paramtrBassValue": "전라북도",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "Begin_de",
+          "paramtrDc": "공고등록검색 시작일 (yyyy-mm-dd)",
+          "paramtrBassValue": "2010-01-01",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "End_de",
+          "paramtrDc": "공고등록검색 종료일 (yyyy-mm-dd)",
+          "paramtrBassValue": "2015-02-01",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "Kwrd",
+          "paramtrDc": "키워드 검색어",
+          "paramtrBassValue": "지방공무원",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "Sort_order",
+          "paramtrDc": "정렬방향 (오름차순,내림차순)",
+          "paramtrBassValue": "1",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        }
+      ],
+      "resList": [
+        {
+          "paramtrNm": "header",
+          "paramtrDc": "header",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/oper-8-header",
+          "subDefNm": "oper-8-header",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "resultCode",
+              "paramtrDc": "결과코드",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "resultMsg",
+              "paramtrDc": "결과메시지",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        },
+        {
+          "paramtrNm": "body",
+          "paramtrDc": "body",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/oper-8-body",
+          "subDefNm": "oper-8-body",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "totalCount",
+              "paramtrDc": "전체 결과 수",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "numOfRows",
+              "paramtrDc": "한 페이지 결과 수",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "pageNo",
+              "paramtrDc": "페이지번호",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "items",
+              "paramtrDc": "items",
+              "arrayYn": "N",
+              "paramtrDefNm": "#/definitions/oper-8-items",
+              "subDefNm": "oper-8-items",
+              "paramtrTy": "object",
+              "paramtrDivision": "필수",
+              "ck": true,
+              "subParam": [
+                {
+                  "paramtrNm": "item",
+                  "paramtrDc": "item",
+                  "arrayYn": "Y",
+                  "paramtrDefNm": "#/definitions/oper-8-item",
+                  "subDefNm": "oper-8-item",
+                  "paramtrTy": "object",
+                  "paramtrDivision": "필수",
+                  "ck": true,
+                  "subParam": [
+                    {
+                      "paramtrNm": "type02",
+                      "paramtrDc": "공고유형2 (e01:공개경쟁채용정보 e02:특별채용 e03:별정직/계약직 e04:행정지원인력 e05:개방형직위 e06:공모직위 e07:전입공모 e08:공공기관공모)",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "insttname",
+                      "paramtrDc": "기관명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "enddate",
+                      "paramtrDc": "마감일(yyyymmdd)",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "idx",
+                      "paramtrDc": "공공취업정보일렬번호",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "moddate",
+                      "paramtrDc": "수정일(yyyymmdd)",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "regdate",
+                      "paramtrDc": "등록일(yyyymmdd)",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "title",
+                      "paramtrDc": "제목",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "areacode",
+                      "paramtrDc": "지역코드",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "readnum",
+                      "paramtrDc": "조회수",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "type01",
+                      "paramtrDc": "공고유형1 (:전체 g01:국가직, g02:지방직, g03:공공기관)",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

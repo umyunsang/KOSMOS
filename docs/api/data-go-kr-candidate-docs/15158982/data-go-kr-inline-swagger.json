@@ -1,0 +1,443 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "대구광역시상수도사업본부 시설정보(일반공사)를 조회하기 위한 서비스로 시설정보(일반공사)를 조회할 수 있습니다. 시설정보 조회 API는 대구광역시 상수도사업본부에서 제공하는 공공데이터 API로, 공사구분, 담당부서코드, 착공일자, 준공일자를 입력하면 해당 기간 동안 진행된 상수도 공사 관련 상세 정보를 조회할 수 있습니다. 제공되는 정보에는 공사명, 공사구간 좌표, 시설부대비, 관급액, 수수료, 포장복구비 등 예산 정보와 함께, 입회일자, 입회부서, 입회자, 준공검사자, 착공·준공 회사명, 공사코드 등이 포함됩니다. 이 API는 상수도 시설 공사의 진행 현황, 예산 집행 내역, 참여 업체 정보 등을 통합적으로 파악할 수 있어 공공 공사 관리, 민원 대응, 행정 업무 지원 등에 활용됩니다.",
+    "version": "1.0.0",
+    "title": "대구광역시_시설정보 조회 서비스_GW"
+  },
+  "host": "apis.data.go.kr/6270000/openData_3",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/CntrwkList": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "rsMsg": {
+                  "type": "object",
+                  "description": "결과정보",
+                  "properties": {
+                    "statusCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "header": {
+                  "type": "string",
+                  "description": "항목구분",
+                  "properties": {}
+                },
+                "count": {
+                  "type": "integer",
+                  "description": "한 페이지 결과 수",
+                  "properties": {}
+                },
+                "tatalCount": {
+                  "type": "integer",
+                  "description": "전체 결과 수",
+                  "properties": {}
+                },
+                "list": {
+                  "type": "object",
+                  "description": "목록",
+                  "properties": {
+                    "gubun": {
+                      "type": "string",
+                      "description": "공사구분",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "공사종별",
+                      "properties": {}
+                    },
+                    "connm": {
+                      "type": "string",
+                      "description": "공사명",
+                      "properties": {}
+                    },
+                    "stworkdt": {
+                      "type": "string",
+                      "description": "착공일자",
+                      "properties": {}
+                    },
+                    "completedt": {
+                      "type": "string",
+                      "description": "준공일자",
+                      "properties": {}
+                    },
+                    "condt": {
+                      "type": "string",
+                      "description": "계약일자",
+                      "properties": {}
+                    },
+                    "consn": {
+                      "type": "string",
+                      "description": "공사번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "공사정보 조회 서비스",
+        "description": "일반공사 정보를 제공하는 서비스",
+        "operationId": "CntrwkList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageno",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "startdate",
+          "description": "시작년월일",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "enddate",
+          "description": "종료년월일",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "gubun",
+          "description": "공사구분 정보",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "pageunit",
+          "description": "페이지행개수 정보",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/CntrwkDetail": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "rsMsg": {
+                  "type": "object",
+                  "description": "결과정보",
+                  "properties": {
+                    "statusCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "header": {
+                  "type": "string",
+                  "description": "항목구분",
+                  "properties": {}
+                },
+                "list": {
+                  "type": "object",
+                  "description": "조회결과",
+                  "properties": {
+                    "consn": {
+                      "type": "string",
+                      "description": "공사번호",
+                      "properties": {}
+                    },
+                    "gubun": {
+                      "type": "string",
+                      "description": "공사구분",
+                      "properties": {}
+                    },
+                    "deptnm": {
+                      "type": "string",
+                      "description": "공사담당부서",
+                      "properties": {}
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "공사종별",
+                      "properties": {}
+                    },
+                    "connm": {
+                      "type": "string",
+                      "description": "공사명",
+                      "properties": {}
+                    },
+                    "stworkdt": {
+                      "type": "string",
+                      "description": "착공일자",
+                      "properties": {}
+                    },
+                    "completedt": {
+                      "type": "string",
+                      "description": "준공일자",
+                      "properties": {}
+                    },
+                    "condt": {
+                      "type": "string",
+                      "description": "계약일자",
+                      "properties": {}
+                    },
+                    "completecheckdt": {
+                      "type": "string",
+                      "description": "준공검사일자",
+                      "properties": {}
+                    },
+                    "coname": {
+                      "type": "string",
+                      "description": "업체명",
+                      "properties": {}
+                    },
+                    "publicpay": {
+                      "type": "string",
+                      "description": "관급액",
+                      "properties": {}
+                    },
+                    "firstpay": {
+                      "type": "string",
+                      "description": "도급액",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "공사정보 상세내역 조회",
+        "description": "일반공사 상세내역 정보를 제공하는 서비스",
+        "operationId": "CntrwkDetail",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "consn",
+          "description": "공사번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "CntrwkList_response": {
+      "type": "object",
+      "properties": {
+        "rsMsg": {
+          "type": "object",
+          "description": "결과정보",
+          "properties": {
+            "statusCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "message": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "header": {
+          "type": "string",
+          "description": "항목구분"
+        },
+        "count": {
+          "type": "integer",
+          "description": "한 페이지 결과 수"
+        },
+        "tatalCount": {
+          "type": "integer",
+          "description": "전체 결과 수"
+        },
+        "list": {
+          "type": "object",
+          "description": "목록",
+          "properties": {
+            "gubun": {
+              "type": "string",
+              "description": "공사구분"
+            },
+            "type": {
+              "type": "string",
+              "description": "공사종별"
+            },
+            "connm": {
+              "type": "string",
+              "description": "공사명"
+            },
+            "stworkdt": {
+              "type": "string",
+              "description": "착공일자"
+            },
+            "completedt": {
+              "type": "string",
+              "description": "준공일자"
+            },
+            "condt": {
+              "type": "string",
+              "description": "계약일자"
+            },
+            "consn": {
+              "type": "string",
+              "description": "공사번호"
+            }
+          }
+        }
+      }
+    },
+    "CntrwkDetail_response": {
+      "type": "object",
+      "properties": {
+        "rsMsg": {
+          "type": "object",
+          "description": "결과정보",
+          "properties": {
+            "statusCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "message": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "header": {
+          "type": "string",
+          "description": "항목구분"
+        },
+        "list": {
+          "type": "object",
+          "description": "조회결과",
+          "properties": {
+            "consn": {
+              "type": "string",
+              "description": "공사번호"
+            },
+            "gubun": {
+              "type": "string",
+              "description": "공사구분"
+            },
+            "deptnm": {
+              "type": "string",
+              "description": "공사담당부서"
+            },
+            "type": {
+              "type": "string",
+              "description": "공사종별"
+            },
+            "connm": {
+              "type": "string",
+              "description": "공사명"
+            },
+            "stworkdt": {
+              "type": "string",
+              "description": "착공일자"
+            },
+            "completedt": {
+              "type": "string",
+              "description": "준공일자"
+            },
+            "condt": {
+              "type": "string",
+              "description": "계약일자"
+            },
+            "completecheckdt": {
+              "type": "string",
+              "description": "준공검사일자"
+            },
+            "coname": {
+              "type": "string",
+              "description": "업체명"
+            },
+            "publicpay": {
+              "type": "string",
+              "description": "관급액"
+            },
+            "firstpay": {
+              "type": "string",
+              "description": "도급액"
+            }
+          }
+        }
+      }
+    }
+  }
+}

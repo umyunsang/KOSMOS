@@ -1,0 +1,93 @@
+{
+  "unit": 1,
+  "collected_at": "2026-05-16",
+  "source_portal": "data.go.kr",
+  "public_data_id": "15121954",
+  "detail_url": "https://www.data.go.kr/data/15121954/openapi.do",
+  "title_ko": "법무부_마을변호사 지역별 현황",
+  "provider_ko": "법무부",
+  "category_ko": "법률",
+  "classification_ko": "공공질서및안전 - 법무및검찰",
+  "application": {
+    "status": "submitted_and_approved",
+    "account_type": "development",
+    "submitted_at": "2026-05-16",
+    "expires_at": "2028-05-16",
+    "portal_evidence": "The data.go.kr usage-application list showed '[승인] 법무부_마을변호사 지역별 현황' after final submission."
+  },
+  "saved_artifacts": {
+    "detail_html": "data-go-kr-detail.html",
+    "inline_swagger": "data-go-kr-inline-swagger.json",
+    "general_swagger_guide_pdf": "gateway_swagger_guide.pdf",
+    "api_specific_reference_document": null,
+    "api_specific_reference_document_note": "The page's API-specific reference-document download handler was blank: fn_fileDownload('', '')."
+  },
+  "ummaya_candidate": {
+    "screening_result": "pass_with_caveat",
+    "candidate_tool_id": "moj_village_lawyer_lookup",
+    "primary_primitive": "find",
+    "supporting_primitives": [
+      "locate"
+    ],
+    "permission_tier_candidate": 1,
+    "priority": "secondary",
+    "frequency_inference": "medium_low",
+    "strategic_value": "medium",
+    "reason": "Citizen-facing Ministry of Justice legal-aid access lookup for underserved local areas; useful for natural queries about finding the assigned village lawyer by residence.",
+    "caveat": "The API exposes only pagination parameters, so a robust adapter must normalize citizen addresses with an existing locate adapter and filter paged records client-side."
+  },
+  "api_contract": {
+    "method": "GET",
+    "gateway_endpoint": "https://apis.data.go.kr/1270000/mojmabyun/mabyun",
+    "provider_origin_endpoint": "https://www.moj.go.kr/lawyerdataApi/mojmabyun",
+    "format": "XML",
+    "operation_id": "mabyun",
+    "required_query_parameters": [
+      {
+        "name": "serviceKey",
+        "type": "string",
+        "description_ko": "공공데이터포털에서 받은 인증키"
+      },
+      {
+        "name": "pageNo",
+        "type": "string",
+        "default": "1",
+        "description_ko": "페이지번호"
+      },
+      {
+        "name": "numOfRows",
+        "type": "string",
+        "default": "20",
+        "description_ko": "한 페이지 결과 수"
+      }
+    ],
+    "response_fields": [
+      "header.resultCode",
+      "header.resultMsg",
+      "body.items.item.State",
+      "body.items.item.City",
+      "body.items.item.Village",
+      "body.items.item.AreaNote",
+      "body.items.item.CityPublicServan",
+      "body.items.item.CityServDuty",
+      "body.items.item.VillagePublicServant",
+      "body.items.item.VillageServDuty",
+      "body.items.item.Attorney",
+      "body.items.item.AttorneyNote",
+      "body.pageNo",
+      "body.numOfRows",
+      "body.totalCount"
+    ],
+    "documented_result_codes": {
+      "0": "정상",
+      "5": "데이터 없음",
+      "200": "성공"
+    }
+  },
+  "citizen_queries_ko": [
+    "우리 동네 마을변호사 찾아줘.",
+    "OO군 OO면에서 무료 법률상담 받을 수 있는 담당 변호사 알려줘.",
+    "전세 문제 상담할 수 있는 지역 법률지원 창구를 찾아줘.",
+    "주소 기준으로 담당 마을변호사와 읍면동 담당 공무원 정보를 정리해줘."
+  ]
+}

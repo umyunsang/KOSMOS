@@ -1,0 +1,644 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "한국농업기술진흥원에서 수행하는 종자거래 및 종자공급 사업과 관련하여 판매용으로 생산·관리되는 종자 정보를 제공하는 API 데이터이다. 본 데이터는 종자 품종별 기본 정보와 함께 작물별·지역별 생산량, 생산연도별 생산 현황 등 종자 생산 및 공급과 관련된 정보를 포함하고 있으며, 종자 유통 현황과 생산 추이를 파악할 수 있도록 구성되어 있다. 또한 품종명 기반 조회 기능을 통해 특정 작물의 지역별 생산 수량 및 연도별 생산 실적을 확인할 수 있으며, 농업인·연구기관·공공기관·민간기업 등이 종자 생산계획 수립, 농업 정책 분석, 데이터 기반 서비스 개발 및 농업 정보 활용에 참고할 수 있도록 제공된다.",
+    "version": "1.0.0",
+    "title": "한국농업기술진흥원_종자생산현황_GW"
+  },
+  "host": "apis.data.go.kr/B554729/seedSupplyInfo",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/seedSupplyList": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "itemImage": {
+                              "type": "string",
+                              "description": "이미지링크",
+                              "properties": {}
+                            },
+                            "itemName": {
+                              "type": "string",
+                              "description": "작물명",
+                              "properties": {}
+                            },
+                            "kindName": {
+                              "type": "string",
+                              "description": "품종분류",
+                              "properties": {}
+                            },
+                            "seq": {
+                              "type": "string",
+                              "description": "종자키값",
+                              "properties": {}
+                            },
+                            "agriculturalName": {
+                              "type": "string",
+                              "description": "작물분류",
+                              "properties": {}
+                            },
+                            "breedingOrg": {
+                              "type": "string",
+                              "description": "육종기관",
+                              "properties": {}
+                            },
+                            "cropName": {
+                              "type": "string",
+                              "description": "품목분류",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "재단 종자거래 사업품종 목록",
+        "description": "재단 종자거래 분류, 특성 등을 제공하는 재단 종자거래 사업품종 목록",
+        "operationId": "seedSupplyList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/supplyAreaView": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "area": {
+                              "type": "string",
+                              "description": "지역",
+                              "properties": {}
+                            },
+                            "cropName": {
+                              "type": "string",
+                              "description": "작물명",
+                              "properties": {}
+                            },
+                            "itemName": {
+                              "type": "string",
+                              "description": "품종명",
+                              "properties": {}
+                            },
+                            "qty": {
+                              "type": "string",
+                              "description": "수량",
+                              "properties": {}
+                            },
+                            "releaseYear": {
+                              "type": "string",
+                              "description": "생산년도",
+                              "properties": {}
+                            },
+                            "seq": {
+                              "type": "string",
+                              "description": "종자키값",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "재단 종자거래 작물별/지역별 생산량",
+        "description": "종자품종명을 통해 작물별 지역별 생산량[지역,수량]을 조회하는 재단 종자거래 작물별/지역별 생산량",
+        "operationId": "supplyAreaView",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "seq",
+          "description": "종자키값",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/supplyYearView": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "releaseYear": {
+                              "type": "string",
+                              "description": "생산년도",
+                              "properties": {}
+                            },
+                            "seq": {
+                              "type": "string",
+                              "description": "종자키값",
+                              "properties": {}
+                            },
+                            "cropName": {
+                              "type": "string",
+                              "description": "작물명",
+                              "properties": {}
+                            },
+                            "itemName": {
+                              "type": "string",
+                              "description": "품종명",
+                              "properties": {}
+                            },
+                            "qty": {
+                              "type": "string",
+                              "description": "수량",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "재단 종자거래 작물/생산년도별 생산량",
+        "description": "종자품종명을 통해 작물별 생산년도별 생산량[생산년도, 수량]을 조회하는 재단 종자거래 작물/생산년도별 생산량",
+        "operationId": "supplyYearView",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "seq",
+          "description": "종자키값",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "seedSupplyList_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "itemImage": {
+                      "type": "string",
+                      "description": "이미지링크"
+                    },
+                    "itemName": {
+                      "type": "string",
+                      "description": "작물명"
+                    },
+                    "kindName": {
+                      "type": "string",
+                      "description": "품종분류"
+                    },
+                    "seq": {
+                      "type": "string",
+                      "description": "종자키값"
+                    },
+                    "agriculturalName": {
+                      "type": "string",
+                      "description": "작물분류"
+                    },
+                    "breedingOrg": {
+                      "type": "string",
+                      "description": "육종기관"
+                    },
+                    "cropName": {
+                      "type": "string",
+                      "description": "품목분류"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "supplyAreaView_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "area": {
+                      "type": "string",
+                      "description": "지역"
+                    },
+                    "cropName": {
+                      "type": "string",
+                      "description": "작물명"
+                    },
+                    "itemName": {
+                      "type": "string",
+                      "description": "품종명"
+                    },
+                    "qty": {
+                      "type": "string",
+                      "description": "수량"
+                    },
+                    "releaseYear": {
+                      "type": "string",
+                      "description": "생산년도"
+                    },
+                    "seq": {
+                      "type": "string",
+                      "description": "종자키값"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "supplyYearView_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "releaseYear": {
+                      "type": "string",
+                      "description": "생산년도"
+                    },
+                    "seq": {
+                      "type": "string",
+                      "description": "종자키값"
+                    },
+                    "cropName": {
+                      "type": "string",
+                      "description": "작물명"
+                    },
+                    "itemName": {
+                      "type": "string",
+                      "description": "품종명"
+                    },
+                    "qty": {
+                      "type": "string",
+                      "description": "수량"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

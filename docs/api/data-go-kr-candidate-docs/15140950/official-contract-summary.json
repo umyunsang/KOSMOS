@@ -1,0 +1,155 @@
+{
+  "source": {
+    "portal_url": "https://www.data.go.kr/data/15140950/openapi.do",
+    "schema_org_url": "https://www.data.go.kr/catalog/15140950/openapi.json",
+    "dcat_url": "https://www.data.go.kr/dcat/metadata/15140950",
+    "extracted_swagger_file": "swagger.json",
+    "downloaded_gateway_guide": "gateway_swagger_guide.pdf"
+  },
+  "api": {
+    "id": "15140950",
+    "title": "헌법재판소_발간자료 조회 서비스",
+    "provider": "헌법재판소",
+    "host": "apis.data.go.kr/9750000/PubDocsService",
+    "preferred_scheme": "https",
+    "produces": [
+      "application/json",
+      "application/xml"
+    ]
+  },
+  "operations": [
+    {
+      "method": "GET",
+      "path": "/getSerialPublicationList",
+      "summary": "주요 연속 간행물 목록 조회",
+      "description": "제목,내용을 입력하여 주요 연속 간행물 목록을 출력하는 기능 제공",
+      "required_parameters": [
+        "serviceKey"
+      ],
+      "optional_parameters": [
+        "pageNo",
+        "numOfRows",
+        "type",
+        "fields",
+        "title",
+        "content"
+      ],
+      "response_fields": [
+        "seqNo",
+        "title",
+        "pubFreq",
+        "pubDate",
+        "bookImg",
+        "content",
+        "totalCount",
+        "pageNo",
+        "numOfRows",
+        "resultCode",
+        "resultMsg"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/getSerialPublicationDetail",
+      "summary": "주요 연속간행물 상세 조회",
+      "description": "책일련번호를 입력하여 주요 연속간행물의 상세 목록을 조회",
+      "required_parameters": [
+        "serviceKey",
+        "seqNo"
+      ],
+      "optional_parameters": [
+        "pageNo",
+        "numOfRows",
+        "type",
+        "fields"
+      ],
+      "response_fields": [
+        "seqNo",
+        "subSeq",
+        "title",
+        "fileLink1",
+        "fileLink2",
+        "totalCount",
+        "pageNo",
+        "numOfRows",
+        "resultCode",
+        "resultMsg"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/getPblctLtrtreList",
+      "summary": "발간문헌 목록 조회",
+      "description": "제목/서명,총서,저자를 입력하여 발간문헌 검색 목록을 조회하는 기능 제공",
+      "required_parameters": [
+        "serviceKey"
+      ],
+      "optional_parameters": [
+        "pageNo",
+        "numOfRows",
+        "type",
+        "fields",
+        "title",
+        "book",
+        "bookReporter",
+        "xmlContent"
+      ],
+      "response_fields": [
+        "bookInfoSeq",
+        "title",
+        "book",
+        "bookReporter",
+        "bookSection",
+        "volumeInfo",
+        "publisher",
+        "pressDate",
+        "totalCount",
+        "pageNo",
+        "numOfRows",
+        "resultCode",
+        "resultMsg"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/getPblctLtrtreDetail",
+      "summary": "발간문헌 상세 조회",
+      "description": "문헌일련번호를 입력하여 발간문헌 검색 상세내용을 조회하는 기능 제공",
+      "required_parameters": [
+        "serviceKey",
+        "bookInfoSeq"
+      ],
+      "optional_parameters": [
+        "pageNo",
+        "numOfRows",
+        "type",
+        "fields"
+      ],
+      "response_fields": [
+        "xmlContent",
+        "bookInfoSeq",
+        "title",
+        "book",
+        "bookReporter",
+        "publisher",
+        "pressDate",
+        "bookSection",
+        "volumeInfo",
+        "seriesInfo",
+        "startPage",
+        "endPage",
+        "totalCount",
+        "pageNo",
+        "numOfRows",
+        "resultCode",
+        "resultMsg"
+      ]
+    }
+  ],
+  "implementation_warnings": [
+    "Validate serviceKey encoding and response format with direct curl before live adapter implementation.",
+    "Treat this adapter as publication lookup, not legal advice.",
+    "When file links are returned, cite them as official response fields and do not infer legal meaning beyond the source material."
+  ]
+}
+

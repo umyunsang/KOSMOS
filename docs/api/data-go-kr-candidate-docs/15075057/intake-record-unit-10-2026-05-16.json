@@ -1,0 +1,168 @@
+{
+  "unit": 10,
+  "collected_at": "2026-05-16",
+  "portal_id": "15075057",
+  "title": "식품의약품안전처_의약품개요정보(e약은요)",
+  "provider": "식품의약품안전처",
+  "classification": "보건 - 식품의약안전",
+  "portal_url": "https://www.data.go.kr/data/15075057/openapi.do",
+  "uddi": "uddi:411d4234-22dd-41ab-a40d-b0866cae3fe2",
+  "service_type": "REST",
+  "formats": [
+    "JSON",
+    "XML"
+  ],
+  "license": "이용허락범위 제한 없음",
+  "approval": {
+    "development": "auto_approved",
+    "operation": "review_required",
+    "my_page_status": "승인",
+    "application_date": "2026-05-16",
+    "expiry_date": "2028-05-16",
+    "application_reference": "115977335"
+  },
+  "ummaya_fit": {
+    "selected": true,
+    "adapter_id": "mfds_easy_drug_info_lookup",
+    "primitive": "lookup",
+    "fit_score": 5,
+    "expected_usage": "high",
+    "reason": "Citizens frequently ask medication efficacy, usage, warnings, side effects, storage, and pill-image questions. The API exposes official MFDS eYak fields that can answer those queries without inventing medical advice."
+  },
+  "endpoint": {
+    "base_url": "http://apis.data.go.kr/1471000/DrbEasyDrugInfoService",
+    "operation": "getDrbEasyDrugList",
+    "request_url": "http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList"
+  },
+  "request_parameters": [
+    {
+      "name": "ServiceKey",
+      "required": true,
+      "description": "data.go.kr service key, URL-encoded in query string calls"
+    },
+    {
+      "name": "pageNo",
+      "required": false,
+      "description": "Page number"
+    },
+    {
+      "name": "numOfRows",
+      "required": false,
+      "description": "Rows per page"
+    },
+    {
+      "name": "entpName",
+      "required": false,
+      "description": "Company/manufacturer name"
+    },
+    {
+      "name": "itemName",
+      "required": false,
+      "description": "Drug product name"
+    },
+    {
+      "name": "itemSeq",
+      "required": false,
+      "description": "Product standard/item sequence code"
+    },
+    {
+      "name": "efcyQesitm",
+      "required": false,
+      "description": "Efficacy question text filter"
+    },
+    {
+      "name": "useMethodQesitm",
+      "required": false,
+      "description": "Usage method question text filter"
+    },
+    {
+      "name": "atpnWarnQesitm",
+      "required": false,
+      "description": "Mandatory pre-use warning question text filter"
+    },
+    {
+      "name": "atpnQesitm",
+      "required": false,
+      "description": "Precaution question text filter"
+    },
+    {
+      "name": "intrcQesitm",
+      "required": false,
+      "description": "Drug or food interaction question text filter"
+    },
+    {
+      "name": "seQesitm",
+      "required": false,
+      "description": "Side effect question text filter"
+    },
+    {
+      "name": "depositMethodQesitm",
+      "required": false,
+      "description": "Storage method question text filter"
+    },
+    {
+      "name": "openDe",
+      "required": false,
+      "description": "Open/publication date"
+    },
+    {
+      "name": "updateDe",
+      "required": false,
+      "description": "Update date"
+    },
+    {
+      "name": "type",
+      "required": false,
+      "description": "Response format xml/json; default xml"
+    }
+  ],
+  "response_fields": [
+    "resultCode",
+    "resultMsg",
+    "numOfRows",
+    "pageNo",
+    "totalCount",
+    "entpName",
+    "itemName",
+    "itemSeq",
+    "efcyQesitm",
+    "useMethodQesitm",
+    "atpnWarnQesitm",
+    "atpnQesitm",
+    "intrcQesitm",
+    "seQesitm",
+    "depositMethodQesitm",
+    "openDe",
+    "updateDe",
+    "itemImage"
+  ],
+  "natural_language_mappings": [
+    {
+      "query": "타이레놀 효능, 복용법, 부작용 알려줘.",
+      "method": "Search with itemName and type=json, then summarize efcyQesitm, useMethodQesitm, and seQesitm."
+    },
+    {
+      "query": "이 약 먹기 전에 피해야 할 음식이나 같이 먹으면 안 되는 약이 있어?",
+      "method": "Search by itemName or itemSeq, then answer from atpnWarnQesitm, atpnQesitm, and intrcQesitm."
+    },
+    {
+      "query": "약 사진이랑 보관 방법도 확인해줘.",
+      "method": "Return itemImage and depositMethodQesitm when available."
+    }
+  ],
+  "caveats": [
+    "Use as official medication information lookup only; do not provide diagnosis, prescription, or emergency triage.",
+    "Downloaded DOCX sample URL uses trustEntpName, while the portal request table lists entpName. Prefer entpName until direct live curl validation proves alias behavior.",
+    "No live API contract test should run in CI."
+  ],
+  "saved_artifacts": [
+    "data-go-kr-detail.html",
+    "openapi-schemaorg.json",
+    "dcat-metadata.rdf.xml",
+    "gateway_swagger_guide.pdf",
+    "IROS_239_의약품개요정보(e약은요)_서비스_v1.0.docx",
+    "IROS_239_의약품개요정보(e약은요)_서비스_v1.0.docx.txt",
+    "pre-application-screening-2026-05-16-unit-10.md",
+    "usage-notes-2026-05-16-unit-10.md"
+  ]
+}

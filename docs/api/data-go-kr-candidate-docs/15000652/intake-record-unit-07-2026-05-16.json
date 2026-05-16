@@ -1,0 +1,222 @@
+{
+  "unit": 7,
+  "collected_at": "2026-05-16",
+  "dataset_id": "15000652",
+  "title": "국립중앙의료원_전국 자동심장충격기(AED) 정보 조회 서비스",
+  "portal_url": "https://www.data.go.kr/data/15000652/openapi.do",
+  "provider": "국립중앙의료원",
+  "classification": "보건 - 보건의료",
+  "data_format": "XML",
+  "approval_type": "개발단계 자동승인 / 운영단계 자동승인",
+  "traffic": {
+    "development_daily_limit_per_operation": 1000,
+    "operation_limit_note": "활용사례 등록시 신청하면 트래픽 증가 가능"
+  },
+  "application": {
+    "submitted": true,
+    "status": "approved",
+    "application_ref": "115975807",
+    "application_date": "2026-05-16",
+    "expiry_date": "2028-05-16",
+    "purpose": "UMMAYA R&D. Build citizen emergency finder for nearby AED sites using official NMC data. Cite agency source. No resale."
+  },
+  "candidate_adapter": {
+    "id": "nmc_aed_site_locate",
+    "primitive": "locate",
+    "fit": "pass",
+    "fit_reason": "Citizens can ask for nearby AEDs or district-level AED locations. The API returns national official AED facility, address, placement, coordinates, contact, and availability-time fields.",
+    "caveat": "The portal warns that business services using location information may require location-service permission/reporting under Korean law."
+  },
+  "citizen_queries": [
+    {
+      "query": "지금 내 근처 자동심장충격기 어디 있어?",
+      "handling": "Resolve coordinates and call /getAedLcinfoInqire with WGS84_LON/WGS84_LAT, then return official AED locations."
+    },
+    {
+      "query": "종로구 자동제세동기 위치 알려줘.",
+      "handling": "Call /getEgytAedManageInfoInqire with Q0=서울특별시 and Q1=종로구, then return facility, address, placement, and contact fields."
+    },
+    {
+      "query": "AED 전체 데이터를 받아서 사전 색인을 만들 수 있어?",
+      "handling": "Use /getAedFullDown for cache or fixture generation, then cite the NMC source in lookup answers."
+    }
+  ],
+  "api_contract": {
+    "base_url": "https://apis.data.go.kr/B552657/AEDInfoInqireService",
+    "operations": [
+      {
+        "operation": "GET /getEgytAedManageInfoInqire",
+        "endpoint": "https://apis.data.go.kr/B552657/AEDInfoInqireService/getEgytAedManageInfoInqire",
+        "required_query_parameters": [
+          {
+            "name": "serviceKey",
+            "description": "공공데이터포털에서 받은 인증키"
+          },
+          {
+            "name": "Q0",
+            "description": "주소(시도), sample 서울특별시"
+          },
+          {
+            "name": "Q1",
+            "description": "주소(시군구), sample 종로구"
+          }
+        ],
+        "optional_query_parameters": [
+          {
+            "name": "pageNo",
+            "description": "페이지 번호"
+          },
+          {
+            "name": "numOfRows",
+            "description": "목록 건수"
+          }
+        ]
+      },
+      {
+        "operation": "GET /getAedLcinfoInqire",
+        "endpoint": "https://apis.data.go.kr/B552657/AEDInfoInqireService/getAedLcinfoInqire",
+        "required_query_parameters": [
+          {
+            "name": "serviceKey",
+            "description": "공공데이터포털에서 받은 인증키"
+          },
+          {
+            "name": "WGS84_LON",
+            "description": "경도"
+          },
+          {
+            "name": "WGS84_LAT",
+            "description": "위도"
+          }
+        ],
+        "optional_query_parameters": [
+          {
+            "name": "pageNo",
+            "description": "페이지 번호"
+          },
+          {
+            "name": "numOfRows",
+            "description": "목록 건수"
+          },
+          {
+            "name": "Q0",
+            "description": "시도 코드"
+          },
+          {
+            "name": "Q1",
+            "description": "구군 코드"
+          }
+        ]
+      },
+      {
+        "operation": "GET /getAedFullDown",
+        "endpoint": "https://apis.data.go.kr/B552657/AEDInfoInqireService/getAedFullDown",
+        "required_query_parameters": [
+          {
+            "name": "serviceKey",
+            "description": "공공데이터포털에서 받은 인증키"
+          }
+        ],
+        "optional_query_parameters": [
+          {
+            "name": "pageNo",
+            "description": "페이지 번호"
+          },
+          {
+            "name": "numOfRows",
+            "description": "목록 건수"
+          }
+        ]
+      }
+    ],
+    "response_fields": [
+      {
+        "name": "resultCode",
+        "description": "결과코드"
+      },
+      {
+        "name": "resultMsg",
+        "description": "결과메시지"
+      },
+      {
+        "name": "totalCount",
+        "description": "전체 결과 수"
+      },
+      {
+        "name": "pageNo",
+        "description": "페이지 번호"
+      },
+      {
+        "name": "numOfRows",
+        "description": "목록 건수"
+      },
+      {
+        "name": "serialSeq",
+        "description": "AED serial sequence"
+      },
+      {
+        "name": "sido",
+        "description": "시도"
+      },
+      {
+        "name": "gugun",
+        "description": "시군구"
+      },
+      {
+        "name": "org",
+        "description": "설치기관 또는 시설명"
+      },
+      {
+        "name": "buildAddress",
+        "description": "설치 주소"
+      },
+      {
+        "name": "buildPlace",
+        "description": "설치 위치"
+      },
+      {
+        "name": "clerkTel",
+        "description": "담당 연락처"
+      },
+      {
+        "name": "manager",
+        "description": "관리자명"
+      },
+      {
+        "name": "managerTel",
+        "description": "관리자 연락처"
+      },
+      {
+        "name": "mfg",
+        "description": "제조사"
+      },
+      {
+        "name": "model",
+        "description": "모델명"
+      },
+      {
+        "name": "wgs84Lat",
+        "description": "위도"
+      },
+      {
+        "name": "wgs84Lon",
+        "description": "경도"
+      },
+      {
+        "name": "weekly_availability_fields",
+        "description": "weekday/holiday start/end time fields and Sunday week availability flags"
+      }
+    ]
+  },
+  "saved_artifacts": [
+    "data-go-kr-detail.html",
+    "gateway_swagger_guide.pdf",
+    "openapi-schemaorg.json",
+    "NIA-IFT-OpenAPI활용가이드-01.국립중앙의료원-자동심장충격기정보조회서비스(AED).hwp",
+    "NIA-IFT-OpenAPI활용가이드-01.국립중앙의료원-자동심장충격기정보조회서비스(AED).hwp.html",
+    "NIA-IFT-OpenAPI활용가이드-01.국립중앙의료원-자동심장충격기정보조회서비스(AED).hwp.txt",
+    "NIA-IFT-OpenAPI활용가이드-01.국립중앙의료원-자동심장충격기정보조회서비스(AED).hwp.normalized.txt",
+    "pre-application-screening-2026-05-16-unit-07.md",
+    "usage-notes-2026-05-16-unit-07.md"
+  ]
+}

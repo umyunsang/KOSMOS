@@ -1,0 +1,600 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "KOICA가 수행한 ODA 개발협력사업을 국가별, 분야별로 조회할 수 있는 API입니다. 각 수원국에서 어떤 분야의 개발협력사업이 수행되었는지, 연도별로 어떤 변화가 있었는지를 정량적으로 분석할 수 있도록 구성되어 있습니다. 보건, 교육, 행정, 농업 등 다양한 분야의 사업 유형을 비교하거나 특정 국가에 집중된 지원 성격을 확인하고자 할 때 활용할 수 있습니다. 해당 API는 인증키(serviceKey), 페이지 번호(pageNo), 페이지당 호출건수(numOfRows) 등 기본적인 요청변수를 사용하며 조회년도, 사업형태, 분야코드, 국가코드 등의 필터 파라미터를 추가로 설정할 수 있습니다. 출력결과에는 사업시작년도, 사업종료년도, 사업명, 사업번호, 사업형태, 코이카지역명, 국가명 등의 항목이 포함되며, 각 항목에 대한 데이터는 XML 형식으로 반환됩니다.",
+    "version": "1.0.0",
+    "title": "한국국제협력단_사업정보(분야,국가)조회"
+  },
+  "host": "apis.data.go.kr/B260003/BsnsAddService",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getBsnsInfoRealmList": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "HEADER": {
+                  "type": "object",
+                  "description": "HEADER",
+                  "properties": {
+                    "RESULT_CODE": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "RESULT_MSG": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "BODY": {
+                  "type": "object",
+                  "description": "BODY",
+                  "properties": {
+                    "ITEMS": {
+                      "type": "object",
+                      "description": "ITEMS",
+                      "properties": {
+                        "ITEM": {
+                          "type": "object",
+                          "description": "ITEM",
+                          "properties": {
+                            "TOT_CNT": {
+                              "type": "number",
+                              "description": "총 데이터건수",
+                              "properties": {}
+                            },
+                            "BSNS_BEGIN_YEAR": {
+                              "type": "string",
+                              "description": "사업시작년도",
+                              "properties": {}
+                            },
+                            "BSNS_END_YEAR": {
+                              "type": "string",
+                              "description": "사업종료년도",
+                              "properties": {}
+                            },
+                            "BSNS_NM": {
+                              "type": "string",
+                              "description": "사업명",
+                              "properties": {}
+                            },
+                            "BSNS_NO": {
+                              "type": "string",
+                              "description": "사업번호",
+                              "properties": {}
+                            },
+                            "BSNS_TY_CD": {
+                              "type": "string",
+                              "description": "사업형태",
+                              "properties": {}
+                            },
+                            "KOICA_AREA_SE_CD": {
+                              "type": "string",
+                              "description": "코이카지역구분코드",
+                              "properties": {}
+                            },
+                            "KOICA_AREA_SE_NM": {
+                              "type": "string",
+                              "description": "코이카지역명",
+                              "properties": {}
+                            },
+                            "NATION_CD": {
+                              "type": "string",
+                              "description": "국가코드",
+                              "properties": {}
+                            },
+                            "NATION_NM": {
+                              "type": "string",
+                              "description": "국가명",
+                              "properties": {}
+                            },
+                            "RNUM": {
+                              "type": "number",
+                              "description": "행번호",
+                              "properties": {}
+                            },
+                            "SPORT_REALM_CD": {
+                              "type": "string",
+                              "description": "사업분야코드",
+                              "properties": {}
+                            },
+                            "SPORT_REALM_NM": {
+                              "type": "string",
+                              "description": "사업분야명",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "numOfRows": {
+                  "type": "string",
+                  "description": "한 페이지 결과 수",
+                  "properties": {}
+                },
+                "pageNO": {
+                  "type": "string",
+                  "description": "페이지 번호",
+                  "properties": {}
+                },
+                "totalCount": {
+                  "type": "string",
+                  "description": "데이터 전체 건수 ",
+                  "properties": {}
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "ODA 분야별 사업목록",
+        "description": "사업에 기준년도(시작, 종료년도)를 기준으로 사업형태 및 분야코드로 KOICA(한국국제협력단)에서 진행하는 사업을 조회하여 사업시작년도, 사업종료년도 사업명, 사업번호, 사업형태, 코이카지역구분코드, 코이카지역명 국가코드, 국가명, 행번호, 사업분야코드, 사업코드명을 조회하는 ODA 분야별 사업목록 정보 서비스",
+        "operationId": "getBsnsInfoRealmList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_YEAR",
+          "description": "조회년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_BSNS_TY_CD",
+          "description": "사업의 형태. 문서 15페이지의 사업유형코드 참고",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_SPORT_REALM_CD",
+          "description": "분야코드. 문서 16페이지의 분야별코드 참고",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getBsnsInfoNationList": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "HEADER": {
+                  "type": "object",
+                  "description": "HEADER",
+                  "properties": {
+                    "RESULT_CODE": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "RESULT_MSG": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "BODY": {
+                  "type": "object",
+                  "description": "BODY",
+                  "properties": {
+                    "ITEMS": {
+                      "type": "object",
+                      "description": "ITEMS",
+                      "properties": {
+                        "ITEM": {
+                          "type": "object",
+                          "description": "ITEM",
+                          "properties": {
+                            "TOT_CNT": {
+                              "type": "number",
+                              "description": "데이터총건수",
+                              "properties": {}
+                            },
+                            "BSNS_BEGIN_YEAR": {
+                              "type": "string",
+                              "description": "사업시작년도",
+                              "properties": {}
+                            },
+                            "BSNS_END_YEAR": {
+                              "type": "string",
+                              "description": "사업종료년도",
+                              "properties": {}
+                            },
+                            "BSNS_NM": {
+                              "type": "string",
+                              "description": "사업명",
+                              "properties": {}
+                            },
+                            "BSNS_NO": {
+                              "type": "string",
+                              "description": "사업번호",
+                              "properties": {}
+                            },
+                            "BSNS_TY_CD": {
+                              "type": "string",
+                              "description": "사업형태",
+                              "properties": {}
+                            },
+                            "KOICA_AREA_SE_CD": {
+                              "type": "string",
+                              "description": "코이카지역구분코드",
+                              "properties": {}
+                            },
+                            "KOICA_AREA_SE_NM": {
+                              "type": "string",
+                              "description": "코이카지역명",
+                              "properties": {}
+                            },
+                            "NATION_CD": {
+                              "type": "string",
+                              "description": "국가코드",
+                              "properties": {}
+                            },
+                            "NATION_NM": {
+                              "type": "string",
+                              "description": "국가명",
+                              "properties": {}
+                            },
+                            "RNUM": {
+                              "type": "number",
+                              "description": "행번호",
+                              "properties": {}
+                            },
+                            "SPORT_REALM_CD": {
+                              "type": "string",
+                              "description": "사업분야코드",
+                              "properties": {}
+                            },
+                            "SPORT_REALM_NM": {
+                              "type": "string",
+                              "description": "사업분야명",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "numOfRows": {
+                  "type": "string",
+                  "description": "결과 ",
+                  "properties": {}
+                },
+                "pageNo": {
+                  "type": "string",
+                  "description": "페이지번호",
+                  "properties": {}
+                },
+                "totalCount": {
+                  "type": "string",
+                  "description": "데이터 총건수",
+                  "properties": {}
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "ODA 국가별 사업목록",
+        "description": "사업에 기준년도(시작, 종료년도)를 기준으로 사업형태 및 국가코드로 KOICA(한국국제협력단)에서 진행하는 사업을 조회하여 사업시작년도, 사업종료년도 사업명, 사업번호, 사업형태, 코이카지역구분코드, 코이카지역명 국가코드, 국가명, 행번호, 사업분야코드, 사업코드명을 조회하는 ODA 국가별 사업목록 정보 서비스",
+        "operationId": "getBsnsInfoNationList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_YEAR",
+          "description": "조회년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_BSNS_TY_CD",
+          "description": "사업의 형태. 문서 15페이지의 사업유형코드 참고",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "P_NATION_CD",
+          "description": "국가코드. 문서 16페이지의 국가코드 참고",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "getBsnsInfoRealmList_response": {
+      "type": "object",
+      "properties": {
+        "HEADER": {
+          "type": "object",
+          "description": "HEADER",
+          "properties": {
+            "RESULT_CODE": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "RESULT_MSG": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "BODY": {
+          "type": "object",
+          "description": "BODY",
+          "properties": {
+            "ITEMS": {
+              "type": "object",
+              "description": "ITEMS",
+              "properties": {
+                "ITEM": {
+                  "type": "object",
+                  "description": "ITEM",
+                  "properties": {
+                    "TOT_CNT": {
+                      "type": "number",
+                      "description": "총 데이터건수"
+                    },
+                    "BSNS_BEGIN_YEAR": {
+                      "type": "string",
+                      "description": "사업시작년도"
+                    },
+                    "BSNS_END_YEAR": {
+                      "type": "string",
+                      "description": "사업종료년도"
+                    },
+                    "BSNS_NM": {
+                      "type": "string",
+                      "description": "사업명"
+                    },
+                    "BSNS_NO": {
+                      "type": "string",
+                      "description": "사업번호"
+                    },
+                    "BSNS_TY_CD": {
+                      "type": "string",
+                      "description": "사업형태"
+                    },
+                    "KOICA_AREA_SE_CD": {
+                      "type": "string",
+                      "description": "코이카지역구분코드"
+                    },
+                    "KOICA_AREA_SE_NM": {
+                      "type": "string",
+                      "description": "코이카지역명"
+                    },
+                    "NATION_CD": {
+                      "type": "string",
+                      "description": "국가코드"
+                    },
+                    "NATION_NM": {
+                      "type": "string",
+                      "description": "국가명"
+                    },
+                    "RNUM": {
+                      "type": "number",
+                      "description": "행번호"
+                    },
+                    "SPORT_REALM_CD": {
+                      "type": "string",
+                      "description": "사업분야코드"
+                    },
+                    "SPORT_REALM_NM": {
+                      "type": "string",
+                      "description": "사업분야명"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "numOfRows": {
+          "type": "string",
+          "description": "한 페이지 결과 수"
+        },
+        "pageNO": {
+          "type": "string",
+          "description": "페이지 번호"
+        },
+        "totalCount": {
+          "type": "string",
+          "description": "데이터 전체 건수 "
+        }
+      }
+    },
+    "getBsnsInfoNationList_response": {
+      "type": "object",
+      "properties": {
+        "HEADER": {
+          "type": "object",
+          "description": "HEADER",
+          "properties": {
+            "RESULT_CODE": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "RESULT_MSG": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "BODY": {
+          "type": "object",
+          "description": "BODY",
+          "properties": {
+            "ITEMS": {
+              "type": "object",
+              "description": "ITEMS",
+              "properties": {
+                "ITEM": {
+                  "type": "object",
+                  "description": "ITEM",
+                  "properties": {
+                    "TOT_CNT": {
+                      "type": "number",
+                      "description": "데이터총건수"
+                    },
+                    "BSNS_BEGIN_YEAR": {
+                      "type": "string",
+                      "description": "사업시작년도"
+                    },
+                    "BSNS_END_YEAR": {
+                      "type": "string",
+                      "description": "사업종료년도"
+                    },
+                    "BSNS_NM": {
+                      "type": "string",
+                      "description": "사업명"
+                    },
+                    "BSNS_NO": {
+                      "type": "string",
+                      "description": "사업번호"
+                    },
+                    "BSNS_TY_CD": {
+                      "type": "string",
+                      "description": "사업형태"
+                    },
+                    "KOICA_AREA_SE_CD": {
+                      "type": "string",
+                      "description": "코이카지역구분코드"
+                    },
+                    "KOICA_AREA_SE_NM": {
+                      "type": "string",
+                      "description": "코이카지역명"
+                    },
+                    "NATION_CD": {
+                      "type": "string",
+                      "description": "국가코드"
+                    },
+                    "NATION_NM": {
+                      "type": "string",
+                      "description": "국가명"
+                    },
+                    "RNUM": {
+                      "type": "number",
+                      "description": "행번호"
+                    },
+                    "SPORT_REALM_CD": {
+                      "type": "string",
+                      "description": "사업분야코드"
+                    },
+                    "SPORT_REALM_NM": {
+                      "type": "string",
+                      "description": "사업분야명"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "numOfRows": {
+          "type": "string",
+          "description": "결과 "
+        },
+        "pageNo": {
+          "type": "string",
+          "description": "페이지번호"
+        },
+        "totalCount": {
+          "type": "string",
+          "description": "데이터 총건수"
+        }
+      }
+    }
+  }
+}

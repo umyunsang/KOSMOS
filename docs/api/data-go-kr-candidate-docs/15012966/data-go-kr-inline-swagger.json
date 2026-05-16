@@ -1,0 +1,514 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "(공동주택 회계감사결과 정보)법정동코드, 단지코드, 회계연도를 이용해 법정동주소, 도로명주소, 단지코드, 단지명, 회계연도, 회계감사 이행여부, 회계연도 기간 시작일자, 회계연도 기간 종료일자, 회계감사 미실시 동의세대수, 회계감사 대상 세대수(입주한 경우만), 등록일, 결산기준년도, 결산기준월, 회계감사업체명, 계약금액(부가세제외), 회계감사계약체결일, 회계감사 현장감사 착수일, 회계감사 현장감사 종료일, 연간관리수입총액, 연간관리비용지출총액, 기타수입총액, 당기순이익을 조회할 수 있는 회계감사보고서 정보제공 서비스. 아파트 관리주체가 회계사를 통해 관리비 및 회계의 투명성과 적정성을 검증받음.",
+    "version": "1.0.0",
+    "title": "국토교통부_회계감사보고서 정보"
+  },
+  "host": "apis.data.go.kr/1613000/AptAccnutReportService2",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getHsmpAccnutReportInfoV5": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "00:성공",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "item": {
+                      "type": "object",
+                      "description": "item",
+                      "properties": {
+                        "audtContDate": {
+                          "type": "string",
+                          "description": "회계감사체결일",
+                          "properties": {}
+                        },
+                        "audtDoEdate": {
+                          "type": "string",
+                          "description": "회계감사 현자감사 종료일",
+                          "properties": {}
+                        },
+                        "audtDoSdate": {
+                          "type": "string",
+                          "description": "회계감사 현자감사 시작일",
+                          "properties": {}
+                        },
+                        "audtTargetEdate": {
+                          "type": "string",
+                          "description": "회계연도 기간 종료일자",
+                          "properties": {}
+                        },
+                        "audtTargetSdate": {
+                          "type": "string",
+                          "description": "회계연도 기간 시작일자",
+                          "properties": {}
+                        },
+                        "audtYear": {
+                          "type": "string",
+                          "description": "회계연도(년)",
+                          "properties": {}
+                        },
+                        "kaptName": {
+                          "type": "string",
+                          "description": "단지명",
+                          "properties": {}
+                        },
+                        "netProfit": {
+                          "type": "string",
+                          "description": "당기순이익(원)",
+                          "properties": {}
+                        },
+                        "regDate": {
+                          "type": "string",
+                          "description": "등록일",
+                          "properties": {}
+                        },
+                        "byyrIncomeTot": {
+                          "type": "string",
+                          "description": "연간관리수입 총액(원)",
+                          "properties": {}
+                        },
+                        "agreeCnt": {
+                          "type": "string",
+                          "description": "회계감사 미실시 동의세대수",
+                          "properties": {}
+                        },
+                        "audtCnt": {
+                          "type": "string",
+                          "description": "회계감사 대상 세대수(입주한 경우만)",
+                          "properties": {}
+                        },
+                        "audtCompanyName": {
+                          "type": "string",
+                          "description": "회계감사업체명",
+                          "properties": {}
+                        },
+                        "audtYn": {
+                          "type": "string",
+                          "description": "회계감사 이행여부",
+                          "properties": {}
+                        },
+                        "byyrCostTot": {
+                          "type": "string",
+                          "description": "연간관리비용 지출 총액(원)",
+                          "properties": {}
+                        },
+                        "audtSettleMonth": {
+                          "type": "string",
+                          "description": "결산기준월",
+                          "properties": {}
+                        },
+                        "audtSettleYear": {
+                          "type": "string",
+                          "description": "결산기준년도",
+                          "properties": {}
+                        },
+                        "contAmount": {
+                          "type": "string",
+                          "description": "계약금액(부가세제외)",
+                          "properties": {}
+                        },
+                        "etcIncomeTot": {
+                          "type": "string",
+                          "description": "기타수입총액(원)",
+                          "properties": {}
+                        },
+                        "kaptCode": {
+                          "type": "string",
+                          "description": "단지코드",
+                          "properties": {}
+                        },
+                        "audtOpinion": {
+                          "type": "string",
+                          "description": "감사의견",
+                          "properties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "단지별 회계감사보고서 정보조회",
+        "description": "단지코드, 회계연도를 이용해 단지코드, 단지명, 회계감사 이행여부, 회계연도, 회계연도 기간 시작일자, 회계연도 기간 종료일자, 회계감사 미실시 동의세대수, 회계감사 대상 세대수(입주한 경우만), 등록일, 결산기준년도, 결산기준월, 회계감사업체명, 계약금액(부가세제외), 회계감사계약체결일, 회계감사 현장감사 착수일, 회계감사 현장감사 종료일, 연간관리수입총액, 연간관리비용지출총액, 기타수입총액, 당기순이익을 조회할 수 있는 회계감사보고서 정보제공 서비스",
+        "operationId": "getHsmpAccnutReportInfoV5",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 발급받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "kaptCode",
+          "description": "단지코드",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "audtYear",
+          "description": "회계연도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getAccnutReportList2": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "00:정상",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "kaptName": {
+                          "type": "string",
+                          "description": "단지명",
+                          "properties": {}
+                        },
+                        "kaptAddr": {
+                          "type": "string",
+                          "description": "법정동주소",
+                          "properties": {}
+                        },
+                        "doroJuso": {
+                          "type": "string",
+                          "description": "도로명주소",
+                          "properties": {}
+                        },
+                        "kaptCode": {
+                          "type": "string",
+                          "description": "단지코드",
+                          "properties": {}
+                        },
+                        "audtYear": {
+                          "type": "string",
+                          "description": "회계연도(년)",
+                          "properties": {}
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "목록 건수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "회계감사보고서 목록조회",
+        "description": "법정동코드를 이용해 법정동주소, 도로명주소, 단지코드, 단지명, 회계연도를 조회할 수 있는 회계감사보고서 정보제공 서비스",
+        "operationId": "getAccnutReportList2",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 발급받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "bjdCode",
+          "description": "행정표준코드관리시스템에서 제공하는 법정동 시군구코드 5자리",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "목록 건수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "getHsmpAccnutReportInfoV5_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "00:성공"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "item": {
+              "type": "object",
+              "description": "item",
+              "properties": {
+                "audtContDate": {
+                  "type": "string",
+                  "description": "회계감사체결일"
+                },
+                "audtDoEdate": {
+                  "type": "string",
+                  "description": "회계감사 현자감사 종료일"
+                },
+                "audtDoSdate": {
+                  "type": "string",
+                  "description": "회계감사 현자감사 시작일"
+                },
+                "audtTargetEdate": {
+                  "type": "string",
+                  "description": "회계연도 기간 종료일자"
+                },
+                "audtTargetSdate": {
+                  "type": "string",
+                  "description": "회계연도 기간 시작일자"
+                },
+                "audtYear": {
+                  "type": "string",
+                  "description": "회계연도(년)"
+                },
+                "kaptName": {
+                  "type": "string",
+                  "description": "단지명"
+                },
+                "netProfit": {
+                  "type": "string",
+                  "description": "당기순이익(원)"
+                },
+                "regDate": {
+                  "type": "string",
+                  "description": "등록일"
+                },
+                "byyrIncomeTot": {
+                  "type": "string",
+                  "description": "연간관리수입 총액(원)"
+                },
+                "agreeCnt": {
+                  "type": "string",
+                  "description": "회계감사 미실시 동의세대수"
+                },
+                "audtCnt": {
+                  "type": "string",
+                  "description": "회계감사 대상 세대수(입주한 경우만)"
+                },
+                "audtCompanyName": {
+                  "type": "string",
+                  "description": "회계감사업체명"
+                },
+                "audtYn": {
+                  "type": "string",
+                  "description": "회계감사 이행여부"
+                },
+                "byyrCostTot": {
+                  "type": "string",
+                  "description": "연간관리비용 지출 총액(원)"
+                },
+                "audtSettleMonth": {
+                  "type": "string",
+                  "description": "결산기준월"
+                },
+                "audtSettleYear": {
+                  "type": "string",
+                  "description": "결산기준년도"
+                },
+                "contAmount": {
+                  "type": "string",
+                  "description": "계약금액(부가세제외)"
+                },
+                "etcIncomeTot": {
+                  "type": "string",
+                  "description": "기타수입총액(원)"
+                },
+                "kaptCode": {
+                  "type": "string",
+                  "description": "단지코드"
+                },
+                "audtOpinion": {
+                  "type": "string",
+                  "description": "감사의견"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getAccnutReportList2_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "00:정상"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "kaptName": {
+                  "type": "string",
+                  "description": "단지명"
+                },
+                "kaptAddr": {
+                  "type": "string",
+                  "description": "법정동주소"
+                },
+                "doroJuso": {
+                  "type": "string",
+                  "description": "도로명주소"
+                },
+                "kaptCode": {
+                  "type": "string",
+                  "description": "단지코드"
+                },
+                "audtYear": {
+                  "type": "string",
+                  "description": "회계연도(년)"
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 번호"
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "목록 건수"
+            }
+          }
+        }
+      }
+    }
+  }
+}

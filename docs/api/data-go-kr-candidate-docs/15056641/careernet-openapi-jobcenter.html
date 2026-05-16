@@ -37,7 +37,7 @@
 <link href="/webres/js/dynatree/skin-vista/ui.dynatree.css" rel="stylesheet" type="text/css">
 <script src="/webres/js/dynatree/jquery.dynatree.js" type="text/javascript"></script>
 <link rel="stylesheet" href="/webres/css/rew/jplayer.blue.monday.css?ver=1.0" type="text/css" />
-<script type="text/javascript" src="/webres/js/rew/jquery.jplayer.min.js?ver=1.0"></script><link rel="stylesheet" type="text/css" href="/cnet/css/front/openApiIframe.css;jsessionid=B64A5CDB456EA478917D54EA02B8ACCA" />
+<script type="text/javascript" src="/webres/js/rew/jquery.jplayer.min.js?ver=1.0"></script><link rel="stylesheet" type="text/css" href="/cnet/css/front/openApiIframe.css;jsessionid=<redacted>" />
 </head>
 
 <body id="openApi">
@@ -145,7 +145,7 @@ $(document).ready(function (){
         });
 
         $.ajax({
-            url: '/cnet/front/openapi/openApiCodeSelProc.json;jsessionid=B64A5CDB456EA478917D54EA02B8ACCA',
+            url: '/cnet/front/openapi/openApiCodeSelProc.json;jsessionid=<redacted>',
             type: 'POST',
             dataType: 'json',
             success: function (data) {
@@ -207,7 +207,7 @@ $(document).ready(function (){
         var APIURL = "www.career.go.kr/cnet/openapi/getOpenApi?apiKey="
 
         $.ajax({
-            url: '/cnet/front/openapi/openApiKeySelectProc.json;jsessionid=B64A5CDB456EA478917D54EA02B8ACCA',
+            url: '/cnet/front/openapi/openApiKeySelectProc.json;jsessionid=<redacted>',
             type: 'POST',
             dataType: 'json',
             success: function (data) {

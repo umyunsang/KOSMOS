@@ -1,0 +1,407 @@
+
+
+
+
+
+
+국가정보자원 개방·공유체계 구축
+OpenAPI 활용가이드
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+개정 이력
+버 전
+변경일
+변경 사유
+변경 내용
+작성자
+승인
+1.0
+2020-07-21
+최초작성
+최초작성
+김종균
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+		
+목 차
+
+목 차
+1. 서비스 목록	4
+2. 서비스 명세	4
+2.1. 경상남도 의령군 민방위대피시설 정보 현황 API	4
+가. 서비스 개요	4
+나. 오퍼레이션 목록	5
+
+
+서비스 목록
+순번
+서비스 ID
+서비스명(국문)
+서비스명(영문)
+1
+uiryeongclnsshuntfclty
+경상남도 의령군 민방위대피시설 정보 현황 API
+uiryeongclnsshuntfclty
+※ 오퍼레이션 목록은 각각의 서비스 명세에 표기
+서비스 명세
+경상남도 의령군 민방위대피시설 정보 현황 API
+서비스 개요
+서비스 정보
+서비스 ID
+uiryeongclnsshuntfclty
+
+서비스명(국문)
+경상남도 의령군 민방위대피시설 정보 현황 API
+
+서비스명(영문)
+uiryeongclnsshuntfclty
+
+서비스 설명
+민방위대피시설명을 기준으로 위도, 경도, 민방위대피시설면적, 대피가능인원수 등을 조회하는 경상남도 의령군 민방위대피시설 정보 조회 서비스
+서비스 보안
+서비스 인증/권한
+[O] 서비스 Key[ ] 인증서 (GPKI)
+[] Basic (ID/PW) [ ] 없음
+[ ]WS-Security
+
+메시지 레벨 암호화
+[  ] 전자서명	[ ] 암호화	[O] 없음
+
+
+전송 레벨 암호화
+[  ] SSL			[ O] 없음
+적용 기술 수준
+인터페이스 표준
+[  ] SOAP 1.2
+(RPC-Encoded, Document Literal, Document Literal Wrapped)
+[ O ] REST (GET)
+[ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타
+
+교환 데이터 표준
+[ O ] XML	[ ] JSON	[ ] MIME	[ ] MTOM
+서비스 URL
+개발환경
+http://data.uiryeong.go.kr/rest/uiryeongclnsshuntfclty
+
+운영환경
+http://data.uiryeong.go.kr/rest/uiryeongclnsshuntfclty?_wadl&type=xml
+서비스 배포 정보
+서비스 버전
+1.0
+
+서비스 시작일
+2020-07-21
+배포 일자
+2020-07-21
+
+서비스 이력
+N/A
+메시지 교환 유형
+[O] Request-Response	[ ] Publish-Subscribe
+[ ] Fire-and-Forgot		[ ] Notification
+메시지 로깅 수준
+성공
+[O] Header [ ] Body
+실패
+[O] Header [O} Body
+사용 제약 사항 (비고)
+N/A
+서비스 제공자
+성지혜 / 행정과 / 055-570-2153 / jihye01@korea.kr
+데이터 갱신주기
+일 1회
+오퍼레이션 목록
+일련번호
+서비스명(국문)
+오퍼레이션명(영문)
+오퍼레이션명(국문)
+메시지명(영문)
+1
+경상남도 의령군 민방위대피시설 정보 현황 API
+getUiryeongclnsshuntfcltyList
+민방위대피시설 정보 목록
+N/A
+
+민방위대피시설 정보 목록 오퍼레이션 명세
+오퍼레이션 정보
+오퍼레이션 번호
+1
+오퍼레이션명(국문)
+민방위대피시설 정보 목록
+
+오퍼레이션 유형
+조회(목록)
+오퍼레이션명(영문)
+getUiryeongclnsshuntfcltyList
+
+오퍼레이션 설명
+민방위대피시설명을 기준으로 위도, 경도, 민방위대피시설면적, 대피가능인원수 등을 조회하는 경상남도 의령군 민방위대피시설 정보 목록 조회 기능
+
+Call Back URL
+N/A
+
+최대 메시지 사이즈
+[ 1000K bytes]
+
+평균 응답 시간
+[ 	500	ms]
+초당 최대 트랜잭션
+[ 	30	tps]
+
+요청 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+numOfRows
+페이지 크기
+4
+0
+10
+페이지 크기(기본10)
+pageNo
+시작 페이지
+4
+0
+1
+시작 페이지(기본1)
+ServiceKey
+인증키
+-
+1
+-
+인증키
+clns_shunt_fclty_nm
+민방위대피시설명
+50
+0
+군민회관
+민방위대피시설명
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+
+응답 메시지 명세
+항목명(영문)
+항목명(국문)
+항목크기
+항목구분
+샘플데이터
+항목설명
+resultCode
+결과코드
+2
+1
+00
+결과코드
+resultMsg
+결과메세지
+50
+1
+success
+결과메세지
+pageIndex
+쿼리 페이지 시작점
+4
+0
+0
+쿼리페이지 시작점
+numOfRows
+페이지 크기
+4
+0
+10
+페이지 크기
+pageNo
+시작 페이지
+4
+0
+1
+시작 페이지
+totalCount
+전체 결과 수
+10
+1
+7
+전체 결과 수
+clns_shunt_fclty_nm
+민방위대피시설명
+200
+1
+군민회관
+민방위대피시설명
+clns_shunt_fclty_se
+민방위대피시설구분
+50
+1
+공공용
+정부지원/공공용
+rdnmadr
+소재지도로명주소
+200
+1
+경상남도 의령군 의령읍 의병로8길 44
+소재지도로명주소
+adres
+소재지지번주소
+200
+0
+경상남도 의령군 의령읍 의병로24길 31-1
+소재지지번주소
+la
+위도
+20
+1
+35.31783176
+NN.NNNNNN
+(소수점이하 6자리 이상 10자리 이하 허용)
+lo
+경도
+20
+1
+128.264609
+NNN.NNNNNN
+(소수점이하 6자리 이상 10자리 이하 허용)
+clns_shunt_fclty_ar
+민방위대피시설면적
+11
+1
+320
+N/㎡
+shunt_posbl_nmpr_co
+대피가능인원수
+11
+1
+388
+N/명
+opn_at
+개방여부
+2
+1
+Y
+Y : 평시 개방
+N : 평시 미개방
+ordtm_prcuse_ty
+평시활용유형
+500
+0
+연습장
+평시활용유형
+mgc_telno
+관리기관전화번호
+20
+0
+055-570-4920
+NNN-NNNN-NNNN
+mgc_nm
+관리기관명
+50
+1
+의령군 시설관리사업소
+관리기관명
+data_stdr_de
+데이터기준일자
+12
+1
+2020-04-13
+YYYY-MM-DD
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+
+요청 / 응답 메시지 예제
+REST(URI)
+http://data.uiryeong.go.kr/rest/uiryeongclnsshuntfclty/getUiryeongclnsshuntfcltyList?ServiceKey=인증키&numOfRows=10&pageNo=1
+응답 메시지
+<rfcOpenApi>
+<header>
+<resultCode>00</resultCode>
+<resultMsg>success</resultMsg>
+</header>
+<body>
+<numOfRows>10</numOfRows>
+<pageIndex>0</pageIndex>
+<pageNo>1</pageNo>
+<totalCount>7</totalCount>
+<data>
+<list>
+<adres>경상남도 의령군 의령읍 동동리 877-14</adres>
+<clns_shunt_fclty_ar>320</clns_shunt_fclty_ar>
+<clns_shunt_fclty_nm>군민회관</clns_shunt_fclty_nm>
+<clns_shunt_fclty_se>공공용</clns_shunt_fclty_se>
+<data_stdr_de>2020-04-13</data_stdr_de>
+<la>35.31783176</la>
+<lo>128.264609</lo>
+<mgc_nm>의령군 시설관리사업소</mgc_nm>
+<mgc_telno>055-570-4920</mgc_telno>
+<opn_at>Y</opn_at>
+<ordtm_prcuse_ty>연습장</ordtm_prcuse_ty>
+<rdnmadr>경상남도 의령군 의령읍 의병로24길 31-1</rdnmadr>
+<shunt_posbl_nmpr_co>388</shunt_posbl_nmpr_co>
+</list>
+<list>...</list>
+<list>...</list>
+<list>...</list>
+<list>...</list>
+<list>...</list>
+<list>...</list>
+<list>...</list>
+<list>...</list>
+<list>...</list>
+</data>
+</body>
+</rfcOpenApi>
+

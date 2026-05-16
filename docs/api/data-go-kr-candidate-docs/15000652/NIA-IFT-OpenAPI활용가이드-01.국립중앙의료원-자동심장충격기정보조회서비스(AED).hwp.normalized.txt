@@ -1,0 +1,1866 @@
+
+
+.Section-0 {
+  width: 210mm;
+}
+.Section-0 .HeaderPageFooter {
+  position: relative;
+  margin-top: 10mm;
+  margin-right: 20mm;
+  margin-bottom: 10mm;
+  margin-left: 20mm;
+}
+.Section-0 .Page {
+  padding-top: 15mm;
+  padding-bottom: 15mm;
+}
+.Section-1 {
+  width: 210mm;
+}
+.Section-1 .HeaderPageFooter {
+  position: relative;
+  margin-top: 15mm;
+  margin-right: 20mm;
+  margin-bottom: 10mm;
+  margin-left: 20mm;
+}
+.Section-1 .Page {
+  padding-top: 10mm;
+  padding-bottom: 15mm;
+}
+.HeaderArea {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 170.01mm;
+  height: 10mm;
+}
+
+2016년공공데이터 오픈API개발 및 연계체계구축사업
+	OpenAPI 활용 가이드
+	
+
+	
+OpenAPI 활용 가이드
+	
+2016년공공데이터 오픈API개발 및 연계체계구축사업
+	
+
+	
+작성일
+	2016.12.09
+	
+버  전
+	1.0
+	
+
+	
+
+
+
+
+
+	
+
+
+2016년공공데이터 오픈API개발 및 연계체계구축사업
+	OpenAPI 활용 가이드
+	
+문서 개정이력표
+	
+문서명
+	OpenAPI 활용 가이드
+	
+버전
+	날짜
+	내용
+	작성자
+	승인자
+	
+1.0
+	2016.12.09
+	최초 제정
+	안종규
+	김경수
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+목    차
+1. 서비스 사용	4
+1.1. 서비스 Key 발급 및 활용	4
+1.1.1 서비스 Key발급(인증신청 및 발급)	4
+1.1.2 서비스 인증키 활용	8
+2. 제공 서비스 목록	12
+3. 서비스 명세	13
+3.1. 자동심장 충격기 정보 조회 서비스(AED)	13
+3.1.1. 서비스 개요	13
+3.1.2. 오퍼레이션 목록	14
+
+서비스 사용
+서비스 Key 발급 및 활용
+
+서비스 Key발급(인증신청 및 발급)
+(1) 공공데이터포털(http://data.go.kr) 활용자
+- 활용신청하고자 하는 API를 검색하여 클릭
+
+
+- 활용 신청 하고자 하는 서비스 항목에 활용신청 버튼 클릭
+
+
+- 해당되는 내용을 기재하고 이용하고자 하는 상세기능을 체크한뒤 가장 아래 쪽 파란 신청 버튼을 클릭
+
+
+
+- 신청이 완료되면 아래와 같은 메시지 박스가 출력된다
+
+
+
+- 신청이 완료되면 신청목록이 조회되어 출력된다
+
+
+
+- 왼쪽의 메뉴에 인증키 발급현황을 클릭하면 인증키 확인이 가능하다
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+서비스 인증키 활용
+(1) 제공기관 활용자
+공공데이터포털 페이지(https://www.data.go.kr) 접속후 아이디/비밀번호, 인증서를 사용하여 로그인한다.
+
+
+- 마이페이지에서 개발계정 신청 내역을 조회한다.
+
+
+
+
+
+
+
+- 마이페이지에서 서비스명을 클릭하면 개발계정 상세보기 화면으로 이동한다.
+
+
+
+목록화면에서 상세기능정보 실행 버튼을 클릭시, 요청변수(Request Parameter) 내용을 확인 할 수 있다. 미리보기 버튼을 클릭시 아래와 같은 오픈API 결과값을 받을 수 있다.
+
+
+
+
+제공 서비스 목록
+NO
+	서비스 ID
+	서비스명(국문)
+	서비스명(영문)
+	
+1
+	SC-IFT-01-05
+	전국 자동심장 충격기 정보 조회 서비스(AED)
+	AEDInfoInqireService
+	
+서비스 명세
+전국 자동심장 충격기 정보 조회 서비스
+서비스 개요
+
+서비스 
+정보
+	서비스 ID
+	SC-IFT-01-05
+	
+서비스명(국문)
+	전국 자동심장 충격기 정보 조회 서비스(AED)
+	
+서비스명(영문)
+	AEDInfoInqireService
+	
+서비스 설명
+	주소 및 위치를 기준으로 AED 정보 및 설치기관 등을 조회하는 응급 의료기관별 자동심장충격기 보유 현황 및 자동심장충격기 개수 등 상세 정보등을 제공
+	
+서비스 
+보안
+	서비스 인증/권한
+	[O] 서비스 Key  [ ] 인증서 (GPKI)
+[ ] Basic (ID/PW) [ ] 없음
+	[ ]WS-Security
+	
+메시지 레벨 암호화
+	[ ] 전자서명	[ ] 암호화	[O] 없음
+	
+전송 레벨 암호화
+	[ ] SSL			[O]   없음
+	
+적용 
+기술
+수준
+	인터페이스 표준
+	[ ] SOAP 1.2
+(RPC-Encoded, Document Literal, Document   Literal Wrapped)
+[O] REST (GET)
+[ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타
+	
+교환 데이터 표준
+	[O ] XML	[ ] JSON	[ ] MIME	[ ] MTOM
+	
+서비스 URL
+	개발환경
+	http://apis.data.go.kr/B552657/AEDInfoInqireService
+	
+운영환경
+	http://apis.data.go.kr/B552657/AEDInfoInqireService
+	
+서비스 WADL
+	개발환경
+	N/A
+	
+운영환경
+	N/A
+	
+서비스 
+배포정보
+	서비스 버전
+	1.1
+	
+유효일자
+	2017-02-01
+	배포 일자
+	2017-02-01
+	
+서비스 이력
+	2017-02-01 게이트웨이 전환
+	
+서비스 제공자
+	김권태 / 국립중앙의료원 / 02-6362-3441 / taesan3@daum.net
+	
+데이터 갱신주기
+	일 1회
+	
+메시지 교환 유형
+	[O] Request-Response	[ ] Publish-Subscribe
+[ ] Fire-and-Forgot		[   ] Notification
+	
+메시지 로깅 수준
+	성공
+	[O] Header [ ] Body
+	실패
+	[O] Header [O] Body
+	
+사용 제약 사항 (비고)
+	N/A
+	
+
+
+
+
+오퍼레이션 목록
+NO
+	서비스명(국문)
+	오퍼레이션명(영문)
+	오퍼레이션명(국문)
+	
+1
+	자동심장 충격기 정보 조회 서비스(AED)
+	getEgytAedManageInfoInqire
+	응급 의료기관별 자동심장충격기 관리정보
+	
+2
+	getAedLcinfoInqire
+	자동심장충격기 위치정보 조회
+	
+3
+	getAedFullDown
+	자동제세동기 FullData 내려받기
+	
+
+
+응급 의료기관별 자동심장충격기 관리정보 조회 오퍼레이션 명세
+
+오퍼레이션 정보
+	오퍼레이션 번호
+	1
+	오퍼레이션명(국문)
+	응급 의료기관별 자동심장충격기 관리정보 조회
+	
+오퍼레이션 유형
+	조회(목록)
+	오퍼레이션명(영문)
+	getEgytAedManageInfoInqire
+	
+오퍼레이션 설명
+	주소를 기준으로 AED 정보를 조회하는 응급 의료기관별 자동심장충격기 관리정보 조회 기능제공
+	
+Call Back URL
+	http://apis.data.go.kr/B552657/AEDInfoInqireService/getEgytAedManageInfoInqire
+	
+최대 메시지 사이즈
+	[ 4000 bytes]
+	
+평균 응답 시간
+	[ 500 ms]
+	초당 최대 트랜잭션
+	[ 30 tps]
+	
+엔티티
+	AED정보
+	테이블명
+	AED
+	
+
+요청 메시지 명세
+항목명(영문)
+	항목명(국문)
+	항목크기
+	항목구분
+	샘플데이터
+	항목설명
+	
+Q0
+	주소(시도)
+	16
+	1
+	강원도
+	주소(시도)
+	
+Q1
+	주소(시군구)
+	60
+	1
+	강릉
+	주소(시군구)
+	
+pageNo
+	페이지 번호
+	100
+	0
+	1
+	페이지 번호
+	
+numOfRows
+	목록 건수
+	100
+	0
+	10
+	목록 건수
+	
+
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+
+
+
+
+
+
+
+
+
+
+
+응답 메시지 명세
+항목명(영문)
+	항목명(국문)
+	항목
+크기
+	항목
+구분
+	샘플데이터
+	항목설명
+	
+resultCode
+	결과코드
+	2
+	1
+	00
+	00:성공
+	
+resultMag
+	결과메시지
+	10
+	1
+	NORMAL SERVICE
+	
+	
+Items
+	
+	
+	0..n
+	
+	
+	
+
+	serialSeq
+	시리얼키(PK)
+	17
+	1
+	062-130110-0019xx
+	시리얼키(PK)
+	
+
+	rnum
+	제조번호
+	10
+	1
+	1
+	item 번호
+	
+
+	wgs84lon
+	경도
+	30
+	1
+	127.7154055
+	경도
+	
+
+	wgs84lat
+	위도
+	30
+	1
+	37.81751788
+	위도
+	
+
+	org
+	설치기관명
+	60
+	1
+	신동보건지소
+	설치기관명
+	
+
+	mfg
+	제조사
+	80
+	1
+	씨유메디칼
+	제조사
+	
+
+	buildplace
+	설치위치
+	100
+	1
+	진료실
+	설치위치
+	
+
+	clerktel
+	설치기관전화번호
+	40
+	1
+	-
+	설치기관전화번호
+	
+
+	buildaddress
+	설치기관주소
+	120
+	1
+	신동면 증리
+	설치기관주소
+	
+
+	manager
+	관리책임자명
+	10
+	1
+	박연순
+	관리책임자명
+	
+
+	managertel
+	관리자 연락처
+	40
+	1
+	033-250-3895
+	관리자 연락처
+	
+
+	model
+	AED 모델명
+	80
+	1
+	NF1200
+	AED 모델명
+	
+
+	zipcode1
+	우편번호(앞자리)
+	6
+	1
+	200
+	우편번호(앞자리)
+	
+
+	zipcode2
+	우편번호(뒤자리)
+	6
+	1
+	81
+	우편번호(뒤자리)
+	
+
+	monSttTme
+	월요일가용시작시간
+	4
+	1
+	0900
+	월요일가용시작시간
+	
+
+	monEndTme
+	월요일가용종료시간
+	4
+	1
+	1800
+	월요일가용종료시간
+	
+
+	tueSttTme
+	화요일가용시작시간
+	4
+	1
+	0900
+	화요일가용시작시간
+	
+
+	tueEndTme
+	화요일가용종료시간
+	4
+	1
+	1800
+	화요일가용종료시간
+	
+
+	wedSttTme
+	수요일가용시작시간
+	4
+	1
+	0900
+	수요일가용시작시간
+	
+
+	wedEndTme
+	수요일가용종료시간
+	4
+	1
+	1800
+	수요일가용종료시간
+	
+
+	thuSttTme
+	목요일가용시작시간
+	4
+	1
+	0900
+	목요일가용시작시간
+	
+
+	thuEndTme
+	목요일가용종료시간
+	4
+	1
+	1800
+	목요일가용종료시간
+	
+
+	friSttTme
+	금요일가용시작시간
+	4
+	1
+	0900
+	금요일가용시작시간
+	
+
+	friEndTme
+	금요일가용종료시간
+	4
+	1
+	1800
+	금요일가용종료시간
+	
+
+	satSttTme
+	토요일가용시작시간
+	4
+	1
+	0900
+	토요일가용시작시간
+	
+
+	satEndTme
+	토요일가용종료시간
+	4
+	1
+	1800
+	토요일가용종료시간
+	
+
+	sunSttTme
+	일요일가용시작시간
+	4
+	1
+	0900
+	일요일가용시작시간
+	
+
+	sunEndTme
+	일요일가용종료시간
+	4
+	1
+	1800
+	일요일가용종료시간
+	
+
+	holSttTme
+	휴일가용시작시간
+	4
+	1
+	0900
+	휴일가용시작시간
+	
+
+	holEndTme
+	휴일가용종료시간
+	4
+	1
+	1800
+	휴일가용종료시간
+	
+
+	sunFrtYon
+	일요일첫째주가능여부
+	1
+	1
+	Y
+	일요일첫째주가능여부
+	
+
+	sunScdYon
+	일요일둘째주가능여부
+	1
+	1
+	Y
+	일요일둘째주가능여부
+	
+
+	sunThiYon
+	일요일셋째주가능여부
+	1
+	1
+	Y
+	일요일셋째주가능여부
+	
+
+	sunFurYon
+	일요일넷째주가능여부
+	1
+	1
+	Y
+	일요일넷째주가능여부
+	
+
+	sunFifYon
+	일요일다섯째주가능여부
+	1
+	1
+	Y
+	일요일다섯째주가능여부
+	
+
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+
+
+   (다) 요청 / 응답 메시지 예제
+
+REST(URI)
+	
+http://apis.data.go.kr/B552657/AEDInfoInqireService/getEgytAedManageInfoInqire?Q0=%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C&Q1=%EC%A2%85%EB%A1%9C%EA%B5%AC&pageNo=1&numOfRows=1
+	
+응답 메시지
+	
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?> 
+- <response>
+- <header>
+  <resultCode>00</resultCode> 
+  <resultMsg>NORMAL SERVICE.</resultMsg> 
+  </header>
+- <body>
+- <items>
+-   <item>
+        <serialSeq>062-130110-0019xx</serialSeq>
+	<buildAddress>인천광역시 연수구 컨벤시아대로 165 동북아무역센터</buildAddress>
+	<buildPlace>60층 피난안전구역</buildPlace>
+	<clerkTel>032-000-0000</clerkTel>
+	<friEndTme>2400</friEndTme>
+	<friSttTme>0000</friSttTme>
+	<holEndTme>2400</holEndTme>
+	<holSttTme>0000</holSttTme>
+	<manager>이**</manager>
+	<managerTel>032-000-0000</managerTel>
+	<mfg>씨유메디컬</mfg>
+	<model>NF-1200</model>
+	<monEndTme>2400</monEndTme>
+	<monSttTme>0000</monSttTme>
+	<org>동북아무역센터</org>
+	<satEndTme>2400</satEndTme>
+	<satSttTme>0000</satSttTme>
+	<sunEndTme>2400</sunEndTme>
+	<sunFifYon>Y</sunFifYon>
+	<sunFrtYon>Y</sunFrtYon>
+	<sunFurYon>Y</sunFurYon>
+	<sunScdYon>Y</sunScdYon>
+	<sunSttTme>0000</sunSttTme>
+	<sunThiYon>Y</sunThiYon>
+	<thuEndTme>2400</thuEndTme>
+	<thuSttTme>0000</thuSttTme>
+	<tueEndTme>2400</tueEndTme>
+	<tueSttTme>0000</tueSttTme>
+	<wedEndTme>2400</wedEndTme>
+	<wedSttTme>0000</wedSttTme>
+	<wgs84Lat>37.3891405277</wgs84Lat>
+	<wgs84Lon>126.6444425656</wgs84Lon>
+	<zipcode1>219</zipcode1>
+	<zipcode2>98</zipcode2>
+    </item>
+  </items>
+  <numOfRows>1</numOfRows> 
+  <pageNo>1</pageNo> 
+  <totalCount>60</totalCount> 
+  </body>
+  </response>
+	
+
+	
+
+
+
+
+자동심장충격기 위치정보 조회 오퍼레이션 명세
+
+오퍼레이션 정보
+	오퍼레이션 번호
+	2
+	오퍼레이션명(국문)
+	자동심장충격기 위치정보 조회
+	
+오퍼레이션 유형
+	조회(목록)
+	오퍼레이션명(영문)
+	getAedLcinfoInqire
+	
+오퍼레이션 설명
+	경/위도를 기준으로 AED 위치정보를 조회하는 자동심장충격기 위치정보 조회 기능제공
+	
+Call Back URL
+	http://apis.data.go.kr/B552657/AEDInfoInqireService/getAedLcinfoInqire
+	
+최대 메시지 사이즈
+	[ 4000 bytes]
+	
+평균 응답 시간
+	[ 500 ms]
+	초당 최대 트랜잭션
+	[ 30 tps]
+	
+엔티티
+	AED정보
+	테이블명
+	AED
+	
+
+
+
+
+요청 메시지 명세
+항목명(영문)
+	항목명(국문)
+	항목크기
+	항목구분
+	샘플데이터
+	항목설명
+	
+WGS84_LON
+	경도
+	30
+	1
+	127.7154055
+	경도
+	
+WGS84_LAT
+	위도
+	30
+	1
+	37.81751788
+	위도
+	
+pageNo
+	페이지 번호
+	100
+	0
+	1
+	페이지 번호
+	
+numOfRows
+	목록 건수
+	100
+	0
+	10
+	목록 건수
+	
+Q0
+	시도 코드
+	2
+	0
+	11
+	시도 코드
+	
+Q1
+	구군 코드
+	4
+	0
+	1101
+	구군 코드
+	
+
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+응답 메시지 명세
+항목명(영문)
+	항목명(국문)
+	항목크기
+	항목구분
+	샘플데이터
+	항목설명
+	
+resultCode
+	결과코드
+	2
+	1
+	00
+	00:성공
+	
+resultMag
+	결과메시지
+	10
+	1
+	NORMAL SERVICE
+	
+	
+Items
+	
+	
+	0..n
+	
+	
+	
+
+	serialSeq
+	시리얼키(PK)
+	20
+	1
+	062-130110-0019xx
+	시리얼키(PK)
+	
+
+	rnum
+	제조번호
+	10
+	1
+	1
+	item 번호
+	
+wgs84lon
+	경도
+	30
+	1
+	127.7154055
+	경도
+	
+
+	wgs84lat
+	위도
+	30
+	1
+	37.81751788
+	위도
+	
+
+	org
+	설치기관명
+	60
+	1
+	신동보건지소
+	설치기관명
+	
+
+	mfg
+	제조사
+	80
+	1
+	씨유메디칼
+	제조사
+	
+
+	buildplace
+	설치위치
+	100
+	1
+	진료실
+	설치위치
+	
+
+	clerktel
+	설치기관전화번호
+	40
+	1
+	　
+	설치기관전화번호
+	
+
+	buildaddress
+	설치기관주소
+	120
+	1
+	신동면 증리
+	설치기관주소
+	
+
+	manager
+	관리책임자명
+	10
+	1
+	박연순
+	관리책임자명
+	
+
+	managertel
+	관리자 연락처
+	40
+	1
+	033-250-3895
+	관리자 연락처
+	
+
+	model
+	AED 모델명
+	80
+	1
+	NF1200
+	AED 모델명
+	
+
+	zipcode1
+	우편번호(앞자리)
+	6
+	0
+	200
+	우편번호(앞자리)
+	
+
+	zipcode2
+	우편번호(뒤자리)
+	6
+	0
+	81
+	우편번호(뒤자리)
+	
+
+	cnt
+	건수
+	10
+	1
+	1
+	건수
+	
+
+	distance
+	거리
+	10
+	1
+	11.96
+	거리
+	
+
+	monSttTme
+	월요일가용시작시간
+	4
+	1
+	0900
+	월요일가용시작시간
+	
+
+	monEndTme
+	월요일가용종료시간
+	4
+	1
+	1800
+	월요일가용종료시간
+	
+
+	tueSttTme
+	화요일가용시작시간
+	4
+	1
+	0900
+	화요일가용시작시간
+	
+
+	tueEndTme
+	화요일가용종료시간
+	4
+	1
+	1800
+	화요일가용종료시간
+	
+
+	wedSttTme
+	수요일가용시작시간
+	4
+	1
+	0900
+	수요일가용시작시간
+	
+
+	wedEndTme
+	수요일가용종료시간
+	4
+	1
+	1800
+	수요일가용종료시간
+	
+
+	thuSttTme
+	목요일가용시작시간
+	4
+	1
+	0900
+	목요일가용시작시간
+	
+
+	thuEndTme
+	목요일가용종료시간
+	4
+	1
+	1800
+	목요일가용종료시간
+	
+
+	friSttTme
+	금요일가용시작시간
+	4
+	1
+	0900
+	금요일가용시작시간
+	
+
+	friEndTme
+	금요일가용종료시간
+	4
+	1
+	1800
+	금요일가용종료시간
+	
+
+	satSttTme
+	토요일가용시작시간
+	4
+	1
+	0900
+	토요일가용시작시간
+	
+
+	satEndTme
+	토요일가용종료시간
+	4
+	1
+	1800
+	토요일가용종료시간
+	
+
+	sunSttTme
+	일요일가용시작시간
+	4
+	1
+	0900
+	일요일가용시작시간
+	
+
+	sunEndTme
+	일요일가용종료시간
+	4
+	1
+	1800
+	일요일가용종료시간
+	
+
+	holSttTme
+	휴일가용시작시간
+	4
+	1
+	0900
+	휴일가용시작시간
+	
+
+	holEndTme
+	휴일가용종료시간
+	4
+	1
+	1800
+	휴일가용종료시간
+	
+
+	sunFrtYon
+	일요일첫째주가능여부
+	1
+	1
+	Y
+	일요일첫째주가능여부
+	
+
+	sunScdYon
+	일요일둘째주가능여부
+	1
+	1
+	Y
+	일요일둘째주가능여부
+	
+
+	sunThiYon
+	일요일셋째주가능여부
+	1
+	1
+	Y
+	일요일셋째주가능여부
+	
+
+	sunFurYon
+	일요일넷째주가능여부
+	1
+	1
+	Y
+	일요일넷째주가능여부
+	
+
+	sunFifYon
+	일요일다섯째주가능여부
+	1
+	1
+	Y
+	일요일다섯째주가능여부
+	
+
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+   (다) 요청 / 응답 메시지 예제
+
+REST(URI)
+	
+http://apis.data.go.kr/B552657/AEDInfoInqireService/getAedLcinfoInqire?WGS84_LON=127.085156592737&WGS84_LAT=37.4881325624879&pageNo=1&numOfRows=1
+	
+응답 메시지
+	
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?> 
+- <response>
+- <header>
+  <resultCode>00</resultCode> 
+  <resultMsg>NORMAL SERVICE.</resultMsg> 
+  </header>
+- <body>
+- <items>
+-    <item>
+         <serialSeq>062-130110-0019xx</serialSeq>
+	<buildAddress>서울특별시 동대문구 경희대로 23 서관 7층 의용공학팀</buildAddress>
+	<buildPlace>치과병원 현관 1층 안내센터</buildPlace>
+	<clerkTel>000-0000</clerkTel>
+	<cnt>7492</cnt>
+	<distance>0.1</distance>
+	<friEndTme>2400</friEndTme>
+	<friSttTme>0830</friSttTme>
+	<holEndTme>2400</holEndTme>
+	<holSttTme>0000</holSttTme>
+	<manager>김**</manager>
+	<managerTel>000-0000-0000</managerTel>
+	<mfg>씨유메디칼시스템</mfg>
+	<model>i-PAD CU-SP1</model>
+	<monEndTme>2400</monEndTme>
+	<monSttTme>0830</monSttTme>
+	<org>경희의료원</org>
+	<rnum>3376</rnum>
+	<satEndTme>2400</satEndTme>
+	<satSttTme>0000</satSttTme>
+	<sunEndTme>2400</sunEndTme>
+	<sunFifYon>Y</sunFifYon>
+	<sunFrtYon>Y</sunFrtYon>
+	<sunFurYon>Y</sunFurYon>
+	<sunScdYon>Y</sunScdYon>
+	<sunSttTme>0000</sunSttTme>
+	<sunThiYon>Y</sunThiYon>
+	<thuEndTme>2400</thuEndTme>
+	<thuSttTme>0830</thuSttTme>
+	<tueEndTme>2400</tueEndTme>
+	<tueSttTme>0830</tueSttTme>
+	<wedEndTme>2400</wedEndTme>
+	<wedSttTme>0830</wedSttTme>
+	<wgs84Lat>37.5937762050</wgs84Lat>
+	<wgs84Lon>127.0507416965</wgs84Lon>
+	<zipcode1>024</zipcode1>
+	<zipcode2>47</zipcode2>
+     </item>
+  </items>
+  <numOfRows>1</numOfRows> 
+  <pageNo>1</pageNo> 
+  <totalCount>3941</totalCount> 
+  </body>
+  </response>
+	
+
+자동제세동기 FullData 내려받기 오퍼레이션 명세
+
+오퍼레이션 정보
+	오퍼레이션 번호
+	3
+	오퍼레이션명(국문)
+	자동제세동기 FullData 내려받기
+	
+오퍼레이션 유형
+	조회(목록)
+	오퍼레이션명(영문)
+	getAedFullDown
+	
+오퍼레이션 설명
+	전체 AED 관련 정보를 조회하는 자동제세동기 FullData 내려받기 기능제공
+	
+Call Back URL
+	http://apis.data.go.kr/B552657/AEDInfoInqireService/getAedFullDown
+	
+최대 메시지 사이즈
+	[ 4000 bytes]
+	
+평균 응답 시간
+	[ 500 ms]
+	초당 최대 트랜잭션
+	[ 30 tps]
+	
+엔티티
+	AED정보
+	테이블명
+	AED
+	
+
+
+요청 메시지 명세
+항목명(영문)
+	항목명(국문)
+	항목크기
+	항목구분
+	샘플데이터
+	항목설명
+	
+pageNo
+	페이지 번호
+	100
+	0
+	1
+	페이지 번호
+	
+numOfRows
+	목록 건수
+	100
+	0
+	10
+	목록 건수
+	
+
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+
+
+
+응답 메시지 명세
+항목명(영문)
+	항목명(국문)
+	항목크기
+	항목구분
+	샘플데이터
+	항목설명
+	
+resultCode
+	결과코드
+	2
+	1
+	00
+	00:성공
+	
+resultMag
+	결과메시지
+	10
+	1
+	NORMAL SERVICE
+	
+	
+Items
+	
+	
+	0..n
+	
+	
+	
+
+	serialSeq
+	시리얼키(PK)
+	17
+	1
+	062-130110-0019xx
+	시리얼키(PK)
+	
+
+	rnum
+	제조번호
+	10
+	1
+	1
+	item 번호
+	
+
+	buildAddress
+	설치기관주소
+	120
+	1
+	신동면 증리
+	설치기관주소
+	
+
+	buildPlace
+	설치위치
+	100
+	1
+	진료실
+	설치위치
+	
+
+	manager
+	관리책임자명
+	10
+	1
+	박연순
+	관리책임자명
+	
+
+	managerTel
+	관리자 연락처
+	40
+	1
+	033-250-3895
+	관리자 연락처
+	
+
+	mfg
+	제조사
+	80
+	0
+	씨유메디칼
+	제조사
+	
+
+	model
+	AED 모델명
+	80
+	0
+	NF1200
+	AED 모델명
+	
+
+	org
+	설치기관명
+	60
+	1
+	신동보건지소
+	설치기관명
+	
+
+	wgs84Lon
+	경도
+	30
+	1
+	127.7154055
+	경도
+	
+
+	wgs84Lat
+	위도
+	30
+	1
+	37.81751788
+	위도
+	
+
+	zipcode1
+	우편번호(앞자리)
+	6
+	1
+	200
+	우편번호(앞자리)
+	
+
+	zipcode2
+	우편번호(뒤자리)
+	6
+	1
+	81
+	우편번호(뒤자리)
+	
+
+	clerkTel
+	설치기관전화번호
+	40
+	0
+	02-1234-5678
+	설치기관전화번호
+	
+
+	monSttTme
+	월요일가용시작시간
+	4
+	1
+	0900
+	월요일가용시작시간
+	
+
+	monEndTme
+	월요일가용종료시간
+	4
+	1
+	1800
+	월요일가용종료시간
+	
+
+	tueSttTme
+	화요일가용시작시간
+	4
+	1
+	0900
+	화요일가용시작시간
+	
+
+	tueEndTme
+	화요일가용종료시간
+	4
+	1
+	1800
+	화요일가용종료시간
+	
+
+	wedSttTme
+	수요일가용시작시간
+	4
+	1
+	0900
+	수요일가용시작시간
+	
+
+	wedEndTme
+	수요일가용종료시간
+	4
+	1
+	1800
+	수요일가용종료시간
+	
+
+	thuSttTme
+	목요일가용시작시간
+	4
+	1
+	0900
+	목요일가용시작시간
+	
+
+	thuEndTme
+	목요일가용종료시간
+	4
+	1
+	1800
+	목요일가용종료시간
+	
+
+	friSttTme
+	금요일가용시작시간
+	4
+	1
+	0900
+	금요일가용시작시간
+	
+
+	friEndTme
+	금요일가용종료시간
+	4
+	1
+	1800
+	금요일가용종료시간
+	
+
+	satSttTme
+	토요일가용시작시간
+	4
+	1
+	0900
+	토요일가용시작시간
+	
+
+	satEndTme
+	토요일가용종료시간
+	4
+	1
+	1800
+	토요일가용종료시간
+	
+
+	sunSttTme
+	일요일가용시작시간
+	4
+	1
+	0900
+	일요일가용시작시간
+	
+
+	sunEndTme
+	일요일가용종료시간
+	4
+	1
+	1800
+	일요일가용종료시간
+	
+
+	holSttTme
+	휴일가용시작시간
+	4
+	1
+	0900
+	휴일가용시작시간
+	
+
+	holEndTme
+	휴일가용종료시간
+	4
+	1
+	1800
+	휴일가용종료시간
+	
+
+	sunFrtYon
+	일요일첫째주가능여부
+	1
+	1
+	Y
+	일요일첫째주가능여부
+	
+
+	sunScdYon
+	일요일둘째주가능여부
+	1
+	1
+	Y
+	일요일둘째주가능여부
+	
+
+	sunThiYon
+	일요일셋째주가능여부
+	1
+	1
+	Y
+	일요일셋째주가능여부
+	
+
+	sunFurYon
+	일요일넷째주가능여부
+	1
+	1
+	Y
+	일요일넷째주가능여부
+	
+
+	sunFifYon
+	일요일다섯째주가능여부
+	1
+	1
+	Y
+	일요일다섯째주가능여부
+	
+
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+   (다) 요청 / 응답 메시지 예제
+
+REST(URI)
+	
+https://apis.data.go.kr/B552657/AEDInfoInqireService/getAedFullDown
+	
+응답 메시지
+	
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?> 
+- <response>
+- <header>
+  <resultCode>00</resultCode> 
+  <resultMsg>NORMAL SERVICE.</resultMsg> 
+  </header>
+- <body>
+- <items>
+-   <item>
+        <serialSeq>062-130110-0019xx</serialSeq>
+        <buildAddress>컨벤시아대로 165 동북아무역센터</buildAddress>
+        <buildPlace>60층 피난안전구역</buildPlace>
+        <clerkTel>032-000-0000</clerkTel>
+        <friEndTme>2400</friEndTme>
+        <friSttTme>0000</friSttTme>
+        <gugun>연수구</gugun>
+        <holEndTme>2400</holEndTme>
+        <holSttTme>0000</holSttTme>
+        <manager>이**</manager>
+        <managerTel>032-000-0000</managerTel>
+        <mfg>씨유메디컬</mfg>
+        <model>NF-1200</model>
+        <monEndTme>2400</monEndTme>
+        <monSttTme>0000</monSttTme>
+        <org>동북아무역센터</org>
+        <rnum>1</rnum>
+        <satEndTme>2400</satEndTme>
+        <satSttTme>0000</satSttTme>
+        <sido>인천광역시</sido>
+        <sunEndTme>2400</sunEndTme>
+        <sunFifYon>Y</sunFifYon>
+        <sunFrtYon>Y</sunFrtYon>
+        <sunFurYon>Y</sunFurYon>
+        <sunScdYon>Y</sunScdYon>
+        <sunSttTme>0000</sunSttTme>
+        <sunThiYon>Y</sunThiYon>
+        <thuEndTme>2400</thuEndTme>
+        <thuSttTme>0000</thuSttTme>
+        <tueEndTme>2400</tueEndTme>
+        <tueSttTme>0000</tueSttTme>
+        <wedEndTme>2400</wedEndTme>
+        <wedSttTme>0000</wedSttTme>
+        <wgs84Lat>37.389140527799974</wgs84Lat>
+        <wgs84Lon>126.64444256560002</wgs84Lon>
+        <zipcode1>219</zipcode1>
+        <zipcode2>98</zipcode2>
+     </item>
+  </items>
+  <numOfRows>1</numOfRows> 
+  <pageNo>1</pageNo> 
+  <totalCount>3941</totalCount> 
+  </body>
+  </response>
+	
+
+	
+

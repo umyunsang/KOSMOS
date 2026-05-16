@@ -1,0 +1,18 @@
+HTTP/1.1 200 OK
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Content-Type: application/json;charset=UTF-8
+Date: Sat, 16 May 2026 08:06:53 GMT
+Expires: 0
+Pragma: no-cache
+Set-Cookie: <redacted>
+Strict-Transport-Security: max-age=31536000 ; includeSubDomains
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+Vary: Origin
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Kong-Proxy-Latency: 1
+X-Kong-Upstream-Latency: 48
+X-Txid: f8ccb50c-ef07-4c1e-ba63-c1ed78be893f
+X-Xss-Protection: 1; mode=block
+Transfer-Encoding: chunked
+

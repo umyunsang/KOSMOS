@@ -1,0 +1,99 @@
+{
+  "unit": 11,
+  "date": "2026-05-16",
+  "portal_id": "15063444",
+  "title": "경상남도 의령군_민방위대피시설",
+  "provider": "경상남도 의령군",
+  "classification": "공공질서및안전 - 안전관리",
+  "category_seen_in_portal": "재난안전",
+  "portal_url": "https://www.data.go.kr/data/15063444/openapi.do",
+  "application": {
+    "submitted": true,
+    "status": "approved",
+    "application_reference": "115977808",
+    "uddi": "uddi:9a5cde40-8d6f-4999-8a7a-a128db9c0701",
+    "application_date": "2026-05-16",
+    "expiry_date": "2028-05-16",
+    "account": "development",
+    "approval_flow": "automatic",
+    "traffic_per_day": 1000
+  },
+  "api": {
+    "type": "REST",
+    "method": "GET",
+    "format": "XML",
+    "service_base_url": "http://data.uiryeong.go.kr/rest/uiryeongclnsshuntfclty",
+    "endpoint": "http://data.uiryeong.go.kr/rest/uiryeongclnsshuntfclty/getUiryeongclnsshuntfcltyList",
+    "auth_parameter": "ServiceKey",
+    "request_parameters": [
+      {
+        "name": "ServiceKey",
+        "required": true,
+        "description": "인증키"
+      },
+      {
+        "name": "pageNo",
+        "required": false,
+        "sample": "1",
+        "description": "시작 페이지(기본1)"
+      },
+      {
+        "name": "numOfRows",
+        "required": false,
+        "sample": "10",
+        "description": "페이지 크기(기본10)"
+      },
+      {
+        "name": "clns_shunt_fclty_nm",
+        "required": false,
+        "sample": "군민회관",
+        "description": "민방위대피시설명"
+      }
+    ],
+    "response_fields": [
+      "resultCode",
+      "resultMsg",
+      "pageIndex",
+      "numOfRows",
+      "pageNo",
+      "totalCount",
+      "clns_shunt_fclty_nm",
+      "clns_shunt_fclty_se",
+      "rdnmadr",
+      "adres",
+      "la",
+      "lo",
+      "clns_shunt_fclty_ar",
+      "shunt_posbl_nmpr_co",
+      "opn_at",
+      "ordtm_prcuse_ty",
+      "mgc_telno",
+      "mgc_nm",
+      "data_stdr_de"
+    ]
+  },
+  "ummaya_fit": {
+    "primary_primitive": "resolve_location",
+    "secondary_primitive": "lookup",
+    "proposed_adapter_id": "data_go_kr_uiryeong_civil_defense_shelters",
+    "citizen_queries": [
+      "의령군에서 가까운 민방위 대피시설 어디야?",
+      "이 대피소 수용인원과 개방여부 알려줘.",
+      "군민회관 민방위 대피시설 주소랑 관리기관 전화번호 찾아줘."
+    ],
+    "selection_reason": "Official shelter location, capacity, coordinate, open-status, and manager-contact fields support disaster-safety citizen lookup and location-grounded answers.",
+    "estimated_usage": "medium regionally during disaster, weather, civil-defense, or evacuation events; low-to-medium for preparedness checks during normal periods"
+  },
+  "saved_artifacts": [
+    "data-go-kr-detail.html",
+    "openapi-schemaorg.json",
+    "dcat-metadata.rdf.xml",
+    "OpenAPI활용가이드_의령군공공데이터(민방위대피시설_API)_v1.0.docx",
+    "OpenAPI활용가이드_의령군공공데이터(민방위대피시설_API)_v1.0.docx.txt",
+    "pre-application-screening-2026-05-16-unit-11.md",
+    "usage-notes-2026-05-16-unit-11.md",
+    "intake-record-unit-11-2026-05-16.json"
+  ],
+  "license": "이용허락범위 제한 없음",
+  "notes": "Application form included public-data location-law notice; no location-business certificate was attached because this intake records adapter feasibility and public-service lookup usage, not a production location-based service launch."
+}

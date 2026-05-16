@@ -1,0 +1,95 @@
+{
+  "unit": "04",
+  "id": "15155046",
+  "title": "행정안전부_안전비상벨위치정보 조회서비스",
+  "url": "https://www.data.go.kr/data/15155046/openapi.do",
+  "provider": "행정안전부",
+  "category": "공공질서및안전 - 안전관리",
+  "discovery_path": "data.go.kr main category navigation -> 재난안전 -> Open API list",
+  "duplicate_check": {
+    "searched_terms": [
+      "15155046",
+      "안전비상벨위치정보",
+      "emergency_call_box_info",
+      "비상벨",
+      "방범용벨",
+      "emergency_bell",
+      "safety_bell"
+    ],
+    "result": "no active UMMAYA adapter or non-candidate local reference found outside data-go-kr-candidate-docs"
+  },
+  "selection_result": "pass",
+  "selection_reason": "Nationwide safety emergency bell location data can answer citizen natural-language queries about nearby emergency call boxes, police-linked bells, and safety infrastructure along routes using address, coordinate, linkage, inspection, and managing-agency fields.",
+  "primitive": [
+    "find",
+    "locate"
+  ],
+  "candidate_adapter_id": "mois_emergency_call_box_lookup",
+  "citizen_queries": [
+    "내 주변 비상벨 위치 알려줘.",
+    "밤길에 경찰 연계 비상벨 있는 곳 찾아줘.",
+    "아이 통학길 주변에 방범용 비상벨이 있는지 확인해줘."
+  ],
+  "application": {
+    "submitted": true,
+    "status": "approved",
+    "observed_status_text": "[승인] 행정안전부_안전비상벨위치정보 조회서비스",
+    "application_date": "2026-05-16",
+    "expiration_date": "2028-05-16",
+    "my_page_reference": "115974105",
+    "purpose_text": "UMMAYA public-data R&D. Build a citizen safety lookup adapter for nearby emergency call boxes using official data. Cite the agency source. No resale."
+  },
+  "contract": {
+    "host": "apis.data.go.kr/1741000/emergency_call_box_info",
+    "base_url": "https://apis.data.go.kr/1741000/emergency_call_box_info",
+    "operation": "GET /info",
+    "endpoint": "https://apis.data.go.kr/1741000/emergency_call_box_info/info",
+    "required_parameters": [
+      "serviceKey",
+      "pageNo",
+      "numOfRows"
+    ],
+    "optional_parameters": [
+      "returnType",
+      "cond[DAT_UPDT_PNT::GTE]",
+      "cond[DAT_UPDT_PNT::LT]",
+      "cond[LCTN_ROAD_NM_ADDR::LIKE]",
+      "cond[SFTY_EMRGNCBLL_INSTL_YR::GTE]",
+      "cond[OPN_ATMY_GRP_CD::EQ]",
+      "cond[DAT_CRTR_YMD::GTE]",
+      "cond[DAT_CRTR_YMD::LT]"
+    ],
+    "response_fields": [
+      "OPN_ATMY_GRP_CD",
+      "MNG_NO",
+      "SFTY_EMRGNCBLL_MNG_NO",
+      "INSTL_PRPS",
+      "INSTL_PLC_TYPE",
+      "INSTL_PSTN",
+      "LCTN_ROAD_NM_ADDR",
+      "LCTN_LOTNO_ADDR",
+      "WGS84_LAT",
+      "WGS84_LOT",
+      "LINK_MTH",
+      "POLC_LINK_EN",
+      "SECCO_LINK_EN",
+      "MNGOFC_LINK_EN",
+      "EXTRA_FWK",
+      "SFTY_EMRGNCBLL_INSTL_YR",
+      "LAST_CHCK_YMD",
+      "LAST_CHCK_RSLT_SE",
+      "MNG_INST_NM",
+      "MNG_INST_TELNO",
+      "DAT_CRTR_YMD"
+    ]
+  },
+  "artifacts": [
+    "data-go-kr-detail.html",
+    "data-go-kr-inline-swagger.json",
+    "gateway_swagger_guide.pdf",
+    "openapi-schemaorg.json",
+    "개방자치단체코드_영업상태코드.xlsx",
+    "pre-application-screening-2026-05-16-unit-04.md",
+    "usage-notes-2026-05-16-unit-04.md"
+  ]
+}

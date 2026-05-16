@@ -1,0 +1,13 @@
+HTTP/1.1 200 OK
+Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';
+Content-Type: application/json
+Date: Sat, 16 May 2026 08:07:30 GMT
+Pragma: no-cache
+Referrer-Policy: strict-origin-when-cross-origin
+Server: Apache
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+Transfer-Encoding: chunked
+

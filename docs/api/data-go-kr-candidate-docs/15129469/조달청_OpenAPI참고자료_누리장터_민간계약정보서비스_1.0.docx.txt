@@ -1,0 +1,276 @@
+조달청 공공데이터 개방
+OpenAPI 참고자료
+1. 서비스 명세	3
+1.1 누리장터 민간계약정보서비스	3
+가. 서비스 개요	3
+나. 오퍼레이션 목록	4
+개정 이력
+1. 서비스 명세
+1.1 누리장터 민간계약정보서비스
+서비스 개요
+오퍼레이션 목록
+[계약현황 민간조회] 오퍼레이션 명세
+요청 메시지 명세
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 명세
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+요청 / 응답 메시지 예제
+[나라장터 검색조건에 의한 계약현황 민간조회] 오퍼레이션 명세
+요청 메시지 명세
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 명세
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+요청 / 응답 메시지 예제
+[계약현황에 대한 민간변경이력조회] 오퍼레이션 명세
+요청 메시지 명세
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 명세
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+요청 / 응답 메시지 예제
+[계약현황에 대한 민간삭제이력조회] 오퍼레이션 명세
+요청 메시지 명세
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 명세
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+요청 / 응답 메시지 예제
+OPEN API 에러코드별 조치방안
+버 전	변경일	변경 구분	변경사유
+1.0	2025	최초 개정	최초 개정
+			
+			
+			
+			
+			
+			
+			
+서비스 정보	서비스 ID	서비스 ID	PrvtCntrctInfoService	PrvtCntrctInfoService	PrvtCntrctInfoService	PrvtCntrctInfoService	PrvtCntrctInfoService	PrvtCntrctInfoService
+서비스 정보	서비스명(국문)	서비스명(국문)	누리장터 민간계약정보서비스	누리장터 민간계약정보서비스	누리장터 민간계약정보서비스	누리장터 민간계약정보서비스	누리장터 민간계약정보서비스	누리장터 민간계약정보서비스
+서비스 정보	서비스명(영문)	서비스명(영문)	PrvtCntrctInfoService	PrvtCntrctInfoService	PrvtCntrctInfoService	PrvtCntrctInfoService	PrvtCntrctInfoService	PrvtCntrctInfoService
+서비스 정보	서비스 설명	서비스 설명	누리장터에 등록된 민간계약정보를 제공하는 서비스로 조회구분, 조회시작일자, 조회종료일자에 따른 계약현황정보를 제공	누리장터에 등록된 민간계약정보를 제공하는 서비스로 조회구분, 조회시작일자, 조회종료일자에 따른 계약현황정보를 제공	누리장터에 등록된 민간계약정보를 제공하는 서비스로 조회구분, 조회시작일자, 조회종료일자에 따른 계약현황정보를 제공	누리장터에 등록된 민간계약정보를 제공하는 서비스로 조회구분, 조회시작일자, 조회종료일자에 따른 계약현황정보를 제공	누리장터에 등록된 민간계약정보를 제공하는 서비스로 조회구분, 조회시작일자, 조회종료일자에 따른 계약현황정보를 제공	누리장터에 등록된 민간계약정보를 제공하는 서비스로 조회구분, 조회시작일자, 조회종료일자에 따른 계약현황정보를 제공
+서비스 보안	서비스 인증/권한	서비스 인증/권한	[O] 서비스 Key[ ] 인증서 (GPKI) [] Basic (ID/PW) [ ] 없음	[O] 서비스 Key[ ] 인증서 (GPKI) [] Basic (ID/PW) [ ] 없음	[O] 서비스 Key[ ] 인증서 (GPKI) [] Basic (ID/PW) [ ] 없음	[O] 서비스 Key[ ] 인증서 (GPKI) [] Basic (ID/PW) [ ] 없음	[O] 서비스 Key[ ] 인증서 (GPKI) [] Basic (ID/PW) [ ] 없음	[ ]WS-Security
+서비스 보안	메시지 레벨 암호화	메시지 레벨 암호화	[  ] 전자서명	[ ] 암호화	[O] 없음	[  ] 전자서명	[ ] 암호화	[O] 없음	[  ] 전자서명	[ ] 암호화	[O] 없음	[  ] 전자서명	[ ] 암호화	[O] 없음	[  ] 전자서명	[ ] 암호화	[O] 없음	[ ]WS-Security
+서비스 보안	전송 레벨 암호화	전송 레벨 암호화	[  ] SSL			[ O] 없음	[  ] SSL			[ O] 없음	[  ] SSL			[ O] 없음	[  ] SSL			[ O] 없음	[  ] SSL			[ O] 없음	[  ] SSL			[ O] 없음
+적용 기술 수준	인터페이스 표준	인터페이스 표준	[  ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [ O ] REST (GET) [ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타	[  ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [ O ] REST (GET) [ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타	[  ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [ O ] REST (GET) [ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타	[  ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [ O ] REST (GET) [ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타	[  ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [ O ] REST (GET) [ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타	[  ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [ O ] REST (GET) [ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타
+적용 기술 수준	교환 데이터 표준	교환 데이터 표준	[ O ] XML	[ O ] JSON	[ ] MIME	[ ] MTOM	[ O ] XML	[ O ] JSON	[ ] MIME	[ ] MTOM	[ O ] XML	[ O ] JSON	[ ] MIME	[ ] MTOM	[ O ] XML	[ O ] JSON	[ ] MIME	[ ] MTOM	[ O ] XML	[ O ] JSON	[ ] MIME	[ ] MTOM	[ O ] XML	[ O ] JSON	[ ] MIME	[ ] MTOM
+서비스 URL	개발환경	개발환경	http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService	http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService	http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService	http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService	http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService	http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService
+서비스 URL	운영환경	운영환경	http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService	http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService	http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService	http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService	http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService	http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService
+서비스 WADL	개발환경	개발환경	N/A	N/A	N/A	N/A	N/A	N/A
+서비스 WADL	운영환경	운영환경	N/A	N/A	N/A	N/A	N/A	N/A
+서비스 배포 정보	서비스 버전	서비스 버전	1.0	1.0	1.0	1.0	1.0	1.0
+서비스 배포 정보	서비스 시작일	서비스 시작일	2025-01-06	2025-01-06	배포 일자	배포 일자	2025-01-06	2025-01-06
+서비스 배포 정보	서비스 이력	서비스 이력	N/A	N/A	N/A	N/A	N/A	N/A
+메시지 교환 유형	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification
+메시지 로깅 수준	성공	[O] Header [ ] Body	[O] Header [ ] Body	실패	실패	[O] Header [O] Body	[O] Header [O] Body	[O] Header [O] Body
+사용 제약 사항 (비고)	N/A	N/A	N/A	N/A	N/A	N/A	N/A	N/A
+서비스 제공자	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr
+데이터 갱신주기	수시	수시	수시	수시	수시	수시	수시	수시
+일련번호	서비스명(국문)	오퍼레이션명(영문)	오퍼레이션명(국문)	메시지명(영문)
+1	누리장터 민간계약정보서비스	getPrvtCntrctInfoList	계약현황 민간조회	N/A
+2	누리장터 민간계약정보서비스	getPrvtCntrctInfoListPPSSrch	나라장터 검색조건에 의한 계약현황 민간조회	N/A
+3	누리장터 민간계약정보서비스	getPrvtCntrctInfoListChgHstry	계약현황에 대한 민간변경이력조회	N/A
+4	누리장터 민간계약정보서비스	getPrvtCntrctInfoListDltHstry	계약현황에 대한 민간삭제이력조회	N/A
+오퍼레이션 정보	오퍼레이션 번호	1	오퍼레이션명(국문)	계약현황 민간조회	계약현황 민간조회
+오퍼레이션 정보	오퍼레이션 유형	조회(목록)	오퍼레이션명(영문)	getPrvtCntrctInfoList	getPrvtCntrctInfoList
+오퍼레이션 정보	오퍼레이션 설명	검색조건을 등록일시, 통합계약번호로 하여 통합계약번호, 업무구분명, 확정계약번호, 계약참조번호, 계약명, 공동계약여부, 계약체결일자, 계약기간, 총계약금액 등의 누리장터시스템에 등록된 계약 정보 조회	검색조건을 등록일시, 통합계약번호로 하여 통합계약번호, 업무구분명, 확정계약번호, 계약참조번호, 계약명, 공동계약여부, 계약체결일자, 계약기간, 총계약금액 등의 누리장터시스템에 등록된 계약 정보 조회	검색조건을 등록일시, 통합계약번호로 하여 통합계약번호, 업무구분명, 확정계약번호, 계약참조번호, 계약명, 공동계약여부, 계약체결일자, 계약기간, 총계약금액 등의 누리장터시스템에 등록된 계약 정보 조회	검색조건을 등록일시, 통합계약번호로 하여 통합계약번호, 업무구분명, 확정계약번호, 계약참조번호, 계약명, 공동계약여부, 계약체결일자, 계약기간, 총계약금액 등의 누리장터시스템에 등록된 계약 정보 조회
+오퍼레이션 정보	Call Back URL	N/A	N/A	N/A	N/A
+오퍼레이션 정보	최대 메시지 사이즈	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]
+오퍼레이션 정보	평균 응답 시간	[ 	500	ms]	초당 최대 트랜잭션	초당 최대 트랜잭션	[ 	30	tps]
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+ServiceKey	서비스키	400	1	공공데이터포털에서 받은 인증키	공공데이터포털에서 받은 인증키
+type	타입	4	0	json	오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정
+inqryDiv	조회구분	1	1	1	검색하고자하는 조회구분 1:등록일시,  2:통합계약번호
+inqryBgnDt	조회시작일시	12	0	201608310000	검색하고자하는 등록일시 범위 시작 'YYYYMMDDHHMM' 조회구분이 1인 경우 필수
+inqryEndDt	조회종료일시	12	0	201608312359	검색하고자하는 등록일시범위 종료 'YYYYMMDDHHMM' 조회구분이 1인 경우 필수
+untyCntrctNo	통합계약번호	13	0	2016050000077	검색하고자하는 통합계약번호 조회구분이 2인 경우 필수
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+resultCode	결과코드	2	1	00	결과코드
+resultMsg	결과메세지	50	1	정상.	결과메세지
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+totalCount	데이터 총 개수	4	1	17	데이터 총 개수
+untyCntrctNo	통합계약번호	13	1	2016050000077	연계 데이터 입력시 등록되는 계약번호로 계약현황 데이터의 식별자
+bsnsDivNm	업무구분명	30	1	물품	누리장터 업무를 구분하는 명으로 물품, 용역, 공사, 기타로 구분함
+dcsnCntrctNo	확정계약번호	35	0	2016050001800	(a) 공사, 기술용역, 외자 중앙 : 계약번호(8)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수 (b) 물품 , 일반용역 중앙 : 계약번호(9)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수(2)  차세대 나라장터 계약번호체계 개편 - 테스트여부(1)+년도(2)+번호구분(2)+순번(8) 총 13자리 구성 * 테스트여부 : T(모의)/R(실제), 번호구분 : BK(입찰공고번호)/TA(계약번호) ** 예시 : R24TA00000001 ☞ `24년 실제 계약번호이며 순번은 00000001
+cntrctRefNo	계약참조번호	35	0	2016050001800	(a) 공사, 기술용역 중앙 : 조달요청번호 자체 : 계약번호(11)+ 계약수정차수(2) (b) 물품, 일반용역 중앙 : 계약번호(9)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수(2) (c) 외자 중앙 : 계약번호(8)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수(2)   차세대 나라장터 계약번호체계 개편 - 테스트여부(1)+년도(2)+번호구분(2)+순번(8) 총 13자리 구성 * 테스트여부 : T(모의)/R(실제), 번호구분 : BK(입찰공고번호)/TA(계약번호) ** 예시 : R24TA00000001 ☞ `24년 실제 계약번호이며 순번은 00000001
+cntrctNm	계약명	100	0	종합경기장 제1종 육상트랙 보수용 관급 탄성포장재 구매설치	공사명 또는 사업명이라고도 하며 계약내용을 요약한 이름
+cmmnCntrctYn	공동계약여부	1	1	N	공동계약의 경우 공사/제조 기타의 계약에 있어서 필요하다고 인정할 때 계약 상대자를 2인 이상과 체결하는 계약이며 단독계약은 계약상대자를 1인으로 하는 통상적인 계약을 미함.(Y/N)
+cntrctCnclsDate	계약체결일자	10	0	2016-05-02	계약이 성립된 체결일자 ”YYYY-MM-DD”
+cntrctPrd	계약기간	70	0	2016.05.02 ~ 2016.06.03	계약의 효력이 있는 기간
+totCntrctAmt	총계약금액	25	1	0	장기계속계약의 경우에만 발생되며 장기계속계약 전체 계약금액(총부기금액) 을 의미함(원화,원)
+thtmCntrctAmt	금차계약금액	25	0	153977000	계약의 금차계약금액(원화,원)
+grntymnyRate	보증금률	25	0	10	계약의 보증금율(%)
+dfctGrntymnyRate	하자보증금률	25	0	10	계약의 하자보증금율(%)
+cntrctInfoUrl	계약정보URL	500	0	http://www.g2b.go.kr	계약정보가 등록 되어 있는 사이트URL
+payDivNm	지급구분명	30	0	직불	계약의 지급구분명
+cntrctInsttCd	계약기관코드	7	1	4230000	누리장터 계약건의 계약기관정보(민간수요자코드)
+cntrctInsttNm	계약기관명	200	0	강원도 속초시	누리장터 계약건의 계약기관명(민간수요자명)
+cntrctInsttChrgDeptNm	계약담당부서명	100	0	회계과	누리장터 계약건의 계약기관 담당 부서명(민간수요자담당부서명)
+cntrctInsttOfclNm	계약담당자명	100	0	김형일	누리장터 계약건의 계약기관 담당자명(민간수요자담당자명)
+cntrctInsttOfclTelNo	계약담당자전화번호	25	0	033-639-2272	계약기관의 담당자 전화번호 핸드폰번호일 경우 '*'처리
+cntrctInsttOfclFaxNo	계약담당자팩스번호	25	0	033-639-2396	계약기관담당자팩스번호 핸드폰번호일 경우 '*'처리
+corpList	업체목록	4000	0..n	[1^주계약업체^단독^삼성포리머 주식회사^대한민국^100^김평기^임득재]	업체목록 [순번^업체구분^공동도급방식구분^업체명^대표자명^국적명^지분율^채권자명^담당자성명],[순번^업체구분^공동도급방식구분^업체명^대표자명^국적명^지분율^채권자명^담당자성명],
+cntrctDtlInfoUrl	계약상세정보URL	500	0	http://www.g2b.go.kr:8067/contract/contDetail.jsp?Union_number=2016050000077	나라장터화면에서 계약상세정보를 확인 할 수 있는 URL
+crdtrNm	채권자명	200	0	속초시장	계약의 채권자명
+cntrctCnclsMthdNm	계약체결방법명	30	0	일반경쟁	계약체결의 방법을 구분하는 명 *일반경쟁계약은 계약 대상 물품의 규격 및 시방서와 계약조건 등을 널리 공고하여 일정한 자격을 가진 불특정 다수인의 입찰희망자를 모두 경쟁 입찰하는 계약방법 *제한경쟁계약은 일반•지명경쟁계약제도의 단점을 보완하기 위해 실적제한, 기술보유제한, 특정물품제한, 지역제한 등을 두는 계약방법 *지명경쟁계약은 계약상대자의 신용과 실적 등에 있어 적당하다고 인정하는 특정 다수의 경쟁 참가자를 지명하여 계약 상대방을 결정하는 계약방법 *수의계약은 계약상대자를 결정함에 있어 경쟁방법에 하지 않고 특정인을 선정하여 계약하는 계약방법
+rgstDt	등록일시	19	1	2016-10-09 12:00:00	등록일시 "YYYY-MM-DD HH:MM:SS"
+chgDt	변경일시	19	0	2016-10-09 12:00:00	변경일시 "YYYY-MM-DD HH:MM:SS"
+REST(URI)
+http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService/getPrvtCntrctInfoList?inqryDiv=1&inqryBgnDt=201605010000&inqryEndDt=201605052359&pageNo=1&numOfRows=10&ServiceKey=인증키
+응답 메시지
+<response> 	<header> 		<resultCode>00</resultCode> 		<resultMsg>정상</resultMsg> 	</header> 	<body> 		<items> 			<item> 				<untyCntrctNo>2016050022078</untyCntrctNo> 				<bsnsDivNm>물품</bsnsDivNm> 				<dcsnCntrctNo>P201600015500</dcsnCntrctNo> 				<cntrctRefNo>P201600015500</cntrctRefNo> 				<cntrctNm>남악골프연습장 골프공 구입</cntrctNm> 				<cmmnCntrctYn>N</cmmnCntrctYn> 				<cntrctCnclsDate>2016-05-04</cntrctCnclsDate> 				<cntrctPrd>23 일</cntrctPrd> 				<totCntrctAmt>19800000</totCntrctAmt> 				<thtmCntrctAmt>19800000</thtmCntrctAmt> 				<grntymnyRate>10</grntymnyRate> 				<dfctGrntymnyRate>2</dfctGrntymnyRate> 				<cntrctInfoUrl>http://www.g2b.go.kr</cntrctInfoUrl> 				<payDivNm>직불</payDivNm> 				<cntrctInsttCd>M008472</cntrctInsttCd> 				<cntrctInsttNm>전남관광주식회사</cntrctInsttNm> 				<cntrctInsttChrgDeptNm>기획팀</cntrctInsttChrgDeptNm> 				<cntrctInsttOfclNm>이승탁</cntrctInsttOfclNm> 				<cntrctInsttOfclTelNo>061-660-1087</cntrctInsttOfclTelNo> 				<cntrctInsttOfclFaxNo>061-660-1094</cntrctInsttOfclFaxNo> 				<corpList>[1^주계약업체^분담^주식회사 낫소골프^최광진^대한민국^^송철호^이창열]</corpList>	<cntrctDtlInfoUrl>http://www.g2b.go.kr:8067/contract/contDetail.jsp?Union_number=2016050022078</cntrctDtlInfoUrl> 				<crdtrNm>전남관광주식회사 대표이사</crdtrNm> 				<cntrctCnclsMthdNm>기타</cntrctCnclsMthdNm> 				<rgstDt>2016-05-04 18:25:05</rgstDt> 				<chgDt>2016-05-10 11:25:52</chgDt> 			</item> 		</items> 		<numOfRows>10</numOfRows> 		<pageNo>1</pageNo> 		<totalCount>6</totalCount> 	</body> </response>
+오퍼레이션 정보	오퍼레이션 번호	2	오퍼레이션명(국문)	나라장터 검색조건에 의한 계약현황 민간조회	나라장터 검색조건에 의한 계약현황 민간조회
+오퍼레이션 정보	오퍼레이션 유형	조회(목록)	오퍼레이션명(영문)	getPrvtCntrctInfoListPPSSrch	getPrvtCntrctInfoListPPSSrch
+오퍼레이션 정보	오퍼레이션 설명	검색조건을 계약일자, 기관코드, 기관명, 계약번호, 공고번호로하여 통합계약번호, 업무구분명, 확정계약번호, 계약참조번호, 계약명, 공동계약여부, 계약체결일자, 계약기간, 총계약금액 등의 누리장터시스템에 등록된 계약 정보 조회	검색조건을 계약일자, 기관코드, 기관명, 계약번호, 공고번호로하여 통합계약번호, 업무구분명, 확정계약번호, 계약참조번호, 계약명, 공동계약여부, 계약체결일자, 계약기간, 총계약금액 등의 누리장터시스템에 등록된 계약 정보 조회	검색조건을 계약일자, 기관코드, 기관명, 계약번호, 공고번호로하여 통합계약번호, 업무구분명, 확정계약번호, 계약참조번호, 계약명, 공동계약여부, 계약체결일자, 계약기간, 총계약금액 등의 누리장터시스템에 등록된 계약 정보 조회	검색조건을 계약일자, 기관코드, 기관명, 계약번호, 공고번호로하여 통합계약번호, 업무구분명, 확정계약번호, 계약참조번호, 계약명, 공동계약여부, 계약체결일자, 계약기간, 총계약금액 등의 누리장터시스템에 등록된 계약 정보 조회
+오퍼레이션 정보	Call Back URL	N/A	N/A	N/A	N/A
+오퍼레이션 정보	최대 메시지 사이즈	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]
+오퍼레이션 정보	평균 응답 시간	[ 	500	ms]	초당 최대 트랜잭션	초당 최대 트랜잭션	[ 	30	tps]
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+ServiceKey	서비스키	400	1	공공데이터포털에서 받은 인증키	공공데이터포털에서 받은 인증키
+type	타입	4	0	json	오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정
+inqryDiv	조회구분	1	1	1	검색하고자하는 조회구분 1:계약일자, 2:계약번호, 3:공고번호
+inqryBgnDate	조회시작일자	8	0	20160830	검색하고자하는 일자 범위 시작 'YYYYMMDD" 조회구분이 1인 경우 필수
+inqryEndDate	조회종료일자	8	0	20160831	검색하고자하는 일자범위 종료 'YYYYMMDD" 조회구분이 1인 경우 필수
+insttCd	기관코드	7	0	1230000	검색하고자하는 민간수요자코드
+insttNm	기관명	200	0	조달청	검색하고자하는 민간수요자명
+cntrctNm	계약명	100	0	서울특별시지방경찰청 면수건 구매	검색하고자하는 계약명 (조회구분 1인 경우 선택)
+cntrctRefNo	계약참조번호	35	0	00163142600	검색하고자하는 계약참조번호 (조회구분 1인 경우 선택)  * 나라장터화면에서 계약번호
+cntrctNo	계약번호	35	0	2016090002306	검색하고자하는 계약번호 조회구분이 2인 경우 필수
+ntceNo	공고번호	40	0	20151109261	검색하고자하는 공고번호(입찰공고번호) 조회구분이 3인 경우 필수
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+resultCode	결과코드	2	1	00	결과코드
+resultMsg	결과메세지	50	1	정상.	결과메세지
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+totalCount	데이터 총 개수	4	1	17	데이터 총 개수
+untyCntrctNo	통합계약번호	13	1	2016050000077	연계 데이터 입력시 등록되는 계약번호로 계약현황 데이터의 식별자
+bsnsDivNm	업무구분명	30	1	물품	누리장터 업무를 구분하는 명으로 물품, 용역, 공사, 기타로 구분함
+dcsnCntrctNo	확정계약번호	35	0	P201700000001	(a) 공사, 기술용역, 외자 중앙 : 계약번호(8)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수 (b) 물품 , 일반용역 중앙 : 계약번호(9)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수(2)  차세대 나라장터 계약번호체계 개편 - 테스트여부(1)+년도(2)+번호구분(2)+순번(8) 총 13자리 구성 * 테스트여부 : T(모의)/R(실제), 번호구분 : BK(입찰공고번호)/TA(계약번호) ** 예시 : R24TA00000001 ☞ `24년 실제 계약번호이며 순번은 00000001
+cntrctRefNo	계약참조번호	35	0	P201700000001	(a) 공사, 기술용역 중앙 : 조달요청번호 자체 : 계약번호(11)+ 계약수정차수(2) (b) 물품, 일반용역 중앙 : 계약번호(9)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수(2) (c) 외자 중앙 : 계약번호(8)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수(2)   차세대 나라장터 계약번호체계 개편 - 테스트여부(1)+년도(2)+번호구분(2)+순번(8) 총 13자리 구성 * 테스트여부 : T(모의)/R(실제), 번호구분 : BK(입찰공고번호)/TA(계약번호) ** 예시 : R24TA00000001 ☞ `24년 실제 계약번호이며 순번은 00000001
+cntrctNm	계약명	100	0	종합경기장 제1종 육상트랙 보수용 관급 탄성포장재 구매설치	공사명 또는 사업명이라고도 하며 계약내용을 요약한 이름
+cmmnCntrctYn	공동계약여부	1	1	N	공동계약의 경우 공사/제조 기타의 계약에 있어서 필요하다고 인정할 때 계약 상대자를 2인 이상과 체결하는 계약이며 단독계약은 계약상대자를 1인으로 하는 통상적인 계약을 미함.(Y/N)
+cntrctCnclsDate	계약체결일자	10	0	2016-05-02	계약이 성립된 체결일자 ”YYYY-MM-DD”
+cntrctPrd	계약기간	70	0	2016.05.02 ~ 2016.06.03	계약의 효력이 있는 기간
+totCntrctAmt	총계약금액	25	1	0	장기계속계약의 경우에만 발생되며 장기계속계약 전체 계약금액(총부기금액) 을 의미함(원화,원)
+thtmCntrctAmt	금차계약금액	25	0	153977000	계약의 금차계약금액(원화,원)
+grntymnyRate	보증금률	25	0	10	계약의 보증금율(%)
+dfctGrntymnyRate	하자보증금률	25	0	10	계약의 하자보증금율(%)
+cntrctInfoUrl	계약정보URL	500	0	http://www.g2b.go.kr	계약정보가 등록 되어 있는 사이트URL
+payDivNm	지급구분명	30	0	직불	계약의 지급구분명
+cntrctInsttCd	계약기관코드	7	1	4230000	누리장터 계약건의 계약기관정보(민간수요자코드)
+cntrctInsttNm	계약기관명	200	0	강원도 속초시	누리장터 계약건의 계약기관명(민간수요자명)
+cntrctInsttChrgDeptNm	계약담당부서명	100	0	회계과	누리장터 계약건의 계약기관 담당 부서명(민간수요자담당부서명)
+cntrctInsttOfclNm	계약담당자명	100	0	김형일	누리장터 계약건의 계약기관 담당자명(민간수요자담당자명)
+cntrctInsttOfclTelNo	계약담당자전화번호	25	0	033-639-2272	계약기관의 담당자 전화번호 핸드폰번호일 경우 '*'처리
+cntrctInsttOfclFaxNo	계약담당자팩스번호	25	0	033-639-2396	계약기관담당자팩스번호 핸드폰번호일 경우 '*'처리
+corpList	업체목록	4000	0..n	[1^주계약업체^단독^삼성포리머 주식회사^대한민국^100^김평기^임득재]	업체목록 [순번^업체구분^공동도급방식구분^업체명^대표자명^국적명^지분율^채권자명^담당자성명],[순번^업체구분^공동도급방식구분^업체명^대표자명^국적명^지분율^채권자명^담당자성명],
+cntrctDtlInfoUrl	계약상세정보URL	500	0	http://www.g2b.go.kr:8067/contract/contDetail.jsp?Union_number=2016050000077	나라장터화면에서 계약상세정보를 확인 할 수 있는 URL
+crdtrNm	채권자명	200	0	속초시장	계약의 채권자명
+cntrctCnclsMthdNm	계약체결방법명	30	0	일반경쟁	계약체결의 방법을 구분하는 명 *일반경쟁계약은 계약 대상 물품의 규격 및 시방서와 계약조건 등을 널리 공고하여 일정한 자격을 가진 불특정 다수인의 입찰희망자를 모두 경쟁 입찰하는 계약방법 *제한경쟁계약은 일반•지명경쟁계약제도의 단점을 보완하기 위해 실적제한, 기술보유제한, 특정물품제한, 지역제한 등을 두는 계약방법 *지명경쟁계약은 계약상대자의 신용과 실적 등에 있어 적당하다고 인정하는 특정 다수의 경쟁 참가자를 지명하여 계약 상대방을 결정하는 계약방법 *수의계약은 계약상대자를 결정함에 있어 경쟁방법에 하지 않고 특정인을 선정하여 계약하는 계약방법
+rgstDt	등록일시	19	1	2016-10-09 12:00:00	등록일시 "YYYY-MM-DD HH:MM:SS"
+chgDt	변경일시	19	0	2016-10-09 12:00:00	변경일시 "YYYY-MM-DD HH:MM:SS"
+REST(URI)
+http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService/getPrvtCntrctInfoListPPSSrch?inqryDiv=2&cntrctNo=P201600015500&pageNo=1&numOfRows=10&ServiceKey=인증키
+응답 메시지
+<response> 	<header> 		<resultCode>00</resultCode> 		<resultMsg>정상</resultMsg> 	</header> 	<body> 		<items> 			<item> 				<untyCntrctNo>2016050022078</untyCntrctNo> 				<bsnsDivNm>물품</bsnsDivNm> 				<dcsnCntrctNo>P201600015500</dcsnCntrctNo> 				<cntrctRefNo>P201600015500</cntrctRefNo> 				<cntrctNm>남악골프연습장 골프공 구입</cntrctNm> 				<cmmnCntrctYn>N</cmmnCntrctYn> 				<cntrctCnclsDate>2016-05-04</cntrctCnclsDate> 				<cntrctPrd>23 일</cntrctPrd> 				<totCntrctAmt>19800000</totCntrctAmt> 				<thtmCntrctAmt>19800000</thtmCntrctAmt> 				<grntymnyRate>10</grntymnyRate> 				<dfctGrntymnyRate>2</dfctGrntymnyRate> 				<cntrctInfoUrl>http://www.g2b.go.kr</cntrctInfoUrl> 				<payDivNm>직불</payDivNm> 				<cntrctInsttCd>M008472</cntrctInsttCd> 				<cntrctInsttNm>전남관광주식회사</cntrctInsttNm> 				<cntrctInsttChrgDeptNm>기획팀</cntrctInsttChrgDeptNm> 				<cntrctInsttOfclNm>이승탁</cntrctInsttOfclNm> 				<cntrctInsttOfclTelNo>061-660-1087</cntrctInsttOfclTelNo> 				<cntrctInsttOfclFaxNo>061-660-1094</cntrctInsttOfclFaxNo> 				<corpList>[1^주계약업체^분담^주식회사 낫소골프^최광진^대한민국^^송철호^이창열]</corpList>	<cntrctDtlInfoUrl>http://www.g2b.go.kr:8067/contract/contDetail.jsp?Union_number=2016050022078</cntrctDtlInfoUrl> 				<crdtrNm>전남관광주식회사 대표이사</crdtrNm> 				<cntrctCnclsMthdNm>기타</cntrctCnclsMthdNm> 				<rgstDt>2016-05-04 18:25:05</rgstDt> 				<chgDt>2016-05-10 11:25:52</chgDt> 			</item> 		</items> 		<numOfRows>10</numOfRows> 		<pageNo>1</pageNo> 		<totalCount>1</totalCount> 	</body> </response>
+오퍼레이션 정보	오퍼레이션 번호	3	오퍼레이션명(국문)	계약현황에 대한 민간변경이력조회	계약현황에 대한 민간변경이력조회
+오퍼레이션 정보	오퍼레이션 유형	조회(목록)	오퍼레이션명(영문)	getPrvtCntrctInfoListChgHstry	getPrvtCntrctInfoListChgHstry
+오퍼레이션 정보	오퍼레이션 설명	검색조건을 변경일시, 통합계약번호로 하여 통합계약번호, 업무구분명, 확정계약번호, 계약참조번호, 계약명, 공동계약여부, 계약체결일자, 계약기간, 총계약금액 등의 누리장터시스템에 등록된 계약변경정보 조회	검색조건을 변경일시, 통합계약번호로 하여 통합계약번호, 업무구분명, 확정계약번호, 계약참조번호, 계약명, 공동계약여부, 계약체결일자, 계약기간, 총계약금액 등의 누리장터시스템에 등록된 계약변경정보 조회	검색조건을 변경일시, 통합계약번호로 하여 통합계약번호, 업무구분명, 확정계약번호, 계약참조번호, 계약명, 공동계약여부, 계약체결일자, 계약기간, 총계약금액 등의 누리장터시스템에 등록된 계약변경정보 조회	검색조건을 변경일시, 통합계약번호로 하여 통합계약번호, 업무구분명, 확정계약번호, 계약참조번호, 계약명, 공동계약여부, 계약체결일자, 계약기간, 총계약금액 등의 누리장터시스템에 등록된 계약변경정보 조회
+오퍼레이션 정보	Call Back URL	N/A	N/A	N/A	N/A
+오퍼레이션 정보	최대 메시지 사이즈	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]
+오퍼레이션 정보	평균 응답 시간	[ 	500	ms]	초당 최대 트랜잭션	초당 최대 트랜잭션	[ 	30	tps]
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+ServiceKey	서비스키	400	1	공공데이터포털에서 받은 인증키	공공데이터포털에서 받은 인증키
+type	타입	4	0	Json	오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정
+inqryDiv	조회구분	1	1	1	검색하고자하는 조회구분 1:변경일시,  2:통합계약번호
+inqryBgnDt	조회시작일시	12	0	201608310000	검색하고자하는 변경일시 범위 시작 'YYYYMMDDHHMM' 조회구분이 1인 경우 필수
+inqryEndDt	조회종료일시	12	0	201608312359	검색하고자하는 변경일시범위 종료 'YYYYMMDDHHMM' 조회구분이 1인 경우 필수
+untyCntrctNo	통합계약번호	13	0	2016050000077	검색하고자하는 통합계약번호 조회구분이 2인 경우 필수
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+resultCode	결과코드	2	1	00	결과코드
+resultMsg	결과메세지	50	1	정상.	결과메세지
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+totalCount	데이터 총 개수	4	1	17	데이터 총 개수
+untyCntrctNo	통합계약번호	13	1	2016050000077	연계 데이터 입력시 등록되는 계약번호로 계약현황 데이터의 식별자
+bsnsDivNm	업무구분명	30	1	물품	누리장터 업무를 구분하는 명으로 물품, 용역, 공사, 기타로 구분함
+dcsnCntrctNo	확정계약번호	35	0	2016050001800	(a) 공사, 기술용역, 외자 중앙 : 계약번호(8)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수 (b) 물품 , 일반용역 중앙 : 계약번호(9)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수(2)  차세대 나라장터 계약번호체계 개편 - 테스트여부(1)+년도(2)+번호구분(2)+순번(8) 총 13자리 구성 * 테스트여부 : T(모의)/R(실제), 번호구분 : BK(입찰공고번호)/TA(계약번호) ** 예시 : R24TA00000001 ☞ `24년 실제 계약번호이며 순번은 00000001
+cntrctRefNo	계약참조번호	35	0	2016050001800	(a) 공사, 기술용역 중앙 : 조달요청번호 자체 : 계약번호(11)+ 계약수정차수(2) (b) 물품, 일반용역 중앙 : 계약번호(9)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수(2) (c) 외자 중앙 : 계약번호(8)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수(2)   차세대 나라장터 계약번호체계 개편 - 테스트여부(1)+년도(2)+번호구분(2)+순번(8) 총 13자리 구성 * 테스트여부 : T(모의)/R(실제), 번호구분 : BK(입찰공고번호)/TA(계약번호) ** 예시 : R24TA00000001 ☞ `24년 실제 계약번호이며 순번은 00000001
+cntrctNm	계약명	100	0	종합경기장 제1종 육상트랙 보수용 관급 탄성포장재 구매설치	공사명 또는 사업명이라고도 하며 계약내용을 요약한 이름
+cmmnCntrctYn	공동계약여부	1	1	N	공동계약의 경우 공사/제조 기타의 계약에 있어서 필요하다고 인정할 때 계약 상대자를 2인 이상과 체결하는 계약이며 단독계약은 계약상대자를 1인으로 하는 통상적인 계약을 미함.(Y/N)
+cntrctCnclsDate	계약체결일자	10	0	2016-05-02	계약이 성립된 체결일자 ”YYYY-MM-DD”
+cntrctPrd	계약기간	70	0	2016.05.02 ~ 2016.06.03	계약의 효력이 있는 기간
+totCntrctAmt	총계약금액	25	1	0	장기계속계약의 경우에만 발생되며 장기계속계약 전체 계약금액(총부기금액) 을 의미함(원화,원)
+thtmCntrctAmt	금차계약금액	25	0	153977000	계약의 금차계약금액(원화,원)
+grntymnyRate	보증금률	25	0	10	계약의 보증금율(%)
+dfctGrntymnyRate	하자보증금률	25	0	10	계약의 하자보증금율(%)
+cntrctInfoUrl	계약정보URL	500	0	http://www.g2b.go.kr	계약정보가 등록 되어 있는 사이트URL
+payDivNm	지급구분명	30	0	직불	계약의 지급구분명
+cntrctInsttCd	계약기관코드	7	1	4230000	누리장터 계약건의 계약기관정보(민간수요자코드)
+cntrctInsttNm	계약기관명	200	0	강원도 속초시	누리장터 계약건의 계약기관명(민간수요자명)
+cntrctInsttChrgDeptNm	계약담당부서명	100	0	회계과	누리장터 계약건의 계약기관 담당 부서명(민간수요자담당부서명)
+cntrctInsttOfclNm	계약담당자명	100	0	김형일	누리장터 계약건의 계약기관 담당자명(민간수요자담당자명)
+cntrctInsttOfclTelNo	계약담당자전화번호	25	0	033-639-2272	계약기관의 담당자 전화번호 핸드폰번호일 경우 '*'처리
+cntrctInsttOfclFaxNo	계약담당자팩스번호	25	0	033-639-2396	계약기관담당자팩스번호 핸드폰번호일 경우 '*'처리
+corpList	업체목록	4000	0..n	[1^주계약업체^단독^삼성포리머 주식회사^대한민국^100^김평기^임득재]	업체목록 [순번^업체구분^공동도급방식구분^업체명^대표자명^국적명^지분율^채권자명^담당자성명],[순번^업체구분^공동도급방식구분^업체명^대표자명^국적명^지분율^채권자명^담당자성명],
+cntrctDtlInfoUrl	계약상세정보URL	500	0	http://www.g2b.go.kr:8067/contract/contDetail.jsp?Union_number=2016050000077	나라장터화면에서 계약상세정보를 확인 할 수 있는 URL
+crdtrNm	채권자명	200	0	속초시장	계약의 채권자명
+cntrctCnclsMthdNm	계약체결방법명	30	0	일반경쟁	계약체결의 방법을 구분하는 명 *일반경쟁계약은 계약 대상 물품의 규격 및 시방서와 계약조건 등을 널리 공고하여 일정한 자격을 가진 불특정 다수인의 입찰희망자를 모두 경쟁 입찰하는 계약방법 *제한경쟁계약은 일반•지명경쟁계약제도의 단점을 보완하기 위해 실적제한, 기술보유제한, 특정물품제한, 지역제한 등을 두는 계약방법 *지명경쟁계약은 계약상대자의 신용과 실적 등에 있어 적당하다고 인정하는 특정 다수의 경쟁 참가자를 지명하여 계약 상대방을 결정하는 계약방법 *수의계약은 계약상대자를 결정함에 있어 경쟁방법에 하지 않고 특정인을 선정하여 계약하는 계약방법
+rgstDt	등록일시	19	1	2016-10-09 12:00:00	등록일시 "YYYY-MM-DD HH:MM:SS"
+chgDt	변경일시	19	0	2016-10-09 12:00:00	변경일시 "YYYY-MM-DD HH:MM:SS"
+REST(URI)
+http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService/getPrvtCntrctInfoListChgHstry?inqryDiv=1&inqryBgnDt=201605010000&inqryEndDt=201605052359&pageNo=1&numOfRows=10&ServiceKey=인증키
+응답 메시지
+<response> 	<header> 		<resultCode>00</resultCode> 		<resultMsg>정상</resultMsg> 	</header> 	<body> 		<items> 			<item> 				<untyCntrctNo>2016050014092</untyCntrctNo> 				<bsnsDivNm>용역</bsnsDivNm> 				<dcsnCntrctNo>P201600015300</dcsnCntrctNo> 				<cntrctRefNo>P201600015300</cntrctRefNo> 				<cntrctNm>소방시설작동기능점검 업체선정 입찰공고</cntrctNm> 				<cmmnCntrctYn>N</cmmnCntrctYn> 				<cntrctCnclsDate>2016-05-03</cntrctCnclsDate> 				<cntrctPrd>21 일</cntrctPrd> 				<totCntrctAmt>6490000</totCntrctAmt> 				<thtmCntrctAmt>6490000</thtmCntrctAmt> 				<grntymnyRate>10</grntymnyRate> 				<dfctGrntymnyRate /> 				<cntrctInfoUrl>http://www.g2b.go.kr</cntrctInfoUrl> 				<payDivNm>직불</payDivNm> 				<cntrctInsttCd>M005836</cntrctInsttCd> 				<cntrctInsttNm>청주푸르지오 캐슬아파트 입주자대표회의</cntrctInsttNm> 				<cntrctInsttChrgDeptNm>관리과</cntrctInsttChrgDeptNm> 				<cntrctInsttOfclNm>이현복</cntrctInsttOfclNm> 				<cntrctInsttOfclTelNo>043-266-1481</cntrctInsttOfclTelNo> 				<cntrctInsttOfclFaxNo>043-266-1483</cntrctInsttOfclFaxNo> 				<corpList>[1^주계약업체^분담^주식회사 충북소방(Chungbuk Sobang Co.,Ltd.)^구본휴^대한민국^^구본휴^구본휴]</corpList>		<cntrctDtlInfoUrl>http://www.g2b.go.kr:8067/contract/contDetail.jsp?Union_number=2016050014092</cntrctDtlInfoUrl> 				<crdtrNm>청주푸르지오 캐슬아파트 입주자대표회의장</crdtrNm> 				<cntrctCnclsMthdNm>기타</cntrctCnclsMthdNm> 				<rgstDt>2016-05-03 18:25:59</rgstDt> 				<chgDt>2016-05-03 18:25:59</chgDt> 			</item> 			<item> 				<untyCntrctNo>2016050014093</untyCntrctNo> 				<bsnsDivNm>용역</bsnsDivNm> 				<dcsnCntrctNo /> 				<cntrctRefNo>P201600015400</cntrctRefNo> 				<cntrctNm>지하주차장 청소용역 입찰공고</cntrctNm> 				<cmmnCntrctYn>N</cmmnCntrctYn> 				<cntrctCnclsDate /> 				<cntrctPrd>29 일</cntrctPrd> 				<totCntrctAmt>17325000</totCntrctAmt> 				<thtmCntrctAmt>17325000</thtmCntrctAmt> 				<grntymnyRate>10</grntymnyRate> 				<dfctGrntymnyRate /> 				<cntrctInfoUrl>http://www.g2b.go.kr</cntrctInfoUrl> 				<payDivNm>직불</payDivNm> 				<cntrctInsttCd>M005836</cntrctInsttCd> 				<cntrctInsttNm>청주푸르지오 캐슬아파트 입주자대표회의</cntrctInsttNm> 				<cntrctInsttChrgDeptNm>관리과</cntrctInsttChrgDeptNm> 				<cntrctInsttOfclNm>이현복</cntrctInsttOfclNm> 				<cntrctInsttOfclTelNo>043-266-1481</cntrctInsttOfclTelNo> 				<cntrctInsttOfclFaxNo>043-266-1483</cntrctInsttOfclFaxNo> 				<corpList>[1^주계약업체^분담^탑스관리주식회사^유장준^대한민국^^채정화^신새롬]</corpList> 				<cntrctDtlInfoUrl>http://www.g2b.go.kr:8067/contract/contDetail.jsp?Union_number=2016050014093</cntrctDtlInfoUrl> 				<crdtrNm>청주푸르지오 캐슬아파트 입주자대표회의장</crdtrNm> 				<cntrctCnclsMthdNm>기타</cntrctCnclsMthdNm> 				<rgstDt>2016-05-03 18:25:59</rgstDt> 				<chgDt>2016-05-04 11:25:43</chgDt> 			</item> 			<item> 				<untyCntrctNo>2016040154614</untyCntrctNo> 				<bsnsDivNm>공사</bsnsDivNm> 				<dcsnCntrctNo>P201600014400</dcsnCntrctNo> 				<cntrctRefNo>P201600014400</cntrctRefNo> 				<cntrctNm>열전환설비 주요밸브 예방정비공사</cntrctNm> 				<cmmnCntrctYn>N</cmmnCntrctYn> 				<cntrctCnclsDate>2016-04-28</cntrctCnclsDate> 				<cntrctPrd>25 일</cntrctPrd> 				<totCntrctAmt>5060000</totCntrctAmt> 				<thtmCntrctAmt>5060000</thtmCntrctAmt> 				<grntymnyRate>15</grntymnyRate> 				<dfctGrntymnyRate>3</dfctGrntymnyRate> 				<cntrctInfoUrl>http://www.g2b.go.kr</cntrctInfoUrl> 				<payDivNm>직불</payDivNm> 				<cntrctInsttCd>M007252</cntrctInsttCd> 				<cntrctInsttNm>청라에너지주식회사</cntrctInsttNm> 				<cntrctInsttChrgDeptNm>경영관리팀</cntrctInsttChrgDeptNm> 				<cntrctInsttOfclNm>장인용</cntrctInsttOfclNm> 				<cntrctInsttOfclTelNo>070-4487-5212</cntrctInsttOfclTelNo> 				<cntrctInsttOfclFaxNo>032-563-8869</cntrctInsttOfclFaxNo> 				<corpList>[1^주계약업체^분담^올텍오토메이션 주식회사^이종철^대한민국^^이종철^박은성]</corpList>		<cntrctDtlInfoUrl>http://www.g2b.go.kr:8067/contract/contDetail.jsp?Union_number=2016040154614</cntrctDtlInfoUrl> 				<crdtrNm>청라에너지주식회사 대표이사</crdtrNm> 				<cntrctCnclsMthdNm>기타</cntrctCnclsMthdNm> 				<rgstDt>2016-04-27 16:25:15</rgstDt> 				<chgDt>2016-05-02 11:25:28</chgDt> 			</item> 			<item> 				<untyCntrctNo>2016050012418</untyCntrctNo> 				<bsnsDivNm>공사</bsnsDivNm> 				<dcsnCntrctNo>P201600015100</dcsnCntrctNo> 				<cntrctRefNo>P201600015100</cntrctRefNo> 				<cntrctNm>화인상가아파트임구주진입로포장공사</cntrctNm> 				<cmmnCntrctYn>N</cmmnCntrctYn> 				<cntrctCnclsDate>2016-05-09</cntrctCnclsDate> 				<cntrctPrd>43 일</cntrctPrd> 				<totCntrctAmt>4752000</totCntrctAmt> 				<thtmCntrctAmt>4752000</thtmCntrctAmt> 				<grntymnyRate>10</grntymnyRate> 				<dfctGrntymnyRate>10</dfctGrntymnyRate> 				<cntrctInfoUrl>http://www.g2b.go.kr</cntrctInfoUrl> 				<payDivNm>직불</payDivNm> 				<cntrctInsttCd>M012848</cntrctInsttCd> 				<cntrctInsttNm>화인상가아파트관리사무소</cntrctInsttNm> 				<cntrctInsttChrgDeptNm>화인상가아파트관리사무소</cntrctInsttChrgDeptNm> 				<cntrctInsttOfclNm>이돈복</cntrctInsttOfclNm> 				<cntrctInsttOfclTelNo>02-937-3497</cntrctInsttOfclTelNo> 				<cntrctInsttOfclFaxNo>02-6937-0832</cntrctInsttOfclFaxNo> 				<corpList>[1^주계약업체^분담^마메든건설(주)^이상엽^대한민국^^이상엽^이상엽]</corpList> 				<cntrctDtlInfoUrl>http://www.g2b.go.kr:8067/contract/contDetail.jsp?Union_number=2016050012418</cntrctDtlInfoUrl> 				<crdtrNm>화인상가입주자대표회의장</crdtrNm> 				<cntrctCnclsMthdNm>기타</cntrctCnclsMthdNm> 				<rgstDt>2016-05-03 15:25:58</rgstDt> 				<chgDt>2016-05-05 13:25:28</chgDt> 			</item> 		</items> 		<numOfRows>10</numOfRows> 		<pageNo>1</pageNo> 		<totalCount>4</totalCount> 	</body> </response>
+오퍼레이션 정보	오퍼레이션 번호	4	오퍼레이션명(국문)	계약현황에 대한 민간삭제이력조회	계약현황에 대한 민간삭제이력조회
+오퍼레이션 정보	오퍼레이션 유형	조회(목록)	오퍼레이션명(영문)	getPrvtCntrctInfoListDltHstry	getPrvtCntrctInfoListDltHstry
+오퍼레이션 정보	오퍼레이션 설명	검색조건에 삭제일시, 통합계약번호를 입력하여 민간 계약삭제이력정보(삭제일시, 변경구분명, 통합계약번호, 확정계약번호, 계약참조번호) 조회	검색조건에 삭제일시, 통합계약번호를 입력하여 민간 계약삭제이력정보(삭제일시, 변경구분명, 통합계약번호, 확정계약번호, 계약참조번호) 조회	검색조건에 삭제일시, 통합계약번호를 입력하여 민간 계약삭제이력정보(삭제일시, 변경구분명, 통합계약번호, 확정계약번호, 계약참조번호) 조회	검색조건에 삭제일시, 통합계약번호를 입력하여 민간 계약삭제이력정보(삭제일시, 변경구분명, 통합계약번호, 확정계약번호, 계약참조번호) 조회
+오퍼레이션 정보	Call Back URL	N/A	N/A	N/A	N/A
+오퍼레이션 정보	최대 메시지 사이즈	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]
+오퍼레이션 정보	평균 응답 시간	[ 	500	ms]	초당 최대 트랜잭션	초당 최대 트랜잭션	[ 	30	tps]
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+ServiceKey	서비스키	400	1	공공데이터포털에서 받은 인증키	공공데이터포털에서 받은 인증키
+type	타입	4	0	json	오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정
+inqryDiv	조회구분	1	1	1	검색하고자하는 조회구분 1:삭제일시,  2:통합계약번호
+inqryBgnDt	조회시작일시	12	0	201701010000	검색하고자하는 삭제일시 범위 시작 'YYYYMMDDHHMM' 조회구분이 1인 경우 필수
+inqryEndDt	조회종료일시	12	0	201701302359	검색하고자하는 삭제일시 범위 종료 'YYYYMMDDHHMM' 조회구분이 1인 경우 필수
+untyCntrctNo	통합계약번호	13	0	2016120232843	검색하고자하는 통합계약번호 조회구분이 2인 경우 필수
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+resultCode	결과코드	2	1	00	결과코드
+resultMsg	결과메세지	50	1	정상	결과메세지
+numOfRows	한 페이지 결과 수	4	1	1	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+totalCount	전체 결과 수	4	1	1	전체 결과 수
+dltDt	삭제일시	19	1	2016-07-15 12:00:00	삭제일시 “YYYY-MM-DD HH:MM:SS”
+chgDivNm	변경구분명	20	1	DEL	데이터의 변경구분명 (DEL : 삭제)
+untyCntrctNo	통합계약번호	13	1	2016090002306	연계 데이터 입력시 등록되는 계약번호로 계약현황 데이터의 식별자
+dcsnCntrctNo	확정계약번호	35	0	00166033106	(a) 공사, 기술용역, 외자 중앙 : 계약번호(8)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수 (b) 물품 , 일반용역 중앙 : 계약번호(9)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수(2)  차세대 나라장터 계약번호체계 개편 - 테스트여부(1)+년도(2)+번호구분(2)+순번(8) 총 13자리 구성 * 테스트여부 : T(모의)/R(실제), 번호구분 : BK(입찰공고번호)/TA(계약번호) ** 예시 : R24TA00000001 ☞ `24년 실제 계약번호이며 순번은 00000001
+cntrctRefNo	계약참조번호	35	0	00166033106	(a) 공사, 기술용역 중앙 : 조달요청번호 자체 : 계약번호(11)+ 계약수정차수(2) (b) 물품, 일반용역 중앙 : 계약번호(9)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수(2) (c) 외자 중앙 : 계약번호(8)+ 계약수정차수(2) 자체 : 계약번호(11)+ 계약수정차수(2)   차세대 나라장터 계약번호체계 개편 - 테스트여부(1)+년도(2)+번호구분(2)+순번(8) 총 13자리 구성 * 테스트여부 : T(모의)/R(실제), 번호구분 : BK(입찰공고번호)/TA(계약번호) ** 예시 : R24TA00000001 ☞ `24년 실제 계약번호이며 순번은 00000001
+REST(URI)
+http://apis.data.go.kr/1230000/ao/PrvtCntrctInfoService/getPrvtCntrctInfoListDltHstry?inqryDiv=1&inqryBgnDt=201605010000&inqryEndDt=201605052359&pageNo=1&numOfRows=10&ServiceKey=인증키
+응답 메시지
+<response> 	<header> 		<resultCode>00</resultCode> 		<resultMsg>정상</resultMsg> 	</header> 	<body> 		<items> 			<item> 				<dltDt>2016-05-03 10:25:17</dltDt> 				<chgDivNm>DEL</chgDivNm> 				<untyCntrctNo>2016040144037</untyCntrctNo> 				<dcsnCntrctNo>P201600013800</dcsnCntrctNo> 				<cntrctRefNo>P201600013800</cntrctRefNo> 			</item> 			<item> 				<dltDt>2016-05-03 10:25:17</dltDt> 				<chgDivNm>DEL</chgDivNm> 				<untyCntrctNo>2016040146042</untyCntrctNo> 				<dcsnCntrctNo>P201600014000</dcsnCntrctNo> 				<cntrctRefNo>P201600014000</cntrctRefNo> 			</item> 		</items> 		<numOfRows>10</numOfRows> 		<pageNo>1</pageNo> 		<totalCount>2</totalCount> 	</body> </response>
+Code	코드값	설명	조치방안
+01	Application Error	제공기관 서비스 제공 상태가 원할하지 않습니다.	서비스 제공기관의 관리자에게 문의하시기 바랍니다.
+02	DB Error	제공기관 서비스 제공 상태가 원할하지 않습니다.	서비스 제공기관의 관리자에게 문의하시기 바랍니다.
+03	No Data	데이터 없음 에러	
+04	HTTP Error	제공기관 서비스 제공 상태가 원할하지 않습니다.	서비스 제공기관의 관리자에게 문의하시기 바랍니다.
+05	service time out	제공기관 서비스 제공 상태가 원할하지 않습니다	서비스 제공기관의 관리자에게 문의하시기 바랍니다.
+06	날짜Format 에러	날짜 Default, Format Error	날짜형식을 확인 하시기 바랍니다.
+07	입력범위값 초과 에러	요청하신 OpenAPI의 파라미터 입력값 범위가 초과 되었습니다.	기술문서를 다시 한번 확인하여 주시기 바랍니다.
+08	필수값 입력 에러	요청하신 OpenAPI의 필수 파라미터가 누락되었습니다.	기술문서를 다시 한번 확인하여 주시기 바랍니다.
+10	잘못된 요청 파라미터 에러	OpenAPI 요청시 ServiceKey 파라미터가 없음	-OpenAPI 요청시 ServiceKey 파라미터가 누락되었습니다. -OpenAPI 요청 URL을 확인하시기 바랍니다.
+11	필수 요청 파라미터가 없음	요청하신 OpenAPI의 필수 파라미터가 누락되었습니다.	기술문서를 다시 한번 확인하시어 주시기 바랍니다.
+12	해당 오픈API 서비스가 없거나 폐기됨	OpenAPI 호출시 URL이 잘못됨	-제공기관 관리자에게 폐기된 서비스인지 확인바랍니다. 폐기된 서비스가 아니면 개발가이드에서 OpenAPI요청 URL을 다시 확인하시기 바랍니다.
+20	서비스 접근 거부	활용승인이 되지 않은 OpenAPI호출	-OpenAPI활용신청정보의 승인상태를 확인하시기 바랍니다. -활용신청에 대해 제공기관 담당자가 확인 후 '승인'이후 부터 사용할 수 있습니다. -신청 후 2~3일 소요되고 결과는 회원가입 시 등록한 e-mail로 발송됩니다.
+22	서비스 요청 제한 횟수 초과 에러	일일 활용건수가 초과함(활용건수 증가 필요)	-OpenAPI활용신청정보의 서비스 상세기능별 일일 트래픽량을 확인하시기 바랍니다. -개발계정의 경우 제공기관에서 정의한 트래픽을 초과하여 활용할 수 없습니다. -운영계정의 경우 변경신청을 통해서 일일트래픽량을 변경 할 수 있습니다.
+30	등록되지 않은 서비스 키	잘못된 서비스키를 사용하였거나 서비스키를 URL인코딩하지 않음	-OpenAPI활용신청정보의 발급받은 서비스키를 다시 확인하시기 바랍니다. - 서비스키 값이 같다면 서비스키가 URL 인코등 되었는지 다시 확인하시기 바랍니다.
+31	기한 만료된 서비스 키	OpenAPI 사용기간이 만료됨 (활용연장신청 후 사용가능)	-OpenAPI 활용신청정보의 활용기간을 확인합니다. -활용기간이 지난 서비스는 이용할 수 없으며 연장신청을 통해 승인 받은 후 다시 이용가능 합니다.
+32	등록되지 않은 도메인명 또는 IP주소	활용신청한 서버의 IP와 실제 OpenAPI호출한 서버가 다를 경우	-OpenAPI 활용신청정보의 등록된 도메인명이나 IP주소를 다시 확인합니다. -IP나 도메인의 정보를 변경하기 위해 변경신청을 할 수 있습니다.

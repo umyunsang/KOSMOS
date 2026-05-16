@@ -1,0 +1,9 @@
+HTTP/1.1 200 OK
+Cache-Control: no-store
+Content-Language: ko-
+Content-Type: application/json;charset=UTF-8
+Date: Sat, 16 May 2026 08:07:04 GMT
+Set-Cookie: <redacted>
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+Content-Length: 1051
+

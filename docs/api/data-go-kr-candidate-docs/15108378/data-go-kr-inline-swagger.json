@@ -1,0 +1,293 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "국토교통부에서 제공하는 마이홈포털 공공임대주택 예비입주자 대기현황 조회 서비스입니다. 오퍼레이션 파라미터를 기준으로 공공임대주택 예비입주자 대기현황 조회하는 서비스 (유의)조회하는 시점에 따라 ‘응답 메시지’가 달라질 수 있습니다. API는 활용신청을 통해 받은 인증키를 사용하여 접속할 수 있습니다. 데이터는 시도 등의 지역 정보를 포함하고 있으며, 공공임대주택 정보를 제공하고 있습니다. 공공임대주택으로는 국민임대, 영구임대, 행복주택 등의 유형을 구분하여 제공중입니다. 자세한 파라미터는 참고문서 파일을 참고해주십시오.",
+    "version": "1.0.0",
+    "title": "국토교통부_마이홈포털 예비입주자 대기현황 조회서비스"
+  },
+  "host": "apis.data.go.kr/1613000/HWSPR03",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/moveWaitStsList": {
+      "get": {
+        "responses": {
+          "11": {
+            "description": "필수 요청 파라메터가 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "$ref": "#/definitions/header"
+                },
+                "body": {
+                  "$ref": "#/definitions/body"
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "999": {
+            "description": "기타 에러"
+          },
+          "00": {
+            "description": "정상 호출"
+          },
+          "02": {
+            "description": "데이터베이스 에러"
+          },
+          "03": {
+            "description": "데이터 없음 에러"
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "예비입주자 대기현황 조회",
+        "description": "광역시도, 시군구, 임대종류, 주택유형을 기준으로 예비입주자 대기현황 정보를 조회하는 서비스",
+        "operationId": "moveWaitStsList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "brtcCode",
+          "description": "광역시도 코드",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "signguCode",
+          "description": "시군구 코드",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "조회될 목록의 페이지당 데이터 개수  (기본값 : 10)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "조회될 페이지의 번호 (기본값:1)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "suplyTy",
+          "description": "임대종류",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "houseTy",
+          "description": "주택유형",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "header": {
+      "type": "object",
+      "properties": {
+        "resultCode": {
+          "type": "string",
+          "description": "결과코드"
+        },
+        "resultMsg": {
+          "type": "string",
+          "description": "결과메세지"
+        }
+      }
+    },
+    "body": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": "string",
+          "description": "전체 결과수"
+        },
+        "numOfRows": {
+          "type": "string",
+          "description": "조회될 목록의 페이지당 데이터 개수 (기본값:10)"
+        },
+        "pageNo": {
+          "type": "string",
+          "description": "조회될 페이지의 번호 (기본값:1)"
+        },
+        "item": {
+          "$ref": "#/definitions/item"
+        }
+      }
+    },
+    "item": {
+      "type": "object",
+      "properties": {
+        "rtsInsttNm": {
+          "type": "string",
+          "description": "임대사업자명"
+        },
+        "brtcNm": {
+          "type": "string",
+          "description": "광역시도_명"
+        },
+        "signguNm": {
+          "type": "string",
+          "description": "시군구_명"
+        },
+        "rnAdres": {
+          "type": "string",
+          "description": "도로명주소"
+        },
+        "hsmpSn": {
+          "type": "number",
+          "description": "단지일련번호"
+        },
+        "hsmpNm": {
+          "type": "string",
+          "description": "단지명"
+        },
+        "houseTyNm": {
+          "type": "string",
+          "description": "주택유형_명"
+        },
+        "suplyTyNm": {
+          "type": "string",
+          "description": "공급유형_명"
+        },
+        "styleNm": {
+          "type": "string",
+          "description": "형명"
+        },
+        "drwtUnit": {
+          "type": "string",
+          "description": "추첨단위"
+        },
+        "waitCo": {
+          "type": "number",
+          "description": "입주대기자수"
+        },
+        "trmnatCo": {
+          "type": "number",
+          "description": "퇴거건수"
+        }
+      }
+    }
+  },
+  "swaggerOprtinVOs": [
+    {
+      "oprtinUrl": "https://data.myhome.go.kr/moveWaitStsList",
+      "oprtinNm": "예비입주자 대기현황 조회",
+      "oprtinDc": "광역시도, 시군구, 임대종류, 주택유형을 기준으로 예비입주자 대기현황 정보를 조회하는 서비스",
+      "gwSvcNm": "moveWaitStsList",
+      "operationId": "moveWaitStsList",
+      "publicDataTyDetailCode": "PRDE02",
+      "reqList": [
+        {
+          "paramtrNm": "serviceKey",
+          "paramtrDc": "공공데이터포털에서 받은 인증키",
+          "paramtrBassValue": "-",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "brtcCode",
+          "paramtrDc": "광역시도 코드",
+          "paramtrBassValue": "11",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "signguCode",
+          "paramtrDc": "시군구 코드",
+          "paramtrBassValue": "350",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "numOfRows",
+          "paramtrDc": "조회될 목록의 페이지당 데이터 개수  (기본값 : 10)",
+          "paramtrBassValue": "10",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "pageNo",
+          "paramtrDc": "조회될 페이지의 번호 (기본값:1)",
+          "paramtrBassValue": "1",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "suplyTy",
+          "paramtrDc": "임대종류",
+          "paramtrBassValue": "01",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "houseTy",
+          "paramtrDc": "주택유형",
+          "paramtrBassValue": "11",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        }
+      ],
+      "resList": [
+        {
+          "paramtrNm": "header",
+          "paramtrDc": "header",
+          "paramtrDefNm": "#/definitions/header",
+          "subDefNm": "header",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "body",
+          "paramtrDc": "body",
+          "paramtrDefNm": "#/definitions/body",
+          "subDefNm": "body",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true
+        }
+      ]
+    }
+  ]
+}

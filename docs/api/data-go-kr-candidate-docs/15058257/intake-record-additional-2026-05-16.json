@@ -1,0 +1,26 @@
+{
+  "id": "15058257",
+  "url": "https://www.data.go.kr/data/15058257/openapi.do",
+  "source_kind": "category",
+  "source_value": "재난안전",
+  "category": "재난안전",
+  "provider_type": "공공기관",
+  "org": "한국도로교통공단",
+  "title_hint": "한국도로교통공단_고속도로 구간별 도로위험지수",
+  "description": "- 고속도로 구간별 도로위험도지수 정보 * 고속도로명, 고속도로구간명과 차종(승용, 버스, 택시, 화물차로 구분)을 이용하여 해당 구간의 실시간(10분단위) 도로위험도지수 및 도로위험등급 정보를 제공 - 해당 데이터는 교통사고정보개방시스템( https://opendata.koroad.or.kr/api/sample.do) 에서 , 를 선택 후 검색 시 WMS 및 REST 형태의 샘플 결과 데이터를 확인하실 수 있습니다.",
+  "modified_date": "2026-04-13",
+  "view_count": "14764",
+  "application_count": "351",
+  "keywords": "고속도로구간별,도로위험도지수정보,교통사고,도로위험등급,실시간",
+  "selection_reason": "Main-page category '재난안전' REST OpenAPI, non-duplicate, update-sorted.",
+  "og_title": "한국도로교통공단_고속도로 구간별 도로위험지수",
+  "og_description": "- 고속도로 구간별 도로위험도지수 정보 * 고속도로명, 고속도로구간명과 차종(승용, 버스, 택시, 화물차로 구분)을 이용하여 해당 구간의 실시간(10분단위) 도로위험도지수 및 도로위험등급 정보를 제공 - 해당 데이터는 교통사고정보개방시스템( https://opendata.koroad.or.kr/api/sample.do) 에서 <API대분류: 교통안전정보>, <API소분류 : 고속도로구간별 도로위험지수API>를 선택 후 검색 시 WMS 및 REST 형태의 샘플 결과 데이터를 확인하실 수 있습니다.",
+  "swagger_url": "",
+  "has_inline_swagger": false,
+  "downloaded_docs": [
+    "기술문서_한국도로교통공단_고속도로구간별 도로위험지수정보.hwp"
+  ],
+  "primitive_candidate": "check",
+  "captured_at": "2026-05-16",
+  "application_status": "not_submitted_confirmation_required"
+}

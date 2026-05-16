@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:dct="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcat="http://www.w3.org/ns/dcat#" xmlns:vcard="http://www.w3.org/2006/vcard/ns#">
+    <dcat:Catalog>
+        
+
+        <dcat:service>
+            <dcat:DataService>
+                <dcat:contactPoint>
+                    <vcard:Organization>
+                        <vcard:organization-unit>증권정보부</vcard:organization-unit>
+                        <vcard:hasTelephone rdf:resource="051-519-1967"/>
+                    </vcard:Organization>
+                </dcat:contactPoint>
+                <dct:description>금융용어사전 조회를 할 수 있는 API조회 서비스입니다. 금융용어를 입력 값에 입력하면, 해당 용어에 맞는 용어설명을 출력값으로 받아볼 수 있습니다. 용어설명은 HTML 태그 등을 포함하고 있습니다. 금융용어명의 항목 크기는 200이며, 용어설명의 항목 크기는 4000입니다. 금융 용어의 이해를 돕기 위해 제공되는 API이며, 용어 정의와 함께 관련 문맥에서 활용되는 뜻을 추가적으로 지원합니다. 예시로, "대량주식 보유상황 공시제도"를 검색하면 "통상 5% rule의 의미로 사용되며, 상장주식의 5% 이상 보유 사실 및 그 후 지분변동 사실을 즉시 공시시킴으로써 증권거래의 투명성을 확보하고자 한 장치" 라는 용어의 정의 및 설명이 나와있습니다. 그리고 어떤 경우에 발동되는 규칙인지 등 자세한 용어에 대한 설명을 알 수 있습니다.</dct:description>
+                <dct:title>한국예탁결제원_금융용어조회서비스_GW</dct:title>
+                <dct:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2026-04-13</dct:issued>
+                <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2026-04-20</dct:modified>
+                <dct:publisher>
+                    <foaf:Organization>
+                        <foaf:name>한국예탁결제원</foaf:name>
+                    </foaf:Organization>
+                </dct:publisher>
+                <dcat:format>XML</dcat:format>
+                <dcat:theme>일반공공행정 - 재정·금융</dcat:theme>
+                <dcat:keyword>금융용어,증권정보,주식정보,채권정보,금융용어명,국문용어,영문용어,사전용어</dcat:keyword>
+                <dcat:keyword>Financial terms,Securities Information,Stock Information,Bond Information,Financial term name,Korean terminology,English terms,Dictionary terms</dcat:keyword>
+                <dct:rights >공공저작물_출처표시 + 상업적 이용금지</dct:rights>
+                <dcat:landingPage rdf:resource="https://www.data.go.kr/data/15158905/openapi.do"/>
+                <dcat:endpointURL/>
+                <dcat:accessURL/>
+                <dct:spatial></dct:spatial>
+                <dct:temporal></dct:temporal>
+            </dcat:DataService>
+        </dcat:service>
+    </dcat:Catalog>
+</rdf:RDF>

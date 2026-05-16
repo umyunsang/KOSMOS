@@ -1,0 +1,26 @@
+{
+  "id": "15095149",
+  "url": "https://www.data.go.kr/data/15095149/openapi.do",
+  "source_kind": "category",
+  "source_value": "보건의료",
+  "category": "보건의료",
+  "provider_type": "국가행정기관",
+  "org": "기상청",
+  "title_hint": "기상청_영향예보_조회서비스 Update",
+  "description": "폭염위험 및 한파위험에 따른 위험 수준과 각 분야별 대응 요령을 조회하는 서비스 (폭염 및 한파위험 수준이 예상될 때 전일 발표) (참고) 위험단계는 다음과 같이 구분됩니다. - 관심: 일상적인 활동이 조금 불편한 수준, 취약한 대상에서는 일부 피해가 예상되는 수준 - 주의: 해당 지역 일부에서 다소 피해가 예상되는 수준 - 경고: 해당 지역 곳곳에서 현저한 피해가 나타나 영향이 단기간 지속될 것으로 예상되는 수준 - 위험: 해당 지역 대부분에 피해가 있고, 곳곳에 극심한 피해가 나타나 영향이 장기간 지속될 것으로 예상되는 수준",
+  "modified_date": "",
+  "view_count": "10441",
+  "application_count": "473",
+  "keywords": "폭염,한파,영향수준,예보,위험기상",
+  "selection_reason": "Main-page category '보건의료' REST OpenAPI, non-duplicate, update-sorted.",
+  "og_title": "기상청_영향예보_조회서비스",
+  "og_description": "폭염위험 및 한파위험에 따른 위험 수준과 각 분야별 대응 요령을 조회하는 서비스 (폭염 및 한파위험 수준이 예상될 때 전일 발표) (참고) 위험단계는 다음과 같이 구분됩니다. - 관심: 일상적인 활동이 조금 불편한 수준, 취약한 대상에서는 일부 피해가 예상되는 수준 - 주의: 해당 지역 일부에서 다소 피해가 예상되는 수준 - 경고: 해당 지역 곳곳에서 현저한 피해가 나타나 영향이 단기간 지속될 것으로 예상되는 수준 - 위험: 해당 지역 대부분에 피해가 있고, 곳곳에 극심한 피해가 나타나 영향이 장기간 지속될 것으로 예상되는 수준",
+  "swagger_url": "",
+  "has_inline_swagger": true,
+  "downloaded_docs": [
+    "(260515) 기상청_영향예보_조회서비스_오픈API활용가이드.zip"
+  ],
+  "primitive_candidate": "find",
+  "captured_at": "2026-05-16",
+  "application_status": "not_submitted_confirmation_required"
+}

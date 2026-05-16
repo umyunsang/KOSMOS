@@ -1,0 +1,42 @@
+HTTP/1.0 307 Temporary Redirect
+Location: https://www.moj.go.kr/purchasesgoodsApi/stay_person_counter/getstaypersoncounter?serviceKey=&pageNo=1&numOfRows=5&searchYm=202504
+Set-Cookie: <redacted>
+Cache-Control: no-cache
+Connection: close
+Content-Length: 0
+
+HTTP/1.0 307 Temporary Redirect
+Location: https://www.moj.go.kr/purchasesgoodsApi/stay_person_counter/getstaypersoncounter?serviceKey=&pageNo=1&numOfRows=5&searchYm=202504
+Set-Cookie: <redacted>
+Cache-Control: no-cache
+Connection: close
+Content-Length: 0
+
+HTTP/1.0 307 Temporary Redirect
+Location: https://www.moj.go.kr/purchasesgoodsApi/stay_person_counter/getstaypersoncounter?serviceKey=&pageNo=1&numOfRows=5&searchYm=202504
+Set-Cookie: <redacted>
+Cache-Control: no-cache
+Connection: close
+Content-Length: 0
+
+HTTP/1.0 307 Temporary Redirect
+Location: https://www.moj.go.kr/purchasesgoodsApi/stay_person_counter/getstaypersoncounter?serviceKey=&pageNo=1&numOfRows=5&searchYm=202504
+Set-Cookie: <redacted>
+Cache-Control: no-cache
+Connection: close
+Content-Length: 0
+
+HTTP/1.0 307 Temporary Redirect
+Location: https://www.moj.go.kr/purchasesgoodsApi/stay_person_counter/getstaypersoncounter?serviceKey=&pageNo=1&numOfRows=5&searchYm=202504
+Set-Cookie: <redacted>
+Cache-Control: no-cache
+Connection: close
+Content-Length: 0
+
+HTTP/1.0 307 Temporary Redirect
+Location: https://www.moj.go.kr/purchasesgoodsApi/stay_person_counter/getstaypersoncounter?serviceKey=&pageNo=1&numOfRows=5&searchYm=202504
+Set-Cookie: <redacted>
+Cache-Control: no-cache
+Connection: close
+Content-Length: 0
+

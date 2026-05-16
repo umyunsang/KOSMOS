@@ -1,0 +1,195 @@
+{
+  "unit": 12,
+  "portal_id": "15156780",
+  "name": "인사혁신처_공공취업정보 조회 서비스",
+  "portal_url": "https://www.data.go.kr/data/15156780/openapi.do",
+  "provider": "인사혁신처",
+  "classification": "사회복지 - 고용노동",
+  "category_seen": "산업고용",
+  "api_type": "REST",
+  "data_format": "XML",
+  "license": "이용허락범위 제한 없음",
+  "update_cycle": "실시간",
+  "traffic": {
+    "development_daily_limit_per_operation": 10000,
+    "operations_selected": [
+      "공공취업정보 상세조회",
+      "채용직급 목록조회",
+      "파일 목록 조회",
+      "채용직급 조회",
+      "채용기관 목록조회",
+      "공공취업정보 목록조회"
+    ]
+  },
+  "approval": {
+    "submitted_via_computer_use": true,
+    "status": "승인",
+    "application_date": "2026-05-16",
+    "expiry_date": "2028-05-16",
+    "application_reference": "115978222",
+    "uddi": "uddi:19c9d3b4-ad5b-4c12-ac11-9a483efdb028_202512300006",
+    "submitted_purpose": "UMMAYA lookup adapter: map public-job natural-language queries by agency, grade, region, deadline, and keyword to list/detail/file endpoints for citizen guidance."
+  },
+  "ummaya": {
+    "candidate_adapter_id": "mpm_public_job_lookup",
+    "primary_primitive": "lookup",
+    "secondary_primitives": [],
+    "citizen_queries": [
+      "Find open central-government hiring notices for administrative jobs.",
+      "Show public-institution job notices that close this week.",
+      "Find 채용 notices from a specific ministry or local government.",
+      "Open the detail and attached files for this public-job notice.",
+      "What grades or job classes are available for this hiring notice?"
+    ],
+    "fit_reason": "Public-sector employment search is a recurring citizen task. This API exposes real-time national public-job notices, institution lookup, grade/class lookup, notice details, and attachment lists that can be wrapped into one lookup adapter."
+  },
+  "contract": {
+    "base_urls": [
+      "https://apis.data.go.kr/1760000/PblJobService",
+      "http://apis.data.go.kr/1760000/PblJobService"
+    ],
+    "operations": [
+      {
+        "method": "GET",
+        "path": "/getList",
+        "summary": "공공취업정보 목록조회",
+        "required_parameters": [
+          "serviceKey",
+          "Pblanc_ty",
+          "Instt_se",
+          "Sort_order"
+        ],
+        "optional_parameters": [
+          "pageNo",
+          "numOfRows",
+          "Instt_nm",
+          "Begin_de",
+          "End_de",
+          "Kwrd"
+        ],
+        "response_fields": [
+          "resultCode",
+          "resultMsg",
+          "totalCount",
+          "numOfRows",
+          "pageNo",
+          "idx",
+          "title",
+          "insttname",
+          "regdate",
+          "moddate",
+          "enddate",
+          "type01",
+          "type02",
+          "areacode",
+          "readnum"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/getItem",
+        "summary": "공공취업정보 상세조회",
+        "required_parameters": [
+          "serviceKey",
+          "idx"
+        ],
+        "optional_parameters": [],
+        "response_fields": [
+          "idx",
+          "title",
+          "type01",
+          "type02",
+          "contents",
+          "link01",
+          "link02",
+          "link03"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/getClsfList",
+        "summary": "채용직급 목록조회",
+        "required_parameters": [
+          "serviceKey"
+        ],
+        "optional_parameters": [
+          "pageNo",
+          "numOfRows",
+          "Clsf_nm"
+        ],
+        "response_fields": [
+          "code",
+          "codename",
+          "codefullname"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/getItemFile",
+        "summary": "파일 목록 조회",
+        "required_parameters": [
+          "serviceKey",
+          "idx"
+        ],
+        "optional_parameters": [
+          "pageNo",
+          "numOfRows"
+        ],
+        "response_fields": [
+          "filename",
+          "filepath",
+          "filesize",
+          "parentidx",
+          "idx",
+          "sort"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/getItemPosition",
+        "summary": "채용직급 조회",
+        "required_parameters": [
+          "serviceKey",
+          "idx"
+        ],
+        "optional_parameters": [],
+        "response_fields": [
+          "idx",
+          "code",
+          "cnt",
+          "parentidx"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/getInsttList",
+        "summary": "채용기관 목록조회",
+        "required_parameters": [
+          "serviceKey",
+          "pageNo",
+          "numOfRows"
+        ],
+        "optional_parameters": [
+          "Instt_nm"
+        ],
+        "response_fields": [
+          "institution lookup fields from swagger.json"
+        ]
+      }
+    ]
+  },
+  "saved_artifacts": [
+    "data-go-kr-detail.html",
+    "openapi-schemaorg.json",
+    "dcat-metadata.rdf.xml",
+    "swagger.json",
+    "gateway_swagger_guide.pdf",
+    "pre-application-screening-2026-05-16-unit-12.md",
+    "usage-notes-2026-05-16-unit-12.md",
+    "intake-record-unit-12-2026-05-16.json"
+  ],
+  "notes": [
+    "No API-specific reference-document attachment was available in the saved HTML because fn_fileDownload was rendered with empty attachment identifiers.",
+    "The contract was extracted from the embedded Swagger JSON in the data.go.kr detail page."
+  ]
+}

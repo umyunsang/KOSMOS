@@ -1,0 +1,127 @@
+{
+  "unit": 16,
+  "collected_at": "2026-05-16",
+  "portal": "data.go.kr",
+  "candidate_id": "15058923",
+  "title": "축산물품질평가원_축산물통합이력정보",
+  "provider": "축산물품질평가원",
+  "classification": "농림 - 임업·산촌",
+  "category_seen": "농축수산",
+  "portal_url": "https://www.data.go.kr/data/15058923/openapi.do",
+  "api_type": "REST",
+  "formats": [
+    "XML"
+  ],
+  "base_url": "http://data.ekape.or.kr/openapi-data/service/user/animalTrace",
+  "operation": {
+    "method": "GET",
+    "path": "/traceNoSearch",
+    "summary": "축산물이력정보조회"
+  },
+  "required_parameters": [
+    "traceNo",
+    "serviceKey"
+  ],
+  "optional_parameters": [
+    "optionNo",
+    "corpNo"
+  ],
+  "parameter_notes": [
+    "Portal request-parameter table lists serviceKey.",
+    "Downloaded DOCX examples show ServiceKey casing; accepted casing must be confirmed by direct curl before a live adapter claim."
+  ],
+  "option_no_values": {
+    "1": "개체(소), 사육(돼지)",
+    "2": "출생 등 신고(소)",
+    "3": "도축(소/돼지)",
+    "4": "포장(소/돼지)",
+    "5": "구제역백신(소)",
+    "6": "질병정보(소)",
+    "7": "브루셀라(소)",
+    "8": "묶음 기본정보(묶음)",
+    "9": "묶음구성내역(묶음)"
+  },
+  "response_fields": [
+    "resultCode",
+    "resultMsg",
+    "traceNoType",
+    "infoType",
+    "birthYmd",
+    "farmAddr",
+    "farmNo",
+    "farmUniqueNo",
+    "farmerNm",
+    "mngrNm",
+    "cattleNo",
+    "pigNo",
+    "histNo",
+    "lotNo",
+    "lsTypeNm",
+    "sexNm",
+    "butcheryPlaceNm",
+    "butcheryPlaceAddr",
+    "butcheryYmd",
+    "gradeNm",
+    "inspectPassYn",
+    "processPlaceNm",
+    "processPlaceAddr",
+    "processYmd",
+    "corpNo",
+    "inspectDesc",
+    "psexmYn",
+    "successYn",
+    "weight"
+  ],
+  "trace_type_examples": [
+    "CATTLE/CATTLE_NO",
+    "CATTLE/LOT_NO",
+    "PIG/PIG_NO",
+    "PIG/LOT_NO",
+    "FOWL/HIST_NO",
+    "DUCK/HIST_NO",
+    "EGG/HIST_NO",
+    "FOWL/LOT_NO",
+    "DUCK/LOT_NO"
+  ],
+  "ummaya_primitive": "lookup",
+  "secondary_primitive_fit": "verify",
+  "citizen_query_fit": [
+    "이 쇠고기 이력번호 조회해줘",
+    "돼지고기 묶음번호로 도축장과 포장처리업소 확인해줘",
+    "이 축산물 등급과 도축일자 알려줘",
+    "닭/오리/계란 이력번호로 농장과 검사 결과 확인해줘",
+    "이 고기 묶음번호에 포함된 개체 이력들을 확인해줘"
+  ],
+  "selection_rationale": "Official livestock traceability fields can map a citizen-provided trace or bundle number to farming, movement, slaughter, inspection, grade, packaging, and distribution evidence. This fits UMMAYA lookup/verify behavior for consumer food-provenance questions.",
+  "application": {
+    "submitted": true,
+    "status": "approved",
+    "application_date": "2026-05-16",
+    "expiry_date": "2028-05-16",
+    "application_reference": "115979896",
+    "uddi": "uddi:cb29ffb9-c219-45e3-ac48-a28f87f26ef2_202601281033",
+    "account_type": "development",
+    "submitted_purpose": "UMMAYA 이력 검증 어댑터: 이력번호와 묶음번호로 축산물의 사육 이동 도축 포장 등급 검사 판매 이력을 조회해 소비자 질의에 대응."
+  },
+  "traffic": {
+    "development_daily": 10000,
+    "operating_note": "Portal says operating-account traffic can be increased after use-case registration."
+  },
+  "license_notes": [
+    "Portal license display: 이용허락범위 제한 없음."
+  ],
+  "saved_artifacts": [
+    "data-go-kr-detail.html",
+    "openapi-schemaorg.json",
+    "dcat-metadata-download-error.html",
+    "gateway_swagger_guide.pdf",
+    "축산물품질평가원_OpenAPI활용가이드_축산물통합이력정보조회_v2.10.docx",
+    "official-contract-summary.json",
+    "pre-application-screening-2026-05-16-unit-16.md",
+    "usage-notes-2026-05-16-unit-16.md"
+  ],
+  "artifact_notes": [
+    "The attempted DCAT metadata download returned a data.go.kr error HTML page, saved as dcat-metadata-download-error.html."
+  ],
+  "live_api_probe": false
+}

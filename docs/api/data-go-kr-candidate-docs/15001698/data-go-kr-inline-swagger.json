@@ -1,0 +1,823 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "건강보험심사평가원에서 관리하는 병원 정보를 조회하는 서비스입니다.\\n- 국민건강보험법 제 43조(요양기관 현황에 대한 신고) 및 동법 시행규칙 제 12조(요양기관 현황 신고 등)에 의해 요양기관이 건강보험심사평가원에 신고한 기준으로 작성되었습니다.\\n- 요양기호는 1:1로 매칭한 암호화된 요양기호로 제공하고 있으며, 별도의 복호화 방법 또는 요양기호는 제공하고 있지 않습니다.\\n- 지역코드 등 API 활용을 위한 코드는 보건의료빅데이터개방시스템(opendata.hira.or.kr) > 서비스 소개 > 용어설명 > 코드조회를 참고하여 주시기 바랍니다.",
+    "version": "1.0.0",
+    "title": "건강보험심사평가원_병원정보서비스"
+  },
+  "host": "apis.data.go.kr/B551182/hospInfoServicev2",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getHospBasisList": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "헤더",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "바디",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "리스트 항목",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "세부항목",
+                          "properties": {
+                            "detyGdrCnt": {
+                              "type": "string",
+                              "description": "치과일반의 인원수",
+                              "properties": {}
+                            },
+                            "detyIntnCnt": {
+                              "type": "string",
+                              "description": "치과인턴 인원수",
+                              "properties": {}
+                            },
+                            "detyResdntCnt": {
+                              "type": "string",
+                              "description": "치과레지던트 인원수",
+                              "properties": {}
+                            },
+                            "detySdrCnt": {
+                              "type": "string",
+                              "description": "치과전문의 인원수",
+                              "properties": {}
+                            },
+                            "cmdcResdntCnt": {
+                              "type": "string",
+                              "description": "한방레지던트 인원수",
+                              "properties": {}
+                            },
+                            "cmdcSdrCnt": {
+                              "type": "string",
+                              "description": "한방전문의 인원수",
+                              "properties": {}
+                            },
+                            "pnursCnt": {
+                              "type": "string",
+                              "description": "조산사 인원수",
+                              "properties": {}
+                            },
+                            "XPos": {
+                              "type": "string",
+                              "description": "x좌표",
+                              "properties": {}
+                            },
+                            "YPos": {
+                              "type": "string",
+                              "description": "y좌표",
+                              "properties": {}
+                            },
+                            "distance": {
+                              "type": "string",
+                              "description": "거리",
+                              "properties": {}
+                            },
+                            "cmdcGdrCnt": {
+                              "type": "string",
+                              "description": "한방일반의 인원수",
+                              "properties": {}
+                            },
+                            "cmdcIntnCnt": {
+                              "type": "string",
+                              "description": "한방인턴 인원수",
+                              "properties": {}
+                            },
+                            "mdeptResdntCnt": {
+                              "type": "string",
+                              "description": "의과레지던트 인원수",
+                              "properties": {}
+                            },
+                            "drTotCnt": {
+                              "type": "string",
+                              "description": "의사총수",
+                              "properties": {}
+                            },
+                            "mdeptGdrCnt": {
+                              "type": "string",
+                              "description": "의과일반의 인원수",
+                              "properties": {}
+                            },
+                            "mdeptIntnCnt": {
+                              "type": "string",
+                              "description": "의과인턴 인원수",
+                              "properties": {}
+                            },
+                            "telno": {
+                              "type": "string",
+                              "description": "전화번호",
+                              "properties": {}
+                            },
+                            "hospUrl": {
+                              "type": "string",
+                              "description": "홈페이지",
+                              "properties": {}
+                            },
+                            "estbDd": {
+                              "type": "string",
+                              "description": "개설일자",
+                              "properties": {}
+                            },
+                            "sgguCdNm": {
+                              "type": "number",
+                              "description": "시군구명",
+                              "properties": {}
+                            },
+                            "emdongNm": {
+                              "type": "string",
+                              "description": "읍면동명",
+                              "properties": {}
+                            },
+                            "postNo": {
+                              "type": "string",
+                              "description": "우편번호",
+                              "properties": {}
+                            },
+                            "addr": {
+                              "type": "string",
+                              "description": "주소",
+                              "properties": {}
+                            },
+                            "sidoCdNm": {
+                              "type": "number",
+                              "description": "시도명",
+                              "properties": {}
+                            },
+                            "sgguCd": {
+                              "type": "number",
+                              "description": "시군구코드",
+                              "properties": {}
+                            },
+                            "ykiho": {
+                              "type": "string",
+                              "description": "암호화된 요양기호",
+                              "properties": {}
+                            },
+                            "yadmNm": {
+                              "type": "string",
+                              "description": "병원명",
+                              "properties": {}
+                            },
+                            "clCd": {
+                              "type": "string",
+                              "description": "종별코드",
+                              "properties": {}
+                            },
+                            "clCdNm": {
+                              "type": "string",
+                              "description": "종별코드명",
+                              "properties": {}
+                            },
+                            "sidoCd": {
+                              "type": "number",
+                              "description": "시도코드",
+                              "properties": {}
+                            },
+                            "mdeptSdrCnt": {
+                              "type": "string",
+                              "description": "의과전문의 인원수",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 수",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "데이터 총 개수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "병원기본목록",
+        "description": "의료기관 검색결과 제공 (요양기관명,주소,전화번호,URL)",
+        "operationId": "getHospBasisList",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "ServiceKey",
+          "description": "서비스키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "sidoCd",
+          "description": "시도코드",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "sgguCd",
+          "description": "시군구코드",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "emdongNm",
+          "description": "읍면동명",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "yadmNm",
+          "description": "병원명(UTF-8 인코딩 필요)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "zipCd",
+          "description": "분류코드(활용가이드 참조)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "clCd",
+          "description": "종별코드(활용가이드 참조)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "dgsbjtCd",
+          "description": "진료과목코드(활용가이드 참조)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "xPos",
+          "description": "x좌표(소수점 15)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "yPos",
+          "description": "y좌표(소수점 15)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "radius",
+          "description": "단위 : 미터(m)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "header": {
+      "type": "object",
+      "properties": {
+        "resultMsg": {
+          "type": "string",
+          "description": "결과메세지"
+        },
+        "resultCode": {
+          "type": "string",
+          "description": "결과코드"
+        }
+      }
+    },
+    "body": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "$ref": "#/definitions/items"
+        },
+        "numOfRows": {
+          "type": "integer",
+          "description": "한 페이지 결과 수"
+        },
+        "pageNo": {
+          "type": "integer",
+          "description": "페이지 수"
+        },
+        "totalCount": {
+          "type": "integer",
+          "description": "데이터 총 개수"
+        }
+      }
+    },
+    "items": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/item"
+        }
+      }
+    },
+    "item": {
+      "type": "object",
+      "properties": {
+        "cmdcResdntCnt": {
+          "type": "string",
+          "description": "한방레지던트 인원수"
+        },
+        "cmdcSdrCnt": {
+          "type": "string",
+          "description": "한방전문의 인원수"
+        },
+        "pnursCnt": {
+          "type": "string",
+          "description": "조산사 인원수"
+        },
+        "XPos": {
+          "type": "string",
+          "description": "x좌표"
+        },
+        "YPos": {
+          "type": "string",
+          "description": "y좌표"
+        },
+        "distance": {
+          "type": "string",
+          "description": "거리"
+        },
+        "detyGdrCnt": {
+          "type": "string",
+          "description": "치과일반의 인원수"
+        },
+        "detyIntnCnt": {
+          "type": "string",
+          "description": "치과인턴 인원수"
+        },
+        "detyResdntCnt": {
+          "type": "string",
+          "description": "치과레지던트 인원수"
+        },
+        "detySdrCnt": {
+          "type": "string",
+          "description": "치과전문의 인원수"
+        },
+        "cmdcGdrCnt": {
+          "type": "string",
+          "description": "한방일반의 인원수"
+        },
+        "cmdcIntnCnt": {
+          "type": "string",
+          "description": "한방인턴 인원수"
+        },
+        "mdeptResdntCnt": {
+          "type": "string",
+          "description": "의과레지던트 인원수"
+        },
+        "drTotCnt": {
+          "type": "string",
+          "description": "의사총수"
+        },
+        "mdeptGdrCnt": {
+          "type": "string",
+          "description": "의과일반의 인원수"
+        },
+        "mdeptIntnCnt": {
+          "type": "string",
+          "description": "의과인턴 인원수"
+        },
+        "telno": {
+          "type": "string",
+          "description": "전화번호"
+        },
+        "hospUrl": {
+          "type": "string",
+          "description": "홈페이지"
+        },
+        "estbDd": {
+          "type": "string",
+          "description": "개설일자"
+        },
+        "sgguCdNm": {
+          "type": "number",
+          "description": "시군구명"
+        },
+        "emdongNm": {
+          "type": "string",
+          "description": "읍면동명"
+        },
+        "postNo": {
+          "type": "string",
+          "description": "우편번호"
+        },
+        "addr": {
+          "type": "string",
+          "description": "주소"
+        },
+        "sidoCdNm": {
+          "type": "number",
+          "description": "시도명"
+        },
+        "sgguCd": {
+          "type": "number",
+          "description": "시군구코드"
+        },
+        "ykiho": {
+          "type": "string",
+          "description": "암호화된 요양기호"
+        },
+        "yadmNm": {
+          "type": "string",
+          "description": "병원명"
+        },
+        "clCd": {
+          "type": "string",
+          "description": "종별코드"
+        },
+        "clCdNm": {
+          "type": "string",
+          "description": "종별코드명"
+        },
+        "sidoCd": {
+          "type": "number",
+          "description": "시도코드"
+        },
+        "mdeptSdrCnt": {
+          "type": "string",
+          "description": "의과전문의 인원수"
+        }
+      }
+    },
+    "getHospBasisList_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "헤더",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "바디",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "리스트 항목",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "세부항목",
+                  "properties": {
+                    "detyGdrCnt": {
+                      "type": "string",
+                      "description": "치과일반의 인원수"
+                    },
+                    "detyIntnCnt": {
+                      "type": "string",
+                      "description": "치과인턴 인원수"
+                    },
+                    "detyResdntCnt": {
+                      "type": "string",
+                      "description": "치과레지던트 인원수"
+                    },
+                    "detySdrCnt": {
+                      "type": "string",
+                      "description": "치과전문의 인원수"
+                    },
+                    "cmdcResdntCnt": {
+                      "type": "string",
+                      "description": "한방레지던트 인원수"
+                    },
+                    "cmdcSdrCnt": {
+                      "type": "string",
+                      "description": "한방전문의 인원수"
+                    },
+                    "pnursCnt": {
+                      "type": "string",
+                      "description": "조산사 인원수"
+                    },
+                    "XPos": {
+                      "type": "string",
+                      "description": "x좌표"
+                    },
+                    "YPos": {
+                      "type": "string",
+                      "description": "y좌표"
+                    },
+                    "distance": {
+                      "type": "string",
+                      "description": "거리"
+                    },
+                    "cmdcGdrCnt": {
+                      "type": "string",
+                      "description": "한방일반의 인원수"
+                    },
+                    "cmdcIntnCnt": {
+                      "type": "string",
+                      "description": "한방인턴 인원수"
+                    },
+                    "mdeptResdntCnt": {
+                      "type": "string",
+                      "description": "의과레지던트 인원수"
+                    },
+                    "drTotCnt": {
+                      "type": "string",
+                      "description": "의사총수"
+                    },
+                    "mdeptGdrCnt": {
+                      "type": "string",
+                      "description": "의과일반의 인원수"
+                    },
+                    "mdeptIntnCnt": {
+                      "type": "string",
+                      "description": "의과인턴 인원수"
+                    },
+                    "telno": {
+                      "type": "string",
+                      "description": "전화번호"
+                    },
+                    "hospUrl": {
+                      "type": "string",
+                      "description": "홈페이지"
+                    },
+                    "estbDd": {
+                      "type": "string",
+                      "description": "개설일자"
+                    },
+                    "sgguCdNm": {
+                      "type": "number",
+                      "description": "시군구명"
+                    },
+                    "emdongNm": {
+                      "type": "string",
+                      "description": "읍면동명"
+                    },
+                    "postNo": {
+                      "type": "string",
+                      "description": "우편번호"
+                    },
+                    "addr": {
+                      "type": "string",
+                      "description": "주소"
+                    },
+                    "sidoCdNm": {
+                      "type": "number",
+                      "description": "시도명"
+                    },
+                    "sgguCd": {
+                      "type": "number",
+                      "description": "시군구코드"
+                    },
+                    "ykiho": {
+                      "type": "string",
+                      "description": "암호화된 요양기호"
+                    },
+                    "yadmNm": {
+                      "type": "string",
+                      "description": "병원명"
+                    },
+                    "clCd": {
+                      "type": "string",
+                      "description": "종별코드"
+                    },
+                    "clCdNm": {
+                      "type": "string",
+                      "description": "종별코드명"
+                    },
+                    "sidoCd": {
+                      "type": "number",
+                      "description": "시도코드"
+                    },
+                    "mdeptSdrCnt": {
+                      "type": "string",
+                      "description": "의과전문의 인원수"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 수"
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "데이터 총 개수"
+            }
+          }
+        }
+      }
+    }
+  },
+  "swaggerOprtinVOs": [
+    {
+      "oprtinUrl": "http://hiraapi.hira.or.kr/openapi/service/hospInfoService1/getHospBasisList1",
+      "oprtinNm": "병원기본목록",
+      "oprtinDc": "의료기관 검색결과 제공 (요양기관명,주소,전화번호,URL)",
+      "gwSvcNm": "getHospBasisList",
+      "operationId": "getHospBasisList",
+      "publicDataTyDetailCode": "PRDE02",
+      "reqList": [
+        {
+          "paramtrNm": "ServiceKey",
+          "paramtrDc": "서비스키",
+          "paramtrBassValue": "-",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "pageNo",
+          "paramtrDc": "페이지번호",
+          "paramtrBassValue": "1",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "numOfRows",
+          "paramtrDc": "한 페이지 결과 수",
+          "paramtrBassValue": "10",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "sidoCd",
+          "paramtrDc": "시도코드",
+          "paramtrBassValue": "110000",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "sgguCd",
+          "paramtrDc": "시군구코드",
+          "paramtrBassValue": "110019",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "emdongNm",
+          "paramtrDc": "읍면동명",
+          "paramtrBassValue": "신내동",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "yadmNm",
+          "paramtrDc": "병원명(UTF-8 인코딩 필요)",
+          "paramtrBassValue": "서울의료원",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "zipCd",
+          "paramtrDc": "분류코드(활용가이드 참조)",
+          "paramtrBassValue": "2010",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "clCd",
+          "paramtrDc": "종별코드(활용가이드 참조)",
+          "paramtrBassValue": "11",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "dgsbjtCd",
+          "paramtrDc": "진료과목코드(활용가이드 참조)",
+          "paramtrBassValue": "01",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "xPos",
+          "paramtrDc": "x좌표(소수점 15)",
+          "paramtrBassValue": "127.09854004628151",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "yPos",
+          "paramtrDc": "y좌표(소수점 15)",
+          "paramtrBassValue": "37.6132113197367",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "radius",
+          "paramtrDc": "단위 : 미터(m)",
+          "paramtrBassValue": "3000",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        }
+      ],
+      "resList": [
+        {
+          "paramtrNm": "header",
+          "paramtrDc": "헤더",
+          "paramtrDefNm": "#/definitions/header",
+          "subDefNm": "header",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "body",
+          "paramtrDc": "바디",
+          "paramtrDefNm": "#/definitions/body",
+          "subDefNm": "body",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true
+        }
+      ]
+    }
+  ]
+}

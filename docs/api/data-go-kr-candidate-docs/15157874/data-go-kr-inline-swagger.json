@@ -1,0 +1,239 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "한국지역난방공사 전기판매량 정보 서비스는 조회시작일, 조회종료일을 검색조건으로 하여 월별, 지사별 전기판매량 정보를 제공합니다.\\n1. 요청파라미터\\n■ serviceKey(공공데이터 인증키) ■ pageNo(페이지 번호) ■ numOfRows(항목 수) ■ startDate(조회 시작일) ■ endDate(조회 종료일)\\n2. 출력요소 (일부항목기제)\\n■ brachId(지사코드)(예시 : 202)  ■ branchName(지사명)(예시: 서울남부) ■ pwrQty(판매량계) ■ pwrQtyUnit(단위) ■rnum(순번) ■yyyymm(생산년월)(예시:202201)\\n3. 활용예제\\n■ 연월데이터에 따른 전기 판매량 추이 및 패턴 비교분석 ■ 기후에 따른 전기판매량 변화에 대한 분석 등\\n4. 주의사항 : 없음 \\n5. 데이터 요청후 불러오는 시간이 다소 필요할 수 있습니다.",
+    "version": "1.0.0",
+    "title": "한국지역난방공사_전기판매량 조회 서비스(GW)"
+  },
+  "host": "apis.data.go.kr/B550373/kdhcPowerSell",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/powerSell": {
+      "get": {
+        "responses": {
+          "99": {
+            "description": "인증키 누락"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "branchId": {
+                              "type": "string",
+                              "description": "지사코드",
+                              "properties": {}
+                            },
+                            "branchName": {
+                              "type": "string",
+                              "description": "지사명",
+                              "properties": {}
+                            },
+                            "pwrQty": {
+                              "type": "string",
+                              "description": "판매량계",
+                              "properties": {}
+                            },
+                            "pwrQtyUnit": {
+                              "type": "string",
+                              "description": "단위",
+                              "properties": {}
+                            },
+                            "rnum": {
+                              "type": "string",
+                              "description": "순번",
+                              "properties": {}
+                            },
+                            "yyyymm": {
+                              "type": "string",
+                              "description": "생산년월",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "전기판매량 정보조회",
+        "description": "조회시작일, 조회종료일을 검색조건으로 하여 월별, 지사별 전기판매량 정보를 제공합니다.",
+        "operationId": "powerSell",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "startDate",
+          "description": "조회 시작일",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "endDate",
+          "description": "조회 종료일",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "powerSell_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "branchId": {
+                      "type": "string",
+                      "description": "지사코드"
+                    },
+                    "branchName": {
+                      "type": "string",
+                      "description": "지사명"
+                    },
+                    "pwrQty": {
+                      "type": "string",
+                      "description": "판매량계"
+                    },
+                    "pwrQtyUnit": {
+                      "type": "string",
+                      "description": "단위"
+                    },
+                    "rnum": {
+                      "type": "string",
+                      "description": "순번"
+                    },
+                    "yyyymm": {
+                      "type": "string",
+                      "description": "생산년월"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            }
+          }
+        }
+      }
+    }
+  }
+}

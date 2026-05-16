@@ -1,0 +1,4838 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "증권이 전자등록발행된 후 전자등록계좌부에 전자등록의 방식으로 계좌간대체 또는 처분제한의 설정 및 말소를 하고, 이 정보가 전자등록된 전자등록계좌부를 관리하는 업무입니다. 예탁증권 집중예탁, 계좌간 대체, 발행 및 유통의 원활화를 위해 자본시장법 제294조에 의해 설립된 한국예탁결제원은 비상장 법인을 위해 예탁대상증권 지정제도를 운영하고 있습니다. 의무보유등록은 전자증권제도 시행 이후 전자증권의 의무보유를 위한 방식으로, 최대주주 등의 소유주식 처분에 따른 주가급락으로부터 일반투자자를 보호하기 위한 제도입니다. 금융위원회의 ‘증권의 발행 및 공시 등에 관한 규정’, 한국거래소의 ‘상장규정’ 및 기타 관계법령에 따라 최대주주, 주식인수인 등이 소유한 주식을 일정기간 동안 한국예탁결제원에 처분이 제한되도록 전자등록하는 것을 말합니다. 보호예수(separate safekeeping)제도란 보호예수의뢰인(계약당사자)과 한국예탁결제원 간의 보호예수계약에 의거하여 보호예수의뢰인별로 증권을 분리 보관하는 특수한 보관형태입니다. 계약관계이기 때문에 일정한 요건을 갖춘 자는 자유롭게 보호예수계약 및 그 구체적 내용을 정할 수 있으나, 의무보호예수 제도에 있어서는 보호예수계약의 체결 및 그 내용(구체적으로는 보호예수 기간) 등에 일정한 제한이 가해질 수 있습니다.",
+    "version": "1.0.0",
+    "title": "한국예탁결제원_주식정보서비스_GW"
+  },
+  "host": "apis.data.go.kr/B552481/StockSvc",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getKDRSecnInfo": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "kdrIsin": {
+                              "type": "string",
+                              "description": "KDR 종목코드(KR표준코드)",
+                              "properties": {}
+                            },
+                            "korSecnNm": {
+                              "type": "string",
+                              "description": "한글종목명",
+                              "properties": {}
+                            },
+                            "listDt": {
+                              "type": "string",
+                              "description": "상장일(YYYYMMDD)",
+                              "properties": {}
+                            },
+                            "ovsListStkmkCd": {
+                              "type": "string",
+                              "description": "해외상장시장(기술문서 참조)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "시장별 KDR 종목 전체 조회",
+        "description": "한국거래소에 상장된 KDR 종목을 상장시장별로 조회",
+        "operationId": "getKDRSecnInfo",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "caltotMartTpcd",
+          "description": "시장구분(11: 유가증권시장, 12: 코스닥시장, 13: 코넥스시장)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getVctfDivRankInfo": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "shotnIsin": {
+                              "type": "string",
+                              "description": "단축코드",
+                              "properties": {}
+                            },
+                            "exerPrcp": {
+                              "type": "string",
+                              "description": "종목명",
+                              "properties": {}
+                            },
+                            "persDivamt": {
+                              "type": "string",
+                              "description": "주당배당금",
+                              "properties": {}
+                            },
+                            "pvalDivrate": {
+                              "type": "string",
+                              "description": "액면가배당율",
+                              "properties": {}
+                            },
+                            "rank": {
+                              "type": "string",
+                              "description": "순위",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "유가증권시장 배당순위 조회",
+        "description": "액면가배당율을 기준으로한 연간 배당금 지급액 TOP3 종목(유가증권 상장 보통주)을 조회",
+        "operationId": "getVctfDivRankInfo",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "schStdYy",
+          "description": "조회기준연도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getTotIssuStkQty": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "vctfMart": {
+                              "type": "string",
+                              "description": "유가증권시장 총발행주식수",
+                              "properties": {}
+                            },
+                            "konexMart": {
+                              "type": "string",
+                              "description": "코넥스시장 총발행주식수",
+                              "properties": {}
+                            },
+                            "kosdaqMart": {
+                              "type": "string",
+                              "description": "코스닥시장 총발행주식수",
+                              "properties": {}
+                            },
+                            "schStdDt": {
+                              "type": "string",
+                              "description": "조회기준일(YYYYMMDD)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "상장시장별 총발행주식수 현황 조회",
+        "description": "한국거래소 장내시장(유가증권, 코스닥, 코넥스시장)에 발행된 총 발행주식수를 시장별로 조회",
+        "operationId": "getTotIssuStkQty",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "schStdDt",
+          "description": "조회기준일",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getKDRIssuLmtDetailsN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "issuLmtDocQty": {
+                              "type": "string",
+                              "description": "한도증서수",
+                              "properties": {}
+                            },
+                            "korSecnNm": {
+                              "type": "string",
+                              "description": "국문종목명",
+                              "properties": {}
+                            },
+                            "caltotMartTpcd": {
+                              "type": "string",
+                              "description": "시장구분명([11]유가증권시장 [12]코스닥시장 [13]K-OTC시장 [14]코넥스시장 [50]기타비상장)",
+                              "properties": {}
+                            },
+                            "kdrIssuRacd": {
+                              "type": "string",
+                              "description": "KDR발행사유코드([1]최초공모 [2]유상증자 [3]무상증자 [4]주식배당 [5]추가발행 [6]기타증가 [7]기타감소 [8]구주주발행))",
+                              "properties": {}
+                            },
+                            "issuLmtRegiDt": {
+                              "type": "string",
+                              "description": "한도적용일(YYYYMMDD)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "KDR 발행한도 내역",
+        "description": "종목별 KDR 발행한도 조회",
+        "operationId": "getKDRIssuLmtDetailsN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "isin",
+          "description": "종목코드(KR표준코드)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getSecSetlCostStatN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "kotcSetlCost": {
+                              "type": "string",
+                              "description": "K-OTC시장 결제대금",
+                              "properties": {}
+                            },
+                            "stdYymm": {
+                              "type": "string",
+                              "description": "기준년월(조회시작일자~조회종료일자 내 월별로 데이터로 제공)",
+                              "properties": {}
+                            },
+                            "martsetlTrCost": {
+                              "type": "string",
+                              "description": "주식시장결제 거래대금",
+                              "properties": {}
+                            },
+                            "martsetlSetlCost": {
+                              "type": "string",
+                              "description": "주식시장결제 결제대금",
+                              "properties": {}
+                            },
+                            "stkisetlTrCost": {
+                              "type": "string",
+                              "description": "주식기관결제 거래대금",
+                              "properties": {}
+                            },
+                            "stkisetlSetlCost": {
+                              "type": "string",
+                              "description": "주식기관결제 결제대금",
+                              "properties": {}
+                            },
+                            "kotcTrCost": {
+                              "type": "string",
+                              "description": "K-OTC시장 거래대금",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "월별 주식결제대금현황",
+        "description": "월별 주식결제대금현황",
+        "operationId": "getSecSetlCostStatN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "schBeginDt",
+          "description": "조회시작일자",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "schExpryDt",
+          "description": "조회종료일자",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getStkIsinByNmN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "shotnIsin": {
+                              "type": "string",
+                              "description": "단축코드(6자리)",
+                              "properties": {}
+                            },
+                            "engSecnNm": {
+                              "type": "string",
+                              "description": "영문 종목명",
+                              "properties": {}
+                            },
+                            "isin": {
+                              "type": "string",
+                              "description": "종목번호(KR표준코드)",
+                              "properties": {}
+                            },
+                            "issuDt": {
+                              "type": "string",
+                              "description": "발행일(YYYYMMDD)",
+                              "properties": {}
+                            },
+                            "issucoCustno": {
+                              "type": "string",
+                              "description": "발행회사번호(기업정보서비스 참조)",
+                              "properties": {}
+                            },
+                            "korSecnNm": {
+                              "type": "string",
+                              "description": "한글 종목명",
+                              "properties": {}
+                            },
+                            "secnKacdNm": {
+                              "type": "string",
+                              "description": "주식종류(보통주/우선주)",
+                              "properties": {}
+                            },
+                            "eltscYn": {
+                              "type": "string",
+                              "description": "전자증권 여부(Y/N)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "종목명칭으로 주식종목코드 및 기본정보 조회",
+        "description": "주식 종목명칭을 기준으로 종목번호와 단축코드, 주식종류 등 주식의 기본정보 조회",
+        "operationId": "getStkIsinByNmN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "secnNm",
+          "description": "발행회사명",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getStkIsinByShortIsinN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "secnKacdNm": {
+                              "type": "string",
+                              "description": "주식종류",
+                              "properties": {}
+                            },
+                            "engSecnNm": {
+                              "type": "string",
+                              "description": "영문 종목명",
+                              "properties": {}
+                            },
+                            "isin": {
+                              "type": "string",
+                              "description": "종목코드(KR표준코드)",
+                              "properties": {}
+                            },
+                            "issuDt": {
+                              "type": "string",
+                              "description": "발행일(YYYYMMDD)",
+                              "properties": {}
+                            },
+                            "issucoCustno": {
+                              "type": "string",
+                              "description": "발행회사번호(기업정보서비스 참조)",
+                              "properties": {}
+                            },
+                            "korSecnNm": {
+                              "type": "string",
+                              "description": "국문종목명",
+                              "properties": {}
+                            },
+                            "eltscYn": {
+                              "type": "string",
+                              "description": "전자증권 여부(Y/N)",
+                              "properties": {}
+                            },
+                            "shotnIsin": {
+                              "type": "string",
+                              "description": "단축코드(6자리)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "단축번호로 주식종목코드(풀코드) 조회",
+        "description": "단축번호를 기준으로 주식종목코드(풀코드) 및 종목명, 발행일 등 주식 기본정보 조회",
+        "operationId": "getStkIsinByShortIsinN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "shortIsin",
+          "description": "단축코드(6자리)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getDividendRankN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "shotnIsin": {
+                              "type": "string",
+                              "description": "단축코드(6자리)",
+                              "properties": {}
+                            },
+                            "caltotMartTpcd": {
+                              "type": "string",
+                              "description": "시장구분명",
+                              "properties": {}
+                            },
+                            "divAmtPerStk": {
+                              "type": "string",
+                              "description": "주당배당금",
+                              "properties": {}
+                            },
+                            "divRateCpri": {
+                              "type": "string",
+                              "description": "시가배당율(%)",
+                              "properties": {}
+                            },
+                            "divRatePval": {
+                              "type": "string",
+                              "description": "액면가배당율(%)",
+                              "properties": {}
+                            },
+                            "issucoCustno": {
+                              "type": "string",
+                              "description": "발행회사번호(기업정보서비스 참조)",
+                              "properties": {}
+                            },
+                            "korSecnNm": {
+                              "type": "string",
+                              "description": "국문 종목명",
+                              "properties": {}
+                            },
+                            "num": {
+                              "type": "string",
+                              "description": "배당 순위",
+                              "properties": {}
+                            },
+                            "pval": {
+                              "type": "string",
+                              "description": "액면가",
+                              "properties": {}
+                            },
+                            "secnKacd": {
+                              "type": "string",
+                              "description": "주식종류(보통주/우선주)",
+                              "properties": {}
+                            },
+                            "setaccMm": {
+                              "type": "string",
+                              "description": "결산월(예:12)",
+                              "properties": {}
+                            },
+                            "setaccMmdd": {
+                              "type": "string",
+                              "description": "결산월일(예:1231)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "배당순위조회",
+        "description": "순위구분, 조회기준연도, 상장구분, 주식종류를 기준으로 배당순위, 결산월일 등 배당관련 정보를 조회",
+        "operationId": "getDividendRankN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "stkTpcd",
+          "description": "주식종류(1. 보통주 2.우선주)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "listTpcd",
+          "description": "상장구분(11. 유가증권시장 12.코스닥시장 13.K-OTC시장 14.코넥스시장 50.기타비상장)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "rankTpcd",
+          "description": "순위구분(1.시가배당율, 2.액면가배당율)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "year",
+          "description": "기준년도(YYYY)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getSafeDpDutyDepoStatusN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "stkDepoQty": {
+                              "type": "string",
+                              "description": "의무보유예탁 주식수",
+                              "properties": {}
+                            },
+                            "cocnt": {
+                              "type": "string",
+                              "description": "의무보호예수 기업수",
+                              "properties": {}
+                            },
+                            "issuStkKindTpcd": {
+                              "type": "string",
+                              "description": "주식종류코드(주식종류명 참조)",
+                              "properties": {}
+                            },
+                            "issuStkKindTpnm": {
+                              "type": "string",
+                              "description": "주식종류명(예:보통주/우선주)",
+                              "properties": {}
+                            },
+                            "issuStkqty": {
+                              "type": "string",
+                              "description": "총발행주식수",
+                              "properties": {}
+                            },
+                            "safedpRatioValue": {
+                              "type": "string",
+                              "description": "보호예수비율(%)",
+                              "properties": {}
+                            },
+                            "secncnt": {
+                              "type": "string",
+                              "description": "종목수",
+                              "properties": {}
+                            },
+                            "stdDt": {
+                              "type": "string",
+                              "description": "기준일(YYYYMMDD)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "의무보호예수전체현황 전체현황표 조회",
+        "description": "조회기준일과 상장구분을 기준으로 의무보호예수주식주, 보호예수비율 등 의무보호예수 전체현황 조회",
+        "operationId": "getSafeDpDutyDepoStatusN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "stdDt",
+          "description": "기준일(YYYYMMDD)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "listTpcd",
+          "description": "상장구분(11. 유가증권시장 12.코스닥시장 13.K-OTC시장 14.코넥스시장 50.기타비상장)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getSafeDpDutyDepoRgtStatusN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "safedpStkDepoQty": {
+                              "type": "string",
+                              "description": "의무보유예탁주식수",
+                              "properties": {}
+                            },
+                            "codevalueNm": {
+                              "type": "string",
+                              "description": "사유명(예: 최대주주(상장))",
+                              "properties": {}
+                            },
+                            "dutyDepoCocnt": {
+                              "type": "string",
+                              "description": "의무보호예수기업수",
+                              "properties": {}
+                            },
+                            "dutyDepoSecncnt": {
+                              "type": "string",
+                              "description": "의무보호예수종목수",
+                              "properties": {}
+                            },
+                            "dutyDepoStkDepoQty": {
+                              "type": "string",
+                              "description": "의무보호예수주식수",
+                              "properties": {}
+                            },
+                            "safedpCocnt": {
+                              "type": "string",
+                              "description": "의무보유예탁기업수",
+                              "properties": {}
+                            },
+                            "safedpRacd": {
+                              "type": "string",
+                              "description": "사유코드",
+                              "properties": {}
+                            },
+                            "safedpSecncnt": {
+                              "type": "string",
+                              "description": "의무보유예탁종목수",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "의무보호예수전체현황 사유별 조회",
+        "description": "상장구분과 기준일을 이용하여 의무보호예수 사유, 기업수, 종목수 등 의무보호예수 정보 조회",
+        "operationId": "getSafeDpDutyDepoRgtStatusN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "listTpcd",
+          "description": "상장구분(11.유가증권시장 12.코스닥시장 13.K-OTC시장 14.코넥스시장 50.기타비상장)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "stdDt",
+          "description": "기준일(YYYYMMDD)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getNewDepoSecnListN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "totIssuQty": {
+                              "type": "string",
+                              "description": "총발행규모",
+                              "properties": {}
+                            },
+                            "apliDt": {
+                              "type": "string",
+                              "description": "예탁지정(취소)일자",
+                              "properties": {}
+                            },
+                            "indtpClsfNo": {
+                              "type": "string",
+                              "description": "한국산업분류코드",
+                              "properties": {}
+                            },
+                            "indtpNm": {
+                              "type": "string",
+                              "description": "한국산업분류명",
+                              "properties": {}
+                            },
+                            "isin": {
+                              "type": "string",
+                              "description": "종목코드(KR표준코드)",
+                              "properties": {}
+                            },
+                            "korSecnNm": {
+                              "type": "string",
+                              "description": "국문 종목명",
+                              "properties": {}
+                            },
+                            "pval": {
+                              "type": "string",
+                              "description": "액면가",
+                              "properties": {}
+                            },
+                            "secnKacd": {
+                              "type": "string",
+                              "description": "주식종류코드(주식종류명 참조)",
+                              "properties": {}
+                            },
+                            "secnKacdNm": {
+                              "type": "string",
+                              "description": "주식종류명(보통주/우선주)",
+                              "properties": {}
+                            },
+                            "setaccMm": {
+                              "type": "string",
+                              "description": "결산월(예: 12)",
+                              "properties": {}
+                            },
+                            "issucoCustno": {
+                              "type": "string",
+                              "description": "발행회사번호(기업정보서비스 참조)",
+                              "properties": {}
+                            },
+                            "eltscYn": {
+                              "type": "string",
+                              "description": "전자증권여부(Y/N)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "신규예탁지정종목조회",
+        "description": "예탁지정 여부와 조회기준연월을 기준으로 예탁지정(취소)일자, 해당 종목코드 등 예탁지정(취소)종목 조회",
+        "operationId": "getNewDepoSecnListN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "yyyymm",
+          "description": "조회연월",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "searchType",
+          "description": "조회구분(1.예탁지정, 2.예탁지정취소)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "issucoCustno",
+          "description": "발행회사번호(기업정보서비스 참조)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getStkListInfoN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "xpitDt": {
+                              "type": "string",
+                              "description": "만료일자(YYYYMMDD)",
+                              "properties": {}
+                            },
+                            "apliDt": {
+                              "type": "string",
+                              "description": "상장일자(YYYYMMDD)",
+                              "properties": {}
+                            },
+                            "dlistDt": {
+                              "type": "string",
+                              "description": "상장폐지일자(YYYYMMDD)",
+                              "properties": {}
+                            },
+                            "isin": {
+                              "type": "string",
+                              "description": "종목번호(KR표준코드)",
+                              "properties": {}
+                            },
+                            "korSecnNm": {
+                              "type": "string",
+                              "description": "국문 종목명",
+                              "properties": {}
+                            },
+                            "listTpcd": {
+                              "type": "string",
+                              "description": "상장구분코드(세부항목 문서 참조)",
+                              "properties": {}
+                            },
+                            "issucoCustno": {
+                              "type": "string",
+                              "description": "발행회사번호(기업정보서비스 참조)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "주식상장정보 조회",
+        "description": "종목번호를 기준으로 상장(폐지)일자, 종목번호 등 주식상장정보 조회",
+        "operationId": "getStkListInfoN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "isin",
+          "description": "종목번호(KR표준코드)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getXrcStkOptionXrcInfoN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "agOrgTpcd": {
+                              "type": "string",
+                              "description": "대행기관구분코드",
+                              "properties": {}
+                            },
+                            "divAndIntClauseTpcd": {
+                              "type": "string",
+                              "description": "배당및이자사항구분코드",
+                              "properties": {}
+                            },
+                            "issucoCustno": {
+                              "type": "string",
+                              "description": "발행회사고객번호",
+                              "properties": {}
+                            },
+                            "korSecnNm": {
+                              "type": "string",
+                              "description": "채권 종목명",
+                              "properties": {}
+                            },
+                            "martpOffPossYn": {
+                              "type": "string",
+                              "description": "시가락가능여부(N/Y)",
+                              "properties": {}
+                            },
+                            "nopayIntXtinYn": {
+                              "type": "string",
+                              "description": "미지급이자소멸여부(N/Y)",
+                              "properties": {}
+                            },
+                            "oddlotIntCalcTpcd": {
+                              "type": "string",
+                              "description": "단주대금이자계산구분코드",
+                              "properties": {}
+                            },
+                            "oddlotIntPayYn": {
+                              "type": "string",
+                              "description": "단주대금이자지급여부(N/Y)",
+                              "properties": {}
+                            },
+                            "oddlotIrate": {
+                              "type": "string",
+                              "description": "단주대금이자율(%)",
+                              "properties": {}
+                            },
+                            "oddlotPayddTpcd": {
+                              "type": "string",
+                              "description": "단주대금지급일구분코드",
+                              "properties": {}
+                            },
+                            "payinMeansTpcd": {
+                              "type": "string",
+                              "description": "납입수단구분코드",
+                              "properties": {}
+                            },
+                            "scapPayinPlace": {
+                              "type": "string",
+                              "description": "주금납입장소(주식대금 납입장소)",
+                              "properties": {}
+                            },
+                            "sharDeliDays": {
+                              "type": "string",
+                              "description": "주권교부일수",
+                              "properties": {}
+                            },
+                            "sharDeliDaysTpcd": {
+                              "type": "string",
+                              "description": "주권교부일수구분코드([1]일 [2]영업일)",
+                              "properties": {}
+                            },
+                            "sharDeliStdCd": {
+                              "type": "string",
+                              "description": "주권교부기준코드",
+                              "properties": {}
+                            },
+                            "wrtIssuQty": {
+                              "type": "string",
+                              "description": "신주인수권발행수량",
+                              "properties": {}
+                            },
+                            "wrtXrcMannTpcd": {
+                              "type": "string",
+                              "description": "신주인수권행사방식구분코드",
+                              "properties": {}
+                            },
+                            "wrtbIssuYn": {
+                              "type": "string",
+                              "description": "신주인수권증권발행여부(N/Y)",
+                              "properties": {}
+                            },
+                            "xrcPossBeginDt": {
+                              "type": "string",
+                              "description": "행사가능시작일자(YYYYMMDD)",
+                              "properties": {}
+                            },
+                            "xrcPossExpryDt": {
+                              "type": "string",
+                              "description": "행사가능종료일자(YYYYMMDD)",
+                              "properties": {}
+                            },
+                            "xrcRatioChgPossYn": {
+                              "type": "string",
+                              "description": "행사비율변동가능여부(N/Y)",
+                              "properties": {}
+                            },
+                            "isin": {
+                              "type": "string",
+                              "description": "채권 종목번호(KR표준코드)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "주식관련사채 행사조건정보 조회",
+        "description": "채권 종목번호를 기준으로 대행기관, 단주대금계산, 주권교부일 등 주식관련사채 행사조건정보 조회",
+        "operationId": "getXrcStkOptionXrcInfoN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "bondIsin",
+          "description": "채권 종목번호(KR표준코드)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getDocInfoN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "persFixIssuprcNm": {
+                              "type": "string",
+                              "description": "신주발행가격((확)확정가격, (예)예정가격)",
+                              "properties": {}
+                            },
+                            "agOrgTpcdNm": {
+                              "type": "string",
+                              "description": "명의개서대행기관(01:KSD, 02:국민은행, 03:하나은행, 90:자체)",
+                              "properties": {}
+                            },
+                            "docIssuTermBeginDt": {
+                              "type": "string",
+                              "description": "증서발행기간시작일자(YYYYMMDD)",
+                              "properties": {}
+                            },
+                            "docIssuTermExpryDt": {
+                              "type": "string",
+                              "description": "증서발행기간종료일자(YYYYMMDD)",
+                              "properties": {}
+                            },
+                            "isin": {
+                              "type": "string",
+                              "description": "신주인수권 증서 종목번호(KR표준코드)",
+                              "properties": {}
+                            },
+                            "issucoCustno": {
+                              "type": "string",
+                              "description": "발행회사고객번호(기업정보서비스 참조)",
+                              "properties": {}
+                            },
+                            "korSecnNm": {
+                              "type": "string",
+                              "description": "신주인수권 증서 종목명(국문 종목명)",
+                              "properties": {}
+                            },
+                            "listDt": {
+                              "type": "string",
+                              "description": "상장일(YYYYMMDD)",
+                              "properties": {}
+                            },
+                            "paidStdDt": {
+                              "type": "string",
+                              "description": "유상기준일자(YYYYMMDD)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "신주인수권증서 정보 조회",
+        "description": "시장구분을 기준으로 대행기관, 증서발행기간, 상장일, 신주발행가격 등 신주인수권증서 정보 조회",
+        "operationId": "getDocInfoN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "martTpcd",
+          "description": "시장구분(11.유가증권시장, 12.코스닥, 13.K-OTC, 14.코넥스, 50.기타시장)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getWrtInfoN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "korSecnNm": {
+                              "type": "string",
+                              "description": "신주인수권증권종목명(국문 종목명)",
+                              "properties": {}
+                            },
+                            "bondIsin": {
+                              "type": "string",
+                              "description": "채권종목번호(KR표준코드)",
+                              "properties": {}
+                            },
+                            "deliDt": {
+                              "type": "string",
+                              "description": "교부일자(YYYYMMDD)",
+                              "properties": {}
+                            },
+                            "isin": {
+                              "type": "string",
+                              "description": "신주인수권증권 종목번호(KR표준코드)",
+                              "properties": {}
+                            },
+                            "issuDt": {
+                              "type": "string",
+                              "description": "발행일자(YYYYMMDD)",
+                              "properties": {}
+                            },
+                            "issuNtimes": {
+                              "type": "string",
+                              "description": "발행횟수",
+                              "properties": {}
+                            },
+                            "issucoCustno": {
+                              "type": "string",
+                              "description": "발행회사고객번호(기업정보서비스 참조)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "신주인수권증권 정보 조회",
+        "description": "조회기준일을 이용하여 기준일 시점에서 유효한 신주인수권증권 종목번호, 발행일자 등 신주인수권증권 정보 조회",
+        "operationId": "getWrtInfoN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "stdDt",
+          "description": "기준일(YYYYMMDD)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getShotnByMartN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "shotnIsin": {
+                              "type": "string",
+                              "description": "단축종목번호(6자리)",
+                              "properties": {}
+                            },
+                            "korSecnNm": {
+                              "type": "string",
+                              "description": "국문 종목명",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "시장별 단축코드 전체 조회",
+        "description": "시장구분을 기준으로 단축종목번호와 종목명 조회",
+        "operationId": "getShotnByMartN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "martTpcd",
+          "description": "시장구분코드(11.유가증권시장, 12.코스닥, 13.K-OTC, 14.코넥스, 50.기타시장)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getLostStkInfo": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "secnIssuNtimes": {
+                              "type": "string",
+                              "description": "주권발행횟수",
+                              "properties": {}
+                            },
+                            "korSecnNm": {
+                              "type": "string",
+                              "description": "종목명",
+                              "properties": {}
+                            },
+                            "misDnomStkqty": {
+                              "type": "string",
+                              "description": "주식수",
+                              "properties": {}
+                            },
+                            "misTpcd": {
+                              "type": "string",
+                              "description": "사고구분(구분값은 기술문서 참고)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "주권 사고신고 조회",
+        "description": "보유주권의 사고신고 유무, 사유, 주식발행 횟수, 사고신고 주식수를 조회",
+        "operationId": "getLostStkInfo",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "isin",
+          "description": "종목코드(KR표준코드)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "lostsec_rsnum",
+          "description": "기번호(주권번호)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getBuyDmanRsn": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "gmetKacd": {
+                              "type": "string",
+                              "description": "주주총회사유([001] 정기총회, [002] 임시총회, [003] 종류총회, [009] 기타)",
+                              "properties": {}
+                            },
+                            "buyreqRacd": {
+                              "type": "string",
+                              "description": "매수청구사유([01] 영업양도/양수/임대, [02] 합병, [03] 감자, [04] 뮤추얼펀드만기연장, [05] 주식교환/이전)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "매수청구사유 조회",
+        "description": "유가증권 상장법인의 매수청구 기본정보를 조회",
+        "operationId": "getBuyDmanRsn",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "issucoCustno",
+          "description": "발행회사번호(기업정보서비스 참조)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "rgtStdDt",
+          "description": "매수청구 권리 기준일",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getListStatN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "payinCapsAmt": {
+                              "type": "string",
+                              "description": "납입자본금액",
+                              "properties": {}
+                            },
+                            "secncnt": {
+                              "type": "string",
+                              "description": "종목수",
+                              "properties": {}
+                            },
+                            "caltotMartTpcd": {
+                              "type": "string",
+                              "description": "집계시장구분코드(11:유가증권시장, 12:코스닥시장, 13:K-OTC시장, 14:코넥스시장, 50:기타비상장)",
+                              "properties": {}
+                            },
+                            "cocnt": {
+                              "type": "string",
+                              "description": "회사수(해당시장, 증권구분에 포함된 기업수)",
+                              "properties": {}
+                            },
+                            "issuStkqty": {
+                              "type": "string",
+                              "description": "발행주식수",
+                              "properties": {}
+                            },
+                            "martpTotamt": {
+                              "type": "string",
+                              "description": "시가총액",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "상장구분별 현황조회",
+        "description": "조회 기준일자를 기준으로 시장별, 증권구분별 발행주식수, 시가총액 등 주식 발행 현황조회",
+        "operationId": "getListStatN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "stdDt",
+          "description": "기준일자(YYYYMMDD)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    },
+    "/getXrcStkStatInfoN1": {
+      "get": {
+        "responses": {
+          "3": {
+            "description": "NODATA_ERROR(데이터 없음)"
+          },
+          "10": {
+            "description": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)"
+          },
+          "11": {
+            "description": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "xrcStkIsinNm": {
+                              "type": "string",
+                              "description": "행사주식종목명",
+                              "properties": {}
+                            },
+                            "issucoCustno": {
+                              "type": "string",
+                              "description": "발행회사번호(기업정보서비스 참조)",
+                              "properties": {}
+                            },
+                            "korSecnNm": {
+                              "type": "string",
+                              "description": "한글종목명(채권 종목명)",
+                              "properties": {}
+                            },
+                            "newstkAlocDdBfLimitDays": {
+                              "type": "string",
+                              "description": "신주배정일전제한일수",
+                              "properties": {}
+                            },
+                            "setaccEndtermLimitDays": {
+                              "type": "string",
+                              "description": "결산기말제한일수",
+                              "properties": {}
+                            },
+                            "wrtbIsin": {
+                              "type": "string",
+                              "description": "신주인수권증권 종목번호(신주인수권증권 표준코드)",
+                              "properties": {}
+                            },
+                            "xrcPrice": {
+                              "type": "string",
+                              "description": "행사가격",
+                              "properties": {}
+                            },
+                            "xrcRatio": {
+                              "type": "string",
+                              "description": "행사비율(%)",
+                              "properties": {}
+                            },
+                            "xrcStkIsin": {
+                              "type": "string",
+                              "description": "행사주식종목번호",
+                              "properties": {}
+                            },
+                            "isin": {
+                              "type": "string",
+                              "description": "종목코드(KR표준코드)",
+                              "properties": {}
+                            },
+                            "issuSecnTpcd": {
+                              "type": "string",
+                              "description": "발행종목구분코드",
+                              "properties": {}
+                            },
+                            "secnTpcd": {
+                              "type": "string",
+                              "description": "종목구분코드",
+                              "properties": {}
+                            },
+                            "wrtbIsinNm": {
+                              "type": "string",
+                              "description": "신주인수권증권 종목명",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "주식관련사채정보 조회",
+        "description": "채권 종목번호를 기준으로 신주인수권 행사가격, 행사비율, 행사주식종목명 등 주식관련사채 정보 조회",
+        "operationId": "getXrcStkStatInfoN1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "bondIsin",
+          "description": "채권 종목번호(KR표준코드)",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "getKDRSecnInfo_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "integer",
+              "description": "전체 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "kdrIsin": {
+                      "type": "string",
+                      "description": "KDR 종목코드(KR표준코드)"
+                    },
+                    "korSecnNm": {
+                      "type": "string",
+                      "description": "한글종목명"
+                    },
+                    "listDt": {
+                      "type": "string",
+                      "description": "상장일(YYYYMMDD)"
+                    },
+                    "ovsListStkmkCd": {
+                      "type": "string",
+                      "description": "해외상장시장(기술문서 참조)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getVctfDivRankInfo_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "shotnIsin": {
+                      "type": "string",
+                      "description": "단축코드"
+                    },
+                    "exerPrcp": {
+                      "type": "string",
+                      "description": "종목명"
+                    },
+                    "persDivamt": {
+                      "type": "string",
+                      "description": "주당배당금"
+                    },
+                    "pvalDivrate": {
+                      "type": "string",
+                      "description": "액면가배당율"
+                    },
+                    "rank": {
+                      "type": "string",
+                      "description": "순위"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "전체 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getTotIssuStkQty_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "vctfMart": {
+                      "type": "string",
+                      "description": "유가증권시장 총발행주식수"
+                    },
+                    "konexMart": {
+                      "type": "string",
+                      "description": "코넥스시장 총발행주식수"
+                    },
+                    "kosdaqMart": {
+                      "type": "string",
+                      "description": "코스닥시장 총발행주식수"
+                    },
+                    "schStdDt": {
+                      "type": "string",
+                      "description": "조회기준일(YYYYMMDD)"
+                    }
+                  }
+                }
+              }
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getKDRIssuLmtDetailsN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "integer",
+              "description": "전체 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "issuLmtDocQty": {
+                      "type": "string",
+                      "description": "한도증서수"
+                    },
+                    "korSecnNm": {
+                      "type": "string",
+                      "description": "국문종목명"
+                    },
+                    "caltotMartTpcd": {
+                      "type": "string",
+                      "description": "시장구분명([11]유가증권시장 [12]코스닥시장 [13]K-OTC시장 [14]코넥스시장 [50]기타비상장)"
+                    },
+                    "kdrIssuRacd": {
+                      "type": "string",
+                      "description": "KDR발행사유코드([1]최초공모 [2]유상증자 [3]무상증자 [4]주식배당 [5]추가발행 [6]기타증가 [7]기타감소 [8]구주주발행))"
+                    },
+                    "issuLmtRegiDt": {
+                      "type": "string",
+                      "description": "한도적용일(YYYYMMDD)"
+                    }
+                  }
+                }
+              }
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 번호"
+            },
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getSecSetlCostStatN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "kotcSetlCost": {
+                      "type": "string",
+                      "description": "K-OTC시장 결제대금"
+                    },
+                    "stdYymm": {
+                      "type": "string",
+                      "description": "기준년월(조회시작일자~조회종료일자 내 월별로 데이터로 제공)"
+                    },
+                    "martsetlTrCost": {
+                      "type": "string",
+                      "description": "주식시장결제 거래대금"
+                    },
+                    "martsetlSetlCost": {
+                      "type": "string",
+                      "description": "주식시장결제 결제대금"
+                    },
+                    "stkisetlTrCost": {
+                      "type": "string",
+                      "description": "주식기관결제 거래대금"
+                    },
+                    "stkisetlSetlCost": {
+                      "type": "string",
+                      "description": "주식기관결제 결제대금"
+                    },
+                    "kotcTrCost": {
+                      "type": "string",
+                      "description": "K-OTC시장 거래대금"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getStkIsinByNmN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "shotnIsin": {
+                      "type": "string",
+                      "description": "단축코드(6자리)"
+                    },
+                    "engSecnNm": {
+                      "type": "string",
+                      "description": "영문 종목명"
+                    },
+                    "isin": {
+                      "type": "string",
+                      "description": "종목번호(KR표준코드)"
+                    },
+                    "issuDt": {
+                      "type": "string",
+                      "description": "발행일(YYYYMMDD)"
+                    },
+                    "issucoCustno": {
+                      "type": "string",
+                      "description": "발행회사번호(기업정보서비스 참조)"
+                    },
+                    "korSecnNm": {
+                      "type": "string",
+                      "description": "한글 종목명"
+                    },
+                    "secnKacdNm": {
+                      "type": "string",
+                      "description": "주식종류(보통주/우선주)"
+                    },
+                    "eltscYn": {
+                      "type": "string",
+                      "description": "전자증권 여부(Y/N)"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            }
+          }
+        }
+      }
+    },
+    "getStkIsinByShortIsinN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "secnKacdNm": {
+                      "type": "string",
+                      "description": "주식종류"
+                    },
+                    "engSecnNm": {
+                      "type": "string",
+                      "description": "영문 종목명"
+                    },
+                    "isin": {
+                      "type": "string",
+                      "description": "종목코드(KR표준코드)"
+                    },
+                    "issuDt": {
+                      "type": "string",
+                      "description": "발행일(YYYYMMDD)"
+                    },
+                    "issucoCustno": {
+                      "type": "string",
+                      "description": "발행회사번호(기업정보서비스 참조)"
+                    },
+                    "korSecnNm": {
+                      "type": "string",
+                      "description": "국문종목명"
+                    },
+                    "eltscYn": {
+                      "type": "string",
+                      "description": "전자증권 여부(Y/N)"
+                    },
+                    "shotnIsin": {
+                      "type": "string",
+                      "description": "단축코드(6자리)"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            }
+          }
+        }
+      }
+    },
+    "getDividendRankN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "shotnIsin": {
+                      "type": "string",
+                      "description": "단축코드(6자리)"
+                    },
+                    "caltotMartTpcd": {
+                      "type": "string",
+                      "description": "시장구분명"
+                    },
+                    "divAmtPerStk": {
+                      "type": "string",
+                      "description": "주당배당금"
+                    },
+                    "divRateCpri": {
+                      "type": "string",
+                      "description": "시가배당율(%)"
+                    },
+                    "divRatePval": {
+                      "type": "string",
+                      "description": "액면가배당율(%)"
+                    },
+                    "issucoCustno": {
+                      "type": "string",
+                      "description": "발행회사번호(기업정보서비스 참조)"
+                    },
+                    "korSecnNm": {
+                      "type": "string",
+                      "description": "국문 종목명"
+                    },
+                    "num": {
+                      "type": "string",
+                      "description": "배당 순위"
+                    },
+                    "pval": {
+                      "type": "string",
+                      "description": "액면가"
+                    },
+                    "secnKacd": {
+                      "type": "string",
+                      "description": "주식종류(보통주/우선주)"
+                    },
+                    "setaccMm": {
+                      "type": "string",
+                      "description": "결산월(예:12)"
+                    },
+                    "setaccMmdd": {
+                      "type": "string",
+                      "description": "결산월일(예:1231)"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getSafeDpDutyDepoStatusN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "stkDepoQty": {
+                      "type": "string",
+                      "description": "의무보유예탁 주식수"
+                    },
+                    "cocnt": {
+                      "type": "string",
+                      "description": "의무보호예수 기업수"
+                    },
+                    "issuStkKindTpcd": {
+                      "type": "string",
+                      "description": "주식종류코드(주식종류명 참조)"
+                    },
+                    "issuStkKindTpnm": {
+                      "type": "string",
+                      "description": "주식종류명(예:보통주/우선주)"
+                    },
+                    "issuStkqty": {
+                      "type": "string",
+                      "description": "총발행주식수"
+                    },
+                    "safedpRatioValue": {
+                      "type": "string",
+                      "description": "보호예수비율(%)"
+                    },
+                    "secncnt": {
+                      "type": "string",
+                      "description": "종목수"
+                    },
+                    "stdDt": {
+                      "type": "string",
+                      "description": "기준일(YYYYMMDD)"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            }
+          }
+        }
+      }
+    },
+    "getSafeDpDutyDepoRgtStatusN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "safedpStkDepoQty": {
+                      "type": "string",
+                      "description": "의무보유예탁주식수"
+                    },
+                    "codevalueNm": {
+                      "type": "string",
+                      "description": "사유명(예: 최대주주(상장))"
+                    },
+                    "dutyDepoCocnt": {
+                      "type": "string",
+                      "description": "의무보호예수기업수"
+                    },
+                    "dutyDepoSecncnt": {
+                      "type": "string",
+                      "description": "의무보호예수종목수"
+                    },
+                    "dutyDepoStkDepoQty": {
+                      "type": "string",
+                      "description": "의무보호예수주식수"
+                    },
+                    "safedpCocnt": {
+                      "type": "string",
+                      "description": "의무보유예탁기업수"
+                    },
+                    "safedpRacd": {
+                      "type": "string",
+                      "description": "사유코드"
+                    },
+                    "safedpSecncnt": {
+                      "type": "string",
+                      "description": "의무보유예탁종목수"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getNewDepoSecnListN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "totIssuQty": {
+                      "type": "string",
+                      "description": "총발행규모"
+                    },
+                    "apliDt": {
+                      "type": "string",
+                      "description": "예탁지정(취소)일자"
+                    },
+                    "indtpClsfNo": {
+                      "type": "string",
+                      "description": "한국산업분류코드"
+                    },
+                    "indtpNm": {
+                      "type": "string",
+                      "description": "한국산업분류명"
+                    },
+                    "isin": {
+                      "type": "string",
+                      "description": "종목코드(KR표준코드)"
+                    },
+                    "korSecnNm": {
+                      "type": "string",
+                      "description": "국문 종목명"
+                    },
+                    "pval": {
+                      "type": "string",
+                      "description": "액면가"
+                    },
+                    "secnKacd": {
+                      "type": "string",
+                      "description": "주식종류코드(주식종류명 참조)"
+                    },
+                    "secnKacdNm": {
+                      "type": "string",
+                      "description": "주식종류명(보통주/우선주)"
+                    },
+                    "setaccMm": {
+                      "type": "string",
+                      "description": "결산월(예: 12)"
+                    },
+                    "issucoCustno": {
+                      "type": "string",
+                      "description": "발행회사번호(기업정보서비스 참조)"
+                    },
+                    "eltscYn": {
+                      "type": "string",
+                      "description": "전자증권여부(Y/N)"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            }
+          }
+        }
+      }
+    },
+    "getStkListInfoN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "xpitDt": {
+                      "type": "string",
+                      "description": "만료일자(YYYYMMDD)"
+                    },
+                    "apliDt": {
+                      "type": "string",
+                      "description": "상장일자(YYYYMMDD)"
+                    },
+                    "dlistDt": {
+                      "type": "string",
+                      "description": "상장폐지일자(YYYYMMDD)"
+                    },
+                    "isin": {
+                      "type": "string",
+                      "description": "종목번호(KR표준코드)"
+                    },
+                    "korSecnNm": {
+                      "type": "string",
+                      "description": "국문 종목명"
+                    },
+                    "listTpcd": {
+                      "type": "string",
+                      "description": "상장구분코드(세부항목 문서 참조)"
+                    },
+                    "issucoCustno": {
+                      "type": "string",
+                      "description": "발행회사번호(기업정보서비스 참조)"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            }
+          }
+        }
+      }
+    },
+    "getXrcStkOptionXrcInfoN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "agOrgTpcd": {
+                      "type": "string",
+                      "description": "대행기관구분코드"
+                    },
+                    "divAndIntClauseTpcd": {
+                      "type": "string",
+                      "description": "배당및이자사항구분코드"
+                    },
+                    "issucoCustno": {
+                      "type": "string",
+                      "description": "발행회사고객번호"
+                    },
+                    "korSecnNm": {
+                      "type": "string",
+                      "description": "채권 종목명"
+                    },
+                    "martpOffPossYn": {
+                      "type": "string",
+                      "description": "시가락가능여부(N/Y)"
+                    },
+                    "nopayIntXtinYn": {
+                      "type": "string",
+                      "description": "미지급이자소멸여부(N/Y)"
+                    },
+                    "oddlotIntCalcTpcd": {
+                      "type": "string",
+                      "description": "단주대금이자계산구분코드"
+                    },
+                    "oddlotIntPayYn": {
+                      "type": "string",
+                      "description": "단주대금이자지급여부(N/Y)"
+                    },
+                    "oddlotIrate": {
+                      "type": "string",
+                      "description": "단주대금이자율(%)"
+                    },
+                    "oddlotPayddTpcd": {
+                      "type": "string",
+                      "description": "단주대금지급일구분코드"
+                    },
+                    "payinMeansTpcd": {
+                      "type": "string",
+                      "description": "납입수단구분코드"
+                    },
+                    "scapPayinPlace": {
+                      "type": "string",
+                      "description": "주금납입장소(주식대금 납입장소)"
+                    },
+                    "sharDeliDays": {
+                      "type": "string",
+                      "description": "주권교부일수"
+                    },
+                    "sharDeliDaysTpcd": {
+                      "type": "string",
+                      "description": "주권교부일수구분코드([1]일 [2]영업일)"
+                    },
+                    "sharDeliStdCd": {
+                      "type": "string",
+                      "description": "주권교부기준코드"
+                    },
+                    "wrtIssuQty": {
+                      "type": "string",
+                      "description": "신주인수권발행수량"
+                    },
+                    "wrtXrcMannTpcd": {
+                      "type": "string",
+                      "description": "신주인수권행사방식구분코드"
+                    },
+                    "wrtbIssuYn": {
+                      "type": "string",
+                      "description": "신주인수권증권발행여부(N/Y)"
+                    },
+                    "xrcPossBeginDt": {
+                      "type": "string",
+                      "description": "행사가능시작일자(YYYYMMDD)"
+                    },
+                    "xrcPossExpryDt": {
+                      "type": "string",
+                      "description": "행사가능종료일자(YYYYMMDD)"
+                    },
+                    "xrcRatioChgPossYn": {
+                      "type": "string",
+                      "description": "행사비율변동가능여부(N/Y)"
+                    },
+                    "isin": {
+                      "type": "string",
+                      "description": "채권 종목번호(KR표준코드)"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            }
+          }
+        }
+      }
+    },
+    "getDocInfoN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "persFixIssuprcNm": {
+                      "type": "string",
+                      "description": "신주발행가격((확)확정가격, (예)예정가격)"
+                    },
+                    "agOrgTpcdNm": {
+                      "type": "string",
+                      "description": "명의개서대행기관(01:KSD, 02:국민은행, 03:하나은행, 90:자체)"
+                    },
+                    "docIssuTermBeginDt": {
+                      "type": "string",
+                      "description": "증서발행기간시작일자(YYYYMMDD)"
+                    },
+                    "docIssuTermExpryDt": {
+                      "type": "string",
+                      "description": "증서발행기간종료일자(YYYYMMDD)"
+                    },
+                    "isin": {
+                      "type": "string",
+                      "description": "신주인수권 증서 종목번호(KR표준코드)"
+                    },
+                    "issucoCustno": {
+                      "type": "string",
+                      "description": "발행회사고객번호(기업정보서비스 참조)"
+                    },
+                    "korSecnNm": {
+                      "type": "string",
+                      "description": "신주인수권 증서 종목명(국문 종목명)"
+                    },
+                    "listDt": {
+                      "type": "string",
+                      "description": "상장일(YYYYMMDD)"
+                    },
+                    "paidStdDt": {
+                      "type": "string",
+                      "description": "유상기준일자(YYYYMMDD)"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            }
+          }
+        }
+      }
+    },
+    "getWrtInfoN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "korSecnNm": {
+                      "type": "string",
+                      "description": "신주인수권증권종목명(국문 종목명)"
+                    },
+                    "bondIsin": {
+                      "type": "string",
+                      "description": "채권종목번호(KR표준코드)"
+                    },
+                    "deliDt": {
+                      "type": "string",
+                      "description": "교부일자(YYYYMMDD)"
+                    },
+                    "isin": {
+                      "type": "string",
+                      "description": "신주인수권증권 종목번호(KR표준코드)"
+                    },
+                    "issuDt": {
+                      "type": "string",
+                      "description": "발행일자(YYYYMMDD)"
+                    },
+                    "issuNtimes": {
+                      "type": "string",
+                      "description": "발행횟수"
+                    },
+                    "issucoCustno": {
+                      "type": "string",
+                      "description": "발행회사고객번호(기업정보서비스 참조)"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getShotnByMartN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "shotnIsin": {
+                      "type": "string",
+                      "description": "단축종목번호(6자리)"
+                    },
+                    "korSecnNm": {
+                      "type": "string",
+                      "description": "국문 종목명"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getLostStkInfo_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "secnIssuNtimes": {
+                      "type": "string",
+                      "description": "주권발행횟수"
+                    },
+                    "korSecnNm": {
+                      "type": "string",
+                      "description": "종목명"
+                    },
+                    "misDnomStkqty": {
+                      "type": "string",
+                      "description": "주식수"
+                    },
+                    "misTpcd": {
+                      "type": "string",
+                      "description": "사고구분(구분값은 기술문서 참고)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getBuyDmanRsn_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "gmetKacd": {
+                      "type": "string",
+                      "description": "주주총회사유([001] 정기총회, [002] 임시총회, [003] 종류총회, [009] 기타)"
+                    },
+                    "buyreqRacd": {
+                      "type": "string",
+                      "description": "매수청구사유([01] 영업양도/양수/임대, [02] 합병, [03] 감자, [04] 뮤추얼펀드만기연장, [05] 주식교환/이전)"
+                    }
+                  }
+                }
+              }
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 번호"
+            },
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "전체 결과 수"
+            }
+          }
+        }
+      }
+    },
+    "getListStatN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "payinCapsAmt": {
+                      "type": "string",
+                      "description": "납입자본금액"
+                    },
+                    "secncnt": {
+                      "type": "string",
+                      "description": "종목수"
+                    },
+                    "caltotMartTpcd": {
+                      "type": "string",
+                      "description": "집계시장구분코드(11:유가증권시장, 12:코스닥시장, 13:K-OTC시장, 14:코넥스시장, 50:기타비상장)"
+                    },
+                    "cocnt": {
+                      "type": "string",
+                      "description": "회사수(해당시장, 증권구분에 포함된 기업수)"
+                    },
+                    "issuStkqty": {
+                      "type": "string",
+                      "description": "발행주식수"
+                    },
+                    "martpTotamt": {
+                      "type": "string",
+                      "description": "시가총액"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            }
+          }
+        }
+      }
+    },
+    "getXrcStkStatInfoN1_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "xrcStkIsinNm": {
+                      "type": "string",
+                      "description": "행사주식종목명"
+                    },
+                    "issucoCustno": {
+                      "type": "string",
+                      "description": "발행회사번호(기업정보서비스 참조)"
+                    },
+                    "korSecnNm": {
+                      "type": "string",
+                      "description": "한글종목명(채권 종목명)"
+                    },
+                    "newstkAlocDdBfLimitDays": {
+                      "type": "string",
+                      "description": "신주배정일전제한일수"
+                    },
+                    "setaccEndtermLimitDays": {
+                      "type": "string",
+                      "description": "결산기말제한일수"
+                    },
+                    "wrtbIsin": {
+                      "type": "string",
+                      "description": "신주인수권증권 종목번호(신주인수권증권 표준코드)"
+                    },
+                    "xrcPrice": {
+                      "type": "string",
+                      "description": "행사가격"
+                    },
+                    "xrcRatio": {
+                      "type": "string",
+                      "description": "행사비율(%)"
+                    },
+                    "xrcStkIsin": {
+                      "type": "string",
+                      "description": "행사주식종목번호"
+                    },
+                    "isin": {
+                      "type": "string",
+                      "description": "종목코드(KR표준코드)"
+                    },
+                    "issuSecnTpcd": {
+                      "type": "string",
+                      "description": "발행종목구분코드"
+                    },
+                    "secnTpcd": {
+                      "type": "string",
+                      "description": "종목구분코드"
+                    },
+                    "wrtbIsinNm": {
+                      "type": "string",
+                      "description": "신주인수권증권 종목명"
+                    }
+                  }
+                }
+              }
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지 번호"
+            }
+          }
+        }
+      }
+    }
+  },
+  "swaggerOprtinVOs": [
+    {
+      "oprtinUrl": "https://seibro.or.kr/openapi/StockSvc/getKDRSecnInfo",
+      "oprtinNm": "시장별 KDR 종목 전체 조회",
+      "oprtinDc": "한국거래소에 상장된 KDR 종목을 상장시장별로 조회",
+      "gwSvcNm": "getKDRSecnInfo",
+      "operationId": "getKDRSecnInfo",
+      "publicDataTyDetailCode": "PRDE02",
+      "reqList": [
+        {
+          "paramtrNm": "serviceKey",
+          "paramtrDc": "공공데이터포털에서 받은 인증키",
+          "paramtrBassValue": "-",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "pageNo",
+          "paramtrDc": "페이지번호",
+          "paramtrBassValue": "1",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "numOfRows",
+          "paramtrDc": "한 페이지 결과 수",
+          "paramtrBassValue": "10",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "caltotMartTpcd",
+          "paramtrDc": "11: 유가증권시장, 12: 코스닥시장, 13: 코넥스시장",
+          "paramtrBassValue": "12",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        }
+      ],
+      "resList": [
+        {
+          "paramtrNm": "header",
+          "paramtrDc": "header",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/header",
+          "subDefNm": "header",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "resultCode",
+              "paramtrDc": "결과코드",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "resultMsg",
+              "paramtrDc": "결과메세지",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        },
+        {
+          "paramtrNm": "body",
+          "paramtrDc": "body",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/body",
+          "subDefNm": "body",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "items",
+              "paramtrDc": "items",
+              "arrayYn": "N",
+              "paramtrDefNm": "#/definitions/items",
+              "subDefNm": "items",
+              "paramtrTy": "object",
+              "paramtrDivision": "필수",
+              "ck": true,
+              "subParam": [
+                {
+                  "paramtrNm": "item",
+                  "paramtrDc": "item",
+                  "arrayYn": "N",
+                  "paramtrDefNm": "#/definitions/item",
+                  "subDefNm": "item",
+                  "paramtrTy": "object",
+                  "paramtrDivision": "필수",
+                  "ck": true,
+                  "subParam": [
+                    {
+                      "paramtrNm": "kdrIsin",
+                      "paramtrDc": "KDR 종목코드",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "korSecnNm",
+                      "paramtrDc": "한글종목명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "listDt",
+                      "paramtrDc": "상장일",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "ovsListStkmkCd",
+                      "paramtrDc": "해외상장시장",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "oprtinNo": 1
+    }
+  ]
+}

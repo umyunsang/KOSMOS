@@ -1,0 +1,345 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "표준데이터셋으로 제공하는 '한국대학교육협의회_대학 및 전문대학정보'를 API로 제공,\\n대학 및 전문대학의 학교구분, 설립형태, 소재지 등의 정보를 포함하여 학제 구분, 운영 형태, 설립 주체, 지역별 분포, 학교 유형별 특성, 규모 및 기본 현황 등 다양한 세부 정보를 함께 제공하며, 교육기관 현황을 체계적으로 파악하고 분석·활용할 수 있도록 지원하고, 관련 서비스 개발 및 정책 수립, 연구·통계 분석 등에 활용 가능한 기반 데이터로 제공하며, 공공데이터 활용도를 높이고 다양한 분야에서의 연계 활용을 지원",
+    "version": "1.0.0",
+    "title": "한국대학교육협의회_대학 및 전문대학정보_GW"
+  },
+  "host": "apis.data.go.kr/B340014/SchoolInfoService",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getSchoolInfo": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "lstUpdtDtm": {
+                              "type": "string",
+                              "description": "최종수정일",
+                              "properties": {}
+                            },
+                            "pbnfAreaCd": {
+                              "type": "string",
+                              "description": "시도코드",
+                              "properties": {}
+                            },
+                            "pbnfAreaNm": {
+                              "type": "string",
+                              "description": "시도명",
+                              "properties": {}
+                            },
+                            "postNo": {
+                              "type": "string",
+                              "description": "도로명우편번호",
+                              "properties": {}
+                            },
+                            "postNoAdrs": {
+                              "type": "string",
+                              "description": "소재지도로명주소",
+                              "properties": {}
+                            },
+                            "psbsDivNm": {
+                              "type": "string",
+                              "description": "본분교명",
+                              "properties": {}
+                            },
+                            "schlDivNm": {
+                              "type": "string",
+                              "description": "대학구분명",
+                              "properties": {}
+                            },
+                            "schlEngNm": {
+                              "type": "string",
+                              "description": "학교영문명",
+                              "properties": {}
+                            },
+                            "schlEstbDivNm": {
+                              "type": "string",
+                              "description": "설립형태구분명",
+                              "properties": {}
+                            },
+                            "schlEstbDt": {
+                              "type": "string",
+                              "description": "설립일자",
+                              "properties": {}
+                            },
+                            "schlId": {
+                              "type": "string",
+                              "description": "학교ID",
+                              "properties": {}
+                            },
+                            "schlKndNm": {
+                              "type": "string",
+                              "description": "학교구분명",
+                              "properties": {}
+                            },
+                            "schlNm": {
+                              "type": "string",
+                              "description": "학교명",
+                              "properties": {}
+                            },
+                            "schlRepFxNoCtnt": {
+                              "type": "string",
+                              "description": "대표팩스번호",
+                              "properties": {}
+                            },
+                            "schlRepTpNoCtnt": {
+                              "type": "string",
+                              "description": "대표전화번호",
+                              "properties": {}
+                            },
+                            "schlUrlAdrs": {
+                              "type": "string",
+                              "description": "홈페이지주소",
+                              "properties": {}
+                            },
+                            "svyYr": {
+                              "type": "string",
+                              "description": "조사연도",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "한국대학교육협의회_대학 및 전문대학정보",
+        "description": "한국대학교육협의회 대학 및 전문대학정보 제공(저작권에 위배되지 않는 정보)",
+        "operationId": "getSchoolInfo",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "svyYr",
+          "description": "조사년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "schlId",
+          "description": "학교코드",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "schlKrnNm",
+          "description": "학교명",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "getSchoolInfo_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "lstUpdtDtm": {
+                      "type": "string",
+                      "description": "최종수정일"
+                    },
+                    "pbnfAreaCd": {
+                      "type": "string",
+                      "description": "시도코드"
+                    },
+                    "pbnfAreaNm": {
+                      "type": "string",
+                      "description": "시도명"
+                    },
+                    "postNo": {
+                      "type": "string",
+                      "description": "도로명우편번호"
+                    },
+                    "postNoAdrs": {
+                      "type": "string",
+                      "description": "소재지도로명주소"
+                    },
+                    "psbsDivNm": {
+                      "type": "string",
+                      "description": "본분교명"
+                    },
+                    "schlDivNm": {
+                      "type": "string",
+                      "description": "대학구분명"
+                    },
+                    "schlEngNm": {
+                      "type": "string",
+                      "description": "학교영문명"
+                    },
+                    "schlEstbDivNm": {
+                      "type": "string",
+                      "description": "설립형태구분명"
+                    },
+                    "schlEstbDt": {
+                      "type": "string",
+                      "description": "설립일자"
+                    },
+                    "schlId": {
+                      "type": "string",
+                      "description": "학교ID"
+                    },
+                    "schlKndNm": {
+                      "type": "string",
+                      "description": "학교구분명"
+                    },
+                    "schlNm": {
+                      "type": "string",
+                      "description": "학교명"
+                    },
+                    "schlRepFxNoCtnt": {
+                      "type": "string",
+                      "description": "대표팩스번호"
+                    },
+                    "schlRepTpNoCtnt": {
+                      "type": "string",
+                      "description": "대표전화번호"
+                    },
+                    "schlUrlAdrs": {
+                      "type": "string",
+                      "description": "홈페이지주소"
+                    },
+                    "svyYr": {
+                      "type": "string",
+                      "description": "조사연도"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

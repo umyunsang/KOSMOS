@@ -1,0 +1,391 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "중소벤처기업부에서 운영중인 중소기업지원 정책정보 통합안내시스템(기업마당)에서 제공중인 중앙행정기관, 지방자치단체체, 유관기관의 최신 지원사업 공고정보 데이터 입니다. \\n\\n해시태그, 분야, 공고ID, 등록일자, 수정일자 파라미터로 데이터를 조회할 수 있으며, 본 데이터의 주요 내용은 공고명, 공고URL, 공고ID, 소관명, 수행기관명, 사업개요내용, 분야, 신청기간, 지원대상, 파일경로명, 파일명, 본문출력파일경로명, 본문출력파일명, 해시태그, 사업신청방법내용, 문의처, 사업신청URL 정보로 구성되어 있습니다. \\n\\n중소기업 지원사업공고 조회 서비스는 기업, 연구자, 지원기관등 국민 누구나 활용하실 수 있습니다",
+    "version": "1.0.0",
+    "title": "중소벤처기업부_중소기업 지원사업 공고 조회 서비스"
+  },
+  "host": "apis.data.go.kr/1421000/bizinfo",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/pblancBsnsService": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "pblancNm": {
+                              "type": "string",
+                              "description": "공고명",
+                              "properties": {}
+                            },
+                            "pblancUrl": {
+                              "type": "string",
+                              "description": "기업마당URL",
+                              "properties": {}
+                            },
+                            "pblancId": {
+                              "type": "string",
+                              "description": "공고ID",
+                              "properties": {}
+                            },
+                            "jrsdInsttNm": {
+                              "type": "string",
+                              "description": "소관기관명",
+                              "properties": {}
+                            },
+                            "excInsttNm": {
+                              "type": "string",
+                              "description": "수행기관명",
+                              "properties": {}
+                            },
+                            "bsnsSumryCn": {
+                              "type": "string",
+                              "description": "사업개요내용",
+                              "properties": {}
+                            },
+                            "pldirSportRealmLclasCodeNm": {
+                              "type": "string",
+                              "description": "정책디렉토리지원분야대분류명",
+                              "properties": {}
+                            },
+                            "creatPnttm": {
+                              "type": "string",
+                              "description": "등록일시",
+                              "properties": {}
+                            },
+                            "reqstBeginEndDe": {
+                              "type": "string",
+                              "description": "신청기간",
+                              "properties": {}
+                            },
+                            "updtPnttm": {
+                              "type": "string",
+                              "description": "수정일시",
+                              "properties": {}
+                            },
+                            "trgetNm": {
+                              "type": "string",
+                              "description": "지원대상",
+                              "properties": {}
+                            },
+                            "inqireCo": {
+                              "type": "string",
+                              "description": "조회수",
+                              "properties": {}
+                            },
+                            "flpthNm": {
+                              "type": "string",
+                              "description": "파일경로명",
+                              "properties": {}
+                            },
+                            "fileNm": {
+                              "type": "string",
+                              "description": "파일명",
+                              "properties": {}
+                            },
+                            "printFlpthNm": {
+                              "type": "string",
+                              "description": "본문출력파일경로명",
+                              "properties": {}
+                            },
+                            "printFileNm": {
+                              "type": "string",
+                              "description": "본문출력파일명",
+                              "properties": {}
+                            },
+                            "hashtags": {
+                              "type": "string",
+                              "description": "해시태그",
+                              "properties": {}
+                            },
+                            "reqstMthPapersCn": {
+                              "type": "string",
+                              "description": "사업신청방법내용",
+                              "properties": {}
+                            },
+                            "refrncNm": {
+                              "type": "string",
+                              "description": "문의처",
+                              "properties": {}
+                            },
+                            "rceptEngnHmpgUrl": {
+                              "type": "string",
+                              "description": "사업신청URL",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한페이지 결과수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "총건수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "중소기업 지원사업 공고 조회 서비스",
+        "description": "중앙부처, 지자체, 유관기관의 최신 지원사업 공고 정보 제공",
+        "operationId": "pblancBsnsService",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "dataType",
+          "description": "응답데이터 형식",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "searchLclasId",
+          "description": "분야를 조회하는 설정값",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "hashtags",
+          "description": "해시태그를 지정하여 조회하는 설정값",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "pblancId",
+          "description": "공고 조회를 위한 고유 식별값 설정값",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "registDe",
+          "description": "공고를 등록한 일자",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "updtPnttm",
+          "description": "공고를 수정한 일자",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "pblancBsnsService_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "pblancNm": {
+                      "type": "string",
+                      "description": "공고명"
+                    },
+                    "pblancUrl": {
+                      "type": "string",
+                      "description": "기업마당URL"
+                    },
+                    "pblancId": {
+                      "type": "string",
+                      "description": "공고ID"
+                    },
+                    "jrsdInsttNm": {
+                      "type": "string",
+                      "description": "소관기관명"
+                    },
+                    "excInsttNm": {
+                      "type": "string",
+                      "description": "수행기관명"
+                    },
+                    "bsnsSumryCn": {
+                      "type": "string",
+                      "description": "사업개요내용"
+                    },
+                    "pldirSportRealmLclasCodeNm": {
+                      "type": "string",
+                      "description": "정책디렉토리지원분야대분류명"
+                    },
+                    "creatPnttm": {
+                      "type": "string",
+                      "description": "등록일시"
+                    },
+                    "reqstBeginEndDe": {
+                      "type": "string",
+                      "description": "신청기간"
+                    },
+                    "updtPnttm": {
+                      "type": "string",
+                      "description": "수정일시"
+                    },
+                    "trgetNm": {
+                      "type": "string",
+                      "description": "지원대상"
+                    },
+                    "inqireCo": {
+                      "type": "string",
+                      "description": "조회수"
+                    },
+                    "flpthNm": {
+                      "type": "string",
+                      "description": "파일경로명"
+                    },
+                    "fileNm": {
+                      "type": "string",
+                      "description": "파일명"
+                    },
+                    "printFlpthNm": {
+                      "type": "string",
+                      "description": "본문출력파일경로명"
+                    },
+                    "printFileNm": {
+                      "type": "string",
+                      "description": "본문출력파일명"
+                    },
+                    "hashtags": {
+                      "type": "string",
+                      "description": "해시태그"
+                    },
+                    "reqstMthPapersCn": {
+                      "type": "string",
+                      "description": "사업신청방법내용"
+                    },
+                    "refrncNm": {
+                      "type": "string",
+                      "description": "문의처"
+                    },
+                    "rceptEngnHmpgUrl": {
+                      "type": "string",
+                      "description": "사업신청URL"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한페이지 결과수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "총건수"
+            }
+          }
+        }
+      }
+    }
+  }
+}

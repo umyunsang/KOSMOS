@@ -1,0 +1,531 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "한국서부발전에서 제공하는 AI 디지털트윈 개발용 플랜트 운전 정보 조회 서비스는 발전 설비의 운전 데이터를 체계적으로 조회하고, 이를 AI 기반 디지털트윈 모델 개발에 활용할 수 있도록 제공되는 서비스입니다. 제공되는 데이터는 호기 코드, 분류 코드, 태그명, 태그 데이터 생성 시간, 태그 값, FLAG로 구성되어 있으며, 설비별·항목별 운전 상태를 시간 단위로 확인할 수 있습니다.\\n\\n각 태그 값은 사전에 정의된 TAG 정보의 최소값과 최대값 범위를 기준으로 비교됩니다. 태그 값이 최소값보다 작으면 FLAG는 -1, 최대값보다 크면 FLAG는 1, 정상 범위 내에 있으면 FLAG는 0으로 표시됩니다. 이를 통해 수집된 운전 데이터가 정상적인 허용 범위 안에 있는지 여부를 쉽게 판단할 수 있습니다.\\n\\n이러한 FLAG 정보는 이상값 식별, 데이터 품질 점검, 학습 데이터 정제 과정에 활용될 수 있습니다. 특히 AI 디지털트윈 모델을 개발할 때, 정상 운전 데이터와 비정상 또는 범위 초과 데이터를 구분함으로써 모델의 학습 신뢰도를 높이고, 실제 플랜트 운전 상태를 보다 정확하게 모사하는 데 도움을 줄 수 있습니다. 따라서 본 서비스는 발전 플랜트의 운전 특성을 반영한 AI 학습용 데이터 구축 및 디지털트윈 기반 성능 분석에 유용하게 활용될 수 있습니다.",
+    "version": "1.0.0",
+    "title": "한국서부발전(주)_(AI친화)AI 디지털트윈 개발용 플랜트 운전 정보 조회 서비스"
+  },
+  "host": "apis.data.go.kr/B552522/AiDigitalTwinPlantService",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getAiDigitalTwinPlantService": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "pwst_nm": {
+                              "type": "string",
+                              "description": "발전소 명",
+                              "properties": {}
+                            },
+                            "tag_data_nvl": {
+                              "type": "string",
+                              "description": "태그 값",
+                              "properties": {}
+                            },
+                            "meno_nm": {
+                              "type": "string",
+                              "description": "호기 명",
+                              "properties": {}
+                            },
+                            "tag_data_crt_hr": {
+                              "type": "string",
+                              "description": "태그 데이터 생성 시간",
+                              "properties": {}
+                            },
+                            "description": {
+                              "type": "string",
+                              "description": "태그 설명",
+                              "properties": {}
+                            },
+                            "flag_cd": {
+                              "type": "string",
+                              "description": "FLAG",
+                              "properties": {}
+                            },
+                            "tag_nm": {
+                              "type": "string",
+                              "description": "태그명",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "AI 디지털트윈 개발용 플랜트 운전 정보 조회",
+        "description": "발전소명, 호기명, 태그명 및 태그 데이터 생성시간을 기준으로 단위, 태그 값, 센서타입, flag코드를 조회한다.",
+        "operationId": "getAiDigitalTwinPlantService",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey ",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "fromDate",
+          "description": "시작날짜",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "toDate",
+          "description": "종료날짜",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "plant",
+          "description": "발전소명",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "clsf_cd",
+          "description": "분류 코드",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "hogi",
+          "description": "호기명",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "tag",
+          "description": "태그명",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "type",
+          "description": "응답데이터 포맷",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "getAiDigitalTwinPlantService_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "pwst_nm": {
+                      "type": "string",
+                      "description": "발전소 명"
+                    },
+                    "tag_data_nvl": {
+                      "type": "string",
+                      "description": "태그 값"
+                    },
+                    "meno_nm": {
+                      "type": "string",
+                      "description": "호기 명"
+                    },
+                    "tag_data_crt_hr": {
+                      "type": "string",
+                      "description": "태그 데이터 생성 시간"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "태그 설명"
+                    },
+                    "flag_cd": {
+                      "type": "string",
+                      "description": "FLAG"
+                    },
+                    "tag_nm": {
+                      "type": "string",
+                      "description": "태그명"
+                    }
+                  }
+                }
+              }
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            }
+          }
+        }
+      }
+    }
+  },
+  "swaggerOprtinVOs": [
+    {
+      "oprtinUrl": "http://110.15.192.182:443/api/data/AiDigitalTwinPlantService",
+      "oprtinNm": "AI 디지털트윈 개발용 플랜트 운전 정보 조회",
+      "oprtinDc": "발전소명, 호기명, 태그명 및 태그 데이터 생성시간을 기준으로 단위, 태그 값, 센서타입, flag코드를 조회한다.",
+      "gwSvcNm": "getAiDigitalTwinPlantService",
+      "operationId": "getAiDigitalTwinPlantService",
+      "publicDataTyDetailCode": "PRDE02",
+      "reqList": [
+        {
+          "paramtrNm": "serviceKey ",
+          "paramtrDc": "공공데이터포털에서 받은 인증키",
+          "paramtrBassValue": "-",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "fromDate",
+          "paramtrDc": "시작날짜",
+          "paramtrBassValue": "2024-12-18",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "toDate",
+          "paramtrDc": "종료날짜",
+          "paramtrBassValue": "2024-12-19",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "plant",
+          "paramtrDc": "발전소명",
+          "paramtrBassValue": "WTTATA",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "clsf_cd",
+          "paramtrDc": "분류 코드",
+          "paramtrBassValue": "P2",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "hogi",
+          "paramtrDc": "호기명",
+          "paramtrBassValue": "WTTATA07",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "tag",
+          "paramtrDc": "태그명",
+          "paramtrBassValue": "T2.CM.0DM-LSLL02B.XG04",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "pageNo",
+          "paramtrDc": "페이지번호",
+          "paramtrBassValue": "1",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "numOfRows",
+          "paramtrDc": "한 페이지 결과 수",
+          "paramtrBassValue": "20",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        },
+        {
+          "paramtrNm": "type",
+          "paramtrDc": "응답데이터 포맷",
+          "paramtrBassValue": "JSON",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        }
+      ],
+      "resList": [
+        {
+          "paramtrNm": "header",
+          "paramtrDc": "header",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/getAiDigitalTwinPlantService-header",
+          "subDefNm": "getAiDigitalTwinPlantService-header",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "resultMsg",
+              "paramtrDc": "결과메시지",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "resultCode",
+              "paramtrDc": "결과코드",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        },
+        {
+          "paramtrNm": "body",
+          "paramtrDc": "body",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/getAiDigitalTwinPlantService-body",
+          "subDefNm": "getAiDigitalTwinPlantService-body",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "totalCount",
+              "paramtrDc": "전체 결과 수",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "items",
+              "paramtrDc": "items",
+              "arrayYn": "N",
+              "paramtrDefNm": "#/definitions/getAiDigitalTwinPlantService-items",
+              "subDefNm": "getAiDigitalTwinPlantService-items",
+              "paramtrTy": "object",
+              "paramtrDivision": "필수",
+              "ck": true,
+              "subParam": [
+                {
+                  "paramtrNm": "item",
+                  "paramtrDc": "item",
+                  "arrayYn": "N",
+                  "paramtrDefNm": "#/definitions/getAiDigitalTwinPlantService-item",
+                  "subDefNm": "getAiDigitalTwinPlantService-item",
+                  "paramtrTy": "object",
+                  "paramtrDivision": "필수",
+                  "ck": true,
+                  "subParam": [
+                    {
+                      "paramtrNm": "pwst_nm",
+                      "paramtrDc": "발전소 명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "tag_data_nvl",
+                      "paramtrDc": "태그 값",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "meno_nm",
+                      "paramtrDc": "호기 명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "tag_data_crt_hr",
+                      "paramtrDc": "태그 데이터 생성 시간",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "description",
+                      "paramtrDc": "태그 설명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "flag_cd",
+                      "paramtrDc": "FLAG",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "tag_nm",
+                      "paramtrDc": "태그명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "paramtrNm": "pageNo",
+              "paramtrDc": "페이지번호",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "numOfRows",
+              "paramtrDc": "한 페이지 결과 수",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

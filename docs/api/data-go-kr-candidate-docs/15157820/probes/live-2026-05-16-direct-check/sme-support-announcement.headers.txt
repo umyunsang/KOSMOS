@@ -1,0 +1,14 @@
+HTTP/1.1 200 OK
+Cache-Control: no-store
+Content-Language: en-US
+Content-Type: application/json;charset=UTF-8
+Date: Sat, 16 May 2026 08:07:27 GMT
+Server: Apache
+Set-Cookie: <redacted>
+Strict-Transport-Security: max-age=31536000 ; includeSubDomains
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Xss-Protection: 1; mode=block
+Transfer-Encoding: chunked
+

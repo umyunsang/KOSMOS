@@ -1,0 +1,2874 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "건강보험심사평가원에서 수집·관리하는 의료기관의 상세정보를 제공하는 서비스입니다.\\n- 시설정보, 세부정보, 진료과목정보, 교통정보, 의료장비정보, 식대가산정보, 간호등급정보, 특수진료정보(진료가능분야조회), 전문병원지정분야, 전문과목별전문의수, 기타인력수 정보 조회 가능\\n※  요양기호는 1:1로 매칭한 암호화된 요양기호로 제공하고 있으며, 별도의 복호화 방법 또는 요양기호는 제공하고 있지 않습니다.\\n   · 암호화된 요양기호는 건강보험심사평가원 '병원정보서비스' Open API > 병원기본목록에서 확인 가능합니다.",
+    "version": "1.0.0",
+    "title": "건강보험심사평가원_의료기관별상세정보서비스"
+  },
+  "host": "apis.data.go.kr/B551182/MadmDtlInfoService2.7",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getSpclDiagInfo2.7": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "헤더",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "바디",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 수",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "데이터 총 개수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "리스트 항목",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "세부항목",
+                          "properties": {
+                            "srchCdNm": {
+                              "type": "string",
+                              "description": "구분 코드명",
+                              "properties": {}
+                            },
+                            "srchCd": {
+                              "type": "string",
+                              "description": "구분 코드",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "특수진료정보(진료가능분야조회)",
+        "description": "의료기관의 특수진료(진료가능분야) 정보 제공 (저작권에 위배되지 않는 정보)",
+        "operationId": "getSpclDiagInfo2.7",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "ykiho",
+          "description": "암호화된 요양기호(확인방법: 건강보험심사평가원 오픈API[병원정보서비스>병원기본목록(getHospBasisList1)](암호화된요양기호(ykiho)))",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "_type",
+          "description": "xml/json (Default : xml)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getTrnsprtInfo2.7": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "헤더",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "바디",
+                  "properties": {
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "데이터 총 개수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "리스트 항목",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "세부항목",
+                          "properties": {
+                            "trafNm": {
+                              "type": "string",
+                              "description": "교통편",
+                              "properties": {}
+                            },
+                            "arivPlc": {
+                              "type": "string",
+                              "description": "하차지점",
+                              "properties": {}
+                            },
+                            "dir": {
+                              "type": "string",
+                              "description": "방향",
+                              "properties": {}
+                            },
+                            "dist": {
+                              "type": "string",
+                              "description": "거리",
+                              "properties": {}
+                            },
+                            "rmk": {
+                              "type": "string",
+                              "description": "비고",
+                              "properties": {}
+                            },
+                            "lineNo": {
+                              "type": "string",
+                              "description": "노선번호",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "교통정보",
+        "description": "의료기관의 교통정보 제공 (저작권에 위배되지 않는 정보)",
+        "operationId": "getTrnsprtInfo2.7",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "ykiho",
+          "description": "암호화된 요양기호(확인방법: 건강보험심사평가원 오픈API[병원정보서비스>병원기본목록(getHospBasisList1)](암호화된요양기호(ykiho)))",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "_type",
+          "description": "xml/json (Default : xml)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getDtlInfo2.7": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "헤더",
+                  "properties": {
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    },
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "바디",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 수",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "데이터 총 개수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "리스트 항목",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "세부항목",
+                          "properties": {
+                            "plcDir": {
+                              "type": "string",
+                              "description": "공공건물(장소) 방향",
+                              "properties": {}
+                            },
+                            "trmtSunEnd": {
+                              "type": "string",
+                              "description": "진료종료시간_일요일",
+                              "properties": {}
+                            },
+                            "rcvSat": {
+                              "type": "string",
+                              "description": "접수시간_토요일",
+                              "properties": {}
+                            },
+                            "trmtSunStart": {
+                              "type": "string",
+                              "description": "진료시작시간_일요일",
+                              "properties": {}
+                            },
+                            "emyNgtTelNo1": {
+                              "type": "string",
+                              "description": "야간 응급실 전화번호 1",
+                              "properties": {}
+                            },
+                            "emyNgtTelNo2": {
+                              "type": "string",
+                              "description": "야간 응급실 전화번호 2",
+                              "properties": {}
+                            },
+                            "lunchWeek": {
+                              "type": "string",
+                              "description": "월~금 점심시간",
+                              "properties": {}
+                            },
+                            "trmtWedStart": {
+                              "type": "string",
+                              "description": "진료시작시간_수요일",
+                              "properties": {}
+                            },
+                            "trmtWedEnd": {
+                              "type": "string",
+                              "description": "진료종료시간_수요일",
+                              "properties": {}
+                            },
+                            "trmtThuStart": {
+                              "type": "string",
+                              "description": "진료시작시간_목요일",
+                              "properties": {}
+                            },
+                            "trmtMonStart": {
+                              "type": "string",
+                              "description": "진료시작시간_월요일",
+                              "properties": {}
+                            },
+                            "trmtMonEnd": {
+                              "type": "string",
+                              "description": "진료종료시간_월요일",
+                              "properties": {}
+                            },
+                            "trmtTueStart": {
+                              "type": "string",
+                              "description": "진료시작시간_화요일",
+                              "properties": {}
+                            },
+                            "trmtTueEnd": {
+                              "type": "string",
+                              "description": "진료종료시간_화요일",
+                              "properties": {}
+                            },
+                            "lunchSat": {
+                              "type": "string",
+                              "description": "점심시간_토요일",
+                              "properties": {}
+                            },
+                            "rcvWeek": {
+                              "type": "string",
+                              "description": "접수시간_평일",
+                              "properties": {}
+                            },
+                            "trmtSatStart": {
+                              "type": "string",
+                              "description": "진료시작시간_토요일",
+                              "properties": {}
+                            },
+                            "trmtSatEnd": {
+                              "type": "string",
+                              "description": "진료종료시간_토요일",
+                              "properties": {}
+                            },
+                            "plcNm": {
+                              "type": "string",
+                              "description": "공공건물(장소) 이름",
+                              "properties": {}
+                            },
+                            "parkXpnsYn": {
+                              "type": "string",
+                              "description": "주차장 운영여부, 주차비용 부담여부",
+                              "properties": {}
+                            },
+                            "parkEtc": {
+                              "type": "string",
+                              "description": "기타 안내사항",
+                              "properties": {}
+                            },
+                            "noTrmtSun": {
+                              "type": "string",
+                              "description": "일요일 휴진 안내",
+                              "properties": {}
+                            },
+                            "noTrmtHoli": {
+                              "type": "string",
+                              "description": "공휴일 휴진 안내",
+                              "properties": {}
+                            },
+                            "emyDayYn": {
+                              "type": "string",
+                              "description": "주간 응급실 운영여부",
+                              "properties": {}
+                            },
+                            "emyDayTelNo1": {
+                              "type": "string",
+                              "description": "주간 응급실 전화번호 1",
+                              "properties": {}
+                            },
+                            "emyDayTelNo2": {
+                              "type": "string",
+                              "description": "주간 응급실 전화번호 1",
+                              "properties": {}
+                            },
+                            "emyNgtYn": {
+                              "type": "string",
+                              "description": "야간 응급실 운영여부",
+                              "properties": {}
+                            },
+                            "trmtThuEnd": {
+                              "type": "string",
+                              "description": "진료종료시간_목요일",
+                              "properties": {}
+                            },
+                            "trmtFriStart": {
+                              "type": "string",
+                              "description": "진료시작시간_금요일",
+                              "properties": {}
+                            },
+                            "trmtFriEnd": {
+                              "type": "string",
+                              "description": "진료종료시간_금요일",
+                              "properties": {}
+                            },
+                            "plcDist": {
+                              "type": "string",
+                              "description": "공공건물(장소) 거리",
+                              "properties": {}
+                            },
+                            "parkQty": {
+                              "type": "string",
+                              "description": "주차 가능대수",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "세부정보",
+        "description": "의료기관의 세부정보 제공 (저작권에 위배되지 않는 정보)",
+        "operationId": "getDtlInfo2.7",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "ykiho",
+          "description": "암호화된 요양기호(확인방법: 건강보험심사평가원 오픈API[병원정보서비스>병원기본목록(getHospBasisList1)](암호화된요양기호(ykiho)))",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "_type",
+          "description": "xml/json (Default : xml)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getEqpInfo2.7": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "헤더",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "바디",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "리스트 항목",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "세부항목",
+                          "properties": {
+                            "sgguCd": {
+                              "type": "string",
+                              "description": "시군구코드",
+                              "properties": {}
+                            },
+                            "sgguCdNm": {
+                              "type": "string",
+                              "description": "시군구명",
+                              "properties": {}
+                            },
+                            "emdongNm": {
+                              "type": "string",
+                              "description": "읍면동명",
+                              "properties": {}
+                            },
+                            "orgTyCdNm": {
+                              "type": "string",
+                              "description": "설립 구분명",
+                              "properties": {}
+                            },
+                            "sidoCd": {
+                              "type": "string",
+                              "description": "시도코드",
+                              "properties": {}
+                            },
+                            "sidoCdNm": {
+                              "type": "string",
+                              "description": "시도명",
+                              "properties": {}
+                            },
+                            "permSbdCnt": {
+                              "type": "string",
+                              "description": "정신과개방허가병상수",
+                              "properties": {}
+                            },
+                            "chldSprmCnt": {
+                              "type": "string",
+                              "description": "소아중환자병상수",
+                              "properties": {}
+                            },
+                            "psydeptClsHigSbdCnt": {
+                              "type": "string",
+                              "description": "정신과폐쇄상급병상수",
+                              "properties": {}
+                            },
+                            "psydeptClsGnlSbdCnt": {
+                              "type": "string",
+                              "description": "정신과폐쇄일반병상수",
+                              "properties": {}
+                            },
+                            "psydeptOpenHigSbdCnt": {
+                              "type": "string",
+                              "description": "정신과개방상급병상수",
+                              "properties": {}
+                            },
+                            "psydeptOpenGnlSbdCnt": {
+                              "type": "string",
+                              "description": "정신과개방일반병상수",
+                              "properties": {}
+                            },
+                            "postNo": {
+                              "type": "string",
+                              "description": "우편번호",
+                              "properties": {}
+                            },
+                            "addr": {
+                              "type": "string",
+                              "description": "주소",
+                              "properties": {}
+                            },
+                            "clCd": {
+                              "type": "string",
+                              "description": "종별 코드",
+                              "properties": {}
+                            },
+                            "telno": {
+                              "type": "string",
+                              "description": "전화번호",
+                              "properties": {}
+                            },
+                            "hghrSickbdCnt": {
+                              "type": "string",
+                              "description": "일반입원실상급병상수",
+                              "properties": {}
+                            },
+                            "stdSickbdCnt": {
+                              "type": "string",
+                              "description": "일반입원실일반병상수",
+                              "properties": {}
+                            },
+                            "aduChldSprmCnt": {
+                              "type": "string",
+                              "description": "성인중환자병상수",
+                              "properties": {}
+                            },
+                            "nbySprmCnt": {
+                              "type": "string",
+                              "description": "신생아중환자병상수",
+                              "properties": {}
+                            },
+                            "partumCnt": {
+                              "type": "string",
+                              "description": "분만실병상수",
+                              "properties": {}
+                            },
+                            "soprmCnt": {
+                              "type": "string",
+                              "description": "수술실병상수",
+                              "properties": {}
+                            },
+                            "emymCnt": {
+                              "type": "string",
+                              "description": "응급실병상수",
+                              "properties": {}
+                            },
+                            "ptrmCnt": {
+                              "type": "string",
+                              "description": "물리치료실병상수",
+                              "properties": {}
+                            },
+                            "hospUrl": {
+                              "type": "string",
+                              "description": "홈페이지",
+                              "properties": {}
+                            },
+                            "orgTyCd": {
+                              "type": "string",
+                              "description": "설립 구분",
+                              "properties": {}
+                            },
+                            "estbDd": {
+                              "type": "string",
+                              "description": "개설일자",
+                              "properties": {}
+                            },
+                            "clCdNm": {
+                              "type": "string",
+                              "description": "종별 코드명",
+                              "properties": {}
+                            },
+                            "yadmNm": {
+                              "type": "string",
+                              "description": "병원명",
+                              "properties": {}
+                            },
+                            "isnrSbdCnt": {
+                              "type": "string",
+                              "description": "격리실병상수",
+                              "properties": {}
+                            },
+                            "anvirTrrmSbdCnt": {
+                              "type": "string",
+                              "description": "무균치료실병상수",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 수",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "데이터 총 개수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "시설정보",
+        "description": "의료기관의 시설정보 제공 (저작권에 위배되지 않는 정보)",
+        "operationId": "getEqpInfo2.7",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "ykiho",
+          "description": "암호화된 요양기호(확인방법: 건강보험심사평가원 오픈API[병원정보서비스>병원기본목록(getHospBasisList1)](암호화된요양기호(ykiho)))",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "_type",
+          "description": "xml/json (Default : xml)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getSpcSbjtSdrInfo2.7": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "헤더",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "바디",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "리스트 항목",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "세부항목",
+                          "properties": {
+                            "dgsbjtCd": {
+                              "type": "string",
+                              "description": "진료과목코드",
+                              "properties": {}
+                            },
+                            "dgsbjtCdNm": {
+                              "type": "string",
+                              "description": "진료과목코드명",
+                              "properties": {}
+                            },
+                            "dtlSdrCnt": {
+                              "type": "string",
+                              "description": "전문의수",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 수",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "데이터 총 개수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "전문과목별 전문의 수",
+        "description": "의료기관의 전문과목별 전문의 수",
+        "operationId": "getSpcSbjtSdrInfo2.7",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "ykiho",
+          "description": "암호화된 요양기호(확인방법: 건강보험심사평가원 오픈API[병원정보서비스>병원기본목록(getHospBasisList1)](암호화된요양기호(ykiho)))",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "_type",
+          "description": "xml/json (Default : xml)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getDgsbjtInfo2.7": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "헤더",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "바디",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "리스트 항목",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "세부항목",
+                          "properties": {
+                            "dgsbjtCd": {
+                              "type": "string",
+                              "description": "진료과목코드",
+                              "properties": {}
+                            },
+                            "dgsbjtCdNm": {
+                              "type": "string",
+                              "description": "진료과목코드명",
+                              "properties": {}
+                            },
+                            "dgsbjtPrSdrCnt": {
+                              "type": "string",
+                              "description": "의사수",
+                              "properties": {}
+                            },
+                            "cdiagDrCnt": {
+                              "type": "string",
+                              "description": "선택진료의사수",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 수",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "데이터 총 개수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "진료과목정보",
+        "description": "의료기관의 진료과목 정보 제공 (저작권에 위배되지 않는 정보)",
+        "operationId": "getDgsbjtInfo2.7",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "ykiho",
+          "description": "암호화된 요양기호(확인방법: 건강보험심사평가원 오픈API[병원정보서비스>병원기본목록(getHospBasisList1)](암호화된요양기호(ykiho)))",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "_type",
+          "description": "xml/json (Default : xml)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getMedOftInfo2.7": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "헤더",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "바디",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "리스트 항목",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "세부항목",
+                          "properties": {
+                            "oftCd": {
+                              "type": "string",
+                              "description": "장비코드",
+                              "properties": {}
+                            },
+                            "oftCdNm": {
+                              "type": "string",
+                              "description": "장비명",
+                              "properties": {}
+                            },
+                            "oftCnt": {
+                              "type": "string",
+                              "description": "보유대수",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 수",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "데이터 총 개수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "의료장비정보",
+        "description": "의료기관의 의료장비 정보 제공 (저작권에 위배되지 않는 정보)",
+        "operationId": "getMedOftInfo2.7",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "ykiho",
+          "description": "암호화된 요양기호(확인방법: 건강보험심사평가원 오픈API[병원정보서비스>병원기본목록(getHospBasisList1)](암호화된요양기호(ykiho)))",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "_type",
+          "description": "xml/json (Default : xml)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getFoepAddcInfo2.7": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "헤더",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "바디",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "리스트 항목",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "세부항목",
+                          "properties": {
+                            "tyCd": {
+                              "type": "string",
+                              "description": "구분 코드",
+                              "properties": {}
+                            },
+                            "trmealGrd": {
+                              "type": "string",
+                              "description": "등급",
+                              "properties": {}
+                            },
+                            "tyCdNm": {
+                              "type": "string",
+                              "description": "구분 코드명",
+                              "properties": {}
+                            },
+                            "gnmAddcYn": {
+                              "type": "string",
+                              "description": "일반식 가산 적용여부",
+                              "properties": {}
+                            },
+                            "calcNopCnt": {
+                              "type": "string",
+                              "description": "인원수",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 수",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "데이터 총 개수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "식대가산정보",
+        "description": "의료기관의 식대가산 정보 제공 (저작권에 위배되지 않는 정보)",
+        "operationId": "getFoepAddcInfo2.7",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "ykiho",
+          "description": "암호화된 요양기호(확인방법: 건강보험심사평가원 오픈API[병원정보서비스>병원기본목록(getHospBasisList1)](암호화된요양기호(ykiho)))",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "_type",
+          "description": "xml/json (Default : xml)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getNursigGrdInfo2.7": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "헤더",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "바디",
+                  "properties": {
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 수",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "데이터 총 개수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "리스트 항목",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "세부항목",
+                          "properties": {
+                            "tyCd": {
+                              "type": "string",
+                              "description": "구분 코드",
+                              "properties": {}
+                            },
+                            "tyCdNm": {
+                              "type": "string",
+                              "description": "구분 코드명",
+                              "properties": {}
+                            },
+                            "careGrd": {
+                              "type": "string",
+                              "description": "간호등급",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "간호등급정보",
+        "description": "의료기관의 간호등급 정보 제공 (저작권에 위배되지 않는 정보)",
+        "operationId": "getNursigGrdInfo2.7",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "ykiho",
+          "description": "암호화된 요양기호(확인방법: 건강보험심사평가원 오픈API[병원정보서비스>병원기본목록(getHospBasisList1)](암호화된요양기호(ykiho)))",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "_type",
+          "description": "xml/json (Default : xml)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getSpclHospAsgFldList2.7": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "헤더",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "바디",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "리스트 항목",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "세부항목",
+                          "properties": {
+                            "srchCd": {
+                              "type": "string",
+                              "description": "구분 코드",
+                              "properties": {}
+                            },
+                            "srchCdNm": {
+                              "type": "string",
+                              "description": "구분 코드명",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 수",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "데이터 총 개수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "전문병원지정분야",
+        "description": "의료기관의 전문병원지정분야 정보 제공 (저작권에 위배되지 않는 정보)",
+        "operationId": "getSpclHospAsgFldList2.7",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "ykiho",
+          "description": "암호화된 요양기호(확인방법: 건강보험심사평가원 오픈API[병원정보서비스>병원기본목록(getHospBasisList1)](암호화된요양기호(ykiho)))",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지 번호",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "integer",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "_type",
+          "description": "xml/json (Default : xml)",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    },
+    "/getEtcHstInfo2.7": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "헤더",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "바디",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "내용",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "세부항목",
+                          "properties": {
+                            "gnlNopCnt": {
+                              "type": "integer",
+                              "description": "기타인력수",
+                              "properties": {}
+                            },
+                            "ykiho": {
+                              "type": "string",
+                              "description": "암호화 요양기호",
+                              "properties": {}
+                            },
+                            "yadmNm": {
+                              "type": "string",
+                              "description": "요양기관명",
+                              "properties": {}
+                            },
+                            "gnlNopDtlCd": {
+                              "type": "string",
+                              "description": "기타인력코드",
+                              "properties": {}
+                            },
+                            "dtlGnlNopCdNm": {
+                              "type": "string",
+                              "description": "기타인력코드명",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "integer",
+                      "description": "페이지 번호",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "총 건수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "기타인력수",
+        "description": "의료기관별 약사, 한약사, 물리치료사 등 기타 인력 수에 대한 정보 제공",
+        "operationId": "getEtcHstInfo2.7",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "ykiho",
+          "description": "암호화된 요양기호(확인방법: 건강보험심사평가원 오픈API[병원정보서비스>병원기본목록(getHospBasisList1)](암호화된요양기호(ykiho)))",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "getSpclDiagInfo2.7_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "헤더",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "바디",
+          "properties": {
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 수"
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "데이터 총 개수"
+            },
+            "items": {
+              "type": "object",
+              "description": "리스트 항목",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "세부항목",
+                  "properties": {
+                    "srchCdNm": {
+                      "type": "string",
+                      "description": "구분 코드명"
+                    },
+                    "srchCd": {
+                      "type": "string",
+                      "description": "구분 코드"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getTrnsprtInfo2.7_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "헤더",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "바디",
+          "properties": {
+            "totalCount": {
+              "type": "integer",
+              "description": "데이터 총 개수"
+            },
+            "items": {
+              "type": "object",
+              "description": "리스트 항목",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "세부항목",
+                  "properties": {
+                    "trafNm": {
+                      "type": "string",
+                      "description": "교통편"
+                    },
+                    "arivPlc": {
+                      "type": "string",
+                      "description": "하차지점"
+                    },
+                    "dir": {
+                      "type": "string",
+                      "description": "방향"
+                    },
+                    "dist": {
+                      "type": "string",
+                      "description": "거리"
+                    },
+                    "rmk": {
+                      "type": "string",
+                      "description": "비고"
+                    },
+                    "lineNo": {
+                      "type": "string",
+                      "description": "노선번호"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 수"
+            }
+          }
+        }
+      }
+    },
+    "getDtlInfo2.7_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "헤더",
+          "properties": {
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            },
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "바디",
+          "properties": {
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 수"
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "데이터 총 개수"
+            },
+            "items": {
+              "type": "object",
+              "description": "리스트 항목",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "세부항목",
+                  "properties": {
+                    "plcDir": {
+                      "type": "string",
+                      "description": "공공건물(장소) 방향"
+                    },
+                    "trmtSunEnd": {
+                      "type": "string",
+                      "description": "진료종료시간_일요일"
+                    },
+                    "rcvSat": {
+                      "type": "string",
+                      "description": "접수시간_토요일"
+                    },
+                    "trmtSunStart": {
+                      "type": "string",
+                      "description": "진료시작시간_일요일"
+                    },
+                    "emyNgtTelNo1": {
+                      "type": "string",
+                      "description": "야간 응급실 전화번호 1"
+                    },
+                    "emyNgtTelNo2": {
+                      "type": "string",
+                      "description": "야간 응급실 전화번호 2"
+                    },
+                    "lunchWeek": {
+                      "type": "string",
+                      "description": "월~금 점심시간"
+                    },
+                    "trmtWedStart": {
+                      "type": "string",
+                      "description": "진료시작시간_수요일"
+                    },
+                    "trmtWedEnd": {
+                      "type": "string",
+                      "description": "진료종료시간_수요일"
+                    },
+                    "trmtThuStart": {
+                      "type": "string",
+                      "description": "진료시작시간_목요일"
+                    },
+                    "trmtMonStart": {
+                      "type": "string",
+                      "description": "진료시작시간_월요일"
+                    },
+                    "trmtMonEnd": {
+                      "type": "string",
+                      "description": "진료종료시간_월요일"
+                    },
+                    "trmtTueStart": {
+                      "type": "string",
+                      "description": "진료시작시간_화요일"
+                    },
+                    "trmtTueEnd": {
+                      "type": "string",
+                      "description": "진료종료시간_화요일"
+                    },
+                    "lunchSat": {
+                      "type": "string",
+                      "description": "점심시간_토요일"
+                    },
+                    "rcvWeek": {
+                      "type": "string",
+                      "description": "접수시간_평일"
+                    },
+                    "trmtSatStart": {
+                      "type": "string",
+                      "description": "진료시작시간_토요일"
+                    },
+                    "trmtSatEnd": {
+                      "type": "string",
+                      "description": "진료종료시간_토요일"
+                    },
+                    "plcNm": {
+                      "type": "string",
+                      "description": "공공건물(장소) 이름"
+                    },
+                    "parkXpnsYn": {
+                      "type": "string",
+                      "description": "주차장 운영여부, 주차비용 부담여부"
+                    },
+                    "parkEtc": {
+                      "type": "string",
+                      "description": "기타 안내사항"
+                    },
+                    "noTrmtSun": {
+                      "type": "string",
+                      "description": "일요일 휴진 안내"
+                    },
+                    "noTrmtHoli": {
+                      "type": "string",
+                      "description": "공휴일 휴진 안내"
+                    },
+                    "emyDayYn": {
+                      "type": "string",
+                      "description": "주간 응급실 운영여부"
+                    },
+                    "emyDayTelNo1": {
+                      "type": "string",
+                      "description": "주간 응급실 전화번호 1"
+                    },
+                    "emyDayTelNo2": {
+                      "type": "string",
+                      "description": "주간 응급실 전화번호 1"
+                    },
+                    "emyNgtYn": {
+                      "type": "string",
+                      "description": "야간 응급실 운영여부"
+                    },
+                    "trmtThuEnd": {
+                      "type": "string",
+                      "description": "진료종료시간_목요일"
+                    },
+                    "trmtFriStart": {
+                      "type": "string",
+                      "description": "진료시작시간_금요일"
+                    },
+                    "trmtFriEnd": {
+                      "type": "string",
+                      "description": "진료종료시간_금요일"
+                    },
+                    "plcDist": {
+                      "type": "string",
+                      "description": "공공건물(장소) 거리"
+                    },
+                    "parkQty": {
+                      "type": "string",
+                      "description": "주차 가능대수"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getEqpInfo2.7_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "헤더",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "바디",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "리스트 항목",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "세부항목",
+                  "properties": {
+                    "sgguCd": {
+                      "type": "string",
+                      "description": "시군구코드"
+                    },
+                    "sgguCdNm": {
+                      "type": "string",
+                      "description": "시군구명"
+                    },
+                    "emdongNm": {
+                      "type": "string",
+                      "description": "읍면동명"
+                    },
+                    "orgTyCdNm": {
+                      "type": "string",
+                      "description": "설립 구분명"
+                    },
+                    "sidoCd": {
+                      "type": "string",
+                      "description": "시도코드"
+                    },
+                    "sidoCdNm": {
+                      "type": "string",
+                      "description": "시도명"
+                    },
+                    "permSbdCnt": {
+                      "type": "string",
+                      "description": "정신과개방허가병상수"
+                    },
+                    "chldSprmCnt": {
+                      "type": "string",
+                      "description": "소아중환자병상수"
+                    },
+                    "psydeptClsHigSbdCnt": {
+                      "type": "string",
+                      "description": "정신과폐쇄상급병상수"
+                    },
+                    "psydeptClsGnlSbdCnt": {
+                      "type": "string",
+                      "description": "정신과폐쇄일반병상수"
+                    },
+                    "psydeptOpenHigSbdCnt": {
+                      "type": "string",
+                      "description": "정신과개방상급병상수"
+                    },
+                    "psydeptOpenGnlSbdCnt": {
+                      "type": "string",
+                      "description": "정신과개방일반병상수"
+                    },
+                    "postNo": {
+                      "type": "string",
+                      "description": "우편번호"
+                    },
+                    "addr": {
+                      "type": "string",
+                      "description": "주소"
+                    },
+                    "clCd": {
+                      "type": "string",
+                      "description": "종별 코드"
+                    },
+                    "telno": {
+                      "type": "string",
+                      "description": "전화번호"
+                    },
+                    "hghrSickbdCnt": {
+                      "type": "string",
+                      "description": "일반입원실상급병상수"
+                    },
+                    "stdSickbdCnt": {
+                      "type": "string",
+                      "description": "일반입원실일반병상수"
+                    },
+                    "aduChldSprmCnt": {
+                      "type": "string",
+                      "description": "성인중환자병상수"
+                    },
+                    "nbySprmCnt": {
+                      "type": "string",
+                      "description": "신생아중환자병상수"
+                    },
+                    "partumCnt": {
+                      "type": "string",
+                      "description": "분만실병상수"
+                    },
+                    "soprmCnt": {
+                      "type": "string",
+                      "description": "수술실병상수"
+                    },
+                    "emymCnt": {
+                      "type": "string",
+                      "description": "응급실병상수"
+                    },
+                    "ptrmCnt": {
+                      "type": "string",
+                      "description": "물리치료실병상수"
+                    },
+                    "hospUrl": {
+                      "type": "string",
+                      "description": "홈페이지"
+                    },
+                    "orgTyCd": {
+                      "type": "string",
+                      "description": "설립 구분"
+                    },
+                    "estbDd": {
+                      "type": "string",
+                      "description": "개설일자"
+                    },
+                    "clCdNm": {
+                      "type": "string",
+                      "description": "종별 코드명"
+                    },
+                    "yadmNm": {
+                      "type": "string",
+                      "description": "병원명"
+                    },
+                    "isnrSbdCnt": {
+                      "type": "string",
+                      "description": "격리실병상수"
+                    },
+                    "anvirTrrmSbdCnt": {
+                      "type": "string",
+                      "description": "무균치료실병상수"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 수"
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "데이터 총 개수"
+            }
+          }
+        }
+      }
+    },
+    "getSpcSbjtSdrInfo2.7_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "헤더",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "바디",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "리스트 항목",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "세부항목",
+                  "properties": {
+                    "dgsbjtCd": {
+                      "type": "string",
+                      "description": "진료과목코드"
+                    },
+                    "dgsbjtCdNm": {
+                      "type": "string",
+                      "description": "진료과목코드명"
+                    },
+                    "dtlSdrCnt": {
+                      "type": "string",
+                      "description": "전문의수"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 수"
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "데이터 총 개수"
+            }
+          }
+        }
+      }
+    },
+    "getDgsbjtInfo2.7_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "헤더",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "바디",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "리스트 항목",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "세부항목",
+                  "properties": {
+                    "dgsbjtCd": {
+                      "type": "string",
+                      "description": "진료과목코드"
+                    },
+                    "dgsbjtCdNm": {
+                      "type": "string",
+                      "description": "진료과목코드명"
+                    },
+                    "dgsbjtPrSdrCnt": {
+                      "type": "string",
+                      "description": "의사수"
+                    },
+                    "cdiagDrCnt": {
+                      "type": "string",
+                      "description": "선택진료의사수"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 수"
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "데이터 총 개수"
+            }
+          }
+        }
+      }
+    },
+    "getMedOftInfo2.7_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "헤더",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "바디",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "리스트 항목",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "세부항목",
+                  "properties": {
+                    "oftCd": {
+                      "type": "string",
+                      "description": "장비코드"
+                    },
+                    "oftCdNm": {
+                      "type": "string",
+                      "description": "장비명"
+                    },
+                    "oftCnt": {
+                      "type": "string",
+                      "description": "보유대수"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 수"
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "데이터 총 개수"
+            }
+          }
+        }
+      }
+    },
+    "getFoepAddcInfo2.7_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "헤더",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "바디",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "리스트 항목",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "세부항목",
+                  "properties": {
+                    "tyCd": {
+                      "type": "string",
+                      "description": "구분 코드"
+                    },
+                    "trmealGrd": {
+                      "type": "string",
+                      "description": "등급"
+                    },
+                    "tyCdNm": {
+                      "type": "string",
+                      "description": "구분 코드명"
+                    },
+                    "gnmAddcYn": {
+                      "type": "string",
+                      "description": "일반식 가산 적용여부"
+                    },
+                    "calcNopCnt": {
+                      "type": "string",
+                      "description": "인원수"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 수"
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "데이터 총 개수"
+            }
+          }
+        }
+      }
+    },
+    "getNursigGrdInfo2.7_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "헤더",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "바디",
+          "properties": {
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 수"
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "데이터 총 개수"
+            },
+            "items": {
+              "type": "object",
+              "description": "리스트 항목",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "세부항목",
+                  "properties": {
+                    "tyCd": {
+                      "type": "string",
+                      "description": "구분 코드"
+                    },
+                    "tyCdNm": {
+                      "type": "string",
+                      "description": "구분 코드명"
+                    },
+                    "careGrd": {
+                      "type": "string",
+                      "description": "간호등급"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getSpclHospAsgFldList2.7_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "헤더",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "바디",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "리스트 항목",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "세부항목",
+                  "properties": {
+                    "srchCd": {
+                      "type": "string",
+                      "description": "구분 코드"
+                    },
+                    "srchCdNm": {
+                      "type": "string",
+                      "description": "구분 코드명"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 수"
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "데이터 총 개수"
+            }
+          }
+        }
+      }
+    },
+    "getEtcHstInfo2.7_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "헤더",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "바디",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "내용",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "세부항목",
+                  "properties": {
+                    "gnlNopCnt": {
+                      "type": "integer",
+                      "description": "기타인력수"
+                    },
+                    "ykiho": {
+                      "type": "string",
+                      "description": "암호화 요양기호"
+                    },
+                    "yadmNm": {
+                      "type": "string",
+                      "description": "요양기관명"
+                    },
+                    "gnlNopDtlCd": {
+                      "type": "string",
+                      "description": "기타인력코드"
+                    },
+                    "dtlGnlNopCdNm": {
+                      "type": "string",
+                      "description": "기타인력코드명"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수"
+            },
+            "pageNo": {
+              "type": "integer",
+              "description": "페이지 번호"
+            },
+            "totalCount": {
+              "type": "integer",
+              "description": "총 건수"
+            }
+          }
+        }
+      }
+    }
+  },
+  "swaggerOprtinVOs": [
+    {
+      "oprtinUrl": "http://hiraapi.hira.or.kr/openapi/service/madmDtlInfoService/getEtcHstInfo",
+      "oprtinNm": "기타인력수",
+      "oprtinDc": "의료기관별 약사, 한약사, 물리치료사 등 기타 인력 수에 대한 정보 제공",
+      "gwSvcNm": "getEtcHstInfo2.7",
+      "operationId": "getEtcHstInfo2.7",
+      "publicDataTyDetailCode": "PRDE02",
+      "reqList": [
+        {
+          "paramtrNm": "serviceKey",
+          "paramtrDc": "공공데이터포털에서 받은 인증키",
+          "paramtrBassValue": "공공데이터 포털에서 받은 인증키",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "pageNo",
+          "paramtrDc": "페이지번호",
+          "paramtrBassValue": "1",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "numOfRows",
+          "paramtrDc": "한 페이지 결과 수",
+          "paramtrBassValue": "10",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "ykiho",
+          "paramtrDc": "암호화된 요양기호(확인방법: 건강보험심사평가원 오픈API[병원정보서비스>병원기본목록(getHospBasisList1)](암호화된요양기호(ykiho)))",
+          "paramtrBassValue": "URL Encode",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        }
+      ],
+      "resList": [
+        {
+          "paramtrNm": "header",
+          "paramtrDc": "헤더",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/getEtcHstInfo_header",
+          "subDefNm": "getEtcHstInfo_header",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "resultCode",
+              "paramtrDc": "결과코드",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "resultMsg",
+              "paramtrDc": "결과메세지",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        },
+        {
+          "paramtrNm": "body",
+          "paramtrDc": "바디",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/getEtcHstInfo_body",
+          "subDefNm": "getEtcHstInfo_body",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "items",
+              "paramtrDc": "내용",
+              "arrayYn": "N",
+              "paramtrDefNm": "#/definitions/getEtcHstInfo_items",
+              "subDefNm": "getEtcHstInfo_items",
+              "paramtrTy": "object",
+              "paramtrDivision": "필수",
+              "ck": true,
+              "subParam": [
+                {
+                  "paramtrNm": "item",
+                  "paramtrDc": "세부항목",
+                  "arrayYn": "N",
+                  "paramtrDefNm": "#/definitions/getEtcHstInfo_item",
+                  "subDefNm": "getEtcHstInfo_item",
+                  "paramtrTy": "object",
+                  "paramtrDivision": "필수",
+                  "ck": true,
+                  "subParam": [
+                    {
+                      "paramtrNm": "gnlNopCnt",
+                      "paramtrDc": "기타인력수",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "integer",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "ykiho",
+                      "paramtrDc": "암호화 요양기호",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "yadmNm",
+                      "paramtrDc": "요양기관명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "gnlNopDtlCd",
+                      "paramtrDc": "기타인력코드",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "dtlGnlNopCdNm",
+                      "paramtrDc": "기타인력코드명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "옵션",
+                      "ck": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "paramtrNm": "numOfRows",
+              "paramtrDc": "한 페이지 결과 수",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "integer",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "pageNo",
+              "paramtrDc": "페이지 번호",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "integer",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "totalCount",
+              "paramtrDc": "총 건수",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "integer",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

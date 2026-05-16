@@ -1,0 +1,26 @@
+{
+  "id": "15001698",
+  "url": "https://www.data.go.kr/data/15001698/openapi.do",
+  "source_kind": "category",
+  "source_value": "보건의료",
+  "category": "보건의료",
+  "provider_type": "공공기관",
+  "org": "건강보험심사평가원",
+  "title_hint": "건강보험심사평가원_병원정보서비스",
+  "description": "건강보험심사평가원에서 관리하는 병원 정보를 조회하는 서비스입니다. - 국민건강보험법 제 43조(요양기관 현황에 대한 신고) 및 동법 시행규칙 제 12조(요양기관 현황 신고 등)에 의해 요양기관이 건강보험심사평가원에 신고한 기준으로 작성되었습니다. - 요양기호는 1:1로 매칭한 암호화된 요양기호로 제공하고 있으며, 별도의 복호화 방법 또는 요양기호는 제공하고 있지 않습니다. - 지역코드 등 API 활용을 위한 코드는 보건의료빅데이터개방시스템(opendata.hira.or.kr) > 서비스 소개 > 용어설명 > 코드조회를 참고하여 주시기 바랍니다.",
+  "modified_date": "2026-05-12",
+  "view_count": "112707",
+  "application_count": "7028",
+  "keywords": "의료정보,병원,의료기관,의료시설,진료정보",
+  "selection_reason": "Main-page category '보건의료' REST OpenAPI, non-duplicate, update-sorted.",
+  "og_title": "건강보험심사평가원_병원정보서비스",
+  "og_description": "건강보험심사평가원에서 관리하는 병원 정보를 조회하는 서비스입니다. - 국민건강보험법 제 43조(요양기관 현황에 대한 신고) 및 동법 시행규칙 제 12조(요양기관 현황 신고 등)에 의해 요양기관이 건강보험심사평가원에 신고한 기준으로 작성되었습니다. - 요양기호는 1:1로 매칭한 암호화된 요양기호로 제공하고 있으며, 별도의 복호화 방법 또는 요양기호는 제공하고 있지 않습니다. - 지역코드 등 API 활용을 위한 코드는 보건의료빅데이터개방시스템(opendata.hira.or.kr) > 서비스 소개 > 용어설명 > 코드조회를 참고하여 주시기 바랍니다.",
+  "swagger_url": "",
+  "has_inline_swagger": true,
+  "downloaded_docs": [
+    "OpenAPI활용가이드_건강보험심사평가원(병원정보서비스)_210616.docx"
+  ],
+  "primitive_candidate": "find",
+  "captured_at": "2026-05-16",
+  "application_status": "not_submitted_confirmation_required"
+}

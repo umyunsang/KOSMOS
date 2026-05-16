@@ -1,0 +1,115 @@
+{
+  "unit": 6,
+  "collected_at": "2026-05-16",
+  "dataset_id": "15096040",
+  "title": "충청남도 계룡시_장애인 전동보장구 충전 장소 API",
+  "portal_url": "https://www.data.go.kr/data/15096040/openapi.do",
+  "provider": "충청남도 계룡시",
+  "classification": "사회복지 - 사회복지일반",
+  "data_format": "JSON",
+  "approval_type": "개발단계 자동승인 / 운영단계 자동승인",
+  "traffic": {
+    "development_daily_limit": 10000,
+    "operation_limit_note": "활용사례 등록시 신청하면 트래픽 증가 가능"
+  },
+  "application": {
+    "submitted": true,
+    "status": "approved",
+    "application_ref": "115975296",
+    "application_date": "2026-05-16",
+    "expiry_date": "2028-05-16",
+    "purpose": "UMMAYA R&D. Build citizen mobility finder for electric wheelchair charging sites using official data. Cite agency. No resale."
+  },
+  "candidate_adapter": {
+    "id": "gyeryong_assistive_device_charging_place_locate",
+    "primitive": "locate",
+    "fit": "pass_with_caveat",
+    "fit_reason": "Citizens can ask for official electric wheelchair or assistive-device charging places in Gyeryong. The API returns facility, location, usable hours, and indoor/outdoor status.",
+    "caveat": "The API returns facility-level locations but not coordinates; near-me ranking requires a separate geocoder or broader geocoded dataset."
+  },
+  "citizen_queries": [
+    {
+      "query": "계룡시에 전동휠체어 충전할 수 있는 곳 찾아줘.",
+      "handling": "Call /getdspsnElectrAsstnDeviceElctcPlace with currentPage/perPage and return official charging-place records."
+    },
+    {
+      "query": "실내 전동보장구 충전 장소만 알려줘.",
+      "handling": "Call the same endpoint with INDOOR_OTDR=실내 and return installation place, location, and usable hours."
+    },
+    {
+      "query": "계룡시청에 전동휠체어 충전기가 있는지 확인해줘.",
+      "handling": "Fetch records and post-filter INSTL_PLACE for the requested facility."
+    }
+  ],
+  "api_contract": {
+    "base_url": "https://apis.data.go.kr/5580000/dspsnElectrAsstnDeviceElctcPlaceService",
+    "operation": "GET /getdspsnElectrAsstnDeviceElctcPlace",
+    "endpoint": "https://apis.data.go.kr/5580000/dspsnElectrAsstnDeviceElctcPlaceService/getdspsnElectrAsstnDeviceElctcPlace",
+    "required_query_parameters": [
+      {
+        "name": "serviceKey",
+        "description": "공공데이터포털에서 받은 인증키"
+      },
+      {
+        "name": "currentPage",
+        "description": "페이지 번호"
+      },
+      {
+        "name": "perPage",
+        "description": "한 페이지 결과 수"
+      }
+    ],
+    "optional_query_parameters": [
+      {
+        "name": "INDOOR_OTDR",
+        "description": "실내 실외"
+      }
+    ],
+    "response_fields": [
+      {
+        "name": "resultCode",
+        "description": "결과코드"
+      },
+      {
+        "name": "resultMsg",
+        "description": "결과메시지"
+      },
+      {
+        "name": "totalRows",
+        "description": "데이터 총 개수"
+      },
+      {
+        "name": "currentPage",
+        "description": "페이지 번호"
+      },
+      {
+        "name": "perPage",
+        "description": "한 페이지 결과 수"
+      },
+      {
+        "name": "INSTL_PLACE",
+        "description": "설치 장소"
+      },
+      {
+        "name": "INSTL_LC",
+        "description": "설치 위치"
+      },
+      {
+        "name": "USE_POSBL_TIME",
+        "description": "이용 가능 시간"
+      },
+      {
+        "name": "INDOOR_OTDR",
+        "description": "실내 실외"
+      }
+    ]
+  },
+  "saved_artifacts": [
+    "data-go-kr-detail.html",
+    "gateway_swagger_guide.pdf",
+    "openapi-schemaorg.json",
+    "OpenAPI활용가이드_계룡시_장애인 전동보장구 충전 장소 API_v1.0.docx",
+    "pre-application-screening-2026-05-16-unit-06.md",
+    "usage-notes-2026-05-16-unit-06.md"
+  ]
+}

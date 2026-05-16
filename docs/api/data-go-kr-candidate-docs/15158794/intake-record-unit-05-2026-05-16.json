@@ -1,0 +1,97 @@
+{
+  "unit": 5,
+  "collected_at": "2026-05-16",
+  "dataset_id": "15158794",
+  "title": "대전교통공사_역간 소요시간/거리/요금 조회 서비스",
+  "portal_url": "https://www.data.go.kr/data/15158794/openapi.do",
+  "provider": "대전교통공사",
+  "classification": "교통및물류 - 철도",
+  "data_format": "XML",
+  "approval_type": "개발단계 자동승인 / 운영단계 자동승인",
+  "traffic": {
+    "development_daily_limit": 1000,
+    "operation_limit_note": "활용사례 등록시 신청하면 트래픽 증가 가능"
+  },
+  "application": {
+    "submitted": true,
+    "status": "approved",
+    "application_ref": "115974597",
+    "application_date": "2026-05-16",
+    "expiry_date": "2028-05-16",
+    "purpose": "UMMAYA public-data R&D. Build a citizen transit check adapter for Daejeon subway segment time, distance, and fare using official data. Cite the agency source. No resale."
+  },
+  "candidate_adapter": {
+    "id": "djtc_subway_segment_fare_time_check",
+    "primitive": "check",
+    "fit": "pass_with_caveat",
+    "fit_reason": "Citizens can ask for official Daejeon subway segment time, distance, and fare before travel. The API returns exactly those fields.",
+    "caveat": "The API requires station numbers, not station names; the adapter must include an official station-name-to-number resolver or fixture."
+  },
+  "citizen_queries": [
+    {
+      "query": "대전 지하철 대전역에서 시청역까지 얼마나 걸리고 요금은 얼마야?",
+      "handling": "Resolve station names to station numbers, call /getTimeDist01, return time, distance, and fare."
+    },
+    {
+      "query": "현충원역에서 반석역까지 지하철 거리 알려줘.",
+      "handling": "Resolve station names to station numbers, call /getTimeDist01, return distfloat."
+    },
+    {
+      "query": "아이랑 대전 지하철 타기 전에 목적지까지 비용과 시간을 확인해줘.",
+      "handling": "Use the check primitive to return fare and expected segment duration."
+    }
+  ],
+  "api_contract": {
+    "base_url": "https://apis.data.go.kr/B554695/TimeDistSVC",
+    "operation": "GET /getTimeDist01",
+    "endpoint": "https://apis.data.go.kr/B554695/TimeDistSVC/getTimeDist01",
+    "required_query_parameters": [
+      {
+        "name": "serviceKey",
+        "description": "공공데이터포털에서 받은 인증키"
+      },
+      {
+        "name": "strstnno",
+        "description": "조회 시작역"
+      },
+      {
+        "name": "endstnno",
+        "description": "조회 끝역"
+      }
+    ],
+    "response_fields": [
+      {
+        "name": "header.resultCode",
+        "description": "결과코드"
+      },
+      {
+        "name": "header.resultMsg",
+        "description": "결과메시지"
+      },
+      {
+        "name": "body.items.item.distfloat",
+        "description": "역간 거리(km)"
+      },
+      {
+        "name": "body.items.item.fee",
+        "description": "요금"
+      },
+      {
+        "name": "body.items.item.min",
+        "description": "소요시간(분)"
+      },
+      {
+        "name": "body.items.item.sec",
+        "description": "소요시간(초)"
+      }
+    ]
+  },
+  "saved_artifacts": [
+    "data-go-kr-detail.html",
+    "data-go-kr-inline-swagger.json",
+    "gateway_swagger_guide.pdf",
+    "openapi-schemaorg.json",
+    "pre-application-screening-2026-05-16-unit-05.md",
+    "usage-notes-2026-05-16-unit-05.md"
+  ]
+}

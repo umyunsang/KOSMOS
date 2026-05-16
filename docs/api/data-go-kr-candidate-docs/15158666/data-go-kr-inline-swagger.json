@@ -1,0 +1,399 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "표준데이터셋으로 제공하는 ‘한국대학교육협의회_대학별 학과정보’를 API로 제공하며, 대학별 개설 학과에 대한 기본 정보와 함께 학과특성, 수업연한, 학위과정(학사·석사·박사 등), 교육목표, 개설 여부, 계열 및 전공 구분, 입학정원 등 다양한 세부 항목을 포함하여 조회할 수 있도록 구성. 또한 최신 데이터를 기반으로 지속적인 업데이트를 지원하여 정보의 정확성과 신뢰성을 확보하고, 진로 탐색, 대학 및 학과 비교 분석, 교육 관련 서비스 개발, 정책 수립을 위한 기초자료 활용, 통계 분석 등 다양한 목적에 활용이 가능하도록 제공하며, 사용자 친화적인 구조로 설계되어 누구나 손쉽게 접근하고 활용할 수 있도록 지원.",
+    "version": "1.0.0",
+    "title": "한국대학교육협의회_대학별 학과정보_GW"
+  },
+  "host": "apis.data.go.kr/B340014/SchoolMajorInfoService",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getSchoolMajorInfo": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "clgNm": {
+                              "type": "string",
+                              "description": "단과대학명",
+                              "properties": {}
+                            },
+                            "dghtDivNm": {
+                              "type": "string",
+                              "description": "주야과정명",
+                              "properties": {}
+                            },
+                            "edcCrseLtrCtnt": {
+                              "type": "string",
+                              "description": "교육과정",
+                              "properties": {}
+                            },
+                            "eschlPscpNum": {
+                              "type": "string",
+                              "description": "입학정원수",
+                              "properties": {}
+                            },
+                            "grdtNum": {
+                              "type": "string",
+                              "description": "졸업자수",
+                              "properties": {}
+                            },
+                            "kediMjrId": {
+                              "type": "string",
+                              "description": "학과코드(7대계열)",
+                              "properties": {}
+                            },
+                            "korMjrNm": {
+                              "type": "string",
+                              "description": "학과명",
+                              "properties": {}
+                            },
+                            "lsnTrmNm": {
+                              "type": "string",
+                              "description": "수업연한",
+                              "properties": {}
+                            },
+                            "lstUpdtDtm": {
+                              "type": "string",
+                              "description": "데이터기준일자",
+                              "properties": {}
+                            },
+                            "mjrAreaCd": {
+                              "type": "string",
+                              "description": "시도코드",
+                              "properties": {}
+                            },
+                            "mjrAreaNm": {
+                              "type": "string",
+                              "description": "시도명",
+                              "properties": {}
+                            },
+                            "mjrAreaSignguCd": {
+                              "type": "string",
+                              "description": "시군구코드",
+                              "properties": {}
+                            },
+                            "mjrAreaSignguNm": {
+                              "type": "string",
+                              "description": "시군구명",
+                              "properties": {}
+                            },
+                            "mjrUpdtDtm": {
+                              "type": "string",
+                              "description": "수정일자",
+                              "properties": {}
+                            },
+                            "onsfSrsClftNm": {
+                              "type": "string",
+                              "description": "대학자체계열명",
+                              "properties": {}
+                            },
+                            "pbnfDgriCrseDivNm": {
+                              "type": "string",
+                              "description": "학위과정명",
+                              "properties": {}
+                            },
+                            "pwayEmplLtrCtnt": {
+                              "type": "string",
+                              "description": "관련직업명",
+                              "properties": {}
+                            },
+                            "schlKndNm": {
+                              "type": "string",
+                              "description": "학교구분명",
+                              "properties": {}
+                            },
+                            "schlMjrCharNm": {
+                              "type": "string",
+                              "description": "학교학과특성명",
+                              "properties": {}
+                            },
+                            "schlMjrStatNm": {
+                              "type": "string",
+                              "description": "학과상태명",
+                              "properties": {}
+                            },
+                            "schlNm": {
+                              "type": "string",
+                              "description": "학교명",
+                              "properties": {}
+                            },
+                            "stdClftMjrId": {
+                              "type": "string",
+                              "description": "표준분류계열코드",
+                              "properties": {}
+                            },
+                            "svyYr": {
+                              "type": "string",
+                              "description": "연도",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "한국대학교육협의회_대학별 학과정보",
+        "description": "한국대학교육협의회_대학별 학과정보(저작권에 위배되지 않는 정보)",
+        "operationId": "getSchoolMajorInfo",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "svyYr",
+          "description": "조사년도",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "schlId",
+          "description": "학교코드",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        },
+        {
+          "name": "schlKrnNm",
+          "description": "학교명",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "getSchoolMajorInfo_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "clgNm": {
+                      "type": "string",
+                      "description": "단과대학명"
+                    },
+                    "dghtDivNm": {
+                      "type": "string",
+                      "description": "주야과정명"
+                    },
+                    "edcCrseLtrCtnt": {
+                      "type": "string",
+                      "description": "교육과정"
+                    },
+                    "eschlPscpNum": {
+                      "type": "string",
+                      "description": "입학정원수"
+                    },
+                    "grdtNum": {
+                      "type": "string",
+                      "description": "졸업자수"
+                    },
+                    "kediMjrId": {
+                      "type": "string",
+                      "description": "학과코드(7대계열)"
+                    },
+                    "korMjrNm": {
+                      "type": "string",
+                      "description": "학과명"
+                    },
+                    "lsnTrmNm": {
+                      "type": "string",
+                      "description": "수업연한"
+                    },
+                    "lstUpdtDtm": {
+                      "type": "string",
+                      "description": "데이터기준일자"
+                    },
+                    "mjrAreaCd": {
+                      "type": "string",
+                      "description": "시도코드"
+                    },
+                    "mjrAreaNm": {
+                      "type": "string",
+                      "description": "시도명"
+                    },
+                    "mjrAreaSignguCd": {
+                      "type": "string",
+                      "description": "시군구코드"
+                    },
+                    "mjrAreaSignguNm": {
+                      "type": "string",
+                      "description": "시군구명"
+                    },
+                    "mjrUpdtDtm": {
+                      "type": "string",
+                      "description": "수정일자"
+                    },
+                    "onsfSrsClftNm": {
+                      "type": "string",
+                      "description": "대학자체계열명"
+                    },
+                    "pbnfDgriCrseDivNm": {
+                      "type": "string",
+                      "description": "학위과정명"
+                    },
+                    "pwayEmplLtrCtnt": {
+                      "type": "string",
+                      "description": "관련직업명"
+                    },
+                    "schlKndNm": {
+                      "type": "string",
+                      "description": "학교구분명"
+                    },
+                    "schlMjrCharNm": {
+                      "type": "string",
+                      "description": "학교학과특성명"
+                    },
+                    "schlMjrStatNm": {
+                      "type": "string",
+                      "description": "학과상태명"
+                    },
+                    "schlNm": {
+                      "type": "string",
+                      "description": "학교명"
+                    },
+                    "stdClftMjrId": {
+                      "type": "string",
+                      "description": "표준분류계열코드"
+                    },
+                    "svyYr": {
+                      "type": "string",
+                      "description": "연도"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

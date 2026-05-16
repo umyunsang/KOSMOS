@@ -1,0 +1,485 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "법무부, 대한변호사협회, 행정안전부가 운영하는 마을변호사 제도는 변호사가 개업하지 않은 무변촌, 도서산간 지역 및 지방소도시 읍면동을 중심으로 운영됩니다. 이에 현재 서울특별시, 대전광역시, 광주광역시에는 마을변호사를 위촉하고 있지 않으며, 대구광역시, 부산광역시, 울산광역시, 인천광역시에는 법률서비스 접근성이 취약한 읍면동 단위의 마을에 한정하여 마을변호사를 위촉하고 있습니다. 마을변호사는 읍면동 단위로 마을을 담당하게 됩니다. 담당할 수 있는 마을의 개수에는 특별한 제한이 없으므로, 마을변호사 1명이 여러 개의 마을을 담당할 수 있으며, 반대로 1개의 마을에 여러 명의 마을변호사가 위촉될 수도 있습니다.",
+    "version": "1.0.0",
+    "title": "법무부_마을변호사  지역별 현황"
+  },
+  "host": "apis.data.go.kr/1270000/mojmabyun",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/mabyun": {
+      "get": {
+        "responses": {
+          "0": {
+            "description": "정상"
+          },
+          "5": {
+            "description": "데이터 없음"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "State": {
+                              "type": "string",
+                              "description": "도/시",
+                              "properties": {}
+                            },
+                            "City": {
+                              "type": "string",
+                              "description": "시/군/구",
+                              "properties": {}
+                            },
+                            "Village": {
+                              "type": "string",
+                              "description": "읍/면/동",
+                              "properties": {}
+                            },
+                            "AreaNote": {
+                              "type": "string",
+                              "description": "지역비고",
+                              "properties": {}
+                            },
+                            "CityPublicServan": {
+                              "type": "string",
+                              "description": "시군구담당공무원",
+                              "properties": {}
+                            },
+                            "CityServDuty": {
+                              "type": "string",
+                              "description": "시군구직책",
+                              "properties": {}
+                            },
+                            "VillagePublicServant": {
+                              "type": "string",
+                              "description": "읍면동담당공무원",
+                              "properties": {}
+                            },
+                            "VillageServDuty": {
+                              "type": "string",
+                              "description": "읍면동직책",
+                              "properties": {}
+                            },
+                            "Attorney": {
+                              "type": "string",
+                              "description": "마을변호사",
+                              "properties": {}
+                            },
+                            "AttorneyNote": {
+                              "type": "string",
+                              "description": "마을변호사비고",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호",
+                      "properties": {}
+                    },
+                    "numOfRows": {
+                      "type": "string",
+                      "description": "한 페이지 결과 수",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "마을변호사 지역별 현황",
+        "description": "마을변호사 및 마을담당공무원의 지역별 배정현황의 상세사항을 조회",
+        "operationId": "mabyun",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "mabyun_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "State": {
+                      "type": "string",
+                      "description": "도/시"
+                    },
+                    "City": {
+                      "type": "string",
+                      "description": "시/군/구"
+                    },
+                    "Village": {
+                      "type": "string",
+                      "description": "읍/면/동"
+                    },
+                    "AreaNote": {
+                      "type": "string",
+                      "description": "지역비고"
+                    },
+                    "CityPublicServan": {
+                      "type": "string",
+                      "description": "시군구담당공무원"
+                    },
+                    "CityServDuty": {
+                      "type": "string",
+                      "description": "시군구직책"
+                    },
+                    "VillagePublicServant": {
+                      "type": "string",
+                      "description": "읍면동담당공무원"
+                    },
+                    "VillageServDuty": {
+                      "type": "string",
+                      "description": "읍면동직책"
+                    },
+                    "Attorney": {
+                      "type": "string",
+                      "description": "마을변호사"
+                    },
+                    "AttorneyNote": {
+                      "type": "string",
+                      "description": "마을변호사비고"
+                    }
+                  }
+                }
+              }
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호"
+            },
+            "numOfRows": {
+              "type": "string",
+              "description": "한 페이지 결과 수"
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수"
+            }
+          }
+        }
+      }
+    }
+  },
+  "swaggerOprtinVOs": [
+    {
+      "oprtinUrl": "https://www.moj.go.kr/lawyerdataApi/mojmabyun",
+      "oprtinNm": "마을변호사 지역별 현황",
+      "oprtinDc": "마을변호사 및 마을담당공무원의 지역별 배정현황의 상세사항을 조회",
+      "gwSvcNm": "mabyun",
+      "operationId": "mabyun",
+      "publicDataTyDetailCode": "PRDE02",
+      "reqList": [
+        {
+          "paramtrNm": "serviceKey",
+          "paramtrDc": "공공데이터포털에서 받은 인증키",
+          "paramtrBassValue": "-",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "pageNo",
+          "paramtrDc": "페이지번호",
+          "paramtrBassValue": "1",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "numOfRows",
+          "paramtrDc": "한 페이지 결과 수",
+          "paramtrBassValue": "20",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        }
+      ],
+      "resList": [
+        {
+          "paramtrNm": "header",
+          "paramtrDc": "header",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/mabyun_header",
+          "subDefNm": "mabyun_header",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "resultCode",
+              "paramtrDc": "결과코드",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "resultMsg",
+              "paramtrDc": "결과메시지",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        },
+        {
+          "paramtrNm": "body",
+          "paramtrDc": "body",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/mabyun_body",
+          "subDefNm": "mabyun_body",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "items",
+              "paramtrDc": "items",
+              "arrayYn": "N",
+              "paramtrDefNm": "#/definitions/mabyun_items",
+              "subDefNm": "mabyun_items",
+              "paramtrTy": "object",
+              "paramtrDivision": "필수",
+              "ck": true,
+              "subParam": [
+                {
+                  "paramtrNm": "item",
+                  "paramtrDc": "item",
+                  "arrayYn": "N",
+                  "paramtrDefNm": "#/definitions/mabyun_item",
+                  "subDefNm": "mabyun_item",
+                  "paramtrTy": "object",
+                  "paramtrDivision": "필수",
+                  "ck": true,
+                  "subParam": [
+                    {
+                      "paramtrNm": "State",
+                      "paramtrDc": "도/시",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "City",
+                      "paramtrDc": "시/군/구",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "Village",
+                      "paramtrDc": "읍/면/동",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "AreaNote",
+                      "paramtrDc": "지역비고",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "CityPublicServan",
+                      "paramtrDc": "시군구담당공무원",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "CityServDuty",
+                      "paramtrDc": "시군구직책",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "VillagePublicServant",
+                      "paramtrDc": "읍면동담당공무원",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "VillageServDuty",
+                      "paramtrDc": "읍면동직책",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "Attorney",
+                      "paramtrDc": "마을변호사",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "AttorneyNote",
+                      "paramtrDc": "마을변호사비고",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "paramtrNm": "pageNo",
+              "paramtrDc": "페이지번호",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "numOfRows",
+              "paramtrDc": "한 페이지 결과 수",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "totalCount",
+              "paramtrDc": "전체 결과 수",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

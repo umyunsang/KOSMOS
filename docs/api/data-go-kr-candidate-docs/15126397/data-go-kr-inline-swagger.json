@@ -1,0 +1,558 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "한국자산관리공사_국유부동산 매각현황 조회서비스 API는 국가(기획재정부)에서 소유하고 한국자산관리공사에서 관리하는 국유일반재산의 관리·처분계획에 따른 매각 관련 현황 정보를 제공합니다. 매각재산의 소재지, 지목, 면적, 입찰종류, 계약일자 등의 주요 속성을 포함하여 매각현황에 대한 상세한 데이터를 확인할 수 있습니다. \\n\\n※ 2014년부터 전월 마지막일까지 국유일반재산 매각 내역을 제공합니다.\\n※ 관련된 내용은 캠코국유재산포털(https://gpminwon.kamco.or.kr)에서도 확인 할 수 있습니다.",
+    "version": "1.0.0",
+    "title": "한국자산관리공사_국유부동산 매각현황 조회서비스"
+  },
+  "host": "apis.data.go.kr/B010003/kamcoGvwsRlstDsplPscd",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/dsplPscdInqSrvc": {
+      "get": {
+        "responses": {
+          "10": {
+            "description": "잘못된 요청 파라미터 에러"
+          },
+          "11": {
+            "description": "필수요청 파라미터가 없음"
+          },
+          "21": {
+            "description": "일시적으로 사용할 수 없는 서비스키"
+          },
+          "33": {
+            "description": "서명되지 않은 호출"
+          },
+          "99": {
+            "description": "기타에러"
+          },
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메세지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "CRTR_YMD": {
+                              "type": "string",
+                              "description": "기준일자",
+                              "properties": {}
+                            },
+                            "YR": {
+                              "type": "string",
+                              "description": "연도",
+                              "properties": {}
+                            },
+                            "RGN_DIV_NM": {
+                              "type": "string",
+                              "description": "지역구분명",
+                              "properties": {}
+                            },
+                            "LCTN_NM": {
+                              "type": "string",
+                              "description": "소재지명",
+                              "properties": {}
+                            },
+                            "PRPT_DIV_NM": {
+                              "type": "string",
+                              "description": "재산구분명",
+                              "properties": {}
+                            },
+                            "PBLB_CLAND_NM": {
+                              "type": "string",
+                              "description": "공부지목명",
+                              "properties": {}
+                            },
+                            "LDGR_SQMS": {
+                              "type": "number",
+                              "description": "대장면적",
+                              "properties": {}
+                            },
+                            "LDGR_AMT": {
+                              "type": "number",
+                              "description": "대장금액",
+                              "properties": {}
+                            },
+                            "DSPS_DIV_NM": {
+                              "type": "string",
+                              "description": "처분구분명",
+                              "properties": {}
+                            },
+                            "CTRT_YMD": {
+                              "type": "string",
+                              "description": "계약일자",
+                              "properties": {}
+                            },
+                            "DEPT_NM": {
+                              "type": "string",
+                              "description": "부서명",
+                              "properties": {}
+                            },
+                            "TMNM": {
+                              "type": "string",
+                              "description": "팀명",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "numOfRows": {
+                      "type": "integer",
+                      "description": "한 페이지 결과 수    ",
+                      "properties": {}
+                    },
+                    "pageNo": {
+                      "type": "string",
+                      "description": "페이지번호    ",
+                      "properties": {}
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "description": "전체 결과 수    ",
+                      "properties": {}
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "01": {
+            "description": "어플리케이션 에러"
+          },
+          "02": {
+            "description": "데이터베이스 에러"
+          },
+          "03": {
+            "description": "데이터없음 에러"
+          },
+          "05": {
+            "description": "서비스 연결실패 에러"
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "국유재산매각현황",
+        "description": "국유재산매각현황을 조회한다.",
+        "operationId": "dsplPscdInqSrvc",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json",
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "pageNo",
+          "description": "페이지번호",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "numOfRows",
+          "description": "한 페이지 결과 수",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "resultType",
+          "description": "호출방식",
+          "type": "string",
+          "required": false,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "dsplPscdInqSrvc_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메세지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "CRTR_YMD": {
+                      "type": "string",
+                      "description": "기준일자"
+                    },
+                    "YR": {
+                      "type": "string",
+                      "description": "연도"
+                    },
+                    "RGN_DIV_NM": {
+                      "type": "string",
+                      "description": "지역구분명"
+                    },
+                    "LCTN_NM": {
+                      "type": "string",
+                      "description": "소재지명"
+                    },
+                    "PRPT_DIV_NM": {
+                      "type": "string",
+                      "description": "재산구분명"
+                    },
+                    "PBLB_CLAND_NM": {
+                      "type": "string",
+                      "description": "공부지목명"
+                    },
+                    "LDGR_SQMS": {
+                      "type": "number",
+                      "description": "대장면적"
+                    },
+                    "LDGR_AMT": {
+                      "type": "number",
+                      "description": "대장금액"
+                    },
+                    "DSPS_DIV_NM": {
+                      "type": "string",
+                      "description": "처분구분명"
+                    },
+                    "CTRT_YMD": {
+                      "type": "string",
+                      "description": "계약일자"
+                    },
+                    "DEPT_NM": {
+                      "type": "string",
+                      "description": "부서명"
+                    },
+                    "TMNM": {
+                      "type": "string",
+                      "description": "팀명"
+                    }
+                  }
+                }
+              }
+            },
+            "numOfRows": {
+              "type": "integer",
+              "description": "한 페이지 결과 수    "
+            },
+            "pageNo": {
+              "type": "string",
+              "description": "페이지번호    "
+            },
+            "totalCount": {
+              "type": "string",
+              "description": "전체 결과 수    "
+            }
+          }
+        }
+      }
+    }
+  },
+  "swaggerOprtinVOs": [
+    {
+      "oprtinUrl": "https://open.kamco.or.kr/services/kamcoGvwsRlstDsplPscd/dsplPscdInqSrvc",
+      "oprtinNm": "국유재산매각현황",
+      "oprtinDc": "국유재산매각현황을 조회한다.",
+      "gwSvcNm": "dsplPscdInqSrvc",
+      "operationId": "dsplPscdInqSrvc",
+      "publicDataTyDetailCode": "PRDE02",
+      "reqList": [
+        {
+          "paramtrNm": "serviceKey",
+          "paramtrDc": "공공데이터포털에서 받은 인증키",
+          "paramtrBassValue": "-",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "pageNo",
+          "paramtrDc": "페이지번호",
+          "paramtrBassValue": "1",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "numOfRows",
+          "paramtrDc": "한 페이지 결과 수",
+          "paramtrBassValue": "10",
+          "paramtrTy": "string",
+          "paramtrDivision": "필수",
+          "ck": true
+        },
+        {
+          "paramtrNm": "resultType",
+          "paramtrDc": "호출방식",
+          "paramtrBassValue": "xml",
+          "paramtrTy": "string",
+          "paramtrDivision": "옵션",
+          "ck": true
+        }
+      ],
+      "resList": [
+        {
+          "paramtrNm": "header",
+          "paramtrDc": "header",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/dsplPscd-header",
+          "subDefNm": "dsplPscd-header",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "resultCode",
+              "paramtrDc": "결과코드",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "resultMsg",
+              "paramtrDc": "결과메세지",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        },
+        {
+          "paramtrNm": "body",
+          "paramtrDc": "body",
+          "arrayYn": "N",
+          "paramtrDefNm": "#/definitions/dsplPscd-body",
+          "subDefNm": "dsplPscd-body",
+          "paramtrTy": "object",
+          "paramtrDivision": "필수",
+          "ck": true,
+          "subParam": [
+            {
+              "paramtrNm": "items",
+              "paramtrDc": "items",
+              "arrayYn": "N",
+              "paramtrDefNm": "#/definitions/dsplPscd-items",
+              "subDefNm": "dsplPscd-items",
+              "paramtrTy": "object",
+              "paramtrDivision": "필수",
+              "ck": true,
+              "subParam": [
+                {
+                  "paramtrNm": "item",
+                  "paramtrDc": "item",
+                  "arrayYn": "N",
+                  "paramtrDefNm": "#/definitions/dsplPscd-item",
+                  "subDefNm": "dsplPscd-item",
+                  "paramtrTy": "object",
+                  "paramtrDivision": "필수",
+                  "ck": true,
+                  "subParam": [
+                    {
+                      "paramtrNm": "CRTR_YMD",
+                      "paramtrDc": "기준일자",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "YR",
+                      "paramtrDc": "연도",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "RGN_DIV_NM",
+                      "paramtrDc": "지역구분명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "LCTN_NM",
+                      "paramtrDc": "소재지명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "PRPT_DIV_NM",
+                      "paramtrDc": "재산구분명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "PBLB_CLAND_NM",
+                      "paramtrDc": "공부지목명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "LDGR_SQMS",
+                      "paramtrDc": "대장면적",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "number",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "LDGR_AMT",
+                      "paramtrDc": "대장금액",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "number",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "DSPS_DIV_NM",
+                      "paramtrDc": "처분구분명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "CTRT_YMD",
+                      "paramtrDc": "계약일자",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "DEPT_NM",
+                      "paramtrDc": "부서명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    },
+                    {
+                      "paramtrNm": "TMNM",
+                      "paramtrDc": "팀명",
+                      "arrayYn": "N",
+                      "paramtrDefNm": "",
+                      "paramtrTy": "string",
+                      "paramtrDivision": "필수",
+                      "ck": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "paramtrNm": "numOfRows",
+              "paramtrDc": "한 페이지 결과 수    ",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "integer",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "pageNo",
+              "paramtrDc": "페이지번호    ",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            },
+            {
+              "paramtrNm": "totalCount",
+              "paramtrDc": "전체 결과 수    ",
+              "arrayYn": "N",
+              "paramtrDefNm": "",
+              "paramtrTy": "string",
+              "paramtrDivision": "필수",
+              "ck": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

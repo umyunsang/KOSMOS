@@ -1,0 +1,276 @@
+조달청 공공데이터 개방
+OpenAPI 참고자료
+1. 서비스 명세	3
+1.1 나라장터 계약과정통합공개서비스	3
+가. 서비스 개요	3
+나. 오퍼레이션 목록	4
+개정 이력
+1. 서비스 명세
+1.1 나라장터 계약과정통합공개서비스
+서비스 개요
+오퍼레이션 목록
+[계약과정통합공개정보에 대한 외자조회] 오퍼레이션 명세
+요청 메시지 명세
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 예제
+요청 / 응답 메시지 예제
+[계약과정통합공개정보에 대한 물품조회] 오퍼레이션 명세
+요청 메시지 명세
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 예제
+요청 / 응답 메시지 예제
+ [계약과정통합공개정보에 대한 용역조회] 오퍼레이션 명세
+요청 메시지 명세
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 예제 
+요청 / 응답 메시지 예제
+[계약과정통합공개정보에 대한 공사조회] 오퍼레이션 명세
+요청 메시지 명세
+※ 항목구분 : 필수(1), 옵션(0), 1건 이상 복수건(1..n), 0건 또는 복수건(0..n)
+응답 메시지 예제 
+요청 / 응답 메시지 예제
+OPEN API 에러코드별 조치방안
+버 전	변경일	변경 구분	변경사유
+1.0	2025	최초 개정	최초 개정
+			
+			
+			
+			
+			
+			
+			
+서비스 정보	서비스 ID	서비스 ID	CntrctProcssIntgOpenService	CntrctProcssIntgOpenService	CntrctProcssIntgOpenService	CntrctProcssIntgOpenService	CntrctProcssIntgOpenService	CntrctProcssIntgOpenService
+서비스 정보	서비스명(국문)	서비스명(국문)	나라장터 계약과정통합공개서비스	나라장터 계약과정통합공개서비스	나라장터 계약과정통합공개서비스	나라장터 계약과정통합공개서비스	나라장터 계약과정통합공개서비스	나라장터 계약과정통합공개서비스
+서비스 정보	서비스명(영문)	서비스명(영문)	CntrctProcssIntgOpenService	CntrctProcssIntgOpenService	CntrctProcssIntgOpenService	CntrctProcssIntgOpenService	CntrctProcssIntgOpenService	CntrctProcssIntgOpenService
+서비스 정보	서비스 설명	서비스 설명	나라장터 제공되는 계약과정통합공개를 구현한 서비스로 물품,외자,용역,공사 업무구분에 대하여 사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 입찰공고의 진행과정 정보(사전규격정보,입찰공고정보,낙찰정보,계약정보목록 등)를 조회하는 서비스	나라장터 제공되는 계약과정통합공개를 구현한 서비스로 물품,외자,용역,공사 업무구분에 대하여 사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 입찰공고의 진행과정 정보(사전규격정보,입찰공고정보,낙찰정보,계약정보목록 등)를 조회하는 서비스	나라장터 제공되는 계약과정통합공개를 구현한 서비스로 물품,외자,용역,공사 업무구분에 대하여 사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 입찰공고의 진행과정 정보(사전규격정보,입찰공고정보,낙찰정보,계약정보목록 등)를 조회하는 서비스	나라장터 제공되는 계약과정통합공개를 구현한 서비스로 물품,외자,용역,공사 업무구분에 대하여 사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 입찰공고의 진행과정 정보(사전규격정보,입찰공고정보,낙찰정보,계약정보목록 등)를 조회하는 서비스	나라장터 제공되는 계약과정통합공개를 구현한 서비스로 물품,외자,용역,공사 업무구분에 대하여 사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 입찰공고의 진행과정 정보(사전규격정보,입찰공고정보,낙찰정보,계약정보목록 등)를 조회하는 서비스	나라장터 제공되는 계약과정통합공개를 구현한 서비스로 물품,외자,용역,공사 업무구분에 대하여 사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 입찰공고의 진행과정 정보(사전규격정보,입찰공고정보,낙찰정보,계약정보목록 등)를 조회하는 서비스
+서비스 보안	서비스 인증/권한	서비스 인증/권한	[O] 서비스 Key[ ] 인증서 (GPKI) [] Basic (ID/PW) [ ] 없음	[O] 서비스 Key[ ] 인증서 (GPKI) [] Basic (ID/PW) [ ] 없음	[O] 서비스 Key[ ] 인증서 (GPKI) [] Basic (ID/PW) [ ] 없음	[O] 서비스 Key[ ] 인증서 (GPKI) [] Basic (ID/PW) [ ] 없음	[O] 서비스 Key[ ] 인증서 (GPKI) [] Basic (ID/PW) [ ] 없음	[ ]WS-Security
+서비스 보안	메시지 레벨 암호화	메시지 레벨 암호화	[  ] 전자서명	[ ] 암호화	[O] 없음	[  ] 전자서명	[ ] 암호화	[O] 없음	[  ] 전자서명	[ ] 암호화	[O] 없음	[  ] 전자서명	[ ] 암호화	[O] 없음	[  ] 전자서명	[ ] 암호화	[O] 없음	[ ]WS-Security
+서비스 보안	전송 레벨 암호화	전송 레벨 암호화	[  ] SSL			[ O] 없음	[  ] SSL			[ O] 없음	[  ] SSL			[ O] 없음	[  ] SSL			[ O] 없음	[  ] SSL			[ O] 없음	[  ] SSL			[ O] 없음
+적용 기술 수준	인터페이스 표준	인터페이스 표준	[  ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [ O ] REST (GET) [ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타	[  ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [ O ] REST (GET) [ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타	[  ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [ O ] REST (GET) [ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타	[  ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [ O ] REST (GET) [ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타	[  ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [ O ] REST (GET) [ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타	[  ] SOAP 1.2 (RPC-Encoded, Document Literal, Document Literal Wrapped) [ O ] REST (GET) [ ] RSS 1.0 [ ] RSS 2.0 [ ] Atom 1.0 [ ] 기타
+적용 기술 수준	교환 데이터 표준	교환 데이터 표준	[ O ] XML	[ O ] JSON	[ ] MIME	[ ] MTOM	[ O ] XML	[ O ] JSON	[ ] MIME	[ ] MTOM	[ O ] XML	[ O ] JSON	[ ] MIME	[ ] MTOM	[ O ] XML	[ O ] JSON	[ ] MIME	[ ] MTOM	[ O ] XML	[ O ] JSON	[ ] MIME	[ ] MTOM	[ O ] XML	[ O ] JSON	[ ] MIME	[ ] MTOM
+서비스 URL	개발환경	개발환경	http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService	http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService	http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService	http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService	http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService	http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService
+서비스 URL	운영환경	운영환경	http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService	http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService	http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService	http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService	http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService	http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService
+서비스 WADL	개발환경	개발환경	N/A	N/A	N/A	N/A	N/A	N/A
+서비스 WADL	운영환경	운영환경	N/A	N/A	N/A	N/A	N/A	N/A
+서비스 배포 정보	서비스 버전	서비스 버전	1.0	1.0	1.0	1.0	1.0	1.0
+서비스 배포 정보	서비스 시작일	서비스 시작일	2025-01-06	2025-01-06	배포 일자	배포 일자	2025-01-06	2025-01-06
+서비스 배포 정보	서비스 이력	서비스 이력	N/A	N/A	N/A	N/A	N/A	N/A
+메시지 교환 유형	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification	[O] Request-Response	[ ] Publish-Subscribe [ ] Fire-and-Forgot		[ ] Notification
+메시지 로깅 수준	성공	[O] Header [ ] Body	[O] Header [ ] Body	실패	실패	[O] Header [O] Body	[O] Header [O] Body	[O] Header [O] Body
+사용 제약 사항 (비고)	N/A	N/A	N/A	N/A	N/A	N/A	N/A	N/A
+서비스 제공자	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr	안정우 / 조달청 조달데이터관리팀 / 042-724-7685 / eureka3112@korea.kr
+데이터 갱신주기	수시	수시	수시	수시	수시	수시	수시	수시
+일련번호	서비스명(국문)	오퍼레이션명(영문)	오퍼레이션명(국문)	메시지명(영문)
+1	나라장터 계약과정통합공개서비스	getCntrctProcssIntgOpenFrgcpt	계약과정통합공개정보에 대한 외자조회	N/A
+2	나라장터 계약과정통합공개서비스	getCntrctProcssIntgOpenThng	계약과정통합공개정보에 대한 물품조회	N/A
+3	나라장터 계약과정통합공개서비스	getCntrctProcssIntgOpenServc	계약과정통합공개정보에 대한 용역조회	N/A
+4	나라장터 계약과정통합공개서비스	getCntrctProcssIntgOpenCnstwk	계약과정통합공개정보에 대한 공사조회	N/A
+오퍼레이션 정보	오퍼레이션 번호	1	오퍼레이션명(국문)	계약과정통합공개정보에 대한 외자조회	계약과정통합공개정보에 대한 외자조회
+오퍼레이션 정보	오퍼레이션 유형	조회(목록)	오퍼레이션명(영문)	getCntrctProcssIntgOpenFrgcpt	getCntrctProcssIntgOpenFrgcpt
+오퍼레이션 정보	오퍼레이션 설명	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 외자입찰공고의 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 외자입찰공고의 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 외자입찰공고의 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 외자입찰공고의 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능
+오퍼레이션 정보	Call Back URL	N/A	N/A	N/A	N/A
+오퍼레이션 정보	최대 메시지 사이즈	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]
+오퍼레이션 정보	평균 응답 시간	[ 	500	ms]	초당 최대 트랜잭션	초당 최대 트랜잭션	[ 	30	tps]
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+ServiceKey	서비스키	400	1	공공데이터포털에서 받은 인증키	공공데이터포털에서 받은 인증키
+type	타입	4	0	json	오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정함
+inqryDiv	조회구분	1	1	1	검색하고자 하는 조회구분 1.입찰공고번호(선택: 입찰공고차수), 2.사전규격등록번호, 3.발주계획번호, 4.조달요청번호
+bidNtceNo	입찰공고번호	11	0	20160312130	검색하고자 하는 입찰공고번호(조회구분 1인 경우 필수
+bidNtceOrd	입찰공고차수	2	0	000	검색하고자 하는 입찰공고번호에 따른 공고 차수 (조회구분 1인 경우 선택
+bfSpecRgstNo	사전규격등록번호	10	0	337425	검색하고자 하는 입찰공고내역의 사전규격등록번호 (조회구분 2인 경우 필수
+orderPlanNo	발주계획번호	40	0	2-1-2016-1192266-000001	검색하고자 하는 입찰공고내역의 발주계획번호 (조회구분 3인 경우 필수
+prcrmntReqNo	조달요청번호	13	0	16GA0289	검색하고자 하는 입찰공고내역의 조달요청번호(조회구분 4인 경우 필수
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+resultCode	결과코드	2	1	00	결과코드
+resultMsg	결과메세지	50	1	정상.	결과메세지
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+totalCount	전체 결과 수	4	1	1	전체 결과 수
+orderPlanNo	발주계획번호	40	0	2-1-2016-1192266-000001-00	발주계획번호는 업무구분코드(1)-업무유형코드(3)-발주년도(4)-기관코드(7)-발주차수(2)로 구성(발주차수를 제외하면 발주계획통합번호임)
+orderBizNm	발주사업명	400	0	초고성능액체크로마토그래피[Ultra Performance Liquid Chromatography System]	발주사업에 대한 사업 명
+orderInsttNm	발주기관명	200	0	해양수산부 국립수산과학원	발주기관의 명
+orderYm	발주년월	7	0	2016-02	발주 년월 ''YYYY-MM'
+prcrmntMethdNm	조달방식명	200	0	중앙조달	조달 방식에 대한 명
+cntrctCnclsMthdNm	계약체결방법명	200	0	일반경쟁	계약체결방법에 대한 명
+bfSpecRgstNo	사전규격등록번호	10	0	337425	사전규격 등록번호
+bfSpecBizNm	사전규격사업명	200	0	Ultra Performance Liquid Chromatography System	사전규격 사업명
+bfSpecDminsttNm	사전규격수요기관명	200	0	해양수산부 국립수산과학원	사전규격 수요기관명
+bfSpecNtceInsttNm	사전규격공고기관명	200	0	조달청	사전규격 공고기관명
+opninRgstClseDt	의견등록마감일시	10	0	2016/03/09 23:59	의견등록 마감일시 'YYYY-MM-DD HH:MM
+bidNtceNo	입찰공고번호	11	1	20160312130	입찰에 대한 공고번호
+bidNtceOrd	입찰공고차수	2	1	00	입찰공고번호에 따른 공고 차수
+prcrmntReqNo	조달요청번호	13	0	16GA0289	조달요청번호
+bidNtceNm	입찰공고명	100	1	Ultra Performance Liquid Chromatography System	입찰공고의 명
+bidDminsttNm	입찰수요기관명	200	1	해양수산부 국립수산과학원	입찰공고 수요기관 명
+bidMthdNm	입찰방법명	200	0	전자입찰	입찰방법명 예) 직찰, 우편, 상시
+bidNtceDt	입찰공고일시	16	1	2016-03-10 11:14	입찰 공고 일시 'YYYY-MM-DD HH:MM'
+bidwinrInfoList	낙찰자정보목록	4000	0..n	[1^System (유) 워터스코리아^1188119944^윤상화^71000^45.2^2^2016-04-05 12:00],	낙찰정보 [순번^낙찰업체명^낙찰업체사업자번호^대표자명^낙찰금액(원화,원)^낙찰률^참가업체수^개찰일시("YYYY-MM-DD HH:MM")]
+cntrctInfoList	계약정보목록	4000	0..n	[1^0016021500^액체크로마토그래피^조달청^해양수산부 국립수산과학원^일반경쟁^71000^2016-04-14]	입찰공고의 입찰공고번호와 연관된 계약정보목록제공  [순번^계약번호^계약명^계약기관명^계약수요기관명^계약체결방법명^계약금액(원화,원)^계약일자("YYYY-MM-DD")]
+orderPlanUntyNo	발주계획통합번호	40	0	2-1-2016-1192266-000001	발주계획통합번호는 발주계획번호에서 발주차수(2)를 제외한 번호임
+REST(URI)
+http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService/getCntrctProcssIntgOpenFrgcpt?inqryDiv =1&bidNtceNo=20160312130&pageNo=1&numOfRows=10&ServiceKey=인증키
+응답 메시지
+<response> <header> <resultCode>00</resultCode> <resultMsg>정상</resultMsg> </header> <body> <items> <item> <orderPlanNo>2-1-2016-1192266-000001-00</orderPlanNo>  <orderBizNm>초고성능액체크로마토그래피[Ultra Performance Liquid Chromatography System]</orderBizNm>    <orderInsttNm>해양수산부 국립수산과학원</orderInsttNm>    <orderYm>2016-02</orderYm>    <prcrmntMethdNm>중앙조달</prcrmntMethdNm>    <cntrctCnclsMthdNm>일반경쟁</cntrctCnclsMthdNm>    <bfSpecRgstNo>337425</bfSpecRgstNo>    <bfSpecBizNm>Ultra Performance Liquid Chromatography System</bfSpecBizNm>    <bfSpecDminsttNm>해양수산부 국립수산과학원</bfSpecDminsttNm>    <bfSpecNtceInsttNm>조달청</bfSpecNtceInsttNm>    <opninRgstClseDt>2016-03-09 23:59</opninRgstClseDt>    <bidNtceNo>20160312130</bidNtceNo>    <bidNtceOrd>00</bidNtceOrd>    <prcrmntReqNo>16GA0289</prcrmntReqNo>    <bidNtceNm>Ultra Performance Liquid Chromatography System</bidNtceNm>    <bidDminsttNm>해양수산부 국립수산과학원</bidDminsttNm>    <bidMthdNm>전자입찰</bidMthdNm>    <bidNtceDt>2016-03-10 11:14</bidNtceDt>    <bidwinrInfoList>[1^System (유) 워터스코리아^1188119944^윤상화^71000^45.2^2^2016-04-05 12:00]</bidwinrInfoList>    <cntrctInfoList>[1^0016021500^액체크로마토그래피^조달청^해양수산부 국립수산과학원^일반경쟁^71000^2016-04-14]</cntrctInfoList> <orderPlanUntyNo>2-1-2016-1192266-000001</orderPlanUntyNo> </item> </items> <numOfRows>1</numOfRows> <pageNo>1</pageNo> <totalCount>10</totalCount> </body> </response>
+오퍼레이션 정보	오퍼레이션 번호	2	오퍼레이션명(국문)	계약과정통합공개정보에 대한 물품조회	계약과정통합공개정보에 대한 물품조회
+오퍼레이션 정보	오퍼레이션 유형	조회(목록)	오퍼레이션명(영문)	getCntrctProcssIntgOpenThng	getCntrctProcssIntgOpenThng
+오퍼레이션 정보	오퍼레이션 설명	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 물품입찰공고의 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 물품입찰공고의 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 물품입찰공고의 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 물품입찰공고의 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능
+오퍼레이션 정보	Call Back URL	N/A	N/A	N/A	N/A
+오퍼레이션 정보	최대 메시지 사이즈	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]
+오퍼레이션 정보	평균 응답 시간	[ 	500	ms]	초당 최대 트랜잭션	초당 최대 트랜잭션	[ 	30	tps]
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+ServiceKey	서비스키	400	1	공공데이터포털에서 받은 인증키	공공데이터포털에서 받은 인증키
+type	타입	4	0	json	오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정함
+inqryDiv	조회구분	1	1	1	검색하고자 하는 조회구분 1.입찰공고번호(선택: 입찰공고차수), 2.사전규격등록번호, 3.발주계획번호, 4.조달요청번호
+bidNtceNo	입찰공고번호	11	0	00000000138	검색하고자 하는 입찰공고번호(조회구분 1인 경우 필수
+bidNtceOrd	입찰공고차수	2	0	000	검색하고자 하는 입찰공고번호에 따른 공고 차수 (조회구분 1인 경우 선택)
+bfSpecRgstNo	사전규격등록번호	10	0	333556	검색하고자 하는 입찰공고내역의 사전규격등록번호(조회구분 2인 경우 필수)
+orderPlanNo	발주계획번호	40	0	1-3-2023-Z009268-000004	검색하고자하는 입찰공고내역의 발주계획번호 (조회구분 3인 경우 필수)
+prcrmntReqNo	조달요청번호	13	0	2523304577	검색하고자하는 입찰공고내역의 조달요청번호(조회구분 4인 경우 필수
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+resultCode	결과코드	2	1	00	결과코드
+resultMsg	결과메세지	50	1	정상.	결과메세지
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+totalCount	전체 결과 수	4	1	1	전체 결과 수
+orderPlanNo	발주계획번호	40	0	1-1-2016-5670000-000026-00	발주계획번호는 업무구분코드(1)-업무유형코드(3)-발주년도(4)-기관코드(7)-발주차수(2)로 구성(발주차수를 제외하면 발주계획통합번호임)
+orderBizNm	발주사업명	400	0	인터넷 운영 가상화시스템 구입	발주사업에 대한 사업 명
+orderInsttNm	발주기관명	200	0	경상남도 창원시	발주기관의 명
+orderYm	발주년월	7	0	2016-02	발주 년월 ''YYYY-MM'
+prcrmntMethdNm	조달방식명	200	0	자체조달	조달 방식에 대한 명
+cntrctCnclsMthdNm	계약체결방법명	200	0	제한총액	계약체결방법에 대한 명
+bfSpecRgstNo	사전규격등록번호	10	0	333556	사전규격 등록번호
+bfSpecBizNm	사전규격사업명	200	0	인터넷운영 노후서버 가상화시스템 구축용 H/W, S/W 구매	사전규격 사업명
+bfSpecDminsttNm	사전규격수요기관명	200	0	경상남도 창원시	사전규격 수요기관명
+bfSpecNtceInsttNm	사전규격공고기관명	200	0	경상남도 창원시	사전규격 공고기관명
+opninRgstClseDt	의견등록마감일시	10	0	2016-02-20 23:59	의견등록 마감일시 'YYYY-MM-DD HH:MM
+bidNtceNo	입찰공고번호	11	1	20160234982	입찰에 대한 공고번호
+bidNtceOrd	입찰공고차수	2	1	00	입찰공고번호에 따른 공고 차수
+prcrmntReqNo	조달요청번호	13	0	1234567	조달요청번호
+bidNtceNm	입찰공고명	100	1	인터넷운영 가상화시스템 구입	입찰공고의 명
+bidDminsttNm	입찰수요기관명	200	1	경상남도 창원시	입찰공고 수요기관 명
+bidMthdNm	입찰방법명	200	0	전자입찰	입찰방법명 예) 직찰, 우편, 상시
+bidNtceDt	입찰공고일시	16	1	2016-03-10 11:14	입찰 공고 일시 'YYYY-MM-DD HH:MM'
+bidwinrInfoList	낙찰자정보목록	4000	0..n	[1^한신정보주식회사^108878780^정상진^88.041^38^2016-03-07 12:00]	입찰공고정보의 입찰공고번호와 연결된 낙찰자정보목록 [순번^낙찰업체명^낙찰업체사업자번호^대표자명^낙찰금액(원화,원)^낙찰률^참가업체수^개찰일시("YYYY-MM-DD")]
+cntrctInfoList	계약정보목록	4000	0..n	[1^2016031744700^인터넷운영 가상화시스템 구입^경상남도 창원시^경상남도 창원시^제한경쟁^108878780^2016-03-09]	입찰공고의 입찰공고번호와 연관된 계약정보목록제공  [순번^계약번호^계약명^계약기관명^계약수요기관명^계약체결방법명^계약금액(원화,원)^계약일자("YYYY-MM-DD")]
+orderPlanUntyNo	발주계획통합번호	40	0	1-1-2016-5670000-000026	발주계획통합번호는 발주계획번호에서 발주차수(2)를 제외한 번호임
+REST(URI)
+http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService/getCntrctProcssIntgOpenThng?inqryDiv =1&bidNtceNo=20160234982&pageNo=1&numOfRows=10&ServiceKey=인증키
+응답 메시지
+<response> <header> <resultCode>00</resultCode> <resultMsg>정상</resultMsg> </header> <body> <items> <item>   <orderPlanNo>1-1-2016-5670000-000026-00</orderPlanNo>    <orderBizNm>인터넷 운영 가상화시스템 구입</orderBizNm>    <orderInsttNm>경상남도 창원시</orderInsttNm>    <orderYm>2016-02</orderYm>    <prcrmntMethdNm>자체조달</prcrmntMethdNm>    <cntrctCnclsMthdNm>제한총액</cntrctCnclsMthdNm>    <bfSpecRgstNo>333556</bfSpecRgstNo>    <bfSpecBizNm>인터넷운영 노후서버 가상화시스템 구축용 H/W, S/W 구매</bfSpecBizNm>    <bfSpecDminsttNm>경상남도 창원시</bfSpecDminsttNm>    <bfSpecNtceInsttNm>경상남도 창원시</bfSpecNtceInsttNm>    <opninRgstClseDt>2016-02-20 23:59</opninRgstClseDt>    <bidNtceNo>20160234982</bidNtceNo>    <bidNtceOrd>00</bidNtceOrd>    <prcrmntReqNo />    <bidNtceNm>인터넷운영 가상화시스템 구입</bidNtceNm>    <bidDminsttNm>경상남도 창원시</bidDminsttNm>    <bidMthdNm>전자입찰</bidMthdNm>    <bidNtceDt>2016-02-26 13:28</bidNtceDt>    <bidwinrInfoList>[1^한신정보주식회사^6098141001^정상진^108878780^88.041^38^2016-03-07 12:00]</bidwinrInfoList>    <cntrctInfoList>[1^2016031744700^인터넷운영 가상화시스템 구입^경상남도 창원시^경상남도 창원시^제한경쟁^108878780^2016-03-09]</cntrctInfoList>   <orderPlanUntyNo>1-1-2016-5670000-000026</orderPlanUntyNo>  </item> </items> <numOfRows>1</numOfRows> <pageNo>1</pageNo> <totalCount>10</totalCount> </body> </response>
+오퍼레이션 정보	오퍼레이션 번호	3	오퍼레이션명(국문)	계약과정통합공개정보에 대한 용역조회	계약과정통합공개정보에 대한 용역조회
+오퍼레이션 정보	오퍼레이션 유형	조회(목록)	오퍼레이션명(영문)	getCntrctProcssIntgOpenServc	getCntrctProcssIntgOpenServc
+오퍼레이션 정보	오퍼레이션 설명	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 용역입찰공고의 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 용역입찰공고의 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 용역입찰공고의 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 용역입찰공고의 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능
+오퍼레이션 정보	Call Back URL	N/A	N/A	N/A	N/A
+오퍼레이션 정보	최대 메시지 사이즈	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]
+오퍼레이션 정보	평균 응답 시간	[ 	500	ms]	초당 최대 트랜잭션	초당 최대 트랜잭션	[ 	30	tps]
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+ServiceKey	서비스키	400	1	공공데이터포털에서 받은 인증키	공공데이터포털에서 받은 인증키
+type	타입	4	0	json	오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정함
+inqryDiv	조회구분	1	1	1	검색하고자 하는 조회구분 1.입찰공고번호 (선택: 입찰공고차수), 2.사전규격등록번호, 3.발주계획번호, 4.조달요청번호
+bidNtceNo	입찰공고번호	11	0	20160318205	검색하고자하는 입찰공고번호(조회구분 1인 경우 필수)
+bidNtceOrd	입찰공고차수	2	0	000	검색하고자하는 입찰공고번호에 따른 공고 차수 (조회구분 1인 경우 옵션)
+bfSpecRgstNo	사전규격등록번호	10	0	341367	검색하고자하는 입찰공고내역의 사전규격등록번호 (조회구분 2인 경우 필수)
+orderPlanNo	발주계획번호	40	0	5-1-2016-8340103-000004	검색하고자하는 입찰공고내역의 발주계획번호 (조회구분 3인 경우 필수)
+prcrmntReqNo	조달요청번호	13	0	3516328049	검색하고자하는 입찰공고내역의 조달요청번호 (조회구분 4인 경우 필수)
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+resultCode	결과코드	2	1	00	결과코드
+resultMsg	결과메세지	50	1	정상.	결과메세지
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+totalCount	전체 결과 수	4	1	1	전체 결과 수
+orderPlanNo	발주계획번호	40	0	5-1-2016-8340103-000004-00	발주계획번호는 업무구분코드(1)-업무유형코드(3)-발주년도(4)-기관코드(7)-발주차수(2)로 구성(발주차수를 제외하면 발주계획통합번호임)
+orderBizNm	발주사업명	400	0	216학년도 우유급식 공급업체 선정 입찰 재공고	발주사업에 대한 사업 명
+orderInsttNm	발주기관명	200	0	전라북도군산교육청 군산용문초등학교	발주기관의 명
+orderYm	발주년월	7	0	2016-03	발주 년월 ''YYYY-MM'
+prcrmntMethdNm	조달방식명	200	0	자체조달	조달 방식에 대한 명
+cntrctCnclsMthdNm	계약체결방법명	200	0	일반	계약체결방법에 대한 명
+bfSpecRgstNo	사전규격등록번호	10	0	341367	사전규격 등록번호
+bfSpecBizNm	사전규격사업명	200	0	216학년도 우유급식 공급업체 선정 입찰 재공고	사전규격 사업명
+bfSpecDminsttNm	사전규격수요기관명	200	0	전라북도군산교육청 군산용문초등학교	사전규격 수요기관명
+bfSpecNtceInsttNm	사전규격공고기관명	200	0	전라북도군산교육청 군산용문초등학교	사전규격 공고기관명
+opninRgstClseDt	의견등록마감일시	10	0	2016-03-21 10:00	의견등록 마감일시 'YYYY-MM-DD HH:MM
+bidNtceNo	입찰공고번호	11	1	20160318205	입찰에 대한 공고번호
+bidNtceOrd	입찰공고차수	2	1	00	입찰공고번호에 따른 공고 차수
+prcrmntReqNo	조달요청번호	13	0	16GA0289	조달요청번호
+bidNtceNm	입찰공고명	100	1	216학년도 우유급식 공급업체 선정 입찰 재공고	입찰공고의 명
+bidDminsttNm	입찰수요기관명	200	1	전라북도군산교육청 군산용문초등학교	입찰공고 수요기관 명
+bidMthdNm	입찰방법명	200	0	전자입찰	입찰방법명 예) 직찰, 우편, 상시
+bidNtceDt	입찰공고일시	16	1	2016-03-10 11:14	입찰 공고 일시 'YYYY-MM-DD HH:MM'
+bidwinrInfoList	낙찰자정보목록	4000	0..n	[1^한신정보주식회사^ 6098141001^정상진 ^108878780^88.041^38^2016-03-07 12:00]	입찰공고정보의 입찰공고번호와 연결된 낙찰자정보목록 [순번^낙찰업체명^낙찰업체사업자번호^대표자명^낙찰금액(원화,원)^낙찰률^참가업체수^개찰일시("YYYY-MM-DD")]
+cntrctInfoList	계약정보목록	4000	0..n	[1^2016036417400^전라북도군산교육청 군산용문초등학교^전라북도군산교육청 군산용문초등학교^수의계약^256000^2016-03-28]	입찰공고의 입찰공고번호와 연관된 계약정보목록제공 [순번^계약번호^계약명^계약기관명^계약수요기관명^계약체결방법명^계약금액(원화,원)^계약일자("YYYY-MM-DD")]
+orderPlanUntyNo	발주계획통합번호	40	0	5-1-2016-8340103-000004	발주계획통합번호는 발주계획번호에서 발주차수(2)를 제외한 번호임
+REST(URI)
+http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService/getCntrctProcssIntgOpenServc?inqryDiv =1&bidNtceNo=20160318205&pageNo=1&numOfRows=10&ServiceKey=인증키
+응답 메시지
+<response> <header> <resultCode>00</resultCode> <resultMsg>정상</resultMsg> </header> <body> <items> <item> <orderPlanNo>5-1-2016-8340103-000004-00</orderPlanNo>    <orderBizNm>216학년도 우유급식 공급업체 선정 입찰 재공고</orderBizNm>    <orderInsttNm>전라북도군산교육청 군산용문초등학교</orderInsttNm>    <orderYm>2016-03</orderYm>    <prcrmntMethdNm>자체조달</prcrmntMethdNm>    <cntrctCnclsMthdNm>일반</cntrctCnclsMthdNm>    <bfSpecRgstNo>341367</bfSpecRgstNo>    <bfSpecBizNm>216학년도 우유급식 공급업체 선정 입찰 재공고</bfSpecBizNm>    <bfSpecDminsttNm>전라북도군산교육청 군산용문초등학교</bfSpecDminsttNm>    <bfSpecNtceInsttNm>전라북도군산교육청 군산용문초등학교</bfSpecNtceInsttNm>    <opninRgstClseDt>2016-03-21 10:00</opninRgstClseDt>    <bidNtceNo>20160318205</bidNtceNo>    <bidNtceOrd>00</bidNtceOrd>    <prcrmntReqNo />    <bidNtceNm>216학년도 우유급식 공급업체 선정 입찰 재공고</bidNtceNm>    <bidDminsttNm>전라북도군산교육청 군산용문초등학교</bidDminsttNm>    <bidMthdNm>전자입찰</bidMthdNm>    <bidNtceDt>2016-03-14 16:04</bidNtceDt>    <bidwinrInfoList />    <cntrctInfoList>[1^2016036417400^전라북도군산교육청 군산용문초등학교^전라북도군산교육청 군산용문초등학교^수의계약^256000^2016-03-28]</cntrctInfoList>  <orderPlanUntyNo>5-1-2016-8340103-000004</orderPlanUntyNo>  </item> </items> <numOfRows>1</numOfRows> <pageNo>1</pageNo> <totalCount>10</totalCount> </body> </response>
+오퍼레이션 정보	오퍼레이션 번호	4	오퍼레이션명(국문)	계약과정통합공개정보에 대한 공사조회	계약과정통합공개정보에 대한 공사조회
+오퍼레이션 정보	오퍼레이션 유형	조회(목록)	오퍼레이션명(영문)	getCntrctProcssIntgOpenCnstwk	getCntrctProcssIntgOpenCnstwk
+오퍼레이션 정보	오퍼레이션 설명	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 공사입찰공고 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 공사입찰공고 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 공사입찰공고 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능	사용자가 [입찰공고번호,사전규격등록번호,발주계획번호,조달요청번호] 중 한 번호를 알고 있는 경우 해당 공사입찰공고 업무 진행과정(발주계획번호,사업명,발주기관명,사전규격등록번호,입찰공고명,낙찰업체명,낙찰금액,낙찰률,계약번호,계약건명 등)을 조회 단, 입찰공고번호는 입찰공고차수를 입력하지 않아도 관련 공고 정보조회 가능
+오퍼레이션 정보	Call Back URL	N/A	N/A	N/A	N/A
+오퍼레이션 정보	최대 메시지 사이즈	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]	[ 4000bytes]
+오퍼레이션 정보	평균 응답 시간	[ 	500	ms]	초당 최대 트랜잭션	초당 최대 트랜잭션	[ 	30	tps]
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+ServiceKey	서비스키	400	1	공공데이터포털에서 받은 인증키	공공데이터포털에서 받은 인증키
+type	타입	4	0	json	오픈API 리턴 타입을 JSON으로 받고 싶을 경우 'json' 으로 지정함
+inqryDiv	조회구분	1	1	1	검색하고자 하는 조회구분 1.입찰공고번호 (선택: 입찰공고차수), 2.사전규격등록번호, 3.발주계획번호, 4.조달요청번호
+bidNtceNo	입찰공고번호	11	0	20160618729	검색하고자 하는 입찰공고번호 (조회구분 1인 경우 필수)
+bidNtceOrd	입찰공고차수	2	0	000	검색하고자 하는 입찰공고번호에 따른 공고 차수 (조회구분 1인 경우 선택)
+bfSpecRgstNo	사전규격등록번호	10	0	368604	검색하고자하는 입찰공고내역의 사전규격등록번호 (조회구분 2인 경우 필수)
+orderPlanNo	발주계획번호	40	0	3-1-2016-8031000-000038	검색하고자하는 입찰공고내역의 발주계획번호 (조회구분 3인 경우 필수)
+prcrmntReqNo	조달요청번호	13	0	2017000200	검색하고자하는 입찰공고내역의 조달요청번호 (조회구분 4인 경우 필수)
+항목명(영문)	항목명(국문)	항목크기	항목구분	샘플데이터	항목설명
+resultCode	결과코드	2	1	00	결과코드
+resultMsg	결과메세지	50	1	정상.	결과메세지
+numOfRows	한 페이지 결과 수	4	1	10	한 페이지 결과 수
+pageNo	페이지 번호	4	1	1	페이지 번호
+totalCount	전체 결과 수	4	1	1	전체 결과 수
+orderPlanNo	발주계획번호	40	0	3-1-2016-D325107-000002-02	발주계획번호는 업무구분코드(1)-업무유형코드(3)-발주년도(4)-기관코드(7)-발주차수(2)로 구성(발주차수를 제외하면 발주계획통합번호임)
+orderBizNm	발주사업명	400	0	2016년도 김해사업소 현장제어설비 정기점검 보수공사	발주사업에 대한 사업 명
+orderInsttNm	발주기관명	200	0	한국지역난방공사 김해사업소	발주기관의 명
+orderYm	발주년월	7	0	2016-06	발주 년월 ''YYYY-MM'
+prcrmntMethdNm	조달방식명	200	0	자체조달	조달 방식에 대한 명
+cntrctCnclsMthdNm	계약체결방법명	200	0	실적	계약체결방법에 대한 명
+bfSpecRgstNo	사전규격등록번호	10	0	341367	사전규격 등록번호
+bfSpecBizNm	사전규격사업명	200	0	2016년도 김해사업소 현장제어설비 정기점검 보수공사	사전규격 사업명
+bfSpecDminsttNm	사전규격수요기관명	200	0	한국지역난방공사 김해사업소	사전규격 수요기관명
+bfSpecNtceInsttNm	사전규격공고기관명	200	0	한국지역난방공사 김해사업소	사전규격 공고기관명
+opninRgstClseDt	의견등록마감일시	10	0	2016-03-21 10:00	의견등록 마감일시 'YYYY-MM-DD HH:MM
+bidNtceNo	입찰공고번호	11	1	20160623330	입찰에 대한 공고번호
+bidNtceOrd	입찰공고차수	2	1	00	입찰공고번호에 따른 공고 차수
+prcrmntReqNo	조달요청번호	13	0	123456	조달요청번호
+bidNtceNm	입찰공고명	100	1	2016년도 김해사업소 현장제어설비 정기점검 보수공사	입찰공고의 명
+bidDminsttNm	입찰수요기관명	200	1	한국지역난방공사 김해사업소	입찰공고 수요기관 명
+bidMthdNm	입찰방법명	200	0	전자입찰	입찰방법명 예) 직찰, 우편, 상시
+bidNtceDt	입찰공고일시	16	1	2016-03-10 11:14	입찰 공고 일시 'YYYY-MM-DD HH:MM'
+bidwinrInfoList	낙찰자정보목록	4000	0..n	[1^(주)칠공사^3048104950^이대일^48813940^87.769^20^2016-06-22 11:00]	입찰공고정보의 입찰공고번호와 연결된 낙찰정보 [순번^낙찰업체명^낙찰업체사업자번호^대표자명^낙찰금액(원화,원)^낙찰률^참가업체수^개찰일시("YYYY-MM-DD")]
+cntrctInfoList	계약정보목록	4000	0..n	[1^0000000001416400^2016년도 현장제어설비 정기점검보수공사^한국지역난방공사 김해사업소^한국지역난방공사 김해사업소^제한경쟁^51230000^2016-03-10]	입찰공고의 입찰공고번호와 연관된 계약정보목록제공  [순번^계약번호^계약명^계약기관명^계약수요기관명^계약체결방법명^계약금액(원화,원)#계약일자("YYYY-MM-DD")]
+orderPlanUntyNo	발주계획통합번호	40	0	3-1-2016-D325107-000002	발주계획통합번호는 발주계획번호에서 발주차수(2)를 제외한 번호임
+REST(URI)
+http://apis.data.go.kr/1230000/ao/CntrctProcssIntgOpenService/getCntrctProcssIntgOpenCnstwk?inqryDiv =1&bidNtceNo=20160618729&pageNo=1&numOfRows=10&ServiceKey=인증키
+응답 메시지
+<response> <header> <resultCode>00</resultCode> <resultMsg>정상</resultMsg> </header> <body> <items> <item> <orderPlanNo>3-1-2016-8031000-000038-00</orderPlanNo>    <orderBizNm>홍광초외1교(유치원) 교사도장 및 포장공사공사</orderBizNm>    <orderInsttNm>충청북도교육청 충청북도제천교육지원청</orderInsttNm>    <orderYm>2016-06</orderYm>    <prcrmntMethdNm>자체조달</prcrmntMethdNm>    <cntrctCnclsMthdNm>수의</cntrctCnclsMthdNm>    <bfSpecRgstNo>368604</bfSpecRgstNo>    <bfSpecBizNm>홍광초외1교(남당초) 교사도장</bfSpecBizNm>    <bfSpecDminsttNm>충청북도교육청 충청북도제천교육지원청</bfSpecDminsttNm>    <bfSpecNtceInsttNm>충청북도교육청 충청북도제천교육지원청</bfSpecNtceInsttNm>    <opninRgstClseDt>2016-06-21 23:59</opninRgstClseDt>    <bidNtceNo>20160618729</bidNtceNo>    <bidNtceOrd>00</bidNtceOrd>    <prcrmntReqNo />    <bidNtceNm>홍광초외1교(남당초) 교사 도장공사 소액수의 견적공고</bidNtceNm>    <bidDminsttNm>충청북도교육청 충청북도제천교육지원청</bidDminsttNm>    <bidMthdNm>전자입찰</bidMthdNm>    <bidNtceDt>2016-06-16 15:34</bidNtceDt>    <bidwinrInfoList>[1^(주)칠공사^3048104950^이대일^48813940^87.769^20^2016-06-22 11:00]</bidwinrInfoList>    <cntrctInfoList />    <orderPlanUntyNo>3-1-2016-8031000-000038</orderPlanUntyNo>  </item> </items> <numOfRows>1</numOfRows> <pageNo>1</pageNo> <totalCount>10</totalCount> </body> </response>
+Code	코드값	설명	조치방안
+01	Application Error	제공기관 서비스 제공 상태가 원할하지 않습니다.	서비스 제공기관의 관리자에게 문의하시기 바랍니다.
+02	DB Error	제공기관 서비스 제공 상태가 원할하지 않습니다.	서비스 제공기관의 관리자에게 문의하시기 바랍니다.
+03	No Data	데이터 없음 에러	
+04	HTTP Error	제공기관 서비스 제공 상태가 원할하지 않습니다.	서비스 제공기관의 관리자에게 문의하시기 바랍니다.
+05	service time out	제공기관 서비스 제공 상태가 원할하지 않습니다	서비스 제공기관의 관리자에게 문의하시기 바랍니다.
+06	날짜Format 에러	날짜 Default, Format Error	날짜형식을 확인 하시기 바랍니다.
+07	입력범위값 초과 에러	요청하신 OpenAPI의 파라미터 입력값 범위가 초과 되었습니다.	기술문서를 다시 한번 확인하여 주시기 바랍니다.
+08	필수값 입력 에러	요청하신 OpenAPI의 필수 파라미터가 누락되었습니다.	기술문서를 다시 한번 확인하여 주시기 바랍니다.
+10	잘못된 요청 파라미터 에러	OpenAPI 요청시 ServiceKey 파라미터가 없음	-OpenAPI 요청시 ServiceKey 파라미터가 누락되었습니다. -OpenAPI 요청 URL을 확인하시기 바랍니다.
+11	필수 요청 파라미터가 없음	요청하신 OpenAPI의 필수 파라미터가 누락되었습니다.	기술문서를 다시 한번 확인하시어 주시기 바랍니다.
+12	해당 오픈API 서비스가 없거나 폐기됨	OpenAPI 호출시 URL이 잘못됨	-제공기관 관리자에게 폐기된 서비스인지 확인바랍니다. 폐기된 서비스가 아니면 개발가이드에서 OpenAPI요청 URL을 다시 확인하시기 바랍니다.
+20	서비스 접근 거부	활용승인이 되지 않은 OpenAPI호출	-OpenAPI활용신청정보의 승인상태를 확인하시기 바랍니다. -활용신청에 대해 제공기관 담당자가 확인 후 '승인'이후 부터 사용할 수 있습니다. -신청 후 2~3일 소요되고 결과는 회원가입 시 등록한 e-mail로 발송됩니다.
+22	서비스 요청 제한 횟수 초과 에러	일일 활용건수가 초과함(활용건수 증가 필요)	-OpenAPI활용신청정보의 서비스 상세기능별 일일 트래픽량을 확인하시기 바랍니다. -개발계정의 경우 제공기관에서 정의한 트래픽을 초과하여 활용할 수 없습니다. -운영계정의 경우 변경신청을 통해서 일일트래픽량을 변경 할 수 있습니다.
+30	등록되지 않은 서비스 키	잘못된 서비스키를 사용하였거나 서비스키를 URL인코딩하지	-OpenAPI활용신청정보의 발급받은 서비스키를 다시 확인하시기 바랍니다. - 서비스키 값이 같다면 서비스키가 URL 인코등 되었는지 다시 확인하시기 바랍니다.
+31	기한 만료된 서비스 키	OpenAPI 사용기간이 만료됨 (활용연장신청 후 사용가능)	-OpenAPI 활용신청정보의 활용기간을 확인합니다. -활용기간이 지난 서비스는 이용할 수 없으며 연장신청을 통해 승인 받은 후 다시 이용가능 합니다.
+32	등록되지 않은 도메인명 또는 IP주소	활용신청한 서버의 IP와 실제 OpenAPI호출한 서버가 다를 경우	-OpenAPI 활용신청정보의 등록된 도메인명이나 IP주소를 다시 확인합니다. -IP나 도메인의 정보를 변경하기 위해 변경신청을 할 수 있습니다.

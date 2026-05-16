@@ -1,0 +1,91 @@
+{
+  "unit": 14,
+  "portal_id": "15158905",
+  "name": "한국예탁결제원_금융용어조회서비스_GW",
+  "portal_url": "https://www.data.go.kr/data/15158905/openapi.do",
+  "provider": "한국예탁결제원",
+  "classification": "일반공공행정 - 재정·금융",
+  "category_seen": "재정금융",
+  "api_type": "REST",
+  "data_format": "XML",
+  "license": "저작자표시-비영리; public-work type 2, source attribution required, commercial use prohibited",
+  "update_cycle": "실시간",
+  "traffic": {
+    "development_daily_limit": 100,
+    "operating_traffic_note": "활용사례 등록시 신청하면 트래픽 증가 가능",
+    "operations_selected": [
+      "금융용어사전 조회"
+    ]
+  },
+  "approval": {
+    "submitted_via_computer_use": true,
+    "status": "승인",
+    "application_date": "2026-05-16",
+    "expiry_date": "2028-05-16",
+    "application_reference": "115979053",
+    "uddi": "uddi:4dc039b9-381f-4edd-9c15-cdc4a89c91e8_202604131639",
+    "submitted_purpose": "UMMAYA lookup adapter: financial term dictionary for citizen queries about securities, bonds, disclosure, settlement, and market terminology."
+  },
+  "ummaya": {
+    "candidate_adapter_id": "ksd_financial_term_lookup",
+    "primary_primitive": "lookup",
+    "secondary_primitives": [],
+    "citizen_queries": [
+      "대량주식 보유상황 공시제도가 무슨 뜻이야?",
+      "Repo가 뭔지 공공기관 자료 기준으로 설명해줘.",
+      "채권 원리금 확정이라는 표현을 쉽게 풀어줘.",
+      "전자등록, 보호예수, 의무보유등록 차이를 알려줘.",
+      "공시 문서에 나온 금융용어 뜻을 공식 정의로 찾아줘."
+    ],
+    "fit_reason": "This official Korea Securities Depository financial dictionary can answer citizen finance-term questions with an authoritative source. It is a support lookup adapter for securities, bond, disclosure, settlement, tax, and market-infrastructure conversations."
+  },
+  "contract": {
+    "base_urls": [
+      "https://apis.data.go.kr/B552481/FnTermSvc",
+      "http://apis.data.go.kr/B552481/FnTermSvc"
+    ],
+    "operations": [
+      {
+        "method": "GET",
+        "path": "/getFinancialTermMeaning",
+        "summary": "금융용어사전 조회",
+        "required_parameters": [
+          "serviceKey",
+          "term"
+        ],
+        "optional_parameters": [
+          "pageNo",
+          "numOfRows"
+        ],
+        "response_fields": [
+          "header.resultCode",
+          "header.resultMsg",
+          "body.totalCount",
+          "body.pageNo",
+          "body.numOfRows",
+          "body.items.item.fnceDictNm",
+          "body.items.item.ksdFnceDictDescContent"
+        ],
+        "documented_errors": {
+          "3": "NODATA_ERROR(데이터 없음)",
+          "10": "INVALID_REQUEST_PARAMETER_ERROR(잘못된 요청 파라메터)",
+          "11": "NO_MANDATORY_REQUEST_PARAMETER_ERROR(필수요청 파라메터가 없음)"
+        }
+      }
+    ]
+  },
+  "source_artifacts": [
+    "data-go-kr-detail.html",
+    "openapi-schemaorg.json",
+    "dcat-metadata.rdf.xml",
+    "swagger.json",
+    "gateway_swagger_guide.pdf",
+    "pre-application-screening-2026-05-16-unit-14.md",
+    "usage-notes-2026-05-16-unit-14.md"
+  ],
+  "notes": [
+    "The portal detail page showed a blank file identifier for the API-specific reference document link, so no API-specific reference document was downloadable.",
+    "Swagger produces application/xml; sanitize HTML tags in ksdFnceDictDescContent before returning to users.",
+    "Live endpoint probes should be direct curl probes with the approved data.go.kr key before a live adapter is implemented. CI must use recorded fixtures only."
+  ]
+}

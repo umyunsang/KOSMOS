@@ -1,0 +1,180 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "대전교통공사에서 운영 및 관리하고 있는 대전도시철도 1호선 역 중 출발역과 도착역 두 역을 입력하면 해당 구간의 소요시간, 역간 거리, 운임 요금 정보를 제공하는 데이터입니다.\\n본 데이터를 활용하면 원하는 두 역 사이의 이동 시간과 거리, 승차 요금을 손쉽게 확인할 수 있으며, 대중교통 길찾기 서비스, 교통 요금 안내 앱, 환승 경로 최적화 플랫폼, 대전 지역 교통 정보 통합 서비스 등 다양한 분야의 애플리케이션 개발에 활용할 수 있습니다. \\n민들이 지하철 이용 전 구간별 소요시간과 요금을 미리 파악할 수 있어 편리한 대중교통 이용 환경 조성과 교통 정보 접근성 향상에 기여합니다.\\n\\n(본 데이터는 오픈API 형태로 제공되며, 데이터 활용을 위해서는 사전에 활용 신청을 완료하고 인증키를 발급받아야 합니다.)",
+    "version": "1.0.0",
+    "title": "대전교통공사_역간 소요시간/거리/요금 조회 서비스"
+  },
+  "host": "apis.data.go.kr/B554695/TimeDistSVC",
+  "basePath": "",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/getTimeDist01": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "header": {
+                  "type": "object",
+                  "description": "header",
+                  "properties": {
+                    "resultCode": {
+                      "type": "string",
+                      "description": "결과코드",
+                      "properties": {}
+                    },
+                    "resultMsg": {
+                      "type": "string",
+                      "description": "결과메시지",
+                      "properties": {}
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "description": "body",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "description": "items",
+                      "properties": {
+                        "item": {
+                          "type": "object",
+                          "description": "item",
+                          "properties": {
+                            "distfloat": {
+                              "type": "string",
+                              "description": "역간 거리(km)",
+                              "properties": {}
+                            },
+                            "fee": {
+                              "type": "string",
+                              "description": "요금",
+                              "properties": {}
+                            },
+                            "min": {
+                              "type": "string",
+                              "description": "소요시간(분)",
+                              "properties": {}
+                            },
+                            "sec": {
+                              "type": "string",
+                              "description": "소요시간(초)",
+                              "properties": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "response"
+              }
+            }
+          },
+          "": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "API 목록"
+        ],
+        "summary": "역간 소요시간/거리/요금 조회",
+        "description": "두 역을 입력하여 역간 소요시간, 거리, 요금을 조회하는 서비스",
+        "operationId": "getTimeDist01",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "serviceKey",
+          "description": "공공데이터포털에서 받은 인증키",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "strstnno",
+          "description": "조회 시작역",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        },
+        {
+          "name": "endstnno",
+          "description": "조회 끝역",
+          "type": "string",
+          "required": true,
+          "in": "query"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "getTimeDist01_response": {
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "object",
+          "description": "header",
+          "properties": {
+            "resultCode": {
+              "type": "string",
+              "description": "결과코드"
+            },
+            "resultMsg": {
+              "type": "string",
+              "description": "결과메시지"
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "body",
+          "properties": {
+            "items": {
+              "type": "object",
+              "description": "items",
+              "properties": {
+                "item": {
+                  "type": "object",
+                  "description": "item",
+                  "properties": {
+                    "distfloat": {
+                      "type": "string",
+                      "description": "역간 거리(km)"
+                    },
+                    "fee": {
+                      "type": "string",
+                      "description": "요금"
+                    },
+                    "min": {
+                      "type": "string",
+                      "description": "소요시간(분)"
+                    },
+                    "sec": {
+                      "type": "string",
+                      "description": "소요시간(초)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
