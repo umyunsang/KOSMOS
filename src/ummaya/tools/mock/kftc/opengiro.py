@@ -358,11 +358,12 @@ async def invoke_bill(params: dict[str, object]) -> SubmitOutput:
 
     status, rsp_code, rsp_message, detail = _fixture_outcome(typed.bill_reference)
     if status == SubmitStatus.succeeded:
-        detail = {
-            "create_bill": "created",
-            "cancel_bill": "cancelled",
-            "check_payment_status": "payment_status_checked",
-        }[typed.operation]
+        if typed.operation == "create_bill":
+            detail = "created"
+        elif typed.operation == "cancel_bill":
+            detail = "cancelled"
+        else:
+            detail = "payment_status_checked"
 
     receipt = OpenGiroReceipt(
         receipt_ref=f"MOCK-OG-BILL-{_hash_ref(typed.bill_reference)}",
