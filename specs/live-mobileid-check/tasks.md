@@ -32,7 +32,7 @@
 
 **Purpose**: Prove the MobileID wire envelope and redaction behavior before any registry wiring.
 
-- [X] T004 [P] [US1] Write failing MIP envelope encode/decode, malformed base64, non-object inner JSON, and redaction tests in `tests/unit/tools/live/test_mobileid_client.py`
+- [X] T004 [P] [US1] Write failing MIP envelope encode/decode, malformed base64, non-object inner JSON, and redaction tests in `tests/unit/tools/test_mobileid_client.py`
 - [X] T005 [US1] Implement `src/ummaya/tools/live/mobileid_client.py` with deterministic envelope encode/decode, sanitized upstream errors, status normalization, and recursive identity-field redaction
 - [X] T006 [US1] Add `src/ummaya/tools/live/__init__.py` without importing network clients at module import time
 
@@ -48,8 +48,8 @@
 
 ### Tests for User Story 1
 
-- [X] T007 [P] [US1] Write failing adapter success tests in `tests/unit/tools/live/test_verify_mobile_id.py` for sanitized `/mip/vp` and `/mip/trxsts` responses
-- [X] T008 [P] [US1] Write failing output-redaction tests in `tests/unit/tools/live/test_verify_mobile_id.py` that scan serialized results for VP data, CI, DI, resident identifiers, phone numbers, names, and birthdate-like values
+- [X] T007 [P] [US1] Write failing adapter success tests in `tests/unit/tools/test_verify_mobile_id_live_adapter.py` for sanitized `/mip/vp` and `/mip/trxsts` responses
+- [X] T008 [P] [US1] Write failing output-redaction tests in `tests/unit/tools/test_verify_mobile_id_live_adapter.py` that scan serialized results for VP data, CI, DI, resident identifiers, phone numbers, names, and birthdate-like values
 
 ### Implementation for User Story 1
 
@@ -121,7 +121,7 @@
 - [X] T025 Run `uv run ruff check src tests` and fix reported issues
 - [X] T026 Run `uv run ruff format --check src tests` and fix formatting issues
 - [X] T027 Run `uv run mypy src` and fix reported type issues
-- [X] T028 Run `uv run pytest tests/unit/tools/live tests/integration/test_live_mobileid_registration.py tests/unit/primitives/test_verify_family_mismatch.py tests/unit/ipc/test_stdio_verify_dispatch.py -m "not live"` and fix failures
+- [X] T028 Run `uv run pytest tests/unit/tools/test_mobileid_client.py tests/unit/tools/test_verify_mobile_id_live_adapter.py tests/integration/test_live_mobileid_registration.py tests/unit/primitives/test_verify_family_mismatch.py tests/unit/ipc/test_stdio_verify_dispatch.py -m "not live"` and fix failures
 - [X] T029 Run `uv run pytest -m "not live"` and fix failures
 - [X] T030 Run secret/PII scan over new MobileID code/docs/tests and remove any plaintext credential or identity occurrence
 - [X] T031 Update `specs/live-mobileid-check/tasks.md` checkboxes and task issue links after completion

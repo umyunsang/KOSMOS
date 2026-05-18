@@ -78,11 +78,47 @@ async def test_live_mobileid_check_returns_mobileid_context() -> None:
 async def test_live_mobileid_check_resident_id_type_uses_resident_tier() -> None:
     output = await handle_live_mobile_id_check(
         LiveMobileIdCheckInput(trxcode="TRX-SAFE-002", id_type="resident"),
-        client=_FakeMobileIdClient(),
+        client=_FakeMobileIdClient(status_result={"result": True, "credentialType": "resident"}),
     )
 
     assert output.id_type == "resident"
     assert output.published_tier == "mobile_id_resident_aal2"
+
+
+@pytest.mark.asyncio
+async def test_live_mobileid_check_resident_requires_upstream_evidence() -> None:
+    with pytest.raises(MobileIdVerificationError):
+        await handle_live_mobile_id_check(
+            LiveMobileIdCheckInput(trxcode="TRX-SAFE-002", id_type="resident"),
+            client=_FakeMobileIdClient(),
+        )
+
+
+@pytest.mark.asyncio
+async def test_live_mobileid_check_fails_closed_on_id_type_mismatch() -> None:
+    with pytest.raises(MobileIdVerificationError):
+        await handle_live_mobile_id_check(
+            LiveMobileIdCheckInput(trxcode="TRX-SAFE-002", id_type="resident"),
+            client=_FakeMobileIdClient(
+                status_result={"result": True, "credentialType": "mobile_driver_license"}
+            ),
+        )
+
+
+@pytest.mark.asyncio
+async def test_live_mobileid_check_accepts_nested_mdl_evidence() -> None:
+    output = await handle_live_mobile_id_check(
+        LiveMobileIdCheckInput(trxcode="TRX-SAFE-002", id_type="mdl"),
+        client=_FakeMobileIdClient(
+            status_result={
+                "result": True,
+                "credential": {"type": ["VerifiableCredential", "MobileDriverLicenseCredential"]},
+            }
+        ),
+    )
+
+    assert output.id_type == "mdl"
+    assert output.published_tier == "mobile_id_mdl_aal2"
 
 
 @pytest.mark.asyncio

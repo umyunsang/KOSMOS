@@ -26,7 +26,8 @@
     "id_type": {
       "type": "string",
       "enum": ["mdl", "resident"],
-      "default": "mdl"
+      "default": "mdl",
+      "description": "resident requires corroborating credential-type evidence in the verified upstream response"
     },
     "vp": {
       "type": ["object", "null"],
@@ -129,6 +130,7 @@ The adapter fails closed for:
 - upstream HTTP status outside 2xx
 - upstream explicit failure result
 - expired, canceled, missing, or unsupported transaction status
+- requested resident `id_type` without corroborating upstream credential-type evidence
 - configured base URL without required credentials
 
 Failure messages are sanitized and must not contain raw VP data, resident identifiers, CI, DI, phone numbers, names, or birthdate-like values.

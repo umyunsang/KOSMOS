@@ -92,7 +92,7 @@ tests/
     └── tools/
         └── live/
             ├── test_mobileid_client.py
-            └── test_verify_mobile_id.py
+            └── test_verify_mobile_id_live_adapter.py
 
 docs/api/verify/
 └── live_verify_mobile_id.md

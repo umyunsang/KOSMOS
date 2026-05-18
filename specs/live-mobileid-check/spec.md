@@ -96,6 +96,7 @@ A maintainer can prove the live adapter is ready using sanitized direct-call evi
 - **FR-009**: System MUST require a transaction code before calling `/mip/vp` or `/mip/trxsts`.
 - **FR-010**: System MUST validate that the `/mip/vp` request shape includes `type`, `version`, `cmd=400`, `request=presentation`, `trxcode`, and a `vp` object with the documented presentation metadata.
 - **FR-011**: System MUST return a typed MobileID context compatible with existing UMMAYA verify consumers: `family="mobile_id"`, `published_tier`, `nist_aal_hint`, `verified_at`, `external_session_ref`, and `id_type`.
+- **FR-011a**: System MUST fail closed before issuing `mobile_id_resident_aal2` unless the verified upstream response includes corroborating credential-type evidence for a resident MobileID. Caller-supplied `id_type="resident"` alone is insufficient.
 - **FR-012**: System MUST NOT return or persist raw VP payloads, CI, DI, resident identifiers, phone numbers, birthdate-like identity attributes, or full decrypted identity result data.
 - **FR-013**: System MUST return fail-closed structured errors for missing `trxcode`, malformed base64, malformed inner JSON, upstream non-2xx, upstream `result=false`, expired transaction, and unsupported transaction status.
 - **FR-014**: System MUST keep all default tests fixture-backed and free of live MobileID, government, identity, payment, or citizen-infrastructure calls.
@@ -146,7 +147,7 @@ Primary references:
 - The operator already has or can deploy an approved MobileID verification daemon; UMMAYA does not host or issue the MobileID credential.
 - v1 receives an existing transaction reference rather than initiating every ceremony mode.
 - `MobileIdContext` is sufficient for v1 unless planning proves that `ModidContext` is required for compatibility; any `verify.py` change must be additive and narrowly scoped.
-- `id_type` can default to `mdl` unless transaction metadata or explicit input selects `resident`.
+- `id_type` can default to `mdl`; `resident` requires corroborating credential-type metadata from the verified upstream response before the adapter may return the resident published tier.
 - `UMMAYA_MOBILEID_BASE_URL`, `UMMAYA_MOBILEID_CLIENT_ID`, and `UMMAYA_MOBILEID_TEST_TRXCODE` are the initial live-test env names; planning may add a secret or service-code variable if the official or operator daemon requires it.
 - Sanitized direct curl evidence is required before claiming live readiness, but not before writing fixture-only unit tests.
 

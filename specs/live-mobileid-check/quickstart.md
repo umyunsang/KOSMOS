@@ -5,7 +5,7 @@
 Run the focused fixture tests without live calls:
 
 ```bash
-uv run pytest tests/unit/tools/live tests/integration/test_live_mobileid_registration.py -m "not live"
+uv run pytest tests/unit/tools/test_mobileid_client.py tests/unit/tools/test_verify_mobile_id_live_adapter.py tests/integration/test_live_mobileid_registration.py -m "not live"
 ```
 
 Run the wider non-live backend suite:

@@ -7,7 +7,7 @@ Represents the public input accepted by `live_verify_mobile_id`.
 | Field | Type | Rules |
 |-------|------|-------|
 | `trxcode` | `str` | Required, trimmed, non-empty transaction reference. |
-| `id_type` | `"mdl" \| "resident"` | Defaults to `mdl`; selects the published tier. |
+| `id_type` | `"mdl" \| "resident"` | Defaults to `mdl`; `resident` is honored only when verified upstream metadata corroborates the resident credential type. |
 | `vp` | `LiveMobileIdVpInput \| null` | Optional encrypted VP presentation metadata for `/mip/vp`. If omitted, v1 can still perform transaction-status verification when the operator daemon has already processed VP evidence. |
 | `timeout_seconds` | `float \| null` | Optional bounded HTTP timeout override for tests/operators; must remain positive and small. |
 
@@ -58,6 +58,7 @@ The normalized status derived from `/mip/vp` and `/mip/trxsts`.
 | `verified` | `bool` | True only when status and VP result indicate successful verification. |
 | `status_code` | `str \| null` | Sanitized upstream transaction/status code. |
 | `message` | `str \| null` | Sanitized diagnostic string; no identity data. |
+| `credential_type_evidence` | `mdl`, `resident`, or `null` | Optional daemon/operator metadata such as `credentialType` or `idType`. Required before returning `mobile_id_resident_aal2`. |
 
 ## Entity: MobileIdContext
 

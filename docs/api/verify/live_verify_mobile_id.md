@@ -73,7 +73,7 @@ For `/mip/vp`, the inner JSON includes:
 }
 ```
 
-`id_type` is `mdl` or `resident`. `vp` is optional when the operator daemon has already processed VP evidence and UMMAYA only needs status verification.
+`id_type` is `mdl` or `resident`. `vp` is optional when the operator daemon has already processed VP evidence and UMMAYA only needs status verification. `resident` is fail-closed unless the verified upstream response includes corroborating credential-type metadata such as a sanitized `credentialType`, `idType`, or VC `type` value that identifies a resident MobileID.
 
 ## Output
 
@@ -116,6 +116,7 @@ The adapter fails closed for:
 - upstream HTTP status outside 2xx
 - upstream `result=false`
 - expired, canceled, pending, or unsupported transaction status
+- requested `id_type="resident"` without corroborating upstream credential-type evidence
 
 It does not fall back to `mock_verify_mobile_id` when `live_verify_mobile_id` is explicitly selected.
 
