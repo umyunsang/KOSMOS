@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 cask "ummaya" do
-  version "0.1.11"
-  sha256 "8b749cf37e089b5be43e08e838bb7c3d9978c3cf0a10e1e35b3f6a4577fd5823"
+  version "0.1.12"
+  sha256 "0e5ab8132dba6958c4ca5431cce75b73dcea61ca08fceceb3736df5f0349b787"
 
   url "https://registry.npmjs.org/ummaya/-/ummaya-#{version}.tgz",
       verified: "registry.npmjs.org/ummaya/"
