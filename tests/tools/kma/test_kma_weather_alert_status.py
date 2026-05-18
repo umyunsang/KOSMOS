@@ -433,3 +433,33 @@ class TestRegister:
             }
         )
         assert normalized.kind == "collection"
+
+    @pytest.mark.asyncio
+    async def test_dispatch_accepts_registered_lookup_collection_envelope(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Legacy direct dispatch accepts the registered find adapter envelope."""
+        from ummaya.tools.executor import ToolExecutor
+        from ummaya.tools.registry import ToolRegistry
+
+        async def fake_call(inp: KmaWeatherAlertStatusInput) -> dict[str, object]:
+            return {"total_count": 1, "warnings": [{"stn_id": "108", "tm_fc": "202605181000"}]}
+
+        monkeypatch.setattr(alert_module, "_call", fake_call)
+        registry = ToolRegistry()
+        executor = ToolExecutor(registry)
+        register(registry, executor)
+
+        result = await executor.dispatch(
+            "kma_weather_alert_status",
+            json.dumps({"stn_id": "108"}),
+            tool_call_id="alert-direct-dispatch",
+        )
+
+        assert result.success is True
+        assert result.error_type is None
+        assert result.data is not None
+        assert result.data["kind"] == "collection"
+        assert result.data["items"] == [{"stn_id": "108", "tm_fc": "202605181000"}]
+        assert result.data["total_count"] == 1
+        assert result.data["meta"]["source"] == "kma_weather_alert_status"

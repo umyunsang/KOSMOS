@@ -350,3 +350,30 @@ class TestRegister:
             }
         )
         assert normalized.kind == "record"
+
+    @pytest.mark.asyncio
+    async def test_dispatch_accepts_registered_lookup_record_envelope(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Legacy direct dispatch accepts the registered find adapter envelope."""
+
+        async def fake_call(params: KmaUltraShortTermForecastInput) -> dict[str, object]:
+            return {"total_count": 0, "items": []}
+
+        monkeypatch.setattr(ultra_module, "_call", fake_call)
+        registry = ToolRegistry()
+        executor = ToolExecutor(registry)
+        register(registry, executor)
+
+        result = await executor.dispatch(
+            "kma_ultra_short_term_forecast",
+            json.dumps({"base_date": "20260414", "base_time": "0830", "nx": 61, "ny": 126}),
+            tool_call_id="forecast-direct-dispatch",
+        )
+
+        assert result.success is True
+        assert result.error_type is None
+        assert result.data is not None
+        assert result.data["kind"] == "record"
+        assert result.data["item"] == {"total_count": 0, "items": []}
+        assert result.data["meta"]["source"] == "kma_ultra_short_term_forecast"
