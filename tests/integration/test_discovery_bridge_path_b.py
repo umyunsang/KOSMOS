@@ -41,12 +41,12 @@ def test_b1_total_tool_count_includes_mocks(
 ) -> None:
     """Path B-1: bridge registers active non-core mock adapters into main registry.
 
-    Expected total: 68 after both verified public-data adapter waves.
+    Expected total: 70 after both verified public-data adapter waves plus KFTC OpenGiro.
     """
     r, _ = loaded_registry
     total = len(r.all_tools())
-    assert total == 68, (
-        f"Expected 68 total tools after discovery_bridge runs; got {total}. "
+    assert total == 70, (
+        f"Expected 70 total tools after discovery_bridge runs; got {total}. "
         f"Verify the bridge registered the active mock adapters."
     )
 
@@ -76,13 +76,15 @@ def test_b1_verify_mocks_in_registry(
 def test_b1_submit_mocks_in_registry(
     loaded_registry: tuple[ToolRegistry, ToolExecutor],
 ) -> None:
-    """All 5 submit mock tool_ids are registered (3 ε + 2 Spec 031)."""
+    """All 7 submit mock tool_ids are registered (3 ε + 2 Spec 031 + 2 OpenGiro)."""
     r, _ = loaded_registry
     ids = {t.id for t in r.all_tools()}
     expected = {
         "mock_submit_module_hometax_taxreturn",
         "mock_submit_module_gov24_minwon",
         "mock_submit_module_public_mydata_action",
+        "mock_kftc_opengiro_bill_send_v1",
+        "mock_kftc_opengiro_payment_send_v1",
         "mock_traffic_fine_pay_v1",
         "mock_welfare_application_submit_v1",
     }

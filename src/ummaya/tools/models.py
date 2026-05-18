@@ -62,6 +62,7 @@ Ministry = Literal[
     "MPM",  # 인사혁신처 — public job notices
     "MSS",  # 중소벤처기업부 — SME support notices
     "KSD",  # 한국예탁결제원 — securities terminology
+    "KFTC",  # 금융결제원 — financial telecommunications and clearing
     "CCOURT",  # 헌법재판소 — constitutional court publications
     "DJTC",  # 대전교통공사 — Daejeon metro
     "MOF",  # 해양수산부 — marine water quality

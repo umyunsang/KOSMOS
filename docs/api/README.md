@@ -68,6 +68,8 @@ Every adapter spec follows the seven-section template in [`specs/1637-p6-docs-sm
 | Mock — Check | `mock_verify_geumyung_injeungseo` | `check` | mock | 2 | [verify/geumyung_injeungseo.md](./verify/geumyung_injeungseo.md) | [mock_verify_geumyung_injeungseo.json](./schemas/mock_verify_geumyung_injeungseo.json) |
 | Mock — Check | `mock_verify_ganpyeon_injeung` | `check` | mock | 2 | [verify/ganpyeon_injeung.md](./verify/ganpyeon_injeung.md) | [mock_verify_ganpyeon_injeung.json](./schemas/mock_verify_ganpyeon_injeung.json) |
 | Mock — Check | `mock_verify_mydata` | `check` | mock | 2 | [verify/mydata.md](./verify/mydata.md) | [mock_verify_mydata.json](./schemas/mock_verify_mydata.json) |
+| Mock — Send | `mock_kftc_opengiro_bill_send_v1` | `send` | mock | 2 | [submit/kftc_opengiro.md](./submit/kftc_opengiro.md) | [mock_kftc_opengiro_bill_send_v1.json](./schemas/mock_kftc_opengiro_bill_send_v1.json) |
+| Mock — Send | `mock_kftc_opengiro_payment_send_v1` | `send` | mock | 2 | [submit/kftc_opengiro.md](./submit/kftc_opengiro.md) | [mock_kftc_opengiro_payment_send_v1.json](./schemas/mock_kftc_opengiro_payment_send_v1.json) |
 | Mock — Send | `mock_traffic_fine_pay_v1` | `send` | mock | 2 | [submit/traffic_fine_pay.md](./submit/traffic_fine_pay.md) | [mock_traffic_fine_pay_v1.json](./schemas/mock_traffic_fine_pay_v1.json) |
 | Mock — Send | `mock_welfare_application_submit_v1` | `send` | mock | 2 | [submit/welfare_application.md](./submit/welfare_application.md) | [mock_welfare_application_submit_v1.json](./schemas/mock_welfare_application_submit_v1.json) |
 | Geocoding | `juso_adm_cd_lookup` | `locate` | live | 1 | [locate/index.md](./locate/index.md) | [juso_adm_cd_lookup.json](./schemas/juso_adm_cd_lookup.json) |
@@ -135,10 +137,12 @@ Every adapter spec follows the seven-section template in [`specs/1637-p6-docs-sm
 | `kakao_keyword_search` | Kakao Local keyword search | live | 1 | [locate/index.md](./locate/index.md) |
 | `sgis_adm_cd_lookup` | SGIS reverse geocoding | live | 1 | [locate/index.md](./locate/index.md) |
 
-### `send` (2 entries)
+### `send` (4 entries)
 
 | tool_id | Source | Tier | Permission | Spec |
 |---|---|---|---|---|
+| `mock_kftc_opengiro_bill_send_v1` | KFTC OpenGiro bill service (mock) | mock | 2 | [submit/kftc_opengiro.md](./submit/kftc_opengiro.md) |
+| `mock_kftc_opengiro_payment_send_v1` | KFTC OpenGiro payment service (mock) | mock | 2 | [submit/kftc_opengiro.md](./submit/kftc_opengiro.md) |
 | `mock_traffic_fine_pay_v1` | data.go.kr (mock) | mock | 2 | [submit/traffic_fine_pay.md](./submit/traffic_fine_pay.md) |
 | `mock_welfare_application_submit_v1` | KFTC MyData (mock) | mock | 2 | [submit/welfare_application.md](./submit/welfare_application.md) |
 

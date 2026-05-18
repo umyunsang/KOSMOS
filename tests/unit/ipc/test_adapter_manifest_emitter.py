@@ -212,7 +212,7 @@ def test_emit_manifest_exits_78_when_no_entries() -> None:
 
 
 def test_audit4_p0_9_mock_submits_have_policy_url(caplog: pytest.LogCaptureFixture) -> None:
-    """Pre-Audit-4: 5 Mock submit adapters lacked an AdapterRealDomainPolicy
+    """Pre-Audit-4: Mock submit adapters lacked an AdapterRealDomainPolicy
     citation, dropping them from the manifest with 10 warnings on every boot.
     Post-Audit-4: each REGISTRATION carries a populated ``policy=`` block, so
     the emitter walks them cleanly and emits zero ``policy_authority_url is
@@ -232,8 +232,10 @@ def test_audit4_p0_9_mock_submits_have_policy_url(caplog: pytest.LogCaptureFixtu
     with caplog.at_level(logging.WARNING, logger="ummaya.ipc.adapter_manifest_emitter"):
         entries = _build_entries(reg, warn_on_missing=True)
 
-    # Five Mock submit adapters MUST surface with policy_authority_url populated.
+    # Mock submit adapters MUST surface with policy_authority_url populated.
     expected_mock_submits = {
+        "mock_kftc_opengiro_bill_send_v1",
+        "mock_kftc_opengiro_payment_send_v1",
         "mock_submit_module_gov24_minwon",
         "mock_submit_module_hometax_taxreturn",
         "mock_submit_module_public_mydata_action",

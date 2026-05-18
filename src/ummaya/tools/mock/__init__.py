@@ -6,6 +6,7 @@ Five mock system sub-packages (byte- or shape-mirror-able public systems):
 - barocert: developers.barocert.com SDK docs (shape mirror)
 - mydata: KFTC MyData v240930 (shape mirror, mTLS/OAuth profile)
 - npki_crypto: PyPinkSign crypto layer (PKCS#7/#12 only; portal session is OPAQUE)
+- kftc: KFTC OpenGiro public OpenAPI (fixture-backed until portal readiness)
 
 OPAQUE systems (Government 24 submission, KEC XML signature, NPKI portal
 session handshake) live in docs/scenarios/ only — no mock adapter
@@ -41,6 +42,7 @@ tool-call loop.
 # Import triggers self-registration in ummaya.primitives.submit._ADAPTER_REGISTRY.
 # APPEND ONLY — do not remove or reorder existing entries.
 import ummaya.tools.mock.data_go_kr.fines_pay  # noqa: F401, E402
+import ummaya.tools.mock.kftc.opengiro  # noqa: F401, E402
 import ummaya.tools.mock.mydata.welfare_application  # noqa: F401, E402
 
 # Epic ε #2296 T023–T025 — new delegation-aware submit adapters.
