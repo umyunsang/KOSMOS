@@ -30,7 +30,7 @@ from __future__ import annotations
 import importlib
 import logging
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
@@ -330,6 +330,8 @@ def _verify_to_govapitool(entry: dict[str, Any]) -> GovAPITool:
     """Build a GovAPITool wrapper for one check-family adapter."""
     scope_rules = str(entry.get("scope_rules", "")).strip()
     scope_clause = f"{scope_rules}\n\n" if scope_rules else ""
+    auth_type = cast(Literal["public", "api_key", "oauth"], entry.get("auth_type", "api_key"))
+    adapter_mode = cast(Literal["live", "mock"], entry.get("adapter_mode", "mock"))
     result_description = str(
         entry.get(
             "llm_result_description",
@@ -343,7 +345,7 @@ def _verify_to_govapitool(entry: dict[str, Any]) -> GovAPITool:
         ministry="UMMAYA",
         category=list(entry.get("category", ["check", "mock", "delegation"])),
         endpoint=entry["endpoint"],
-        auth_type=str(entry.get("auth_type", "api_key")),
+        auth_type=auth_type,
         input_schema=_VerifyParamsShell,
         output_schema=_OpaqueOutput,
         llm_description=(
@@ -375,7 +377,7 @@ def _verify_to_govapitool(entry: dict[str, Any]) -> GovAPITool:
         rate_limit_per_minute=int(entry.get("rate_limit_per_minute", 30)),
         is_core=False,  # Discoverable via lookup search; NOT in primary LLM tool list
         primitive="check",
-        adapter_mode=str(entry.get("adapter_mode", "mock")),
+        adapter_mode=adapter_mode,
     )
 
 
