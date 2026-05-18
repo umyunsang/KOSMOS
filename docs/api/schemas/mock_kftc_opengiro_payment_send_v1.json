@@ -1,0 +1,89 @@
+{
+  "$defs": {
+    "_OpaqueOutput": {
+      "additionalProperties": true,
+      "description": "Generic envelope wrapper for bridge-registered tools' outputs.",
+      "title": "_OpaqueOutput",
+      "type": "object"
+    }
+  },
+  "$id": "https://ummaya.example/api/schemas/mock_kftc_opengiro_payment_send_v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Typed params for the OpenGiro payment service fixture.",
+  "properties": {
+    "amount_krw": {
+      "anyOf": [
+        {
+          "maximum": 99999999,
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": 15000,
+      "description": "Payment amount in KRW. Required for payment URL creation.",
+      "title": "Amount Krw"
+    },
+    "giro_no": {
+      "default": "1234567",
+      "description": "OpenGiro giro number from the biller contract.",
+      "maxLength": 32,
+      "minLength": 4,
+      "title": "Giro No",
+      "type": "string"
+    },
+    "live_probe_requested": {
+      "default": false,
+      "description": "Opt-in live probe flag. Fixture mode is used unless this is true.",
+      "title": "Live Probe Requested",
+      "type": "boolean"
+    },
+    "operation": {
+      "default": "create_link_payment_url",
+      "description": "OpenGiro payment operation to mirror.",
+      "enum": [
+        "create_inquiry_payment_url",
+        "create_input_payment_url",
+        "create_link_payment_url",
+        "query_payment_result"
+      ],
+      "title": "Operation",
+      "type": "string"
+    },
+    "payer_reference": {
+      "default": "MOCK-PAYER",
+      "description": "Sanitized payer reference for fixture correlation.",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Payer Reference",
+      "type": "string"
+    },
+    "payment_reference": {
+      "default": "MOCK-PAY-2026-001",
+      "description": "Payment correlation reference. Fixture values may use MOCK/REJECT/EXPIRED.",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Payment Reference",
+      "type": "string"
+    },
+    "redirect_return_url": {
+      "anyOf": [
+        {
+          "maxLength": 512,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Operator-approved return URL for browser redirect fixtures.",
+      "title": "Redirect Return Url"
+    }
+  },
+  "title": "mock_kftc_opengiro_payment_send_v1",
+  "type": "object"
+}

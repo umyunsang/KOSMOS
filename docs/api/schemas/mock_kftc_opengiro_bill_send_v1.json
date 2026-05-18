@@ -1,0 +1,88 @@
+{
+  "$defs": {
+    "_OpaqueOutput": {
+      "additionalProperties": true,
+      "description": "Generic envelope wrapper for bridge-registered tools' outputs.",
+      "title": "_OpaqueOutput",
+      "type": "object"
+    }
+  },
+  "$id": "https://ummaya.example/api/schemas/mock_kftc_opengiro_bill_send_v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Typed params for the OpenGiro bill service fixture.",
+  "properties": {
+    "amount_krw": {
+      "anyOf": [
+        {
+          "maximum": 99999999,
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": 15000,
+      "description": "Bill amount in KRW. Required for create_bill.",
+      "title": "Amount Krw"
+    },
+    "bill_reference": {
+      "default": "MOCK-BILL-2026-001",
+      "description": "Biller-side bill reference. Fixture values may use MOCK/REJECT/EXPIRED.",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Bill Reference",
+      "type": "string"
+    },
+    "due_date": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": "2026-06-30",
+      "description": "Bill due date. Required for create_bill.",
+      "title": "Due Date"
+    },
+    "giro_no": {
+      "default": "1234567",
+      "description": "OpenGiro giro number from the biller contract.",
+      "maxLength": 32,
+      "minLength": 4,
+      "title": "Giro No",
+      "type": "string"
+    },
+    "live_probe_requested": {
+      "default": false,
+      "description": "Opt-in live probe flag. Fixture mode is used unless this is true.",
+      "title": "Live Probe Requested",
+      "type": "boolean"
+    },
+    "operation": {
+      "default": "create_bill",
+      "description": "OpenGiro bill operation to mirror.",
+      "enum": [
+        "create_bill",
+        "cancel_bill",
+        "check_payment_status"
+      ],
+      "title": "Operation",
+      "type": "string"
+    },
+    "payer_reference": {
+      "default": "MOCK-PAYER",
+      "description": "Sanitized payer reference for fixture correlation.",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Payer Reference",
+      "type": "string"
+    }
+  },
+  "title": "mock_kftc_opengiro_bill_send_v1",
+  "type": "object"
+}

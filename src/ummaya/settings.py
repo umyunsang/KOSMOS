@@ -55,6 +55,31 @@ class UmmayaSettings(BaseSettings):
     data_go_kr_api_key: str = Field(default="")
     """공공데이터포털 통합 API 키, shared by KOROAD / KMA / HIRA / NMC / NFA / MOHW."""
 
+    # --- KFTC OpenGiro (fixture-backed until operator live readiness is proven) ---
+    kftc_opengiro_service_enabled: bool = Field(default=False)
+    """KFTC OpenGiro service application state (UMMAYA_KFTC_OPENGIRO_SERVICE_ENABLED)."""
+
+    kftc_opengiro_callback_url: str = Field(default="")
+    """Operator-approved KFTC Callback URL (UMMAYA_KFTC_OPENGIRO_CALLBACK_URL)."""
+
+    kftc_opengiro_api_key_registered: bool = Field(default=False)
+    """Whether OpenGiro bill/payment APIs are registered to the API Key."""
+
+    kftc_opengiro_client_id: str = Field(default="")
+    """KFTC developer portal Client ID. Never log or commit its paired secret."""
+
+    kftc_opengiro_client_secret: str = Field(default="")
+    """KFTC developer portal Client Secret. Never print, log, or commit this value."""
+
+    kftc_opengiro_access_token: str = Field(default="")
+    """Short-lived KFTC access token for future live probes. Empty by default."""
+
+    kftc_opengiro_documents_accessible: bool = Field(default=False)
+    """Whether gated KFTC OpenGiro documents are accessible to the operator."""
+
+    kftc_opengiro_live_probe_enabled: bool = Field(default=False)
+    """Explicit opt-in for future live KFTC probes. Default false keeps CI fixture-only."""
+
     # --- Live adapter gateway (release CLI path) ---
     live_adapter_mode: Literal["auto", "proxy", "direct"] = Field(default="auto")
     """Live adapter route (UMMAYA_LIVE_ADAPTER_MODE).

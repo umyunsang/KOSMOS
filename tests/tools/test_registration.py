@@ -38,10 +38,11 @@ class TestToolRegistration:
         # Spec #2797 verified public-data wave: + 14 direct-curl verified
         # data.go.kr/LINK adapters = 52.
         # Spec #2798 live expansion: + 16 approved data.go.kr adapters = 68.
+        # Spec #2799 KFTC OpenGiro: + 2 fixture-backed send adapters = 70.
         # is_core=False so the LLM's primary tool list stays at active
         # primitives + lookup-class; these participate in
         # lookup(mode="search") BM25 corpus only.
-        assert len(registry) == 68
+        assert len(registry) == 70
 
     def test_tool_ids_present(self) -> None:
         """Each expected tool_id is in the registry.
@@ -107,6 +108,9 @@ class TestToolRegistration:
             "ccourt_publication_documents",
             "moj_stay_person_counter",
             "msit_business_announcement_lookup",
+            # Spec #2799 KFTC OpenGiro send adapters
+            "mock_kftc_opengiro_bill_send_v1",
+            "mock_kftc_opengiro_payment_send_v1",
         }
         for tool_id in expected:
             assert tool_id in registry, f"{tool_id} not found in registry"

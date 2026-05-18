@@ -3,7 +3,7 @@
 
 Parameterised over active mock adapter IDs:
   - 10 verify families  (ummaya.primitives.verify._VERIFY_ADAPTERS)
-  - 5  submit adapters  (ummaya.primitives.submit._ADAPTER_REGISTRY)
+  - 7  submit adapters  (ummaya.primitives.submit._ADAPTER_REGISTRY)
   - 2  lookup tools     (main ToolRegistry, adapter_mode='mock')
 
 Each adapter is invoked with minimal synthetic input and the six transparency
@@ -126,7 +126,7 @@ def test_verify_adapter_carries_six_transparency_fields(family: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Submit surface — 5 adapters
+# Submit surface — 7 adapters
 # ---------------------------------------------------------------------------
 
 # Adapters that require a DelegationContext in params (new delegation-aware mocks)
@@ -168,6 +168,25 @@ _DELEGATION_SUBMIT_CASES: list[tuple[str, str, dict[str, Any]]] = [
 
 # Adapters that do NOT require a DelegationContext (existing pre-delegation mocks)
 _NODELEGATION_SUBMIT_CASES: list[tuple[str, dict[str, Any]]] = [
+    (
+        "mock_kftc_opengiro_bill_send_v1",
+        {
+            "operation": "create_bill",
+            "giro_no": "1234567",
+            "bill_reference": "MOCK-BILL-SCAN-001",
+            "amount_krw": 15_000,
+            "due_date": "2026-06-30",
+        },
+    ),
+    (
+        "mock_kftc_opengiro_payment_send_v1",
+        {
+            "operation": "create_link_payment_url",
+            "giro_no": "1234567",
+            "payment_reference": "MOCK-PAY-SCAN-001",
+            "amount_krw": 15_000,
+        },
+    ),
     (
         "mock_traffic_fine_pay_v1",
         {"fine_reference": "FINE-SCAN-001", "payment_method": "card"},
@@ -324,10 +343,10 @@ def _all_mock_adapter_ids() -> list[str]:
     )
 
 
-def test_canonical_mock_adapter_count_is_17() -> None:
-    """Guard: canonical active mock adapter list must total exactly 17 entries."""
+def test_canonical_mock_adapter_count_is_19() -> None:
+    """Guard: canonical active mock adapter list must total exactly 19 entries."""
     ids = _all_mock_adapter_ids()
-    assert len(ids) == 17, f"Expected 17 canonical Mock adapter IDs, got {len(ids)}. IDs: {ids}"
+    assert len(ids) == 19, f"Expected 19 canonical Mock adapter IDs, got {len(ids)}. IDs: {ids}"
     assert len(set(ids)) == len(ids), (
         "Duplicate adapter IDs detected in canonical list — each adapter must "
         f"appear exactly once. Duplicates: "

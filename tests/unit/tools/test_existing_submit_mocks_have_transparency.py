@@ -4,6 +4,8 @@
 Covers:
 - mock_traffic_fine_pay_v1 (data_go_kr.fines_pay)
 - mock_welfare_application_submit_v1 (mydata.welfare_application)
+- mock_kftc_opengiro_bill_send_v1 (kftc.opengiro)
+- mock_kftc_opengiro_payment_send_v1 (kftc.opengiro)
 
 Each is retrofitted via stamp_mock_response — this test asserts the six fields
 are present and non-empty in adapter_receipt after a successful invocation.
@@ -29,6 +31,25 @@ _TRANSPARENCY_FIELDS = (
 # ---------------------------------------------------------------------------
 
 _SUBMIT_ADAPTER_CASES = [
+    (
+        "mock_kftc_opengiro_bill_send_v1",
+        {
+            "operation": "create_bill",
+            "giro_no": "1234567",
+            "bill_reference": "MOCK-BILL-TRANSPARENCY",
+            "amount_krw": 15_000,
+            "due_date": "2026-06-30",
+        },
+    ),
+    (
+        "mock_kftc_opengiro_payment_send_v1",
+        {
+            "operation": "create_link_payment_url",
+            "giro_no": "1234567",
+            "payment_reference": "MOCK-PAY-TRANSPARENCY",
+            "amount_krw": 15_000,
+        },
+    ),
     (
         "mock_traffic_fine_pay_v1",
         {"fine_reference": "FINE-2026-001", "payment_method": "card"},
@@ -61,6 +82,7 @@ async def test_existing_submit_mock_has_six_transparency_fields(
     """
     # Ensure mock modules are imported (they self-register on import)
     import ummaya.tools.mock.data_go_kr.fines_pay  # noqa: F401
+    import ummaya.tools.mock.kftc.opengiro  # noqa: F401
     import ummaya.tools.mock.mydata.welfare_application  # noqa: F401
     from ummaya.primitives.submit import _ADAPTER_REGISTRY
 

@@ -2,9 +2,9 @@
 """T035 — Registry count breakdown assertion (SC-003).
 
 Boots the registry and asserts the active count breakdown from spec.md SC-003:
-  - Main ToolRegistry: 68 entries
+  - Main ToolRegistry: 70 entries
   - ummaya.primitives.verify._VERIFY_ADAPTERS: 10 families
-  - ummaya.primitives.submit._ADAPTER_REGISTRY: 5 families
+  - ummaya.primitives.submit._ADAPTER_REGISTRY: 7 families
 
 Test FAILS if any count is off-by-one.
 
@@ -16,7 +16,7 @@ do NOT silently adjust the expected values.
 from __future__ import annotations
 
 # ---------------------------------------------------------------------------
-# Main ToolRegistry count — 68 total
+# Main ToolRegistry count — 70 total
 # ---------------------------------------------------------------------------
 # Epic η #2298 — extended from 16 to 18 by adding `check` / `send`
 # to mvp_surface as `is_core=True` GovAPITool entries (FR-021).
@@ -30,7 +30,8 @@ from __future__ import annotations
 #     simple_auth,any_id_sso} + mock_verify_{gongdong,geumyung,ganpyeon,
 #     mobile_id,mydata}_*)
 #   - 5 submit wrappers (mock_submit_module_{hometax_taxreturn,gov24_minwon,
-#     public_mydata_action} + mock_traffic_fine_pay_v1 + mock_welfare_application_submit_v1)
+#     public_mydata_action} + mock_traffic_fine_pay_v1 + mock_welfare_application_submit_v1);
+#     Spec #2799 adds 2 OpenGiro submit wrappers, bringing wrapped submit tools to 7.
 # These wrappers are registered with is_core=False so the LLM's primary tool list
 # stays at active primitives + find-class Live; they participate in find(mode="search")
 # BM25 corpus so verify/submit candidates surface for citizen queries
@@ -42,7 +43,9 @@ from __future__ import annotations
 # verified public-data adapters under src/ummaya/tools/verified_data_go_kr/.
 # Spec #2798 — extended from 52 to 68 by registering sixteen additional
 # approved live public-data adapters from the 2026-05-16 direct evidence batch.
-_EXPECTED_MAIN_REGISTRY_COUNT = 68
+# Spec #2799 — extended from 68 to 70 by registering two fixture-backed KFTC
+# OpenGiro send adapters.
+_EXPECTED_MAIN_REGISTRY_COUNT = 70
 
 _EXPECTED_MAIN_REGISTRY_BREAKDOWN = {
     "live_adapters": 42,  # 12 existing Live + 30 verified public-data adapters
@@ -109,7 +112,7 @@ _EXPECTED_LOOKUP_MOCK_IDS = frozenset(
 
 
 def test_main_registry_total_count() -> None:
-    """Main ToolRegistry must have exactly 68 entries after register_all_tools()."""
+    """Main ToolRegistry must have exactly 70 entries after register_all_tools()."""
     import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
     from ummaya.tools.executor import ToolExecutor
     from ummaya.tools.register_all import register_all_tools
@@ -256,16 +259,19 @@ def test_verify_digital_onepass_not_in_registry() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Submit sub-registry count — 5 adapters
+# Submit sub-registry count — 7 adapters
 # ---------------------------------------------------------------------------
 
-_EXPECTED_SUBMIT_COUNT = 5
+_EXPECTED_SUBMIT_COUNT = 7
 
 _EXPECTED_SUBMIT_IDS = frozenset(
     {
         # 2 existing (retrofitted, pre-delegation)
         "mock_traffic_fine_pay_v1",
         "mock_welfare_application_submit_v1",
+        # 2 KFTC OpenGiro fixture-backed send adapters
+        "mock_kftc_opengiro_bill_send_v1",
+        "mock_kftc_opengiro_payment_send_v1",
         # 3 new delegation-aware (Epic ε)
         "mock_submit_module_hometax_taxreturn",
         "mock_submit_module_gov24_minwon",
@@ -275,7 +281,7 @@ _EXPECTED_SUBMIT_IDS = frozenset(
 
 
 def test_submit_adapter_registry_count() -> None:
-    """ummaya.primitives.submit._ADAPTER_REGISTRY must have exactly 5 entries."""
+    """ummaya.primitives.submit._ADAPTER_REGISTRY must have exactly 7 entries."""
     import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
     from ummaya.primitives.submit import _ADAPTER_REGISTRY
 
@@ -288,7 +294,7 @@ def test_submit_adapter_registry_count() -> None:
 
 
 def test_submit_adapter_registry_ids() -> None:
-    """All 5 expected submit adapter IDs must be present in _ADAPTER_REGISTRY."""
+    """All 7 expected submit adapter IDs must be present in _ADAPTER_REGISTRY."""
     import ummaya.tools.mock  # noqa: F401 — trigger side-effect registration
     from ummaya.primitives.submit import _ADAPTER_REGISTRY
 
@@ -340,14 +346,16 @@ def test_all_active_surface_counts_match_canonical() -> None:
         # Epic ζ #2297 path B (live smoke 2026-04-30) — main_registry extended
         # from 18 to 33 by discovery_bridge bridging 15 non-core mock adapters
         # (10 verify + 5 submit family wrappers) into the BM25
-        # corpus so find(mode="search") surfaces them. is_core=False so the
+        # corpus so find(mode="search") surfaces them. Spec #2799 adds two KFTC
+        # OpenGiro send wrappers, bringing the main ToolRegistry to 70 and the
+        # submit registry to 7. is_core=False so the
         # primary LLM tool list stays at active primitives + find-class Live.
         # Locate-provider adapters add five first-class registry entries.
         # Spec #2798 adds sixteen approved live data.go.kr adapters, bringing
         # the main ToolRegistry from 52 to 68.
-        "main_registry": 68,
+        "main_registry": 70,
         "verify_families": 10,
-        "submit_adapters": 5,
+        "submit_adapters": 7,
     }
 
     failures = []
