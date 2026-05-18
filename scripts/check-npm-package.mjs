@@ -21,6 +21,87 @@ const maxEntries = Number(process.env.UMMAYA_NPM_MAX_ENTRIES ?? 2_700)
 const files = pack.files.map((entry) => entry.path)
 const fileSet = new Set(files)
 
+function readJsonVersion(path) {
+  return JSON.parse(readFileSync(path, 'utf8')).version
+}
+
+function readTomlTableVersion(path, tableName) {
+  const text = readFileSync(path, 'utf8')
+  const tableHeader = `[${tableName}]`
+  const start = text.indexOf(tableHeader)
+  if (start === -1) {
+    throw new Error(`${path} missing ${tableHeader}`)
+  }
+  const rest = text.slice(start + tableHeader.length)
+  const nextTable = rest.search(/\n\[/)
+  const section = nextTable === -1 ? rest : rest.slice(0, nextTable)
+  const match = section.match(/^version\s*=\s*"([^"]+)"\s*$/m)
+  if (!match) {
+    throw new Error(`${path} ${tableHeader} missing version`)
+  }
+  return match[1]
+}
+
+function readHomebrewCaskVersion(path) {
+  const text = readFileSync(path, 'utf8')
+  const match = text.match(/^\s*version\s+"([^"]+)"\s*$/m)
+  if (!match) {
+    throw new Error(`${path} missing cask version`)
+  }
+  return match[1]
+}
+
+function readHomebrewCaskSha256(path) {
+  const text = readFileSync(path, 'utf8')
+  const match = text.match(/^\s*sha256\s+"([^"]+)"\s*$/m)
+  if (!match) {
+    throw new Error(`${path} missing cask sha256`)
+  }
+  return match[1]
+}
+
+function assertSameVersion(label, actual, expected) {
+  if (actual !== expected) {
+    throw new Error(`${label} version ${actual} does not match package.json ${expected}`)
+  }
+}
+
+const rootPackageVersion = readJsonVersion('package.json')
+assertSameVersion('npm pack report', pack.version, rootPackageVersion)
+assertSameVersion('tui/package.json', readJsonVersion('tui/package.json'), rootPackageVersion)
+assertSameVersion(
+  'pyproject.toml [project]',
+  readTomlTableVersion('pyproject.toml', 'project'),
+  rootPackageVersion,
+)
+assertSameVersion(
+  'pyproject.toml [tool.commitizen]',
+  readTomlTableVersion('pyproject.toml', 'tool.commitizen'),
+  rootPackageVersion,
+)
+
+const npmShrinkwrap = JSON.parse(readFileSync('npm-shrinkwrap.json', 'utf8'))
+assertSameVersion('npm-shrinkwrap.json', npmShrinkwrap.version, rootPackageVersion)
+assertSameVersion(
+  'npm-shrinkwrap.json packages[""]',
+  npmShrinkwrap.packages?.['']?.version,
+  rootPackageVersion,
+)
+
+const packageLock = JSON.parse(readFileSync('package-lock.json', 'utf8'))
+assertSameVersion('package-lock.json', packageLock.version, rootPackageVersion)
+assertSameVersion(
+  'package-lock.json packages[""]',
+  packageLock.packages?.['']?.version,
+  rootPackageVersion,
+)
+
+const caskSha256 = readHomebrewCaskSha256('Casks/ummaya.rb')
+assertSameVersion('Casks/ummaya.rb', readHomebrewCaskVersion('Casks/ummaya.rb'), rootPackageVersion)
+if (!/^[0-9a-f]{64}$/.test(caskSha256)) {
+  throw new Error(`Casks/ummaya.rb sha256 is not a 64-character lowercase hex digest`)
+}
+
 const required = [
   'bin/ummaya',
   'package.json',
