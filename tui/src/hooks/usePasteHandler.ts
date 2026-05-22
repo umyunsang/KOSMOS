@@ -54,6 +54,13 @@ function canSubmitFastPaste(text: string): boolean {
   )
 }
 
+function containsImageFilePath(text: string): boolean {
+  return text
+    .split(/ (?=\/|[A-Za-z]:\\)/)
+    .flatMap(part => part.split('\n'))
+    .some(line => isImageFilePath(line.trim()))
+}
+
 type PasteHandlerProps = {
   onPaste?: (text: string) => void
   onInput: (input: string, key: Key) => void
@@ -279,10 +286,7 @@ export function usePasteHandler({
     // When dragging multiple images, they may come as newline-separated or
     // space-separated paths. Split on spaces preceding absolute paths:
     // - Unix: ` /` - Windows: ` C:\` etc.
-    const hasImageFilePath = input
-      .split(/ (?=\/|[A-Za-z]:\\)/)
-      .flatMap(part => part.split('\n'))
-      .some(line => isImageFilePath(line.trim()))
+    const hasImageFilePath = containsImageFilePath(input)
 
     // Handle empty paste (clipboard image on macOS)
     // When the user pastes an image with Cmd+V, the terminal sends an empty
@@ -303,6 +307,13 @@ export function usePasteHandler({
       !isFromPaste
     ) {
       const pastedText = normalizePasteChunks(pasteChunksRef.current)
+      if (
+        !canSubmitFastPaste(pastedText) ||
+        (containsImageFilePath(pastedText) && onImagePaste)
+      ) {
+        return
+      }
+
       if (pasteTimeoutRef.current) {
         clearTimeout(pasteTimeoutRef.current)
       }
@@ -312,14 +323,7 @@ export function usePasteHandler({
       setPasteState({ chunks: [], timeoutId: null })
       setIsPasting(false)
 
-      if (canSubmitFastPaste(pastedText)) {
-        onInput(`${pastedText}\r`, TEXT_INPUT_KEY)
-        return
-      }
-
-      if (onPaste) {
-        onPaste(pastedText)
-      }
+      onInput(`${pastedText}\r`, TEXT_INPUT_KEY)
       return
     }
 

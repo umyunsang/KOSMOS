@@ -28,15 +28,21 @@ function keyEvents(input: string): InputEvent[] {
 type HarnessProps = {
   onInput: (input: string, key: Key) => void
   onPaste: (text: string) => void
+  onImagePaste?: () => void
   onReady: (send: (event: InputEvent) => void) => void
 }
 
 function PasteHandlerHarness({
   onInput,
   onPaste,
+  onImagePaste,
   onReady,
 }: HarnessProps): React.ReactElement {
-  const { wrappedOnInput } = usePasteHandler({ onInput, onPaste })
+  const { wrappedOnInput } = usePasteHandler({
+    onInput,
+    onPaste,
+    onImagePaste,
+  })
 
   React.useEffect(() => {
     onReady((event: InputEvent) => {
@@ -73,6 +79,37 @@ describe('usePasteHandler paste + Enter submission', () => {
     expect(onInput.mock.calls[0]?.[0]).toBe('/login\r')
     expect(onInput.mock.calls[0]?.[1].return).toBe(false)
     expect(onPaste).not.toHaveBeenCalled()
+
+    unmount()
+  })
+
+  test('lets pasted image paths complete through the paste pipeline when Enter follows', async () => {
+    const onInput = mock((_: string, __: Key) => {})
+    const onPaste = mock((_: string) => {})
+    const onImagePaste = mock(() => {})
+    let send: ((event: InputEvent) => void) | null = null
+
+    const { unmount } = render(
+      <PasteHandlerHarness
+        onInput={onInput}
+        onPaste={onPaste}
+        onImagePaste={onImagePaste}
+        onReady={nextSend => {
+          send = nextSend
+        }}
+      />,
+    )
+    await tick()
+
+    for (const event of keyEvents(
+      '\x1b[200~/tmp/ummaya-paste-smoke.png\x1b[201~\r',
+    )) {
+      send?.(event)
+    }
+    await tick(250)
+
+    expect(onInput).not.toHaveBeenCalled()
+    expect(onPaste).toHaveBeenCalledWith('/tmp/ummaya-paste-smoke.png')
 
     unmount()
   })
