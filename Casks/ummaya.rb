@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 cask "ummaya" do
-  version "0.1.12"
-  sha256 "9e5c3d6ad0d1eb92e021a478656dc1fdf293636ad98a195c73c74b8b0111f40c"
+  version "0.1.13"
+  sha256 "710b48a8f311d98f3a25c886aeefd709789c7d4fe5c5cd7999ec2f43f7b1296c"
 
   url "https://registry.npmjs.org/ummaya/-/ummaya-#{version}.tgz",
       verified: "registry.npmjs.org/ummaya/"
@@ -13,12 +13,14 @@ cask "ummaya" do
   depends_on formula: "oven-sh/bun/bun"
   depends_on formula: "uv"
 
+  binary "ummaya"
+
   preflight do
     install_args = ["install", "--production", "--cwd", "#{staged_path}/package"]
-    if File.exist?("#{staged_path}/package/bun.lock")
-      install_args << "--frozen-lockfile"
+    install_args << if File.exist?("#{staged_path}/package/bun.lock")
+      "--frozen-lockfile"
     else
-      install_args << "--no-save"
+      "--no-save"
     end
 
     system_command "#{HOMEBREW_PREFIX}/opt/bun/bin/bun",
@@ -32,8 +34,6 @@ cask "ummaya" do
     SH
     FileUtils.chmod 0755, wrapper
   end
-
-  binary "ummaya"
 
   zap trash: "~/.ummaya"
 end
