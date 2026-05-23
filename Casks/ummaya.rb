@@ -3,9 +3,9 @@
 cask "ummaya" do
   arch arm: "arm64", intel: "x64"
 
-  version "0.1.17"
-  sha256 arm:   "ded4fa8b48f8d6d4ad3e48b006b4cb6199cb5e2d50c1d23cb0f772c0deeba70a",
-         intel: "4e18032520490fe0452b24574f1d488a2674bc7dcec64dbb5c65be28c590f25f"
+  version "0.1.18"
+  sha256 arm:   "85da24e2240f0fcbf7e4c6098f36db74bb7e4dcaebe138237644167131c4ef0f",
+         intel: "23793a77722904e368cfe241c3d8039b382296c65e3482981efcfa4d664d1f15"
 
   url "https://ummaya-docs.pages.dev/downloads/homebrew/v#{version}/ummaya-#{version}-macos-#{arch}.tar.gz"
   name "UMMAYA"
@@ -23,12 +23,6 @@ cask "ummaya" do
   depends_on formula: "uv"
 
   binary "ummaya"
-
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-dr", "com.apple.quarantine", staged_path.to_s],
-                   sudo: false
-  end
 
   zap trash: "~/.ummaya"
 end
