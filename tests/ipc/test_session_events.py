@@ -215,7 +215,11 @@ async def test_save_emits_ack(
     proc.stdin.write(_session_event(new_sid, "save"))
     await proc.stdin.drain()
 
-    save_parsed = await _read_session_event(proc.stdout, event="save", timeout=_SESSION_EVENT_TIMEOUT)
+    save_parsed = await _read_session_event(
+        proc.stdout,
+        event="save",
+        timeout=_SESSION_EVENT_TIMEOUT,
+    )
     assert save_parsed is not None, "Expected ack frame for session_event save"
     assert save_parsed.payload.get("session_id"), "save ack must include session_id"
 
@@ -241,7 +245,11 @@ async def test_list_returns_sessions(
     proc.stdin.write(_session_event(sid, "list"))
     await proc.stdin.drain()
 
-    list_parsed = await _read_session_event(proc.stdout, event="list", timeout=_SESSION_EVENT_TIMEOUT)
+    list_parsed = await _read_session_event(
+        proc.stdout,
+        event="list",
+        timeout=_SESSION_EVENT_TIMEOUT,
+    )
     assert list_parsed is not None, "Expected a response frame for session_event list"
     sessions = list_parsed.payload.get("sessions")
     assert isinstance(sessions, list) and len(sessions) > 0, "sessions must be non-empty"
@@ -275,7 +283,11 @@ async def test_resume_emits_load_frame(
     proc.stdin.write(_session_event(sid, "resume", {"id": new_sid}))
     await proc.stdin.drain()
 
-    load_parsed = await _read_session_event(proc.stdout, event="load", timeout=_SESSION_EVENT_TIMEOUT)
+    load_parsed = await _read_session_event(
+        proc.stdout,
+        event="load",
+        timeout=_SESSION_EVENT_TIMEOUT,
+    )
     assert load_parsed is not None, "Expected a load frame for session_event resume"
     payload = load_parsed.payload
     assert payload.get("session_id") == new_sid, "load frame must echo session_id"
@@ -296,7 +308,11 @@ async def test_exit_event_shuts_down(
     proc.stdin.close()
 
     assert proc.stdout is not None
-    exit_parsed = await _read_session_event(proc.stdout, event="exit", timeout=_SESSION_EVENT_TIMEOUT)
+    exit_parsed = await _read_session_event(
+        proc.stdout,
+        event="exit",
+        timeout=_SESSION_EVENT_TIMEOUT,
+    )
     assert exit_parsed is not None, "Expected an exit frame response"
     # The loop always emits a final session_event exit frame on shutdown.
 
