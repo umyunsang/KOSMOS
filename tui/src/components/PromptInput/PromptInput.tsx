@@ -80,7 +80,7 @@ import type { ProcessUserInputContext } from '../../utils/processUserInput/proce
 import { editPromptInEditor } from '../../utils/promptEditor.js';
 import { hasAutoModeOptIn } from '../../utils/settings/settings.js';
 import { findBtwTriggerPositions } from '../../utils/sideQuestion.js';
-import { findSlashCommandPositions } from '../../utils/suggestions/commandSuggestions.js';
+import { findSlashCommandPositions, isExactSlashCommandInput } from '../../utils/suggestions/commandSuggestions.js';
 import { findSlackChannelPositions, getKnownChannelsVersion, hasSlackMcpServer, subscribeKnownChannels } from '../../utils/suggestions/slackChannelSuggestions.js';
 import { isInProcessEnabled } from '../../utils/swarm/backends/registry.js';
 import { syncTeammateMode } from '../../utils/swarm/teamHelpers.js';
@@ -761,7 +761,7 @@ function PromptInput({
     if (feature('ULTRAPLAN') && ultraplanTriggers.length) {
       addNotification({
         key: 'ultraplan-active',
-        text: 'This prompt will launch an ultraplan session in Claude Code on the web',
+        text: 'This prompt will launch an ultraplan session in UMMAYA on the web',
         priority: 'immediate',
         timeoutMs: 5000
       });
@@ -773,7 +773,7 @@ function PromptInput({
     if (isUltrareviewEnabled() && ultrareviewTriggers.length) {
       addNotification({
         key: 'ultrareview-active',
-        text: 'Run /ultrareview after Claude finishes to review these changes in the cloud',
+        text: 'Run /ultrareview after UMMAYA finishes to review these changes in the cloud',
         priority: 'immediate',
         timeoutMs: 5000
       });
@@ -982,10 +982,6 @@ function PromptInput({
     setSuggestionsStateRaw(prev => typeof updater === 'function' ? updater(prev) : updater);
   }, []);
   const onSubmit = useCallback(async (inputParam: string, isSubmittingSlashCommand = false) => {
-    // UMMAYA-1978 T003 diag: trace which guard swallows Enter.
-    // Set UMMAYA_TUI_LOG_LEVEL=DEBUG and the entries below appear on stderr
-    // (per tui/src/ipc/bridge.ts:_log — stderr-only, never on the frame stdout).
-    logForDebugging(`[onSubmit] enter input=${JSON.stringify(inputParam)} slashCmd=${isSubmittingSlashCommand}`);
     inputParam = inputParam.trimEnd();
 
     // Don't submit if a footer indicator is being opened. Read fresh from
@@ -995,7 +991,6 @@ function PromptInput({
     // selection (pill disappeared) doesn't swallow Enter.
     const state = store.getState();
     if (state.footerSelection && footerItems.includes(state.footerSelection)) {
-      logForDebugging(`[onSubmit] guard:footerSelection swallow (selection=${String(state.footerSelection)})`);
       return;
     }
 
@@ -1003,7 +998,6 @@ function PromptInput({
     // BaseTextInput's useInput registers before that hook (child effects fire first),
     // so without this guard Enter would double-fire and auto-submit the suggestion.
     if (state.viewSelectionMode === 'selecting-agent') {
-      logForDebugging(`[onSubmit] guard:viewSelectionMode=selecting-agent swallow`);
       return;
     }
 
@@ -1071,15 +1065,15 @@ function PromptInput({
 
     // Allow submission if there are images attached, even without text
     if (inputParam.trim() === '' && !hasImages) {
-      logForDebugging(`[onSubmit] guard:empty-input swallow`);
       return;
     }
 
     // PromptInput UX: Check if suggestions dropdown is showing
     // For directory suggestions, allow submission (Tab is used for completion)
     const hasDirectorySuggestions = suggestionsState.suggestions.length > 0 && suggestionsState.suggestions.every(s => s.description === 'directory');
-    if (suggestionsState.suggestions.length > 0 && !isSubmittingSlashCommand && !hasDirectorySuggestions) {
-      logForDebugging(`[onSubmit] guard:suggestions-showing swallow (count=${suggestionsState.suggestions.length})`);
+    const isExactSlashCommand = isExactSlashCommandInput(inputParam, commands);
+    if (suggestionsState.suggestions.length > 0 && !isSubmittingSlashCommand && !hasDirectorySuggestions && !isExactSlashCommand) {
+      logForDebugging(`[onSubmit] early return: suggestions showing (count=${suggestionsState.suggestions.length})`);
       return; // Don't submit, user needs to clear suggestions first
     }
 
@@ -1094,7 +1088,6 @@ function PromptInput({
     // Route input to viewed agent (in-process teammate or named local_agent).
     const activeAgent = getActiveAgentForInput(store.getState());
     if (activeAgent.type !== 'leader' && onAgentSubmit) {
-      logForDebugging(`[onSubmit] route:onAgentSubmit (agent.type=${activeAgent.type})`);
       logEvent('tengu_transcript_input_to_teammate', {});
       await onAgentSubmit(inputParam, activeAgent.task, {
         setCursorOffset,
@@ -1105,14 +1098,12 @@ function PromptInput({
     }
 
     // Normal leader submission
-    logForDebugging(`[onSubmit] route:onSubmitProp (normal leader)`);
     await onSubmitProp(inputParam, {
       setCursorOffset,
       clearBuffer,
       resetHistory
     });
-    logForDebugging(`[onSubmit] onSubmitProp returned`);
-  }, [promptSuggestionState, speculation, speculationSessionTimeSavedMs, teamContext, store, footerItems, suggestionsState.suggestions, onSubmitProp, onAgentSubmit, clearBuffer, resetHistory, logOutcomeAtSubmission, setAppState, markAccepted, pastedContents, removeNotification]);
+  }, [promptSuggestionState, speculation, speculationSessionTimeSavedMs, teamContext, store, footerItems, suggestionsState.suggestions, commands, onSubmitProp, onAgentSubmit, clearBuffer, resetHistory, logOutcomeAtSubmission, setAppState, markAccepted, pastedContents, removeNotification]);
   const {
     suggestions,
     selectedSuggestion,
@@ -1998,7 +1989,7 @@ function PromptInput({
     columns,
     rows
   } = useTerminalSize();
-  const textInputColumns = Math.max(1, columns - 3 - companionReservedColumns(columns, companionSpeaking));
+  const textInputColumns = columns - 3 - companionReservedColumns(columns, companionSpeaking);
 
   // POC: click-to-position-cursor. Mouse tracking is only enabled inside
   // <AlternateScreen>, so this is dormant in the normal main-screen REPL.
@@ -2274,7 +2265,7 @@ function PromptInput({
               {textInputElement}
             </Box>
           </Box>
-          <Text color={swarmBanner.bgColor}>{'─'.repeat(Math.max(0, columns))}</Text>
+          <Text color={swarmBanner.bgColor}>{'─'.repeat(columns)}</Text>
         </> : <Box flexDirection="row" alignItems="flex-start" justifyContent="flex-start" borderColor={getBorderColor()} borderStyle="round" borderLeft={false} borderRight={false} borderBottom width="100%" borderText={buildBorderText(showFastIcon ?? false, showFastIconHint, fastModeCooldown)}>
           <PromptInputModeIndicator mode={mode} isLoading={isLoading} viewingAgentName={viewingAgentName} viewingAgentColor={viewingAgentColor} />
           <Box flexGrow={1} flexShrink={1} onClick={handleInputClick}>

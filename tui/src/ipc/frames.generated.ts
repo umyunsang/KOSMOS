@@ -273,9 +273,9 @@ export type Kind3 = 'tool_call';
  */
 export type CallId = string;
 /**
- * Primitive name per Spec 031.
+ * Concrete tool name selected by the model; root primitive names remain valid for legacy transcripts.
  */
-export type Name3 = 'find' | 'locate' | 'send' | 'check';
+export type Name3 = string;
 /**
  * Opaque session identifier.
  */
@@ -1144,6 +1144,14 @@ export type PolicyAuthorityUrl = string | null;
  */
 export type SourceMode = 'live' | 'mock' | 'internal';
 /**
+ * Bilingual adapter discovery phrase copied from the backend registry. Used by the TUI concrete tool surface and tool-search metadata.
+ */
+export type SearchHint = string | null;
+/**
+ * Backend-authored model-facing adapter usage prose. This is the same description the backend exposes in OpenAI/FriendliAI function metadata.
+ */
+export type LlmDescription = string | null;
+/**
  * Lowercase hex SHA-256 of canonical-JSON-serialised entries sorted by tool_id (I3). Cheap change-detection for hot-reload (future epic).
  */
 export type ManifestHash = string;
@@ -1421,7 +1429,7 @@ export interface ToolCallFrame {
   arguments: Arguments1;
 }
 /**
- * Primitive-specific arguments; shape per Spec 031 input schemas.
+ * Tool-specific arguments. Concrete adapter calls carry adapter schema fields directly.
  */
 export interface Arguments1 {
   [k: string]: any;
@@ -1908,6 +1916,22 @@ export interface AdapterManifestEntry {
   primitive: Primitive;
   policy_authority_url?: PolicyAuthorityUrl;
   source_mode: SourceMode;
+  search_hint?: SearchHint;
+  llm_description?: LlmDescription;
+  input_schema_json?: InputSchemaJson;
+  output_schema_json?: OutputSchemaJson;
+}
+/**
+ * Full backend Pydantic JSON Schema for adapter input parameters. Credential-only fields such as authKey must be omitted by adapters.
+ */
+export interface InputSchemaJson {
+  [k: string]: any;
+}
+/**
+ * Full backend Pydantic JSON Schema for adapter output data.
+ */
+export interface OutputSchemaJson {
+  [k: string]: any;
 }
 /**
  * TUI -> backend: citizen requests revocation of a prior consent receipt.

@@ -6,11 +6,7 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
   logEvent,
 } from '../../services/analytics/index.js'
-// Anthropic API removed in P1+P2 (Spec 1633); UMMAYA routes LLM calls
-// through FriendliAI Serverless via the Python backend.
-const queryModelWithoutStreaming = async (..._args: readonly unknown[]): Promise<never> => {
-  throw new Error('Anthropic API not available in UMMAYA — Spec 1633')
-}
+import { queryModelWithoutStreaming } from '../../services/api/claude.js'
 import { getEmptyToolPermissionContext } from '../../Tool.js'
 import type { Message } from '../../types/message.js'
 import { createAbortController } from '../abortController.js'
@@ -18,11 +14,14 @@ import { count } from '../array.js'
 import { getCwd } from '../cwd.js'
 import { toError } from '../errors.js'
 import { logError } from '../log.js'
-import { extractTag, extractTextContent } from '../messageText.js'
+import {
+  createUserMessage,
+  extractTag,
+  extractTextContent,
+} from '../messages.js'
 import { getSmallFastModel } from '../model/model.js'
 import { jsonParse } from '../slowOperations.js'
 import { asSystemPrompt } from '../systemPromptType.js'
-import { createUserMessage } from '../userMessageFactories.js'
 import {
   type ApiQueryHookConfig,
   createApiQueryHook,

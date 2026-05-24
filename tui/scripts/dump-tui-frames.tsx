@@ -17,7 +17,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import React from 'react'
 import { render } from 'ink-testing-library'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../src/ink.js'
 
 import { ThemeProvider } from '../src/theme/provider'
 import { WelcomeV2 } from '../src/components/LogoV2/WelcomeV2'

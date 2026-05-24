@@ -13,7 +13,8 @@ Run:
 from __future__ import annotations
 
 import os
-from datetime import UTC, datetime
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -23,12 +24,19 @@ import pytest
 
 pytestmark = pytest.mark.live
 
-_KEY_PRESENT = bool(os.environ.get("UMMAYA_DATA_GO_KR_API_KEY"))
+_DATA_GO_KR_KEY_PRESENT = bool(os.environ.get("UMMAYA_DATA_GO_KR_API_KEY"))
+_KMA_API_HUB_KEY_PRESENT = bool(os.environ.get("UMMAYA_KMA_API_HUB_AUTH_KEY"))
+_SEOUL_TZ = ZoneInfo("Asia/Seoul")
 
 
-def _skip_if_no_key() -> None:
-    if not _KEY_PRESENT:
+def _skip_if_no_data_go_kr_key() -> None:
+    if not _DATA_GO_KR_KEY_PRESENT:
         pytest.skip("UMMAYA_DATA_GO_KR_API_KEY not set — skipping live test")
+
+
+def _skip_if_no_kma_api_hub_key() -> None:
+    if not _KMA_API_HUB_KEY_PRESENT:
+        pytest.skip("UMMAYA_KMA_API_HUB_AUTH_KEY not set — skipping live test")
 
 
 # ---------------------------------------------------------------------------
@@ -36,59 +44,44 @@ def _skip_if_no_key() -> None:
 # ---------------------------------------------------------------------------
 
 
-def _now_base_date() -> str:
-    """Return today's date as YYYYMMDD."""
-    return datetime.now(tz=UTC).strftime("%Y%m%d")
+def _kst_now() -> datetime:
+    """Return the current KST wall clock."""
+    return datetime.now(_SEOUL_TZ)
 
 
-def _now_obs_time() -> str:
-    """Return base_time for getUltraSrtNcst: previous whole hour, HHMM.
+def _now_obs_slot() -> tuple[str, str]:
+    """Return base_date/base_time for getUltraSrtNcst in KST.
 
-    Minutes >= 40: use current hour; else use previous hour.
-    Always returns HH00 (round down to :00).
+    Minutes >= 10: use current hour; else use previous hour.
+    Always returns HH00 and keeps date rollover paired with the time.
     """
-    now = datetime.now(tz=UTC)
-    # Convert UTC to KST (+9)
-    from datetime import timedelta
-
-    kst = now + timedelta(hours=9)
-    hour = kst.hour if kst.minute >= 40 else (kst.hour - 1) % 24
-    return f"{hour:02d}00"
+    kst = _kst_now()
+    slot = kst if kst.minute >= 10 else kst - timedelta(hours=1)
+    return slot.strftime("%Y%m%d"), f"{slot.hour:02d}00"
 
 
-def _now_forecast_base_time() -> str:
-    """Return valid base_time for getVilageFcst: latest announcement before now.
+def _now_forecast_slot() -> tuple[str, str]:
+    """Return base_date/base_time for getVilageFcst in KST.
 
     Valid times: 0200, 0500, 0800, 1100, 1400, 1700, 2000, 2300 (KST).
+    KMA publishes each slot approximately 10 minutes after its base time.
     """
-    from datetime import timedelta
-
     _VALID_HOURS = [2, 5, 8, 11, 14, 17, 20, 23]
-    now = datetime.now(tz=UTC) + timedelta(hours=9)  # to KST
+    now = _kst_now() - timedelta(minutes=10)
     current_hour = now.hour
-    # Find latest valid hour <= current_hour
     past_hours = [h for h in _VALID_HOURS if h <= current_hour]
     if not past_hours:
-        # Before 0200 KST — use previous day's 2300
-        hour = 23
-    else:
-        hour = past_hours[-1]
-    return f"{hour:02d}00"
+        prev_day = now - timedelta(days=1)
+        return prev_day.strftime("%Y%m%d"), "2300"
+    hour = past_hours[-1]
+    return now.strftime("%Y%m%d"), f"{hour:02d}00"
 
 
-def _ultra_short_base_time() -> str:
-    """Return base_time for getUltraSrtFcst: latest HH30 before now (KST)."""
-    from datetime import timedelta
-
-    now = datetime.now(tz=UTC) + timedelta(hours=9)  # to KST
-    # base_time is HH30, but there's also HH00 apparently; use HH30
-    # The KMA docs say every 30 minutes from 0030
-    minute = now.minute
-    if minute >= 30:
-        return f"{now.hour:02d}30"
-    else:
-        prev_hour = (now.hour - 1) % 24
-        return f"{prev_hour:02d}30"
+def _ultra_short_slot() -> tuple[str, str]:
+    """Return base_date/base_time for getUltraSrtFcst latest HH30 in KST."""
+    now = _kst_now()
+    slot = now if now.minute >= 45 else now - timedelta(hours=1)
+    return slot.strftime("%Y%m%d"), f"{slot.hour:02d}30"
 
 
 # ---------------------------------------------------------------------------
@@ -102,13 +95,14 @@ class TestKmaCurrentObservationLive:
     @pytest.mark.asyncio
     async def test_seoul_current_observation(self) -> None:
         """Seoul (nx=61, ny=126) current observation returns valid temperature."""
-        _skip_if_no_key()
+        _skip_if_no_kma_api_hub_key()
 
         from ummaya.tools.kma.kma_current_observation import KmaCurrentObservationInput, _call
 
+        base_date, base_time = _now_obs_slot()
         inp = KmaCurrentObservationInput(
-            base_date=_now_base_date(),
-            base_time=_now_obs_time(),
+            base_date=base_date,
+            base_time=base_time,
             nx=61,
             ny=126,
         )
@@ -127,14 +121,15 @@ class TestKmaCurrentObservationLive:
         NOT lat/lon.  Busan's grid is (98, 76) — passing lat(35.1)/lon(129.0) would
         fail with invalid range errors (nx 1-149, ny 1-253 check).
         """
-        _skip_if_no_key()
+        _skip_if_no_kma_api_hub_key()
 
         from ummaya.tools.kma.kma_current_observation import KmaCurrentObservationInput, _call
 
         # Busan KMA grid: nx=98, ny=76
+        base_date, base_time = _now_obs_slot()
         inp = KmaCurrentObservationInput(
-            base_date=_now_base_date(),
-            base_time=_now_obs_time(),
+            base_date=base_date,
+            base_time=base_time,
             nx=98,
             ny=76,
         )
@@ -160,13 +155,14 @@ class TestKmaShortTermForecastLive:
     @pytest.mark.asyncio
     async def test_seoul_short_term_forecast(self) -> None:
         """Seoul (nx=61, ny=126) short-term forecast returns ≥1 item."""
-        _skip_if_no_key()
+        _skip_if_no_kma_api_hub_key()
 
         from ummaya.tools.kma.kma_short_term_forecast import KmaShortTermForecastInput, _call
 
+        base_date, base_time = _now_forecast_slot()
         inp = KmaShortTermForecastInput(
-            base_date=_now_base_date(),
-            base_time=_now_forecast_base_time(),
+            base_date=base_date,
+            base_time=base_time,
             nx=61,
             ny=126,
             num_of_rows=10,
@@ -196,16 +192,17 @@ class TestKmaUltraShortTermForecastLive:
     @pytest.mark.asyncio
     async def test_seoul_ultra_short_forecast(self) -> None:
         """Seoul (nx=61, ny=126) ultra-short-term forecast returns ≥1 item."""
-        _skip_if_no_key()
+        _skip_if_no_kma_api_hub_key()
 
         from ummaya.tools.kma.kma_ultra_short_term_forecast import (
             KmaUltraShortTermForecastInput,
             _call,
         )
 
+        base_date, base_time = _ultra_short_slot()
         inp = KmaUltraShortTermForecastInput(
-            base_date=_now_base_date(),
-            base_time=_ultra_short_base_time(),
+            base_date=base_date,
+            base_time=base_time,
             nx=61,
             ny=126,
             num_of_rows=10,
@@ -229,22 +226,22 @@ class TestKmaForecastFetchLive:
     @pytest.mark.asyncio
     async def test_busan_forecast_fetch_by_latlon(self) -> None:
         """Busan by lat/lon — adapter internally converts to nx/ny."""
-        _skip_if_no_key()
+        _skip_if_no_kma_api_hub_key()
 
-        from ummaya.tools.kma.forecast_fetch import KmaForecastFetchInput, _call
+        from ummaya.tools.kma.forecast_fetch import KmaForecastFetchInput, _fetch
+        from ummaya.tools.models import LookupTimeseries
 
+        base_date, base_time = _now_forecast_slot()
         inp = KmaForecastFetchInput(
             lat=35.1796,
             lon=129.0756,
-            num_of_rows=10,
+            base_date=base_date,
+            base_time=base_time,
         )
-        result = await _call(inp)
+        result = await _fetch(inp)
 
-        assert isinstance(result, dict)
-        assert "items" in result
-        items = result["items"]
-        assert isinstance(items, list)
-        assert len(items) >= 1
+        assert isinstance(result, LookupTimeseries)
+        assert len(result.points) >= 1
 
 
 # ---------------------------------------------------------------------------
@@ -258,7 +255,7 @@ class TestKmaPreWarningLive:
     @pytest.mark.asyncio
     async def test_nationwide_pre_warning(self) -> None:
         """Nationwide pre-warning list (no stn_id) returns valid output."""
-        _skip_if_no_key()
+        _skip_if_no_data_go_kr_key()
 
         from ummaya.tools.kma.kma_pre_warning import KmaPreWarningInput, _call
 
@@ -275,7 +272,7 @@ class TestKmaPreWarningLive:
     @pytest.mark.asyncio
     async def test_seoul_pre_warning_with_stn_id(self) -> None:
         """Seoul (stn_id=108) pre-warning filtered list is valid."""
-        _skip_if_no_key()
+        _skip_if_no_data_go_kr_key()
 
         from ummaya.tools.kma.kma_pre_warning import KmaPreWarningInput, _call
 
@@ -302,7 +299,7 @@ class TestKmaWeatherAlertStatusLive:
     @pytest.mark.asyncio
     async def test_seoul_alert_status_by_stn_id(self) -> None:
         """Seoul (stn_id=108) alert status by stn_id returns valid output."""
-        _skip_if_no_key()
+        _skip_if_no_data_go_kr_key()
 
         from ummaya.tools.kma.kma_weather_alert_status import (
             KmaWeatherAlertStatusInput,
@@ -321,7 +318,7 @@ class TestKmaWeatherAlertStatusLive:
     @pytest.mark.asyncio
     async def test_jeju_alert_status_by_stn_id(self) -> None:
         """Jeju (stn_id=184) alert status returns valid output (active marine area)."""
-        _skip_if_no_key()
+        _skip_if_no_data_go_kr_key()
 
         from ummaya.tools.kma.kma_weather_alert_status import (
             KmaWeatherAlertStatusInput,

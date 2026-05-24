@@ -9,6 +9,7 @@ from datetime import UTC
 from pydantic import BaseModel
 
 from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.manifest_metadata import build_verified_llm_description
 from ummaya.tools.models import AdapterRealDomainPolicy, GovAPITool
 from ummaya.tools.registry import ToolRegistry
 from ummaya.tools.verified_data_go_kr._client import fetch_verified_output
@@ -41,7 +42,7 @@ def build_tool(spec: VerifiedAdapterSpec, input_schema: type[BaseModel]) -> GovA
         rate_limit_per_minute=20,
         adapter_mode=spec.adapter_mode,
         primitive=spec.primitive,
-        llm_description=spec.llm_description,
+        llm_description=build_verified_llm_description(spec),
         trigger_examples=spec.trigger_examples,
     )
 

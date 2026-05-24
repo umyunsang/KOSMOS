@@ -18,7 +18,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname as pathDirnameSync, join as pathJoin } from 'node:path';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput } from '../../ink.js';
 import { PDFDocument, rgb, type PDFFont } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { useTheme } from '../../theme/provider.js';

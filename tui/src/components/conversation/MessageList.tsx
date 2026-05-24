@@ -13,7 +13,7 @@
 // T120: replaced naive .map() over messageOrder with <VirtualizedList>.
 
 import React, { useCallback } from 'react'
-import { Box } from 'ink'
+import { Box } from '../../ink.js'
 import { useSessionStore } from '../../store/session-store'
 import type { ToolResult } from '../../store/session-store'
 import { StreamingMessage, UserMessage } from './StreamingMessage'

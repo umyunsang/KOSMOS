@@ -1,11 +1,12 @@
 import { c as _c } from "react/compiler-runtime";
 import { marked, type Token, type Tokens } from 'marked';
-import React, { useRef } from 'react';
+import React, { Suspense, use, useMemo, useRef } from 'react';
+import { useSettings } from '../hooks/useSettings.js';
 import { Ansi, Box, useTheme } from '../ink.js';
-import type { CliHighlight } from '../utils/cliHighlight.js';
+import { type CliHighlight, getCliHighlightPromise } from '../utils/cliHighlight.js';
 import { hashContent } from '../utils/hash.js';
 import { configureMarked, formatToken } from '../utils/markdown.js';
-import { stripPromptXMLTags } from '../utils/messageText.js';
+import { stripPromptXMLTags } from '../utils/messages.js';
 import { MarkdownTable } from './MarkdownTable.js';
 type Props = {
   children: string;
@@ -75,22 +76,49 @@ function cachedLexer(content: string): Token[] {
  * - Other content is rendered as ANSI strings via formatToken
  */
 export function Markdown(props) {
-  const $ = _c(2);
-  // UMMAYA-1633: cli-highlight is intentionally not bundled (syntax highlighting
-  // is a code-review surface that doesn't apply to citizen public-service
-  // workflows). CC's Suspense + use(promise) lazy-load path stalls in the ink
-  // react runtime when the dynamic import resolves to null synchronously,
-  // leaving assistant text invisible. Bypass the boundary entirely and always
-  // render highlight=null — code blocks render as plain ANSI text.
+  const $ = _c(4);
+  const settings = useSettings();
+  if (settings.syntaxHighlightingDisabled) {
+    let t0;
+    if ($[0] !== props) {
+      t0 = <MarkdownBody {...props} highlight={null} />;
+      $[0] = props;
+      $[1] = t0;
+    } else {
+      t0 = $[1];
+    }
+    return t0;
+  }
   let t0;
-  if ($[0] !== props) {
-    t0 = <MarkdownBody {...props} highlight={null} />;
-    $[0] = props;
-    $[1] = t0;
+  if ($[2] !== props) {
+    t0 = <Suspense fallback={<MarkdownBody {...props} highlight={null} />}><MarkdownWithHighlight {...props} /></Suspense>;
+    $[2] = props;
+    $[3] = t0;
   } else {
-    t0 = $[1];
+    t0 = $[3];
   }
   return t0;
+}
+function MarkdownWithHighlight(props) {
+  const $ = _c(4);
+  let t0;
+  if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+    t0 = getCliHighlightPromise();
+    $[0] = t0;
+  } else {
+    t0 = $[0];
+  }
+  const highlight = use(t0);
+  let t1;
+  if ($[1] !== highlight || $[2] !== props) {
+    t1 = <MarkdownBody {...props} highlight={highlight} />;
+    $[1] = highlight;
+    $[2] = props;
+    $[3] = t1;
+  } else {
+    t1 = $[3];
+  }
+  return t1;
 }
 function MarkdownBody(t0) {
   const $ = _c(7);
@@ -173,14 +201,6 @@ export function StreamingMarkdown({
   // one-time re-lex on the smaller stripped string.
   const stripped = stripPromptXMLTags(children);
   const stablePrefixRef = useRef('');
-
-  // SWAP/llm-provider(2521): hide the row entirely while the visible
-  // text is still the leading whitespace K-EXAONE often emits as its
-  // first chunk. Drawing the bare ● bullet for that single frame was
-  // the regression frame_40 of smoke-small.gif caught.
-  if (stripped.trim().length === 0) {
-    return null;
-  }
 
   // Reset if text was replaced (defensive; normally unmount handles this)
   if (!stripped.startsWith(stablePrefixRef.current)) {

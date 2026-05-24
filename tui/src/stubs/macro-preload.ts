@@ -1,30 +1,20 @@
 /// <reference types="bun-types" />
-// [P0 reconstructed · Bun MACRO shim + TTY shim + useEffectEvent polyfill]
+// [P0 reconstructed · Bun MACRO shim + TTY shim]
 // CC 2.1.88 uses `MACRO.*` build-time constants that Bun's bundler would
 // normally inline. Without a build step, those references throw
 // `ReferenceError: MACRO is not defined`. This preload script injects a
-// global `MACRO` object, a TTY detection shim, and a `useEffectEvent` fallback
-// so the module-load phase succeeds and the splash renders.
+// global `MACRO` object and a TTY detection shim so the module-load phase
+// succeeds and the splash renders.
 //
 // Referenced from `bunfig.toml` `preload = ["./src/stubs/macro-preload.ts"]`.
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-if (process.env.NODE_ENV === 'test') {
-  try {
-    const { mock } = await import('bun:test')
-    mock.module('bundle', () => ({
-      feature: () => false,
-    }))
-  } catch {
-    /* bun:test is only available in the test runner */
-  }
-}
 
 // ═══════════════════════════════════════════════════════════════════════
 // bun:bundle virtual module plugin
 // Bun's default resolver treats `bun:` as a reserved built-in namespace and
 // ignores tsconfig paths for it. We register a Bun plugin that intercepts
-// imports of `bun:bundle` at runtime and routes them to our stub file.
+// imports of `bun:bundle` at runtime and routes them to the local runtime
+// implementation when the bundler path supports plugin-time resolution.
 // ═══════════════════════════════════════════════════════════════════════
 try {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,7 +29,7 @@ try {
         ) => void
       }) {
         build.onResolve({ filter: /^bun:bundle$/ }, () => ({
-          path: new URL('./bun-bundle.ts', import.meta.url).pathname,
+          path: new URL('../runtime/bun-bundle.ts', import.meta.url).pathname,
         }))
       },
     })
@@ -102,21 +92,6 @@ try {
   }
 } catch {
   /* node:tty not available; fall through */
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// React.useEffectEvent polyfill
-// Ink's react-reconciler (v0.32) does not dispatch `useEffectEvent` through
-// the hook dispatcher, so CC callsites throw
-// `resolveDispatcher().useEffectEvent is not a function`. useCallback is
-// functionally close for the baseline — latest-closure semantics differ
-// (stale closures possible) but the splash path doesn't depend on that.
-// TODO(Epic #1633): replace with a real latest-closure ref+effect polyfill.
-// ═══════════════════════════════════════════════════════════════════════
-import React from 'react'
-if (typeof (React as any).useEffectEvent !== 'function') {
-  ;(React as any).useEffectEvent =
-    (React as any).useCallback ?? ((fn: any) => fn)
 }
 
 // ═══════════════════════════════════════════════════════════════════════

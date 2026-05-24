@@ -9,10 +9,13 @@
 // All tests use module-level clearManifestCache() to reset singleton state.
 
 import { describe, test, expect, beforeEach } from 'bun:test'
+import { getAdapterToolByName } from '../src/tools/AdapterTool/AdapterTool'
+import { toolToFunctionSchema } from '../src/query/toolSerialization'
 import {
   ingestManifestFrame,
   resolveAdapter,
   isManifestSynced,
+  waitForManifestSync,
   clearManifestCache,
 } from '../src/services/api/adapterManifest'
 import type { AdapterManifestSyncFrame } from '../src/ipc/frames.generated'
@@ -84,6 +87,16 @@ describe('isManifestSynced', () => {
     ingestManifestFrame(makeManifestFrame())
     clearManifestCache()
     expect(isManifestSynced()).toBe(false)
+  })
+
+  test('waitForManifestSync resolves when a frame is ingested', async () => {
+    const pending = waitForManifestSync(100)
+    ingestManifestFrame(makeManifestFrame())
+    await expect(pending).resolves.toBe(true)
+  })
+
+  test('waitForManifestSync resolves false on cold-boot timeout', async () => {
+    await expect(waitForManifestSync(1)).resolves.toBe(false)
   })
 })
 
@@ -166,5 +179,67 @@ describe('resolveAdapter', () => {
     expect(entry).toBeDefined()
     expect(entry!.source_mode).toBe('live')
     expect(entry!.policy_authority_url == null || entry!.policy_authority_url === undefined).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Concrete adapter schema exposure — CC-style tool definitions
+// ---------------------------------------------------------------------------
+
+describe('concrete adapter tool schemas', () => {
+  test('AdapterTool exposes backend input_schema_json and llm_description', async () => {
+    ingestManifestFrame(makeManifestFrame({
+      entries: [
+        {
+          tool_id: 'kma_apihub_amm_iwxxm_service_get_metar',
+          name: 'KMA APIHub AmmIwxxmService getMetar',
+          primitive: 'find',
+          policy_authority_url: 'https://apihub.kma.go.kr/',
+          source_mode: 'live',
+          search_hint: 'KMA APIHub AmmIwxxmService getMetar METAR icao',
+          llm_description: 'KMA APIHub AmmIwxxmService/getMetar. Provide ICAO station code as icao; authKey is supplied by UMMAYA runtime.',
+          input_schema_json: {
+            type: 'object',
+            properties: {
+              icao: {
+                type: 'string',
+                description: 'KMA APIHub request parameter icao.',
+              },
+              page_no: {
+                type: 'integer',
+                default: 1,
+                description: 'KMA APIHub request parameter pageNo.',
+              },
+            },
+            required: ['icao'],
+            additionalProperties: false,
+          },
+          output_schema_json: {
+            type: 'object',
+            properties: {
+              items: { type: 'array', items: { type: 'object' } },
+            },
+          },
+        },
+      ] as unknown as AdapterManifestSyncFrame['entries'],
+    }))
+
+    const tool = getAdapterToolByName('kma_apihub_amm_iwxxm_service_get_metar')
+    expect(tool).toBeDefined()
+
+    const serialized = await toolToFunctionSchema(tool!)
+    expect(serialized.function.description).toContain('AmmIwxxmService/getMetar')
+
+    const parameters = serialized.function.parameters as {
+      properties?: Record<string, { type?: string; description?: string; default?: unknown }>
+      required?: string[]
+      additionalProperties?: boolean
+    }
+    expect(parameters.properties?.icao?.type).toBe('string')
+    expect(parameters.properties?.icao?.description).toBe('KMA APIHub request parameter icao.')
+    expect(parameters.properties?.page_no?.type).toBe('integer')
+    expect(parameters.properties?.page_no?.default).toBe(1)
+    expect(parameters.required).toContain('icao')
+    expect(parameters.additionalProperties).toBe(false)
   })
 })

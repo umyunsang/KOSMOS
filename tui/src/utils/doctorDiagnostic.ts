@@ -215,8 +215,8 @@ async function detectMultipleInstallations(): Promise<
   }
 
   // Check for global npm installation
-  const packagesToCheck = ['ummaya']
-  if (MACRO.PACKAGE_URL && MACRO.PACKAGE_URL !== 'ummaya') {
+  const packagesToCheck = ['@anthropic-ai/claude-code']
+  if (MACRO.PACKAGE_URL && MACRO.PACKAGE_URL !== '@anthropic-ai/claude-code') {
     packagesToCheck.push(MACRO.PACKAGE_URL)
   }
   const npmResult = await execFileNoThrow('npm', [
@@ -536,10 +536,10 @@ export async function getDoctorDiagnostic(): Promise<DiagnosticInfo> {
 
     for (const install of npmInstalls) {
       if (install.type === 'npm-global') {
-        let uninstallCmd = 'npm -g uninstall ummaya'
+        let uninstallCmd = 'npm -g uninstall @anthropic-ai/claude-code'
         if (
           MACRO.PACKAGE_URL &&
-          MACRO.PACKAGE_URL !== 'ummaya'
+          MACRO.PACKAGE_URL !== '@anthropic-ai/claude-code'
         ) {
           uninstallCmd += ` && npm -g uninstall ${MACRO.PACKAGE_URL}`
         }

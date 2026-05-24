@@ -23,7 +23,8 @@ import pytest_asyncio
 
 _LIVE_ENV_VARS = {
     "UMMAYA_FRIENDLI_TOKEN": "FriendliAI Serverless API token",
-    "UMMAYA_DATA_GO_KR_API_KEY": "data.go.kr public data portal key (shared by KMA + KOROAD)",
+    "UMMAYA_DATA_GO_KR_API_KEY": "data.go.kr public data portal key",
+    "UMMAYA_KMA_API_HUB_AUTH_KEY": "KMA API Hub authentication key",
 }
 
 
@@ -53,6 +54,12 @@ def friendli_token() -> str:
 def data_go_kr_api_key() -> str:
     """Return the data.go.kr API key from the environment."""
     return _require_env("UMMAYA_DATA_GO_KR_API_KEY")
+
+
+@pytest.fixture(scope="session")
+def kma_api_hub_auth_key() -> str:
+    """Return the KMA API Hub authentication key from the environment."""
+    return _require_env("UMMAYA_KMA_API_HUB_AUTH_KEY")
 
 
 @pytest.fixture(scope="session")

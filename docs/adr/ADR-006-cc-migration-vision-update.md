@@ -33,7 +33,7 @@ This ADR records the consolidated decision so the nine Epics under Initiative #2
 - `assets/ummaya-{logo,logo-dark,banner-dark,icon}.{svg,png}` (8 brand assets)
 - `specs/031-five-primitive-harness/research.md § 1` (CC primitive-mapping table)
 - `specs/027-agent-swarm-core/` (file-based mailbox IPC, shipped)
-- `tui/src/hooks/useKoreanIME.ts`, `tui/src/theme/dark.ts`, `tui/src/commands/index.ts`, `tui/src/components/input/InputBar.tsx`, `tui/src/components/coordinator/PermissionGauntletModal.tsx` (current UMMAYA TUI coverage)
+- `tui/src/theme/dark.ts`, `tui/src/commands/index.ts`, `tui/src/components/input/InputBar.tsx`, `tui/src/components/coordinator/PermissionGauntletModal.tsx` (current UMMAYA TUI coverage)
 
 ---
 
@@ -135,27 +135,23 @@ The following ten amendments bring `docs/vision.md` back in sync with shipped st
 
 **Add a new sub-section under Layer 5 (TUI)** or cross-reference into the new Appendix above:
 
-> **Keyboard-shortcut migration.** CC defines 65 bindings across 20 contexts (`src/keybindings/defaultBindings.ts`). UMMAYA currently implements 5 (Enter, y/Y, n/N/Esc, Backspace/Delete, IME passthrough for modifiers). The Tier plan below is the authoritative migration scope for Phase 2:
+> **Keyboard-shortcut migration.** CC defines the binding surface in `src/keybindings/defaultBindings.ts`. UMMAYA keeps the restored CC input and keybinding path as the baseline; Korean text input follows that restored path, not a UMMAYA-only IME shim. The Tier plan below remains a later hardening scope only:
 >
-> - **Tier 1 (pre-citizen-launch blocker)**: `ctrl+c` (interrupt active agent), `ctrl+d` (clean exit), `escape` in InputBar (cancel draft, gated on `!ime.isComposing`), `ctrl+r` (history search), `up`/`down` in InputBar (history prev/next, gated on empty buffer).
+> - **Tier 1 (pre-citizen-launch blocker)**: restore the CC default bindings without UMMAYA-only action registries or composition guards.
 > - **Tier 2 (post-launch hardening)**: `pageup`/`pagedown`, `ctrl+l` (redraw), `shift+tab` (cycle PermissionMode — binds A-5), `ctrl+_` (undo), `ctrl+shift+c` (copy selection).
 > - **Tier 3 (deferred until dependent specs)**: `ctrl+x ctrl+k` (killAll — needs multi-worker), `ctrl+e` (external editor), `meta+p` (modelPicker — UMMAYA uses K-EXAONE only), `ctrl+s` (stash), `ctrl+v` (image paste).
->
-> IME safety rule: every binding that mutates the input buffer MUST check `!useKoreanIME().isComposing` before acting (Hangul composition must not be interrupted by a shortcut).
 
-**Evidence**: Full 65-binding catalog in R2 research output (see References). Current UMMAYA 5-binding surface inventoried across `tui/src/components/input/InputBar.tsx`, `tui/src/components/coordinator/PermissionGauntletModal.tsx`, `tui/src/hooks/useKoreanIME.ts`.
+**Evidence**: Full binding catalog in the restored CC source under `.references/claude-code-sourcemap/restored-src/src/keybindings/`.
 
-##### A-10 implementation landed in Spec 288
+##### A-10 Spec 288 shortcut port retired
 
-The Tier 1 port specified above shipped under Epic I #1303 / Spec 288 on 2026-04-20. Implementation lives at:
+The UMMAYA-only Tier 1 port that shipped under Epic I #1303 / Spec 288 has been removed from the current source. The remaining keybinding implementation is the restored CC file set:
 
-- `tui/src/keybindings/` — registry + parser + resolver + accessibility announcer (Lead Phase 2 ports T004–T025).
-- `tui/src/keybindings/actions/` — per-action handlers (T026/T028/T030/T034/T036/T037 across Teams A/B/C).
-- `tui/src/components/history/HistorySearchOverlay.tsx` — `ctrl+r` overlay (Spec 035 OnboardingShell modal pattern; T037 closes #1584).
-- `tui/src/keybindings/template.ts` — Tier 1 catalogue dump powering FR-032 / SC-007 screen-reader discoverability (T040 closes #1587).
-- `tui/tests/keybindings/` — TDD regression suite covering FR-005 / FR-020..FR-032 + SC-002 / SC-004 / SC-007 (T038/T039/T040 close #1585/#1586/#1587).
+- `tui/src/keybindings/` — restored CC parser, resolver, defaults, template, context, and hooks.
+- `tui/src/commands/keybindings/` — restored CC command surface.
+- `tui/src/skills/bundled/keybindings.ts` — restored CC bundled skill content.
 
-Tier 2 / Tier 3 ports remain explicitly deferred to #1588 / #1589 per Part C narrowing.
+Tier 2 / Tier 3 ports remain explicitly deferred to #1588 / #1589 per Part C narrowing, but must start from restored CC source rather than a UMMAYA-only registry.
 
 Cross-reference: `specs/288-shortcut-tier1-port/tasks.md` § Phase 10 T040.
 
@@ -174,7 +170,7 @@ The CC→UMMAYA Phase 2 migration surface is scoped as **nine Epics**, linked di
 | **I** | #1303 | Shortcut Tier 1 port (binds A-10) | `src/keybindings/defaultBindings.ts` + `src/hooks/useGlobalKeybindings.tsx` | 5/65 bindings implemented | P1 |
 | **D** | #1299 | Context Assembly v2 — memdir User + Project tiers (binds A-6) | `src/memdir/memdir.ts` + `src/memdir/paths.ts` | System + Session tiers only; no `~/.ummaya/memory/` | P2 |
 | **C** | #1301 | Ministry Specialists — 출산 보조금 / 건강보험 / 교통 workers | `src/coordinator/coordinatorMode.ts` + `src/tasks/InProcessTeammateTask/` | Spec 027 mailbox shipped; no ministry-specific workers yet | P2 |
-| **E** | #1300 | Korean IME — composition-aware shortcut gating, Hangul width | `src/hooks/useKeybindings.ts` (no IME notion in CC) | `useKoreanIME.ts` exists; not integrated with Tier 1 keybindings | P2 |
+| **E** | #1300 | Korean input parity | restored CC input path | UMMAYA-only IME shim retired; future changes must prove divergence against restored CC first | P2 |
 | **F** | #1304 | Scenario 2+3 E2E — multi-ministry coordination walk-throughs | — (UMMAYA original; uses `pytest @pytest.mark.live`) | Scenario 1 done (Spec 013); Scenarios 2+3 not specced | P3 |
 
 **Why G is P0 (now completed)**: without a repaired sub-issue graph, `/speckit-taskstoissues` output for the nine Epics cannot be traced; GraphQL-only issue-tracking (AGENTS.md hard rule) fails at the Initiative level. G's scope was narrowed during execution from "data repair" to "documentation fix: AGENTS.md field name correction (`trackedIssues` → `subIssues`) + this ADR's hierarchy-correction note" after a GraphQL query on 2026-04-19 revealed that `issue.subIssues.totalCount` for Initiative #2 was already 21 (well-populated) while `issue.trackedIssues.totalCount` was 0 — confirming the bug was in AGENTS.md's field reference, not in the sub-issue graph.

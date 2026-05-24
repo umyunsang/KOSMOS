@@ -1,17 +1,20 @@
 # SPDX-License-Identifier: Apache-2.0
 """Live validation tests for KMA forecast and pre-warning adapter endpoints.
 
-Tests hit the REAL KMA APIs via data.go.kr.  They hard-fail on any network or
+Tests hit the REAL KMA APIs. VilageFcst tests use KMA API Hub; pre-warning
+tests still use the data.go.kr WthrWrnInfoService shape. They hard-fail on any network or
 API error — no silent skips on unavailability.  Assertions are limited to
 response *structure*, not specific data values, because weather data changes
 constantly.
 
-Required environment variable: ``UMMAYA_DATA_GO_KR_API_KEY``.
+Required environment variables: ``UMMAYA_KMA_API_HUB_AUTH_KEY`` and
+``UMMAYA_DATA_GO_KR_API_KEY``.
 """
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -37,6 +40,8 @@ from ummaya.tools.kma.kma_ultra_short_term_forecast import (
     _call as _ultra_short_term_call,
 )
 
+_SEOUL_TZ = ZoneInfo("Asia/Seoul")
+
 # ---------------------------------------------------------------------------
 # Datetime helpers
 # ---------------------------------------------------------------------------
@@ -52,7 +57,7 @@ def _short_term_datetime() -> tuple[str, str]:
     Returns:
         A tuple of (YYYYMMDD, HHMM) strings.
     """
-    now = datetime.now(UTC) + timedelta(hours=9)  # Convert to KST
+    now = datetime.now(_SEOUL_TZ)
     # Walk back to the most recent valid base_time
     publish_hours = [2, 5, 8, 11, 14, 17, 20, 23]
     # Subtract 3 hours to avoid data-not-ready edge cases
@@ -76,7 +81,7 @@ def _ultra_short_term_datetime() -> tuple[str, str]:
     Returns:
         A tuple of (YYYYMMDD, HHMM) strings.
     """
-    now = datetime.now(UTC) + timedelta(hours=9)  # Convert to KST
+    now = datetime.now(_SEOUL_TZ)
     prev = now - timedelta(hours=1)
     base_date = prev.strftime("%Y%m%d")
     base_time = f"{prev.hour:02d}30"
@@ -91,7 +96,7 @@ def _ultra_short_term_datetime() -> tuple[str, str]:
 @pytest.mark.live
 @pytest.mark.asyncio
 async def test_live_kma_short_term_forecast_basic(
-    data_go_kr_api_key: str,
+    kma_api_hub_auth_key: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Call the real KMA getVilageFcst endpoint for Seoul and verify response structure.
@@ -99,7 +104,7 @@ async def test_live_kma_short_term_forecast_basic(
     Uses Seoul grid coordinates (nx=61, ny=126) and the most recently published
     base time.  Verifies that total_count is non-negative and items is a list.
     """
-    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_KMA_API_HUB_AUTH_KEY", kma_api_hub_auth_key)
 
     base_date, base_time = _short_term_datetime()
     inp = KmaShortTermForecastInput(
@@ -131,11 +136,11 @@ async def test_live_kma_short_term_forecast_basic(
 @pytest.mark.live
 @pytest.mark.asyncio
 async def test_live_kma_short_term_forecast_parses_to_model(
-    data_go_kr_api_key: str,
+    kma_api_hub_auth_key: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that the raw _call() dict validates cleanly into KmaShortTermForecastOutput."""
-    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_KMA_API_HUB_AUTH_KEY", kma_api_hub_auth_key)
 
     base_date, base_time = _short_term_datetime()
     inp = KmaShortTermForecastInput(
@@ -161,7 +166,7 @@ async def test_live_kma_short_term_forecast_parses_to_model(
 @pytest.mark.live
 @pytest.mark.asyncio
 async def test_live_kma_ultra_short_term_forecast_basic(
-    data_go_kr_api_key: str,
+    kma_api_hub_auth_key: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Call the real KMA getUltraSrtFcst endpoint for Seoul and verify response structure.
@@ -169,7 +174,7 @@ async def test_live_kma_ultra_short_term_forecast_basic(
     Uses Seoul grid coordinates (nx=61, ny=126) and the previous half-hour slot.
     Verifies that total_count is non-negative and items is a list.
     """
-    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_KMA_API_HUB_AUTH_KEY", kma_api_hub_auth_key)
 
     base_date, base_time = _ultra_short_term_datetime()
     inp = KmaUltraShortTermForecastInput(
@@ -200,11 +205,11 @@ async def test_live_kma_ultra_short_term_forecast_basic(
 @pytest.mark.live
 @pytest.mark.asyncio
 async def test_live_kma_ultra_short_term_forecast_parses_to_model(
-    data_go_kr_api_key: str,
+    kma_api_hub_auth_key: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that the raw _call() dict validates cleanly into KmaUltraShortTermForecastOutput."""
-    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_KMA_API_HUB_AUTH_KEY", kma_api_hub_auth_key)
 
     base_date, base_time = _ultra_short_term_datetime()
     inp = KmaUltraShortTermForecastInput(

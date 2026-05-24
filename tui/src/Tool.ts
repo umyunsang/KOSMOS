@@ -1,7 +1,7 @@
 import type {
   ToolResultBlockParam,
   ToolUseBlockParam,
-} from 'src/sdk-compat.js'
+} from '@anthropic-ai/sdk/resources/index.mjs'
 import type {
   ElicitRequestURLParams,
   ElicitResult,
@@ -790,5 +790,3 @@ export function buildTool<D extends AnyToolDef>(def: D): BuiltTool<D> {
     ...def,
   } as BuiltTool<D>
 }
-
-export type ToolProgressData = Record<string, unknown>

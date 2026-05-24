@@ -459,11 +459,17 @@ class ToolCallFrame(_BaseFrame):
 
     kind: Literal["tool_call"] = Field(default="tool_call", description="Frame discriminator.")
     call_id: str = Field(description="ULID correlating this call to its subsequent tool_result.")
-    name: Literal["find", "locate", "send", "check"] = Field(
-        description="Primitive name per Spec 031."
+    name: str = Field(
+        min_length=1,
+        description=(
+            "Concrete tool name selected by the model; root primitive names remain "
+            "valid for legacy transcripts."
+        ),
     )
     arguments: dict[str, object] = Field(
-        description="Primitive-specific arguments; shape per Spec 031 input schemas."
+        description=(
+            "Tool-specific arguments. Concrete adapter calls carry adapter schema fields directly."
+        )
     )
 
 
@@ -1181,6 +1187,35 @@ class AdapterManifestEntry(BaseModel):
     )
     source_mode: Literal["live", "mock", "internal"] = Field(
         description="Tag for the citation-rendering surface.",
+    )
+    search_hint: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=4096,
+        description=(
+            "Bilingual adapter discovery phrase copied from the backend registry. "
+            "Used by the TUI concrete tool surface and tool-search metadata."
+        ),
+    )
+    llm_description: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=20000,
+        description=(
+            "Backend-authored model-facing adapter usage prose. This is the same "
+            "description the backend exposes in OpenAI/FriendliAI function metadata."
+        ),
+    )
+    input_schema_json: dict[str, object] = Field(
+        default_factory=dict,
+        description=(
+            "Full backend Pydantic JSON Schema for adapter input parameters. "
+            "Credential-only fields such as authKey must be omitted by adapters."
+        ),
+    )
+    output_schema_json: dict[str, object] = Field(
+        default_factory=dict,
+        description="Full backend Pydantic JSON Schema for adapter output data.",
     )
 
     @field_validator("tool_id")

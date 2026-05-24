@@ -131,14 +131,6 @@ export const UI_L2_SLASH_COMMANDS: readonly SlashCommandCatalogEntryT[] = [
     hidden: false,
   },
   {
-    name: '/history',
-    group: 'storage',
-    description_ko: '과거 세션을 날짜·세션·Layer 필터로 검색합니다',
-    description_en: 'Search past sessions by date / session / layer filter',
-    arg_signature: '[--date FROM..TO] [--session <id>] [--layer <n>]',
-    hidden: false,
-  },
-  {
     name: '/migrate-sessions',
     group: 'storage',
     description_ko: 'CC 워크스페이스 JSONL 세션을 UMMAYA memdir로 마이그레이션합니다',

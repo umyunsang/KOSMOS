@@ -1,5 +1,5 @@
 import { c as _c } from "react/compiler-runtime";
-import type { Base64ImageSource, ImageBlockParam } from 'src/sdk-compat.js';
+import type { Base64ImageSource, ImageBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs';
 import React, { Suspense, use, useCallback, useMemo, useRef, useState } from 'react';
 import { useSettings } from '../../../hooks/useSettings.js';
 import { useTerminalSize } from '../../../hooks/useTerminalSize.js';
@@ -467,7 +467,7 @@ Questions asked and answers provided:\n${questionsWithAnswers_0}`;
         handleCancel();
         return;
       }
-      if (value === "send") {
+      if (value === "submit") {
         submitAnswers(answers).catch(logError);
       }
     };

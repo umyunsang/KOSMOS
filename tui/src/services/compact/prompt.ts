@@ -1,6 +1,13 @@
 import { feature } from 'bun:bundle'
 import type { PartialCompactDirection } from '../../types/message.js'
-import { isProactiveActive } from '../../utils/proactiveModule.js'
+
+// Dead code elimination: conditional import for proactive mode
+/* eslint-disable @typescript-eslint/no-require-imports */
+const proactiveModule =
+  feature('PROACTIVE') || feature('KAIROS')
+    ? (require('../../proactive/index.js') as typeof import('../../proactive/index.js'))
+    : null
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 // Aggressive no-tools preamble. The cache-sharing fork path inherits the
 // parent's full tool set (required for cache-key match), and on Sonnet 4.6+
@@ -353,7 +360,7 @@ Continue the conversation from where it left off without asking the user any fur
 
     if (
       (feature('PROACTIVE') || feature('KAIROS')) &&
-      isProactiveActive()
+      proactiveModule?.isProactiveActive()
     ) {
       continuation += `
 

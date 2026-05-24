@@ -166,7 +166,7 @@ export class Cursor {
     selection: number = 0,
   ): Cursor {
     // make MeasuredText on less than columns width, to account for cursor
-    return new Cursor(new MeasuredText(text, Math.max(1, columns - 1)), offset, selection)
+    return new Cursor(new MeasuredText(text, columns - 1), offset, selection)
   }
 
   getViewportStartLine(maxVisibleLines?: number): number {
@@ -223,7 +223,20 @@ export class Cursor {
         let displayText = text
         if (mask) {
           const graphemes = Array.from(getGraphemeSegmenter().segment(text))
-          displayText = mask.repeat(graphemes.length)
+          if (currentLine === allLines.length - 1) {
+            // Last line: mask all but the trailing 6 chars so the user can
+            // confirm they pasted the right thing without exposing the full token
+            const visibleCount = Math.min(6, graphemes.length)
+            const maskCount = graphemes.length - visibleCount
+            const splitOffset =
+              graphemes.length > visibleCount ? graphemes[maskCount]!.index : 0
+            displayText = mask.repeat(maskCount) + text.slice(splitOffset)
+          } else {
+            // Earlier wrapped lines: fully mask. Previously only the last line
+            // was masked, leaking the start of the token on narrow terminals
+            // where the pasted OAuth code wraps across multiple lines.
+            displayText = mask.repeat(graphemes.length)
+          }
         }
         // looking for the line with the cursor
         if (line !== currentLine) return displayText.trimEnd()

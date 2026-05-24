@@ -34,6 +34,7 @@ from ummaya.ipc.frame_schema import (
 )
 from ummaya.ipc.frame_schema import (
     ChatRequestFrame,
+    ToolCallFrame,
 )
 from ummaya.llm.models import StreamEvent
 from ummaya.primitives import (
@@ -220,6 +221,7 @@ async def test_verify_call_emits_permission_request_frame(
         "home",
         classmethod(lambda cls: tmp_path),  # type: ignore[arg-type]
     )
+    monkeypatch.setenv("UMMAYA_PERMISSION_TIMEOUT_SECONDS", "0.01")
 
     fake_stdout = _FakeStdout()
     monkeypatch.setattr(sys, "stdout", fake_stdout)
@@ -270,7 +272,17 @@ async def test_verify_call_emits_permission_request_frame(
         event="exit",
         payload={},
     )
-    payload = (frame.model_dump_json() + "\n").encode() + (
+    tool_call_frame = ToolCallFrame(
+        session_id=session_id,
+        correlation_id=frame.correlation_id,
+        role="tool",
+        ts=_ts(),
+        kind="tool_call",
+        call_id=f"call-verify-{uuid.uuid4().hex[:8]}",
+        name="check",
+        arguments=json.loads(_VerifyOnceLLMClient._args_json),
+    )
+    payload = (tool_call_frame.model_dump_json() + "\n").encode() + (
         exit_frame.model_dump_json() + "\n"
     ).encode()
 

@@ -1,4 +1,4 @@
-import type { ToolUseBlock } from 'src/sdk-compat.js'
+import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'
 import last from 'lodash-es/last.js'
 import {
   getSessionId,
@@ -27,8 +27,7 @@ import {
   createFileStateCacheWithSizeLimit,
   type FileStateCache,
 } from './fileStateCache.js'
-import { normalizeMessages } from './messageNormalize.js'
-import { isNotEmptyMessage } from './messagePredicates.js'
+import { isNotEmptyMessage, normalizeMessages } from './messages.js'
 import { expandPath } from './path.js'
 import type {
   inputSchema as permissionToolInputSchema,

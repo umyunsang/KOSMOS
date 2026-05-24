@@ -7,7 +7,7 @@ const sessionTranscriptModule = feature('KAIROS')
   ? (require('../sessionTranscript/sessionTranscript.js') as typeof import('../sessionTranscript/sessionTranscript.js'))
   : null
 
-import { APIUserAbortError } from 'src/sdk-compat.js'
+import { APIUserAbortError } from '@anthropic-ai/sdk'
 import { markPostCompaction } from 'src/bootstrap/state.js'
 import { getInvokedSkillsForAgent } from '../../bootstrap/state.js'
 import type { QuerySource } from '../../constants/querySource.js'
@@ -57,15 +57,15 @@ import {
 } from '../../utils/hooks.js'
 import { logError } from '../../utils/log.js'
 import { MEMORY_TYPE_VALUES } from '../../utils/memory/types.js'
-import { normalizeMessagesForAPI } from '../../utils/messageApiNormalize.js'
-import { createUserMessage } from '../../utils/userMessageFactories.js'
 import {
   createCompactBoundaryMessage,
+  createUserMessage,
+  getAssistantMessageText,
+  getLastAssistantMessage,
   getMessagesAfterCompactBoundary,
   isCompactBoundaryMessage,
-} from '../../utils/messageBoundary.js'
-import { getAssistantMessageText } from '../../utils/messageContent.js'
-import { getLastAssistantMessage } from '../../utils/messageQueries.js'
+  normalizeMessagesForAPI,
+} from '../../utils/messages.js'
 import { expandPath } from '../../utils/path.js'
 import { getPlan, getPlanFilePath } from '../../utils/plans.js'
 import {
@@ -96,20 +96,18 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../analytics/index.js'
-// UMMAYA: services/api/claude.js deleted by Spec 1633 P1+P2.
-// getMaxOutputTokensForModel → 8192 default, queryModelWithStreaming → throws.
-const getMaxOutputTokensForModel = (_model: string): number => 8192
-async function* queryModelWithStreaming(..._args: unknown[]): AsyncGenerator<never> {
-  throw new Error('Anthropic API not available in UMMAYA — Spec 1633')
-}
-// UMMAYA Spec 1633 / Epic #2293 — services/api/{errors,promptCacheBreakDetection,withRetry} deleted; inline stubs preserve call sites.
-const getPromptTooLongTokenGap = (): number => 0
-const PROMPT_TOO_LONG_ERROR_MESSAGE = 'API Error: prompt is too long'
-const startsWithApiErrorPrefix = (text: string): boolean => text.startsWith('API Error')
-const notifyCompaction = (_querySource: string, _agentId?: string): void => {}
-const getRetryDelay = (_attempt: number): number => 1000
-// UMMAYA: services/internalLogging.js deleted by Spec 1633 P1. logPermissionContextForAnts → no-op.
-const logPermissionContextForAnts = (_ctx: unknown, _label: unknown): void => {}
+import {
+  getMaxOutputTokensForModel,
+  queryModelWithStreaming,
+} from '../api/claude.js'
+import {
+  getPromptTooLongTokenGap,
+  PROMPT_TOO_LONG_ERROR_MESSAGE,
+  startsWithApiErrorPrefix,
+} from '../api/errors.js'
+import { notifyCompaction } from '../api/promptCacheBreakDetection.js'
+import { getRetryDelay } from '../api/withRetry.js'
+import { logPermissionContextForAnts } from '../internalLogging.js'
 import {
   roughTokenCountEstimation,
   roughTokenCountEstimationForMessages,

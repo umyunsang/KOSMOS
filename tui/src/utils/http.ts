@@ -3,8 +3,7 @@
  */
 
 import axios from 'axios'
-// UMMAYA: constants/oauth.js deleted by Spec 1633 P1+P2. OAUTH_BETA_HEADER → '' (OAuth not used with FriendliAI).
-const OAUTH_BETA_HEADER = ''
+import { OAUTH_BETA_HEADER } from '../constants/oauth.js'
 import {
   getAnthropicApiKey,
   getClaudeAIOAuthTokens,

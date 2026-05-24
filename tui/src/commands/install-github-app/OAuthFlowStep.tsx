@@ -207,7 +207,7 @@ export function OAuthFlowStep({
             {!showPastePrompt && <Box>
                 <Spinner />
                 <Text>
-                  Opening browser to sign in with your Claude account…
+                  Opening browser to sign in with your UMMAYA account…
                 </Text>
               </Box>}
 

@@ -132,7 +132,7 @@ export function validateOfficialNameSource(
     // Verify the repo is from the official org
     const repo = source.repo || ''
     if (!repo.toLowerCase().startsWith(`${OFFICIAL_GITHUB_ORG}/`)) {
-      return `The name '${name}' is reserved for official Anthropic marketplaces. Only repositories from 'github.com/${OFFICIAL_GITHUB_ORG}/' can use this name.`
+      return `The name '${name}' is reserved for official UMMAYA marketplaces. Only repositories from 'github.com/${OFFICIAL_GITHUB_ORG}/' can use this name.`
     }
     return null // Valid: reserved name from official GitHub source
   }
@@ -149,11 +149,11 @@ export function validateOfficialNameSource(
       return null // Valid: reserved name from official git URL
     }
 
-    return `The name '${name}' is reserved for official Anthropic marketplaces. Only repositories from 'github.com/${OFFICIAL_GITHUB_ORG}/' can use this name.`
+    return `The name '${name}' is reserved for official UMMAYA marketplaces. Only repositories from 'github.com/${OFFICIAL_GITHUB_ORG}/' can use this name.`
   }
 
   // Reserved names must come from GitHub (either 'github' or 'git' source)
-  return `The name '${name}' is reserved for official Anthropic marketplaces and can only be used with GitHub sources from the '${OFFICIAL_GITHUB_ORG}' organization.`
+  return `The name '${name}' is reserved for official UMMAYA marketplaces and can only be used with GitHub sources from the '${OFFICIAL_GITHUB_ORG}' organization.`
 }
 
 /**
@@ -574,8 +574,8 @@ const PluginManifestMcpServerSchema = lazySchema(() =>
 /**
  * Schema for a single user-configurable option in plugin manifest userConfig.
  *
- * Shape intentionally matches `McpbUserConfigurationOption` from the
- * mcpb package so the parsed result is structurally assignable to
+ * Shape intentionally matches `McpbUserConfigurationOption` from
+ * `@anthropic-ai/mcpb` so the parsed result is structurally assignable to
  * `UserConfigSchema` in mcpbHandler.ts — this lets us reuse
  * `validateUserConfig` and the config dialog without modification.
  * `title` and `description` are required (not optional) because the upstream

@@ -8,7 +8,7 @@
 // US1 scenario 2 (streaming text appears as chunks arrive)
 
 import React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../../ink.js'
 import { useSessionStore } from '../../store/session-store'
 import type { Message } from '../../store/session-store'
 import { useTheme } from '../../theme/provider'

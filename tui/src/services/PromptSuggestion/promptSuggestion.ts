@@ -12,8 +12,10 @@ import {
 } from '../../utils/forkedAgent.js'
 import type { REPLHookContext } from '../../utils/hooks/postSamplingHooks.js'
 import { logError } from '../../utils/log.js'
-import { createUserMessage } from '../../utils/userMessageFactories.js'
-import { getLastAssistantMessage } from '../../utils/messageQueries.js'
+import {
+  createUserMessage,
+  getLastAssistantMessage,
+} from '../../utils/messages.js'
 import { getInitialSettings } from '../../utils/settings/settings.js'
 import { isTeammate } from '../../utils/teammate.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../analytics/growthbook.js'
@@ -21,8 +23,7 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../analytics/index.js'
-// UMMAYA-original: CC claudeAiLimits not used — always allowed.
-const currentLimits = { status: 'allowed' as const }
+import { currentLimits } from '../claudeAiLimits.js'
 import { isSpeculationEnabled, startSpeculation } from './speculation.js'
 
 let currentAbortController: AbortController | null = null

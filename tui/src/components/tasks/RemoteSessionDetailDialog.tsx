@@ -18,11 +18,9 @@ import { openBrowser } from '../../utils/browser.js';
 import { errorMessage } from '../../utils/errors.js';
 import { formatDuration, truncateToWidth } from '../../utils/format.js';
 import { toInternalMessages } from '../../utils/messages/mappers.js';
-import { EMPTY_LOOKUPS } from '../../utils/messageLookups.js';
-import { normalizeMessages } from '../../utils/messageNormalize.js';
+import { EMPTY_LOOKUPS, normalizeMessages } from '../../utils/messages.js';
 import { plural } from '../../utils/stringUtils.js';
-// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport deleted.
-const teleportResumeCodeSession = async (..._args: unknown[]): Promise<{ success: boolean; sessionId?: string; error?: string }> => ({ success: false, error: 'UMMAYA: teleport disabled' });
+import { teleportResumeCodeSession } from '../../utils/teleport.js';
 import { Select } from '../CustomSelect/select.js';
 import { Byline } from '../design-system/Byline.js';
 import { Dialog } from '../design-system/Dialog.js';
@@ -46,7 +44,7 @@ type Props = {
 export function formatToolUseSummary(name: string, input: unknown): string {
   // plan_ready phase is only reached via ExitPlanMode tool
   if (name === EXIT_PLAN_MODE_V2_TOOL_NAME) {
-    return 'Review the plan in Claude Code on the web';
+    return 'Review the plan in UMMAYA on the web';
   }
   if (!input || typeof input !== 'object') return name;
   // AskUserQuestion: show the question text as a CTA, not the tool name.
@@ -170,7 +168,7 @@ function UltraplanSessionDetail(t0) {
     }
     let t7;
     if ($[12] === Symbol.for("react.memo_cache_sentinel")) {
-      t7 = <Text dimColor={true}>This will terminate the Claude Code on the web session.</Text>;
+      t7 = <Text dimColor={true}>This will terminate the UMMAYA web session.</Text>;
       $[12] = t7;
     } else {
       t7 = $[12];
@@ -313,7 +311,7 @@ function UltraplanSessionDetail(t0) {
   let t19;
   if ($[47] === Symbol.for("react.memo_cache_sentinel")) {
     t19 = {
-      label: "Review in Claude Code on the web",
+      label: "Review in UMMAYA on the web",
       value: "open" as const
     };
     $[47] = t19;
@@ -597,13 +595,13 @@ function ReviewSessionDetail(t0) {
   let t3;
   if ($[11] !== completed || $[12] !== onKill || $[13] !== running) {
     t3 = completed ? [{
-      label: "Open in Claude Code on the web",
+      label: "Open in UMMAYA on the web",
       value: "open"
     }, {
       label: "Dismiss",
       value: "dismiss"
     }] : [{
-      label: "Open in Claude Code on the web",
+      label: "Open in UMMAYA on the web",
       value: "open"
     }, ...(onKill && running ? [{
       label: "Stop ultrareview",

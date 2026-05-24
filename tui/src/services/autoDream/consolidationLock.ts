@@ -72,7 +72,7 @@ export async function tryAcquireConsolidationLock(): Promise<number | null> {
   await writeFile(path, String(process.pid))
 
   // Two reclaimers both write → last wins the PID. Loser bails on re-read.
-  let check: string
+  let verify: string
   try {
     verify = await readFile(path, 'utf8')
   } catch {

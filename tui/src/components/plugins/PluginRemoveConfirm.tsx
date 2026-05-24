@@ -5,7 +5,7 @@
 // PluginBrowser is mounted. Y emits `plugin_op_request:uninstall` via the
 // passed onConfirm callback; N dismisses without action.
 
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput } from '../../ink.js';
 import React from 'react';
 import { useTheme } from '../../theme/provider.js';
 import type { PluginEntry } from './PluginBrowser.js';

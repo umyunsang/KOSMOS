@@ -7,7 +7,7 @@
 // Visual layout mirrors CC HelpV2/Commands.tsx at ≥90% fidelity (FR-034 / SC-009).
 
 import React from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput } from '../../ink.js';
 import { useKeybinding } from '../../keybindings/useKeybinding.js';
 import { useTheme } from '../../theme/provider.js';
 import {

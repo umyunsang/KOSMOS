@@ -1,9 +1,9 @@
-import type { ContentBlockParam } from 'src/sdk-compat.js';
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';
 import type { Command } from '../commands.js';
 import { AGENT_TOOL_NAME } from '../tools/AgentTool/constants.js';
 const statusline = {
   type: 'prompt',
-  description: "Set up Claude Code's status line UI",
+  description: "Set up UMMAYA's status line UI",
   contentLength: 0,
   // Dynamic content
   aliases: [],

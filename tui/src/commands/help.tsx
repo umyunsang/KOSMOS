@@ -2,7 +2,7 @@
 // Renders the known-commands list via Ink <Box> + <Text>.
 // Unknown command path passes an errorBanner prop for the error notice.
 
-import { Box, Text } from 'ink'
+import { Box, Text } from '../ink.js'
 import { useTheme } from '../theme/provider'
 import { useI18n } from '../i18n'
 import type { CommandDefinition } from './types.ts'

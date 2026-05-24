@@ -10,6 +10,7 @@ import { render } from 'ink-testing-library'
 import type React from 'react'
 import { LookupPrimitive } from '../LookupPrimitive.js'
 import type { Output } from '../LookupPrimitive.js'
+import type { ToolUseContext } from '../../../Tool.js'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -156,5 +157,21 @@ describe('FindPrimitive renderToolResultMessage — error path preserved', () =>
     expect(frame).toContain('Error:')
     expect(frame).toContain("Adapter 'unknown_tool' was not found")
     expect(frame).not.toContain('Mock')
+  })
+})
+
+describe('FindPrimitive validateInput — primitive self-target guard', () => {
+  test('rejects find(find) before TS-side internal tool fallback', async () => {
+    const result = await LookupPrimitive.validateInput!(
+      { tool_id: 'find', params: {} },
+      {
+        options: {
+          tools: [LookupPrimitive],
+        },
+      } as unknown as ToolUseContext,
+    )
+
+    expect(result.result).toBe(false)
+    expect(result.message).toContain("Root primitive 'find' is not an adapter")
   })
 })

@@ -30,9 +30,6 @@ with ``SystemExit(78)`` (``EX_CONFIG``) if any adapter is misconfigured per
 from __future__ import annotations
 
 import logging
-from typing import Any
-
-from pydantic import BaseModel
 
 from ummaya.tools.executor import ToolExecutor
 from ummaya.tools.registry import ToolRegistry
@@ -88,12 +85,11 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> Routin
             (invariant violation — see routing-consistency.md).
     """
     from ummaya.tools.hira.hospital_search import register as reg_hira
-    from ummaya.tools.kma.forecast_fetch import (
-        KMA_FORECAST_FETCH_TOOL,
-        KmaForecastFetchInput,
+    from ummaya.tools.kma.apihub_structured_adapter import (
+        register as reg_kma_apihub_structured,
     )
     from ummaya.tools.kma.forecast_fetch import (
-        _fetch as kma_forecast_fetch_adapter,
+        register as reg_kma_forecast_fetch,
     )
     from ummaya.tools.kma.kma_current_observation import register as reg_kma_obs
     from ummaya.tools.kma.kma_pre_warning import register as reg_kma_pre_warning
@@ -137,18 +133,13 @@ def register_all_tools(registry: ToolRegistry, executor: ToolExecutor) -> Routin
     reg_nmc(registry, executor)  # T033 — NMC (Layer 3 gated stub)
     reg_hira(registry, executor)  # T056 — HIRA hospital search
 
-    # T048 — KMA forecast_fetch: register tool + bind executor adapter.
-    # The module's register(registry) only covers the registry; the executor
-    # binding lives here so _fetch is reachable via lookup(mode="fetch").
-    registry.register(KMA_FORECAST_FETCH_TOOL)
+    reg_kma_forecast_fetch(registry, executor)  # T048 — KMA forecast fetch
 
-    async def _kma_forecast_fetch_adapter(inp: BaseModel) -> dict[str, Any]:
-        assert isinstance(inp, KmaForecastFetchInput)
-        result = await kma_forecast_fetch_adapter(inp)
-        return result.model_dump() if hasattr(result, "model_dump") else dict(result)
-
-    executor.register_adapter("kma_forecast_fetch", _kma_forecast_fetch_adapter)
-    logger.info("Registered tool: kma_forecast_fetch")
+    # Spec #2800 — KMA APIHub structured typ02/openApi catalog. These generic
+    # read-only wrappers cover the 85 structured operations discovered from
+    # the agency-owned APIHub catalog while preserving the specialized weather
+    # adapters above for citizen-facing forecast/current-weather flows.
+    reg_kma_apihub_structured(registry, executor)
 
     # Phase 2 adapters (spec 029 — NFA 119 + MOHW SSIS, Layer 3 gated stubs)
     reg_nfa(registry, executor)  # T014 — NFA EMS statistics (interface-only)

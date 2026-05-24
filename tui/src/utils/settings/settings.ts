@@ -8,8 +8,7 @@ import {
   getOriginalCwd,
   getUseCoworkPlugins,
 } from '../../bootstrap/state.js'
-// UMMAYA-original: remote managed settings (CC admin policy) not used — always null.
-const getRemoteManagedSettingsSyncFromCache = (): null => null
+import { getRemoteManagedSettingsSyncFromCache } from '../../services/remoteManagedSettings/syncCacheState.js'
 import { uniq } from '../array.js'
 import { logForDebugging } from '../debug.js'
 import { logForDiagnosticsNoPII } from '../diagLogs.js'

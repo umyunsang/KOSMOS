@@ -1,17 +1,12 @@
-// SWAP: dead-code-cleanup (Spec 1633 + Epic #2293) + LLM provider (sdk-compat)
-// CC reference: .references/claude-code-sourcemap/restored-src/src/components/permissions/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx
-// Divergence LOC: ~51 (autoNameSessionFromPlan no-op; UUID/generateSessionName/getSettings_DEPRECATED removed; sdk-compat)
-// Spec citation: #1633 (queryHaiku auto-naming removal), #2293 (utils/auth removal), Epic #2639 (audit § 5.5)
-// Justification: queryHaiku auto-naming requires Anthropic SDK; UMMAYA exits plan mode without auto-naming, plan acceptance + permission propagation preserved 1:1.
 import { feature } from 'bun:bundle';
-// UUID type removed — was only used in autoNameSessionFromPlan (deleted, Spec 1633 / Epic #2293).
+import type { UUID } from 'crypto';
 import figures from 'figures';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNotifications } from 'src/context/notifications.js';
 import { type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS, logEvent } from 'src/services/analytics/index.js';
 import { useAppState, useAppStateStore, useSetAppState } from 'src/state/AppState.js';
-import { getSdkBetas, getSessionId, setHasExitedPlanMode, setNeedsAutoModeExitAttachment, setNeedsPlanModeExitAttachment } from '../../../bootstrap/state.js';
-// commands/rename/generateSessionName removed — Anthropic queryHaiku auto-naming is Anthropic-only (Spec 1633 / Epic #2293).
+import { getSdkBetas, getSessionId, isSessionPersistenceDisabled, setHasExitedPlanMode, setNeedsAutoModeExitAttachment, setNeedsPlanModeExitAttachment } from '../../../bootstrap/state.js';
+import { generateSessionName } from '../../../commands/rename/generateSessionName.js';
 import { launchUltraplan } from '../../../commands/ultraplan.js';
 import type { KeyboardEvent } from '../../../ink/events/keyboard-event.js';
 import { Box, Text } from '../../../ink.js';
@@ -27,7 +22,7 @@ import { getDisplayPath } from '../../../utils/file.js';
 import { toIDEDisplayName } from '../../../utils/ide.js';
 import { logError } from '../../../utils/log.js';
 import { enqueuePendingNotification } from '../../../utils/messageQueueManager.js';
-import { createUserMessage } from '../../../utils/userMessageFactories.js';
+import { createUserMessage } from '../../../utils/messages.js';
 import { getMainLoopModel, getRuntimeMainLoopModel } from '../../../utils/model/model.js';
 import { createPromptRuleContent, isClassifierPermissionsEnabled, PROMPT_PREFIX } from '../../../utils/permissions/bashClassifier.js';
 import { type PermissionMode, toExternalPermissionMode } from '../../../utils/permissions/PermissionMode.js';
@@ -36,8 +31,8 @@ import { isAutoModeGateEnabled, restoreDangerousPermissions, stripDangerousPermi
 import { getPewterLedgerVariant, isPlanModeInterviewPhaseEnabled } from '../../../utils/planModeV2.js';
 import { getPlan, getPlanFilePath } from '../../../utils/plans.js';
 import { editFileInEditor, editPromptInEditor } from '../../../utils/promptEditor.js';
-import { getCurrentSessionTitle, getTranscriptPath } from '../../../utils/sessionStorage.js';
-// getSettings_DEPRECATED removed — was only used in autoNameSessionFromPlan (deleted, Spec 1633 / Epic #2293).
+import { getCurrentSessionTitle, getTranscriptPath, saveAgentName, saveCustomTitle } from '../../../utils/sessionStorage.js';
+import { getSettings_DEPRECATED } from '../../../utils/settings/settings.js';
 import { type OptionWithDescription, Select } from '../../CustomSelect/index.js';
 import { Markdown } from '../../Markdown.js';
 import { PermissionDialog } from '../PermissionDialog.js';
@@ -46,7 +41,7 @@ import { PermissionRuleExplanation } from '../PermissionRuleExplanation.js';
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const autoModeStateModule = feature('TRANSCRIPT_CLASSIFIER') ? require('../../../utils/permissions/autoModeState.js') as typeof import('../../../utils/permissions/autoModeState.js') : null;
-import type { Base64ImageSource, ImageBlockParam } from 'src/sdk-compat.js';
+import type { Base64ImageSource, ImageBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs';
 /* eslint-enable @typescript-eslint/no-require-imports */
 import type { PastedContent } from '../../../utils/config.js';
 import type { ImageDimensions } from '../../../utils/imageResizer.js';
@@ -85,11 +80,40 @@ export function buildPermissionUpdates(mode: PermissionMode, allowedPrompts?: Al
  * if they haven't already named it via /rename or --name. Fire-and-forget.
  * Mirrors /rename: kebab-case name, updates the prompt-border badge.
  */
-// autoNameSessionFromPlan: Anthropic queryHaiku auto-naming removed (Spec 1633 / Epic #2293).
-// The component still exits plan mode; session auto-naming is a no-op in UMMAYA.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function autoNameSessionFromPlan(_plan: string, _setAppState: (updater: (prev: AppState) => AppState) => void, _isClearContext: boolean): void {
-  // no-op: generateSessionName (Anthropic queryHaiku) removed
+export function autoNameSessionFromPlan(plan: string, setAppState: (updater: (prev: AppState) => AppState) => void, isClearContext: boolean): void {
+  if (isSessionPersistenceDisabled() || getSettings_DEPRECATED()?.cleanupPeriodDays === 0) {
+    return;
+  }
+  // On clear-context, the current session is about to be abandoned — its
+  // title (which may have been set by a PRIOR auto-name) is irrelevant.
+  // Checking it would make the feature self-defeating after first use.
+  if (!isClearContext && getCurrentSessionTitle(getSessionId())) return;
+  void generateSessionName(
+  // generateSessionName tail-slices to the last 1000 chars (correct for
+  // conversations, where recency matters). Plans front-load the goal and
+  // end with testing steps — head-slice so Haiku sees the summary.
+  [createUserMessage({
+    content: plan.slice(0, 1000)
+  })], new AbortController().signal).then(async name => {
+    // On clear-context acceptance, regenerateSessionId() has run by now —
+    // this intentionally names the NEW execution session. Do not "fix" by
+    // capturing sessionId once; that would name the abandoned planning session.
+    if (!name || getCurrentSessionTitle(getSessionId())) return;
+    const sessionId = getSessionId() as UUID;
+    const fullPath = getTranscriptPath();
+    await saveCustomTitle(sessionId, name, fullPath, 'auto');
+    await saveAgentName(sessionId, name, fullPath, 'auto');
+    setAppState(prev => {
+      if (prev.standaloneAgentContext?.name === name) return prev;
+      return {
+        ...prev,
+        standaloneAgentContext: {
+          ...prev.standaloneAgentContext,
+          name
+        }
+      };
+    });
+  }).catch(logError);
 }
 export function ExitPlanModePermissionRequest({
   toolUseConfirm,
@@ -576,7 +600,7 @@ export function ExitPlanModePermissionRequest({
     }
     return <PermissionDialog color="planMode" title="Exit plan mode?" workerBadge={workerBadge}>
         <Box flexDirection="column" paddingX={1} marginTop={1}>
-          <Text>Claude wants to exit plan mode</Text>
+          <Text>UMMAYA wants to exit plan mode</Text>
           <Box marginTop={1}>
             <Select options={[{
             label: 'Yes',
@@ -603,7 +627,7 @@ export function ExitPlanModePermissionRequest({
       <PermissionDialog color="planMode" title="Ready to code?" innerPaddingX={0} workerBadge={workerBadge}>
         <Box flexDirection="column" marginTop={1}>
           <Box paddingX={1} flexDirection="column">
-            <Text>Here is Claude&apos;s plan:</Text>
+            <Text>Here is UMMAYA&apos;s plan:</Text>
           </Box>
           <Box borderColor="subtle" borderStyle="dashed" flexDirection="column" borderLeft={false} borderRight={false} paddingX={1} marginBottom={1}
         // Necessary for Windows Terminal to render properly
@@ -620,7 +644,7 @@ export function ExitPlanModePermissionRequest({
                 </Box>}
             {!useStickyFooter && <>
                 <Text dimColor>
-                  Claude has written up a plan and is ready to execute. Would
+                  UMMAYA has written up a plan and is ready to execute. Would
                   you like to proceed?
                 </Text>
                 <Box marginTop={1}>
@@ -706,7 +730,7 @@ export function buildPlanApprovalOptions({
   });
   if (showUltraplan) {
     options.push({
-      label: 'No, refine with Ultraplan on Claude Code on the web',
+      label: 'No, refine the plan before executing',
       value: 'ultraplan'
     });
   }
@@ -714,7 +738,7 @@ export function buildPlanApprovalOptions({
     type: 'input',
     label: 'No, keep planning',
     value: 'no',
-    placeholder: 'Tell Claude what to change',
+    placeholder: 'Tell UMMAYA what to change',
     description: 'shift+tab to approve with this feedback',
     onChange: onFeedbackChange
   });

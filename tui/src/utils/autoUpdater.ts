@@ -52,42 +52,34 @@ export type MaxVersionConfig = {
 }
 
 /**
- * Checks if the current version meets the minimum required version from Statsig config
+ * Checks if the current version meets UMMAYA's configured minimum version.
  * Terminates the process with an error message if the version is too old
  *
- * NOTE ON SHA-BASED VERSIONING:
- * We use SemVer-compliant versioning with build metadata format (X.X.X+SHA) for continuous deployment.
- * According to SemVer specs, build metadata (the +SHA part) is ignored when comparing versions.
- *
- * Versioning approach:
- * 1. For version requirements/compatibility (assertMinVersion), we use semver comparison that ignores build metadata
- * 2. For updates ('claude update'), we use exact string comparison to detect any change, including SHA
- *    - This ensures users always get the latest build, even when only the SHA changes
- *    - The UI clearly shows both versions including build metadata
- *
- * This approach keeps version comparison logic simple while maintaining traceability via the SHA.
+ * UMMAYA does not use Claude Code's Anthropic/GrowthBook distribution gate.
+ * Published versions are distributed through npm and Homebrew, so the default
+ * local-source runtime must not fetch Anthropic's `tengu_version_config`.
  */
 export async function assertMinVersion(): Promise<void> {
   if (process.env.NODE_ENV === 'test') {
     return
   }
 
-  try {
-    const versionConfig = await getDynamicConfig_BLOCKS_ON_INIT<{
-      minVersion: string
-    }>('tengu_version_config', { minVersion: '0.0.0' })
+  const minVersion = process.env.UMMAYA_MIN_VERSION?.trim()
+  if (!minVersion) {
+    return
+  }
 
-    if (
-      versionConfig.minVersion &&
-      lt(MACRO.VERSION, versionConfig.minVersion)
-    ) {
+  try {
+    if (lt(MACRO.VERSION, minVersion)) {
       // biome-ignore lint/suspicious/noConsole:: intentional console output
       console.error(`
-It looks like your version of Claude Code (${MACRO.VERSION}) needs an update.
-A newer version (${versionConfig.minVersion} or higher) is required to continue.
+It looks like your version of UMMAYA (${MACRO.VERSION}) needs an update.
+A newer version (${minVersion} or higher) is required to continue.
 
 To update, please run:
-    claude update
+    brew upgrade --cask umyunsang/ummaya/ummaya
+or:
+    npm install -g ummaya
 
 This will ensure you have access to the latest features and improvements.
 `)

@@ -7,7 +7,7 @@
  * FR-019: find collection list renderer.
  */
 import React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../../ink.js'
 import { useTheme } from '@/theme/provider'
 import type { LookupCollectionPayload } from './types'
 

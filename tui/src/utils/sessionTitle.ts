@@ -12,9 +12,6 @@
  * Each remains for backwards compat; new callers should use this module.
  */
 
-// SWAP/llm-swap(2643): queryHaiku target = K-EXAONE via FriendliAI (Spec 2521 byte-copy bridge).
-// Spec 2643 Epic G US1 — byte-copy from .references/claude-code-sourcemap/restored-src/src/utils/sessionTitle.ts
-// Spec source: specs/2643-utils-residue/contracts/sessionTitle.contract.md
 import { z } from 'zod/v4'
 import { getIsNonInteractiveSession } from '../bootstrap/state.js'
 import { logEvent } from '../services/analytics/index.js'
@@ -23,7 +20,7 @@ import type { Message } from '../types/message.js'
 import { logForDebugging } from './debug.js'
 import { safeParseJSON } from './json.js'
 import { lazySchema } from './lazySchema.js'
-import { extractTextContent } from './messageText.js'
+import { extractTextContent } from './messages.js'
 import { asSystemPrompt } from './systemPromptType.js'
 
 const MAX_CONVERSATION_TEXT = 1000

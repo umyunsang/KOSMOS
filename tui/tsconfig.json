@@ -22,7 +22,7 @@
     "paths": {
       "@/*": ["src/*"],
       "src/*": ["./src/*"],
-      "bun:bundle": ["./src/stubs/bun-bundle.ts"],
+      "bun:bundle": ["./src/runtime/bun-bundle.ts"],
       "react/compiler-runtime": ["./src/stubs/react-compiler-runtime"],
       "@datadog/browser-logs": ["./src/stubs/any-stub"],
       "@ant/claude-for-chrome-mcp": ["./src/stubs/any-stub"],

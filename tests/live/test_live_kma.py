@@ -1,17 +1,20 @@
 # SPDX-License-Identifier: Apache-2.0
 """Live validation tests for KMA weather adapter endpoints.
 
-Tests hit the REAL KMA APIs via data.go.kr.  They hard-fail on any network or
+Tests hit the REAL KMA APIs. VilageFcst tests use KMA API Hub; warning tests
+still use the data.go.kr WthrWrnInfoService shape. They hard-fail on any network or
 API error — no silent skips on unavailability.  Assertions are limited to
 response *structure*, not specific data values, because weather data changes
 constantly.
 
-Required environment variable: ``UMMAYA_DATA_GO_KR_API_KEY``.
+Required environment variables: ``UMMAYA_KMA_API_HUB_AUTH_KEY`` and
+``UMMAYA_DATA_GO_KR_API_KEY``.
 """
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -29,6 +32,8 @@ from ummaya.tools.kma.kma_weather_alert_status import (
 from ummaya.tools.kma.kma_weather_alert_status import (
     _call as _alert_call,
 )
+
+_SEOUL_TZ = ZoneInfo("Asia/Seoul")
 
 # ---------------------------------------------------------------------------
 # Weather Alert tests
@@ -95,13 +100,13 @@ async def test_live_kma_weather_alert_parses_to_model(
 def _observation_datetime() -> tuple[str, str]:
     """Return (base_date, base_time) using the *previous* hour to avoid data-not-ready errors.
 
-    Uses ``datetime.now(UTC)`` and subtracts one hour so the KMA API has
-    already published the observation data for that slot.
+    Uses Asia/Seoul time and subtracts one hour so the KMA API has already
+    published the observation data for that KST slot.
 
     Returns:
         A tuple of (YYYYMMDD, HHMM) strings.
     """
-    now = datetime.now(UTC)
+    now = datetime.now(_SEOUL_TZ)
     prev_hour = now - timedelta(hours=1)
     base_date = prev_hour.strftime("%Y%m%d")
     base_time = prev_hour.strftime("%H00")
@@ -111,7 +116,7 @@ def _observation_datetime() -> tuple[str, str]:
 @pytest.mark.live
 @pytest.mark.asyncio
 async def test_live_kma_current_observation_basic(
-    data_go_kr_api_key: str,
+    kma_api_hub_auth_key: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Call the real KMA getUltraSrtNcst endpoint for Seoul and verify response structure.
@@ -120,7 +125,7 @@ async def test_live_kma_current_observation_basic(
     timestamp.  Verifies required keys and that ``t1h`` is float or None
     and ``rn1`` is float.
     """
-    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_KMA_API_HUB_AUTH_KEY", kma_api_hub_auth_key)
 
     base_date, base_time = _observation_datetime()
     inp = KmaCurrentObservationInput(
@@ -143,11 +148,11 @@ async def test_live_kma_current_observation_basic(
 @pytest.mark.live
 @pytest.mark.asyncio
 async def test_live_kma_current_observation_parses_to_model(
-    data_go_kr_api_key: str,
+    kma_api_hub_auth_key: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that the raw _call() dict validates cleanly into KmaCurrentObservationOutput."""
-    monkeypatch.setenv("UMMAYA_DATA_GO_KR_API_KEY", data_go_kr_api_key)
+    monkeypatch.setenv("UMMAYA_KMA_API_HUB_AUTH_KEY", kma_api_hub_auth_key)
 
     base_date, base_time = _observation_datetime()
     inp = KmaCurrentObservationInput(

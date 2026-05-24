@@ -25,7 +25,7 @@ import { verifyBootRegistry } from '../../services/toolRegistry/bootGuard.js'
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Build a minimal fake primitive that satisfies the 9-member contract. */
+/** Build a minimal fake primitive that satisfies the 10-member contract. */
 function fakePrimitive(name: string, overrides: Partial<Record<string, unknown>> = {}): Tool {
   const base: Record<string, unknown> = {
     name,
@@ -35,9 +35,14 @@ function fakePrimitive(name: string, overrides: Partial<Record<string, unknown>>
     isMcp: false,
     validateInput: async () => ({ result: true }),
     call: async () => ({ data: {} }),
+    mapToolResultToToolResultBlockParam: (content: unknown, toolUseID: string) => ({
+      type: 'tool_result',
+      tool_use_id: toolUseID,
+      content: JSON.stringify(content),
+    }),
     renderToolUseMessage: () => null,
     renderToolResultMessage: () => null,
-    // Extra non-contract fields (allowed — guard only checks required 9)
+    // Extra non-contract fields (allowed — guard only checks required 10)
     isEnabled: () => true,
     searchHint: '',
   }
@@ -69,6 +74,22 @@ describe('verifyBootRegistry — full active-primitive registry (Case 1)', () =>
     // SC-002: wall-clock budget on developer laptop
     expect(result.durationMs).toBeLessThanOrEqual(200)
   })
+
+  test('real locate primitive maps successful output into a tool_result block', () => {
+    const block = ResolveLocationPrimitive.mapToolResultToToolResultBlockParam(
+      {
+        ok: true,
+        result: { kind: 'locate', address_name: 'Busan Saha-gu Dadae 1-dong' },
+        outbound_traces: [{ should_not_reach_llm: true }],
+      },
+      'toolu-locate',
+    )
+
+    expect(block.type).toBe('tool_result')
+    expect(block.tool_use_id).toBe('toolu-locate')
+    expect(block.content).not.toContain('outbound_traces')
+    expect(block.content).toContain('Busan Saha-gu Dadae 1-dong')
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -98,10 +119,36 @@ describe('verifyBootRegistry — missing renderToolResultMessage (Case 2)', () =
     expect(result.offendingTool).toBe('find')
     expect(result.missingMembers).toContain('renderToolResultMessage')
 
-    // Diagnostic must name the tool, the 9-member contract, and Korean text
+    // Diagnostic must name the tool, the ToolDef contract, and Korean text
     expect(result.diagnostic).toContain('find')
-    expect(result.diagnostic).toContain('9-member')
-    expect(result.diagnostic).toContain('UMMAYA는 9-member ToolDef 계약을')
+    expect(result.diagnostic).toContain('10-member')
+    expect(result.diagnostic).toContain('UMMAYA는 10-member ToolDef 계약을')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Case 2b: Synthetic registry — primitive missing result mapper
+// ---------------------------------------------------------------------------
+
+describe('verifyBootRegistry — missing mapToolResultToToolResultBlockParam', () => {
+  test('returns ok === false before runtime tool execution can crash', () => {
+    const brokenLocate = fakePrimitive('locate', {
+      mapToolResultToToolResultBlockParam: undefined,
+    })
+    const registry: readonly Tool[] = [
+      fakePrimitive('find'),
+      brokenLocate,
+      fakePrimitive('send'),
+      fakePrimitive('check'),
+    ]
+
+    const result = verifyBootRegistry(registry)
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+
+    expect(result.offendingTool).toBe('locate')
+    expect(result.missingMembers).toContain('mapToolResultToToolResultBlockParam')
   })
 })
 

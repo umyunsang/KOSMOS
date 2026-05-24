@@ -103,6 +103,7 @@
     "auto-bind": "^5.0.1",
     "axios": "^1.15.2",
     "bidi-js": "^1.0.3",
+    "bundle": "file:./tui/src/runtime/bundle-package",
     "chalk": "^5.3.0",
     "chokidar": "^4.0.0",
     "cli-boxes": "^4.0.1",

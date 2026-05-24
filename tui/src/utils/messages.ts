@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle'
-import type { BetaUsage as Usage } from 'src/sdk-compat.js'
+import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type {
   ContentBlock,
   ContentBlockParam,
@@ -11,7 +11,7 @@ import type {
   ToolResultBlockParam,
   ToolUseBlock,
   ToolUseBlockParam,
-} from 'src/sdk-compat.js'
+} from '@anthropic-ai/sdk/resources/index.mjs'
 import { randomUUID, type UUID } from 'crypto'
 import isObject from 'lodash-es/isObject.js'
 import last from 'lodash-es/last.js'
@@ -82,41 +82,8 @@ import {
 } from './attachments.js'
 import { quote } from './bash/shellQuote.js'
 import { formatNumber, formatTokens } from './format.js'
-import {
-  extractTag as extractTagFromMessageText,
-  extractTextContent as extractTextContentFromMessageText,
-  isEmptyMessageText as isEmptyMessageTextFromMessageText,
-  stripPromptXMLTags as stripPromptXMLTagsFromMessageText,
-  SYNTHETIC_MESSAGES as SYNTHETIC_MESSAGES_FROM_MESSAGE_TEXT,
-  SYNTHETIC_MODEL as SYNTHETIC_MODEL_FROM_MESSAGE_TEXT,
-} from './messageText.js'
 import { getPewterLedgerVariant } from './planModeV2.js'
 import { jsonStringify } from './slowOperations.js'
-
-// Keep these pure helper exports as local declarations near the top of this
-// large module. Linux Bun has previously missed named exports when messages.ts
-// only re-exported bindings from another module.
-export const SYNTHETIC_MESSAGES = SYNTHETIC_MESSAGES_FROM_MESSAGE_TEXT
-export const SYNTHETIC_MODEL = SYNTHETIC_MODEL_FROM_MESSAGE_TEXT
-
-export function stripPromptXMLTags(content: string): string {
-  return stripPromptXMLTagsFromMessageText(content)
-}
-
-export function isEmptyMessageText(text: string): boolean {
-  return isEmptyMessageTextFromMessageText(text)
-}
-
-export function extractTextContent(
-  blocks: readonly { readonly type: string }[],
-  separator = '',
-): string {
-  return extractTextContentFromMessageText(blocks, separator)
-}
-
-export function extractTag(html: string, tagName: string): string | null {
-  return extractTagFromMessageText(html, tagName)
-}
 
 // Hook attachments that have a hookName field (excludes HookPermissionDecisionAttachment)
 type HookAttachmentWithName = Exclude<
@@ -124,14 +91,14 @@ type HookAttachmentWithName = Exclude<
   HookPermissionDecisionAttachment
 >
 
-import type { APIError } from 'src/sdk-compat.js'
+import type { APIError } from '@anthropic-ai/sdk'
 import type {
   BetaContentBlock,
   BetaMessage,
   BetaRedactedThinkingBlock,
   BetaThinkingBlock,
   BetaToolUseBlock,
-} from 'src/sdk-compat.js'
+} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type {
   HookEvent,
   SDKAssistantMessageError,
@@ -192,6 +159,7 @@ import {
   getPlanModeV2ExploreAgentCount,
   isPlanModeInterviewPhaseEnabled,
 } from './planModeV2.js'
+import { escapeRegExp } from './stringUtils.js'
 import { isTodoV2Enabled } from './tasks.js'
 
 // Lazy import to avoid circular dependency (teammateMailbox -> teammate -> ... -> messages)
@@ -267,7 +235,7 @@ export function AUTO_REJECT_MESSAGE(toolName: string): string {
   return `Permission to use ${toolName} has been denied. ${DENIAL_WORKAROUND_GUIDANCE}`
 }
 export function DONT_ASK_REJECT_MESSAGE(toolName: string): string {
-  return `Permission to use ${toolName} has been denied because Claude Code is running in don't ask mode. ${DENIAL_WORKAROUND_GUIDANCE}`
+  return `Permission to use ${toolName} has been denied because UMMAYA is running in don't ask mode. ${DENIAL_WORKAROUND_GUIDANCE}`
 }
 export const NO_RESPONSE_REQUESTED = 'No response requested.'
 
@@ -328,6 +296,16 @@ export function buildClassifierUnavailableMessage(
     `Note: reading files, searching code, and other read-only operations do not require the classifier and can still be used.`
   )
 }
+
+export const SYNTHETIC_MODEL = '<synthetic>'
+
+export const SYNTHETIC_MESSAGES = new Set([
+  INTERRUPT_MESSAGE,
+  INTERRUPT_MESSAGE_FOR_TOOL_USE,
+  CANCEL_MESSAGE,
+  REJECT_MESSAGE,
+  NO_RESPONSE_REQUESTED,
+])
 
 export function isSyntheticMessage(message: Message): boolean {
   return (
@@ -652,6 +630,62 @@ export function createToolResultStopMessage(
   }
 }
 
+export function extractTag(html: string, tagName: string): string | null {
+  if (!html.trim() || !tagName.trim()) {
+    return null
+  }
+
+  const escapedTag = escapeRegExp(tagName)
+
+  // Create regex pattern that handles:
+  // 1. Self-closing tags
+  // 2. Tags with attributes
+  // 3. Nested tags of the same type
+  // 4. Multiline content
+  const pattern = new RegExp(
+    `<${escapedTag}(?:\\s+[^>]*)?>` + // Opening tag with optional attributes
+      '([\\s\\S]*?)' + // Content (non-greedy match)
+      `<\\/${escapedTag}>`, // Closing tag
+    'gi',
+  )
+
+  let match
+  let depth = 0
+  let lastIndex = 0
+  const openingTag = new RegExp(`<${escapedTag}(?:\\s+[^>]*?)?>`, 'gi')
+  const closingTag = new RegExp(`<\\/${escapedTag}>`, 'gi')
+
+  while ((match = pattern.exec(html)) !== null) {
+    // Check for nested tags
+    const content = match[1]
+    const beforeMatch = html.slice(lastIndex, match.index)
+
+    // Reset depth counter
+    depth = 0
+
+    // Count opening tags before this match
+    openingTag.lastIndex = 0
+    while (openingTag.exec(beforeMatch) !== null) {
+      depth++
+    }
+
+    // Count closing tags before this match
+    closingTag.lastIndex = 0
+    while (closingTag.exec(beforeMatch) !== null) {
+      depth--
+    }
+
+    // Only include content if we're at the correct nesting level
+    if (depth === 0 && content) {
+      return content
+    }
+
+    lastIndex = match.index + match[0].length
+  }
+
+  return null
+}
+
 export function isNotEmptyMessage(message: Message): boolean {
   if (
     message.type === 'progress' ||
@@ -788,11 +822,208 @@ export function normalizeMessages(messages: Message[]): NormalizedMessage[] {
   })
 }
 
-export {
-  isToolUseRequestMessage,
-  isToolUseResultMessage,
-  reorderMessagesInUI,
-} from './messageReorder.js'
+type ToolUseRequestMessage = NormalizedAssistantMessage & {
+  message: { content: [ToolUseBlock] }
+}
+
+export function isToolUseRequestMessage(
+  message: Message,
+): message is ToolUseRequestMessage {
+  return (
+    message.type === 'assistant' &&
+    // Note: stop_reason === 'tool_use' is unreliable -- it's not always set correctly
+    message.message.content.some(_ => _.type === 'tool_use')
+  )
+}
+
+type ToolUseResultMessage = NormalizedUserMessage & {
+  message: { content: [ToolResultBlockParam] }
+}
+
+export function isToolUseResultMessage(
+  message: Message,
+): message is ToolUseResultMessage {
+  return (
+    message.type === 'user' &&
+    ((Array.isArray(message.message.content) &&
+      message.message.content[0]?.type === 'tool_result') ||
+      Boolean(message.toolUseResult))
+  )
+}
+
+// Re-order, to move result messages to be after their tool use messages
+export function reorderMessagesInUI(
+  messages: (
+    | NormalizedUserMessage
+    | NormalizedAssistantMessage
+    | AttachmentMessage
+    | SystemMessage
+  )[],
+  syntheticStreamingToolUseMessages: NormalizedAssistantMessage[],
+): (
+  | NormalizedUserMessage
+  | NormalizedAssistantMessage
+  | AttachmentMessage
+  | SystemMessage
+)[] {
+  // Maps tool use ID to its related messages
+  const toolUseGroups = new Map<
+    string,
+    {
+      toolUse: ToolUseRequestMessage | null
+      preHooks: AttachmentMessage[]
+      toolResult: NormalizedUserMessage | null
+      postHooks: AttachmentMessage[]
+    }
+  >()
+
+  // First pass: group messages by tool use ID
+  for (const message of messages) {
+    // Handle tool use messages
+    if (isToolUseRequestMessage(message)) {
+      const toolUseID = message.message.content[0]?.id
+      if (toolUseID) {
+        if (!toolUseGroups.has(toolUseID)) {
+          toolUseGroups.set(toolUseID, {
+            toolUse: null,
+            preHooks: [],
+            toolResult: null,
+            postHooks: [],
+          })
+        }
+        toolUseGroups.get(toolUseID)!.toolUse = message
+      }
+      continue
+    }
+
+    // Handle pre-tool-use hooks
+    if (
+      isHookAttachmentMessage(message) &&
+      message.attachment.hookEvent === 'PreToolUse'
+    ) {
+      const toolUseID = message.attachment.toolUseID
+      if (!toolUseGroups.has(toolUseID)) {
+        toolUseGroups.set(toolUseID, {
+          toolUse: null,
+          preHooks: [],
+          toolResult: null,
+          postHooks: [],
+        })
+      }
+      toolUseGroups.get(toolUseID)!.preHooks.push(message)
+      continue
+    }
+
+    // Handle tool results
+    if (
+      message.type === 'user' &&
+      message.message.content[0]?.type === 'tool_result'
+    ) {
+      const toolUseID = message.message.content[0].tool_use_id
+      if (!toolUseGroups.has(toolUseID)) {
+        toolUseGroups.set(toolUseID, {
+          toolUse: null,
+          preHooks: [],
+          toolResult: null,
+          postHooks: [],
+        })
+      }
+      toolUseGroups.get(toolUseID)!.toolResult = message
+      continue
+    }
+
+    // Handle post-tool-use hooks
+    if (
+      isHookAttachmentMessage(message) &&
+      message.attachment.hookEvent === 'PostToolUse'
+    ) {
+      const toolUseID = message.attachment.toolUseID
+      if (!toolUseGroups.has(toolUseID)) {
+        toolUseGroups.set(toolUseID, {
+          toolUse: null,
+          preHooks: [],
+          toolResult: null,
+          postHooks: [],
+        })
+      }
+      toolUseGroups.get(toolUseID)!.postHooks.push(message)
+      continue
+    }
+  }
+
+  // Second pass: reconstruct the message list in the correct order
+  const result: (
+    | NormalizedUserMessage
+    | NormalizedAssistantMessage
+    | AttachmentMessage
+    | SystemMessage
+  )[] = []
+  const processedToolUses = new Set<string>()
+
+  for (const message of messages) {
+    // Check if this is a tool use
+    if (isToolUseRequestMessage(message)) {
+      const toolUseID = message.message.content[0]?.id
+      if (toolUseID && !processedToolUses.has(toolUseID)) {
+        processedToolUses.add(toolUseID)
+        const group = toolUseGroups.get(toolUseID)
+        if (group && group.toolUse) {
+          // Output in order: tool use, pre hooks, tool result, post hooks
+          result.push(group.toolUse)
+          result.push(...group.preHooks)
+          if (group.toolResult) {
+            result.push(group.toolResult)
+          }
+          result.push(...group.postHooks)
+        }
+      }
+      continue
+    }
+
+    // Check if this message is part of a tool use group
+    if (
+      isHookAttachmentMessage(message) &&
+      (message.attachment.hookEvent === 'PreToolUse' ||
+        message.attachment.hookEvent === 'PostToolUse')
+    ) {
+      // Skip - already handled in tool use groups
+      continue
+    }
+
+    if (
+      message.type === 'user' &&
+      message.message.content[0]?.type === 'tool_result'
+    ) {
+      // Skip - already handled in tool use groups
+      continue
+    }
+
+    // Handle api error messages (only keep the last one)
+    if (message.type === 'system' && message.subtype === 'api_error') {
+      const last = result.at(-1)
+      if (last?.type === 'system' && last.subtype === 'api_error') {
+        result[result.length - 1] = message
+      } else {
+        result.push(message)
+      }
+      continue
+    }
+
+    // Add standalone messages
+    result.push(message)
+  }
+
+  // Add synthetic streaming tool use messages
+  for (const message of syntheticStreamingToolUseMessages) {
+    result.push(message)
+  }
+
+  // Filter to keep only the last api error message
+  const last = result.at(-1)
+  return result.filter(
+    _ => _.type !== 'system' || _.subtype !== 'api_error' || _ === last,
+  )
+}
 
 function isHookAttachmentMessage(
   message: Message,
@@ -2519,6 +2750,18 @@ export function normalizeContentFromAPI(
   })
 }
 
+export function isEmptyMessageText(text: string): boolean {
+  return (
+    stripPromptXMLTags(text).trim() === '' || text.trim() === NO_CONTENT_MESSAGE
+  )
+}
+const STRIPPED_TAGS_RE =
+  /<(commit_analysis|context|function_analysis|pr_analysis)>.*?<\/\1>\n?/gs
+
+export function stripPromptXMLTags(content: string): string {
+  return content.replace(STRIPPED_TAGS_RE, '').trim()
+}
+
 export function getToolUseID(message: NormalizedMessage): string | null {
   switch (message.type) {
     case 'attachment':
@@ -2640,6 +2883,21 @@ export function textForResubmit(
     return { text: `${cmd} ${args}`, mode: 'prompt' }
   }
   return { text: stripIdeContextTags(content), mode: 'prompt' }
+}
+
+/**
+ * Extract text from an array of content blocks, joining text blocks with the
+ * given separator. Works with ContentBlock, ContentBlockParam, BetaContentBlock,
+ * and their readonly/DeepImmutable variants via structural typing.
+ */
+export function extractTextContent(
+  blocks: readonly { readonly type: string }[],
+  separator = '',
+): string {
+  return blocks
+    .filter((b): b is { type: 'text'; text: string } => b.type === 'text')
+    .map(b => b.text)
+    .join(separator)
 }
 
 export function getContentText(
@@ -2814,25 +3072,9 @@ export function handleMessageFromStream(
           })
           return
         }
-        case 'thinking_delta': {
-          const thinkingDelta = message.event.delta.thinking
-          onUpdateLength(thinkingDelta)
-          // SWAP/llm-provider(2521): K-EXAONE on FriendliAI emits its
-          // chain-of-thought on the reasoning_content channel. Without
-          // wiring streamingThinking here (CC's source only updates it
-          // on the final assistant message) the citizen sees the
-          // ``● find(...)`` tool_call painted with no reasoning
-          // preview — which user surfaced as "왜 도구호출부터 하는거지?".
-          // Live-streaming the reasoning preview lets the citizen see
-          // *what* the model is reasoning about right before the
-          // tool_call paints.
-          onStreamingThinking?.((prev) => ({
-            thinking: (prev?.thinking ?? '') + thinkingDelta,
-            isStreaming: true,
-            streamingEndedAt: undefined,
-          }))
+        case 'thinking_delta':
+          onUpdateLength(message.event.delta.thinking)
           return
-        }
         case 'signature_delta':
           // Signatures are cryptographic authentication strings, not model
           // output. Excluding them from onUpdateLength prevents them from

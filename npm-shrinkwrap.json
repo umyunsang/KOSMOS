@@ -43,6 +43,7 @@
         "auto-bind": "^5.0.1",
         "axios": "^1.15.2",
         "bidi-js": "^1.0.3",
+        "bundle": "file:./tui/src/runtime/bundle-package",
         "chalk": "^5.3.0",
         "chokidar": "^4.0.0",
         "cli-boxes": "^4.0.1",
@@ -3130,6 +3131,10 @@
       "resolved": "https://registry.npmjs.org/buffer-equal-constant-time/-/buffer-equal-constant-time-1.0.1.tgz",
       "integrity": "sha512-zRpUiDwd/xk6ADqPMATG8vc9VPrkck7T07OIx0gnjmJAnHnTVXNQG3vfvWNuiZIkwu9KrKdA1iJKfsfTVxE6NA==",
       "license": "BSD-3-Clause"
+    },
+    "node_modules/bundle": {
+      "resolved": "tui/src/runtime/bundle-package",
+      "link": true
     },
     "node_modules/bytes": {
       "version": "3.1.2",
@@ -7415,6 +7420,10 @@
       "peerDependencies": {
         "zod": "^3.25.28 || ^4"
       }
+    },
+    "tui/src/runtime/bundle-package": {
+      "name": "bundle",
+      "version": "0.0.0"
     }
   }
 }

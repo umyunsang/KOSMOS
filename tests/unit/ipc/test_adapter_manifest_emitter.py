@@ -16,9 +16,12 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+from datetime import UTC, datetime
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
+from pydantic import BaseModel, ConfigDict, Field
 
 from ummaya.ipc.adapter_manifest_emitter import (
     _EXTRA_REGISTRY,
@@ -28,10 +31,28 @@ from ummaya.ipc.adapter_manifest_emitter import (
     register_manifest_entry,
 )
 from ummaya.ipc.frame_schema import AdapterManifestEntry, AdapterManifestSyncFrame
+from ummaya.tools.models import AdapterRealDomainPolicy
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+class _ProbeInput(BaseModel):
+    """Small OpenAPI-shaped input model used to prove manifest schema export."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    icao: str = Field(description="KMA APIHub request parameter icao.")
+    page_no: int = Field(default=1, description="KMA APIHub request parameter pageNo.")
+
+
+class _ProbeOutput(BaseModel):
+    """Small OpenAPI-shaped output model used to prove manifest schema export."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    items: list[dict[str, object]]
 
 
 def _make_entry(
@@ -56,6 +77,39 @@ def _empty_registry() -> object:
     mock = MagicMock()
     mock._tools = {}
     return mock
+
+
+def _registry_tool(
+    tool_id: str,
+    *,
+    primitive: str = "find",
+    is_core: bool = False,
+    input_schema: type[BaseModel] = _ProbeInput,
+    output_schema: type[BaseModel] = _ProbeOutput,
+    search_hint: str | None = None,
+    llm_description: str | None = None,
+) -> SimpleNamespace:
+    return SimpleNamespace(
+        id=tool_id,
+        name_ko=tool_id.replace("_", " "),
+        primitive=primitive,
+        adapter_mode="live",
+        is_core=is_core,
+        input_schema=input_schema,
+        output_schema=output_schema,
+        search_hint=search_hint or f"{tool_id} APIHub OpenAPI schema probe",
+        llm_description=llm_description
+        or (
+            f"{tool_id} OpenAPI operation. Use the concrete backend input schema; "
+            "credential parameters are supplied by UMMAYA runtime, not by the user."
+        ),
+        policy=AdapterRealDomainPolicy(
+            real_classification_url=f"https://example.gov.kr/{tool_id}/policy.do",
+            real_classification_text=f"{tool_id} policy",
+            citizen_facing_gate="read-only",
+            last_verified=datetime(2026, 5, 24, tzinfo=UTC),
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -151,6 +205,31 @@ def test_extra_registry_takes_precedence_over_main_registry() -> None:
     """Entries registered via register_manifest_entry() override ToolRegistry entries."""
     _EXTRA_REGISTRY.clear()
 
+
+def test_core_primitives_are_not_adapter_manifest_entries() -> None:
+    """Only root primitives are hidden; concrete adapters may still be is_core."""
+    _EXTRA_REGISTRY.clear()
+
+    registry = _empty_registry()
+    registry._tools = {
+        "find": _registry_tool("find", primitive="find", is_core=True),
+        "locate": _registry_tool("locate", primitive="locate", is_core=True),
+        "kma_current_observation": _registry_tool(
+            "kma_current_observation",
+            primitive="find",
+            is_core=True,
+        ),
+    }
+
+    entries = _build_entries(registry)
+    by_id = {entry.tool_id: entry for entry in entries}
+
+    assert "kma_current_observation" in by_id
+    assert "find" not in by_id
+    assert "locate" not in by_id
+
+    _EXTRA_REGISTRY.clear()
+
     # Register an entry for "conflict_tool" in the extra registry.
     extra_entry = AdapterManifestEntry(
         tool_id="conflict_tool",
@@ -180,6 +259,106 @@ def test_extra_registry_takes_precedence_over_main_registry() -> None:
     )
 
     _EXTRA_REGISTRY.clear()
+
+
+def test_build_entries_exports_backend_tool_schema_and_description() -> None:
+    """Concrete adapter manifest entries carry the backend OpenAPI schema."""
+    _EXTRA_REGISTRY.clear()
+
+    registry = _empty_registry()
+    registry._tools = {
+        "kma_apihub_amm_iwxxm_service_get_metar": _registry_tool(
+            "kma_apihub_amm_iwxxm_service_get_metar",
+            search_hint="KMA APIHub AmmIwxxmService getMetar METAR icao",
+            llm_description=(
+                "KMA APIHub AmmIwxxmService/getMetar. Provide ICAO station code "
+                "as icao; authKey is supplied by UMMAYA runtime."
+            ),
+        ),
+    }
+
+    entries = _build_entries(registry)
+    entry = next(e for e in entries if e.tool_id == "kma_apihub_amm_iwxxm_service_get_metar")
+
+    assert entry.search_hint == "KMA APIHub AmmIwxxmService getMetar METAR icao"
+    assert entry.llm_description is not None
+    assert "AmmIwxxmService/getMetar" in entry.llm_description
+
+    properties = entry.input_schema_json["properties"]
+    assert isinstance(properties, dict)
+    assert properties["icao"]["description"] == "KMA APIHub request parameter icao."
+    assert properties["page_no"]["default"] == 1
+    assert "authKey" not in properties
+    assert entry.input_schema_json["additionalProperties"] is False
+
+    output_properties = entry.output_schema_json["properties"]
+    assert isinstance(output_properties, dict)
+    assert "items" in output_properties
+
+    _EXTRA_REGISTRY.clear()
+
+
+def test_full_runtime_manifest_exports_model_facing_tool_metadata() -> None:
+    """Every runtime adapter exposes enough metadata for LLM tool selection."""
+    from ummaya.tools.executor import ToolExecutor
+    from ummaya.tools.register_all import register_all_tools
+    from ummaya.tools.registry import ToolRegistry
+
+    _EXTRA_REGISTRY.clear()
+
+    registry = ToolRegistry()
+    executor = ToolExecutor(registry)
+    register_all_tools(registry, executor)
+
+    entries = _build_entries(registry)
+    issues: list[str] = []
+
+    for entry in entries:
+        search_hint = (entry.search_hint or "").strip()
+        if len(search_hint) < 30:
+            issues.append(f"{entry.tool_id}: search_hint too short or missing")
+
+        llm_description = (entry.llm_description or "").strip()
+        if len(llm_description) < 80:
+            issues.append(f"{entry.tool_id}: llm_description too short or missing")
+
+        properties = entry.input_schema_json.get("properties")
+        if not isinstance(properties, dict) or not properties:
+            issues.append(f"{entry.tool_id}: input_schema_json.properties missing")
+            continue
+
+        for property_name, property_schema in properties.items():
+            if not isinstance(property_schema, dict):
+                issues.append(f"{entry.tool_id}.{property_name}: property schema is not an object")
+                continue
+            description = str(property_schema.get("description") or "").strip()
+            if len(description) < 24:
+                issues.append(f"{entry.tool_id}.{property_name}: description too short")
+
+    assert issues == []
+
+    by_id = {entry.tool_id: entry for entry in entries}
+
+    assert "cityCode" in _property_description(by_id["tago_bus_route_search"], "city_code")
+    assert "sidoName" in _property_description(by_id["airkorea_ctprvn_air_quality"], "sido_name")
+    assert "cntrCd" in _property_description(by_id["kepco_contract_power_usage"], "cntr_cd")
+    assert "presentnYear" in _property_description(by_id["ftc_large_group_status"], "presentn_year")
+
+    mobile_id = by_id["mobile_id"]
+    assert mobile_id.source_mode == "internal"
+    assert "scope_list" in mobile_id.input_schema_json["properties"]
+    assert "check:mobile_id.identity" in str(mobile_id.llm_description)
+    assert "mobile ID" in str(mobile_id.search_hint)
+
+    _EXTRA_REGISTRY.clear()
+
+
+def _property_description(entry: AdapterManifestEntry, property_name: str) -> str:
+    properties = entry.input_schema_json["properties"]
+    assert isinstance(properties, dict)
+    property_schema = properties[property_name]
+    assert isinstance(property_schema, dict)
+    return str(property_schema["description"])
 
 
 # ---------------------------------------------------------------------------

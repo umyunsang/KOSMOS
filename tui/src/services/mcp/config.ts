@@ -40,8 +40,7 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../analytics/index.js'
-// services/mcp/claudeai removed in P1+P2 (Spec 1633); UMMAYA does not use claude.ai MCP proxy.
-const fetchClaudeAIMcpConfigsIfEligible = async (): Promise<Record<string, ScopedMcpServerConfig>> => ({})
+import { fetchClaudeAIMcpConfigsIfEligible } from './claudeai.js'
 import { expandEnvVarsInString } from './envExpansion.js'
 import {
   type ConfigScope,
@@ -1360,7 +1359,7 @@ export function parseMcpConfig(params: {
         ...(filePath && { file: filePath }),
         path: `mcpServers.${name}`,
         message: `Windows requires 'cmd /c' wrapper to execute npx`,
-        suggestion: `Change command to "cmd" with args ["/c", "npx", ...]. See: https://code.claude.com/docs/en/mcp#configure-mcp-servers`,
+        suggestion: `Change command to "cmd" with args ["/c", "npx", ...]. See: https://ummaya-docs.pages.dev/en/`,
         mcpErrorMetadata: {
           scope,
           serverName: name,

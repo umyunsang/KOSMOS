@@ -12,7 +12,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import React from 'react'
 import { render } from 'ink-testing-library'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../src/ink.js'
 
 import { ThemeProvider } from '../src/theme/provider'
 import { CollectionList } from '../src/components/primitive/CollectionList'

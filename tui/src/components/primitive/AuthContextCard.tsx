@@ -8,7 +8,7 @@
  * FR-030 / FR-031: check success renderer; korea_tier is always the primary label.
  */
 import React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../../ink.js'
 import { useTheme } from '@/theme/provider'
 import type { VerifySuccessPayload } from './types'
 

@@ -3,21 +3,34 @@
 import { describe, expect, test } from 'bun:test'
 
 import { InputEvent } from '../../src/ink/events/input-event'
-import { INITIAL_STATE, parseMultipleKeypresses } from '../../src/ink/parse-keypress'
+import {
+  INITIAL_STATE,
+  parseMultipleKeypresses,
+  type ParsedKey,
+} from '../../src/ink/parse-keypress'
 import { splitCoalescedEnter } from '../../src/hooks/useTextInput'
 
+function parseSingleKey(input: string): ParsedKey {
+  const [events] = parseMultipleKeypresses(INITIAL_STATE, input)
+  const event = events[0]
+
+  if (!event || event.kind !== 'key') {
+    throw new Error(`Expected a key event for ${JSON.stringify(input)}`)
+  }
+
+  return event
+}
+
 describe('Enter key normalization', () => {
-  test('treats LF as Return so terminal variants still submit input', () => {
-    const [parsed] = parseMultipleKeypresses(INITIAL_STATE, '\n')
-    const keypress = parsed[0]
+  test.each([
+    ['CR', '\r'],
+    ['LF', '\n'],
+    ['CRLF', '\r\n'],
+  ])('normalizes %s to Ink key.return', (_label, input) => {
+    const event = new InputEvent(parseSingleKey(input))
 
-    expect(keypress?.kind).toBe('key')
-    if (keypress?.kind !== 'key') {
-      throw new Error('expected LF to parse as a keypress')
-    }
-
-    const event = new InputEvent(keypress)
     expect(event.key.return).toBe(true)
+    expect(event.keypress.name).toBe('return')
     expect(event.input).toBe('')
   })
 

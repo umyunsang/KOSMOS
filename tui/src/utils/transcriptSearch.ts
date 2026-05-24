@@ -2,7 +2,7 @@ import type { RenderableMessage } from '../types/message.js'
 import {
   INTERRUPT_MESSAGE,
   INTERRUPT_MESSAGE_FOR_TOOL_USE,
-} from './permissionMessages.js'
+} from './messages.js'
 
 const SYSTEM_REMINDER_CLOSE = '</system-reminder>'
 

@@ -1,5 +1,5 @@
 import { c as _c } from "react/compiler-runtime";
-import type { ToolResultBlockParam, ToolUseBlockParam } from 'src/sdk-compat.js';
+import type { ToolResultBlockParam, ToolUseBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';
 import * as React from 'react';
 import { ConfigurableShortcutHint } from 'src/components/ConfigurableShortcutHint.js';
 import { CtrlOToExpand, SubAgentProvider } from 'src/components/CtrlOToExpand.js';
@@ -22,8 +22,7 @@ import { count } from '../../utils/array.js';
 import { getSearchOrReadFromContent, getSearchReadSummaryText } from '../../utils/collapseReadSearch.js';
 import { getDisplayPath } from '../../utils/file.js';
 import { formatDuration, formatNumber } from '../../utils/format.js';
-import { createAssistantMessage } from '../../utils/assistantMessageFactories.js';
-import { buildSubagentLookups, EMPTY_LOOKUPS } from '../../utils/messageLookups.js';
+import { buildSubagentLookups, createAssistantMessage, EMPTY_LOOKUPS } from '../../utils/messages.js';
 import type { ModelAlias } from '../../utils/model/aliases.js';
 import { getMainLoopModel, parseUserSpecifiedModel, renderModelName } from '../../utils/model/model.js';
 import type { Theme, ThemeName } from '../../utils/theme.js';

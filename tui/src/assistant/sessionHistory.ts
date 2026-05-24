@@ -1,13 +1,8 @@
 import axios from 'axios'
-// constants/oauth removed in P1+P2 (Spec 1633); UMMAYA uses FriendliAI, not Anthropic OAuth.
-const getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })
+import { getOauthConfig } from '../constants/oauth.js'
 import type { SDKMessage } from '../entrypoints/agentSdkTypes.js'
 import { logForDebugging } from '../utils/debug.js'
-// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport/ deleted; stub.
-const getOAuthHeaders = (_token: string): Record<string, string> => ({})
-const prepareApiRequest = async (): Promise<{ accessToken: string; orgUUID: string }> => {
-  throw new Error('UMMAYA: remote CCR sessions not supported')
-}
+import { getOAuthHeaders, prepareApiRequest } from '../utils/teleport/api.js'
 
 export const HISTORY_PAGE_SIZE = 100
 

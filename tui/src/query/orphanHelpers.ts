@@ -3,7 +3,7 @@
 //
 // Extracted from tui/src/query/deps.ts so the FR-009 pairing-invariant unit
 // tests do not transitively pull autoCompact.ts → 'bun:bundle'. The Bun
-// preload plugin shim that maps `bun:bundle` to a stub does not always
+// preload/plugin path for `bun:bundle` resolution does not always
 // intercept static-import resolution under `bun test` on CI, so isolating
 // these pure helpers in a leaf module avoids the issue entirely.
 

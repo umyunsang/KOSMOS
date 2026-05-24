@@ -110,6 +110,7 @@ import { errorMessage, getErrnoCode, isENOENT, toError } from 'src/utils/errors.
 import { getFsImplementation, safeResolvePath } from 'src/utils/fsOperations.js';
 import { gracefulShutdown, gracefulShutdownSync } from 'src/utils/gracefulShutdown.js';
 import { setAllHookEventsEnabled } from 'src/utils/hooks/hookEvents.js';
+import { assertFriendliApiKeyForUse } from 'src/utils/auth.js';
 import { refreshModelCapabilities } from 'src/utils/model/modelCapabilities.js';
 import { peekForStdinData, writeToStderr } from 'src/utils/process.js';
 import { setCwd } from 'src/utils/Shell.js';
@@ -262,7 +263,7 @@ function loadSettingsFromFlag(settingsFile: string): void {
 
       // Create a temporary file and write the JSON to it.
       // Use a content-hash-based path instead of random UUID to avoid
-      // busting the Anthropic API prompt cache. The settings path ends up
+      // busting the FriendliAI API prompt cache. The settings path ends up
       // in the Bash tool's sandbox denyWithinAllow list, which is part of
       // the tool description sent to the API. A random UUID per subprocess
       // changes the tool description on every query() call, invalidating
@@ -435,7 +436,7 @@ export async function main() {
     setQuestionPreviewFormat('markdown');
   }
 
-  // Tag sessions created via `claude remote-control` so the backend can identify them
+  // Tag sessions created via `ummaya remote-control` so the backend can identify them
   if (process.env.CLAUDE_CODE_ENVIRONMENT_KIND === 'bridge') {
     setSessionSource('remote-control');
   }
@@ -978,7 +979,7 @@ async function run(): Promise<CommanderCommand> {
       }
     }
 
-    // Extract Claude in Chrome option and enforce claude.ai subscriber check (unless user is ant)
+    // Extract UMMAYA in Chrome option and enforce browser session access (unless user is ant)
     const chromeOpts = options as {
       chrome?: boolean;
     };
@@ -1003,10 +1004,10 @@ async function run(): Promise<CommanderCommand> {
           appendSystemPrompt = appendSystemPrompt ? `${chromeSystemPrompt}\n\n${appendSystemPrompt}` : chromeSystemPrompt;
         }
       } catch (error) {
-        logForDebugging(`[Claude in Chrome] Error: ${error}`);
+        logForDebugging(`[UMMAYA in Chrome] Error: ${error}`);
         logError(error);
         // biome-ignore lint/suspicious/noConsole:: intentional console output
-        console.error(`Error: Failed to run with Claude in Chrome.`);
+        console.error(`Error: Failed to run with UMMAYA in Chrome.`);
         process.exit(1);
       }
     } else if (autoEnableClaudeInChrome) {
@@ -1022,7 +1023,7 @@ async function run(): Promise<CommanderCommand> {
         appendSystemPrompt = appendSystemPrompt ? `${appendSystemPrompt}\n\n${hint}` : hint;
       } catch (error) {
         // Silently skip any errors for the auto-enable
-        logForDebugging(`[Claude in Chrome] Error (auto-enable): ${error}`);
+        logForDebugging(`[UMMAYA in Chrome] Error (auto-enable): ${error}`);
       }
     }
 
@@ -1734,6 +1735,13 @@ async function run(): Promise<CommanderCommand> {
       // This includes potentially dangerous environment variables from untrusted sources
       // but print mode is considered trusted (as documented in help text)
       applyConfigEnvironmentVariables();
+      try {
+        assertFriendliApiKeyForUse();
+      } catch (error) {
+        writeToStderr(`${errorMessage(error)}\n`);
+        gracefulShutdownSync(1);
+        return;
+      }
 
       // TODO(1633-T012): invoke Spec 021 UMMAYA OTEL init here
       // once initUmmayaOtel() exists (separate commit).
@@ -2651,7 +2659,7 @@ async function run(): Promise<CommanderCommand> {
     process.exit(0);
   });
 
-  // Remote Control command — connect local environment to claude.ai/code.
+  // Remote Control command — connect local environment to UMMAYA on the web.
   // The actual command is intercepted by the fast-path in cli.tsx before
   // Commander.js runs, so this registration exists only for help output.
   // Always hidden: isBridgeEnabled() at this point (before enableConfigs)

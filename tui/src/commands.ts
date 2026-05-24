@@ -1,17 +1,11 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
-//
-// UMMAYA-2640: 19 P0 auto-stub commands removed — Stage-1 sourcemap reconstruction
-// gap (Initiative #2636 / Epic #2640). All were NO-OP Proxy stubs from
-// Epic #1633 dead-code elimination tracking. See
-// `specs/cc-migration-audit/scope-S5-commands-input.md § DROP-CANDIDATE`.
-// Removed: ant-trace, autofix-pr, backfill-sessions, break-cache, bughunter,
-// commands/, ctx_viz, debug-tool-call, env, good-claude, issue, mock-limits,
-// oauth-refresh, perf-issue, reset-limits, share, summary, teleport, plus the
-// `commands/clear/clear/` nested reconstruction artifact (CC-original absent).
-//
 import addDir from './commands/add-dir/index.js'
+import autofixPr from './commands/autofix-pr/index.js'
+import backfillSessions from './commands/backfill-sessions/index.js'
 import btw from './commands/btw/index.js'
-// feedback command removed — claude.ai 1P telemetry submission, Anthropic-only (Spec 1633 / Epic #2293).
+import goodClaude from './commands/good-claude/index.js'
+import issue from './commands/issue/index.js'
+import feedback from './commands/feedback/index.js'
 import clear from './commands/clear/index.js'
 import color from './commands/color/index.js'
 import commit from './commands/commit.js'
@@ -23,6 +17,7 @@ import config from './commands/config/index.js'
 import { context, contextNonInteractive } from './commands/context/index.js'
 import cost from './commands/cost/index.js'
 import diff from './commands/diff/index.js'
+import ctx_viz from './commands/ctx_viz/index.js'
 import doctor from './commands/doctor/index.js'
 import memory from './commands/memory/index.js'
 import help from './commands/help/index.js'
@@ -34,17 +29,21 @@ import login from './commands/login/index.js'
 import logout from './commands/logout/index.js'
 import installGitHubApp from './commands/install-github-app/index.js'
 import installSlackApp from './commands/install-slack-app/index.js'
+import breakCache from './commands/break-cache/index.js'
 import mcp from './commands/mcp/index.js'
 import mobile from './commands/mobile/index.js'
+import onboarding from './commands/onboarding/index.js'
 import pr_comments from './commands/pr_comments/index.js'
 import releaseNotes from './commands/release-notes/index.js'
 import rename from './commands/rename/index.js'
 import resume from './commands/resume/index.js'
 import review, { ultrareview } from './commands/review.js'
 import session from './commands/session/index.js'
+import share from './commands/share/index.js'
 import skills from './commands/skills/index.js'
 import status from './commands/status/index.js'
 import tasks from './commands/tasks/index.js'
+import teleport from './commands/teleport/index.js'
 /* eslint-disable @typescript-eslint/no-require-imports */
 const agentsPlatform =
   process.env.USER_TYPE === 'ant'
@@ -52,6 +51,7 @@ const agentsPlatform =
     : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 import securityReview from './commands/security-review.js'
+import bughunter from './commands/bughunter/index.js'
 import terminalSetup from './commands/terminalSetup/index.js'
 import usage from './commands/usage/index.js'
 import theme from './commands/theme/index.js'
@@ -110,16 +110,11 @@ const peersCmd = feature('UDS_INBOX')
       require('./commands/peers/index.js') as typeof import('./commands/peers/index.js')
     ).default
   : null
-// UMMAYA: `/fork` is a first-class session-fork command (delegates to
-// branch.ts at runtime). The CC `FORK_SUBAGENT` feature flag gates a
-// different concept (subagent fork) and is permanently `false` per
-// tui/src/stubs/bun-bundle.ts; keeping the feature() check here would
-// suppress the citizen-facing /fork promised by docs/requirements/
-// ummaya-migration-tree.md § A5. Decision: docs/decisions/
-// fork-command-decision.md (2026-05-04).
-const forkCmd = (
-  require('./commands/fork/index.js') as typeof import('./commands/fork/index.js')
-).default
+const forkCmd = feature('FORK_SUBAGENT')
+  ? (
+      require('./commands/fork/index.js') as typeof import('./commands/fork/index.js')
+    ).default
+  : null
 const buddy = feature('BUDDY')
   ? (
       require('./commands/buddy/index.js') as typeof import('./commands/buddy/index.js')
@@ -131,25 +126,26 @@ import thinkbackPlay from './commands/thinkback-play/index.js'
 import permissions from './commands/permissions/index.js'
 import plan from './commands/plan/index.js'
 import fast from './commands/fast/index.js'
-// passes command removed — claude.ai guest passes SaaS dead in UMMAYA
+import passes from './commands/passes/index.js'
 import privacySettings from './commands/privacy-settings/index.js'
 import hooks from './commands/hooks/index.js'
 import files from './commands/files/index.js'
 import branch from './commands/branch/index.js'
 import agents from './commands/agents/index.js'
-// Spec 1979 T021 — UMMAYA citizen plugin command (singular file). The previous
-// import (`./commands/plugin/index.js`) routed `/plugin` to the CC marketplace
-// surface; the singular file emits `plugin_op_request` IPC frames consumed by
-// the backend dispatcher in `src/ummaya/ipc/plugin_op_dispatcher.py`. The CC
-// marketplace residue under `commands/plugin/`, `services/plugins/`, and
-// `utils/plugins/` is now unreachable from citizen surface; cleanup tracked
-// in #2242 (deferred to a Spec 1633-style follow-up Epic).
-import plugin from './commands/plugin.js'
+import plugin from './commands/plugin/index.js'
 import reloadPlugins from './commands/reload-plugins/index.js'
 import rewind from './commands/rewind/index.js'
 import heapDump from './commands/heapdump/index.js'
+import mockLimits from './commands/mock-limits/index.js'
 import bridgeKick from './commands/bridge-kick.js'
 import version from './commands/version.js'
+import summary from './commands/summary/index.js'
+import {
+  resetLimits,
+  resetLimitsNonInteractive,
+} from './commands/reset-limits/index.js'
+import antTrace from './commands/ant-trace/index.js'
+import perfIssue from './commands/perf-issue/index.js'
 import sandboxToggle from './commands/sandbox-toggle/index.js'
 import chrome from './commands/chrome/index.js'
 import stickers from './commands/stickers/index.js'
@@ -171,7 +167,9 @@ import {
   clearPluginSkillsCache,
 } from './utils/plugins/loadPluginCommands.js'
 import memoize from 'lodash-es/memoize.js'
-import { isFirstPartyUmmayaBaseUrl } from './utils/model/providers.js'
+import { isUsing3PServices, isClaudeAISubscriber } from './utils/auth.js'
+import { isFirstPartyAnthropicBaseUrl } from './utils/model/providers.js'
+import env from './commands/env/index.js'
 import exit from './commands/exit/index.js'
 import exportCommand from './commands/export/index.js'
 import model from './commands/model/index.js'
@@ -187,8 +185,23 @@ import rateLimitOptions from './commands/rate-limit-options/index.js'
 import statusline from './commands/statusline.js'
 import effort from './commands/effort/index.js'
 import stats from './commands/stats/index.js'
-// UMMAYA Spec 1633 / Epic #2293 — commands/insights.ts deleted (claude-code
-// internal /insights command; not a UMMAYA citizen use case).
+// insights.ts is 113KB (3200 lines, includes diffLines/html rendering). Lazy
+// shim defers the heavy module until /insights is actually invoked.
+const usageReport: Command = {
+  type: 'prompt',
+  name: 'insights',
+  description: 'Generate a report analyzing your UMMAYA sessions',
+  contentLength: 0,
+  progressMessage: 'analyzing your sessions',
+  source: 'builtin',
+  async getPromptForCommand(args, context) {
+    const real = (await import('./commands/insights.js')).default
+    if (real.type !== 'prompt') throw new Error('unreachable')
+    return real.getPromptForCommand(args, context)
+  },
+}
+import oauthRefresh from './commands/oauth-refresh/index.js'
+import debugToolCall from './commands/debug-tool-call/index.js'
 import { getSettingSourceName } from './utils/settings/constants.js'
 import {
   type Command,
@@ -209,27 +222,35 @@ export type {
 export { getCommandName, isCommandEnabled } from './types/command.js'
 
 // Commands that get eliminated from the external build
-//
-// UMMAYA-2640: 19 P0 auto-stub entries removed (backfillSessions, breakCache,
-// bughunter, ctx_viz, goodClaude, issue, mockLimits, resetLimits,
-// resetLimitsNonInteractive, share, summary, teleport, antTrace, perfIssue,
-// env, oauthRefresh, debugToolCall, autofixPr — all NO-OP Proxy stubs from
-// Stage-1 sourcemap reconstruction gap, Initiative #2636 / Epic #2640).
-// The remaining USER_TYPE-gated entries (commit, commitPushPr, initVerifiers,
-// bridgeKick, version, agentsPlatform, plus optional flag-gated forceSnip /
-// ultraplan / subscribePr) are kept; they have CC source-of-truth
-// implementations or UMMAYA-justified equivalents and are still surfaced for
-// internal builds when `process.env.USER_TYPE === 'ant'`.
 export const INTERNAL_ONLY_COMMANDS = [
+  backfillSessions,
+  breakCache,
+  bughunter,
   commit,
   commitPushPr,
+  ctx_viz,
+  goodClaude,
+  issue,
   initVerifiers,
   ...(forceSnip ? [forceSnip] : []),
+  mockLimits,
   bridgeKick,
   version,
   ...(ultraplan ? [ultraplan] : []),
   ...(subscribePr ? [subscribePr] : []),
+  resetLimits,
+  resetLimitsNonInteractive,
+  onboarding,
+  share,
+  summary,
+  teleport,
+  antTrace,
+  perfIssue,
+  env,
+  oauthRefresh,
+  debugToolCall,
   agentsPlatform,
+  autofixPr,
 ].filter(Boolean)
 
 // Declared as a function so that we don't run this until getCommands is called,
@@ -261,8 +282,6 @@ const COMMANDS = memoize((): Command[] => [
   ide,
   init,
   keybindings,
-  logout,
-  login(),
   installGitHubApp,
   installSlackApp,
   mcp,
@@ -285,7 +304,7 @@ const COMMANDS = memoize((): Command[] => [
   stickers,
   tag,
   theme,
-  // feedback removed — Anthropic-only (Spec 1633 / Epic #2293)
+  feedback,
   review,
   ultrareview,
   rewind,
@@ -296,6 +315,7 @@ const COMMANDS = memoize((): Command[] => [
   extraUsageNonInteractive,
   rateLimitOptions,
   usage,
+  usageReport,
   vim,
   ...(webCmd ? [webCmd] : []),
   ...(forkCmd ? [forkCmd] : []),
@@ -314,6 +334,8 @@ const COMMANDS = memoize((): Command[] => [
   hooks,
   exportCommand,
   sandboxToggle,
+  ...(!isUsing3PServices() ? [logout, login()] : []),
+  passes,
   ...(peersCmd ? [peersCmd] : []),
   tasks,
   ...(workflowsCmd ? [workflowsCmd] : []),
@@ -397,11 +419,18 @@ export function meetsAvailabilityRequirement(cmd: Command): boolean {
   for (const a of cmd.availability) {
     switch (a) {
       case 'claude-ai':
-        // Anthropic claude.ai subscription check removed (UMMAYA uses FriendliAI)
+        if (isClaudeAISubscriber()) return true
         break
       case 'console':
-        // Anthropic console API key check removed (UMMAYA uses FriendliAI)
-        if (isFirstPartyUmmayaBaseUrl()) return true
+        // Console API key user = direct 1P API customer (not 3P, not claude.ai).
+        // Excludes 3P (Bedrock/Vertex/Foundry) who don't set ANTHROPIC_BASE_URL
+        // and gateway users who proxy through a custom base URL.
+        if (
+          !isClaudeAISubscriber() &&
+          !isUsing3PServices() &&
+          isFirstPartyAnthropicBaseUrl()
+        )
+          return true
         break
       default: {
         const _exhaustive: never = a
@@ -599,7 +628,7 @@ export const REMOTE_SAFE_COMMANDS: Set<Command> = new Set([
   usage, // Show usage info
   copy, // Copy last message
   btw, // Quick note
-  // feedback removed — Anthropic-only (Spec 1633 / Epic #2293)
+  feedback, // Send feedback
   plan, // Plan mode toggle
   keybindings, // Keybinding management
   statusline, // Status line toggle
@@ -624,8 +653,7 @@ export const BRIDGE_SAFE_COMMANDS: Set<Command> = new Set(
     compact, // Shrink context — useful mid-session from a phone
     clear, // Wipe transcript
     cost, // Show session cost
-    // UMMAYA-2640: `summary` removed — was a P0 NO-OP Proxy stub (Stage-1
-    // sourcemap reconstruction gap, Initiative #2636 / Epic #2640).
+    summary, // Summarize conversation
     releaseNotes, // Show changelog
     files, // List tracked files
   ].filter((c): c is Command => c !== null),
@@ -723,26 +751,4 @@ export function formatDescriptionWithSource(cmd: Command): string {
   }
 
   return `${cmd.description} (${getSettingSourceName(cmd.source)})`
-}
-
-// UMMAYA migration: re-export the dispatcher API so tests / consumers that
-// `import { buildDefaultRegistry, dispatchCommand } from 'src/commands'`
-// resolve to the new dispatcher (Spec 1637 P6 T032). The legacy `commands.ts`
-// barrel takes precedence over `commands/index.ts` in Bun's module
-// resolution, so the new exports must be hoisted up.
-export {
-  buildDefaultRegistry,
-  dispatchCommand,
-  createRegistry,
-  registerCommand,
-  isSlashCommand,
-  listCommands,
-} from './commands/index.js'
-export type { CommandRegistry, DispatchResult } from './commands/index.js'
-
-export type Command = {
-  name: string
-  description?: string
-  isHidden?: boolean
-  [key: string]: unknown
 }

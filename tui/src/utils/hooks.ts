@@ -55,13 +55,13 @@ import {
   logEvent,
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
 } from 'src/services/analytics/index.js'
-// UMMAYA-original: CC telemetry events not used — no-op.
-const logOTelEvent = (_eventName: string, _data?: unknown): void => {}
+import { logOTelEvent } from './telemetry/events.js'
 import { ALLOWED_OFFICIAL_MARKETPLACE_NAMES } from './plugins/schemas.js'
-// UMMAYA-original: CC session tracing not used — no-ops.
-const startHookSpan = (_name: string, _data?: unknown): unknown => ({})
-const endHookSpan = (_span: unknown, _data?: unknown): void => {}
-const isBetaTracingEnabled = (): boolean => false
+import {
+  startHookSpan,
+  endHookSpan,
+  isBetaTracingEnabled,
+} from './telemetry/sessionTracing.js'
 import {
   hookJSONOutputSchema,
   promptRequestSchema,
@@ -132,9 +132,11 @@ import { createCombinedAbortSignal } from './combinedAbortSignal.js'
 import type { PermissionResult } from './permissions/PermissionResult.js'
 import { registerPendingAsyncHook } from './hooks/AsyncHookRegistry.js'
 import { enqueuePendingNotification } from './messageQueueManager.js'
-import { extractTextContent } from './messageText.js'
-import { getLastAssistantMessage } from './messageQueries.js'
-import { wrapInSystemReminder } from './systemReminder.js'
+import {
+  extractTextContent,
+  getLastAssistantMessage,
+  wrapInSystemReminder,
+} from './messages.js'
 import {
   emitHookStarted,
   emitHookResponse,

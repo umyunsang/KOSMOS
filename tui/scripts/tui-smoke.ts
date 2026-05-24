@@ -55,7 +55,6 @@ const ACCEPTABLE_EXIT_CODES = new Set([0, 143])
 function withoutFriendliCredential(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const next = { ...env }
   delete next.UMMAYA_FRIENDLI_TOKEN
-  delete next.UMMAYA_FRIENDLI_SESSION_ACTIVE
   return next
 }
 

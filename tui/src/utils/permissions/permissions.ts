@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle'
-import { APIUserAbortError } from 'src/sdk-compat.js'
+import { APIUserAbortError } from '@anthropic-ai/sdk'
 import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'
 import {
   getToolNameForPermissionCheck,
@@ -87,9 +87,8 @@ import {
   buildClassifierUnavailableMessage,
   buildYoloRejectionMessage,
   DONT_ASK_REJECT_MESSAGE,
-} from '../permissionMessages.js'
-// UMMAYA-original: model cost calculation not used — FriendliAI pricing N/A.
-const calculateCostFromTokens = (_model?: string, _usage?: unknown): undefined => undefined
+} from '../messages.js'
+import { calculateCostFromTokens } from '../modelCost.js'
 /* eslint-enable @typescript-eslint/no-require-imports */
 import { jsonStringify } from '../slowOperations.js'
 import {
@@ -100,7 +99,6 @@ import {
   recordSuccess,
   shouldFallbackToPrompting,
 } from './denialTracking.js'
-// SWAP/path-b(2643): yoloClassifier extracted to sibling module — Spec 2643 Epic G US3.
 import {
   classifyYoloAction,
   formatActionForClassifier,
@@ -207,7 +205,7 @@ export function createPermissionRequestMessage(
   }
 
   // Default message without listing allowed commands
-  const message = `Claude requested permissions to use ${toolName}, but you haven't granted it yet.`
+  const message = `UMMAYA requested permissions to use ${toolName}, but you haven't granted it yet.`
 
   return message
 }

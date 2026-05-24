@@ -47,9 +47,9 @@ On domain or upstream errors the adapter returns a `LookupError` dict with `kind
 
 ## Endpoint
 
-- **data.go.kr endpoint**: `1360000/VilageFcstInfoService_2.0/getVilageFcst`
-- **Source URL**: https://www.data.go.kr/data/15084084/openapi.do
-- **Authentication**: API key via `UMMAYA_DATA_GO_KR_API_KEY` (per Constitution IV)
+- **KMA API Hub endpoint**: `https://apihub.kma.go.kr/api/typ02/openApi/VilageFcstInfoService_2.0/getVilageFcst`
+- **Source URL**: https://apihub.kma.go.kr/apiList.do?seqApi=10
+- **Authentication**: KMA API Hub key via `UMMAYA_KMA_API_HUB_AUTH_KEY` as `authKey`.
 
 ## Permission tier rationale
 
@@ -117,11 +117,12 @@ UMMAYA: 서울 시청(위도 37.5665, 경도 126.9780) 2026년 4월 26일 오전
 
 ## Constraints
 
-- **Rate limit**: data.go.kr daily quota: 1,000 requests per API key. In-adapter rate limit: 10 requests/minute (`rate_limit_per_minute=10`).
-- **Freshness window**: KMA publishes 8 times/day. `cache_ttl_seconds=0` (no cache). Coordinates outside the KMA Lambert domain (approximately 33–38°N, 126–130°E) return a `LookupError` with `reason="out_of_domain"`.
+- **Rate limit**: KMA API Hub applies the approved API usage quota for this service. In-adapter rate limit: 10 requests/minute (`rate_limit_per_minute=10`).
+- **Freshness window**: KMA publishes 8 times/day and the guide says to call a slot after its +10 minute publication window. `cache_ttl_seconds=0` (no cache). Coordinates outside the KMA Lambert domain (approximately 33–38°N, 126–130°E) return a `LookupError` with `reason="out_of_domain"`.
+- **Endpoint caveat**: This adapter uses the KMA API Hub `authKey` surface. The data.go.kr `serviceKey` credential is not accepted for this adapter.
 - **Fixture coverage gaps**: `precipitation_mm` values are raw KMA strings (`"강수없음"`, `"1.0mm"`, `"30.0~50.0mm"`) and require caller-side parsing. TMN/TMX items appear once per day; they will be present in `points` but not at every hour. `sky_code` may be `None` for hours beyond the 3-day window.
 - **Error envelope examples**:
   - Tier-1 fail: `{"kind": "error", "reason": "upstream_unavailable", "message": "KMA API error: resultCode='03' resultMsg='NO_DATA'", "retryable": false}`
   - Domain error: `{"kind": "error", "reason": "out_of_domain", "message": "Coordinates (lat=35.0, lon=120.0) are outside the KMA Lambert domain."}`
-  - Tier-2 / Tier-3 (auth) fail: `{"error": {"code": "CONFIGURATION_ERROR", "message": "Missing required environment variable: UMMAYA_DATA_GO_KR_API_KEY"}}`
+  - Tier-2 / Tier-3 (auth) fail: `{"error": {"code": "CONFIGURATION_ERROR", "message": "Missing required environment variable: UMMAYA_KMA_API_HUB_AUTH_KEY"}}`
   - Network timeout: `{"kind": "error", "reason": "timeout", "message": "Network error reaching KMA forecast API: timed out", "retryable": true}`

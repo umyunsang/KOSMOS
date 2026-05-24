@@ -1,12 +1,11 @@
-import type { BetaContentBlock } from 'src/sdk-compat.js'
+import type { BetaContentBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import { createHash, randomUUID, type UUID } from 'crypto'
 import { mkdir, readFile, writeFile } from 'fs/promises'
 import isPlainObject from 'lodash-es/isPlainObject.js'
 import mapValues from 'lodash-es/mapValues.js'
 import { dirname, join } from 'path'
 import { addToTotalSessionCost } from 'src/cost-tracker.js'
-// UMMAYA: utils/modelCost.js deleted by Spec 1633 P1. calculateUSDCost → 0 (cost tracking not applicable).
-const calculateUSDCost = (_model: string, _usage: unknown): number => 0
+import { calculateUSDCost } from 'src/utils/modelCost.js'
 import type {
   AssistantMessage,
   Message,
@@ -18,7 +17,7 @@ import { getCwd } from '../utils/cwd.js'
 import { env } from '../utils/env.js'
 import { getClaudeConfigHomeDir, isEnvTruthy } from '../utils/envUtils.js'
 import { getErrnoCode } from '../utils/errors.js'
-import { normalizeMessagesForAPI } from '../utils/messageApiNormalize.js'
+import { normalizeMessagesForAPI } from '../utils/messages.js'
 import { jsonParse, jsonStringify } from '../utils/slowOperations.js'
 
 function shouldUseVCR(): boolean {

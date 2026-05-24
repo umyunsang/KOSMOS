@@ -15,7 +15,7 @@
 // The Plugin context in defaultBindings.ts (space/i/r/a) mirrors this surface.
 
 import React, { useState, useCallback } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput } from '../../ink.js';
 import { useTheme } from '../../theme/provider.js';
 import { useUiL2I18n } from '../../i18n/uiL2.js';
 

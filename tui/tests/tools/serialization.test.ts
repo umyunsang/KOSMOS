@@ -40,6 +40,24 @@ describe('toolToFunctionSchema - LookupPrimitive', () => {
     expect(required).toContain('params')
     expect(properties['mode']).toBeUndefined()
   })
+
+  test('uses the full Tool.prompt() text as the model-facing description', async () => {
+    const def = await toolToFunctionSchema(LookupPrimitive)
+    const prompt = await LookupPrimitive.prompt({
+      getToolPermissionContext: async () => ({
+        mode: 'default',
+        additionalWorkingDirectories: new Map(),
+        alwaysAllowRules: {},
+        alwaysDenyRules: {},
+        alwaysAskRules: {},
+        isBypassPermissionsModeAvailable: false,
+      }),
+      tools: [LookupPrimitive],
+      agents: [],
+    })
+
+    expect(def.function.description).toBe(prompt)
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -97,22 +115,22 @@ describe('toolToFunctionSchema - ResolveLocationPrimitive', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Test 5 — getToolDefinitionsForFrame returns exactly 4 active primitives
+// Test 5 — getToolDefinitionsForFrame delegates model-facing adapter schemas to backend
 // ---------------------------------------------------------------------------
 describe('getToolDefinitionsForFrame', () => {
-  test('returns exactly 4 published primitive entries', async () => {
+  test('does not publish root primitives from the TUI catalog', async () => {
     const defs = await getToolDefinitionsForFrame()
-    expect(defs.length).toBe(4)
+    expect(defs).toEqual([])
   })
 
-  test('includes the expected primitive tool names', async () => {
+  test('root primitive names are absent from the TUI-provided tool list', async () => {
     const defs = await getToolDefinitionsForFrame()
     const names = new Set(defs.map(d => d.function.name))
 
-    expect(names.has('find')).toBe(true)
-    expect(names.has('locate')).toBe(true)
-    expect(names.has('send')).toBe(true)
-    expect(names.has('check')).toBe(true)
+    expect(names.has('find')).toBe(false)
+    expect(names.has('locate')).toBe(false)
+    expect(names.has('send')).toBe(false)
+    expect(names.has('check')).toBe(false)
     expect(names.has('subscribe')).toBe(false)
   })
 })

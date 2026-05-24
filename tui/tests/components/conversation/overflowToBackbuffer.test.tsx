@@ -6,7 +6,7 @@
 
 import { describe, expect, it, mock } from 'bun:test'
 import React from 'react'
-import { Text } from 'ink'
+import { Text } from '../../../src/ink.js'
 import { render } from 'ink-testing-library'
 import { VirtualizedList } from '../../../src/components/conversation/VirtualizedList'
 
@@ -21,7 +21,7 @@ function makeMessages(count: number): readonly string[] {
 const keyExtractor = (item: string): string => item
 
 // ---------------------------------------------------------------------------
-// Test: overflowToBackbuffer — historical rows go to Static backbuffer
+// Test: overflowToBackbuffer — historical rows stay above the live viewport
 // ---------------------------------------------------------------------------
 
 describe('VirtualizedList overflowToBackbuffer — exceeds terminal height', () => {
@@ -46,7 +46,7 @@ describe('VirtualizedList overflowToBackbuffer — exceeds terminal height', () 
   })
 
   it('on re-render after appending one message, only viewport rows re-invoke renderItem', () => {
-    // First render: 200 items. Static will commit all backbuffer items on first mount.
+    // First render: 200 items. Backbuffer items are mounted above the viewport.
     const initial = makeMessages(200)
 
     // First-render spy captures initial mount calls.
@@ -78,7 +78,7 @@ describe('VirtualizedList overflowToBackbuffer — exceeds terminal height', () 
       />,
     )
 
-    // On re-render, <Static> only processes newly-added backbuffer entries
+    // On re-render, only newly visible entries should add render work.
     // (those appended since the last committed index). The viewport window
     // (tail ~11 items) also re-renders. Total should be << 201.
     const callsOnReRender = reRenderSpy.mock.calls.length
@@ -140,7 +140,7 @@ describe('VirtualizedList overflowToBackbuffer — no re-render of historical ro
     expect(callsAfterFirstRender).toBeLessThan(101)
   })
 
-  it('renders correctly with overflowToBackbuffer=false (no Static region)', () => {
+  it('renders correctly with overflowToBackbuffer=false (no backbuffer region)', () => {
     const items = makeMessages(50)
 
     const { lastFrame } = render(

@@ -57,8 +57,7 @@ import {
   getFsImplementation,
   safeResolvePath,
 } from '../../utils/fsOperations.js'
-// UMMAYA-original: auto mode (fast mode) not supported with EXAONE provider.
-const modelSupportsAutoMode = (_model?: string): boolean => false
+import { modelSupportsAutoMode } from '../betas.js'
 import { logForDebugging } from '../debug.js'
 import { gracefulShutdown } from '../gracefulShutdown.js'
 import { getMainLoopModel } from '../model/model.js'

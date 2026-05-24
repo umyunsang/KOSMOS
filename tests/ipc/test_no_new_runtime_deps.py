@@ -101,6 +101,8 @@ _TUI_DEPS_SNAPSHOT: Final[frozenset[str]] = frozenset(
         "auto-bind",
         "axios",
         "bidi-js",
+        # PR #3040 — CC restored source parity for bun:bundle feature gates.
+        "bundle",
         "chalk",
         "chokidar",
         "cli-boxes",
@@ -129,6 +131,8 @@ _TUI_DEPS_SNAPSHOT: Final[frozenset[str]] = frozenset(
         "proper-lockfile",
         "qrcode",
         "react",
+        # PR #3040 — CC restored Ink renderer depends on react-reconciler.
+        "react-reconciler",
         "semver",
         "shell-quote",
         "supports-hyperlinks",

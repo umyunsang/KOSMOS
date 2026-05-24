@@ -18,7 +18,7 @@ UMMAYA TUI renders through Ink (React for CLIs) in a terminal emulator. Unlike t
 2. **Reduced-motion fallback** — components that animate (all `Spinner/*` rows, `LogoV2/AnimatedAsterisk.tsx`, `LogoV2/WelcomeV2.tsx`, `useShimmerAnimation.ts` consumers) MUST honor the `NO_COLOR` / `UMMAYA_REDUCED_MOTION=1` env flag and emit a static-text equivalent. Implementation Epic is H #1302 (palette + motion tokens); runtime check is the responsibility of the implementing Epic (typically H or B).
 3. **Semantic ordering** — rendered output MUST follow top-to-bottom reading order matching visual precedence. Ink's `<Box>` flex layout with `flexDirection="column"` is the default compliant shape; `position="absolute"` or out-of-order rendering is a regression that breaks the text-stream pathway.
 4. **Focus narration** — focus transitions (WCAG 2.4.7) MUST emit a human-readable cue in the text stream when focus lands. Inverse-video alone is insufficient for screen readers that cannot see color — every focused affordance MUST carry a visible label or announcement line.
-5. **Keyboard-only operation** — per WCAG 2.1.1, no affordance may require a mouse or trackpad; no citizen workflow may depend on terminal mouse reporting (`xterm-mouse`). All `IME-safe = yes` rows (§5) additionally guard against composition-mid-submit — the composition keypress MUST NOT trigger an action.
+5. **Keyboard-only operation** — per WCAG 2.1.1, no affordance may require a mouse or trackpad; no citizen workflow may depend on terminal mouse reporting (`xterm-mouse`). All `Input path = yes` rows (§5) additionally guard against composition-mid-submit — the composition keypress MUST NOT trigger an action.
 
 Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM is deferred to #25 (`4.1.2 Name Role Value — deep compliance`); this gate requires role annotations only as §3 table entries, not runtime exposure. Epic H #1302 (palette) and Epic I #1303 (shortcuts) are the primary downstream consumers of this pathway; their `/speckit-specify` inputs MUST cite this §1.1 when proposing any animation, color, or keybinding decision.
 
@@ -36,7 +36,7 @@ Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM 
 
 <a id="ag-customselect"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 1 | CustomSelect/index.ts | PORT | 1.4.3 | — | n/a | n/a |
 | 2 | CustomSelect/option-map.ts | PORT | 1.4.3 | — | n/a | n/a |
@@ -51,7 +51,7 @@ Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM 
 
 <a id="ag-design-system"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 11 | design-system/Byline.tsx | PORT | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
 | 12 | design-system/color.ts | PORT | 1.4.3 | — | n/a | n/a |
@@ -72,7 +72,7 @@ Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM 
 
 <a id="ag-diff"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 27 | diff/DiffDetailView.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | — | n/a | 4.5:1 |
 | 28 | diff/DiffDialog.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | — | n/a | 4.5:1 |
@@ -80,13 +80,13 @@ Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM 
 
 <a id="ag-highlightedcode"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 30 | HighlightedCode/Fallback.tsx | PORT | 1.4.3 | — | n/a | 4.5:1 |
 
 <a id="ag-logov2"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 31 | LogoV2/AnimatedAsterisk.tsx | REWRITE | 1.4.3, 4.1.2 | 은하계 로고 애니메이션 대체 텍스트 제공; 고대비 모드 지원 · **SHIPPED-Epic-H #1302** | n/a | 3:1 |
 | 32 | LogoV2/CondensedLogo.tsx | REWRITE | 1.4.3, 4.1.2 | 축약 헤더 UMMAYA 워드마크 대체 텍스트; 스크린 리더 세션 정보 안내 · **SHIPPED-Epic-H #1302** | n/a | 4.5:1 |
@@ -98,7 +98,7 @@ Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM 
 
 <a id="ag-spinner"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 38 | Spinner/FlashingChar.tsx | PORT | 1.4.3 | — | n/a | 3:1 |
 | 39 | Spinner/GlimmerMessage.tsx | PORT | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
@@ -116,14 +116,14 @@ Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM 
 
 <a id="ag-structureddiff"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 51 | StructuredDiff/colorDiff.ts | PORT | 1.4.3 | — | n/a | n/a |
 | 52 | StructuredDiff/Fallback.tsx | PORT | 1.4.3 | — | n/a | 4.5:1 |
 
 <a id="ag-ui"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 53 | ui/OrderedList.tsx | PORT | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
 | 54 | ui/OrderedListItem.tsx | PORT | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
@@ -131,7 +131,7 @@ Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM 
 
 <a id="ag-messages"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 56 | messages/AssistantRedactedThinkingMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
 | 57 | messages/AssistantTextMessage.tsx | PORT | 1.4.3, 4.1.2 | 전체 대화 내역 스크린 리더 접근 가능; 개인정보(PIPA) 렌더링 시 processor 역할 유지 — controller 재고지 책임 없음 | n/a | 4.5:1 |
@@ -194,13 +194,13 @@ Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM 
 
 <a id="ag-promptinput"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 114 | PromptInput/* | REWRITE | 1.4.3, 2.1.1, 2.4.7, 3.3.2, 4.1.2 | 한국어 IME 합성 보호; 키보드 접근성 유지; 입력 필드 레이블 및 플레이스홀더 한국어 제공 | yes | 4.5:1 |
 
 <a id="ag-helpv2"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 115 | HelpV2/Commands.tsx | PORT | 1.4.3, 4.1.2 | 검색 가능한 단일 창 안내; 포커스 복귀 지원 | n/a | 4.5:1 |
 | 116 | HelpV2/General.tsx | PORT | 1.4.3, 4.1.2 | 검색 가능한 단일 창 안내; 포커스 복귀 지원 | n/a | 4.5:1 |
@@ -208,7 +208,7 @@ Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM 
 
 <a id="ag-hooks"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 118 | hooks/HooksConfigMenu.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | — | n/a | 4.5:1 |
 | 119 | hooks/PromptDialog.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 3.3.2, 4.1.2 | — | n/a | 4.5:1 |
@@ -219,7 +219,7 @@ Deep ARIA-style role/name/value conformance (WCAG 4.1.2) for an Ink virtual DOM 
 
 <a id="ag-memory"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 124 | memory/MemoryFileSelector.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | — | n/a | 4.5:1 |
 | 125 | memory/MemoryUpdateNotification.tsx | PORT | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
@@ -234,7 +234,7 @@ _(No PORT or REWRITE rows in the ClaudeCodeHint family — PluginHintMenu.tsx is
 
 <a id="ag-permissions"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 126 | permissions/PermissionDialog.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 권한 게이트 키보드 접근 + Shift+Tab 순환; 음성 안내 호환 | n/a | 4.5:1 |
 | 127 | permissions/* | REWRITE | 1.4.3, 2.1.1, 2.4.7, 3.3.2, 4.1.2 | 권한 게이트 키보드 접근 + Shift+Tab 순환; 음성 안내 호환; 권한 요청 레이블 한국어 제공 | n/a | 4.5:1 |
@@ -242,21 +242,21 @@ _(No PORT or REWRITE rows in the ClaudeCodeHint family — PluginHintMenu.tsx is
 
 <a id="ag-trustdialog"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 129 | TrustDialog/TrustDialog.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 3.3.2, 4.1.2 | 권한 게이트 키보드 접근 + Shift+Tab 순환; 음성 안내 호환; 동의 절차 스크린 리더 안내 | n/a | 4.5:1 |
 | 130 | TrustDialog/utils.ts | REWRITE | 1.4.3 | — | n/a | n/a |
 
 <a id="ag-managedsettings"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 131 | ManagedSettingsSecurityDialog/ManagedSettingsSecurityDialog.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 3.3.2, 4.1.2 | 언어/테마/권한모드 라벨; 오류 메시지 즉시 안내; 관리형 설정 경고 스크린 리더 접근 | n/a | 4.5:1 |
 | 132 | ManagedSettingsSecurityDialog/utils.ts | REWRITE | 1.4.3 | — | n/a | n/a |
 
 <a id="ag-agents"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 133 | agents/* | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | — | n/a | 4.5:1 |
 
@@ -278,7 +278,7 @@ _(No PORT or REWRITE rows in the sandbox family — all five sandbox/* rows are 
 
 <a id="ag-mcp"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 134 | mcp/CapabilitiesSection.tsx | REWRITE | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
 | 135 | mcp/ElicitationDialog.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 3.3.2, 4.1.2 | 한국어 IME 합성 보호; 키보드 접근성 유지; 입력 파라미터 레이블 한국어 검증 | yes | 4.5:1 |
@@ -292,13 +292,13 @@ _(No PORT or REWRITE rows in the skills family — SkillsMenu.tsx is DISCARD.)_
 
 <a id="ag-tasks"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 139 | tasks/* | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | — | n/a | 4.5:1 |
 
 <a id="ag-wizard"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 140 | wizard/index.ts | REWRITE | 1.4.3 | — | n/a | n/a |
 | 141 | wizard/useWizard.ts | REWRITE | 1.4.3 | — | n/a | n/a |
@@ -316,7 +316,7 @@ _(No PORT or REWRITE rows in the LspRecommendation family — LspRecommendationM
 
 <a id="ag-settings"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 145 | Settings/Config.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 3.3.2, 4.1.2 | 언어/테마/권한모드 라벨; 오류 메시지 즉시 안내 | yes | 4.5:1 |
 | 146 | Settings/Settings.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 언어/테마/권한모드 라벨; 오류 메시지 즉시 안내 | n/a | 4.5:1 |
@@ -334,27 +334,27 @@ _(No PORT or REWRITE rows in the DesktopUpsell family — DesktopUpsellStartup.t
 
 <a id="ag-logo-wordmark"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 154 | FastIcon.tsx | REWRITE | 1.4.3, 4.1.2 | — | n/a | 3:1 |
 | 155 | TagTabs.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | — | n/a | 4.5:1 |
 
 <a id="ag-onboarding"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 156 | Onboarding.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 은하계 스플래시 대체 텍스트; 키보드 포커스 순서 명확; 시민 온보딩 흐름 스크린 리더 안내 | n/a | 4.5:1 |
 
 <a id="ag-shortcuts"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 157 | root.shortcuts/* | REWRITE | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | 단축키 충돌 사전 경고; 한영 입력 모드 전환 안내 | n/a | 4.5:1 |
 | 158 | KeybindingWarnings.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 3.3.2, 4.1.2 | 단축키 충돌 사전 경고; 한영 입력 모드 전환 안내; 경고 메시지 즉시 안내 | n/a | 4.5:1 |
 
 <a id="ag-coordinator"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 159 | AgentProgressLine.tsx | PORT | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
 | 160 | App.tsx | PORT | 1.4.3, 4.1.2 | — | n/a | 4.5:1 |
@@ -373,7 +373,7 @@ _(No PORT or REWRITE rows in the DesktopUpsell family — DesktopUpsellStartup.t
 
 <a id="ag-dialogs"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 173 | CostThresholdDialog.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 3.3.2, 4.1.2 | — | n/a | 4.5:1 |
 | 174 | ExitFlow.tsx | PORT | 1.4.3, 2.1.1, 2.4.7, 4.1.2 | — | n/a | 4.5:1 |
@@ -388,7 +388,7 @@ _(No PORT or REWRITE rows in the DesktopUpsell family — DesktopUpsellStartup.t
 
 <a id="ag-input"></a>
 
-| # | CC source path | Verdict | WCAG | KWCAG notes | IME-safe | Contrast constraint |
+| # | CC source path | Verdict | WCAG | KWCAG notes | Input path | Contrast constraint |
 |---|---|---|---|---|---|---|
 | 183 | BaseTextInput.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 3.3.2, 4.1.2 | 한국어 IME 합성 보호; 키보드 접근성 유지 | yes | 4.5:1 |
 | 184 | TextInput.tsx | REWRITE | 1.4.3, 2.1.1, 2.4.7, 3.3.2, 4.1.2 | 한국어 IME 합성 보호; 키보드 접근성 유지 | yes | 4.5:1 |
@@ -409,15 +409,15 @@ The following families must include non-empty KWCAG notes in their gate rows (FR
 - `ManagedSettingsSecurityDialog` — citizen-visible dangerous-settings warning
 - Shortcut surfaces (`root.shortcuts/*`, `KeybindingWarnings.tsx`) — keyboard conflict warnings and IME-mode-switch guidance
 
-## §5 · IME-safe composition-gate acceptance
+## §5 · Input path composition-gate acceptance
 
-Every `IME-safe = yes` gate row, when materialized as a Task sub-issue via `/speckit-taskstoissues`, MUST carry this line in its acceptance-checklist body:
+Every `Input path = yes` gate row, when materialized as a Task sub-issue via `/speckit-taskstoissues`, MUST carry this line in its acceptance-checklist body:
 
 ```
 - [ ] All keyboard handlers gated on `!useKoreanIME().isComposing` before mutating input buffer
 ```
 
-IME-safe rows in this gate (11 total):
+Input path rows in this gate (11 total):
 
 - `CustomSelect/select.tsx` (row 5) — search-filter keyboard handler
 - `CustomSelect/SelectMulti.tsx` (row 6) — multi-select keyboard handler
@@ -440,7 +440,7 @@ This gate is the single source of truth for six machine-checkable invariants. `/
 | AG-01 | Every PORT/REWRITE `CatalogRow` has exactly one `AccessibilityGateRow` with matching `CC source path`. | FR-018, SC-009 | `/speckit-analyze` FAILS — reports the orphan verdict (catalog row without a gate row, or gate row without a catalog row) and blocks merge. Fix: add or remove the gate row to restore 1:1 pairing. |
 | AG-02 | The `WCAG` column is non-empty for every row (at minimum `1.4.3` for any visible component). | FR-019 | `/speckit-analyze` FAILS — reports the offending row number. Fix: populate the `WCAG` column with ≥ 1 criterion from the §2 closed set. |
 | AG-03 | Citizen-facing families (§4) have non-empty `KWCAG notes`. | FR-020 | `/speckit-analyze` FAILS — reports the family and row. Fix: author a KWCAG note specific to the citizen interaction (boilerplate strings without per-component detail do NOT satisfy this invariant and MUST be elaborated). |
-| AG-04 | `IME-safe = yes` rows propagate the composition-gate acceptance line into the generated `TaskSubIssue.acceptance_checklist` body. | FR-021 | `/speckit-taskstoissues` REJECTS the Task creation — the sub-issue body template rendering fails with a missing-line error. Fix: ensure the §5 acceptance-checklist line is included verbatim in the Task template. Downstream Epic PR fails the AG-04 check if any IME-safe component ships without the gate. |
+| AG-04 | `Input path = yes` rows propagate the composition-gate acceptance line into the generated `TaskSubIssue.acceptance_checklist` body. | FR-021 | `/speckit-taskstoissues` REJECTS the Task creation — the sub-issue body template rendering fails with a missing-line error. Fix: ensure the §5 acceptance-checklist line is included verbatim in the Task template. Downstream Epic PR fails the AG-04 check if any Input path component ships without the gate. |
 | AG-05 | `Contrast constraint` column values ⊆ `{4.5:1, 3:1, n/a}`. | FR-022 | `/speckit-analyze` FAILS — reports the out-of-set value. Fix: normalize to the three allowed values (not free-text). Epic H #1302 reviewer is copied on the failure. |
 | AG-06 | Every row's `WCAG` values ⊆ the closed set defined in §2 (exactly five criteria: 1.4.3 / 2.1.1 / 2.4.7 / 3.3.2 / 4.1.2). | FR-019 | `/speckit-analyze` FAILS — reports the out-of-set criterion. Fix: either rewrite the row to use a criterion from the closed set, or open an ADR to extend §2 (requires Accessibility Auditor sign-off). |
 

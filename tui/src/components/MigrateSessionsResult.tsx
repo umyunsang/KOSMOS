@@ -9,7 +9,7 @@
 // Props mirror MigrationSummary from utils/migrateSessions.ts.
 
 import * as React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../ink.js'
 
 // ---------------------------------------------------------------------------
 // Types

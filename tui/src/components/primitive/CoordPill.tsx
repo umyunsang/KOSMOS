@@ -7,7 +7,7 @@
  * FR-022: locate coords renderer.
  */
 import React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../../ink.js'
 import { useTheme } from '@/theme/provider'
 import type { CoordsSlot } from './types'
 

@@ -16,7 +16,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../ink.js'
 import type { BackpressureSignalFrame } from './frames.generated.js'
 
 // ---------------------------------------------------------------------------

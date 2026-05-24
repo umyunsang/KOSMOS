@@ -368,17 +368,13 @@ async def _run_chain(
 
 
 # ---------------------------------------------------------------------------
-# FR-016 — 3 tool_call + 3 tool_result frames; receipt-id regex match
+# FR-016 boundary — chat_request emits first tool_call and returns
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
 async def test_tui_primitive_dispatch_e2e(monkeypatch: pytest.MonkeyPatch) -> None:
-    """FR-016: citizen chain emits ≥3 tool_call + ≥3 tool_result frames.
-
-    SC-001: completes under 30 s. FR-015: receipt-id regex present in submit
-    tool_result envelope.
-    """
+    """FR-016: backend stops at first tool_use; TUI owns Tool.call dispatch."""
     t0 = time.monotonic()
     frame = _make_chat_request("종합소득세 신고해줘")
 
@@ -391,20 +387,13 @@ async def test_tui_primitive_dispatch_e2e(monkeypatch: pytest.MonkeyPatch) -> No
     tool_calls = [f for f in frames if f.get("kind") == "tool_call"]
     tool_results = [f for f in frames if f.get("kind") == "tool_result"]
 
-    assert len(tool_calls) >= 3, (
-        f"FR-016: expected ≥3 tool_call frames, got {len(tool_calls)}. "
-        f"Kinds emitted: {[f.get('kind') for f in frames]}"
+    assert len(tool_calls) == 1, (
+        f"FR-016: expected exactly one provider-boundary tool_call, got "
+        f"{len(tool_calls)}. Kinds emitted: {[f.get('kind') for f in frames]}"
     )
-    assert len(tool_results) >= 3, (
-        f"FR-016: expected ≥3 tool_result frames, got {len(tool_results)}. "
-        f"Kinds emitted: {[f.get('kind') for f in frames]}"
-    )
-
-    # FR-015: receipt-id present somewhere in the tool_result envelopes.
-    all_result_text = json.dumps([f.get("envelope", {}) for f in tool_results])
-    assert _RECEIPT_RE.search(all_result_text), (
-        f"FR-015: receipt-id regex not found in tool_result envelopes. "
-        f"Envelope text (truncated): {all_result_text[:400]}"
+    assert not tool_results, (
+        "chat_request must not emit tool_result; TUI Tool.call sends inbound "
+        f"tool_call frames for backend execution. Kinds emitted: {[f.get('kind') for f in frames]}"
     )
 
     # SC-001: wall-clock budget.

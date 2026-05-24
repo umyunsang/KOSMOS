@@ -1,10 +1,9 @@
 import { c as _c } from "react/compiler-runtime";
-import type { ToolResultBlockParam } from 'src/sdk-compat.js';
+import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';
 import * as React from 'react';
 import type { Tools } from '../../../Tool.js';
 import type { NormalizedUserMessage, ProgressMessage } from '../../../types/message.js';
-import { type buildMessageLookups } from '../../../utils/messageLookups.js';
-import { CANCEL_MESSAGE, INTERRUPT_MESSAGE_FOR_TOOL_USE, REJECT_MESSAGE } from '../../../utils/permissionMessages.js';
+import { type buildMessageLookups, CANCEL_MESSAGE, INTERRUPT_MESSAGE_FOR_TOOL_USE, REJECT_MESSAGE } from '../../../utils/messages.js';
 import { UserToolCanceledMessage } from './UserToolCanceledMessage.js';
 import { UserToolErrorMessage } from './UserToolErrorMessage.js';
 import { UserToolRejectMessage } from './UserToolRejectMessage.js';
@@ -70,13 +69,6 @@ export function UserToolResultMessage(t0) {
     return t2;
   }
   if (param.is_error) {
-    const canRenderVerboseToolError =
-      (verbose || isTranscriptMode === true) &&
-      message.toolUseResult !== undefined &&
-      toolUse.tool.renderToolResultMessage !== undefined;
-    if (canRenderVerboseToolError) {
-      return <UserToolSuccessMessage message={message} lookups={lookups} toolUseID={toolUse.toolUse.id} progressMessagesForMessage={progressMessagesForMessage} style={style} tool={toolUse.tool} tools={tools} verbose={verbose} width={width} isTranscriptMode={isTranscriptMode} />;
-    }
     let t1;
     if ($[10] !== isTranscriptMode || $[11] !== param || $[12] !== progressMessagesForMessage || $[13] !== toolUse.tool || $[14] !== tools || $[15] !== verbose) {
       t1 = <UserToolErrorMessage progressMessagesForMessage={progressMessagesForMessage} tool={toolUse.tool} tools={tools} param={param} verbose={verbose} isTranscriptMode={isTranscriptMode} />;

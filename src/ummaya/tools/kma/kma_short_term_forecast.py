@@ -2,13 +2,13 @@
 """KMA short-term forecast adapter (단기예보 조회).
 
 Wraps the ``getVilageFcst`` endpoint from the Korea Meteorological Administration
-(기상청) via the shared data.go.kr service key.
+(기상청) via the KMA API Hub ``authKey`` surface.
 Returns a list of forecast items covering approximately 3 days ahead, published
 8 times a day at 0200, 0500, 0800, 1100, 1400, 1700, 2000, 2300 KST.
 
 Wire format quirks handled by this module:
   - Single-item response returns ``item`` as a dict (not array) — normalized to list.
-  - XML is the default; JSON is requested via ``_type=json`` and ``dataType=JSON``.
+  - XML is the official default; JSON is requested only when explicitly selected.
   - ``resultCode != "00"`` is always an error regardless of HTTP 200.
   - Wire fields use camelCase; output model fields use snake_case.
   - PCP / SNO values may be strings like "30.0~50.0mm" — stored as-is.
@@ -18,26 +18,51 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, Literal, cast
+from zoneinfo import ZoneInfo
 
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from ummaya.tools._description_template import build_description_v4
 from ummaya.tools._outbound_trace import traced_async_client
-from ummaya.tools.errors import ConfigurationError, ToolExecutionError, _require_env
+from ummaya.tools.errors import ConfigurationError, ToolExecutionError
 from ummaya.tools.executor import ToolExecutor
 from ummaya.tools.kma.grid_coords import kma_grid_short_reference
+from ummaya.tools.kma.response_payload import (
+    KmaPayloadDecodeError,
+    apply_format_params,
+    decode_response_payload,
+    summarize_http_status_error,
+)
+from ummaya.tools.kma.vilage_fcst_endpoint import (
+    KMA_API_HUB_VILAGE_FCST_BASE_URL,
+    resolve_vilage_fcst_endpoint,
+)
 from ummaya.tools.models import AdapterRealDomainPolicy, GovAPITool
 from ummaya.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 
-_BASE_URL = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst"
+_SEOUL_TZ = ZoneInfo("Asia/Seoul")
+_OPERATION = "getVilageFcst"
+_BASE_URL = f"{KMA_API_HUB_VILAGE_FCST_BASE_URL}/{_OPERATION}"
 
 # Valid base times for the short-term forecast service (KST)
-_VALID_BASE_TIMES = frozenset({"0200", "0500", "0800", "1100", "1400", "1700", "2000", "2300"})
+_BASE_TIME_ORDER: tuple[str, ...] = (
+    "0200",
+    "0500",
+    "0800",
+    "1100",
+    "1400",
+    "1700",
+    "2000",
+    "2300",
+)
+_VALID_BASE_TIMES = frozenset(_BASE_TIME_ORDER)
+_NO_DATA_RESULT_CODE = "03"
+_MAX_BASE_SLOT_ATTEMPTS = 9
 
 # ---------------------------------------------------------------------------
 # Input / Output models
@@ -67,7 +92,7 @@ class KmaShortTermForecastInput(BaseModel):
         le=149,
         description=(
             "KMA 격자 X 좌표 (1-149). locate adapter 결과의 coords.nx 를 "
-            "그대로 전달. 예: 서울 종로구=60, 부산 사하구=96."
+            "그대로 전달. Do not substitute a memorized city example."
         ),
     )
     ny: int = Field(
@@ -76,7 +101,7 @@ class KmaShortTermForecastInput(BaseModel):
         le=253,
         description=(
             "KMA 격자 Y 좌표 (1-253). nx 와 함께 locate 으로 받음. "
-            "예: 서울 종로구=127, 부산 사하구=73."
+            "Do not substitute a memorized city example."
         ),
     )
     num_of_rows: int = Field(
@@ -90,8 +115,8 @@ class KmaShortTermForecastInput(BaseModel):
         description="페이지 번호 (1-based, default 1). 보통 기본값.",
     )
     data_type: Literal["JSON", "XML"] = Field(
-        default="JSON",
-        description="응답 형식. JSON 권장 (default).",
+        default="XML",
+        description="응답 형식. XML is the official default; JSON is available if requested.",
     )
 
     @field_validator("base_date")
@@ -187,8 +212,74 @@ def _normalize_items(raw: object) -> list[dict[str, object]]:
     return []
 
 
+def _previous_base_slot(base_date: str, base_time: str) -> tuple[str, str]:
+    """Return the previous KMA short-term forecast publication slot."""
+    idx = _BASE_TIME_ORDER.index(base_time)
+    if idx > 0:
+        return base_date, _BASE_TIME_ORDER[idx - 1]
+
+    base_day = datetime.strptime(base_date, "%Y%m%d").replace(tzinfo=_SEOUL_TZ)
+    prev_day = base_day - timedelta(days=1)
+    return prev_day.strftime("%Y%m%d"), _BASE_TIME_ORDER[-1]
+
+
+def _candidate_base_slots(
+    base_date: str,
+    base_time: str,
+    *,
+    max_attempts: int = _MAX_BASE_SLOT_ATTEMPTS,
+) -> list[tuple[str, str]]:
+    """Return the requested and prior KMA base slots for NO_DATA recovery."""
+    slots: list[tuple[str, str]] = []
+    current_date = base_date
+    current_time = base_time
+    for _ in range(max_attempts):
+        slots.append((current_date, current_time))
+        current_date, current_time = _previous_base_slot(current_date, current_time)
+    return slots
+
+
+def _latest_published_base_slot(
+    *,
+    now: datetime | None = None,
+    publication_lag_minutes: int = 10,
+) -> tuple[str, str]:
+    """Return the latest short-term forecast slot expected to be published."""
+    kst_now = now.astimezone(_SEOUL_TZ) if now is not None else datetime.now(_SEOUL_TZ)
+    stable_now = kst_now - timedelta(minutes=publication_lag_minutes)
+    past_times = [
+        base_time for base_time in _BASE_TIME_ORDER if int(base_time[:2]) <= stable_now.hour
+    ]
+    if past_times:
+        return stable_now.strftime("%Y%m%d"), past_times[-1]
+
+    prev_day = stable_now - timedelta(days=1)
+    return prev_day.strftime("%Y%m%d"), _BASE_TIME_ORDER[-1]
+
+
+def _coerce_future_base_slot(
+    base_date: str,
+    base_time: str,
+    *,
+    now: datetime | None = None,
+) -> tuple[str, str]:
+    """Clamp a future or unpublished request to the latest published KMA slot."""
+    latest_date, latest_time = _latest_published_base_slot(now=now)
+    requested_key = (base_date, base_time)
+    latest_key = (latest_date, latest_time)
+    if requested_key > latest_key:
+        return latest_key
+    return requested_key
+
+
+def _is_no_data_error(exc: ToolExecutionError) -> bool:
+    """Return True when a KMA ToolExecutionError is resultCode=03/NO_DATA."""
+    message = str(exc)
+    return f"resultCode={_NO_DATA_RESULT_CODE!r}" in message or "resultMsg='NO_DATA'" in message
+
+
 def _parse_response(payload: dict[str, object]) -> KmaShortTermForecastOutput:
-    """Parse a full KMA getVilageFcst JSON response.
+    """Parse a full KMA getVilageFcst response envelope.
 
     Args:
         payload: Decoded JSON dict from the API.
@@ -255,7 +346,7 @@ def _parse_response(payload: dict[str, object]) -> KmaShortTermForecastOutput:
 # ---------------------------------------------------------------------------
 
 
-async def _call(
+async def _call(  # noqa: C901
     params: KmaShortTermForecastInput,
     *,
     client: httpx.AsyncClient | None = None,
@@ -270,36 +361,17 @@ async def _call(
         A plain dict matching ``KmaShortTermForecastOutput`` field names.
 
     Raises:
-        ConfigurationError: If ``UMMAYA_DATA_GO_KR_API_KEY`` is not set.
+        ConfigurationError: If ``UMMAYA_KMA_API_HUB_AUTH_KEY`` is not set.
         ToolExecutionError: On HTTP errors or unexpected API response shapes.
     """
-    api_key = _require_env("UMMAYA_DATA_GO_KR_API_KEY")
+    endpoint = resolve_vilage_fcst_endpoint(_OPERATION)
 
-    if params.data_type == "XML":
-        raise ToolExecutionError(
-            tool_id="kma_short_term_forecast",
-            message="XML data_type is not supported; use JSON.",
-        )
-
-    query_params: dict[str, str | int] = {
-        "serviceKey": api_key,
-        "base_date": params.base_date,
-        "base_time": params.base_time,
-        "nx": params.nx,
-        "ny": params.ny,
-        "numOfRows": params.num_of_rows,
-        "pageNo": params.page_no,
-        "dataType": params.data_type,
-        "_type": "json",
-    }
-
-    logger.debug(
-        "KMA short-term forecast request: base_date=%s base_time=%s nx=%d ny=%d",
+    initial_base_date, initial_base_time = _coerce_future_base_slot(
         params.base_date,
         params.base_time,
-        params.nx,
-        params.ny,
     )
+    candidate_slots = _candidate_base_slots(initial_base_date, initial_base_time)
+    no_data_slots: list[str] = []
 
     own_client = client is None
     if own_client:
@@ -307,45 +379,81 @@ async def _call(
 
     try:
         assert client is not None  # noqa: S101
-        response = await client.get(_BASE_URL, params=query_params)
-        response.raise_for_status()
+        for base_date, base_time in candidate_slots:
+            query_params: dict[str, str | int] = {
+                endpoint.auth_query_param: endpoint.api_key,
+                "base_date": base_date,
+                "base_time": base_time,
+                "nx": params.nx,
+                "ny": params.ny,
+                "numOfRows": params.num_of_rows,
+                "pageNo": params.page_no,
+            }
+            query_params = apply_format_params(query_params, params.data_type)
 
-        content_type = response.headers.get("content-type", "")
-        if "xml" in content_type.lower() and "json" not in content_type.lower():
-            raise ToolExecutionError(
-                tool_id="kma_short_term_forecast",
-                message=(
-                    f"Unexpected XML response from KMA API "
-                    f"(content-type={content_type!r}). "
-                    "Check serviceKey validity."
-                ),
+            logger.debug(
+                "KMA short-term forecast request: base_date=%s base_time=%s nx=%d ny=%d",
+                base_date,
+                base_time,
+                params.nx,
+                params.ny,
             )
 
-        payload: dict[str, object] = response.json()
-        output = _parse_response(payload)
+            response = await client.get(endpoint.url, params=query_params)
+            response.raise_for_status()
 
-        logger.info(
-            "KMA short-term forecast retrieved: base_date=%s base_time=%s nx=%d ny=%d items=%d",
-            params.base_date,
-            params.base_time,
-            params.nx,
-            params.ny,
-            len(output.items),
+            payload = decode_response_payload(response)
+            try:
+                output = _parse_response(payload)
+            except ToolExecutionError as exc:
+                if _is_no_data_error(exc):
+                    no_data_slots.append(f"{base_date} {base_time}: {exc}")
+                    continue
+                raise
+
+            if output.items:
+                logger.info(
+                    "KMA short-term forecast retrieved: base_date=%s base_time=%s "
+                    "nx=%d ny=%d items=%d",
+                    base_date,
+                    base_time,
+                    params.nx,
+                    params.ny,
+                    len(output.items),
+                )
+                return output.model_dump()
+
+            no_data_slots.append(f"{base_date} {base_time}: empty item list")
+
+        attempted = ", ".join(no_data_slots)
+        raise ToolExecutionError(
+            tool_id="kma_short_term_forecast",
+            message=(
+                "KMA API returned no forecast data for the requested slot or prior slots. "
+                f"attempted={attempted}"
+            ),
         )
-        return output.model_dump()
 
     except (ToolExecutionError, ConfigurationError):
         raise
     except httpx.HTTPStatusError as exc:
         raise ToolExecutionError(
             tool_id="kma_short_term_forecast",
-            message=f"HTTP error from KMA short-term forecast API: {exc.response.status_code}",
+            message=(
+                f"HTTP error from KMA short-term forecast API: {summarize_http_status_error(exc)}"
+            ),
             cause=exc,
         ) from exc
     except httpx.RequestError as exc:
         raise ToolExecutionError(
             tool_id="kma_short_term_forecast",
             message=f"Network error reaching KMA short-term forecast API: {exc}",
+            cause=exc,
+        ) from exc
+    except KmaPayloadDecodeError as exc:
+        raise ToolExecutionError(
+            tool_id="kma_short_term_forecast",
+            message=f"Unable to decode KMA short-term forecast API response: {exc}",
             cause=exc,
         ) from exc
     finally:

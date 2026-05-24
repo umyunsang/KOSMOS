@@ -7,7 +7,7 @@
  * FR-021: find error renderer.
  */
 import React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../../ink.js'
 import { useTheme } from '@/theme/provider'
 import type { LookupErrorPayload } from './types'
 

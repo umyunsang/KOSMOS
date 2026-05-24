@@ -18,7 +18,6 @@ import {
   extractJsonStringField,
   extractLastJsonStringField,
   findProjectDir,
-  getCCLegacyProjectsDir,
   getProjectsDir,
   MAX_SANITIZED_LENGTH,
   readSessionLite,
@@ -403,36 +402,13 @@ async function gatherProjectCandidates(
 
 /**
  * Gathers candidate session files across all project directories.
- *
- * Walks both UMMAYA-native path (`~/.ummaya/memdir/user/sessions/`) and
- * CC-legacy path (`~/.claude/projects/`). Results are deduped by sessionId
- * with UMMAYA sessions taking priority over CC-legacy sessions for the same
- * sessionId (last-active-at ordering within UMMAYA is preserved).
  */
 async function gatherAllCandidates(doStat: boolean): Promise<Candidate[]> {
-  // Walk UMMAYA-native sessions root first (higher priority).
-  const ummayaCandidates = await gatherFromRoot(getProjectsDir(), doStat)
-  // Walk CC-legacy projects root, excluding any sessionId already seen.
-  const ummayaIds = new Set(ummayaCandidates.map(c => c.sessionId))
-  const legacyCandidates = await gatherFromRoot(
-    getCCLegacyProjectsDir(),
-    doStat,
-  )
-  const deduped = legacyCandidates.filter(c => !ummayaIds.has(c.sessionId))
+  const projectsDir = getProjectsDir()
 
-  return [...ummayaCandidates, ...deduped]
-}
-
-/**
- * Gathers candidates from a single sessions root directory (all sub-directories).
- */
-async function gatherFromRoot(
-  rootDir: string,
-  doStat: boolean,
-): Promise<Candidate[]> {
   let dirents: Dirent[]
   try {
-    dirents = await readdir(rootDir, { withFileTypes: true })
+    dirents = await readdir(projectsDir, { withFileTypes: true })
   } catch {
     return []
   }
@@ -440,7 +416,7 @@ async function gatherFromRoot(
   const perProject = await Promise.all(
     dirents
       .filter(d => d.isDirectory())
-      .map(d => listCandidates(join(rootDir, d.name), doStat)),
+      .map(d => listCandidates(join(projectsDir, d.name), doStat)),
   )
 
   return perProject.flat()

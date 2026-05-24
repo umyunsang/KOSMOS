@@ -7,7 +7,7 @@
  * FR-017: find point-of-interest renderer.
  */
 import React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../../ink.js'
 import { useTheme } from '@/theme/provider'
 import type { LookupPointPayload } from './types'
 

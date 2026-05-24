@@ -2,9 +2,8 @@
 // UMMAYA REWRITE + file rename per Epic H #1302 (035-onboarding-brand-port) — ADR-006 A-9
 
 import React, { useEffect, useState } from 'react'
-import { Text } from 'ink'
+import { Text } from '../../ink.js'
 import { useTheme } from '../../theme/provider'
-import { useReducedMotion } from '../../hooks/useReducedMotion'
 
 type Props = {
   shimmering?: boolean // defaults to false
@@ -21,9 +20,8 @@ type Props = {
  */
 export function UmmayaCoreIcon({ shimmering = false }: Props): React.ReactElement {
   const theme = useTheme()
-  const { prefersReducedMotion } = useReducedMotion()
 
-  const animationActive = shimmering && !prefersReducedMotion
+  const animationActive = shimmering
 
   const [phase, setPhase] = useState<'base' | 'shimmer'>('base')
 

@@ -1,16 +1,26 @@
-// SPDX-License-Identifier: Apache-2.0
-// UMMAYA-original — Epic #2637 cascade · stub-noop replacement.
-// SWAP/anti-anthropic-1p(2637): ClaudeCodeDiagLogger (Anthropic 1P diagnostic
-// telemetry sink) is permanently disabled in UMMAYA. instrumentation.ts byte-copy
-// (R-5) references this export; UMMAYA uses stdlib logging (AGENTS.md hard rule).
-
-import { DiagLogger } from '@opentelemetry/api'
-
+import type { DiagLogger } from '@opentelemetry/api'
+import { logForDebugging } from '../debug.js'
+import { logError } from '../log.js'
 export class ClaudeCodeDiagLogger implements DiagLogger {
-  // Intentional no-op (Epic #2637 stub). Anthropic 1P diagnostic logger is swap-1 dependent.
-  verbose(..._args: unknown[]): void {}
-  debug(..._args: unknown[]): void {}
-  info(..._args: unknown[]): void {}
-  warn(..._args: unknown[]): void {}
-  error(..._args: unknown[]): void {}
+  error(message: string, ..._: unknown[]) {
+    logError(new Error(message))
+    logForDebugging(`[3P telemetry] OTEL diag error: ${message}`, {
+      level: 'error',
+    })
+  }
+  warn(message: string, ..._: unknown[]) {
+    logError(new Error(message))
+    logForDebugging(`[3P telemetry] OTEL diag warn: ${message}`, {
+      level: 'warn',
+    })
+  }
+  info(_message: string, ..._args: unknown[]) {
+    return
+  }
+  debug(_message: string, ..._args: unknown[]) {
+    return
+  }
+  verbose(_message: string, ..._args: unknown[]) {
+    return
+  }
 }

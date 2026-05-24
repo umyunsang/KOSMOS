@@ -1,4 +1,4 @@
-import type { Base64ImageSource } from 'src/sdk-compat.js'
+import type { Base64ImageSource } from '@anthropic-ai/sdk/resources/index.mjs'
 import { readdir, readFile as readFileAsync } from 'fs/promises'
 import * as path from 'path'
 import { posix, win32 } from 'path'
@@ -51,7 +51,7 @@ import {
 import { lazySchema } from '../../utils/lazySchema.js'
 import { logError } from '../../utils/log.js'
 import { isAutoMemFile } from '../../utils/memoryFileDetection.js'
-import { createUserMessage } from '../../utils/userMessageFactories.js'
+import { createUserMessage } from '../../utils/messages.js'
 import { getCanonicalName, getMainLoopModel } from '../../utils/model/model.js'
 import {
   mapNotebookCellsToToolResult,

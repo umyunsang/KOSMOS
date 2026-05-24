@@ -4,8 +4,7 @@ import { markPostCompaction } from 'src/bootstrap/state.js'
 import { getSystemPrompt } from '../../constants/prompts.js'
 import { getSystemContext, getUserContext } from '../../context.js'
 import { getShortcutDisplay } from '../../keybindings/shortcutFormat.js'
-// UMMAYA: services/api/promptCacheBreakDetection deleted. No-op stub.
-const notifyCompaction = (..._args: unknown[]): void => {}
+import { notifyCompaction } from '../../services/api/promptCacheBreakDetection.js'
 import {
   type CompactionResult,
   compactConversation,
@@ -25,7 +24,7 @@ import type { Message } from '../../types/message.js'
 import { hasExactErrorMessage } from '../../utils/errors.js'
 import { executePreCompactHooks } from '../../utils/hooks.js'
 import { logError } from '../../utils/log.js'
-import { getMessagesAfterCompactBoundary } from '../../utils/messageBoundary.js'
+import { getMessagesAfterCompactBoundary } from '../../utils/messages.js'
 import { getUpgradeMessage } from '../../utils/model/contextWindowUpgradeCheck.js'
 import {
   buildEffectiveSystemPrompt,

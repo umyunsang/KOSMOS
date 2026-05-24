@@ -12,8 +12,7 @@ import type { IDESelection } from '../../hooks/useIdeSelection.js';
 import { useMainLoopModel } from '../../hooks/useMainLoopModel.js';
 import { useVoiceEnabled } from '../../hooks/useVoiceEnabled.js';
 import { Box, Text } from '../../ink.js';
-// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — claudeAiLimitsHook deleted.
-const useClaudeAiLimits = (): { isUsingOverage: boolean; status: 'allowed' | 'rejected'; resetsAt: number | undefined } => ({ isUsingOverage: false, status: 'allowed', resetsAt: undefined });
+import { useClaudeAiLimits } from '../../services/claudeAiLimitsHook.js';
 import { calculateTokenWarningState } from '../../services/compact/autoCompact.js';
 import type { MCPServerConnection } from '../../services/mcp/types.js';
 import type { Message } from '../../types/message.js';
@@ -24,7 +23,7 @@ import { isEnvTruthy } from '../../utils/envUtils.js';
 import { formatDuration } from '../../utils/format.js';
 import { setEnvHookNotifier } from '../../utils/hooks/fileChangedWatcher.js';
 import { toIDEDisplayName } from '../../utils/ide.js';
-import { getMessagesAfterCompactBoundary } from '../../utils/messageBoundary.js';
+import { getMessagesAfterCompactBoundary } from '../../utils/messages.js';
 import { tokenCountFromLastAPIResponse } from '../../utils/tokens.js';
 import { AutoUpdaterWrapper } from '../AutoUpdaterWrapper.js';
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js';

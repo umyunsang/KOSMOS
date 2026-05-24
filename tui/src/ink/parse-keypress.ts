@@ -698,7 +698,7 @@ function parseKeypress(s: string = ''): ParsedKey {
     return createNavKey(s, 'mouse', false)
   }
 
-  if (s === '\r' || s === '\n') {
+  if (s === '\r' || s === '\n' || s === '\r\n') {
     key.raw = undefined
     key.name = 'return'
   } else if (s === '\t') {

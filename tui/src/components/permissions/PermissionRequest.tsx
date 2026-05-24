@@ -31,15 +31,6 @@ import { NotebookEditPermissionRequest } from './NotebookEditPermissionRequest/N
 import { PowerShellPermissionRequest } from './PowerShellPermissionRequest/PowerShellPermissionRequest.js';
 import { SkillPermissionRequest } from './SkillPermissionRequest/SkillPermissionRequest.js';
 import { WebFetchPermissionRequest } from './WebFetchPermissionRequest/WebFetchPermissionRequest.js';
-// UMMAYA Epic 1 finish — 4 primitive arms wired into permissionComponentForTool.
-import {
-  LookupPermissionRequestAdapter,
-  VerifyPermissionRequestAdapter,
-  SubmitPermissionRequestAdapter,
-} from './UmmayaPrimitivePermissionRequest/UmmayaPermissionRequestAdapter.js';
-import { LookupPrimitive } from '../../tools/LookupPrimitive/LookupPrimitive.js';
-import { VerifyPrimitive } from '../../tools/VerifyPrimitive/VerifyPrimitive.js';
-import { SubmitPrimitive } from '../../tools/SubmitPrimitive/SubmitPrimitive.js';
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const ReviewArtifactTool = feature('REVIEW_ARTIFACT') ? (require('../../tools/ReviewArtifactTool/ReviewArtifactTool.js') as typeof import('../../tools/ReviewArtifactTool/ReviewArtifactTool.js')).ReviewArtifactTool : null;
@@ -48,7 +39,7 @@ const WorkflowTool = feature('WORKFLOW_SCRIPTS') ? (require('../../tools/Workflo
 const WorkflowPermissionRequest = feature('WORKFLOW_SCRIPTS') ? (require('../../tools/WorkflowTool/WorkflowPermissionRequest.js') as typeof import('../../tools/WorkflowTool/WorkflowPermissionRequest.js')).WorkflowPermissionRequest : null;
 const MonitorTool = feature('MONITOR_TOOL') ? (require('../../tools/MonitorTool/MonitorTool.js') as typeof import('../../tools/MonitorTool/MonitorTool.js')).MonitorTool : null;
 const MonitorPermissionRequest = feature('MONITOR_TOOL') ? (require('./MonitorPermissionRequest/MonitorPermissionRequest.js') as typeof import('./MonitorPermissionRequest/MonitorPermissionRequest.js')).MonitorPermissionRequest : null;
-import type { ContentBlockParam } from 'src/sdk-compat.js';
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs';
 /* eslint-enable @typescript-eslint/no-require-imports */
 import type { z } from 'zod/v4';
 import type { PermissionUpdate } from '../../utils/permissions/PermissionUpdateSchema.js';
@@ -85,16 +76,6 @@ function permissionComponentForTool(tool: Tool): React.ComponentType<PermissionR
     case GrepTool:
     case FileReadTool:
       return FilesystemPermissionRequest;
-    // UMMAYA Epic 1 finish — 4 primitive arms (FR-012 spec).
-    // find: read-only, bypass via checkPermissions allow. Adapter returns null.
-    case LookupPrimitive:
-      return LookupPermissionRequestAdapter;
-    // check: Layer 1 (green ⓵) — delegates to external auth vendor.
-    case VerifyPrimitive:
-      return VerifyPermissionRequestAdapter;
-    // send: Layer 2 (reversible) / Layer 3 (irreversible) — side-effecting citizen action.
-    case SubmitPrimitive:
-      return SubmitPermissionRequestAdapter;
     default:
       return FallbackPermissionRequest;
   }
@@ -147,18 +128,18 @@ export type ToolUseConfirm<Input extends AnyObject = AnyObject> = {
 function getNotificationMessage(toolUseConfirm: ToolUseConfirm): string {
   const toolName = toolUseConfirm.tool.userFacingName(toolUseConfirm.input as never);
   if (toolUseConfirm.tool === ExitPlanModeV2Tool) {
-    return 'Claude Code needs your approval for the plan';
+    return 'UMMAYA needs your approval for the plan';
   }
   if (toolUseConfirm.tool === EnterPlanModeTool) {
-    return 'Claude Code wants to enter plan mode';
+    return 'UMMAYA wants to enter plan mode';
   }
   if (feature('REVIEW_ARTIFACT') && toolUseConfirm.tool === ReviewArtifactTool) {
-    return 'Claude needs your approval for a review artifact';
+    return 'UMMAYA needs your approval for a review artifact';
   }
   if (!toolName || toolName.trim() === '') {
-    return 'Claude Code needs your attention';
+    return 'UMMAYA needs your attention';
   }
-  return `Claude needs your permission to use ${toolName}`;
+  return `UMMAYA needs your permission to use ${toolName}`;
 }
 
 // TODO: Move this to Tool.renderPermissionRequest

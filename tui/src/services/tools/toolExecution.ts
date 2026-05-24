@@ -3,7 +3,7 @@ import type {
   ContentBlockParam,
   ToolResultBlockParam,
   ToolUseBlock,
-} from 'src/sdk-compat.js'
+} from '@anthropic-ai/sdk/resources/index.mjs'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
@@ -48,6 +48,10 @@ import {
   isDeferredTool,
   TOOL_SEARCH_TOOL_NAME,
 } from '../../tools/ToolSearchTool/prompt.js'
+import {
+  getAdapterToolByName,
+  isAdapterToolName,
+} from '../../tools/AdapterTool/AdapterTool.js'
 import { getAllBaseTools } from '../../tools.js'
 import type { HookProgress } from '../../types/hooks.js'
 import type {
@@ -69,16 +73,14 @@ import {
 } from '../../utils/errors.js'
 import { executePermissionDeniedHooks } from '../../utils/hooks.js'
 import { logError } from '../../utils/log.js'
-import { createUserMessage } from '../../utils/userMessageFactories.js'
-import { createStopHookSummaryMessage } from '../../utils/systemMessageFactories.js'
-import {
-  createProgressMessage,
-  createToolResultStopMessage,
-} from '../../utils/toolMessageFactories.js'
 import {
   CANCEL_MESSAGE,
+  createProgressMessage,
+  createStopHookSummaryMessage,
+  createToolResultStopMessage,
+  createUserMessage,
   withMemoryCorrectionHint,
-} from '../../utils/permissionMessages.js'
+} from '../../utils/messages.js'
 import type {
   PermissionDecisionReason,
   PermissionResult,
@@ -89,10 +91,8 @@ import {
 } from '../../utils/sessionActivity.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
 import { Stream } from '../../utils/stream.js'
-// UMMAYA Epic #2637 — Spec 021 OTEL Tool layer wire (4-tier OTEL, R-6).
-// 9 inline stubs replaced with UMMAYA OTEL helper (toolSpans.ts).
+import { logOTelEvent } from '../../utils/telemetry/events.js'
 import {
-  logOTelEvent,
   addToolContentEvent,
   endToolBlockedOnUserSpan,
   endToolExecutionSpan,
@@ -101,7 +101,7 @@ import {
   startToolBlockedOnUserSpan,
   startToolExecutionSpan,
   startToolSpan,
-} from '../../utils/telemetry/toolSpans.js'
+} from '../../utils/telemetry/sessionTracing.js'
 import {
   formatError,
   formatZodValidationError,
@@ -354,8 +354,14 @@ export async function* runToolUse(
   if (!tool) {
     const fallbackTool = findToolByName(getAllBaseTools(), toolName)
     // Only use fallback if the tool was found via alias (deprecated name)
-    if (fallbackTool && fallbackTool.aliases?.includes(toolName)) {
+    if (
+      fallbackTool &&
+      (fallbackTool.aliases?.includes(toolName) || isAdapterToolName(toolName))
+    ) {
       tool = fallbackTool
+    }
+    if (!tool && isAdapterToolName(toolName)) {
+      tool = getAdapterToolByName(toolName)
     }
   }
   const messageId = assistantMessage.message.id

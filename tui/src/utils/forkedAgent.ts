@@ -18,12 +18,8 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../services/analytics/index.js'
-// UMMAYA-original: CC usage accumulation not used with FriendliAI provider.
-const accumulateUsage = (a: unknown, _b: unknown): unknown => a
-const updateUsage = (base: unknown, _delta: unknown): unknown => base
-// services/api/logging removed (Spec 2293 cleanup); re-export from emptyUsage.
-import { EMPTY_USAGE } from '../services/api/emptyUsage.js'
-type NonNullableUsage = import('src/entrypoints/sdk/sdkUtilityTypes.js').NonNullableUsage
+import { accumulateUsage, updateUsage } from '../services/api/claude.js'
+import { EMPTY_USAGE, type NonNullableUsage } from '../services/api/logging.js'
 import type { ToolUseContext } from '../Tool.js'
 import type { AgentDefinition } from '../tools/AgentTool/loadAgentsDir.js'
 import type { AgentId } from '../types/ids.js'
@@ -32,9 +28,11 @@ import { createChildAbortController } from './abortController.js'
 import { logForDebugging } from './debug.js'
 import { cloneFileStateCache } from './fileStateCache.js'
 import type { REPLHookContext } from './hooks/postSamplingHooks.js'
-import { createUserMessage } from './userMessageFactories.js'
-import { extractTextContent } from './messageText.js'
-import { getLastAssistantMessage } from './messageQueries.js'
+import {
+  createUserMessage,
+  extractTextContent,
+  getLastAssistantMessage,
+} from './messages.js'
 import { createDenialTrackingState } from './permissions/denialTracking.js'
 import { parseToolListFromCLI } from './permissions/permissionSetup.js'
 import { recordSidechainTranscript } from './sessionStorage.js'

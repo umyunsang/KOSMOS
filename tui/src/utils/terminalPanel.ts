@@ -118,7 +118,7 @@ class TerminalPanel {
       'bind-key', '-n', 'M-j', 'detach-client', ';',
       'set-option', '-g', 'status-style', 'bg=default', ';',
       'set-option', '-g', 'status-left', '', ';',
-      'set-option', '-g', 'status-right', ' Alt+J to return to Claude ', ';',
+      'set-option', '-g', 'status-right', ' Alt+J to return to UMMAYA ', ';',
       'set-option', '-g', 'status-right-style', 'fg=brightblack',
     ])
 

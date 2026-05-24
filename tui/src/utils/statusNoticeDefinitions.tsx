@@ -62,7 +62,7 @@ const claudeAiSubscriberExternalTokenNotice: StatusNoticeDefinition = {
     return <Box flexDirection="row" marginTop={1}>
         <Text color="warning">{figures.warning}</Text>
         <Text color="warning">
-          Auth conflict: Using {authTokenInfo.source} instead of Claude account
+          Auth conflict: Using {authTokenInfo.source} instead of UMMAYA account
           subscription token. Either unset {authTokenInfo.source}, or run
           `claude /logout`.
         </Text>
@@ -182,7 +182,7 @@ const jetbrainsPluginNotice: StatusNoticeDefinition = {
         <Text>
           Install the <Text color="ide">{ideName}</Text> plugin from the
           JetBrains Marketplace:{' '}
-          <Text bold>https://docs.claude.com/s/claude-code-jetbrains</Text>
+          <Text bold>https://ummaya-docs.pages.dev/en/</Text>
         </Text>
       </Box>;
   }

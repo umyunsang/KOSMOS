@@ -1,12 +1,12 @@
 import type { Command } from '../../commands.js'
+import { hasAnthropicApiKeyAuth } from '../../utils/auth.js'
 import { isEnvTruthy } from '../../utils/envUtils.js'
-import { hasFriendliCredential } from '../../utils/friendliAuth.js'
 
 export default () =>
   ({
     type: 'local-jsx',
     name: 'login',
-    description: hasFriendliCredential()
+    description: hasAnthropicApiKeyAuth()
       ? 'Switch FriendliAI API keys'
       : 'Sign in with your FriendliAI API key',
     isEnabled: () => !isEnvTruthy(process.env.DISABLE_LOGIN_COMMAND),

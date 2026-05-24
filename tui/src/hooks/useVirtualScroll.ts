@@ -270,8 +270,7 @@ export function useVirtualScroll(
   // itemRefs self-cleans via ref(null) on unmount.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- refs are stable
   useMemo(() => {
-    const live = new Set<string>()
-    for (const k of itemKeys ?? []) live.add(k)
+    const live = new Set(itemKeys)
     let dirty = false
     for (const k of heightCache.current.keys()) {
       if (!live.has(k)) {

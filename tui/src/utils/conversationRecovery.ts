@@ -24,10 +24,16 @@ import {
   type FileHistorySnapshot,
 } from './fileHistory.js'
 import { logError } from './log.js'
-import { createAssistantMessage } from './assistantMessageFactories.js'
-import { normalizeMessages } from './messageNormalize.js'
-import * as messageUtils from './messages.js'
-import { NO_RESPONSE_REQUESTED } from './messageText.js'
+import {
+  createAssistantMessage,
+  createUserMessage,
+  filterOrphanedThinkingOnlyMessages,
+  filterUnresolvedToolUses,
+  filterWhitespaceOnlyAssistantMessages,
+  isToolUseResultMessage,
+  NO_RESPONSE_REQUESTED,
+  normalizeMessages,
+} from './messages.js'
 import { copyPlanForResume } from './plans.js'
 import { processSessionStartHooks } from './sessionStart.js'
 import {
@@ -41,15 +47,7 @@ import {
   loadTranscriptFile,
   removeExtraFields,
 } from './sessionStorage.js'
-
-const {
-  filterOrphanedThinkingOnlyMessages,
-  filterUnresolvedToolUses,
-  filterWhitespaceOnlyAssistantMessages,
-  isToolUseResultMessage,
-} = messageUtils
 import type { ContentReplacementRecord } from './toolResultStorage.js'
-import { createUserMessage } from './userMessageFactories.js'
 
 // Dead code elimination: ant-only tool names are conditionally required so
 // their strings don't leak into external builds. Static imports always bundle.

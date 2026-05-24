@@ -6,7 +6,7 @@
 // promises four distinct citizen-facing session-lifecycle modes:
 // `--continue / --resume / --fork / new`.
 //
-// CC's `FORK_SUBAGENT` feature flag (tui/src/stubs/bun-bundle.ts:5) is a
+// CC's `FORK_SUBAGENT` feature flag is a
 // permanent stub returning `false` in UMMAYA — that flag gates a different
 // concept (parallel subagent dispatch with prompt-cache-aligned prefix,
 // `tui/src/tools/AgentTool/forkSubagent.ts`). UMMAYA's `/fork` is the
