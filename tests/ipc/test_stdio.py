@@ -19,13 +19,12 @@ Tests added per Epic #2077 T011:
     Contract ref: chat-request-frame.md § Validation contract.
 
 (d) test_agentic_loop_max_turns_honored
-    A fixture LLM that always returns a tool_call_delta causes the agentic
-    loop to terminate after UMMAYA_AGENTIC_LOOP_MAX_TURNS iterations
-    (default 8) per FR-011.
+    A fixture LLM that returns a tool_call_delta causes chat_request to stop at
+    assistant(tool_use). The TUI-owned Tool.call path drives follow-up turns.
 
 (e) test_otel_spans_preserved
-    After one chat_request with a non-gated tool call (find), spans with
-    at minimum these attribute keys are emitted:
+    After one TUI-owned inbound ToolCallFrame with a gated submit call, spans
+    with at minimum these attribute keys are emitted:
     ummaya.tool.dispatched, ummaya.permission.mode, ummaya.permission.decision,
     ummaya.session.id.  Exact values are not asserted — only key presence.
 
@@ -66,6 +65,7 @@ from ummaya.ipc.frame_schema import (
     ChatMessageFunctionCall,
     ChatMessageToolCall,
     ChatRequestFrame,
+    ToolCallFrame,
     ToolDefinition,
     ToolDefinitionFunction,
 )
@@ -134,6 +134,7 @@ def _make_chat_request(
     session_id: str | None = None,
     tools: list[ToolDefinition] | None = None,
     system: str | None = None,
+    content: str = "응급실 위치 알려줘",
 ) -> ChatRequestFrame:
     """Build a minimal ChatRequestFrame for testing."""
     return ChatRequestFrame(
@@ -145,7 +146,7 @@ def _make_chat_request(
         messages=[
             IPCChatMessage(
                 role="user",
-                content="응급실 위치 알려줘",
+                content=content,
             )
         ],
         tools=tools if tools is not None else [],
@@ -153,7 +154,7 @@ def _make_chat_request(
     )
 
 
-def _encode_frame(frame: ChatRequestFrame) -> bytes:
+def _encode_frame(frame: Any) -> bytes:
     return (frame.model_dump_json() + "\n").encode("utf-8")
 
 
@@ -257,6 +258,7 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
     *,
     monkeypatch: pytest.MonkeyPatch,
     env_overrides: dict[str, str] | None = None,
+    extra_frames: list[Any] | None = None,
 ) -> tuple[_CaptureBuf, _BaseFakeLLMClient]:
     """Pipe one ChatRequestFrame through run() and return (stdout_buf, fake_client).
 
@@ -372,7 +374,8 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
 
     # --- Build stdin payload ---
     session_id = frame.session_id
-    payload = _encode_frame(frame)
+    frames_to_send: list[Any] = [frame, *(extra_frames or [])]
+    payload = b"".join(_encode_frame(item) for item in frames_to_send)
 
     # Create an OS pipe. r_fd is the read end (stdin), w_fd is the write end.
     r_fd, w_fd = os.pipe()
@@ -416,6 +419,37 @@ async def _run_with_frame(  # noqa: C901 — test harness deliberately covers ma
 
 
 @pytest.mark.asyncio
+async def test_stdio_emits_adapter_manifest_before_first_chat_frame(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Default stdio boot emits adapter manifest before first LLM response frame."""
+    frame = _make_chat_request(tools=[])
+
+    buf, _fake_client = await _run_with_frame(
+        frame,
+        _FakeLLMClientNoTools,
+        monkeypatch=monkeypatch,
+    )
+
+    emitted = buf.as_frames()
+    assert emitted, "Expected at least the adapter_manifest_sync boot frame"
+    assert emitted[0].get("kind") == "adapter_manifest_sync"
+
+    manifest_index = next(
+        i for i, item in enumerate(emitted) if item.get("kind") == "adapter_manifest_sync"
+    )
+    first_non_manifest_index = next(
+        (
+            i
+            for i, item in enumerate(emitted)
+            if item.get("kind") in {"assistant_chunk", "tool_call", "tool_result"}
+        ),
+        None,
+    )
+    assert first_non_manifest_index is None or manifest_index < first_non_manifest_index
+
+
+@pytest.mark.asyncio
 async def test_chat_request_with_empty_tools_uses_registry_fallback(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -452,11 +486,11 @@ async def test_chat_request_with_empty_tools_uses_registry_fallback(
 async def test_chat_request_appends_available_tools_section(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """LLM-bound system message contains '## Available tools' with primitive headers.
+    """LLM-bound system message contains concrete adapter headers.
 
     Verifies the Step 3 system-prompt augmentation from system-prompt-builder.md.
     The system message (role='system') in messages[0].content must contain
-    '### find', '### send', etc. — one per registered primitive.
+    the same concrete adapter names exported in the structured tools[] payload.
     """
     frame = _make_chat_request(tools=[], system="Base system prompt.")
 
@@ -483,10 +517,13 @@ async def test_chat_request_appends_available_tools_section(
         f"System message does not contain '## Available tools' block. "
         f"Content preview: {system_content[:300]!r}"
     )
-    # At minimum the find primitive must appear (it is always registered).
-    assert "### find" in system_content, (
-        f"'### find' not found in system prompt Available tools section. "
+    assert "### find" not in system_content, (
+        "Root primitive headers must not be published as model-facing tools. "
         f"Content preview: {system_content[:500]!r}"
+    )
+    assert "### nmc_emergency_search" in system_content, (
+        "Expected at least one concrete adapter header in the system prompt "
+        f"Available tools section. Content preview: {system_content[:500]!r}"
     )
 
 
@@ -561,15 +598,14 @@ async def test_unknown_tool_in_frame_dropped_silently(
 
 
 # ---------------------------------------------------------------------------
-# (d) test_agentic_loop_max_turns_honored — FR-011
+# (d) test_chat_request_stops_at_tool_use — CC provider boundary
 # ---------------------------------------------------------------------------
 
 
 class _EternalToolCallLLMClient(_BaseFakeLLMClient):
-    """LLM that always emits a tool_call_delta so the loop keeps turning.
+    """LLM that always emits a tool_call_delta.
 
-    Uses a class-level counter to track how many times stream() has been
-    called; each call represents one agentic loop turn.
+    Uses a class-level counter to track how many times stream() has been called.
     """
 
     recorded_calls: list[dict[str, Any]] = []
@@ -592,9 +628,6 @@ class _EternalToolCallLLMClient(_BaseFakeLLMClient):
     ) -> AsyncIterator[StreamEvent]:
         type(self).turn_count += 1
         type(self).recorded_calls.append({"messages": messages, "tools": tools})
-        # Emit a tool_call_delta for 'find' then done.
-        # The agentic loop will dispatch it, wait for result (which will time out),
-        # then loop again — until max turns.
         yield StreamEvent(
             type="tool_call_delta",
             tool_call_index=0,
@@ -666,58 +699,33 @@ class _DuplicateHiraToolCallLLMClient(_BaseFakeLLMClient):
 
 
 @pytest.mark.asyncio
-async def test_agentic_loop_max_turns_honored(
+async def test_chat_request_stops_at_tool_use(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Agentic loop terminates after UMMAYA_AGENTIC_LOOP_MAX_TURNS turns (FR-011).
+    """chat_request emits assistant(tool_use) and returns without Tool.call work."""
 
-    Uses a fixture LLM that always emits tool_call_delta, causing the loop to
-    continue each turn.  The tool dispatch is mocked to immediately resolve
-    the pending Future (without a real primitive call) so the loop doesn't
-    block on tool_result timeout.
-    """
-    max_turns = 3  # Use 3 (not 8) to keep test fast
-
-    # Patch the tool result timeout very low so the loop doesn't hang
-    monkeypatch.setenv("UMMAYA_TOOL_RESULT_TIMEOUT_SECONDS", "1")
-    monkeypatch.setenv("UMMAYA_AGENTIC_LOOP_MAX_TURNS", str(max_turns))
-
-    frame = _make_chat_request(tools=[])
+    frame = _make_chat_request(tools=[], content="테스트")
 
     buf, fake_client = await _run_with_frame(
         frame,
         _EternalToolCallLLMClient,
         monkeypatch=monkeypatch,
-        env_overrides={
-            "UMMAYA_TOOL_RESULT_TIMEOUT_SECONDS": "1",
-            "UMMAYA_AGENTIC_LOOP_MAX_TURNS": str(max_turns),
-        },
     )
 
     assert fake_client is _EternalToolCallLLMClient, (
         "Expected fake_client to be _EternalToolCallLLMClient class sentinel"
     )
-    # The loop should have called stream() exactly max_turns times (each turn
-    # emits a tool call; after max_turns the loop terminates without further
-    # LLM invocations).  Allow for ≤ max_turns since the loop exits before the
-    # last invocation when the turn counter is exhausted.
-    turn_count = _EternalToolCallLLMClient.turn_count
-    assert 1 <= turn_count <= max_turns + 1, (
-        f"Expected between 1 and {max_turns + 1} LLM stream() calls "
-        f"(UMMAYA_AGENTIC_LOOP_MAX_TURNS={max_turns}), got {turn_count}. "
-        f"FR-011: loop must terminate at max-turns boundary."
-    )
-
-    # Verify the terminal assistant_chunk (done=True) was emitted — the loop
-    # must always signal completion to the TUI.
+    assert _EternalToolCallLLMClient.turn_count == 1
     emitted = buf.as_frames()
-    terminal_chunks = [
-        f for f in emitted if f.get("kind") == "assistant_chunk" and f.get("done") is True
-    ]
-    assert terminal_chunks, (
-        "No terminal assistant_chunk (done=True) found in emitted frames. "
-        "The agentic loop must emit a final done=True chunk when max turns are hit."
+    tool_calls = [f for f in emitted if f.get("kind") == "tool_call"]
+    assert len(tool_calls) == 1, f"Expected exactly one tool_call frame: {emitted}"
+    assert tool_calls[0].get("name") == "find"
+    assert not [f for f in emitted if f.get("kind") == "tool_result"], (
+        "chat_request must not execute tools; Tool.call sends inbound tool_call separately"
     )
+    assert not [
+        f for f in emitted if f.get("kind") == "assistant_chunk" and f.get("done") is True
+    ], "chat_request must stop at tool_use instead of completing the turn"
 
 
 @pytest.mark.asyncio
@@ -949,39 +957,60 @@ class _SingleSubmitPermissionTimeoutLLMClient(_BaseFakeLLMClient):
 async def test_terminal_permission_denial_does_not_reinvoke_llm(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A terminal permission denial/timeout must end the current agentic turn.
+    """A Tool.call permission timeout returns tool_result without LLM reinvocation.
 
-    CC rejects interactive user-deny through the cancellation path; UMMAYA
-    should not feed permission_denied back to the model as a recoverable tool
-    error that invites another verify/submit attempt.
+    CC's provider stops at assistant(tool_use). Permission denial/timeout occurs
+    in the TUI-owned Tool.call path, so the backend must emit the denied
+    tool_result for that inbound ToolCallFrame and must not synthesize a
+    follow-up assistant answer in the same handler.
     """
-    frame = _make_chat_request(tools=[])
+    frame = _make_chat_request(tools=[], content="테스트")
+    permission_call_id = "permission-timeout-call"
+    inbound_tool_call = ToolCallFrame(
+        session_id=frame.session_id,
+        correlation_id=str(uuid.uuid4()),
+        role="tool",
+        ts=_ts(),
+        kind="tool_call",
+        call_id=permission_call_id,
+        name="send",
+        arguments={
+            "tool_id": "mock_submit_module_gov24_minwon",
+            "params": {
+                "applicant_name": "홍길동",
+                "service_code": "resident_register",
+                "delivery_method": "online",
+            },
+        },
+    )
 
     buf, fake_client = await _run_with_frame(
         frame,
-        _SingleSubmitPermissionTimeoutLLMClient,
+        _FakeLLMClientNoTools,
         monkeypatch=monkeypatch,
         env_overrides={
             "UMMAYA_PERMISSION_TIMEOUT_SECONDS": "0.1",
             "UMMAYA_TOOL_RESULT_TIMEOUT_SECONDS": "2",
         },
+        extra_frames=[inbound_tool_call],
     )
 
     emitted = buf.as_frames()
     assert len(fake_client.recorded_calls) == 1, (
-        "Permission denial/timeout was reinjected into the agentic loop; "
+        "Permission denial/timeout reinvoked the LLM inside the Tool.call path; "
         f"LLM stream calls: {len(fake_client.recorded_calls)}"
     )
     assert any(
         f.get("kind") == "tool_result"
+        and f.get("call_id") == permission_call_id
         and f.get("envelope", {}).get("error") == "permission_timeout"
         and f.get("envelope", {}).get("denied") is True
         for f in emitted
     ), f"No synthetic permission_timeout tool_result found: {emitted}"
-    assert any(
+    assert not any(
         f.get("kind") == "assistant_chunk" and "permission_timeout" in str(f.get("delta", ""))
         for f in emitted
-    ), f"No terminal permission_timeout assistant message found: {emitted}"
+    ), f"Backend synthesized a same-handler permission answer: {emitted}"
 
 
 @pytest.mark.asyncio
@@ -1007,14 +1036,34 @@ async def test_otel_spans_preserved(
     monkeypatch.setattr(stdio_mod, "_tracer", provider.get_tracer("ummaya.ipc.test"))
     exporter.clear()
 
-    # Use short tool result timeout so dispatch resolves via internal async task
-    frame = _make_chat_request(tools=[])
+    frame = _make_chat_request(tools=[], content="테스트")
+    inbound_tool_call = ToolCallFrame(
+        session_id=frame.session_id,
+        correlation_id=str(uuid.uuid4()),
+        role="tool",
+        ts=_ts(),
+        kind="tool_call",
+        call_id="otel-permission-timeout-call",
+        name="send",
+        arguments={
+            "tool_id": "mock_submit_module_gov24_minwon",
+            "params": {
+                "applicant_name": "홍길동",
+                "service_code": "resident_register",
+                "delivery_method": "online",
+            },
+        },
+    )
 
     await _run_with_frame(
         frame,
-        _SingleLookupLLMClient,
+        _FakeLLMClientNoTools,
         monkeypatch=monkeypatch,
-        env_overrides={"UMMAYA_TOOL_RESULT_TIMEOUT_SECONDS": "5"},
+        env_overrides={
+            "UMMAYA_PERMISSION_TIMEOUT_SECONDS": "0.1",
+            "UMMAYA_TOOL_RESULT_TIMEOUT_SECONDS": "5",
+        },
+        extra_frames=[inbound_tool_call],
     )
 
     spans = exporter.get_finished_spans()

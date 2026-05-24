@@ -63,7 +63,9 @@ _tracer = trace.get_tracer(__name__)
 # Frames whose handlers can legitimately await follow-up frames from the same
 # stdin stream. Running them inline deadlocks the reader: chat_request waits for
 # permission_response while the reader is still awaiting chat_request.
-_BACKGROUND_FRAME_KINDS: frozenset[str] = frozenset({"chat_request", "user_input", "plugin_op"})
+_BACKGROUND_FRAME_KINDS: frozenset[str] = frozenset(
+    {"chat_request", "user_input", "tool_call", "plugin_op"}
+)
 _SCOPE_ENTRY_RE = re.compile(r"^(find|send|check):[a-z0-9_]+\.[a-z0-9_-]+$")
 _TOOL_ID_SCOPE_RE = re.compile(r"^(?P<verb>find|send|check):(?P<tool_id>[a-z][a-z0-9_]*[a-z0-9])$")
 _LEGACY_SCOPE_VERB_ALIASES: Final[dict[str, str]] = {
@@ -1283,6 +1285,38 @@ def _tool_call_arguments_dict(tool_call: object) -> dict[str, object]:
     return {str(key): value for key, value in parsed.items()}
 
 
+def _canonical_args_for_tool_call_name(
+    call_fn: object,
+    raw_args: dict[str, object],
+    *,
+    primitive: str,
+    tool_id: str | None = None,
+    registry: Any = None,
+) -> dict[str, object] | None:
+    """Return root-primitive arguments for a root or concrete adapter call.
+
+    CC's transcript stores the model-facing tool name. UMMAYA accepts legacy
+    root primitive calls and new concrete adapter calls, then canonicalizes the
+    latter only for internal duplicate/prerequisite guards.
+    """
+    if not isinstance(call_fn, str):
+        return None
+    if call_fn == primitive:
+        if tool_id is not None and raw_args.get("tool_id") != tool_id:
+            return None
+        return raw_args
+    if tool_id is not None and call_fn == tool_id:
+        return {"tool_id": call_fn, "params": dict(raw_args)}
+    if registry is not None:
+        try:
+            tool = registry.find(call_fn)
+        except Exception:  # noqa: BLE001
+            return None
+        if str(getattr(tool, "primitive", "") or "") == primitive:
+            return {"tool_id": str(call_fn), "params": dict(raw_args)}
+    return None
+
+
 def _payload_dict_is_error_like(payload: dict[str, object]) -> bool:
     """Return True when a primitive payload is a structured failure."""
     if payload.get("kind") == "error" or payload.get("denied") is True:
@@ -1329,13 +1363,19 @@ def _lookup_call_ids_for_tool(
             call_fn = getattr(getattr(tool_call, "function", None), "name", None) or (
                 tool_call.get("function", {}).get("name") if isinstance(tool_call, dict) else None
             )
-            if call_fn != "find":
-                continue
             args = _tool_call_arguments_dict(tool_call)
+            canonical_args = _canonical_args_for_tool_call_name(
+                call_fn,
+                args,
+                primitive="find",
+                tool_id=tool_id,
+            )
+            if canonical_args is None:
+                continue
             call_id = getattr(tool_call, "id", None) or (
                 tool_call.get("id") if isinstance(tool_call, dict) else None
             )
-            if args.get("tool_id") == tool_id and isinstance(call_id, str):
+            if canonical_args.get("tool_id") == tool_id and isinstance(call_id, str):
                 matching_call_ids.add(call_id)
     return matching_call_ids
 
@@ -1348,9 +1388,6 @@ def _tool_result_payload_for_call(
     """Parse a lookup tool-result message when it matches one of call IDs."""
     role = getattr(msg, "role", None) or (msg.get("role") if isinstance(msg, dict) else None)
     if role != "tool":
-        return None
-    name = getattr(msg, "name", None) or (msg.get("name") if isinstance(msg, dict) else None)
-    if name != "find":
         return None
     call_id = getattr(msg, "tool_call_id", None) or (
         msg.get("tool_call_id") if isinstance(msg, dict) else None
@@ -1390,6 +1427,7 @@ def _primitive_call_ids_for_tool(
     *,
     primitive: str,
     tool_id: str | None = None,
+    registry: Any = None,
 ) -> set[str]:
     """Collect assistant primitive call IDs, optionally narrowed by adapter id."""
     matching_call_ids: set[str] = set()
@@ -1406,10 +1444,15 @@ def _primitive_call_ids_for_tool(
             call_fn = getattr(getattr(tool_call, "function", None), "name", None) or (
                 tool_call.get("function", {}).get("name") if isinstance(tool_call, dict) else None
             )
-            if call_fn != primitive:
-                continue
             args = _tool_call_arguments_dict(tool_call)
-            if tool_id is not None and args.get("tool_id") != tool_id:
+            canonical_args = _canonical_args_for_tool_call_name(
+                call_fn,
+                args,
+                primitive=primitive,
+                tool_id=tool_id,
+                registry=registry,
+            )
+            if canonical_args is None:
                 continue
             call_id = getattr(tool_call, "id", None) or (
                 tool_call.get("id") if isinstance(tool_call, dict) else None
@@ -1428,9 +1471,6 @@ def _tool_result_payload_for_primitive_call(
     """Parse a primitive tool-result message when it matches one of call IDs."""
     role = getattr(msg, "role", None) or (msg.get("role") if isinstance(msg, dict) else None)
     if role != "tool":
-        return None
-    name = getattr(msg, "name", None) or (msg.get("name") if isinstance(msg, dict) else None)
-    if name != primitive:
         return None
     call_id = getattr(msg, "tool_call_id", None) or (
         msg.get("tool_call_id") if isinstance(msg, dict) else None
@@ -1465,8 +1505,6 @@ def _tool_result_payload_for_primitive(
     if role != "tool":
         return None
     name = getattr(msg, "name", None) or (msg.get("name") if isinstance(msg, dict) else None)
-    if name != primitive:
-        return None
     content = getattr(msg, "content", None) or (
         msg.get("content") if isinstance(msg, dict) else None
     )
@@ -1474,7 +1512,11 @@ def _tool_result_payload_for_primitive(
         return None
     try:
         payload: object = _stdlib_json.loads(content)
-        return payload
+        if name == primitive:
+            return payload
+        if isinstance(payload, dict) and payload.get("kind") == primitive:
+            return payload
+        return None
     except _stdlib_json.JSONDecodeError:
         return None
 
@@ -1515,6 +1557,7 @@ def _conversation_has_successful_identical_primitive_call(  # noqa: C901
     a blank max-turn termination.
     """
     target_signature = _canonical_primitive_args(args)
+    target_tool_id = args.get("tool_id")
     matching_call_ids: set[str] = set()
     for msg in llm_messages:
         role = getattr(msg, "role", None) or (msg.get("role") if isinstance(msg, dict) else None)
@@ -1529,14 +1572,21 @@ def _conversation_has_successful_identical_primitive_call(  # noqa: C901
             call_fn = getattr(getattr(tool_call, "function", None), "name", None) or (
                 tool_call.get("function", {}).get("name") if isinstance(tool_call, dict) else None
             )
-            if call_fn != primitive:
-                continue
             call_id = getattr(tool_call, "id", None) or (
                 tool_call.get("id") if isinstance(tool_call, dict) else None
             )
             if not isinstance(call_id, str):
                 continue
-            if _canonical_primitive_args(_tool_call_arguments_dict(tool_call)) == target_signature:
+            canonical_args = _canonical_args_for_tool_call_name(
+                call_fn,
+                _tool_call_arguments_dict(tool_call),
+                primitive=primitive,
+                tool_id=target_tool_id if isinstance(target_tool_id, str) else None,
+            )
+            if (
+                canonical_args is not None
+                and _canonical_primitive_args(canonical_args) == target_signature
+            ):
                 matching_call_ids.add(call_id)
 
     if not matching_call_ids:
@@ -1598,9 +1648,30 @@ def _conversation_has_successful_primitive_any_tool(
     llm_messages: list[Any],
     *,
     primitive: str,
+    registry: Any = None,
 ) -> bool:
     """Return True when any prior tool result for ``primitive`` succeeded."""
+    matching_call_ids = (
+        _primitive_call_ids_for_tool(
+            llm_messages,
+            primitive=primitive,
+            registry=registry,
+        )
+        if registry is not None
+        else set()
+    )
     for msg in llm_messages:
+        if matching_call_ids:
+            payload = _tool_result_payload_for_primitive_call(
+                msg,
+                primitive=primitive,
+                matching_call_ids=matching_call_ids,
+            )
+            if payload is not None and _primitive_payload_is_success(
+                payload,
+                primitive=primitive,
+            ):
+                return True
         payload = _tool_result_payload_for_primitive(msg, primitive=primitive)
         if payload is not None and _primitive_payload_is_success(payload, primitive=primitive):
             return True
@@ -1692,12 +1763,29 @@ def _latest_successful_primitive_observation(
         role = getattr(msg, "role", None) or (msg.get("role") if isinstance(msg, dict) else None)
         if role != "tool":
             continue
-        primitive = getattr(msg, "name", None) or (
+        tool_message_name = getattr(msg, "name", None) or (
             msg.get("name") if isinstance(msg, dict) else None
         )
+        content = getattr(msg, "content", None) or (
+            msg.get("content") if isinstance(msg, dict) else None
+        )
+        primitive: object = tool_message_name
+        payload: object | None = None
         if primitive not in {"find", "locate", "check", "send"}:
-            continue
-        payload = _tool_result_payload_for_primitive(msg, primitive=str(primitive))
+            if not isinstance(content, str):
+                continue
+            try:
+                parsed_payload: object = _stdlib_json.loads(content)
+            except _stdlib_json.JSONDecodeError:
+                continue
+            if not isinstance(parsed_payload, dict):
+                continue
+            primitive = parsed_payload.get("kind")
+            if primitive not in {"find", "locate", "check", "send"}:
+                continue
+            payload = parsed_payload
+        if payload is None:
+            payload = _tool_result_payload_for_primitive(msg, primitive=str(primitive))
         if payload is None or not _primitive_payload_is_success(payload, primitive=str(primitive)):
             continue
         tool_call_id = getattr(msg, "tool_call_id", None) or (
@@ -1921,7 +2009,7 @@ def _check_sensitive_lookup_terminated_without_lookup(
             "Sensitive lookup follow-up missing: verify has already granted "
             f"{required_scope!r}, but the citizen's requested data has not been "
             f"retrieved from {tool_id!r}. RECOVERY: in the next turn call "
-            f"find(tool_id={tool_id!r}, params={{}}). "
+            f"{tool_id}({{}}). "
             "Do NOT answer from the verify result alone; summarize the requested "
             "medical and education deduction fields only after the find "
             "tool_result succeeds."
@@ -1929,7 +2017,7 @@ def _check_sensitive_lookup_terminated_without_lookup(
     }
 
 
-def _conversation_has_tool_call(llm_messages: list[Any], tool_name: str) -> bool:
+def _conversation_has_tool_call(llm_messages: list[Any], tool_name: str) -> bool:  # noqa: C901
     """Return True when conversation history already contains a tool call/result."""
     for msg in llm_messages:
         role = getattr(msg, "role", None) or (msg.get("role") if isinstance(msg, dict) else None)
@@ -1938,6 +2026,8 @@ def _conversation_has_tool_call(llm_messages: list[Any], tool_name: str) -> bool
                 msg.get("name") if isinstance(msg, dict) else None
             )
             if name == tool_name:
+                return True
+            if _tool_result_payload_for_primitive(msg, primitive=tool_name) is not None:
                 return True
             continue
         if role != "assistant":
@@ -2990,20 +3080,28 @@ def _location_independent_resolve_redirect_for_query(
 def _check_location_terminated_without_resolve(
     llm_messages: list[Any],
     user_query: str,
+    registry: Any = None,
 ) -> str | None:
     """Return recovery text when a location-like request would end without resolve."""
     if not _query_implies_location_resolution(user_query):
         return None
-    if _conversation_has_tool_call(llm_messages, "locate"):
+    if _conversation_has_tool_call(
+        llm_messages,
+        "locate",
+    ) or _conversation_has_successful_primitive_any_tool(
+        llm_messages,
+        primitive="locate",
+        registry=registry,
+    ):
         return None
     return (
         "Location resolution prerequisite missing: the citizen supplied a place, "
         "address, station, or nearby-search request, but this turn is about to "
-        "answer without invoking locate. RECOVERY: in the next turn call "
-        "locate(tool_id='kakao_keyword_search', params={'query': "
-        "<citizen supplied place/address text>}) for a place/POI/station, or "
-        "locate(tool_id='kakao_address_search', params={'query': "
-        "<citizen supplied address text>}) for a structured road/jibun address, "
+        "answer without invoking a location adapter. RECOVERY: in the next turn call "
+        'kakao_keyword_search({"query": '
+        '"<citizen supplied place/address text>"}) for a place/POI/station, or '
+        'kakao_address_search({"query": '
+        '"<citizen supplied address text>"}) for a structured road/jibun address, '
         "even when the text looks fake or incomplete. "
         "Only report not_found / 유효한 위치 없음 after the resolver returns it; "
         "do NOT invent coordinates."
@@ -3094,6 +3192,26 @@ _ADMCD_INPUT_FIELDS: frozenset[str] = frozenset(
 )
 
 
+def _chain_param_transfer_recovery_hint(
+    tool_id: str,
+    schema_required_fields: set[str],
+) -> str:
+    """Return schema-specific recovery text for missing adapter params."""
+    if tool_id == "kma_forecast_fetch" or {"lat", "lon"}.issubset(schema_required_fields):
+        return (
+            "tool_result. For this KMA adapter, copy WGS-84 lat/lon from the "
+            "latest locate result and fill base_date/base_time from the current "
+            "KST context in the tool schema."
+        )
+    if tool_id.startswith("kma_") and {"nx", "ny"}.issubset(schema_required_fields):
+        return (
+            "tool_result. For this KMA adapter, use the displayed KMA grid nx/ny "
+            "values exactly and fill base_date/base_time from the current KST "
+            "context in the tool schema."
+        )
+    return "tool_result."
+
+
 def _extract_explicit_find_tool_id_request(user_query: str, registry: Any) -> str | None:
     """Return a citizen-mentioned find adapter id when the query explicitly asks for one."""
     if registry is None:
@@ -3170,7 +3288,7 @@ def _check_chain_prerequisite(  # noqa: C901
             "Find tool-choice mismatch: the citizen explicitly requested "
             f"tool_id={explicit_tool_id!r}, but the model emitted "
             f"tool_id={tool_id!r}. RECOVERY: re-invoke "
-            f"find(tool_id={explicit_tool_id!r}) using the same citizen request "
+            f"{explicit_tool_id}(...) using the same citizen request "
             "and any prior locate result already present in the conversation. "
             "Do NOT substitute another find adapter when the citizen names an "
             "available tool_id."
@@ -3205,6 +3323,7 @@ def _check_chain_prerequisite(  # noqa: C901
     has_prior_resolve = _conversation_has_successful_primitive_any_tool(
         llm_messages,
         primitive="locate",
+        registry=registry,
     )
     if tool_id == "nmc_emergency_search":
         has_region_params = (
@@ -3222,10 +3341,8 @@ def _check_chain_prerequisite(  # noqa: C901
                 "the official getEgytListInfoInqire region operation, not the coordinate "
                 "operation. The prior locate call did not provide the q0/q1 "
                 "region-mode parameters used by NMC. RECOVERY: call "
-                "locate(tool_id='kakao_coord_to_region', "
-                "params={lat:<prior_lat>, lon:<prior_lon>}), then call "
-                "find(tool_id='nmc_emergency_search', "
-                "params={mode:'region', q0:region.region_1depth_name, "
+                "kakao_coord_to_region({lat:<prior_lat>, lon:<prior_lon>}), then call "
+                "nmc_emergency_search({mode:'region', q0:region.region_1depth_name, "
                 "q1:region.region_2depth_name, origin_lat:coords.lat, "
                 "origin_lon:coords.lon, limit:<N>}). Do NOT retry coordinate mode for "
                 "station/neighborhood ER search and do NOT invent NMC filters such as QZ."
@@ -3237,19 +3354,19 @@ def _check_chain_prerequisite(  # noqa: C901
     if _conversation_has_successful_primitive_any_tool(
         llm_messages,
         primitive="locate",
+        registry=registry,
     ):
         missing_required_fields = sorted(
             field for field in schema_required_fields if params.get(field) in (None, "")
         )
         if missing_required_fields:
+            transfer_hint = _chain_param_transfer_recovery_hint(tool_id, schema_required_fields)
             return (
                 "Chain parameter transfer missing: a prior locate call succeeded, "
                 "but the current find call omitted required adapter params "
                 f"{missing_required_fields!r}. RECOVERY: re-invoke "
-                f"find(tool_id={tool_id!r}) with params copied from the latest locate "
-                "tool_result. For KMA adapters, use the displayed KMA grid nx/ny "
-                "values exactly and fill base_date/base_time from the current KST "
-                "context in the tool schema. Do NOT call the adapter with empty params "
+                f"{tool_id}(...) with params copied from the latest locate "
+                f"{transfer_hint} Do NOT call the adapter with empty params "
                 "and do NOT guess location values from prior knowledge."
             )
         return None
@@ -3267,10 +3384,9 @@ def _check_chain_prerequisite(  # noqa: C901
             "operations and must receive location fields from locate in the "
             "same conversation. No locate turn precedes the current call. "
             "RECOVERY: in the next turn call a coordinate-producing locate adapter "
-            "such as locate(tool_id='kakao_keyword_search', params={query:'<지역명>'}), "
-            "then locate(tool_id='kakao_coord_to_region', params={lat:<lat>, lon:<lon>}), "
-            "then call find(tool_id='nmc_emergency_search', "
-            "params={mode:'region', q0:region.region_1depth_name, "
+            "such as kakao_keyword_search({query:'<지역명>'}), "
+            "then kakao_coord_to_region({lat:<lat>, lon:<lon>}), "
+            "then call nmc_emergency_search({mode:'region', q0:region.region_1depth_name, "
             "q1:region.region_2depth_name, origin_lat:coords.lat, origin_lon:coords.lon, "
             "limit:<N>}). Do NOT guess coordinates or set NMC filters such as QZ unless "
             "the citizen explicitly supplied them."
@@ -3289,9 +3405,9 @@ def _check_chain_prerequisite(  # noqa: C901
         f"that means the values would be guessed from prior knowledge instead "
         f"of being resolved against Kakao Local API. "
         f"RECOVERY: in the next turn call a coordinate-producing locate adapter "
-        f"such as locate(tool_id='kakao_keyword_search', params={{query:'<지역명>'}}) "
+        f"such as kakao_keyword_search({{query:'<지역명>'}}) "
         f"to obtain the canonical lat/lon for the citizen's location, then "
-        f"re-invoke this tool with the returned values. Do NOT "
+        f"re-invoke {tool_id} with the returned values. Do NOT "
         f"guess coordinates."
     )
 
@@ -3414,6 +3530,7 @@ def _query_implies_current_weather_observation(user_query: str) -> bool:
 def _check_current_weather_terminated_without_observation(
     llm_messages: list[Any],
     user_query: str,
+    registry: Any = None,
 ) -> str | None:
     """Require KMA current observation before final current/today weather prose."""
     if not _query_implies_current_weather_observation(user_query):
@@ -3427,14 +3544,15 @@ def _check_current_weather_terminated_without_observation(
     if not _conversation_has_successful_primitive_any_tool(
         llm_messages,
         primitive="locate",
+        registry=registry,
     ):
         return None
     return (
         "Current weather observation missing: the citizen asked for current/today "
         "weather, but the conversation is about to answer without calling "
-        "find(tool_id='kma_current_observation'). RECOVERY: call "
-        "find(tool_id='kma_current_observation', params={base_date:<current KST "
-        "YYYYMMDD>, base_time:<current or prior HH00>, nx:<latest locate KMA X>, "
+        "kma_current_observation. RECOVERY: call "
+        "kma_current_observation({base_date:<current KST YYYYMMDD>, "
+        "base_time:<current or prior HH00>, nx:<latest locate KMA X>, "
         "ny:<latest locate KMA Y>}) using the latest locate result. Do NOT claim "
         "that live/current observation data is unavailable unless this adapter was "
         "called and returned an error."
@@ -3488,6 +3606,7 @@ def _final_answer_missing_current_weather_observation_values(
 def _check_resolve_terminated_without_followup(  # noqa: C901
     llm_messages: list[Any],
     user_query: str,
+    registry: Any = None,
 ) -> str | None:
     """Return chain-recovery error message when the LLM is about to terminate
     a turn without invoking a follow-up ``find`` after ``locate``.
@@ -3516,12 +3635,60 @@ def _check_resolve_terminated_without_followup(  # noqa: C901
     if not _available_adapters_block_has_find_candidate(available_adapters_block):
         return None
 
+    locate_call_ids = (
+        _primitive_call_ids_for_tool(
+            llm_messages,
+            primitive="locate",
+            registry=registry,
+        )
+        if registry is not None
+        else set()
+    )
+    find_call_ids = (
+        _primitive_call_ids_for_tool(
+            llm_messages,
+            primitive="find",
+            registry=registry,
+        )
+        if registry is not None
+        else set()
+    )
     resolve_succeeded = False
     saw_followup_lookup = False
     for m in llm_messages:
         role = getattr(m, "role", None) or (m.get("role") if isinstance(m, dict) else None)
         # Detect locate tool result message
         if role == "tool":
+            find_payload = (
+                _tool_result_payload_for_primitive_call(
+                    m,
+                    primitive="find",
+                    matching_call_ids=find_call_ids,
+                )
+                if find_call_ids
+                else _tool_result_payload_for_primitive(
+                    m,
+                    primitive="find",
+                )
+            )
+            if find_payload is not None and _primitive_payload_is_success(
+                find_payload,
+                primitive="find",
+            ):
+                saw_followup_lookup = True
+                continue
+            if locate_call_ids:
+                locate_payload = _tool_result_payload_for_primitive_call(
+                    m,
+                    primitive="locate",
+                    matching_call_ids=locate_call_ids,
+                )
+                if locate_payload is not None:
+                    resolve_succeeded = _primitive_payload_is_success(
+                        locate_payload,
+                        primitive="locate",
+                    )
+                    continue
             name = getattr(m, "name", None) or (m.get("name") if isinstance(m, dict) else None)
             if name == "locate":
                 resolve_payload = _tool_result_payload_for_primitive(
@@ -3544,9 +3711,6 @@ def _check_resolve_terminated_without_followup(  # noqa: C901
             call_fn = getattr(getattr(tc, "function", None), "name", None) or (
                 tc.get("function", {}).get("name") if isinstance(tc, dict) else None
             )
-            if call_fn != "find":
-                continue
-            # Inspect arguments to confirm fetch-mode against an adapter.
             raw_args = getattr(getattr(tc, "function", None), "arguments", None) or (
                 tc.get("function", {}).get("arguments") if isinstance(tc, dict) else None
             )
@@ -3561,8 +3725,16 @@ def _check_resolve_terminated_without_followup(  # noqa: C901
                 parsed_args = raw_args or {}
             if not isinstance(parsed_args, dict):
                 continue
-            mode = parsed_args.get("mode")
-            tool_id = parsed_args.get("tool_id")
+            canonical_args = _canonical_args_for_tool_call_name(
+                call_fn,
+                {str(key): value for key, value in parsed_args.items()},
+                primitive="find",
+                registry=registry,
+            )
+            if canonical_args is None:
+                continue
+            mode = canonical_args.get("mode")
+            tool_id = canonical_args.get("tool_id")
             if mode in (None, "fetch") and isinstance(tool_id, str) and tool_id:
                 saw_followup_lookup = True
                 break
@@ -3575,15 +3747,15 @@ def _check_resolve_terminated_without_followup(  # noqa: C901
         return None
     return (
         "Chain incomplete: this conversation invoked locate but did NOT "
-        "follow up with find(tool_id=<adapter>, params={...}) on "
+        "follow up with a concrete find adapter on "
         "any adapter even though the dynamic <available_adapters> block for "
         "this citizen query includes find candidates. Coordinates alone are "
         "not the requested public-service answer when a registry-selected "
         "find adapter is available; treating them as a final answer is a "
         "fabrication risk. RECOVERY: in the next turn, choose the correct "
-        "adapter from the <available_adapters> block and call "
-        "find(tool_id='<adapter>', params={lat: <resolved>, "
-        "lon: <resolved>, ...}) using the coordinates returned by the prior "
+        "adapter from the <available_adapters> block and call it directly, "
+        "for example <adapter>({lat: <resolved>, lon: <resolved>, ...}), "
+        "using the coordinates returned by the prior "
         "locate turn. Do NOT produce a final answer this turn."
     )
 
@@ -4176,6 +4348,54 @@ async def run(  # noqa: C901
     _AVAILABLE_ADAPTERS_TOP_K = int(  # noqa: N806 — env-derived constant
         _os_chat_env.environ.get("UMMAYA_AVAILABLE_ADAPTERS_TOP_K", "5")
     )
+    _root_primitive_tool_ids = frozenset({"locate", "find", "check", "send"})
+
+    def _select_concrete_adapter_tools_for_turn(user_query: str) -> list[Any]:
+        """Return concrete, non-core adapter tools for this citizen turn.
+
+        CC exposes concrete Tool objects to the model; UMMAYA keeps the same
+        model-facing shape and uses BM25/dense retrieval only as a loading
+        optimization so the tool list stays small.
+        """
+        q = (user_query or "").strip()
+        if not q:
+            return []
+        registry = _ensure_tool_registry()
+        selected: dict[str, Any] = {}
+        for tool in registry.all_tools():
+            if tool.id in _root_primitive_tool_ids:
+                continue
+            if tool.id in q:
+                selected[tool.id] = tool
+        try:
+            from ummaya.tools.search import search  # noqa: PLC0415
+
+            raw_top_k = max(_AVAILABLE_ADAPTERS_TOP_K * 3, _AVAILABLE_ADAPTERS_TOP_K)
+            candidates = search(
+                query=q,
+                bm25_index=registry.bm25_index,
+                registry=registry,
+                top_k=min(raw_top_k, 20),
+            )
+        except Exception:
+            logger.exception("adapter tool retrieval failed for '%s'", q[:80])
+            candidates = []
+        for candidate in candidates:
+            try:
+                tool = registry.find(candidate.tool_id)
+            except Exception:
+                logger.debug(
+                    "Skipping unavailable adapter candidate %s",
+                    candidate.tool_id,
+                    exc_info=True,
+                )
+                continue
+            if tool.id in _root_primitive_tool_ids:
+                continue
+            selected.setdefault(tool.id, tool)
+            if len(selected) >= _AVAILABLE_ADAPTERS_TOP_K:
+                break
+        return list(selected.values())[:_AVAILABLE_ADAPTERS_TOP_K]
 
     def _build_available_adapters_suffix(user_query: str) -> str:  # noqa: C901
         """Run BM25 against the live registry and emit the citizen-turn
@@ -4216,7 +4436,7 @@ async def run(  # noqa: C901
                     exc_info=True,
                 )
                 continue
-            if tool.is_core:
+            if tool.id in _root_primitive_tool_ids:
                 continue
             filtered_candidates.append(candidate)
             if len(filtered_candidates) >= _AVAILABLE_ADAPTERS_TOP_K:
@@ -4368,8 +4588,9 @@ async def run(  # noqa: C901
                     )
         lines.append("")
         lines.append(
-            "규칙: 위 목록의 primitive에 맞는 루트 도구만 호출하세요: "
-            'locate/find/check/send({"tool_id":"...", "params":{...}}). '
+            "규칙: 위 목록의 tool_id는 이미 model-facing concrete function name입니다. "
+            "루트 wrapper find/locate/check/send 를 호출하지 말고, 해당 tool_id 이름의 "
+            "함수를 직접 호출하세요. 인자는 schema 의 필드명 그대로 전달합니다. "
             "동일 tool_id 를 한 turn 안에서 반복 호출하지 마세요."
         )
         listed_primitives = {str(candidate.primitive or "find") for candidate in candidates}
@@ -4377,7 +4598,7 @@ async def run(  # noqa: C901
             lines.append(
                 "공개자료 조회 규칙: 위 후보가 모두 primitive=find 이면 시민이 "
                 "인증/본인확인/동의/신청/제출/납부/신고를 명시하지 않은 한 "
-                "check/send 를 호출하지 마세요. 성공한 find 결과가 있으면 "
+                "check/send 계열 adapter를 호출하지 마세요. 성공한 find 결과가 있으면 "
                 "다음 turn 은 최종 답변입니다."
             )
         lines.append(
@@ -4391,8 +4612,8 @@ async def run(  # noqa: C901
             '"date" 같은 추측 키는 모든 어댑터에서 invalid_params 로 거부됩니다.'
         )
         lines.append(
-            "BM25 도구 발견은 백엔드 internal 기능 — find(mode='search') 같은 호출은"
-            " 무효화됩니다 (Spec 2521)."
+            "BM25 도구 발견은 백엔드 internal 기능입니다. 모델은 검색 함수를 호출하지 "
+            "않고, backend가 tools[]에 실어준 concrete function만 호출합니다."
         )
         lines.append("</available_adapters>")
         return "\n".join(lines)
@@ -4551,29 +4772,29 @@ async def run(  # noqa: C901
                 )
                 perm_span.set_attribute("ummaya.permission.decision", "timeout")
                 _pending_perms.pop(request_id, None)
-                # Emit synthetic denied tool_result so the LLM turn resolves.
+                # Emit synthetic denied tool_result so the Tool.call resolves.
                 denied_env = ToolResultEnvelope(
                     kind=cast("Any", fname),
                     **{"error": "permission_timeout", "denied": True},
                 )
+                denied_result_frame = ToolResultFrame(
+                    session_id=session_id,
+                    correlation_id=correlation_id,
+                    role="backend",
+                    ts=_utcnow(),
+                    kind="tool_result",
+                    call_id=call_id,
+                    envelope=denied_env,
+                )
+                try:
+                    await write_frame(denied_result_frame)
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning(
+                        "permission: failed to emit timeout tool_result: %s",
+                        exc,
+                    )
                 fut = _pending_calls.get(call_id)
                 if fut and not fut.done():
-                    denied_result_frame = ToolResultFrame(
-                        session_id=session_id,
-                        correlation_id=correlation_id,
-                        role="backend",
-                        ts=_utcnow(),
-                        kind="tool_result",
-                        call_id=call_id,
-                        envelope=denied_env,
-                    )
-                    try:
-                        await write_frame(denied_result_frame)
-                    except Exception as exc:  # noqa: BLE001
-                        logger.warning(
-                            "permission: failed to emit timeout tool_result: %s",
-                            exc,
-                        )
                     fut.set_result(denied_result_frame)
                 return False
             finally:
@@ -4629,24 +4850,24 @@ async def run(  # noqa: C901
                     kind=cast("Any", fname),
                     **{"error": "permission_denied", "denied": True},
                 )
+                denied_result_frame2 = ToolResultFrame(
+                    session_id=session_id,
+                    correlation_id=correlation_id,
+                    role="backend",
+                    ts=_utcnow(),
+                    kind="tool_result",
+                    call_id=call_id,
+                    envelope=denied_env2,
+                )
+                try:
+                    await write_frame(denied_result_frame2)
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning(
+                        "permission: failed to emit denied tool_result: %s",
+                        exc,
+                    )
                 fut2 = _pending_calls.get(call_id)
                 if fut2 and not fut2.done():
-                    denied_result_frame2 = ToolResultFrame(
-                        session_id=session_id,
-                        correlation_id=correlation_id,
-                        role="backend",
-                        ts=_utcnow(),
-                        kind="tool_result",
-                        call_id=call_id,
-                        envelope=denied_env2,
-                    )
-                    try:
-                        await write_frame(denied_result_frame2)
-                    except Exception as exc:  # noqa: BLE001
-                        logger.warning(
-                            "permission: failed to emit denied tool_result: %s",
-                            exc,
-                        )
                     fut2.set_result(denied_result_frame2)
                 return False
 
@@ -5192,11 +5413,11 @@ async def run(  # noqa: C901
         rationale.
 
         Replaces ``_handle_user_input_llm`` for ``ChatRequestFrame``. Streams
-        text deltas as ``AssistantChunkFrame``, emits one ``ToolCallFrame``
-        per K-EXAONE function-call, awaits each matching ``ToolResultFrame``
-        via ``_pending_calls`` Futures, then injects synthetic
-        ``role="tool"`` messages into the local history and re-invokes
-        ``LLMClient.stream`` (agentic-loop continuation per ADR-0005).
+        text deltas as ``AssistantChunkFrame`` and emits one ``ToolCallFrame``
+        per K-EXAONE function-call. Matching Claude Code's provider/query
+        boundary, this handler returns at ``assistant(tool_use)``; the TUI
+        query loop owns ``Tool.call()`` execution and sends a follow-up
+        ``ChatRequestFrame`` containing the resulting role="tool" message.
 
         Loop is bounded by ``UMMAYA_AGENTIC_LOOP_MAX_TURNS`` (default 8;
         also accepts the legacy ``UMMAYA_REACT_MAX_TURNS``) and the
@@ -5268,37 +5489,23 @@ async def run(  # noqa: C901
             except Exception:  # noqa: BLE001 — diagnostic must never raise
                 logger.exception("[CHAT_REQUEST_DUMP] failed to serialise")
 
-        # Tool inventory — backend ToolRegistry is the single source of
-        # truth, BUT only the active LLM-callable primitives go into the
-        # ``tools`` parameter the model sees. UMMAYA architecture
-        # (docs/vision.md L1-C): `system prompt exposes primitive
-        # signatures only; BM25 surfaces adapters dynamically`. Adapter
-        # tools (kma_*, hira_*, nmc_*, koroad_*, mohw_*, nfa_*) are
-        # invoked via `find(tool_id="<adapter_id>", params={...})`,
-        # never directly. The previous version of this block
-        # (commit 5050417f) emitted every core_tool — primitive AND
-        # adapter — into the tools[] parameter, which let K-EXAONE call
-        # adapter ids directly (e.g. `kma_current_observation()` instead
-        # of `find(tool_id="kma_current_observation", params=...)`).
-        # The dispatcher then rejected the call with "Model requested
-        # unknown tool 'kma_current_observation'" because PRIMITIVE_REGISTRY
-        # only contains the active primitives. Captured live in
-        # specs/integration-verification/donga-univ-poi-bug/
-        # snap-001-01-kma-now (2026-05-04).
-        #
-        # Filtering by `ministry == "UMMAYA"` AND id in the primitive
-        # whitelist matches the intent of mvp_surface.py — the UMMAYA
-        # GovAPITool entries with `primitive=` field set are exactly
-        # the LLM-callable surface. Adapters (every other ministry) flow
-        # through the `<available_adapters>` system-prompt suffix that
-        # `_build_available_adapters_suffix` emits below.
-        registry = cast("Any", _ensure_tool_registry())
-        from ummaya.primitives import PRIMITIVE_REGISTRY  # noqa: PLC0415
+        latest_user_utt = ""
+        for _msg in reversed(frame.messages):
+            if _msg.role == "user" and _msg.content:
+                latest_user_utt = _msg.content
+                break
 
+        # Tool inventory — backend ToolRegistry is the single source of
+        # truth. CC exposes concrete Tool objects as model-facing functions:
+        # each entry has a concrete name, prompt/description, and input schema.
+        # UMMAYA now follows that shape: BM25/dense retrieval selects a small
+        # turn-local set of concrete adapter tools, and each selected
+        # GovAPITool is exported directly as an OpenAI-compatible function.
+        # The root primitives remain internal dispatcher families and legacy
+        # transcript compatibility names, not the model-facing tool surface.
+        registry = cast("Any", _ensure_tool_registry())
         backend_tools_raw = [
-            t.to_openai_tool()
-            for t in registry.core_tools()
-            if t.ministry == "UMMAYA" and t.id in PRIMITIVE_REGISTRY
+            t.to_openai_tool() for t in _select_concrete_adapter_tools_for_turn(latest_user_utt)
         ]
         backend_tool_names: set[object] = set()
         for raw_tool in backend_tools_raw:
@@ -5527,16 +5734,19 @@ async def run(  # noqa: C901
             stream_gate = StreamGate()
 
             def _append_tool_routing_observation(reason: str, message: str) -> None:
-                """Add a non-tool observation so the model chooses the next call."""
+                """Add an internal routing repair instruction for the next model turn."""
                 llm_messages.append(
                     LLMChatMessage(
-                        role="user",
+                        role="system",
                         content=(
-                            "[UMMAYA TOOL ROUTING OBSERVATION]\n"
+                            "[UMMAYA TOOL ROUTING REPAIR]\n"
                             f"{message}\n"
-                            "Use the available tool descriptions and adapter metadata to "
-                            "choose the next primitive call yourself. Do not answer from "
-                            "memory when the observation says a tool prerequisite is missing."
+                            "Internal instruction: do not repeat or summarize this repair "
+                            "message to the citizen. Use the concrete function names in "
+                            "the current tools[] list and each tool's own schema directly. "
+                            "Root primitives find/locate/check/send are internal dispatch "
+                            "families here; do not call them as wrapper functions unless "
+                            "they are explicitly present in tools[]."
                         ),
                     )
                 )
@@ -5551,7 +5761,7 @@ async def run(  # noqa: C901
                 force_no_tools_next_turn = True
                 llm_messages.append(
                     LLMChatMessage(
-                        role="user",
+                        role="system",
                         content=_final_answer_observation_message(
                             message=message,
                             latest_user_utt=latest_user_utt,
@@ -5778,7 +5988,9 @@ async def run(  # noqa: C901
             # know whether a tool_call follows in this turn.
             if not tool_call_buf:
                 location_gate_msg = _check_location_terminated_without_resolve(
-                    llm_messages, latest_user_utt
+                    llm_messages,
+                    latest_user_utt,
+                    registry=_ensure_tool_registry(),
                 )
                 if location_gate_msg is not None:
                     _append_tool_routing_observation(
@@ -5847,7 +6059,9 @@ async def run(  # noqa: C901
                 # Add a chain-recovery observation and continue the loop so
                 # the model chooses the missing follow-up find call itself.
                 chain_followup_msg = _check_resolve_terminated_without_followup(
-                    llm_messages, latest_user_utt
+                    llm_messages,
+                    latest_user_utt,
+                    registry=_ensure_tool_registry(),
                 )
                 if chain_followup_msg is not None:
                     _append_tool_routing_observation(
@@ -5862,6 +6076,7 @@ async def run(  # noqa: C901
                 current_weather_gate_msg = _check_current_weather_terminated_without_observation(
                     llm_messages,
                     latest_user_utt,
+                    registry=_ensure_tool_registry(),
                 )
                 if current_weather_gate_msg is not None:
                     _append_tool_routing_observation(
@@ -6131,7 +6346,6 @@ async def run(  # noqa: C901
             buffered_visible.clear()
 
             # ---- T027/T029 — emit tool_call frames + register Futures -----
-            loop = asyncio.get_event_loop()
             issued_calls: list[tuple[str, str]] = []  # (call_id, name)
             assistant_tool_calls: list[LLMToolCall] = []
             tool_call_indices = sorted(tool_call_buf.keys())
@@ -6157,7 +6371,52 @@ async def run(  # noqa: C901
                 if not isinstance(args_obj, dict):
                     args_obj = {"_value": args_obj}
 
-                fname = slot["name"]
+                model_tool_name = slot["name"]
+                model_args_obj = dict(args_obj)
+
+                from ummaya.primitives import PRIMITIVE_REGISTRY  # noqa: PLC0415
+
+                if model_tool_name in PRIMITIVE_REGISTRY:
+                    fname = model_tool_name
+                    args_obj = dict(model_args_obj)
+                else:
+                    try:
+                        concrete_tool = registry.find(model_tool_name)
+                    except Exception:
+                        await write_frame(
+                            ErrorFrame(
+                                session_id=frame.session_id,
+                                correlation_id=frame.correlation_id or str(uuid.uuid4()),
+                                role="backend",
+                                ts=_utcnow(),
+                                kind="error",
+                                code="unknown_tool",
+                                message=f"Model requested unknown tool {model_tool_name!r}",
+                                details={"call_id": call_id},
+                            )
+                        )
+                        continue
+                    primitive_name = str(concrete_tool.primitive or "find")
+                    if primitive_name not in PRIMITIVE_REGISTRY:
+                        await write_frame(
+                            ErrorFrame(
+                                session_id=frame.session_id,
+                                correlation_id=frame.correlation_id or str(uuid.uuid4()),
+                                role="backend",
+                                ts=_utcnow(),
+                                kind="error",
+                                code="unknown_tool_family",
+                                message=(
+                                    f"Model requested tool {model_tool_name!r}, but its "
+                                    f"primitive family {primitive_name!r} is not registered."
+                                ),
+                                details={"call_id": call_id},
+                            )
+                        )
+                        continue
+                    fname = primitive_name
+                    args_obj = {"tool_id": model_tool_name, "params": dict(model_args_obj)}
+
                 args_obj = _maybe_reroute_locate_admin_keyword_args(fname, args_obj)
                 args_obj = _normalize_lookup_args_for_query(fname, args_obj, latest_user_utt)
                 args_obj = _normalize_verify_args_for_query(fname, args_obj, latest_user_utt)
@@ -6178,26 +6437,12 @@ async def run(  # noqa: C901
                         latest_user_utt,
                         adapter_param_names=adapter_param_names,
                     )
-                # Epic #2077 FR-003 — registry-derived whitelist. spec.md
-                # § Out of Scope (Permanent) forbids hardcoded enumerations
-                # outside the registry; ``PRIMITIVE_REGISTRY`` is the single
-                # source of truth for LLM-visible primitive names.
-                from ummaya.primitives import PRIMITIVE_REGISTRY  # noqa: PLC0415
-
-                if fname not in PRIMITIVE_REGISTRY:
-                    await write_frame(
-                        ErrorFrame(
-                            session_id=frame.session_id,
-                            correlation_id=frame.correlation_id or str(uuid.uuid4()),
-                            role="backend",
-                            ts=_utcnow(),
-                            kind="error",
-                            code="unknown_tool",
-                            message=f"Model requested unknown tool {fname!r}",
-                            details={"call_id": call_id},
-                        )
-                    )
-                    continue
+                emit_tool_name = model_tool_name
+                emit_args_obj = (
+                    dict(cast("dict[str, object]", args_obj.get("params") or {}))
+                    if model_tool_name != fname
+                    else args_obj
+                )
 
                 resolve_redirect = _location_independent_resolve_redirect_for_query(
                     fname,
@@ -6241,8 +6486,8 @@ async def run(  # noqa: C901
                             ts=_utcnow(),
                             kind="tool_call",
                             call_id=call_id,
-                            name=fname,  # type: ignore[arg-type]
-                            arguments=args_obj,
+                            name=emit_tool_name,
+                            arguments=emit_args_obj,
                         )
                     )
                     err_envelope = ToolResultEnvelope.model_validate(
@@ -6276,8 +6521,8 @@ async def run(  # noqa: C901
                                     id=call_id,
                                     type="function",
                                     function=LLMFunctionCall(
-                                        name=fname,
-                                        arguments=_json.dumps(args_obj),
+                                        name=emit_tool_name,
+                                        arguments=_json.dumps(emit_args_obj),
                                     ),
                                 )
                             ],
@@ -6294,7 +6539,7 @@ async def run(  # noqa: C901
                                 },
                                 ensure_ascii=False,
                             ),
-                            name=fname,
+                            name=emit_tool_name,
                             tool_call_id=call_id,
                         )
                     )
@@ -6415,8 +6660,8 @@ async def run(  # noqa: C901
                             ts=_utcnow(),
                             kind="tool_call",
                             call_id=call_id,
-                            name=fname,  # type: ignore[arg-type]
-                            arguments=args_obj,
+                            name=emit_tool_name,
+                            arguments=emit_args_obj,
                         )
                     )
                     err_envelope = ToolResultEnvelope.model_validate(
@@ -6450,8 +6695,8 @@ async def run(  # noqa: C901
                                     id=call_id,
                                     type="function",
                                     function=LLMFunctionCall(
-                                        name=fname,
-                                        arguments=_json.dumps(args_obj),
+                                        name=emit_tool_name,
+                                        arguments=_json.dumps(emit_args_obj),
                                     ),
                                 )
                             ],
@@ -6468,7 +6713,7 @@ async def run(  # noqa: C901
                                 },
                                 ensure_ascii=False,
                             ),
-                            name=fname,
+                            name=emit_tool_name,
                             tool_call_id=call_id,
                         )
                     )
@@ -6570,8 +6815,8 @@ async def run(  # noqa: C901
                             ts=_utcnow(),
                             kind="tool_call",
                             call_id=call_id,
-                            name=fname,  # type: ignore[arg-type]
-                            arguments=args_obj,
+                            name=emit_tool_name,
+                            arguments=emit_args_obj,
                         )
                     )
                     err_envelope = ToolResultEnvelope.model_validate(
@@ -6605,8 +6850,8 @@ async def run(  # noqa: C901
                                     id=call_id,
                                     type="function",
                                     function=LLMFunctionCall(
-                                        name=fname,
-                                        arguments=_json.dumps(args_obj),
+                                        name=emit_tool_name,
+                                        arguments=_json.dumps(emit_args_obj),
                                     ),
                                 )
                             ],
@@ -6623,7 +6868,7 @@ async def run(  # noqa: C901
                                 },
                                 ensure_ascii=False,
                             ),
-                            name=fname,
+                            name=emit_tool_name,
                             tool_call_id=call_id,
                         )
                     )
@@ -6639,18 +6884,6 @@ async def run(  # noqa: C901
                     )
                     continue
 
-                _pending_calls[call_id] = loop.create_future()
-                issued_calls.append((call_id, fname))
-                assistant_tool_calls.append(
-                    LLMToolCall(
-                        id=call_id,
-                        type="function",
-                        function=LLMFunctionCall(
-                            name=fname,
-                            arguments=_json.dumps(args_obj),
-                        ),
-                    )
-                )
                 await write_frame(
                     ToolCallFrame(
                         session_id=frame.session_id,
@@ -6659,39 +6892,11 @@ async def run(  # noqa: C901
                         ts=_utcnow(),
                         kind="tool_call",
                         call_id=call_id,
-                        name=fname,  # type: ignore[arg-type]
-                        arguments=args_obj,
+                        name=emit_tool_name,
+                        arguments=emit_args_obj,
                     )
                 )
-
-                # Spec 1978 T053b — fire internal primitive dispatch as a
-                # background task. The task resolves _pending_calls[call_id]
-                # when the primitive returns, allowing the gather below to
-                # proceed without waiting for an external tool_result frame.
-                asyncio.create_task(
-                    _dispatch_primitive(
-                        call_id,
-                        fname,
-                        args_obj,
-                        frame.session_id,
-                        frame.correlation_id,
-                    ),
-                    name=f"primitive-{fname}-{call_id[:8]}",
-                )
-
-                # Neurosymbolic constraint — clear the force flag once a
-                # locate turn has actually been dispatched. Any
-                # subsequent turn returns to free tool_choice so the LLM
-                # can route to the actual coord-input adapter (KMA/HIRA/
-                # NMC) with the resolved coordinates.
-                if fname == "locate":
-                    force_locate_next_turn = False
-                if fname == "check":
-                    force_verify_next_turn = None
-                if fname == "find":
-                    force_lookup_next_turn = None
-                if fname == "send":
-                    force_submit_next_turn = None
+                return
 
             # If every tool call was rejected (whitelist), terminate.
             # Exception: when a validation gate fired (repair flag set), keep
@@ -7005,6 +7210,93 @@ async def run(  # noqa: C901
         if not fut.done():
             fut.set_result(frame)
 
+    async def _handle_tool_call(frame: IPCFrame) -> None:
+        """Execute a TUI-owned Tool.call request and emit a tool_result frame.
+
+        Claude Code's query loop, not the provider, owns tool execution. The
+        backend first exposes the model's function call as a ToolCallFrame from
+        ``_handle_chat_request``. The TUI then invokes the matching Tool.call()
+        and sends this inbound ToolCallFrame back to the backend. Only this
+        path runs Korean public-service adapters and returns ToolResultFrame.
+        """
+        from ummaya.ipc.frame_schema import ToolCallFrame  # noqa: PLC0415
+
+        if not isinstance(frame, ToolCallFrame):
+            return
+        args_obj: dict[str, Any]
+        if isinstance(frame.arguments, dict):
+            args_obj = dict(frame.arguments)
+        else:
+            args_obj = {"_value": frame.arguments}
+
+        from ummaya.primitives import PRIMITIVE_REGISTRY  # noqa: PLC0415
+
+        dispatch_name = frame.name
+        dispatch_args = args_obj
+        if dispatch_name not in PRIMITIVE_REGISTRY:
+            try:
+                concrete_tool = _ensure_tool_registry().find(dispatch_name)
+            except Exception:
+                from ummaya.ipc.frame_schema import (  # noqa: PLC0415
+                    ToolResultEnvelope,
+                    ToolResultFrame,
+                )
+
+                envelope = ToolResultEnvelope(
+                    kind="find",
+                    error=f"Unknown concrete adapter tool {dispatch_name!r}.",
+                    tool_id=dispatch_name,
+                )
+                await write_frame(
+                    ToolResultFrame(
+                        session_id=frame.session_id,
+                        correlation_id=frame.correlation_id,
+                        role="backend",
+                        ts=_utcnow(),
+                        kind="tool_result",
+                        call_id=frame.call_id,
+                        envelope=envelope,
+                    )
+                )
+                return
+            primitive_name = str(concrete_tool.primitive or "find")
+            if primitive_name not in PRIMITIVE_REGISTRY:
+                from ummaya.ipc.frame_schema import (  # noqa: PLC0415
+                    ToolResultEnvelope,
+                    ToolResultFrame,
+                )
+
+                envelope = ToolResultEnvelope(
+                    kind="find",
+                    error=(
+                        f"Concrete adapter tool {dispatch_name!r} belongs to "
+                        f"unknown primitive family {primitive_name!r}."
+                    ),
+                    tool_id=dispatch_name,
+                )
+                await write_frame(
+                    ToolResultFrame(
+                        session_id=frame.session_id,
+                        correlation_id=frame.correlation_id,
+                        role="backend",
+                        ts=_utcnow(),
+                        kind="tool_result",
+                        call_id=frame.call_id,
+                        envelope=envelope,
+                    )
+                )
+                return
+            dispatch_name = primitive_name
+            dispatch_args = {"tool_id": frame.name, "params": dict(args_obj)}
+
+        await _dispatch_primitive(
+            frame.call_id,
+            dispatch_name,
+            dispatch_args,
+            frame.session_id,
+            frame.correlation_id,
+        )
+
     # UMMAYA_IPC_HANDLER env var selects the user_input handler:
     #   - "llm" (default): route UserInputFrame → LLMClient.stream() → FriendliAI
     #   - "echo": mirror UserInputFrame back as AssistantChunkFrame "[echo] {text}"
@@ -7034,6 +7326,8 @@ async def run(  # noqa: C901
             done=True,
         )
         await write_frame(echo_frame)
+
+    _using_default_frame_handler = on_frame is None
 
     if on_frame is None:
 
@@ -7082,6 +7376,12 @@ async def run(  # noqa: C901
                     await _handle_tool_result(frame)
                 except Exception as exc:  # noqa: BLE001
                     logger.exception("tool_result handler failed: %s", exc)
+
+            elif frame.kind == "tool_call":
+                try:
+                    await _handle_tool_call(frame)
+                except Exception as exc:  # noqa: BLE001
+                    logger.exception("tool_call handler failed: %s", exc)
 
             elif frame.kind == "permission_response":
                 # Spec 1978 T047 — resolve pending permission Future.
@@ -7399,6 +7699,9 @@ async def run(  # noqa: C901
                 )
 
         on_frame = _handle_frame
+
+    if _using_default_frame_handler and _handler_mode != "echo":
+        _ensure_tool_registry()
 
     # Spec 1978 T081 / ADR-0004 — root span ``ummaya.session`` covers the
     # entire stdio session lifetime. All inbound/outbound frame spans

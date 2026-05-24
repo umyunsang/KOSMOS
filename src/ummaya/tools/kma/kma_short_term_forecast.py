@@ -18,8 +18,9 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, Literal, cast
+from zoneinfo import ZoneInfo
 
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -44,11 +45,24 @@ from ummaya.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 
+_SEOUL_TZ = ZoneInfo("Asia/Seoul")
 _OPERATION = "getVilageFcst"
 _BASE_URL = f"{KMA_API_HUB_VILAGE_FCST_BASE_URL}/{_OPERATION}"
 
 # Valid base times for the short-term forecast service (KST)
-_VALID_BASE_TIMES = frozenset({"0200", "0500", "0800", "1100", "1400", "1700", "2000", "2300"})
+_BASE_TIME_ORDER: tuple[str, ...] = (
+    "0200",
+    "0500",
+    "0800",
+    "1100",
+    "1400",
+    "1700",
+    "2000",
+    "2300",
+)
+_VALID_BASE_TIMES = frozenset(_BASE_TIME_ORDER)
+_NO_DATA_RESULT_CODE = "03"
+_MAX_BASE_SLOT_ATTEMPTS = 9
 
 # ---------------------------------------------------------------------------
 # Input / Output models
@@ -78,7 +92,7 @@ class KmaShortTermForecastInput(BaseModel):
         le=149,
         description=(
             "KMA 격자 X 좌표 (1-149). locate adapter 결과의 coords.nx 를 "
-            "그대로 전달. 예: 서울 종로구=60, 부산 사하구=96."
+            "그대로 전달. Do not substitute a memorized city example."
         ),
     )
     ny: int = Field(
@@ -87,7 +101,7 @@ class KmaShortTermForecastInput(BaseModel):
         le=253,
         description=(
             "KMA 격자 Y 좌표 (1-253). nx 와 함께 locate 으로 받음. "
-            "예: 서울 종로구=127, 부산 사하구=73."
+            "Do not substitute a memorized city example."
         ),
     )
     num_of_rows: int = Field(
@@ -198,6 +212,72 @@ def _normalize_items(raw: object) -> list[dict[str, object]]:
     return []
 
 
+def _previous_base_slot(base_date: str, base_time: str) -> tuple[str, str]:
+    """Return the previous KMA short-term forecast publication slot."""
+    idx = _BASE_TIME_ORDER.index(base_time)
+    if idx > 0:
+        return base_date, _BASE_TIME_ORDER[idx - 1]
+
+    base_day = datetime.strptime(base_date, "%Y%m%d").replace(tzinfo=_SEOUL_TZ)
+    prev_day = base_day - timedelta(days=1)
+    return prev_day.strftime("%Y%m%d"), _BASE_TIME_ORDER[-1]
+
+
+def _candidate_base_slots(
+    base_date: str,
+    base_time: str,
+    *,
+    max_attempts: int = _MAX_BASE_SLOT_ATTEMPTS,
+) -> list[tuple[str, str]]:
+    """Return the requested and prior KMA base slots for NO_DATA recovery."""
+    slots: list[tuple[str, str]] = []
+    current_date = base_date
+    current_time = base_time
+    for _ in range(max_attempts):
+        slots.append((current_date, current_time))
+        current_date, current_time = _previous_base_slot(current_date, current_time)
+    return slots
+
+
+def _latest_published_base_slot(
+    *,
+    now: datetime | None = None,
+    publication_lag_minutes: int = 10,
+) -> tuple[str, str]:
+    """Return the latest short-term forecast slot expected to be published."""
+    kst_now = now.astimezone(_SEOUL_TZ) if now is not None else datetime.now(_SEOUL_TZ)
+    stable_now = kst_now - timedelta(minutes=publication_lag_minutes)
+    past_times = [
+        base_time for base_time in _BASE_TIME_ORDER if int(base_time[:2]) <= stable_now.hour
+    ]
+    if past_times:
+        return stable_now.strftime("%Y%m%d"), past_times[-1]
+
+    prev_day = stable_now - timedelta(days=1)
+    return prev_day.strftime("%Y%m%d"), _BASE_TIME_ORDER[-1]
+
+
+def _coerce_future_base_slot(
+    base_date: str,
+    base_time: str,
+    *,
+    now: datetime | None = None,
+) -> tuple[str, str]:
+    """Clamp a future or unpublished request to the latest published KMA slot."""
+    latest_date, latest_time = _latest_published_base_slot(now=now)
+    requested_key = (base_date, base_time)
+    latest_key = (latest_date, latest_time)
+    if requested_key > latest_key:
+        return latest_key
+    return requested_key
+
+
+def _is_no_data_error(exc: ToolExecutionError) -> bool:
+    """Return True when a KMA ToolExecutionError is resultCode=03/NO_DATA."""
+    message = str(exc)
+    return f"resultCode={_NO_DATA_RESULT_CODE!r}" in message or "resultMsg='NO_DATA'" in message
+
+
 def _parse_response(payload: dict[str, object]) -> KmaShortTermForecastOutput:
     """Parse a full KMA getVilageFcst response envelope.
 
@@ -266,7 +346,7 @@ def _parse_response(payload: dict[str, object]) -> KmaShortTermForecastOutput:
 # ---------------------------------------------------------------------------
 
 
-async def _call(
+async def _call(  # noqa: C901
     params: KmaShortTermForecastInput,
     *,
     client: httpx.AsyncClient | None = None,
@@ -286,24 +366,12 @@ async def _call(
     """
     endpoint = resolve_vilage_fcst_endpoint(_OPERATION)
 
-    query_params: dict[str, str | int] = {
-        endpoint.auth_query_param: endpoint.api_key,
-        "base_date": params.base_date,
-        "base_time": params.base_time,
-        "nx": params.nx,
-        "ny": params.ny,
-        "numOfRows": params.num_of_rows,
-        "pageNo": params.page_no,
-    }
-    query_params = apply_format_params(query_params, params.data_type)
-
-    logger.debug(
-        "KMA short-term forecast request: base_date=%s base_time=%s nx=%d ny=%d",
+    initial_base_date, initial_base_time = _coerce_future_base_slot(
         params.base_date,
         params.base_time,
-        params.nx,
-        params.ny,
     )
+    candidate_slots = _candidate_base_slots(initial_base_date, initial_base_time)
+    no_data_slots: list[str] = []
 
     own_client = client is None
     if own_client:
@@ -311,21 +379,60 @@ async def _call(
 
     try:
         assert client is not None  # noqa: S101
-        response = await client.get(endpoint.url, params=query_params)
-        response.raise_for_status()
+        for base_date, base_time in candidate_slots:
+            query_params: dict[str, str | int] = {
+                endpoint.auth_query_param: endpoint.api_key,
+                "base_date": base_date,
+                "base_time": base_time,
+                "nx": params.nx,
+                "ny": params.ny,
+                "numOfRows": params.num_of_rows,
+                "pageNo": params.page_no,
+            }
+            query_params = apply_format_params(query_params, params.data_type)
 
-        payload = decode_response_payload(response)
-        output = _parse_response(payload)
+            logger.debug(
+                "KMA short-term forecast request: base_date=%s base_time=%s nx=%d ny=%d",
+                base_date,
+                base_time,
+                params.nx,
+                params.ny,
+            )
 
-        logger.info(
-            "KMA short-term forecast retrieved: base_date=%s base_time=%s nx=%d ny=%d items=%d",
-            params.base_date,
-            params.base_time,
-            params.nx,
-            params.ny,
-            len(output.items),
+            response = await client.get(endpoint.url, params=query_params)
+            response.raise_for_status()
+
+            payload = decode_response_payload(response)
+            try:
+                output = _parse_response(payload)
+            except ToolExecutionError as exc:
+                if _is_no_data_error(exc):
+                    no_data_slots.append(f"{base_date} {base_time}: {exc}")
+                    continue
+                raise
+
+            if output.items:
+                logger.info(
+                    "KMA short-term forecast retrieved: base_date=%s base_time=%s "
+                    "nx=%d ny=%d items=%d",
+                    base_date,
+                    base_time,
+                    params.nx,
+                    params.ny,
+                    len(output.items),
+                )
+                return output.model_dump()
+
+            no_data_slots.append(f"{base_date} {base_time}: empty item list")
+
+        attempted = ", ".join(no_data_slots)
+        raise ToolExecutionError(
+            tool_id="kma_short_term_forecast",
+            message=(
+                "KMA API returned no forecast data for the requested slot or prior slots. "
+                f"attempted={attempted}"
+            ),
         )
-        return output.model_dump()
 
     except (ToolExecutionError, ConfigurationError):
         raise

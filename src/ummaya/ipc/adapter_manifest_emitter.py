@@ -43,13 +43,17 @@ Hard rules (per AGENTS.md)
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 import logging
 import os
 from datetime import UTC, datetime
 from typing import IO, Any, Literal
 
+from pydantic import BaseModel
+
 from ummaya.ipc.frame_schema import AdapterManifestEntry, AdapterManifestSyncFrame
+from ummaya.tools.manifest_metadata import enrich_input_schema_json
 
 logger = logging.getLogger(__name__)
 
@@ -133,16 +137,45 @@ def _build_entries(  # noqa: C901, ANN401 — three-source walker, refactor defe
     except ImportError:
         _submit_registry = {}
 
+    registry_tools = getattr(registry, "_tools", {})
+
     for tool_id, (reg, _fn) in _submit_registry.items():
         if tool_id in seen:
             continue
-        policy_url: str | None = None
-        if reg.policy is not None:
-            policy_url = reg.policy.real_classification_url
         source_mode_raw = (
             reg.source_mode.value if hasattr(reg.source_mode, "value") else str(reg.source_mode)
         )
         source_mode_val = _map_source_mode(source_mode_raw)
+        policy_url: str | None = None
+        if reg.policy is not None:
+            policy_url = reg.policy.real_classification_url
+        registry_tool = registry_tools.get(tool_id) if isinstance(registry_tools, dict) else None
+        if registry_tool is not None:
+            try:
+                rich_entry = _entry_from_tool(
+                    registry_tool,
+                    warn_on_missing=warn_on_missing,
+                    source_mode_override=source_mode_val,
+                )
+                seen[tool_id] = AdapterManifestEntry(
+                    tool_id=rich_entry.tool_id,
+                    name=_adapter_display_name(reg),
+                    primitive=rich_entry.primitive,
+                    policy_authority_url=policy_url or rich_entry.policy_authority_url,
+                    source_mode=source_mode_val,
+                    search_hint=rich_entry.search_hint or _adapter_search_hint(reg),
+                    llm_description=rich_entry.llm_description or _submit_llm_description(tool_id),
+                    input_schema_json=rich_entry.input_schema_json,
+                    output_schema_json=rich_entry.output_schema_json,
+                )
+                continue
+            except Exception as exc:
+                logger.warning(
+                    "manifest_emitter: falling back to submit registration for %s — %s",
+                    tool_id,
+                    exc,
+                )
+
         if source_mode_val in ("live", "mock") and not policy_url and warn_on_missing:
             logger.warning(
                 "manifest_emitter: submit adapter %s has no policy URL (source_mode=%s)",
@@ -150,12 +183,17 @@ def _build_entries(  # noqa: C901, ANN401 — three-source walker, refactor defe
                 source_mode_val,
             )
         try:
+            input_model = _resolve_model_ref(getattr(reg, "input_model_ref", ""))
             entry = AdapterManifestEntry(
                 tool_id=tool_id,
                 name=_adapter_display_name(reg),
                 primitive=_map_primitive(reg.primitive),
                 policy_authority_url=policy_url,
                 source_mode=source_mode_val,
+                search_hint=_adapter_search_hint(reg),
+                llm_description=_submit_llm_description(tool_id),
+                input_schema_json=_model_json_schema(input_model, tool_id=tool_id),
+                output_schema_json=_submit_output_schema(),
             )
             seen[tool_id] = entry
         except Exception as exc:
@@ -184,10 +222,14 @@ def _build_entries(  # noqa: C901, ANN401 — three-source walker, refactor defe
     except ImportError:
         _verify_adapters = {}
 
+    verify_family_metadata = _verify_family_metadata_by_family()
     for family in _verify_adapters:
         # Surface verify families under their family name (matches the
         # family_hint argument the LLM passes to verify(family_hint=...)).
         if family in seen:
+            continue
+        if family in verify_family_metadata:
+            seen[family] = _entry_from_verify_family(family, verify_family_metadata[family])
             continue
         seen[family] = AdapterManifestEntry(
             tool_id=family,
@@ -195,70 +237,266 @@ def _build_entries(  # noqa: C901, ANN401 — three-source walker, refactor defe
             primitive="check",
             policy_authority_url=None,
             source_mode="internal",
+            search_hint=(
+                f"{family} verify check authentication delegation consent scope_list "
+                "purpose_ko purpose_en"
+            ),
+            llm_description=_verify_family_llm_description(family, None),
+            input_schema_json=_model_json_schema(
+                _resolve_verify_params_shell(),
+                tool_id=family,
+            ),
+            output_schema_json=_model_json_schema(_resolve_verify_output_shell()),
         )
 
     # --- Source 3: main ToolRegistry -----------------------------------------
     try:
-        tools_list = list(getattr(registry, "_tools", {}).values())
+        tools_list = list(registry_tools.values()) if isinstance(registry_tools, dict) else []
     except Exception:
         tools_list = []
 
+    root_primitive_tool_ids = frozenset({"locate", "find", "check", "send"})
+
     for tool in tools_list:
         tool_id_opt: str | None = tool.id if hasattr(tool, "id") else getattr(tool, "tool_id", None)
-        if tool_id_opt is None or tool_id_opt in seen:
+        if (
+            tool_id_opt is None
+            or tool_id_opt in root_primitive_tool_ids
+            or tool_id_opt in seen
+        ):
             continue
         tool_id = tool_id_opt
-        policy_url = None
-        if tool.policy is not None:
-            policy_url = tool.policy.real_classification_url
-
-        raw_primitive: Any = tool.primitive
-        if raw_primitive is None:
-            # Primitive may be None during pre-v1.2 compatibility window;
-            # infer from adapter_mode or skip.
-            raw_primitive = "find"
-
-        adapter_mode: str = getattr(tool, "adapter_mode", "live")
-        source_mode_val = "mock" if adapter_mode == "mock" else "live"
-
         try:
-            entry = AdapterManifestEntry(
-                tool_id=tool_id,
-                name=getattr(tool, "name_ko", tool_id),
-                primitive=_map_primitive(raw_primitive),
-                policy_authority_url=policy_url,
-                source_mode=source_mode_val,
-            )
-            seen[tool_id] = entry
+            seen[tool_id] = _entry_from_tool(tool, warn_on_missing=warn_on_missing)
         except Exception as exc:
             logger.warning("manifest_emitter: skipping ToolRegistry entry %s — %s", tool_id, exc)
-
-    # --- Add internal MVP surface entries (resolve_location, lookup) ----------
-    _add_internal_if_absent(seen, "locate", "Resolve Location", "locate")
-    _add_internal_if_absent(seen, "find", "Lookup", "find")
 
     return sorted(seen.values(), key=lambda e: e.tool_id)
 
 
-def _add_internal_if_absent(
-    seen: dict[str, AdapterManifestEntry],
-    tool_id: str,
-    name: str,
-    primitive: str,
-) -> None:
-    """Add an internal (no policy URL) entry if the tool_id is not yet recorded."""
-    if tool_id in seen:
-        return
-    try:
-        seen[tool_id] = AdapterManifestEntry(
-            tool_id=tool_id,
-            name=name,
-            primitive=primitive,  # type: ignore[arg-type]
-            policy_authority_url=None,
-            source_mode="internal",
+def _entry_from_tool(  # noqa: ANN401
+    tool: Any,
+    *,
+    warn_on_missing: bool = False,
+    source_mode_override: Literal["live", "mock", "internal"] | None = None,
+) -> AdapterManifestEntry:
+    """Build a manifest entry from a full GovAPITool-like registry record."""
+    tool_id = str(getattr(tool, "id", getattr(tool, "tool_id", "")))
+    policy = getattr(tool, "policy", None)
+    policy_url = policy.real_classification_url if policy is not None else None
+
+    raw_primitive: Any = getattr(tool, "primitive", None)
+    if raw_primitive is None:
+        raw_primitive = "find"
+
+    adapter_mode = str(getattr(tool, "adapter_mode", "live"))
+    source_mode_val: Literal["live", "mock", "internal"] = (
+        "mock" if adapter_mode == "mock" else "live"
+    )
+    if source_mode_override is not None:
+        source_mode_val = source_mode_override
+
+    if source_mode_val in ("live", "mock") and not policy_url and warn_on_missing:
+        logger.warning(
+            "manifest_emitter: registry adapter %s has no policy URL (source_mode=%s)",
+            tool_id,
+            source_mode_val,
         )
-    except Exception as exc:
-        logger.warning("manifest_emitter: could not add internal entry %s — %s", tool_id, exc)
+
+    return AdapterManifestEntry(
+        tool_id=tool_id,
+        name=getattr(tool, "name_ko", tool_id),
+        primitive=_map_primitive(raw_primitive),
+        policy_authority_url=policy_url,
+        source_mode=source_mode_val,
+        search_hint=getattr(tool, "search_hint", None),
+        llm_description=getattr(tool, "llm_description", None),
+        input_schema_json=_schema_attr_json(tool, "input_schema", tool_id=tool_id),
+        output_schema_json=_schema_attr_json(tool, "output_schema"),
+    )
+
+
+def _entry_from_verify_family(
+    family: str,
+    metadata: dict[str, object],
+) -> AdapterManifestEntry:
+    """Build the internal manifest entry for one verify family."""
+
+    name = str(metadata.get("name_ko") or family).strip()
+    return AdapterManifestEntry(
+        tool_id=family,
+        name=f"check:{name}",
+        primitive="check",
+        policy_authority_url=None,
+        source_mode="internal",
+        search_hint=_verify_search_hint(metadata),
+        llm_description=_verify_family_llm_description(family, metadata),
+        input_schema_json=_model_json_schema(
+            _resolve_verify_params_shell(),
+            tool_id=family,
+        ),
+        output_schema_json=_model_json_schema(_resolve_verify_output_shell()),
+    )
+
+
+def _verify_family_metadata_by_family() -> dict[str, dict[str, object]]:
+    """Return discovery-bridge verify metadata keyed by family id."""
+
+    try:
+        from ummaya.tools.discovery_bridge import _VERIFY_FAMILIES  # noqa: PLC0415
+    except ImportError:
+        return {}
+
+    result: dict[str, dict[str, object]] = {}
+    for entry in _VERIFY_FAMILIES:
+        family = str(entry.get("family") or "").strip()
+        if family:
+            result[family] = dict(entry)
+    return result
+
+
+def _verify_search_hint(metadata: dict[str, object]) -> str:
+    """Compose the bilingual discovery phrase for one verify family."""
+
+    ko = " ".join(_string_list(metadata.get("search_hint_ko")))
+    en = " ".join(_string_list(metadata.get("search_hint_en")))
+    family = str(metadata.get("family") or "").strip()
+    tool_id = str(metadata.get("tool_id") or "").strip()
+    return (
+        f"{ko} {en} {family} {tool_id} verify check authentication "
+        "인증 인증서 위임 delegation scope_list purpose_ko purpose_en"
+    ).strip()
+
+
+def _verify_family_llm_description(
+    family: str,
+    metadata: dict[str, object] | None,
+) -> str:
+    """Build model-facing prose for a verify-family manifest entry."""
+
+    metadata = metadata or {}
+    tool_id = str(metadata.get("tool_id") or family).strip()
+    name = str(metadata.get("name_ko") or family).strip()
+    scope_rules = str(metadata.get("scope_rules") or "").strip()
+    scope_clause = f" {scope_rules}" if scope_rules else ""
+    return (
+        f"Internal check-family surface for {name} (family_hint='{family}', "
+        f"bridged adapter id '{tool_id}'). Use this only through the core check "
+        "primitive before a downstream protected find/send action needs delegated "
+        "authorization. Params must follow input_schema_json exactly: scope_list "
+        "contains '<verb>:<adapter_family>.<action>' scope strings, purpose_ko is "
+        "the Korean citizen-facing consent purpose, and purpose_en is the audit-log "
+        "English purpose. The manifest entry stays source_mode='internal' because "
+        "the agency citation is emitted by the verify response transparency stamp, "
+        "while the pre-call tool schema remains stable for the TUI and LLM loop."
+        f"{scope_clause}"
+    )
+
+
+def _string_list(value: object) -> list[str]:
+    """Return non-empty strings from a loosely typed metadata list."""
+
+    if not isinstance(value, list):
+        return []
+    return [str(item).strip() for item in value if str(item).strip()]
+
+
+def _resolve_verify_params_shell() -> type[BaseModel] | None:
+    """Resolve the discovery bridge check params schema without import-time coupling."""
+
+    try:
+        from ummaya.tools.discovery_bridge import _VerifyParamsShell  # noqa: PLC0415
+    except ImportError:
+        return None
+    return _VerifyParamsShell
+
+
+def _resolve_verify_output_shell() -> type[BaseModel] | None:
+    """Resolve the discovery bridge opaque output schema without import-time coupling."""
+
+    try:
+        from ummaya.tools.discovery_bridge import _OpaqueOutput  # noqa: PLC0415
+    except ImportError:
+        return None
+    return _OpaqueOutput
+
+
+def _schema_attr_json(  # noqa: ANN401
+    owner: Any,
+    attr: str,
+    *,
+    tool_id: str | None = None,
+) -> dict[str, object]:
+    """Export ``owner.<attr>.model_json_schema()`` when present."""
+    model = getattr(owner, attr, None)
+    return _model_json_schema(model, tool_id=tool_id)
+
+
+def _model_json_schema(
+    model: object | None,
+    *,
+    tool_id: str | None = None,
+) -> dict[str, object]:
+    """Return a Pydantic JSON Schema dict for ``model`` or ``{}`` on absence."""
+    if model is None:
+        return {}
+    if not isinstance(model, type) or not issubclass(model, BaseModel):
+        return {}
+    try:
+        schema = model.model_json_schema()
+    except Exception as exc:  # pragma: no cover - defensive registry path
+        logger.warning("manifest_emitter: failed to export schema for %s — %s", model, exc)
+        return {}
+    exported = {str(key): value for key, value in schema.items()}
+    if tool_id is not None:
+        return enrich_input_schema_json(tool_id, exported)
+    return exported
+
+
+def _resolve_model_ref(model_ref: str) -> type[BaseModel] | None:
+    """Resolve ``module.Model`` references used by submit AdapterRegistration."""
+    if not model_ref or "." not in model_ref:
+        return None
+    try:
+        module_name, model_name = model_ref.rsplit(".", 1)
+        model = getattr(importlib.import_module(module_name), model_name)
+    except Exception as exc:  # pragma: no cover - defensive registry path
+        logger.warning("manifest_emitter: failed to resolve input model %s — %s", model_ref, exc)
+        return None
+    if isinstance(model, type) and issubclass(model, BaseModel):
+        return model
+    return None
+
+
+def _submit_output_schema() -> dict[str, object]:
+    """Export the submit primitive output envelope schema."""
+    try:
+        from ummaya.primitives.submit import SubmitOutput  # noqa: PLC0415
+    except ImportError:
+        return {}
+    return _model_json_schema(SubmitOutput)
+
+
+def _adapter_search_hint(reg: Any) -> str | None:  # noqa: ANN401
+    """Flatten AdapterRegistration bilingual search hints."""
+    search_hint = getattr(reg, "search_hint", None)
+    if not isinstance(search_hint, dict):
+        return None
+    parts: list[str] = []
+    for locale in ("ko", "en"):
+        values = search_hint.get(locale)
+        if isinstance(values, list):
+            parts.extend(str(value).strip() for value in values if str(value).strip())
+    return " ".join(parts) or None
+
+
+def _submit_llm_description(tool_id: str) -> str:
+    """Build the model-facing usage prose for submit adapters without a GovAPITool wrapper."""
+    return (
+        f"send primitive adapter {tool_id}. Requires a prior check call that returns a "
+        "matching DelegationContext. Pass the adapter-specific payload described by "
+        "input_schema_json; credential and authorization material is supplied by UMMAYA runtime."
+    )
 
 
 def _map_source_mode(raw: str) -> Literal["live", "mock", "internal"]:

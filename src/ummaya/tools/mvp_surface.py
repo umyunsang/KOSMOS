@@ -80,9 +80,10 @@ class _LookupInputForLLM(BaseModel):
         # Mirrors LookupFetchInput.tool_id pattern (Spec 1636 ADR-007).
         pattern=r"^([a-z][a-z0-9_]*|plugin\.[a-z][a-z0-9_]*\.(find|send|check|locate))$",
         description=(
-            "Adapter identifier picked from the dynamically-injected "
-            "<available_adapters> block. Must come from the candidate "
-            "list — never guess."
+            "Concrete adapter identifier picked from the dynamically-injected "
+            "<available_adapters> block. This is not the root function name; "
+            "never set tool_id to 'find', 'locate', 'check', or 'send'. "
+            "Must come from the candidate list — never guess."
         ),
     )
     params: dict[str, object] = Field(
@@ -108,7 +109,9 @@ class _LocateInputForLLM(BaseModel):
     tool_id: str = Field(
         pattern=r"^[a-z][a-z0-9_]*$",
         description=(
-            "Locate adapter id from <available_adapters>, e.g. "
+            "Concrete locate adapter id from <available_adapters>; this is not "
+            "the root function name. Never set tool_id to 'locate', 'find', "
+            "'check', or 'send'. Examples: "
             "'kakao_keyword_search', 'kakao_address_search', "
             "'kakao_coord_to_region', 'juso_adm_cd_lookup', or "
             "'sgis_adm_cd_lookup'."
@@ -193,7 +196,11 @@ LOOKUP_SEARCH_TOOL = GovAPITool(
         "자동으로 inject 합니다 — LLM 은 그 목록의 tool_id 중 하나를 선택해 "
         "이 find 도구를 호출하면 됩니다.\n\n"
         "사용법:\n"
-        '  {"tool_id": "<후보 목록의 tool_id>", "params": {...}}\n\n'
+        "  Call the root function named find, but set tool_id to a concrete "
+        "adapter id from <available_adapters>.\n"
+        '  {"tool_id": "<후보 목록의 adapter tool_id>", "params": {...}}\n'
+        "  Never use root primitive names as tool_id values: find, locate, "
+        "check, send.\n\n"
         "예시 (시민: '오늘 부산 날씨'):\n"
         "  {\n"
         '    "tool_id": "kma_forecast_fetch",\n'

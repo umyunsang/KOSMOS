@@ -87,8 +87,10 @@ class TestMCPToolsListShape:
         tools = response["result"]["tools"]
         # Subscribe is deferred out of the active surface until UMMAYA owns an
         # app/push delivery runtime. The MCP tool list mirrors the active
-        # registry: 155 tools after Spec #2800 adds 85 KMA APIHub structured adapters.
-        assert len(tools) == 155, f"Tool list count drift: got {len(tools)}, expected 155"
+        # registry: 148 tools after Spec #2800 adds 78 active KMA APIHub
+        # structured adapters; three unstable GTS endpoints and four retired
+        # UM NWP endpoints remain cataloged but are not callable tools.
+        assert len(tools) == 148, f"Tool list count drift: got {len(tools)}, expected 148"
 
     def test_tools_list_entries_have_required_keys(self, mcp_server: MCPServer) -> None:
         response = asyncio.run(

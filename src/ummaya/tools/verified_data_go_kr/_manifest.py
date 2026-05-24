@@ -281,8 +281,9 @@ VERIFIED_DATA_GO_KR_ADAPTERS: tuple[VerifiedAdapterSpec, ...] = (
         last_verified=_LAST_VERIFIED,
         search_hint="15129394 조달청 나라장터 입찰공고 bid public info find",
         llm_description=(
-            "조회구분(inqry_div)과 입찰공고번호(bid_ntce_no)로 "
-            "나라장터 입찰공고 공개 데이터를 조회한다."
+            "조회구분 inqry_div='2'와 필수 입찰공고번호(bid_ntce_no)로 "
+            "나라장터 입찰공고 공개 데이터를 조회한다. 등록일시/변경일시 "
+            "목록 검색은 이 adapter가 아니라 별도 PPS operation으로 감싸야 한다."
         ),
     ),
     VerifiedAdapterSpec(

@@ -27,14 +27,44 @@ The logged-in APIHub page exposed these category links:
 
 ## Current Approval Evidence
 
-The logged-in My Page showed four approved utilization applications. The approved visible operations were:
+The logged-in My Page verification on 2026-05-24 showed `87` approved
+utilization applications. The paginated approval table was checked across all
+18 pages:
 
-- `VilageFcstInfoService_2.0/getFcstVersion`
-- `VilageFcstInfoService_2.0/getVilageFcst`
-- `VilageFcstInfoService_2.0/getUltraSrtFcst`
-- `typ01/url/fct_shrt_reg.php`
+- Rows `1` through `87` were present exactly once.
+- Every row status was `승인`.
+- `85` entries were structured `/openApi` operations.
+- `2` entries were non-structured `/url` operations:
+  `nph-dfs_odam_grd` and `fct_shrt_reg.php`.
 
 This proves that APIHub key issuance and per-operation utilization approval are separate. The credential itself is intentionally not recorded here.
+
+## Utilization Application Submission Follow-Up
+
+After the user completed the required portal login state on 2026-05-24, the
+Chrome-authenticated APIHub form flow was resumed for the remaining structured
+operations that still needed utilization applications. The browser automation
+observed the official success modal text `API 활용신청을 완료하였습니다.` for
+these `APIUse.do?seqApi=` pages in the final pass:
+
+- `740`, `741`, `748`, `749`
+- `878`, `880`, `881`, `882`
+- `885`, `886`, `887`, `888`, `889`, `890`, `891`, `892`, `893`
+
+An earlier pass in the same logged-in browser session had already progressed
+the structured application queue through `seqApi=739`, while `seqApi=747`
+returned the portal's already-applied message. This follow-up records
+submission evidence only. The later My Page approval-list confirmation above
+promotes all 85 structured catalog operations to `approved`.
+
+Representative post-submission live probe:
+
+- Endpoint: `/api/typ02/openApi/AmmIwxxmService/getMetar`
+- Parameters: official sample shape with `pageNo=1`, `numOfRows=10`,
+  `dataType=JSON`, and `icao=RKSI`
+- Result: HTTP 200 with `resultCode=00` and `resultMsg=NORMAL_SERVICE`
+- Secret handling: the APIHub `authKey` was sourced from the local environment
+  and was not printed or recorded
 
 ## Category Extraction Summary
 

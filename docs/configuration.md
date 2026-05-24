@@ -46,6 +46,7 @@ Column definitions:
 | `UMMAYA_KAKAO_API_KEY` | No (operator-managed) | — | REST API key string | `ummaya.settings.UmmayaSettings.kakao_api_key` | [Kakao Developers Console](https://developers.kakao.com) |
 | `UMMAYA_FRIENDLI_TOKEN` | No (user session) | — | Bearer token | `ummaya.llm.config.LLMClientConfig.token` | [FriendliAI Suite](https://suite.friendli.ai) |
 | `UMMAYA_DATA_GO_KR_API_KEY` | No (operator-managed) | — | API key string | `ummaya.settings.UmmayaSettings.data_go_kr_api_key` | [공공데이터포털](https://www.data.go.kr) |
+| `UMMAYA_KMA_API_HUB_AUTH_KEY` | No (operator-managed) | — | API Hub auth key string | `ummaya.settings.UmmayaSettings.kma_api_hub_auth_key`; KMA VilageFcst adapters | [KMA API Hub](https://apihub.kma.go.kr/) |
 | `UMMAYA_LIVE_ADAPTER_MODE` | No | `auto` | `auto` \| `proxy` \| `direct` | `ummaya.tools.live_proxy.should_use_live_adapter_proxy` | [Live adapter gateway](#ummaya_live_adapter_mode) |
 | `UMMAYA_LIVE_ADAPTER_PROXY_URL` | No | `https://ummaya-live-gateway-ygjh3ipzqq-du.a.run.app/v1/adapters` | HTTPS URL | `ummaya.tools.live_proxy.invoke_live_adapter_proxy` | [Live adapter gateway](#ummaya_live_adapter_proxy_url) |
 | `UMMAYA_LIVE_ADAPTER_PROXY_TIMEOUT_SECONDS` | No | `30.0` | Float > 0 | `ummaya.tools.live_proxy.invoke_live_adapter_proxy` | [Live adapter gateway](#ummaya_live_adapter_proxy_timeout_seconds) |
@@ -114,7 +115,6 @@ Column definitions:
 | `UMMAYA_AGENT_MAILBOX_RECIPIENT` | OTel span attr | n/a | String span attribute key | `ummaya.observability.semconv.UMMAYA_AGENT_MAILBOX_RECIPIENT` | [Agent Swarm (Epic #13)](#agent-swarm-epic-13) |
 | `UMMAYA_TUI_THEME` | No | `default` | `default` \| `dark` \| `light` | `ummaya.config.env_registry.TUISettings.theme` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
 | `UMMAYA_TUI_LOG_LEVEL` | No | `WARN` | `DEBUG` \| `INFO` \| `WARN` \| `ERROR` | `ummaya.config.env_registry.TUISettings.log_level` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
-| `UMMAYA_TUI_IME_STRATEGY` | No | `fork` | `fork` \| `readline` | `ummaya.config.env_registry.TUISettings.ime_strategy` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
 | `UMMAYA_TUI_SOAK_EVENTS_PER_SEC` | No | `100` | Integer >= 1 | `ummaya.config.env_registry.TUISettings.soak_events_per_sec` | [Spec 287 TUI (Epic #287)](#tui-ink-react-bun-epic-287) |
 | `UMMAYA_IPC_RING_SIZE` | No | `256` | Integer >= 1 | `ummaya.ipc.ring_buffer._DEFAULT_RING_SIZE` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
 | `UMMAYA_IPC_HWM` | No | `64` | Integer >= 1 | `ummaya.ipc.backpressure._DEFAULT_HWM` / `ummaya.ipc.ring_buffer._DEFAULT_HWM` | [Spec 032 IPC (Epic #1298)](#ipc-stdio-hardening-epic-1298) |
@@ -152,8 +152,8 @@ Column definitions:
 > Spec 028 added `UMMAYA_OTEL_COLLECTOR_PORT`, `UMMAYA_LANGFUSE_OTLP_ENDPOINT`, and
 > `UMMAYA_LANGFUSE_OTLP_AUTH_HEADER` (rows 29–31 of UMMAYA_* active set).
 > Spec 287 (T010) added `UMMAYA_TUI_THEME`, `UMMAYA_TUI_LOG_LEVEL`,
-> `UMMAYA_TUI_IME_STRATEGY`, and `UMMAYA_TUI_SOAK_EVENTS_PER_SEC`
-> (rows 36–39 of UMMAYA_* active set).
+> and `UMMAYA_TUI_SOAK_EVENTS_PER_SEC`
+> (rows 36–38 of UMMAYA_* active set).
 > Spec 032 (T053–T061) added 3 env-var rows (`UMMAYA_IPC_RING_SIZE`,
 > `UMMAYA_IPC_HWM`, `UMMAYA_IPC_TX_CACHE_CAPACITY`) and 9 OTel-span-attribute
 > key constants (`UMMAYA_IPC_CORRELATION_ID`, `UMMAYA_IPC_TRANSACTION_ID`,
@@ -202,7 +202,7 @@ Source: [FriendliAI Suite](https://suite.friendli.ai) → API Keys.
 ### <a id="ummaya_data_go_kr_api_key"></a>`UMMAYA_DATA_GO_KR_API_KEY`
 
 Shared 공공데이터포털 (data.go.kr) API key. Operator-managed; required only for live adapter
-execution paths that call KOROAD, KMA, HIRA, NMC, or similar public-data services. A per-tool
+execution paths that call KOROAD, HIRA, NMC, or similar public-data services. A per-tool
 override (`UMMAYA_{TOOL_ID}_API_KEY`) takes precedence when present.
 
 > **Defect note (FR-050)**: Prior to Epic #468, `.github/workflows/ci.yml` injected this variable
@@ -210,6 +210,19 @@ override (`UMMAYA_{TOOL_ID}_API_KEY`) takes precedence when present.
 > migration. If you see the old name in any file surface, it is stale and should be rewritten.
 
 Source: [공공데이터포털](https://www.data.go.kr) → 마이페이지 → 인증키.
+
+---
+
+### <a id="ummaya_kma_api_hub_auth_key"></a>`UMMAYA_KMA_API_HUB_AUTH_KEY`
+
+KMA API Hub authentication key. Operator-managed; KMA-owned API Hub adapters use this
+credential with the `authKey` query parameter on `https://apihub.kma.go.kr/api/...`.
+
+The KMA VilageFcst adapters intentionally do not accept the data.go.kr `serviceKey`
+credential. data.go.kr and KMA API Hub expose overlapping operation names, but the hosts,
+credential names, and API utilization approvals are separate.
+
+Source: [KMA API Hub](https://apihub.kma.go.kr/) → 마이페이지 → 인증키.
 
 ---
 
@@ -222,7 +235,7 @@ Controls how live public-API adapters are invoked.
 - `proxy`: force the operator-managed gateway route.
 - `direct`: force the legacy local-env route for source/self-hosted development.
 
-This keeps public release users from needing Kakao/data.go.kr credentials while avoiding
+This keeps public release users from needing Kakao/data.go.kr/KMA API Hub credentials while avoiding
 packaging those operator-managed credentials into npm/Homebrew artifacts.
 
 ---
@@ -234,8 +247,9 @@ parameters to `{UMMAYA_LIVE_ADAPTER_PROXY_URL}/{tool_id}` and expects the same L
 envelope shape a local adapter would return.
 
 This value is not a secret and may be packaged as a default. It must point to a service whose
-server-side runtime holds `UMMAYA_KAKAO_API_KEY`, `UMMAYA_DATA_GO_KR_API_KEY`, and any other
-operator-managed public API credentials in a secret manager.
+server-side runtime holds `UMMAYA_KAKAO_API_KEY`, `UMMAYA_KMA_API_HUB_AUTH_KEY`,
+`UMMAYA_DATA_GO_KR_API_KEY`, and any other operator-managed public API credentials in a
+secret manager.
 
 ---
 
@@ -280,7 +294,7 @@ before adapter dispatch.
 
 Internal path set by the npm/Homebrew `bin/ummaya` wrapper. In `UMMAYA_LIVE_ADAPTER_MODE=auto`,
 presence of this value marks a packaged CLI execution and selects the live adapter gateway for
-eligible Kakao/data.go.kr-style adapters. Users should not set this manually.
+eligible Kakao/data.go.kr/KMA API Hub-style adapters. Users should not set this manually.
 
 ---
 
@@ -355,8 +369,9 @@ Source: [Langfuse Cloud](https://cloud.langfuse.com) → Settings → API Keys.
 
 Any env var matching the expansion `UMMAYA_<TOOL_ID_UPPER>_API_KEY` (e.g.,
 `UMMAYA_KOROAD_ACCIDENT_SEARCH_API_KEY`) is a per-tool credential override. When present, it takes
-priority over the provider-level key (`UMMAYA_DATA_GO_KR_API_KEY` or `UMMAYA_KAKAO_API_KEY`) in
-the lookup chain defined by `ummaya.permissions.credentials.resolve_credential`.
+priority over the provider-level key (`UMMAYA_KMA_API_HUB_AUTH_KEY`,
+`UMMAYA_DATA_GO_KR_API_KEY`, or `UMMAYA_KAKAO_API_KEY`) in the lookup chain defined by
+`ummaya.permissions.credentials.resolve_credential`.
 
 This family pattern covers concrete per-tool expansions and keeps env-var reviews aligned
 with the registry contract (no false-positive regressions on concrete
@@ -365,7 +380,7 @@ with the registry contract (no false-positive regressions on concrete
 Lookup order (from `ummaya.permissions.credentials.resolve_credential`):
 
 1. `UMMAYA_{TOOL_ID_UPPER}_API_KEY` (this override)
-2. Provider-level key (`UMMAYA_KAKAO_API_KEY` or `UMMAYA_DATA_GO_KR_API_KEY`)
+2. Provider-level key (`UMMAYA_KAKAO_API_KEY`, `UMMAYA_KMA_API_HUB_AUTH_KEY`, or `UMMAYA_DATA_GO_KR_API_KEY`)
 3. `UMMAYA_API_KEY` (deprecated global fallback)
 
 Do NOT add per-tool concrete expansions as individual registry rows. Use this family row.
@@ -377,8 +392,9 @@ Do NOT add per-tool concrete expansions as individual registry rows. Use this fa
 **Do not use for new tool adapters.** This is the legacy global credential fallback honoured by
 `ummaya.permissions.credentials.resolve_credential` as the last resort in the lookup chain.
 
-Replacement: use the appropriate provider-level key (`UMMAYA_KAKAO_API_KEY` or
-`UMMAYA_DATA_GO_KR_API_KEY`) or a per-tool override (`UMMAYA_{TOOL_ID}_API_KEY`).
+Replacement: use the appropriate provider-level key (`UMMAYA_KAKAO_API_KEY`,
+`UMMAYA_KMA_API_HUB_AUTH_KEY`, or `UMMAYA_DATA_GO_KR_API_KEY`) or a per-tool override
+(`UMMAYA_{TOOL_ID}_API_KEY`).
 
 Removal target: post-#468 (tracking issue #744). Removal requires a cross-tool refactor to
 eliminate all remaining callers; that work is deferred.
@@ -442,7 +458,8 @@ RequiredVar(
 - 변수명 규칙(`UMMAYA_*` + 승인된 예외)을 준수하는지.
 - 표의 `Consumed by`가 실제 모듈 경로와 일치하는지.
 - `UMMAYA_FRIENDLI_TOKEN`은 사용자 세션 키로 분리되어 있는지.
-- 운영자 키(`UMMAYA_KAKAO_API_KEY`, `UMMAYA_DATA_GO_KR_API_KEY`, per-tool 키)는 환경 변수 정책을 만족하는지.
+- 운영자 키(`UMMAYA_KAKAO_API_KEY`, `UMMAYA_KMA_API_HUB_AUTH_KEY`,
+  `UMMAYA_DATA_GO_KR_API_KEY`, per-tool 키)는 환경 변수 정책을 만족하는지.
 - 필요한 경우 해당 기능/권한/세션 테스트로 회귀를 확인했는지.
 
 ---
@@ -478,6 +495,7 @@ At minimum, live-adapter operator environments normally contain:
 
 - `UMMAYA_KAKAO_API_KEY`
 - `UMMAYA_DATA_GO_KR_API_KEY`
+- `UMMAYA_KMA_API_HUB_AUTH_KEY`
 
 Do not store `UMMAYA_FRIENDLI_TOKEN` in Infisical. Public CLI users enter their own FriendliAI key
 through `/login`, and CI/unit tests use dummy local values where a code path explicitly needs the
@@ -632,6 +650,7 @@ Minimum operator-managed set for live-adapter CI fallback:
 |-------------|--------|
 | `UMMAYA_KAKAO_API_KEY` | Infisical export |
 | `UMMAYA_DATA_GO_KR_API_KEY` | Infisical export |
+| `UMMAYA_KMA_API_HUB_AUTH_KEY` | Infisical export |
 
 Optional fallbacks (add only if the live geocoding suite needs them):
 

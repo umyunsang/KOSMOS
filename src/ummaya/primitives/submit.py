@@ -52,6 +52,8 @@ import hashlib
 import json
 import logging
 import re
+from collections.abc import Mapping, Sequence
+from datetime import date, datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
@@ -218,7 +220,7 @@ def derive_transaction_id(
     """
     canonical_payload: dict[str, object] = {
         "tool_id": tool_id,
-        "params": dict(sorted(params.items())),
+        "params": _canonical_json_value(dict(sorted(params.items()))),
         "adapter_nonce": adapter_nonce,
     }
     canonical = json.dumps(
@@ -229,6 +231,28 @@ def derive_transaction_id(
     )
     digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     return f"urn:ummaya:send:{digest}"
+
+
+def _canonical_json_value(value: object) -> object:
+    """Return a deterministic JSON-compatible value for transaction hashing."""
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+    if isinstance(value, StrEnum):
+        return value.value
+    if isinstance(value, BaseModel):
+        return value.model_dump(mode="json")
+    if isinstance(value, Mapping):
+        return {
+            str(key): _canonical_json_value(val)
+            for key, val in sorted(value.items(), key=lambda item: str(item[0]))
+        }
+    if isinstance(value, Sequence) and not isinstance(value, str):
+        return [_canonical_json_value(item) for item in value]
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    return str(value)
 
 
 # ---------------------------------------------------------------------------

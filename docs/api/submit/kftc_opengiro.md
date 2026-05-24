@@ -9,7 +9,7 @@ permission_tier: 2
 
 ## Overview
 
-Wraps the Korea Financial Telecommunications and Clearings Institute (KFTC) OpenGiro bill and payment OpenAPI surfaces as two UMMAYA `send` adapters. The adapters are fixture-backed now because the current developer-portal state is not live-ready: Callback URL registration is missing, API Key registration is blocked by that missing Callback URL, and gated OpenGiro documents remain access-denied.
+Wraps the Korea Financial Telecommunications and Clearings Institute (KFTC) OpenGiro bill and payment OpenAPI surfaces as two UMMAYA `send` adapters. The adapters are fixture-backed now because the current live path is not credential-ready: Callback URL and API Key registration are complete in the KFTC portal, but the deployed callback route currently returns 404, the portal `도구` menu remains access-denied, and the token endpoint candidates reject the portal Client ID as non-existent.
 
 | Field | Value |
 |---|---|
@@ -121,11 +121,12 @@ Live probing remains disabled until all readiness checks pass:
 
 1. OpenGiro service application is complete in the KFTC developer portal.
 2. The operator registers the deployment-specific Callback URL.
-3. OpenGiro `부과서비스` and `납부서비스` are registered to the API Key.
-4. `UMMAYA_KFTC_OPENGIRO_CLIENT_ID` and `UMMAYA_KFTC_OPENGIRO_CLIENT_SECRET` are provided through operator secret storage, never repository files.
-5. KFTC access token material is obtained outside CI and redacted from evidence.
-6. Gated OpenGiro documents are accessible.
-7. `UMMAYA_KFTC_OPENGIRO_LIVE_PROBE_ENABLED=true` is set only for a manual live probe.
+3. The deployed callback URL responds with a non-404 handler that either exchanges the code safely or fails closed without logging secrets.
+4. OpenGiro `부과서비스` and `납부서비스` are registered to the API Key.
+5. `UMMAYA_KFTC_OPENGIRO_CLIENT_ID` and `UMMAYA_KFTC_OPENGIRO_CLIENT_SECRET` are provided through operator secret storage, never repository files.
+6. KFTC access token material is obtained outside CI and redacted from evidence.
+7. Gated OpenGiro documents or portal token tooling are accessible, or direct development/test token endpoint evidence proves the Client ID is accepted.
+8. `UMMAYA_KFTC_OPENGIRO_LIVE_PROBE_ENABLED=true` is set only for a manual live probe.
 
 The canonical callback path documented for operators is:
 
@@ -140,3 +141,4 @@ https://<operator-host>/auth/kftc/opengiro/callback
 - `live_probe_requested=true` returns `setup_blocked` unless all UMMAYA_KFTC readiness settings are complete.
 - Receipts mask `giro_no` and hash bill/payment references.
 - Fixture paths cover success, validation failure, missing setup, rejected, and expired payment URL outcomes.
+- Latest sanitized live evidence is recorded in `specs/2799-kftc-opengiro-send/evidence/README.md`.

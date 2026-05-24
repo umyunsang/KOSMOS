@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import date
 
 from ummaya.primitives.submit import derive_transaction_id
 
@@ -131,3 +132,25 @@ def test_param_key_order_invariance() -> None:
     assert txid_ordered == txid_reversed, (
         "transaction_id must be invariant to dict key insertion order (canonical JSON)"
     )
+
+
+def test_transaction_id_canonicalizes_date_values() -> None:
+    """Adapter defaults may contain date objects before JSON ingress serialization."""
+    params: dict[str, object] = {"due_date": date(2026, 6, 30), "amount_krw": 15000}
+
+    txid = derive_transaction_id(
+        "mock_kftc_opengiro_bill_send_v1",
+        params,
+        adapter_nonce="mock_kftc_opengiro_bill_send_v1_nonce_v1",
+    )
+
+    canonical_payload = {
+        "tool_id": "mock_kftc_opengiro_bill_send_v1",
+        "params": {"amount_krw": 15000, "due_date": "2026-06-30"},
+        "adapter_nonce": "mock_kftc_opengiro_bill_send_v1_nonce_v1",
+    }
+    canonical = json.dumps(
+        canonical_payload, sort_keys=True, ensure_ascii=True, separators=(",", ":")
+    )
+    expected_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    assert txid == f"urn:ummaya:send:{expected_hash}"

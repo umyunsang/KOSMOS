@@ -53,7 +53,10 @@ class UmmayaSettings(BaseSettings):
     """SGIS API consumer secret (UMMAYA_SGIS_SECRET)."""
 
     data_go_kr_api_key: str = Field(default="")
-    """공공데이터포털 통합 API 키, shared by KOROAD / KMA / HIRA / NMC / NFA / MOHW."""
+    """공공데이터포털 통합 API 키, shared by KOROAD / HIRA / NMC / NFA / MOHW."""
+
+    kma_api_hub_auth_key: str = Field(default="")
+    """KMA API Hub authentication key for KMA-owned OpenAPI surfaces."""
 
     # --- KFTC OpenGiro (fixture-backed until operator live readiness is proven) ---
     kftc_opengiro_service_enabled: bool = Field(default=False)
@@ -94,7 +97,7 @@ class UmmayaSettings(BaseSettings):
     )
     """Operator-managed live adapter gateway base URL.
 
-    Public release users should not need Kakao/data.go.kr credentials locally;
+    Public release users should not need Kakao/data.go.kr/KMA API Hub credentials locally;
     the gateway keeps those operator credentials server-side.
     """
 

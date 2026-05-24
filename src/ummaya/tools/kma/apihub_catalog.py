@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 type KmaApiHubScalar = str | int | float | bool | None
 type KmaApiHubApprovalState = Literal["approved", "approval_pending"]
+type KmaApiHubAvailability = Literal["active", "retired", "upstream_unavailable"]
 
 
 class KmaApiHubRequestParam(BaseModel):
@@ -37,7 +38,9 @@ class KmaApiHubOperation(BaseModel):
     tool_id: str
     endpoint_path: str
     request_params: tuple[KmaApiHubRequestParam, ...]
-    approval_state: KmaApiHubApprovalState = "approval_pending"
+    approval_state: KmaApiHubApprovalState = "approved"
+    availability: KmaApiHubAvailability = "active"
+    disabled_reason: str | None = None
     response_fields: tuple[str, ...] = Field(default_factory=tuple)
 
     @property
@@ -89,7 +92,10 @@ def _operation(
     service: str,
     operation: str,
     params: tuple[tuple[str, KmaApiHubScalar], ...],
-    approval_state: KmaApiHubApprovalState = "approval_pending",
+    approval_state: KmaApiHubApprovalState = "approved",
+    *,
+    availability: KmaApiHubAvailability = "active",
+    disabled_reason: str | None = None,
 ) -> KmaApiHubOperation:
     endpoint_path = f"/api/typ02/openApi/{service}/{operation}"
     return KmaApiHubOperation(
@@ -101,6 +107,8 @@ def _operation(
         endpoint_path=endpoint_path,
         request_params=tuple(_param(name, default) for name, default in params),
         approval_state=approval_state,
+        availability=availability,
+        disabled_reason=disabled_reason,
     )
 
 
@@ -117,7 +125,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("icao", "RKSI"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -132,7 +140,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("resultType", "aep"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -148,7 +156,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1100000000"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -163,7 +171,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("resultType", "ca"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -179,7 +187,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1100000000"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -194,7 +202,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("resultType", "cld"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -210,7 +218,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1100000000"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -225,7 +233,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("resultType", "cer"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -241,7 +249,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1100000000"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -256,7 +264,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("resultType", "fog"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -272,7 +280,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1100000000"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         7,
@@ -287,7 +295,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("toTmFc", "20171129"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         7,
@@ -302,7 +310,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("toTmFc", "20171129"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         12,
@@ -317,7 +325,13 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("stnId", "1300001"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
+        availability="upstream_unavailable",
+        disabled_reason=(
+            "Direct KMA APIHub probes on 2026-05-25 returned resultCode=02 "
+            "DB_ERROR for this GTS operation, so it is not exposed as a "
+            "callable adapter until KMA upstream behavior is stable."
+        ),
     ),
     _operation(
         12,
@@ -329,10 +343,16 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("pageNo", 1),
             ("dataType", "XML"),
             ("tm", "202109120000 "),
-            ("stnId", 1366),
+            ("stnId", 47108),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
+        availability="upstream_unavailable",
+        disabled_reason=(
+            "Direct KMA APIHub probes on 2026-05-25 returned resultCode=02 "
+            "DB_ERROR for this GTS operation, so it is not exposed as a "
+            "callable adapter until KMA upstream behavior is stable."
+        ),
     ),
     _operation(
         12,
@@ -347,7 +367,13 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("stnId", "48839"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
+        availability="upstream_unavailable",
+        disabled_reason=(
+            "Direct KMA APIHub probes on 2026-05-25 returned resultCode=02 "
+            "DB_ERROR for this GTS operation, so it is not exposed as a "
+            "callable adapter until KMA upstream behavior is stable."
+        ),
     ),
     _operation(
         9,
@@ -361,7 +387,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dataType", "XML"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         9,
@@ -375,7 +401,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1111051500"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         9,
@@ -389,7 +415,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dataType", "XML"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         9,
@@ -403,7 +429,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1111051500"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         9,
@@ -419,7 +445,12 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dataTypeCd", "Temp"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
+        availability="retired",
+        disabled_reason=(
+            "Official KMA APIHub documentation marks UM model production as ended after "
+            "2026-03-31; live probes return resultCode=99 for this operation."
+        ),
     ),
     _operation(
         9,
@@ -435,7 +466,12 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dataTypeCd", "Temp"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
+        availability="retired",
+        disabled_reason=(
+            "Official KMA APIHub documentation marks UM model production as ended after "
+            "2026-03-31; live probes return resultCode=99 for this operation."
+        ),
     ),
     _operation(
         9,
@@ -452,7 +488,12 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1100000000"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
+        availability="retired",
+        disabled_reason=(
+            "Official KMA APIHub documentation marks UM model production as ended after "
+            "2026-03-31; live probes return resultCode=99 for this operation."
+        ),
     ),
     _operation(
         9,
@@ -468,7 +509,12 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dataTypeCd", "Temp"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
+        availability="retired",
+        disabled_reason=(
+            "Official KMA APIHub documentation marks UM model production as ended after "
+            "2026-03-31; live probes return resultCode=99 for this operation."
+        ),
     ),
     _operation(
         3,
@@ -483,7 +529,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         3,
@@ -498,7 +544,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         3,
@@ -513,7 +559,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         3,
@@ -529,7 +575,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", "22101"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         3,
@@ -545,7 +591,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", 955),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         3,
@@ -561,7 +607,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", "22441"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         3,
@@ -576,7 +622,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         3,
@@ -591,7 +637,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         3,
@@ -606,7 +652,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         3,
@@ -621,7 +667,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         3,
@@ -636,7 +682,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "02"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         3,
@@ -651,7 +697,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         3,
@@ -666,7 +712,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         3,
@@ -681,7 +727,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         14,
@@ -696,7 +742,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         14,
@@ -712,7 +758,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", 92),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         2,
@@ -728,7 +774,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", 90),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         2,
@@ -743,7 +789,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         2,
@@ -758,7 +804,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         2,
@@ -773,7 +819,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         2,
@@ -788,7 +834,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         14,
@@ -803,7 +849,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         14,
@@ -818,7 +864,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", 128),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         14,
@@ -833,7 +879,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", 128),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         14,
@@ -848,7 +894,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", 128),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         2,
@@ -862,7 +908,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("year", 2016),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         14,
@@ -876,7 +922,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("year", 2016),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         2,
@@ -890,7 +936,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("year", 2016),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         14,
@@ -904,7 +950,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("year", 2016),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         2,
@@ -919,7 +965,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", 140),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         2,
@@ -934,7 +980,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", 140),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         2,
@@ -949,7 +995,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", 140),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         8,
@@ -963,7 +1009,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("year", 2016),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         2,
@@ -977,7 +1023,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("year", 2016),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         2,
@@ -991,7 +1037,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("year", 2016),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         14,
@@ -1005,7 +1051,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("year", 2016),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         4,
@@ -1020,7 +1066,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         4,
@@ -1035,7 +1081,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         4,
@@ -1051,7 +1097,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", "47102"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         4,
@@ -1067,7 +1113,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", "47102"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         4,
@@ -1082,7 +1128,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("month", "09"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         4,
@@ -1098,7 +1144,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("station", "47102"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         10,
@@ -1147,7 +1193,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("ny", 127),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         10,
@@ -1178,7 +1224,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("regId", "11A00101"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         10,
@@ -1192,7 +1238,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("regId", "12A20100"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         10,
@@ -1206,7 +1252,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("stnId", 108),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         5,
@@ -1222,7 +1268,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dataTypeCd", "CZ"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         5,
@@ -1239,7 +1285,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1100000000"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -1255,7 +1301,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("unitType", "R"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -1272,7 +1318,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1100000000"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -1288,7 +1334,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("unitType", "R"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -1305,7 +1351,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1100000000"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -1321,7 +1367,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("unitType", "R"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -1338,7 +1384,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1100000000"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -1354,7 +1400,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("unitType", "R"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -1371,7 +1417,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1100000000"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -1387,7 +1433,7 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("unitType", "lat"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
     _operation(
         6,
@@ -1404,14 +1450,23 @@ KMA_APIHUB_STRUCTURED_OPERATIONS: tuple[KmaApiHubOperation, ...] = (
             ("dongCode", "1100000000"),
             ("authKey", None),
         ),
-        "approval_pending",
+        "approved",
     ),
 )
 
 
-def iter_structured_operations() -> tuple[KmaApiHubOperation, ...]:
-    """Return all KMA APIHub structured operations in deterministic order."""
-    return KMA_APIHUB_STRUCTURED_OPERATIONS
+def iter_structured_operations(
+    *,
+    include_retired: bool = False,
+) -> tuple[KmaApiHubOperation, ...]:
+    """Return active KMA APIHub structured operations in deterministic order."""
+    if include_retired:
+        return KMA_APIHUB_STRUCTURED_OPERATIONS
+    return tuple(
+        operation
+        for operation in KMA_APIHUB_STRUCTURED_OPERATIONS
+        if operation.availability == "active"
+    )
 
 
 def get_operation_by_tool_id(tool_id: str) -> KmaApiHubOperation:

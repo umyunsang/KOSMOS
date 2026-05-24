@@ -455,8 +455,11 @@ class TestToolDefinition:
 
 class TestRegister:
     def test_register_adds_to_registry(self) -> None:
+        from ummaya.tools.executor import ToolExecutor
         from ummaya.tools.registry import ToolRegistry
 
         registry = ToolRegistry()
-        register(registry)
+        executor = ToolExecutor(registry)
+        register(registry, executor)
         assert "kma_forecast_fetch" in registry
+        assert "kma_forecast_fetch" in executor._adapters

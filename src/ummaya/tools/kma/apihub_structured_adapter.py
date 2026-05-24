@@ -16,6 +16,7 @@ from ummaya.tools.errors import ConfigurationError, ToolExecutionError
 from ummaya.tools.executor import AdapterFn, ToolExecutor
 from ummaya.tools.kma.apihub_catalog import (
     KmaApiHubOperation,
+    get_operation_by_id,
     iter_structured_operations,
 )
 from ummaya.tools.kma.apihub_endpoint import KMA_API_HUB_BASE_URL, resolve_apihub_endpoint
@@ -68,18 +69,254 @@ def _model_name(operation: KmaApiHubOperation) -> str:
     return "KmaApiHub" + "".join(part.title() for part in parts) + "Input"
 
 
+_DYNAMIC_TIME_PARAMS = frozenset(
+    {
+        "fromTmFc",
+        "toTmFc",
+        "dateTime",
+        "tm",
+        "baseTime",
+        # VilageFcstInfoService_2.0 uses snake_case official parameter names.
+        "base_date",
+        "base_time",
+        "basedatetime",
+    }
+)
+
+_PARAM_DESCRIPTIONS: dict[str, str] = {
+    "pageNo": "Page number, 1-based. Use the default unless the citizen asks for another page.",
+    "numOfRows": "Number of rows to return. Use the default unless more rows are needed.",
+    "dataType": (
+        "Response format requested from KMA APIHub. XML is the official sample/default; "
+        "JSON may be used only when the operation supports it."
+    ),
+    "fromTmFc": (
+        "Earthquake/volcano bulletin announcement start date, YYYYMMDD. "
+        "Use a recent KST date; APIHub returns an error for ranges outside "
+        "the current 3 days window."
+    ),
+    "toTmFc": (
+        "Earthquake/volcano bulletin announcement end date, YYYYMMDD. "
+        "Keep the range within the current 3 days window and do not use "
+        "stale catalog sample dates."
+    ),
+    "dateTime": (
+        "KMA satellite/radar observation datetime, YYYYMMDDHHMM. Use a recent "
+        "KST observation; APIHub returns an error outside the current 2 days "
+        "window for these satellite products."
+    ),
+    "resultType": (
+        "KMA product/result code for this satellite, radar, or model product. "
+        "Keep the catalog default unless the citizen names a product code."
+    ),
+    "dongCode": (
+        "Administrative area code for area-scoped KMA products. Use only for "
+        "Area operations, not All operations."
+    ),
+    "tm": (
+        "GTS world weather observation datetime, YYYYMMDDHHMM. Use a recent "
+        "KST/UTC-aligned observation; APIHub returns an error outside the "
+        "current 1 day window."
+    ),
+    "stnId": (
+        "KMA/APIHub station identifier for the GTS world-weather operation. "
+        "Required by the official GTS APIHub schema; obtain it from the GTS "
+        "station-information source or the citizen's station identifier."
+    ),
+    "icao": (
+        "ICAO airport/station code for aviation METAR data, for example RKSI. "
+        "Do not pass a Korean place name here."
+    ),
+    "baseTime": (
+        "Numerical weather model base datetime, YYYYMMDDHHMM. Use a current "
+        "or recent model slot; do not use stale catalog sample dates."
+    ),
+    "base_date": (
+        "KMA village forecast base date, YYYYMMDD. Use a recent KST date within "
+        "the APIHub retention window; stale catalog sample dates are rejected."
+    ),
+    "base_time": (
+        "KMA village forecast base time, HHMM. Use the latest valid KST issue "
+        "slot for the selected operation; stale catalog sample times are rejected."
+    ),
+    "basedatetime": (
+        "KMA village forecast version base datetime, YYYYMMDDHHMM. Use a recent "
+        "KST datetime within the current APIHub retention window."
+    ),
+}
+
+_FIELD_PATTERNS: dict[str, str] = {
+    "fromTmFc": r"^\d{8}$",
+    "toTmFc": r"^\d{8}$",
+    "dateTime": r"^\d{12}$",
+    "tm": r"^\d{12}$",
+    "baseTime": r"^\d{12}$",
+    "base_date": r"^\d{8}$",
+    "base_time": r"^\d{4}$",
+    "basedatetime": r"^\d{12}$",
+}
+
+_REQUIRED_PARAMS_BY_OPERATION: dict[str, frozenset[str]] = {
+    "GtsInfoService/getBuoy": frozenset({"stnId"}),
+    "GtsInfoService/getSynop": frozenset({"stnId"}),
+    "GtsInfoService/getTemp": frozenset({"stnId"}),
+}
+
+_CATEGORY_GUIDANCE: dict[int, tuple[str, str]] = {
+    6: (
+        "KMA satellite product lookup for GK2A imagery/grid products. Use it only "
+        "when the citizen asks for satellite, cloud, fog, radiation, or "
+        "imagery-derived meteorological products.",
+        "위성 satellite GK2A cloud fog imagery grid product",
+    ),
+    7: (
+        "KMA earthquake/volcano bulletin lookup. Use it for 지진, 화산, earthquake "
+        "bulletin, seismic notification, and related alert-list questions; it is "
+        "not for weather observations.",
+        "지진 지진통보 화산 earthquake volcano seismic bulletin alert notification",
+    ),
+    12: (
+        "KMA world-weather GTS observation lookup such as SYNOP, BUOY, or TEMP. "
+        "Use it for international station observations, not for earthquake or "
+        "Korean neighborhood forecasts.",
+        "세계기상 GTS SYNOP BUOY TEMP WMO international station observation",
+    ),
+    14: (
+        "KMA aviation-weather IWXXM/METAR lookup. Use it for airport aviation "
+        "weather, METAR, TAF, or ICAO station reports.",
+        "항공기상 aviation weather IWXXM METAR TAF airport ICAO",
+    ),
+}
+
+_OPERATION_GUIDANCE: dict[str, tuple[str, str, str]] = {
+    "AmmIwxxmService/getMetar": (
+        "Fetch a METAR aviation weather report for one ICAO airport/station code.",
+        "Choose this for airport aviation weather or METAR requests. Do not use "
+        "it for neighborhood weather by Korean address; resolve location then "
+        "use the KMA forecast/observation adapters instead.",
+        "METAR aviation airport ICAO RKSI 항공기상 공항 실황",
+    ),
+    "CloudSatlitInfoService/getGk2aappsAll": (
+        "Fetch GK2A APP satellite product data for the whole satellite coverage area.",
+        "Choose this for satellite imagery/product questions. date_time must be "
+        "a current recent YYYYMMDDHHMM slot; old sample datetimes are rejected "
+        "by APIHub.",
+        "GK2A APP satellite imagery whole area 위성 산출물 dateTime",
+    ),
+    "EqkInfoService/getEqkMsgList": (
+        "Fetch the KMA earthquake/volcano bulletin list for a recent announcement date range.",
+        "Choose this for earthquake bulletin/list questions. It is not for "
+        "weather observations or SYNOP; keep from_tm_fc/to_tm_fc within the "
+        "current 3 days APIHub window.",
+        "지진통보 목록 지진 화산 earthquake bulletin list seismic notification",
+    ),
+    "GtsInfoService/getSynop": (
+        "Fetch one KMA APIHub GTS SYNOP world-weather surface observation.",
+        "Choose this for SYNOP/world-weather station observations. It is not "
+        "for earthquake bulletins, satellite products, or Korean neighborhood "
+        "forecasts.",
+        "SYNOP GTS world weather surface observation WMO 세계기상",
+    ),
+}
+
+
+def _field_default(operation: KmaApiHubOperation, param_name: str, default: object) -> object:
+    """Avoid stale APIHub sample dates becoming model-call defaults."""
+    if param_name in _DYNAMIC_TIME_PARAMS:
+        return ...
+    if param_name in _REQUIRED_PARAMS_BY_OPERATION.get(operation.operation_id, frozenset()):
+        return ...
+    return default if default is not None else ...
+
+
+def _field_description(operation: KmaApiHubOperation, param_name: str) -> str:
+    if operation.service == "NwpModelInfoService" and param_name == "baseTime":
+        return (
+            "Legacy NWP model base datetime, YYYYMMDDHHMM. Live APIHub probes "
+            "currently return resultCode=99 because file production stopped "
+            "after 2026-03-31 while the endpoint also enforces a current "
+            "retention window. Do not choose this operation for current "
+            f"citizen weather answers. Official parameter name: {param_name}. "
+            f"Operation: {operation.operation_id}."
+        )
+    base = _PARAM_DESCRIPTIONS.get(
+        param_name,
+        f"KMA APIHub request parameter {param_name}.",
+    )
+    return f"{base} Official parameter name: {param_name}. Operation: {operation.operation_id}."
+
+
+def _field_extra(param_name: str) -> dict[str, object]:
+    pattern = _FIELD_PATTERNS.get(param_name)
+    if pattern is None:
+        return {}
+    return {"pattern": pattern}
+
+
+def _operation_guidance(operation: KmaApiHubOperation) -> tuple[str, str, str]:
+    specific = _OPERATION_GUIDANCE.get(operation.operation_id)
+    if specific is not None:
+        return specific
+    if operation.service == "NwpModelInfoService":
+        return (
+            "Legacy KMA NWP model grid-data lookup. Live APIHub probes currently "
+            "return resultCode=99 because this product is no longer producible "
+            "through the current retention window.",
+            "Do not choose this for citizen-facing current weather or forecast "
+            "answers. Prefer KMA village/current forecast adapters or KIMModel "
+            "operations when model-grid data is specifically needed.",
+            "legacy NWP model resultCode 99 discontinued retention 수치모델 중단",
+        )
+    category_purpose, category_keywords = _CATEGORY_GUIDANCE.get(
+        operation.category_seq,
+        (
+            "KMA APIHub structured OpenAPI operation for direct agency meteorological data lookup.",
+            "KMA APIHub official agency meteorological data",
+        ),
+    )
+    return (
+        f"{category_purpose} Specific operation: {operation.operation_id}.",
+        "Choose this only when the citizen request matches this exact API family "
+        "and operation name. Prefer specialized KMA current/forecast adapters "
+        "for Korean address weather.",
+        category_keywords,
+    )
+
+
+def _search_hint(operation: KmaApiHubOperation) -> str:
+    _, _, keywords = _operation_guidance(operation)
+    return (
+        f"KMA APIHub 기상청 {operation.category_name_ko} {operation.service} "
+        f"{operation.operation} {operation.operation_id} {keywords}"
+    )
+
+
+def _llm_description(operation: KmaApiHubOperation) -> str:
+    purpose, selection, _ = _operation_guidance(operation)
+    visible_params = ", ".join(param.field_name for param in operation.non_credential_params)
+    return (
+        f"KMA APIHub structured OpenAPI operation {operation.operation_id}. "
+        f"Category: {operation.category_name_ko}. "
+        f"Purpose: {purpose} Selection rule: {selection} "
+        f"Input fields: {visible_params}. "
+        "Credential handling: UMMAYA runtime supplies authKey from "
+        "UMMAYA_KMA_API_HUB_AUTH_KEY; the model must never provide authKey."
+    )
+
+
 @cache
 def input_schema_for(operation_id: str) -> type[BaseModel]:
     """Build the Pydantic input model for ``<service>/<operation>``."""
-    operation = next(op for op in iter_structured_operations() if op.operation_id == operation_id)
+    operation = get_operation_by_id(operation_id)
     fields: dict[str, tuple[object, object]] = {}
     for param in operation.non_credential_params:
-        default: object = param.default if param.default is not None else ...
+        default = _field_default(operation, param.name, param.default)
         fields[param.field_name] = (
             _field_type(param.value_type),
             Field(
                 default,
-                description=f"KMA APIHub request parameter {param.name}.",
+                description=_field_description(operation, param.name),
+                **_field_extra(param.name),
             ),
         )
 
@@ -143,7 +380,7 @@ def _parse_response(
     header = _dict_or_empty(response.get("header"))
     result_code = str(header.get("resultCode", "")) or None
     result_msg = str(header.get("resultMsg", "")) or None
-    if result_code and result_code != "00":
+    if result_code and result_code not in {"00", "03"}:
         raise ToolExecutionError(
             tool_id=operation.tool_id,
             message=(
@@ -258,16 +495,8 @@ def build_tool(operation: KmaApiHubOperation) -> GovAPITool:
         auth_type="api_key",
         input_schema=input_schema_for(operation.operation_id),
         output_schema=KmaApiHubStructuredOutput,
-        search_hint=(
-            f"KMA APIHub 기상청 {operation.category_name_ko} {operation.service} "
-            f"{operation.operation} {operation.operation_id} weather meteorological data"
-        ),
-        llm_description=(
-            f"KMA APIHub structured OpenAPI operation {operation.operation_id}. "
-            "Use this for direct agency weather data lookup only when the user's "
-            "request matches this specific API family. Authentication uses "
-            "UMMAYA_KMA_API_HUB_AUTH_KEY via the APIHub authKey parameter."
-        ),
+        search_hint=_search_hint(operation),
+        llm_description=_llm_description(operation),
         policy=AdapterRealDomainPolicy(
             real_classification_url="https://apihub.kma.go.kr/",
             real_classification_text=(

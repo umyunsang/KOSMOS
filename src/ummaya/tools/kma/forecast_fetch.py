@@ -19,8 +19,8 @@ Returns a ``LookupTimeseries`` with one point per forecast hour, each carrying:
 FR-027 to FR-031 (spec/022-mvp-main-tool/spec.md).
 
 Registration:
-  Call ``register(registry)`` at application startup to make this tool
-  discoverable.  Do NOT call from register_all.py — Stage 3 (T048) does that.
+  Call ``register(registry, executor)`` at application startup. This follows the
+  canonical adapter pattern used by every registered tool module.
 """
 
 from __future__ import annotations
@@ -36,6 +36,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from ummaya.tools._description_template import build_description_v4
 from ummaya.tools._outbound_trace import traced_async_client
 from ummaya.tools.errors import LookupErrorReason
+from ummaya.tools.executor import ToolExecutor
 from ummaya.tools.kma.projection import KMADomainError, latlon_to_lcc
 from ummaya.tools.kma.response_payload import (
     KmaPayloadDecodeError,
@@ -52,6 +53,7 @@ from ummaya.tools.models import (  # noqa: A004
     LookupError,  # noqa: A004 — domain-specific Pydantic model, intentional shadow
     LookupTimeseries,
 )
+from ummaya.tools.registry import ToolRegistry
 
 # UMMAYA canonical citizen-facing timezone for `meta.fetched_at`.
 # Internal elapsed-time math (`t_start`) keeps UTC; only the citizen-visible
@@ -524,25 +526,25 @@ KMA_FORECAST_FETCH_TOOL = GovAPITool(
 
 
 # ---------------------------------------------------------------------------
-# Registration helper (DO NOT call from register_all.py — Stage 3 / T048)
+# Registration helper
 # ---------------------------------------------------------------------------
 
 
-def register(registry: object) -> None:
+def register(registry: ToolRegistry, executor: ToolExecutor) -> None:
     """Register kma_forecast_fetch in the tool registry.
 
-    NOTE: This function intentionally takes only ``registry`` (not ``executor``)
-    because the adapter is invoked through the MVP lookup facade which calls
-    ``_fetch`` directly via the registry look-up.  If the executor pattern is
-    needed, callers can bind it separately.
-
-    Do NOT call this from ``register_all.py``.  Stage 3 (T048) does that.
-
     Args:
-        registry: A ``ToolRegistry`` instance.
+        registry: Central ``ToolRegistry`` instance.
+        executor: Central ``ToolExecutor`` instance.
     """
-    from ummaya.tools.registry import ToolRegistry
-
-    assert isinstance(registry, ToolRegistry)
     registry.register(KMA_FORECAST_FETCH_TOOL)
+    executor.register_adapter("kma_forecast_fetch", _kma_forecast_fetch_adapter)
     logger.info("Registered tool: kma_forecast_fetch")
+
+
+async def _kma_forecast_fetch_adapter(input_model: BaseModel) -> dict[str, Any]:
+    """Executor adapter wrapper for ``kma_forecast_fetch``."""
+
+    assert isinstance(input_model, KmaForecastFetchInput)
+    result = await _fetch(input_model)
+    return result.model_dump() if hasattr(result, "model_dump") else dict(result)

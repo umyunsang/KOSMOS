@@ -14,7 +14,8 @@ from ummaya.tools.kma.apihub_catalog import (
 
 
 def test_catalog_contains_all_structured_typ02_operations() -> None:
-    assert len(iter_structured_operations()) == 85
+    assert len(iter_structured_operations(include_retired=True)) == 85
+    assert len(iter_structured_operations()) == 78
 
 
 def test_catalog_tool_ids_are_unique_and_prefixed() -> None:
@@ -42,18 +43,43 @@ def test_catalog_category_counts_match_captured_apihub_evidence() -> None:
     }
 
 
-def test_approved_operations_are_limited_to_browser_evidence_set() -> None:
+def test_approved_operations_match_current_mypage_evidence() -> None:
     approved = {
         operation.operation_id
         for operation in KMA_APIHUB_STRUCTURED_OPERATIONS
         if operation.approval_state == "approved"
     }
 
-    assert approved == {
-        "VilageFcstInfoService_2.0/getFcstVersion",
-        "VilageFcstInfoService_2.0/getUltraSrtFcst",
-        "VilageFcstInfoService_2.0/getVilageFcst",
+    assert len(approved) == 85
+    assert approved == {operation.operation_id for operation in KMA_APIHUB_STRUCTURED_OPERATIONS}
+
+
+def test_disabled_operations_are_kept_in_catalog_but_not_active() -> None:
+    disabled = {
+        operation.operation_id
+        for operation in KMA_APIHUB_STRUCTURED_OPERATIONS
+        if operation.availability != "active"
     }
+
+    assert disabled == {
+        "GtsInfoService/getBuoy",
+        "GtsInfoService/getSynop",
+        "GtsInfoService/getTemp",
+        "NwpModelInfoService/getLdapsUnisAll",
+        "NwpModelInfoService/getLdapsUnisArea",
+        "NwpModelInfoService/getRdapsUnisAll",
+        "NwpModelInfoService/getRdapsUnisArea",
+    }
+    assert disabled.isdisjoint(
+        operation.operation_id for operation in iter_structured_operations()
+    )
+
+    assert get_operation_by_id("GtsInfoService/getSynop").availability == (
+        "upstream_unavailable"
+    )
+    assert get_operation_by_id("NwpModelInfoService/getLdapsUnisAll").availability == (
+        "retired"
+    )
 
 
 def test_catalog_lookup_helpers_return_stable_operations() -> None:

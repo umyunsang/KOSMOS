@@ -42,6 +42,7 @@ import sys
 import time
 from typing import Any
 
+from ummaya._dotenv import load_repo_dotenv
 from ummaya.ipc.adapter_manifest_emitter import emit_manifest
 from ummaya.tools.executor import ToolExecutor
 from ummaya.tools.register_all import register_all_tools
@@ -239,6 +240,7 @@ async def _run_loop(server: MCPServer) -> None:
 
 async def main() -> None:
     """Entry point — build registry + routing index, then run the stdio loop."""
+    load_repo_dotenv()
     logging.basicConfig(
         level=logging.INFO, stream=sys.stderr, format="%(levelname)s %(name)s: %(message)s"
     )

@@ -81,7 +81,7 @@ class KmaCurrentObservationInput(BaseModel):
         description=(
             "KMA grid X coordinate (1-149). 시도/시군구 명칭이 아닌 KMA 격자 좌표. "
             "Obtain via a coordinate-producing locate adapter which returns nx/ny "
-            "verbatim. Example: 서울 종로구 = 60, 부산 사하구 = 96."
+            "verbatim. Copy the exact nx value from the latest locate result."
         ),
     )
     ny: int = Field(
@@ -90,7 +90,7 @@ class KmaCurrentObservationInput(BaseModel):
         le=253,
         description=(
             "KMA grid Y coordinate (1-253). nx와 함께 locate 으로 받음. "
-            "Example: 서울 종로구 = 127, 부산 사하구 = 73."
+            "Copy the exact ny value from the latest locate result."
         ),
     )
     num_of_rows: int = Field(

@@ -39,11 +39,14 @@ class TestToolRegistration:
         # data.go.kr/LINK adapters = 52.
         # Spec #2798 live expansion: + 16 approved data.go.kr adapters = 68.
         # Spec #2799 KFTC OpenGiro: + 2 fixture-backed send adapters = 70.
-        # Spec #2800 KMA APIHub structured typ02/openApi wrappers: +85 = 155.
+        # Spec #2800 KMA APIHub structured typ02/openApi wrappers: +78 active
+        # = 148. Three unstable GTS operations and four retired UM
+        # NwpModelInfoService operations stay cataloged but are not registered
+        # as callable tools.
         # is_core=False so the LLM's primary tool list stays at active
         # primitives + lookup-class; these participate in
         # lookup(mode="search") BM25 corpus only.
-        assert len(registry) == 155
+        assert len(registry) == 148
 
     def test_tool_ids_present(self) -> None:
         """Each expected tool_id is in the registry.

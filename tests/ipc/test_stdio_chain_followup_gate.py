@@ -1764,8 +1764,128 @@ def test_unknown_location_query_implies_resolution() -> None:
     )
 
     assert msg is not None
-    assert "locate" in msg
+    assert "kakao_keyword_search" in msg
+    assert "kakao_address_search" in msg
+    assert "locate(tool_id=" not in msg
     assert "do NOT invent coordinates" in msg
+
+
+def test_location_gate_accepts_concrete_locate_result() -> None:
+    """Concrete adapter calls exposed to the LLM still satisfy locate gates."""
+    msgs: list[Any] = [
+        LLMChatMessage(role="user", content="다대1동 날씨"),
+        _msg_assistant_tool_call("kakao_address_search", {"query": "부산 사하구 다대1동"}),
+        _msg_tool_result(
+            "kakao_address_search",
+            {"kind": "locate", "result": {"lat": 35.059152, "lon": 128.971316}},
+        ),
+    ]
+
+    assert _check_location_terminated_without_resolve(msgs, "다대1동 날씨") is None
+
+
+def test_concrete_locate_ok_result_satisfies_kma_chain_gate() -> None:
+    """AdapterTool ok/result payloads must still satisfy primitive chain state."""
+
+    class Registry:
+        def find(self, tool_id: str) -> object:
+            if tool_id == "kakao_address_search":
+                return SimpleNamespace(
+                    primitive="locate",
+                    input_schema=SimpleNamespace(model_json_schema=lambda: {"properties": {}}),
+                )
+            if tool_id == "kma_current_observation":
+                return SimpleNamespace(
+                    primitive="find",
+                    input_schema=SimpleNamespace(
+                        model_json_schema=lambda: {
+                            "properties": {"base_date": {}, "base_time": {}, "nx": {}, "ny": {}},
+                            "required": ["base_date", "base_time", "nx", "ny"],
+                        }
+                    ),
+                )
+            raise KeyError(tool_id)
+
+    msgs: list[Any] = [
+        LLMChatMessage(role="user", content="다대1동 날씨"),
+        _msg_assistant_tool_call("kakao_address_search", {"query": "부산 사하구 다대1동"}),
+        _msg_tool_result(
+            "kakao_address_search",
+            {
+                "ok": True,
+                "result": {
+                    "kind": "bundle",
+                    "coords": {"lat": 35.059152, "lon": 128.971316, "nx": 97, "ny": 74},
+                },
+            },
+        ),
+    ]
+
+    assert (
+        _check_chain_prerequisite(
+            "find",
+            {
+                "tool_id": "kma_current_observation",
+                "params": {
+                    "base_date": "20260524",
+                    "base_time": "2300",
+                    "nx": 97,
+                    "ny": 74,
+                },
+            },
+            msgs,
+            registry=Registry(),
+            user_query="부산 사하구 다대1동 현재 날씨",
+        )
+        is None
+    )
+
+
+def test_kma_forecast_fetch_recovery_hint_names_lat_lon_not_grid() -> None:
+    """lat/lon KMA adapters must not be repaired with nx/ny instructions."""
+
+    class Registry:
+        def find(self, tool_id: str) -> object:
+            if tool_id == "kakao_address_search":
+                return SimpleNamespace(
+                    primitive="locate",
+                    input_schema=SimpleNamespace(model_json_schema=lambda: {"properties": {}}),
+                )
+            if tool_id == "kma_forecast_fetch":
+                return SimpleNamespace(
+                    primitive="find",
+                    input_schema=SimpleNamespace(
+                        model_json_schema=lambda: {
+                            "properties": {"lat": {}, "lon": {}, "base_date": {}, "base_time": {}},
+                            "required": ["lat", "lon", "base_date", "base_time"],
+                        }
+                    ),
+                )
+            raise KeyError(tool_id)
+
+    msgs: list[Any] = [
+        LLMChatMessage(role="user", content="부산 사하구 다대1동 오늘 저녁 예보"),
+        _msg_assistant_tool_call("kakao_address_search", {"query": "부산 사하구 다대1동"}),
+        _msg_tool_result(
+            "kakao_address_search",
+            {"ok": True, "result": {"lat": 35.059152, "lon": 128.971316, "nx": 97, "ny": 74}},
+        ),
+    ]
+
+    err = _check_chain_prerequisite(
+        "find",
+        {
+            "tool_id": "kma_forecast_fetch",
+            "params": {"lat": 35.059152, "lon": 128.971316},
+        },
+        msgs,
+        registry=Registry(),
+        user_query="부산 사하구 다대1동 오늘 저녁 예보",
+    )
+
+    assert err is not None
+    assert "WGS-84 lat/lon" in err
+    assert "nx/ny" not in err
 
 
 def test_effective_chat_max_tokens_clamps_interactive_default(
@@ -1852,6 +1972,7 @@ def test_today_weather_forecast_only_is_rejected_until_current_observation() -> 
 
     assert msg is not None
     assert "kma_current_observation" in msg
+    assert "find(tool_id=" not in msg
     assert "Do NOT claim" in msg
 
     msgs.append(
@@ -2023,7 +2144,9 @@ def test_existing_prerequisite_gate_unchanged() -> None:
         registry=None,
     )
     assert err is not None
-    assert "locate" in err
+    assert "kakao_keyword_search" in err
+    assert "find(tool_id=" not in err
+    assert "locate(tool_id=" not in err
 
 
 def test_explicit_find_tool_id_mismatch_is_rejected() -> None:
@@ -2069,7 +2192,9 @@ def test_nmc_prerequisite_message_names_region_mode() -> None:
     )
 
     assert err is not None
-    assert "tool_id='kakao_coord_to_region'" in err
+    assert "kakao_coord_to_region" in err
+    assert "find(tool_id=" not in err
+    assert "locate(tool_id=" not in err
     assert "mode:'region'" in err
     assert "q0:region.region_1depth_name" in err
 

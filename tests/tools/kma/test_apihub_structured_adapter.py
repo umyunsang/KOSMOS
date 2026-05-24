@@ -14,6 +14,7 @@ from ummaya.tools.executor import ToolExecutor
 from ummaya.tools.kma.apihub_catalog import get_operation_by_id
 from ummaya.tools.kma.apihub_structured_adapter import (
     KmaApiHubStructuredOutput,
+    build_tool,
     call_operation,
     input_schema_for,
     register,
@@ -48,6 +49,63 @@ def test_input_schema_excludes_auth_key_and_uses_official_param_names() -> None:
         "data_type": "XML",
         "icao": "RKSI",
     }
+
+
+def test_failed_live_apihub_ops_expose_precise_schema_and_tool_selection_hints() -> None:
+    """The model-facing APIHub tools must explain the real parameter contract.
+
+    These operations were selected during live TUI use and failed or were
+    mis-selected when the schema/description only said "weather data".
+    """
+    eqk = get_operation_by_id("EqkInfoService/getEqkMsgList")
+    eqk_schema = input_schema_for(eqk.operation_id).model_json_schema()
+    eqk_tool = build_tool(eqk)
+    assert {"from_tm_fc", "to_tm_fc"}.issubset(set(eqk_schema["required"]))
+    assert "지진" in str(eqk_tool.llm_description)
+    assert "earthquake" in str(eqk_tool.llm_description).lower()
+    assert "3 days" in eqk_schema["properties"]["from_tm_fc"]["description"]
+    assert "not for weather observations" in str(eqk_tool.llm_description).lower()
+
+    sat = get_operation_by_id("CloudSatlitInfoService/getGk2aappsAll")
+    sat_schema = input_schema_for(sat.operation_id).model_json_schema()
+    sat_tool = build_tool(sat)
+    assert "date_time" in sat_schema["required"]
+    assert "2 days" in sat_schema["properties"]["date_time"]["description"]
+    assert "satellite" in str(sat_tool.llm_description).lower()
+    assert "satellite" in sat_tool.search_hint.lower()
+
+    gts = get_operation_by_id("GtsInfoService/getSynop")
+    gts_schema = input_schema_for(gts.operation_id).model_json_schema()
+    gts_tool = build_tool(gts)
+    assert gts.availability == "upstream_unavailable"
+    assert {"tm", "stn_id"}.issubset(set(gts_schema["required"]))
+    assert "default" not in gts_schema["properties"]["stn_id"]
+    assert "1 day" in gts_schema["properties"]["tm"]["description"]
+    assert "official GTS APIHub schema" in gts_schema["properties"]["stn_id"]["description"]
+    assert "SYNOP" in str(gts_tool.llm_description)
+    assert "not for earthquake" in str(gts_tool.llm_description).lower()
+
+    metar = get_operation_by_id("AmmIwxxmService/getMetar")
+    metar_schema = input_schema_for(metar.operation_id).model_json_schema()
+    metar_tool = build_tool(metar)
+    assert "ICAO" in metar_schema["properties"]["icao"]["description"]
+    assert "aviation" in str(metar_tool.llm_description).lower()
+
+    village = get_operation_by_id("VilageFcstInfoService_2.0/getUltraSrtNcst")
+    village_schema = input_schema_for(village.operation_id).model_json_schema()
+    assert {"base_date", "base_time"}.issubset(set(village_schema["required"]))
+    assert village_schema["properties"]["base_date"]["pattern"] == r"^\d{8}$"
+    assert village_schema["properties"]["base_time"]["pattern"] == r"^\d{4}$"
+    assert "stale catalog sample" in village_schema["properties"]["base_date"]["description"]
+
+    nwp = get_operation_by_id("NwpModelInfoService/getLdapsUnisAll")
+    nwp_schema = input_schema_for(nwp.operation_id).model_json_schema()
+    nwp_tool = build_tool(nwp)
+    assert nwp.availability == "retired"
+    assert "resultCode=99" in nwp_schema["properties"]["base_time"]["description"]
+    assert "Do not choose this for citizen-facing current weather" in str(
+        nwp_tool.llm_description
+    )
 
 
 @pytest.mark.asyncio
@@ -93,7 +151,11 @@ async def test_call_operation_parses_json_success(monkeypatch: pytest.MonkeyPatc
     )
 
     async with _client_for_response(response) as client:
-        output = await call_operation(operation, schema.model_validate({}), client=client)
+        output = await call_operation(
+            operation,
+            schema.model_validate({"from_tm_fc": "20260523", "to_tm_fc": "20260523"}),
+            client=client,
+        )
 
     assert output.raw_format == "json"
     assert output.items[0]["tmFc"] == "202605240901"
@@ -101,7 +163,7 @@ async def test_call_operation_parses_json_success(monkeypatch: pytest.MonkeyPatc
 
 
 @pytest.mark.asyncio
-async def test_call_operation_non_success_result_code_raises_tool_error(
+async def test_call_operation_no_data_result_code_returns_empty_output(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("UMMAYA_KMA_API_HUB_AUTH_KEY", "test-api-hub-key")
@@ -114,11 +176,37 @@ async def test_call_operation_non_success_result_code_raises_tool_error(
     )
 
     async with _client_for_response(response) as client:
+        output = await call_operation(operation, schema.model_validate({}), client=client)
+
+    assert output.result_code == "03"
+    assert output.result_msg == "NO_DATA"
+    assert output.items == []
+    assert output.total_count is None
+
+
+@pytest.mark.asyncio
+async def test_call_operation_non_recoverable_result_code_raises_tool_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("UMMAYA_KMA_API_HUB_AUTH_KEY", "test-api-hub-key")
+    operation = get_operation_by_id("AmmIwxxmService/getMetar")
+    schema = input_schema_for(operation.operation_id)
+    response = httpx.Response(
+        200,
+        text=(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            "<response><header><resultCode>02</resultCode>"
+            "<resultMsg>DB_ERROR</resultMsg></header></response>"
+        ),
+        headers={"content-type": "application/xml"},
+    )
+
+    async with _client_for_response(response) as client:
         with pytest.raises(ToolExecutionError) as exc_info:
             await call_operation(operation, schema.model_validate({}), client=client)
 
-    assert "resultCode='03'" in str(exc_info.value)
-    assert "NO_DATA" in str(exc_info.value)
+    assert "resultCode='02'" in str(exc_info.value)
+    assert "DB_ERROR" in str(exc_info.value)
 
 
 @pytest.mark.asyncio
@@ -126,7 +214,9 @@ async def test_pending_approval_http_403_names_approval_state(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("UMMAYA_KMA_API_HUB_AUTH_KEY", "test-api-hub-key")
-    operation = get_operation_by_id("AmmIwxxmService/getMetar")
+    operation = get_operation_by_id("AmmIwxxmService/getMetar").model_copy(
+        update={"approval_state": "approval_pending"}
+    )
     schema = input_schema_for(operation.operation_id)
     response = httpx.Response(
         403,
@@ -184,8 +274,10 @@ async def test_register_binds_all_structured_tools_and_executor_path(
         request_id=str(uuid4()),
     )
 
-    assert len(registry) == 85
-    assert len(executor._adapters) == 85
+    assert len(registry) == 78
+    assert len(executor._adapters) == 78
+    assert "kma_apihub_gts_info_service_get_synop" not in registry._tools
+    assert "kma_apihub_nwp_model_info_service_get_ldaps_unis_all" not in registry._tools
     assert result.kind == "record"
     assert result.item["operation_id"] == "AmmIwxxmService/getMetar"
     assert result.item["items"] == [{"icao": "RKSI"}]

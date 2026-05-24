@@ -51,6 +51,7 @@ _auth_header = APIKeyHeader(name="Authorization", auto_error=False)
 _rate_limit_lock = Lock()
 _REQUIRED_OPERATOR_ENV_NAMES = (
     "UMMAYA_DATA_GO_KR_API_KEY",
+    "UMMAYA_KMA_API_HUB_AUTH_KEY",
     "UMMAYA_KAKAO_API_KEY",
     "UMMAYA_JUSO_CONFM_KEY",
     "UMMAYA_SGIS_KEY",
