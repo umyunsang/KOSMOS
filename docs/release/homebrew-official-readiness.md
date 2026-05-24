@@ -17,7 +17,7 @@ not controlled by UMMAYA release automation alone.
 
 ## Current State
 
-UMMAYA v0.1.18 now publishes macOS release archives:
+UMMAYA v0.2.0 continues to publish macOS release archives:
 
 - `ummaya-<version>-macos-arm64.tar.gz`
 - `ummaya-<version>-macos-x64.tar.gz`
@@ -94,12 +94,12 @@ manual notability discretion during review.
 
 ### 4. Gatekeeper/runtime gate
 
-Status: addressed in the v0.1.18 release artifact.
+Status: addressed in the v0.1.18 and later release artifacts.
 
 The archive bundles Bun 1.3.14 so users do not run `npm install` during cask installation.
 Earlier tap-only casks removed `com.apple.quarantine` in `postflight` to make the bundled
 runtime work from `Caskroom`, but official casks should not bypass Homebrew's quarantine model.
-The v0.1.18 wrapper therefore keeps the cask DSL free of quarantine-stripping hooks and, when
+The v0.1.18+ wrapper therefore keeps the cask DSL free of quarantine-stripping hooks and, when
 running from Homebrew `Caskroom`, copies the bundled runtime into a SHA-256-addressed user cache
 with `cp -X` before execution. The copied runtime SHA is checked before reuse, and the archive
 itself is still verified by the cask SHA.

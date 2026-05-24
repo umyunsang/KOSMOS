@@ -5,6 +5,33 @@ All notable changes to UMMAYA are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.2.0] - 2026-05-25
+
+### Added
+
+- Added the KMA APIHub structured adapter catalog and generated tool surface for approved
+  weather, observation, satellite, radar, aviation, earthquake, and model endpoints.
+- Added prebuilt macOS Homebrew cask artifacts for the project tap install path.
+- Added TUI/package smoke coverage for the CC-style runtime bundle and FriendliAI login path.
+
+### Changed
+
+- Tightened the UMMAYA TUI and agent loop toward the restored Claude Code harness structure
+  while keeping UMMAYA branding, K-EXAONE/FriendliAI provider wiring, and Korean public-service
+  tool content.
+- Updated release packaging so npm metadata, Python metadata, TUI metadata, and Homebrew cask
+  metadata move together for the 0.2 series.
+- Retired unavailable live identity-check branches from the active release surface after provider
+  access was confirmed unavailable for the current undergraduate account.
+
+### Fixed
+
+- Fixed terminal submit behavior for LF/coalesced enter input paths and paste-followed-by-enter
+  scenarios.
+- Fixed KMA weather calls to use the APIHub credential path for the approved KMA APIHub
+  endpoints instead of mixing it with the data.go.kr credential surface.
+- Fixed duplicated final-answer rendering in the live TUI tool loop.
+
 ## [v0.1-alpha] — 2026-04-26
 
 The UMMAYA migration-completion release. Initiative #1631 closed; the six Phase Epics — P0 #1632 (baseline runnable), P1+P2 #1633 (dead-code + Friendli migration), P3 #1634 (tool-system wiring), P4 #1847 (UI L2 citizen port), P5 #1927 (5-tier plugin DX), and P6 #1637 (docs/API + integration smoke) — all merged.
