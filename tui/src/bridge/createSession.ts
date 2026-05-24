@@ -25,7 +25,7 @@ type SessionEvent = {
 /**
  * Create a session on a bridge environment via POST /v1/sessions.
  *
- * Used by both `claude remote-control` (empty session so the user has somewhere to
+ * Used by both `ummaya remote-control` (empty session so the user has somewhere to
  * type immediately) and `/remote-control` (session pre-populated with conversation
  * history).
  *
@@ -54,8 +54,8 @@ export async function createBridgeSession({
 }): Promise<string | null> {
   const { getClaudeAIOAuthTokens } = await import('../utils/auth.js')
   const { getOrganizationUUID } = await import('../services/oauth/client.js')
-  const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' }) /* UMMAYA-1633: oauth deleted */
-  const getOAuthHeaders = (_token?: string): Record<string, string> => ({}) /* UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport deleted */
+  const { getOauthConfig } = await import('../constants/oauth.js')
+  const { getOAuthHeaders } = await import('../utils/teleport/api.js')
   const { parseGitHubRepository } = await import('../utils/detectRepository.js')
   const { getDefaultBranch } = await import('../utils/git.js')
   const { getMainLoopModel } = await import('../utils/model/model.js')
@@ -193,8 +193,8 @@ export async function getBridgeSession(
 ): Promise<{ environment_id?: string; title?: string } | null> {
   const { getClaudeAIOAuthTokens } = await import('../utils/auth.js')
   const { getOrganizationUUID } = await import('../services/oauth/client.js')
-  const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' }) /* UMMAYA-1633: oauth deleted */
-  const getOAuthHeaders = (_token?: string): Record<string, string> => ({}) /* UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport deleted */
+  const { getOauthConfig } = await import('../constants/oauth.js')
+  const { getOAuthHeaders } = await import('../utils/teleport/api.js')
   const { default: axios } = await import('axios')
 
   const accessToken =
@@ -247,7 +247,7 @@ export async function getBridgeSession(
  * Archive a bridge session via POST /v1/sessions/{id}/archive.
  *
  * The CCR server never auto-archives sessions — archival is always an
- * explicit client action. Both `claude remote-control` (standalone bridge) and the
+ * explicit client action. Both `ummaya remote-control` (standalone bridge) and the
  * always-on `/remote-control` REPL bridge call this during shutdown to archive any
  * sessions that are still alive.
  *
@@ -270,8 +270,8 @@ export async function archiveBridgeSession(
 ): Promise<void> {
   const { getClaudeAIOAuthTokens } = await import('../utils/auth.js')
   const { getOrganizationUUID } = await import('../services/oauth/client.js')
-  const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' }) /* UMMAYA-1633: oauth deleted */
-  const getOAuthHeaders = (_token?: string): Record<string, string> => ({}) /* UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport deleted */
+  const { getOauthConfig } = await import('../constants/oauth.js')
+  const { getOAuthHeaders } = await import('../utils/teleport/api.js')
   const { default: axios } = await import('axios')
 
   const accessToken =
@@ -320,7 +320,7 @@ export async function archiveBridgeSession(
  * Update the title of a bridge session via PATCH /v1/sessions/{id}.
  *
  * Called when the user renames a session via /rename while a bridge
- * connection is active, so the title stays in sync on claude.ai/code.
+ * connection is active, so the title stays in sync on UMMAYA on the web.
  *
  * Errors are swallowed — title sync is best-effort.
  */
@@ -331,8 +331,8 @@ export async function updateBridgeSessionTitle(
 ): Promise<void> {
   const { getClaudeAIOAuthTokens } = await import('../utils/auth.js')
   const { getOrganizationUUID } = await import('../services/oauth/client.js')
-  const getOauthConfig = (): { BASE_API_URL: string } => ({ BASE_API_URL: '' }) /* UMMAYA-1633: oauth deleted */
-  const getOAuthHeaders = (_token?: string): Record<string, string> => ({}) /* UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport deleted */
+  const { getOauthConfig } = await import('../constants/oauth.js')
+  const { getOAuthHeaders } = await import('../utils/teleport/api.js')
   const { default: axios } = await import('axios')
 
   const accessToken =

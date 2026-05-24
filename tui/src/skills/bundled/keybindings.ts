@@ -31,7 +31,7 @@ function generateContextsTable(): string {
  * Build a markdown table of all actions with their default bindings and context.
  */
 function generateActionsTable(): string {
-  // Build a find: action -> { keys, context }
+  // Build a lookup: action -> { keys, context }
   const actionInfo: Record<string, { keys: string[]; context: string }> = {}
   for (const block of DEFAULT_BINDINGS) {
     for (const [key, action] of Object.entries(block.bindings)) {
@@ -113,7 +113,7 @@ function generateReservedShortcuts(): string {
 
 const FILE_FORMAT_EXAMPLE: KeybindingsSchemaType = {
   $schema: 'https://www.schemastore.org/claude-code-keybindings.json',
-  $docs: 'https://code.claude.com/docs/en/keybindings',
+  $docs: 'https://ummaya-docs.pages.dev/en/',
   bindings: [
     {
       context: 'Chat',

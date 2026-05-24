@@ -3,7 +3,6 @@ import { writeSync } from 'fs'
 import memoize from 'lodash-es/memoize.js'
 import { onExit } from 'signal-exit'
 import type { ExitReason } from 'src/entrypoints/agentSdkTypes.js'
-import { formatUmmayaResumeCommand } from '../constants/cli.js'
 import {
   getIsInteractive,
   getIsScrollDraining,
@@ -30,9 +29,8 @@ import {
   supportsTabStatus,
   wrapForMultiplexer,
 } from '../ink/termio/osc.js'
-// UMMAYA-original: CC analytics/datadog not used — no-ops.
-const shutdownDatadog = async (): Promise<void> => {}
-const shutdown1PEventLogging = async (): Promise<void> => {}
+import { shutdownDatadog } from '../services/analytics/datadog.js'
+import { shutdown1PEventLogging } from '../services/analytics/firstPartyEventLogger.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
@@ -175,7 +173,7 @@ function printResumeHint(): void {
       writeSync(
         1,
         chalk.dim(
-          `\nResume this session with:\n${formatUmmayaResumeCommand(resumeArg)}\n`,
+          `\nResume this session with:\nummaya --resume ${resumeArg}\n`,
         ),
       )
       resumeHintPrinted = true
@@ -343,7 +341,9 @@ export function gracefulShutdownSync(
     setAppState?: (f: (prev: AppState) => AppState) => void
   },
 ): void {
-  // Set the exit code that will be used when process naturally exits.
+  // Set the exit code that will be used when process naturally exits. Note that we do it
+  // here inside the sync version too so that it is possible to determine if
+  // gracefulShutdownSync was called by checking process.exitCode.
   process.exitCode = exitCode
 
   pendingShutdown = gracefulShutdown(exitCode, reason, options)

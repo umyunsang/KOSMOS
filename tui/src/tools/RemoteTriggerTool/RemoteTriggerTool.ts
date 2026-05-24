@@ -1,13 +1,9 @@
 import axios from 'axios'
 import { z } from 'zod/v4'
-// constants/oauth removed in P1+P2 (Spec 1633); UMMAYA uses FriendliAI, not Anthropic OAuth.
-const getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({
-  authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '',
-})
+import { getOauthConfig } from '../../constants/oauth.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
 import { getOrganizationUUID } from '../../services/oauth/client.js'
-// policyLimits removed in P1+P2 (Spec 1633); UMMAYA opens features by default via Spec 033 permission gauntlet.
-const isPolicyAllowed = (_policy: string): boolean => true
+import { isPolicyAllowed } from '../../services/policyLimits/index.js'
 import type { ToolUseContext } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import {

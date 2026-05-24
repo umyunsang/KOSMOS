@@ -131,7 +131,7 @@ const AssistantChunkFrameSchema = BaseFrame.extend({
 const ToolCallFrameSchema = BaseFrame.extend({
   kind: z.literal('tool_call'),
   call_id: z.string(),
-  name: z.enum(['find', 'locate', 'send', 'check']),
+  name: z.string().min(1),
   arguments: z.record(z.unknown()),
 })
 
@@ -294,6 +294,10 @@ const AdapterManifestEntrySchema = z.object({
   primitive: z.enum(['find', 'send', 'check', 'locate']),
   policy_authority_url: z.string().url().nullable().optional(),
   source_mode: z.enum(['live', 'mock', 'internal']),
+  search_hint: z.string().min(1).nullable().optional(),
+  llm_description: z.string().min(1).nullable().optional(),
+  input_schema_json: z.record(z.string(), z.unknown()).default({}),
+  output_schema_json: z.record(z.string(), z.unknown()).default({}),
 })
 
 const AdapterManifestSyncFrameSchema = BaseFrame.extend({

@@ -11,7 +11,7 @@
 // has no chord in defaultBindings.ts so a useInput Esc fallback is mandatory).
 
 import React from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput } from '../../ink.js';
 import { useTheme } from '../../theme/provider.js';
 import { useUiL2I18n } from '../../i18n/uiL2.js';
 import {

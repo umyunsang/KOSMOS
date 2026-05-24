@@ -10,15 +10,9 @@ import {
 } from '../../src/entrypoints/envGuard.js'
 
 describe('envGuard', () => {
-  it('requires the TUI login session marker', () => {
+  it('accepts a FriendliAI token without a UMMAYA-only session marker', () => {
     expect(hasFriendliCredential({})).toBe(false)
-    expect(hasFriendliCredential({ UMMAYA_FRIENDLI_TOKEN: 'primary' })).toBe(false)
-    expect(
-      hasFriendliCredential({
-        UMMAYA_FRIENDLI_TOKEN: 'primary',
-        UMMAYA_FRIENDLI_SESSION_ACTIVE: '1',
-      }),
-    ).toBe(true)
+    expect(hasFriendliCredential({ UMMAYA_FRIENDLI_TOKEN: 'primary' })).toBe(true)
   })
 
   it('warns without exiting when credential is missing', () => {

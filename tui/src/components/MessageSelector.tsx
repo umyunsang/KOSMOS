@@ -1,5 +1,5 @@
 import { c as _c } from "react/compiler-runtime";
-import type { ContentBlockParam, TextBlockParam } from 'src/sdk-compat.js';
+import type { ContentBlockParam, TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';
 import { randomUUID, type UUID } from 'crypto';
 import figures from 'figures';
 import * as React from 'react';
@@ -13,10 +13,7 @@ import { Box, Text } from '../ink.js';
 import { useKeybinding, useKeybindings } from '../keybindings/useKeybinding.js';
 import type { Message, PartialCompactDirection, UserMessage } from '../types/message.js';
 import { stripDisplayTags } from '../utils/displayTags.js';
-import { isToolUseResultMessage } from '../utils/messageReorder.js';
-import { isSyntheticMessage } from '../utils/messageSynthetic.js';
-import { extractTag, isEmptyMessageText } from '../utils/messageText.js';
-import { createUserMessage } from '../utils/userMessageFactories.js';
+import { createUserMessage, extractTag, isEmptyMessageText, isSyntheticMessage, isToolUseResultMessage } from '../utils/messages.js';
 import { type OptionWithDescription, Select } from './CustomSelect/select.js';
 import { Spinner } from './Spinner.js';
 function isTextBlock(block: ContentBlockParam): block is TextBlockParam {

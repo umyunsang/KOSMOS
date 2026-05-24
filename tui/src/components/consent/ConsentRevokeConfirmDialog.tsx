@@ -19,7 +19,7 @@
 //   locale   — display locale ('ko' | 'en'), default 'ko'
 
 import React from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput } from '../../ink.js';
 import { useTheme } from '../../theme/provider.js';
 import type { PermissionReceiptT } from '../../schemas/ui-l2/permission.js';
 import { LAYER_VISUAL } from '../../schemas/ui-l2/permission.js';

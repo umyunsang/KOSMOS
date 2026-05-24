@@ -3,7 +3,7 @@
 // (FriendliAI K-EXAONE single-provider; AGENTS.md § CORE THESIS).
 // `verify` was already gated `process.env.USER_TYPE !== 'ant'` (effectively dead).
 // `claudeApi` was gated `feature('BUILDING_CLAUDE_APPS')` which always returns
-// false in UMMAYA (`tui/src/stubs/bun-bundle.ts` returns false for all flags).
+// false in UMMAYA's external-build feature registry unless explicitly enabled.
 // Tracked under Initiative #2636 / Epic #2640. See
 // `specs/cc-migration-audit/scope-S5-commands-input.md § DROP-CANDIDATE`.
 import { feature } from 'bun:bundle'

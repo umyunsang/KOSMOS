@@ -1,9 +1,6 @@
-// SWAP/llm-swap(2643): queryHaiku target = K-EXAONE via FriendliAI (Spec 2521 byte-copy bridge).
-// Spec 2643 Epic G US2 — byte-copy from .references/claude-code-sourcemap/restored-src/src/utils/mcp/dateTimeParser.ts
-// Spec source: specs/2643-utils-residue/contracts/dateTimeParser.contract.md
 import { queryHaiku } from '../../services/api/claude.js'
 import { logError } from '../log.js'
-import { extractTextContent } from '../messageText.js'
+import { extractTextContent } from '../messages.js'
 import { asSystemPrompt } from '../systemPromptType.js'
 
 export type DateTimeParseResult =
@@ -103,13 +100,8 @@ Parse the user's input into ISO 8601 format. Return ONLY the formatted string, o
 
     return { success: true, value: parsedText }
   } catch (error) {
-    // SWAP/codex-p2(2643): suppress AbortError logging — ElicitationDialog
-    // intentionally aborts in-flight parses on every keystroke (Codex P2 review
-    // on PR #2753); only log unexpected failures to avoid filling --hard-fail
-    // logs with normal typing noise. CC byte-copy preserved for non-abort path.
-    if (!(error instanceof Error && error.name === 'AbortError')) {
-      logError(error)
-    }
+    // Log error but don't expose details to user
+    logError(error)
     return {
       success: false,
       error:

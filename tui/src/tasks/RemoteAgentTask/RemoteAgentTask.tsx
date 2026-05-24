@@ -1,4 +1,4 @@
-import type { ToolUseBlock } from 'src/sdk-compat.js';
+import type { ToolUseBlock } from '@anthropic-ai/sdk/resources';
 import { getRemoteSessionUrl } from '../../constants/product.js';
 import { OUTPUT_FILE_TAG, REMOTE_REVIEW_PROGRESS_TAG, REMOTE_REVIEW_TAG, STATUS_TAG, SUMMARY_TAG, TASK_ID_TAG, TASK_NOTIFICATION_TAG, TASK_TYPE_TAG, TOOL_USE_ID_TAG, ULTRAPLAN_TAG } from '../../constants/xml.js';
 import type { SDKAssistantMessage, SDKMessage } from '../../entrypoints/agentSdkTypes.js';
@@ -9,21 +9,14 @@ import { type BackgroundRemoteSessionPrecondition, checkBackgroundRemoteSessionE
 import { logForDebugging } from '../../utils/debug.js';
 import { logError } from '../../utils/log.js';
 import { enqueuePendingNotification } from '../../utils/messageQueueManager.js';
-import { extractTag, extractTextContent } from '../../utils/messageText.js';
+import { extractTag, extractTextContent } from '../../utils/messages.js';
 import { emitTaskTerminatedSdk } from '../../utils/sdkEventQueue.js';
 import { deleteRemoteAgentMetadata, listRemoteAgentMetadata, type RemoteAgentMetadata, writeRemoteAgentMetadata } from '../../utils/sessionStorage.js';
 import { jsonStringify } from '../../utils/slowOperations.js';
 import { appendTaskOutput, evictTaskOutput, getTaskOutputPath, initTaskOutput } from '../../utils/task/diskOutput.js';
 import { registerTask, updateTaskState } from '../../utils/task/framework.js';
-// UMMAYA: utils/teleport/api.js deleted by Spec 1633 P1. fetchSession → throws (remote sessions not available).
-const fetchSession = async (_sessionId: unknown): Promise<never> => {
-  throw new Error('Remote sessions not available in UMMAYA — Spec 1633')
-}
-// UMMAYA: utils/teleport.js deleted by Spec 1633 P1. Remote sessions not available.
-const pollRemoteSessionEvents = async (_sessionId: unknown, _lastEventId: unknown): Promise<never> => {
-  throw new Error('Remote sessions not available in UMMAYA — Spec 1633')
-}
-const archiveRemoteSession = async (_sessionId: unknown): Promise<void> => {}
+import { fetchSession } from '../../utils/teleport/api.js';
+import { archiveRemoteSession, pollRemoteSessionEvents } from '../../utils/teleport.js';
 import type { TodoList } from '../../utils/todo/types.js';
 import type { UltraplanPhase } from '../../utils/ultraplan/ccrSession.js';
 export type RemoteAgentTaskState = TaskStateBase & {
@@ -153,15 +146,15 @@ export async function checkRemoteAgentEligibility({
 export function formatPreconditionError(error: BackgroundRemoteSessionPrecondition): string {
   switch (error.type) {
     case 'not_logged_in':
-      return 'Please run /login and sign in with your Claude.ai account (not Console).';
+      return 'Please run /login and sign in with your UMMAYA web account.';
     case 'no_remote_environment':
-      return 'No cloud environment available. Set one up at https://claude.ai/code/onboarding?magic=env-setup';
+      return 'No cloud environment available. Set one up in UMMAYA on the web.';
     case 'not_in_git_repo':
       return 'Background tasks require a git repository. Initialize git or run from a git repository.';
     case 'no_git_remote':
       return 'Background tasks require a GitHub remote. Add one with `git remote add origin REPO_URL`.';
     case 'github_app_not_installed':
-      return 'The Claude GitHub app must be installed on this repository first.\nhttps://github.com/apps/claude/installations/new';
+      return 'The UMMAYA GitHub app must be installed on this repository first.';
     case 'policy_blocked':
       return "Remote sessions are disabled by your organization's policy. Contact your organization admin to enable them.";
   }

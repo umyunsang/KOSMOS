@@ -15,8 +15,7 @@ import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'
 import { query } from '../../query.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
 import { getDumpPromptsPath } from '../../services/api/dumpPrompts.js'
-// UMMAYA: services/api/promptCacheBreakDetection deleted. No-op stub.
-const cleanupAgentTracking = (_agentId: unknown): void => {}
+import { cleanupAgentTracking } from '../../services/api/promptCacheBreakDetection.js'
 import {
   connectToServer,
   fetchToolsForClient,
@@ -56,7 +55,7 @@ import {
 import { registerFrontmatterHooks } from '../../utils/hooks/registerFrontmatterHooks.js'
 import { clearSessionHooks } from '../../utils/hooks/sessionHooks.js'
 import { executeSubagentStartHooks } from '../../utils/hooks.js'
-import { createUserMessage } from '../../utils/userMessageFactories.js'
+import { createUserMessage } from '../../utils/messages.js'
 import { getAgentModel } from '../../utils/model/agent.js'
 import type { ModelAlias } from '../../utils/model/aliases.js'
 import {
@@ -73,10 +72,11 @@ import {
   asSystemPrompt,
   type SystemPrompt,
 } from '../../utils/systemPromptType.js'
-// UMMAYA: utils/telemetry/perfettoTracing.js deleted by Spec 1633 P1. Stubs provided.
-const isPerfettoTracingEnabled = (): false => false
-const registerPerfettoAgent = (_agentId: unknown, _agentType: unknown, _parentId: unknown): void => {}
-const unregisterPerfettoAgent = (_agentId: unknown): void => {}
+import {
+  isPerfettoTracingEnabled,
+  registerAgent as registerPerfettoAgent,
+  unregisterAgent as unregisterPerfettoAgent,
+} from '../../utils/telemetry/perfettoTracing.js'
 import type { ContentReplacementState } from '../../utils/toolResultStorage.js'
 import { createAgentId } from '../../utils/uuid.js'
 import { resolveAgentTools } from './agentToolUtils.js'

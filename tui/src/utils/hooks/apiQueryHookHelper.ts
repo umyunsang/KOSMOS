@@ -1,15 +1,11 @@
 import { randomUUID } from 'crypto'
 import type { QuerySource } from '../../constants/querySource.js'
-// Anthropic API removed in P1+P2 (Spec 1633); UMMAYA routes LLM calls
-// through FriendliAI Serverless via the Python backend.
-const queryModelWithoutStreaming = async (..._args: readonly unknown[]): Promise<never> => {
-  throw new Error('Anthropic API not available in UMMAYA — Spec 1633')
-}
+import { queryModelWithoutStreaming } from '../../services/api/claude.js'
 import type { Message } from '../../types/message.js'
 import { createAbortController } from '../../utils/abortController.js'
 import { logError } from '../../utils/log.js'
 import { toError } from '../errors.js'
-import { extractTextContent } from '../messageText.js'
+import { extractTextContent } from '../messages.js'
 import { asSystemPrompt } from '../systemPromptType.js'
 import type { REPLHookContext } from './postSamplingHooks.js'
 

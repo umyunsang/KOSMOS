@@ -11,7 +11,7 @@ export const FIND_TOOL_NAME = 'find'
 
 /** Citizen-facing English description shown to the LLM (<= 240 chars). */
 export const DESCRIPTION =
-  'Invoke a Korean public-service adapter. The backend injects matching candidate adapters into <available_adapters>; choose one listed tool_id and call find({tool_id, params}).'
+  'Invoke one concrete Korean public-service adapter. Use the function named find, but set tool_id to a listed adapter id from <available_adapters>, never to find/locate/check/send.'
 
 /** Extended prompt included in the system-prompt tool-use section. */
 export const FIND_TOOL_PROMPT = `Invoke Korean public-service adapters registered in the UMMAYA tool registry.
@@ -30,6 +30,11 @@ injects the top-K candidates into the system prompt's
 block and calls find directly.
 
 Rules:
+- The function name is find. The tool_id argument is NOT the function name.
+- tool_id must be a concrete adapter id listed in <available_adapters>, for example "kma_current_observation" or "kma_forecast_fetch".
+- Never set tool_id to a root primitive name: "find", "locate", "check", or "send".
+- Invalid: find({ tool_id: "find", params: {...} })
+- Valid:   find({ tool_id: "kma_current_observation", params: {...} })
 - Pick tool_id only from <available_adapters>. Never guess an id.
 - Do NOT call find with mode='search' / query — those payloads are
   rejected with LookupErrorReason.invalid_params (Spec 2521).

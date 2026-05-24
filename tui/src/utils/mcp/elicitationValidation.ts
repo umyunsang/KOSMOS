@@ -7,10 +7,10 @@ import type {
 import { z } from 'zod/v4'
 import { jsonStringify } from '../slowOperations.js'
 import { plural } from '../stringUtils.js'
-// Spec 2643 Epic G US2 — restored byte-copy of CC dateTimeParser; replaces the
-// Spec 1633 inline ISO8601-only stub with the full natural-language parser
-// (K-EXAONE-wired via swap-1). See specs/2643-utils-residue/contracts/dateTimeParser.contract.md.
-import { looksLikeISO8601, parseNaturalLanguageDateTime } from './dateTimeParser.js'
+import {
+  looksLikeISO8601,
+  parseNaturalLanguageDateTime,
+} from './dateTimeParser.js'
 
 export type ValidationResult = {
   value?: string | number | boolean

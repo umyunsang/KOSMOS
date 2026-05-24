@@ -1,9 +1,17 @@
-// utils/secureStorage removed in P1+P2 (Spec 1633); UMMAYA uses process-scoped FriendliAI secrets, not OS keychain.
-const getMacOsKeychainStorageServiceName = (): string => 'ummaya'
+import { execa } from 'execa'
+import { getMacOsKeychainStorageServiceName } from 'src/utils/secureStorage/macOsKeychainHelpers.js'
 
 export async function maybeRemoveApiKeyFromMacOSKeychainThrows(): Promise<void> {
-  // UMMAYA: no OS keychain — API keys are session/process-scoped.
-  void getMacOsKeychainStorageServiceName()
+  if (process.platform === 'darwin') {
+    const storageServiceName = getMacOsKeychainStorageServiceName()
+    const result = await execa(
+      `security delete-generic-password -a $USER -s "${storageServiceName}"`,
+      { shell: true, reject: false },
+    )
+    if (result.exitCode !== 0) {
+      throw new Error('Failed to delete keychain entry')
+    }
+  }
 }
 
 export function normalizeApiKeyForConfig(apiKey: string): string {

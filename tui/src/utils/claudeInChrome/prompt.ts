@@ -1,4 +1,4 @@
-export const BASE_CHROME_PROMPT = `# Claude in Chrome browser automation
+export const BASE_CHROME_PROMPT = `# UMMAYA in Chrome browser automation
 
 You have access to browser automation tools (mcp__claude-in-chrome__*) for interacting with web pages in Chrome. Follow these guidelines for effective browser automation.
 
@@ -70,7 +70,7 @@ export function getChromeSystemPrompt(): string {
 }
 
 /**
- * Minimal hint about Claude in Chrome skill availability. This is injected at startup when the extension is installed
+ * Minimal hint about UMMAYA in Chrome skill availability. This is injected at startup when the extension is installed
  * to guide the model to invoke the skill before using the MCP tools.
  */
 export const CLAUDE_IN_CHROME_SKILL_HINT = `**Browser Automation**: Chrome browser tools are available via the "claude-in-chrome" skill. CRITICAL: Before using any mcp__claude-in-chrome__* tools, invoke the skill by calling the Skill tool with skill: "claude-in-chrome". The skill provides browser automation instructions and enables the tools.`

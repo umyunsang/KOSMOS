@@ -26,8 +26,7 @@ import { TOOL_SEARCH_TOOL_NAME } from '../tools/ToolSearchTool/prompt.js'
 import { SYNTHETIC_OUTPUT_TOOL_NAME } from '../tools/SyntheticOutputTool/SyntheticOutputTool.js'
 import { ENTER_WORKTREE_TOOL_NAME } from '../tools/EnterWorktreeTool/constants.js'
 import { EXIT_WORKTREE_TOOL_NAME } from '../tools/ExitWorktreeTool/constants.js'
-// UMMAYA Spec 1633 / Epic #2293 — WorkflowTool deleted (claude-code multi-step
-// workflow tool; UMMAYA uses primitive chains via system prompt).
+import { WORKFLOW_TOOL_NAME } from '../tools/WorkflowTool/constants.js'
 import {
   CRON_CREATE_TOOL_NAME,
   CRON_DELETE_TOOL_NAME,
@@ -42,7 +41,8 @@ export const ALL_AGENT_DISALLOWED_TOOLS = new Set([
   ...(process.env.USER_TYPE === 'ant' ? [] : [AGENT_TOOL_NAME]),
   ASK_USER_QUESTION_TOOL_NAME,
   TASK_STOP_TOOL_NAME,
-  // UMMAYA Epic #2293 — WORKFLOW_TOOL_NAME removed with WorkflowTool deletion.
+  // Prevent recursive workflow execution inside subagents.
+  ...(feature('WORKFLOW_SCRIPTS') ? [WORKFLOW_TOOL_NAME] : []),
 ])
 
 export const CUSTOM_AGENT_DISALLOWED_TOOLS = new Set([

@@ -1,15 +1,13 @@
-import type { ContentBlock } from 'src/sdk-compat.js'
+import type { ContentBlock } from '@anthropic-ai/sdk/resources/index.mjs'
 import { getUserContext } from 'src/context.js'
-// Anthropic API removed in P1+P2 (Spec 1633); UMMAYA routes LLM calls
-// through FriendliAI Serverless via the Python backend.
-const queryModelWithoutStreaming = async (..._args: readonly unknown[]): Promise<never> => {
-  throw new Error('Anthropic API not available in UMMAYA — Spec 1633')
-}
+import { queryModelWithoutStreaming } from 'src/services/api/claude.js'
 import { getEmptyToolPermissionContext } from 'src/Tool.js'
 import { AGENT_TOOL_NAME } from 'src/tools/AgentTool/constants.js'
 import { prependUserContext } from 'src/utils/api.js'
-import { normalizeMessagesForAPI } from 'src/utils/messageApiNormalize.js'
-import { createUserMessage } from 'src/utils/userMessageFactories.js'
+import {
+  createUserMessage,
+  normalizeMessagesForAPI,
+} from 'src/utils/messages.js'
 import type { ModelName } from 'src/utils/model/model.js'
 import { isAutoMemoryEnabled } from '../../memdir/paths.js'
 import {

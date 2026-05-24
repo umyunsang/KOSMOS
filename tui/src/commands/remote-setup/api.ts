@@ -1,15 +1,8 @@
 import axios from 'axios'
-// constants/oauth removed in P1+P2 (Spec 1633); UMMAYA uses FriendliAI, not Anthropic OAuth.
-const getOauthConfig = (): { authorizationUrl: string; tokenUrl: string; clientId: string; scopes: readonly string[]; BASE_API_URL: string } => ({ authorizationUrl: '', tokenUrl: '', clientId: '', scopes: [] as readonly string[], BASE_API_URL: '' })
+import { getOauthConfig } from '../../constants/oauth.js'
 import { logForDebugging } from '../../utils/debug.js'
-// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport/ deleted; stub.
-const getOAuthHeaders = (_token: string): Record<string, string> => ({})
-const prepareApiRequest = async (): Promise<{ accessToken: string; orgUUID: string }> => {
-  throw new Error('UMMAYA: remote CCR sessions not supported')
-}
-type EnvironmentKind = 'anthropic_cloud' | 'byoc' | 'bridge'
-type EnvironmentResource = { kind: EnvironmentKind; environment_id: string; name: string; created_at: string; state: 'active' }
-const fetchEnvironments = async (): Promise<EnvironmentResource[]> => []
+import { getOAuthHeaders, prepareApiRequest } from '../../utils/teleport/api.js'
+import { fetchEnvironments } from '../../utils/teleport/environments.js'
 
 const CCR_BYOC_BETA_HEADER = 'ccr-byoc-2025-07-29'
 
@@ -53,7 +46,7 @@ export type ImportTokenError =
  * POSTs a GitHub token to the CCR backend, which validates it against
  * GitHub's /user endpoint and stores it Fernet-encrypted in sync_user_tokens.
  * The stored token satisfies the same read paths as an OAuth token, so
- * clone/push in claude.ai/code works immediately after this succeeds.
+ * clone/push in UMMAYA on the web works immediately after this succeeds.
  */
 export async function importGithubToken(
   token: RedactedGithubToken,

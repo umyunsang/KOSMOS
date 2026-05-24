@@ -1,5 +1,5 @@
 // [P0 reconstructed · Pass 3 v2 · agent-verified · SSH session factory]
-// Reference: code.claude.com/docs/en/remote-control + full consumer surface
+// Reference: UMMAYA remote-control consumer surface
 // in hooks/useSSHSession.ts (lines 72, 125, 184, 186, 206, 210, 211, 227).
 //
 // `claude ssh <host>` spawns a child CLI over an SSH tunnel. Upstream CC

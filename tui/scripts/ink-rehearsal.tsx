@@ -28,7 +28,7 @@
  */
 
 import { render } from 'ink-testing-library'
-import { Box, Text, useInput } from 'ink'
+import { Box, Text, useInput } from '../src/ink.js'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { createBridge, type IPCBridge } from '../src/ipc/bridge.js'

@@ -1,7 +1,3 @@
-// UMMAYA Epic #2112: legacy first-party base-URL check rewritten for FriendliAI.
-// All callers updated to `isFirstPartyUmmayaBaseUrl` (see grep history pre-Spec
-// 2112 for the legacy alias name).
-
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../../services/analytics/index.js'
 import { isEnvTruthy } from '../envUtils.js'
 
@@ -22,27 +18,23 @@ export function getAPIProviderForStatsig(): AnalyticsMetadata_I_VERIFIED_THIS_IS
 }
 
 /**
- * Check if UMMAYA_FRIENDLI_BASE_URL points to FriendliAI Serverless.
- * Returns true if not set (default endpoint) or points to api.friendli.ai.
+ * Check if ANTHROPIC_BASE_URL is a first-party Anthropic API URL.
+ * Returns true if not set (default API) or points to api.anthropic.com
+ * (or api-staging.anthropic.com for ant users).
  */
-export function isFirstPartyUmmayaBaseUrl(): boolean {
-  const baseUrl = process.env.UMMAYA_FRIENDLI_BASE_URL
+export function isFirstPartyAnthropicBaseUrl(): boolean {
+  const baseUrl = process.env.ANTHROPIC_BASE_URL
   if (!baseUrl) {
     return true
   }
   try {
     const host = new URL(baseUrl).host
-    return host === 'api.friendli.ai'
+    const allowedHosts = ['api.anthropic.com']
+    if (process.env.USER_TYPE === 'ant') {
+      allowedHosts.push('api-staging.anthropic.com')
+    }
+    return allowedHosts.includes(host)
   } catch {
     return false
   }
-}
-
-
-// SWAP/anti-anthropic-1p(2521): byte-copied tui/src/services/api/claude.ts
-// imports `isFirstPartyAnthropicBaseUrl`. UMMAYA routes through FriendliAI
-// single provider; stub returns false so claude.ts's first-party gates fall
-// through to the 3P branch (byte-copy is zero-callers at runtime anyway).
-export function isFirstPartyAnthropicBaseUrl(_url?: string): boolean {
-  return false
 }

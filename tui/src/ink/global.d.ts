@@ -1,4 +1,3 @@
-// [P0 stub] CC 2.1.88 sourcemap reconstruction gap — empty declaration.
-// The original global.d.ts contents were not captured in the extracted source.
-// Tracked for recovery in Epic #1633.
-export {};
+// CC 2.1.88 sourcemap gap: Box.tsx imports this declaration module, but the
+// extracted restored-src tree does not include its original contents.
+export {}

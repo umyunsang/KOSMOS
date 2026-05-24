@@ -388,18 +388,18 @@ export function useTextInput({
             case input === '\x1b[F' || input === '\x1b[4~':
               return cursor.endOfLine()
             default: {
-              // Trailing \r after text is SSH-coalesced Enter ("o\r") —
-              // strip it so the Enter isn't inserted as content. Lone \r
-              // here is Alt+Enter leaking through (META_KEY_CODE_RE doesn't
-              // match \x1b\r) — leave it for the \r→\n below. Embedded \r
-              // is multi-line paste from a terminal without bracketed
-              // paste — convert to \n. Backslash+\r is a stale VS Code
-              // Shift+Enter binding (pre-#8991 /terminal-setup wrote
-              // args.text "\\\r\n" to keybindings.json); keep the \r so
-              // it becomes \n below (anthropics/claude-code#31316).
+              // Trailing CR/LF after text is coalesced Enter ("o\r",
+              // "o\n", or "o\r\n") — strip it so Enter is not inserted as
+              // content. Lone newline here is Alt+Enter leaking through; leave
+              // it for the newline normalization below. Embedded newline is
+              // multi-line paste from a terminal without bracketed paste.
+              // Backslash+newline is a stale VS Code Shift+Enter binding; keep
+              // it so it becomes a normal newline below.
               const text = stripAnsi(input)
                 // eslint-disable-next-line custom-rules/no-lookbehind-regex -- .replace(re, str) on 1-2 char keystrokes: no-match returns same string (Object.is), regex never runs
-                .replace(/(?<=[^\\\r\n])\r$/, '')
+                .replace(/(?<=[^\\\r\n])\r\n$/, '')
+                // eslint-disable-next-line custom-rules/no-lookbehind-regex -- .replace(re, str) on 1-2 char keystrokes: no-match returns same string (Object.is), regex never runs
+                .replace(/(?<=[^\\\r\n])[\r\n]$/, '')
                 .replace(/\r/g, '\n')
               if (cursor.isAtStart() && isInputModeCharacter(input)) {
                 return cursor.insert(text).left()
@@ -482,18 +482,25 @@ export function useTextInput({
         }
         setOffset(nextCursor.offset)
       }
-      // SSH-coalesced Enter: on slow links, "o" + Enter can arrive as one
-      // chunk "o\r". parseKeypress only matches s === '\r', so it hit the
-      // default handler above (which stripped the trailing \r). Text with
-      // exactly one trailing \r is coalesced Enter; lone \r is Alt+Enter
-      // (newline); embedded \r is multi-line paste.
+      // Coalesced Enter: on slow links or PTY automation, "o" + Enter can
+      // arrive as one chunk ("o\r", "o\n", or "o\r\n"). parseKeypress only
+      // matches standalone Enter bytes, so this reaches the default handler
+      // above. Text with exactly one trailing newline is coalesced Enter; lone
+      // newline is Alt+Enter; embedded newline is multi-line paste.
+      const strippedInput = stripAnsi(filteredInput)
+      const inputWithoutCoalescedEnter = strippedInput
+        // eslint-disable-next-line custom-rules/no-lookbehind-regex -- see text normalization above
+        .replace(/(?<=[^\\\r\n])\r\n$/, '')
+        // eslint-disable-next-line custom-rules/no-lookbehind-regex -- see text normalization above
+        .replace(/(?<=[^\\\r\n])[\r\n]$/, '')
       if (
-        filteredInput.length > 1 &&
-        filteredInput.endsWith('\r') &&
-        !filteredInput.slice(0, -1).includes('\r') &&
-        // Backslash+CR is a stale VS Code Shift+Enter binding, not
+        inputWithoutCoalescedEnter !== strippedInput &&
+        !inputWithoutCoalescedEnter.includes('\r') &&
+        !inputWithoutCoalescedEnter.includes('\n') &&
+        // Backslash+newline is a stale VS Code Shift+Enter binding, not
         // coalesced Enter. See default handler above.
-        filteredInput[filteredInput.length - 2] !== '\\'
+        inputWithoutCoalescedEnter[inputWithoutCoalescedEnter.length - 1] !==
+          '\\'
       ) {
         onSubmit?.(nextCursor.text)
       }

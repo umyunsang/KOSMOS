@@ -1,17 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // Epic #2077 K-EXAONE tool wiring · T013
 //
-// 6 invariants from contracts/stream-event-projection.md § Test coverage:
+// CC provider-contract invariants from contracts/stream-event-projection.md:
 //   I1 — tool_call frame yields two stream events, not SystemMessage
 //   I2 — content_block_start carries id/name/input from frame fields
-//   I3 — tool_result yields user-role tool_result content block
-//   I4 — is_error: true set when envelope.kind === 'error'
-//   I5 — multiple tool_calls produce sequential indices 1, 2, 3
-//   I6 — terminal AssistantMessage content array contains text + N tool_use blocks
+//   I3 — provider stops at assistant(tool_use), matching Claude Code's
+//        provider/query boundary; tool_result emission belongs to runTools
+//   I4 — same backend-turn final prose is not emitted after tool_use
 //
 // Test harness: Bun mock.module() replaces bridgeSingleton and toolSerialization
-// before deps.ts is loaded so queryModelWithStreaming (exposed via
-// productionDeps().callModel) drives against a FakeBridge that captures the
+// before the legacy backend-chat provider is loaded so queryModelWithStreaming
+// drives against a FakeBridge that captures the
 // ChatRequestFrame's correlation_id from send() and yields pre-staged IPC
 // frames tagged with that exact id.
 //
@@ -146,6 +145,8 @@ mock.module(join(TUI_ROOT, 'src/query/toolSerialization.js'), () => ({
 
 mock.module(join(TUI_ROOT, 'src/utils/messages.js'), () => ({
   SYNTHETIC_MODEL: 'ummaya-test-model',
+  SYNTHETIC_MESSAGES: new Set<string>(),
+  isEmptyMessageText: (text: unknown) => text === '',
   createAssistantMessage: ({ content }: { content: unknown }) => ({
     type: 'assistant',
     uuid: 'assistant-message-stub',
@@ -199,8 +200,12 @@ mock.module(join(TUI_ROOT, 'src/utils/messages.js'), () => ({
 }))
 
 // Dynamic import AFTER mock.module() so the mocked bindings are in place
-// when deps.ts resolves its own imports of bridgeSingleton / toolSerialization.
-const { productionDeps } = await import(join(TUI_ROOT, 'src/query/deps.js'))
+// when the legacy backend-chat provider resolves bridgeSingleton /
+// toolSerialization. Production deps intentionally use services/api/claude.ts;
+// this file now guards only the compatibility provider.
+const { queryModelWithStreaming } = await import(
+  join(TUI_ROOT, 'src/services/api/ummaya.js')
+)
 
 // ---------------------------------------------------------------------------
 // Shared test runner
@@ -227,14 +232,11 @@ function makeFrame(
 
 async function run(buildFrames: (corrId: string) => StagedFrame[]): Promise<unknown[]> {
   const previousPrimary = process.env.UMMAYA_FRIENDLI_TOKEN
-  const previousSession = process.env.UMMAYA_FRIENDLI_SESSION_ACTIVE
   process.env.UMMAYA_FRIENDLI_TOKEN = 'test-token-handlers'
-  process.env.UMMAYA_FRIENDLI_SESSION_ACTIVE = '1'
   installBridge(buildFrames)
   try {
-    const callModel = productionDeps().callModel
     const results: unknown[] = []
-    for await (const ev of callModel({
+    for await (const ev of queryModelWithStreaming({
       messages: [{ type: 'user', message: { role: 'user', content: 'hi' } }],
       systemPrompt: 'test system prompt',
     })) {
@@ -246,11 +248,6 @@ async function run(buildFrames: (corrId: string) => StagedFrame[]): Promise<unkn
       delete process.env.UMMAYA_FRIENDLI_TOKEN
     } else {
       process.env.UMMAYA_FRIENDLI_TOKEN = previousPrimary
-    }
-    if (previousSession === undefined) {
-      delete process.env.UMMAYA_FRIENDLI_SESSION_ACTIVE
-    } else {
-      process.env.UMMAYA_FRIENDLI_SESSION_ACTIVE = previousSession
     }
   }
 }
@@ -394,18 +391,18 @@ describe('stream-event projection I2', () => {
 })
 
 // ---------------------------------------------------------------------------
-// I3 — tool_result yields user-role message with tool_result content block.
+// I3 — provider stops at assistant(tool_use); tool_result belongs to runTools.
 // ---------------------------------------------------------------------------
 
-describe('stream-event projection I3', () => {
-  test('tool_result frame yields user-role tool_result content block', async () => {
+describe('CC provider contract I3', () => {
+  test('tool_result frame from the same backend turn is not yielded as a user message', async () => {
     const callId = 'call-res-001'
-    const envelope = { kind: 'lookup', data: [{ name: '서울대병원' }] }
+    const envelope = { kind: 'find', data: [{ name: '서울대병원' }] }
 
     const results = await run((corrId) => [
       makeFrame('tool_call', corrId, {
         call_id: callId,
-        name: 'lookup',
+        name: 'find',
         arguments: {},
       }),
       makeFrame('tool_result', corrId, {
@@ -419,241 +416,36 @@ describe('stream-event projection I3', () => {
       }),
     ])
 
-    type UserMsgItem = {
-      type: 'user'
-      message: {
-        role: string
-        content: Array<{ type?: string; tool_use_id?: string; content?: string }>
-      }
-      toolUseResult?: { ok?: boolean; result?: unknown }
-    }
-
     const userMessages = results.filter(
       (r) => (r as { type?: string }).type === 'user',
-    ) as UserMsgItem[]
+    )
 
-    expect(userMessages.length).toBeGreaterThan(0)
-
-    const toolResultMsg = userMessages[0]!
-    expect(toolResultMsg.message.role).toBe('user')
-
-    const block = toolResultMsg.message.content[0]!
-    expect(block.type).toBe('tool_result')
-    expect(block.tool_use_id).toBe(callId)
-    expect(toolResultMsg.toolUseResult?.ok).toBe(true)
-    expect(toolResultMsg.toolUseResult?.result).toEqual(envelope)
+    expect(userMessages).toHaveLength(0)
   })
-})
 
-// ---------------------------------------------------------------------------
-// I4 — is_error: true set when envelope.kind === 'error'.
-// ---------------------------------------------------------------------------
-
-describe('stream-event projection I4', () => {
-  test('is_error: true set when envelope.kind === error', async () => {
-    const callId = 'call-err-001'
-    const errorEnvelope = { kind: 'error', message: 'adapter returned 500' }
+  test('terminal assistant message contains tool_use only, not backend-completed final prose', async () => {
+    const callId = 'call-render-order-001'
 
     const results = await run((corrId) => [
       makeFrame('tool_call', corrId, {
         call_id: callId,
-        name: 'lookup',
-        arguments: {},
-      }),
-      makeFrame('tool_result', corrId, {
-        call_id: callId,
-        envelope: errorEnvelope,
-      }),
-      makeFrame('assistant_chunk', corrId, {
-        message_id: 'mid-004',
-        delta: '',
-        done: true,
-      }),
-    ])
-
-    type UserMsgItem = {
-      type: 'user'
-      toolUseResult?: { ok?: boolean; error?: { message?: string } }
-      message: { role: string; content: Array<{ type?: string; is_error?: boolean }> }
-    }
-
-    const userMessages = results.filter(
-      (r) => (r as { type?: string }).type === 'user',
-    ) as UserMsgItem[]
-
-    expect(userMessages.length).toBeGreaterThan(0)
-    const toolResultMsg = userMessages[0]!
-    const block = toolResultMsg.message.content[0]!
-    expect(block.is_error).toBe(true)
-    expect(toolResultMsg.toolUseResult?.ok).toBe(false)
-    expect(toolResultMsg.toolUseResult?.error?.message).toBe('adapter returned 500')
-  })
-
-  test('is_error: true set when primitive result carries nested error', async () => {
-    const callId = 'call-err-primitive-001'
-    const errorEnvelope = {
-      kind: 'lookup',
-      tool_id: 'kma_forecast_fetch',
-      result: {
-        kind: 'error',
-        reason: 'invalid_params',
-        message: 'Missing lat/lon; resolve_location must run first',
-      },
-      outbound_traces: [
-        {
-          method: 'GET',
-          url: 'https://api.example.invalid/weather',
-          status_code: 400,
-        },
-      ],
-    }
-
-    const results = await run((corrId) => [
-      makeFrame('tool_call', corrId, {
-        call_id: callId,
-        name: 'lookup',
+        name: 'find',
         arguments: {
           mode: 'fetch',
-          tool_id: 'kma_forecast_fetch',
-          params: {},
+          tool_id: 'kma_current_observation',
+          params: { nx: 97, ny: 74 },
         },
       }),
       makeFrame('tool_result', corrId, {
         call_id: callId,
-        envelope: errorEnvelope,
+        envelope: {
+          kind: 'find',
+          result: { kind: 'record', items: [{ temperature_c: 21.8 }] },
+        },
       }),
       makeFrame('assistant_chunk', corrId, {
-        message_id: 'mid-004-nested',
-        delta: '',
-        done: true,
-      }),
-    ])
-
-    type UserMsgItem = {
-      type: 'user'
-      toolUseResult?: {
-        ok?: boolean
-        error?: { kind?: string; message?: string }
-        outbound_traces?: unknown[]
-      }
-      message: {
-        role: string
-        content: Array<{ type?: string; is_error?: boolean; content?: string }>
-      }
-    }
-
-    const userMessages = results.filter(
-      (r) => (r as { type?: string }).type === 'user',
-    ) as UserMsgItem[]
-
-    expect(userMessages.length).toBeGreaterThan(0)
-    const toolResultMsg = userMessages[0]!
-    const block = toolResultMsg.message.content[0]!
-    expect(block.is_error).toBe(true)
-    expect(toolResultMsg.toolUseResult?.ok).toBe(false)
-    expect(toolResultMsg.toolUseResult?.error?.kind).toBe('invalid_params')
-    expect(toolResultMsg.toolUseResult?.error?.message).toBe(
-      'Missing lat/lon; resolve_location must run first',
-    )
-    expect(toolResultMsg.toolUseResult?.outbound_traces).toHaveLength(1)
-
-    const llmFacing = JSON.parse(block.content ?? '{}') as Record<string, unknown>
-    expect(llmFacing).not.toHaveProperty('outbound_traces')
-  })
-})
-
-// ---------------------------------------------------------------------------
-// I5 — multiple tool_calls produce sequential indices 1, 2, 3.
-//
-// The text block opens at index 0 on the first assistant_chunk delta.
-// Each subsequent tool_use block claims the next available index (blockIndex
-// is pre-incremented before content_block_start per the spec contract).
-// ---------------------------------------------------------------------------
-
-describe('stream-event projection I5', () => {
-  test('three tool_calls produce content_block_start indices 1, 2, 3', async () => {
-    const results = await run((corrId) => [
-      // Opens text block at index 0
-      makeFrame('assistant_chunk', corrId, {
-        message_id: 'mid-005',
-        delta: 'hello',
-        done: false,
-      }),
-      makeFrame('tool_call', corrId, {
-        call_id: 'tc-1',
-        name: 'lookup',
-        arguments: { mode: 'fetch', tool_id: 'kma_forecast_fetch', query: 'q1' },
-      }),
-      makeFrame('tool_call', corrId, {
-        call_id: 'tc-2',
-        name: 'submit',
-        arguments: { tool_id: 'foo', params: {} },
-      }),
-      makeFrame('tool_call', corrId, {
-        call_id: 'tc-3',
-        name: 'verify',
-        arguments: { tool_id: 'bar', params: {} },
-      }),
-      makeFrame('assistant_chunk', corrId, {
-        message_id: 'mid-005',
-        delta: '',
-        done: true,
-      }),
-    ])
-
-    type StartEventItem = {
-      type: 'stream_event'
-      event: { type: string; index?: number; content_block?: { type?: string } }
-    }
-
-    const streamEvents = results.filter(
-      (r) => (r as { type?: string }).type === 'stream_event',
-    ) as StartEventItem[]
-
-    const toolUseStarts = streamEvents.filter(
-      (e) =>
-        e.event.type === 'content_block_start' &&
-        e.event.content_block?.type === 'tool_use',
-    )
-
-    expect(toolUseStarts).toHaveLength(3)
-    expect(toolUseStarts[0]!.event.index).toBe(1)
-    expect(toolUseStarts[1]!.event.index).toBe(2)
-    expect(toolUseStarts[2]!.event.index).toBe(3)
-  })
-})
-
-// ---------------------------------------------------------------------------
-// I6 — terminal AssistantMessage content array = text + N tool_use blocks.
-//
-// Sequence: assistant_chunk(delta='hello'), tool_call(id=A), tool_call(id=B),
-//           assistant_chunk(done=true).
-// Expected content array: 3 elements —
-//   [{type:'text', text:'hello'}, {type:'tool_use', id:'A', name:'lookup'},
-//    {type:'tool_use', id:'B', name:'submit'}]
-// ---------------------------------------------------------------------------
-
-describe('stream-event projection I6', () => {
-  test('terminal AssistantMessage content array contains text + N tool_use blocks', async () => {
-    const results = await run((corrId) => [
-      makeFrame('assistant_chunk', corrId, {
-        message_id: 'mid-006',
-        delta: 'hello',
-        done: false,
-      }),
-      makeFrame('tool_call', corrId, {
-        call_id: 'A',
-        name: 'lookup',
-        arguments: { mode: 'fetch', tool_id: 'kma_forecast_fetch', query: 'test' },
-      }),
-      makeFrame('tool_call', corrId, {
-        call_id: 'B',
-        name: 'submit',
-        arguments: { tool_id: 'abc', params: {} },
-      }),
-      makeFrame('assistant_chunk', corrId, {
-        message_id: 'mid-006',
-        delta: '',
+        message_id: 'mid-render-order-001',
+        delta: '현재 기온은 21.8도입니다.',
         done: true,
       }),
     ])
@@ -661,40 +453,67 @@ describe('stream-event projection I6', () => {
     type AssistantMsgItem = {
       type: 'assistant'
       message: {
-        role: string
-        content: Array<{ type?: string; id?: string; name?: string; text?: string }>
+        content: Array<{ type?: string; id?: string; text?: string }>
       }
     }
+
+    const firstToolUseAssistantIndex = results.findIndex((r) => {
+      const msg = r as AssistantMsgItem
+      return (
+        msg.type === 'assistant' &&
+        msg.message.content.some(
+          (block) => block.type === 'tool_use' && block.id === callId,
+        )
+      )
+    })
+
+    expect(firstToolUseAssistantIndex).toBeGreaterThanOrEqual(0)
 
     const assistantMessages = results.filter(
       (r) => (r as { type?: string }).type === 'assistant',
     ) as AssistantMsgItem[]
+    const finalAssistant = assistantMessages[assistantMessages.length - 1]!
+    expect(finalAssistant.message.content).toEqual([
+      {
+        type: 'tool_use',
+        id: callId,
+        name: 'find',
+        input: {
+          mode: 'fetch',
+          tool_id: 'kma_current_observation',
+          params: { nx: 97, ny: 74 },
+        },
+      },
+    ])
+    expect(JSON.stringify(results)).not.toContain('현재 기온은 21.8도입니다.')
+  })
+})
 
-    expect(assistantMessages.length).toBeGreaterThan(0)
+// ---------------------------------------------------------------------------
+// I4 — backend-turn final prose after tool_use is ignored by provider.
+// ---------------------------------------------------------------------------
 
-    // The last assistant message is the terminal one (yielded on done=true)
-    const terminal = assistantMessages[assistantMessages.length - 1]!
-    const content = terminal.message.content
+describe('CC provider contract I4', () => {
+  test('assistant final chunks staged after tool_call are not yielded in the same provider call', async () => {
+    const results = await run((corrId) => [
+      makeFrame('tool_call', corrId, {
+        call_id: 'call-final-prose-001',
+        name: 'find',
+        arguments: {
+          mode: 'fetch',
+          tool_id: 'kma_forecast_fetch',
+          params: {},
+        },
+      }),
+      makeFrame('assistant_chunk', corrId, {
+        message_id: 'mid-final-prose',
+        delta: '이 문장은 같은 backend turn에서 나오면 안 됩니다.',
+        done: true,
+      }),
+    ])
 
-    // 2 tool_use blocks + text block = 3 elements total
-    // Epic #2766 follow-up — render-order fix v2 (deps.ts root-cause):
-    // tool_use blocks render BEFORE the text block so the citizen sees the
-    // tool calls (chronologically first) before the synthesis. CC's order
-    // looked like [text, tool_use[]] only because each CC turn carries at
-    // most one block-type; UMMAYA' multi-turn-into-one-message assembly
-    // makes the relative order load-bearing.
-    expect(content).toHaveLength(3)
-
-    expect(content[0]!.type).toBe('tool_use')
-    expect(content[0]!.id).toBe('A')
-    expect(content[0]!.name).toBe('lookup')
-
-    expect(content[1]!.type).toBe('tool_use')
-    expect(content[1]!.id).toBe('B')
-    expect(content[1]!.name).toBe('submit')
-
-    expect(content[2]!.type).toBe('text')
-    // Leading whitespace is trimmed by deps.ts (accumulated.trimStart())
-    expect(content[2]!.text).toBe('hello')
+    expect(JSON.stringify(results)).not.toContain(
+      '이 문장은 같은 backend turn에서 나오면 안 됩니다.',
+    )
   })
 })

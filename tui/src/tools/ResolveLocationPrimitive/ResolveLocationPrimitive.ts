@@ -27,12 +27,17 @@ import {
 import { getOrCreateUmmayaBridge } from '../../ipc/bridgeSingleton.js'
 import { getOrCreatePendingCallRegistry } from '../../ipc/pendingCallSingleton.js'
 
+const ROOT_PRIMITIVE_TOOL_IDS = new Set(['find', 'locate', 'check', 'send'])
+
 const inputSchema = lazySchema(() =>
   z.strictObject({
     tool_id: z
       .string()
       .min(1)
-      .describe('Registered locate adapter identifier from <available_adapters>.'),
+      .describe(
+        'Concrete locate adapter identifier from <available_adapters>. ' +
+          'This is not the function name. Never use "locate", "find", "check", or "send".',
+      ),
     params: z
       .record(z.string(), z.unknown())
       .describe('Adapter-defined Pydantic-validated parameter body.'),
@@ -230,6 +235,22 @@ export const ResolveLocationPrimitive = buildTool({
     return LOCATE_TOOL_PROMPT
   },
 
+  mapToolResultToToolResultBlockParam(output, toolUseID) {
+    const llmContent =
+      typeof output === 'object' && output !== null
+        ? Object.fromEntries(
+            Object.entries(output as Record<string, unknown>).filter(
+              ([k]) => k !== 'outbound_traces',
+            ),
+          )
+        : output
+    return {
+      tool_use_id: toolUseID,
+      type: 'tool_result',
+      content: JSON.stringify(llmContent),
+    }
+  },
+
   renderToolUseMessage(input: { tool_id?: string; query?: string; want?: string }, options: { verbose: boolean }) {
     if (options.verbose) {
       return renderVerboseInputJson(input)
@@ -239,7 +260,14 @@ export const ResolveLocationPrimitive = buildTool({
 
   isMcp: false,
 
-  async validateInput() {
+  async validateInput(input: z.infer<InputSchema>) {
+    if (ROOT_PRIMITIVE_TOOL_IDS.has(input.tool_id)) {
+      return {
+        result: false as const,
+        message: `Root primitive '${input.tool_id}' is not a locate adapter tool_id. Pick a concrete locate adapter from <available_adapters>.`,
+        errorCode: 1,
+      }
+    }
     return { result: true as const }
   },
 

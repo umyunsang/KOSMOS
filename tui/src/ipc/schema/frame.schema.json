@@ -51,6 +51,48 @@
           ],
           "title": "Source Mode",
           "type": "string"
+        },
+        "search_hint": {
+          "anyOf": [
+            {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Bilingual adapter discovery phrase copied from the backend registry. Used by the TUI concrete tool surface and tool-search metadata.",
+          "title": "Search Hint"
+        },
+        "llm_description": {
+          "anyOf": [
+            {
+              "maxLength": 20000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Backend-authored model-facing adapter usage prose. This is the same description the backend exposes in OpenAI/FriendliAI function metadata.",
+          "title": "Llm Description"
+        },
+        "input_schema_json": {
+          "additionalProperties": true,
+          "description": "Full backend Pydantic JSON Schema for adapter input parameters. Credential-only fields such as authKey must be omitted by adapters.",
+          "title": "Input Schema Json",
+          "type": "object"
+        },
+        "output_schema_json": {
+          "additionalProperties": true,
+          "description": "Full backend Pydantic JSON Schema for adapter output data.",
+          "title": "Output Schema Json",
+          "type": "object"
         }
       },
       "required": [
@@ -2903,19 +2945,14 @@
           "type": "string"
         },
         "name": {
-          "description": "Primitive name per Spec 031.",
-          "enum": [
-            "find",
-            "locate",
-            "send",
-            "check"
-          ],
+          "description": "Concrete tool name selected by the model; root primitive names remain valid for legacy transcripts.",
+          "minLength": 1,
           "title": "Name",
           "type": "string"
         },
         "arguments": {
           "additionalProperties": true,
-          "description": "Primitive-specific arguments; shape per Spec 031 input schemas.",
+          "description": "Tool-specific arguments. Concrete adapter calls carry adapter schema fields directly.",
           "title": "Arguments",
           "type": "object"
         }

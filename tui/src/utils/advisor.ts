@@ -1,7 +1,6 @@
-import type { BetaUsage } from 'src/sdk-compat.js'
+import type { BetaUsage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../services/analytics/growthbook.js'
-// UMMAYA-original: CC first-party betas not used with FriendliAI provider.
-const shouldIncludeFirstPartyOnlyBetas = (): boolean => false
+import { shouldIncludeFirstPartyOnlyBetas } from './betas.js'
 import { isEnvTruthy } from './envUtils.js'
 import { getInitialSettings } from './settings/settings.js'
 

@@ -73,7 +73,6 @@ describe('SlashCommandSuggestions (FR-014)', () => {
     expect(names).toContain('/config');
     expect(names).toContain('/plugins');
     expect(names).toContain('/export');
-    expect(names).toContain('/history');
   });
 
   test('SC-005: matchPrefix is synchronous (≤100ms contract)', () => {

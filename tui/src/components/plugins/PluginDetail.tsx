@@ -6,7 +6,7 @@
 // §26 trustee acknowledgment SHA-256 for processes_pii=true plugins so
 // citizens can verify who handles their data per FR-012.
 
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput } from '../../ink.js';
 import React from 'react';
 import { useTheme } from '../../theme/provider.js';
 import type { PluginEntry } from './PluginBrowser.js';

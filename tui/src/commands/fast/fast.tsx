@@ -11,11 +11,7 @@ import { type AppState, useAppState, useSetAppState } from '../../state/AppState
 import type { LocalJSXCommandOnDone } from '../../types/command.js';
 import { clearFastModeCooldown, FAST_MODE_MODEL_DISPLAY, getFastModeModel, getFastModeRuntimeState, getFastModeUnavailableReason, isFastModeEnabled, isFastModeSupportedByModel, prefetchFastModeStatus } from '../../utils/fastMode.js';
 import { formatDuration } from '../../utils/format.js';
-// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/modelCost deleted (Anthropic
-// per-token Claude.ai pricing). UMMAYA uses FriendliAI K-EXAONE; pricing
-// information is not surfaced to the citizen TUI.
-const formatModelPricing = (_tier: unknown): string => '' /* UMMAYA: pricing not surfaced */;
-const getOpus46CostTier = (_includeOverage: boolean): unknown => null;
+import { formatModelPricing, getOpus46CostTier } from '../../utils/modelCost.js';
 import { updateSettingsForSource } from '../../utils/settings/settings.js';
 function applyFastMode(enable: boolean, setAppState: (f: (prev: AppState) => AppState) => void): void {
   clearFastModeCooldown();
@@ -195,7 +191,7 @@ export function FastModePicker(t0) {
   }
   let t11;
   if ($[25] === Symbol.for("react.memo_cache_sentinel")) {
-    t11 = <Text dimColor={true}>Learn more:{" "}<Link url="https://code.claude.com/docs/en/fast-mode">https://code.claude.com/docs/en/fast-mode</Link></Text>;
+    t11 = <Text dimColor={true}>Learn more:{" "}<Link url="https://ummaya-docs.pages.dev/en/">https://ummaya-docs.pages.dev/en/</Link></Text>;
     $[25] = t11;
   } else {
     t11 = $[25];

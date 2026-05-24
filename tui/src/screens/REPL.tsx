@@ -1,8 +1,3 @@
-// SWAP: swap-1 LLM provider + swap-2 tool surface + dead-code-cleanup
-// CC reference: .references/claude-code-sourcemap/restored-src/src/screens/REPL.tsx
-// Divergence LOC: ~678 (LLM provider plumbing, IPC envelope routing, permission gauntlet, K-EXAONE multi-tool layout, services/api removal)
-// Spec citation: #2521 (LLM swap), #032 (IPC stdio hardening), #2293 (services/api removal), #1978 (Enter-swallow diagnostics), Epic #2639 (audit § 5.7)
-// Justification: Largest TUI file (920 KB) where both UMMAYA swaps converge (IPC routing + FriendliAI K-EXAONE streaming + permission propagation); inline site comments mark each edit.
 import { c as _c } from "react/compiler-runtime";
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import { feature } from 'bun:bundle';
@@ -49,9 +44,7 @@ import { WorkerPendingPermission } from '../components/permissions/WorkerPending
 import { injectUserMessageToTeammate, getAllInProcessTeammateTasks } from '../tasks/InProcessTeammateTask/InProcessTeammateTask.js';
 import { isLocalAgentTask, queuePendingMessage, appendMessageToLocalAgent, type LocalAgentTaskState } from '../tasks/LocalAgentTask/LocalAgentTask.js';
 import { registerLeaderToolUseConfirmQueue, unregisterLeaderToolUseConfirmQueue, registerLeaderSetToolPermissionContext, unregisterLeaderSetToolPermissionContext } from '../utils/swarm/leaderPermissionBridge.js';
-import { registerIpcToolUseConfirmQueue } from '../utils/permissions/ipcPermissionBridge.js';
-// utils/telemetry/sessionTracing removed — UMMAYA telemetry handled by Spec 021 OTEL pipeline.
-const endInteractionSpan = (): void => { /* no-op */ }
+import { endInteractionSpan } from '../utils/telemetry/sessionTracing.js';
 import { useLogMessages } from '../hooks/useLogMessages.js';
 import { useReplBridge } from '../hooks/useReplBridge.js';
 import { type Command, type CommandResultDisplay, type ResumeEntrypoint, getCommandName, isCommandEnabled } from '../commands.js';
@@ -65,7 +58,8 @@ import type { PromptRequest, PromptResponse } from '../types/hooks.js';
 import PromptInput from '../components/PromptInput/PromptInput.js';
 import { PromptInputQueuedCommands } from '../components/PromptInput/PromptInputQueuedCommands.js';
 import { useRemoteSession } from '../hooks/useRemoteSession.js';
-// UMMAYA-2642 / Epic F · S7 — directConnect/server/ DROPPED (claude.ai sync swap-out, Spec 2642 § US1).
+import { useDirectConnect } from '../hooks/useDirectConnect.js';
+import type { DirectConnectConfig } from '../server/directConnectManager.js';
 import { useSSHSession } from '../hooks/useSSHSession.js';
 import { useAssistantHistory } from '../hooks/useAssistantHistory.js';
 import type { SSHSession } from '../ssh/createSSHSession.js';
@@ -75,6 +69,7 @@ import { useMoreRight } from '../moreright/useMoreRight.js';
 import { SpinnerWithVerb, BriefIdleStatus, type SpinnerMode } from '../components/Spinner.js';
 import { getSystemPrompt } from '../constants/prompts.js';
 import { buildEffectiveSystemPrompt } from '../utils/systemPrompt.js';
+import { getSystemContext, getUserContext } from '../context.js';
 import { getMemoryFiles } from '../utils/claudemd.js';
 import { startBackgroundHousekeeping } from '../utils/backgroundHousekeeping.js';
 import { getTotalCost, saveCurrentSessionCosts, resetCostState, getStoredSessionCosts } from '../cost-tracker.js';
@@ -99,44 +94,29 @@ import { errorMessage } from '../utils/errors.js';
 import { isHumanTurn } from '../utils/messagePredicates.js';
 import { logError } from '../utils/log.js';
 // Dead code elimination: conditional imports
-// Use function declarations (not const arrows) so these are hoisted and not
-// subject to TDZ when REPL.tsx is part of a circular import chain.
-// See: tui/src/utils/proactiveModule.ts for the same pattern (Round 1 fix).
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
-function useVoiceIntegration(...args: Parameters<typeof import('../hooks/useVoiceIntegration.js').useVoiceIntegration>) {
-  if (feature('VOICE_MODE')) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (require('../hooks/useVoiceIntegration.js').useVoiceIntegration as (...a: any[]) => any)(...args)
-  }
-  return { stripTrailing: () => 0, handleKeyEvent: () => {}, resetAnchor: () => {} }
-}
-function VoiceKeybindingHandler(props: Parameters<typeof import('../hooks/useVoiceIntegration.js').VoiceKeybindingHandler>[0]) {
-  if (feature('VOICE_MODE')) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (require('../hooks/useVoiceIntegration.js').VoiceKeybindingHandler as (p: any) => any)(props)
-  }
-  return null
-}
+const useVoiceIntegration: typeof import('../hooks/useVoiceIntegration.js').useVoiceIntegration = feature('VOICE_MODE') ? require('../hooks/useVoiceIntegration.js').useVoiceIntegration : () => ({
+  stripTrailing: () => 0,
+  handleKeyEvent: () => {},
+  resetAnchor: () => {}
+});
+const VoiceKeybindingHandler: typeof import('../hooks/useVoiceIntegration.js').VoiceKeybindingHandler = feature('VOICE_MODE') ? require('../hooks/useVoiceIntegration.js').VoiceKeybindingHandler : () => null;
 // Frustration detection is ant-only (dogfooding). Conditional require so external
 // builds eliminate the module entirely (including its two O(n) useMemos that run
 // on every messages change, plus the GrowthBook fetch).
-function useFrustrationDetection(...args: Parameters<typeof import('../components/FeedbackSurvey/useFrustrationDetection.js').useFrustrationDetection>) {
-  // "external" === 'ant' is always false — keep as no-op for UMMAYA builds.
-  return { state: 'closed' as const, handleTranscriptSelect: () => {} }
-}
+const useFrustrationDetection: typeof import('../components/FeedbackSurvey/useFrustrationDetection.js').useFrustrationDetection = "external" === 'ant' ? require('../components/FeedbackSurvey/useFrustrationDetection.js').useFrustrationDetection : () => ({
+  state: 'closed',
+  handleTranscriptSelect: () => {}
+});
 // Ant-only org warning. Conditional require so the org UUID list is
 // eliminated from external builds (one UUID is on excluded-strings).
-function useAntOrgWarningNotification() {
-  // "external" === 'ant' is always false — no-op for UMMAYA builds.
-}
+const useAntOrgWarningNotification: typeof import('../hooks/notifs/useAntOrgWarningNotification.js').useAntOrgWarningNotification = "external" === 'ant' ? require('../hooks/notifs/useAntOrgWarningNotification.js').useAntOrgWarningNotification : () => {};
 // Dead code elimination: conditional import for coordinator mode
-function getCoordinatorUserContext(mcpClients: ReadonlyArray<{ name: string }>, scratchpadDir?: string): { [k: string]: string } {
-  if (feature('COORDINATOR_MODE')) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (require('../coordinator/coordinatorMode.js').getCoordinatorUserContext as (...a: any[]) => any)(mcpClients, scratchpadDir)
-  }
-  return {}
-}
+const getCoordinatorUserContext: (mcpClients: ReadonlyArray<{
+  name: string;
+}>, scratchpadDir?: string) => {
+  [k: string]: string;
+} = feature('COORDINATOR_MODE') ? require('../coordinator/coordinatorMode.js').getCoordinatorUserContext : () => ({});
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 import useCanUseTool from '../hooks/useCanUseTool.js';
 import type { ToolPermissionContext, Tool } from '../Tool.js';
@@ -152,14 +132,8 @@ import { getGlobalConfig, saveGlobalConfig, getGlobalConfigWriteCount } from '..
 import { hasConsoleBillingAccess } from '../utils/billing.js';
 import { logEvent, type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from 'src/services/analytics/index.js';
 import { getFeatureValue_CACHED_MAY_BE_STALE } from 'src/services/analytics/growthbook.js';
-import { getContentText, textForResubmit } from '../utils/messageContent.js';
-import { getMessagesAfterCompactBoundary, isCompactBoundaryMessage } from '../utils/messageBoundary.js';
-import { formatCommandInputTags } from '../utils/commandMessageTags.js';
-import { handleMessageFromStream, type StreamingToolUse, type StreamingThinking } from '../utils/messageStream.js';
-import { createAgentsKilledMessage, createApiMetricsMessage, createCommandInputMessage, createSystemMessage, createTurnDurationMessage } from '../utils/systemMessageFactories.js';
-import { createAssistantMessage } from '../utils/assistantMessageFactories.js';
-import { createUserMessage } from '../utils/userMessageFactories.js';
-// utils/sessionTitle removed — Anthropic queryHaiku session title generator deleted (Spec 1633 / Epic #2293).;
+import { textForResubmit, handleMessageFromStream, type StreamingToolUse, type StreamingThinking, isCompactBoundaryMessage, getMessagesAfterCompactBoundary, getContentText, createUserMessage, createAssistantMessage, createTurnDurationMessage, createAgentsKilledMessage, createApiMetricsMessage, createSystemMessage, createCommandInputMessage, formatCommandInputTags } from '../utils/messages.js';
+import { generateSessionTitle } from '../utils/sessionTitle.js';
 import { BASH_INPUT_TAG, COMMAND_MESSAGE_TAG, COMMAND_NAME_TAG, LOCAL_COMMAND_STDOUT_TAG } from '../constants/xml.js';
 import { escapeXml } from '../utils/xml.js';
 import type { ThinkingConfig } from '../utils/thinking.js';
@@ -194,7 +168,7 @@ import { resolveAgentTools } from '../tools/AgentTool/agentToolUtils.js';
 import { resumeAgentBackground } from '../tools/AgentTool/resumeAgent.js';
 import { useMainLoopModel } from '../hooks/useMainLoopModel.js';
 import { useAppState, useSetAppState, useAppStateStore } from '../state/AppState.js';
-import type { ContentBlockParam, ImageBlockParam } from 'src/sdk-compat.js';
+import type { ContentBlockParam, ImageBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs';
 import type { ProcessUserInputContext } from '../utils/processUserInput/processUserInput.js';
 import type { PastedContent } from '../utils/config.js';
 import { copyPlanForFork, copyPlanForResume, getPlanSlug, setPlanSlug } from '../utils/plans.js';
@@ -215,20 +189,12 @@ import { isBgSession, updateSessionName, updateSessionActivity } from '../utils/
 import { isInProcessTeammateTask, type InProcessTeammateTaskState } from '../tasks/InProcessTeammateTask/types.js';
 import { restoreRemoteAgentTasks } from '../tasks/RemoteAgentTask/RemoteAgentTask.js';
 import { useInboxPoller } from '../hooks/useInboxPoller.js';
-import {
-  getProactiveModule,
-  isProactiveActive,
-  pauseProactive,
-  resumeProactive,
-  setContextBlocked,
-} from '../utils/proactiveModule.js'
 // Dead code elimination: conditional import for loop mode
 /* eslint-disable @typescript-eslint/no-require-imports */
-// Use function declarations (not const arrows) so these are hoisted and not
-// subject to TDZ when REPL.tsx is part of a circular import chain.
-function PROACTIVE_NO_OP_SUBSCRIBE(_cb: () => void): () => void { return () => {} }
-function PROACTIVE_FALSE(): boolean { return false }
-function SUGGEST_BG_PR_NOOP(_p: string, _n: string): boolean { return false }
+const proactiveModule = feature('PROACTIVE') || feature('KAIROS') ? require('../proactive/index.js') : null;
+const PROACTIVE_NO_OP_SUBSCRIBE = (_cb: () => void) => () => {};
+const PROACTIVE_FALSE = () => false;
+const SUGGEST_BG_PR_NOOP = (_p: string, _n: string): boolean => false;
 const useProactive = feature('PROACTIVE') || feature('KAIROS') ? require('../proactive/useProactive.js').useProactive : null;
 const useScheduledTasks = feature('AGENT_TRIGGERS') ? require('../hooks/useScheduledTasks.js').useScheduledTasks : null;
 /* eslint-enable @typescript-eslint/no-require-imports */
@@ -251,24 +217,10 @@ import { IdeOnboardingDialog } from '../components/IdeOnboardingDialog.js';
 import { EffortCallout, shouldShowEffortCallout } from '../components/EffortCallout.js';
 import type { EffortValue } from '../utils/effort.js';
 import { RemoteCallout } from '../components/RemoteCallout.js';
-// Use function declarations (hoisted, no TDZ) for ant-only conditionally required modules.
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
-function AntModelSwitchCallout(props: Record<string, unknown>) {
-  if ("external" !== 'ant') return null
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const Comp = require('../components/AntModelSwitchCallout.js').AntModelSwitchCallout as (p: any) => any
-  return Comp(props)
-}
-function shouldShowAntModelSwitch(): boolean {
-  if ("external" !== 'ant') return false
-  return require('../components/AntModelSwitchCallout.js').shouldShowModelSwitchCallout()
-}
-function UndercoverAutoCallout(props: Record<string, unknown>) {
-  if ("external" !== 'ant') return null
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const Comp = require('../components/UndercoverAutoCallout.js').UndercoverAutoCallout as (p: any) => any
-  return Comp(props)
-}
+const AntModelSwitchCallout = "external" === 'ant' ? require('../components/AntModelSwitchCallout.js').AntModelSwitchCallout : null;
+const shouldShowAntModelSwitch = "external" === 'ant' ? require('../components/AntModelSwitchCallout.js').shouldShowModelSwitchCallout : (): boolean => false;
+const UndercoverAutoCallout = "external" === 'ant' ? require('../components/UndercoverAutoCallout.js').UndercoverAutoCallout : null;
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 import { activityManager } from '../utils/activityManager.js';
 import { createAbortController } from '../utils/abortController.js';
@@ -315,24 +267,18 @@ import { useTeammateLifecycleNotification } from 'src/hooks/notifs/useTeammateSh
 import { useFastModeNotification } from 'src/hooks/notifs/useFastModeNotification.js';
 import { AutoRunIssueNotification, shouldAutoRunIssue, getAutoRunIssueReasonText, getAutoRunCommand, type AutoRunIssueReason } from '../utils/autoRunIssue.js';
 import type { HookProgress } from '../types/hooks.js';
-// UMMAYA Spec 1633 / Epic #2293 — TungstenTool deleted (claude-code internal tool).
-// Use function declaration (hoisted, no TDZ) for feature-gated panel module.
+import { TungstenLiveMonitor } from '../tools/TungstenTool/TungstenLiveMonitor.js';
 /* eslint-disable @typescript-eslint/no-require-imports */
-function getWebBrowserPanelModule() {
-  if (!feature('WEB_BROWSER_TOOL')) return null
-  return require('../tools/WebBrowserTool/WebBrowserPanel.js') as typeof import('../tools/WebBrowserTool/WebBrowserPanel.js')
-}
+const WebBrowserPanelModule = feature('WEB_BROWSER_TOOL') ? require('../tools/WebBrowserTool/WebBrowserPanel.js') as typeof import('../tools/WebBrowserTool/WebBrowserPanel.js') : null;
 /* eslint-enable @typescript-eslint/no-require-imports */
 import { IssueFlagBanner } from '../components/PromptInput/IssueFlagBanner.js';
 import { useIssueFlagBanner } from '../hooks/useIssueFlagBanner.js';
 import { CompanionSprite, CompanionFloatingBubble, MIN_COLS_FOR_FULL_SPRITE } from '../buddy/CompanionSprite.js';
 import { DevBar } from '../components/DevBar.js';
 // Session manager removed - using AppState now
-// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — remote/RemoteSessionManager deleted.
-import type { RemoteSessionConfig } from '../hooks/useRemoteSession.js';
+import type { RemoteSessionConfig } from '../remote/RemoteSessionManager.js';
 import { REMOTE_SAFE_COMMANDS } from '../commands.js';
-// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport/ deleted; stub.
-type RemoteMessageContent = string | Array<{ type: string; [key: string]: unknown }>
+import type { RemoteMessageContent } from '../utils/teleport/api.js';
 import { FullscreenLayout, useUnseenDivider, computeUnseenDivider } from '../components/FullscreenLayout.js';
 import { isFullscreenEnvEnabled, maybeGetTmuxMouseHint, isMouseTrackingEnabled } from '../utils/fullscreen.js';
 import { AlternateScreen } from '../ink/components/AlternateScreen.js';
@@ -342,75 +288,16 @@ import { setClipboard } from '../ink/termio/osc.js';
 import type { ScrollBoxHandle } from '../ink/components/ScrollBox.js';
 import { createAttachmentMessage, getQueuedCommandAttachments } from '../utils/attachments.js';
 
-// UMMAYA P4 UI L2 — US1/US2/US3/US4/US5 wiring imports (T022/T023/T026/T036/T039/T056/T059/T072)
-import { StreamingChunk } from '../components/messages/StreamingChunk.js';
-import { CtrlOToExpand } from '../components/PromptInput/CtrlOToExpand.js';
-import { MarkdownRenderer } from '../components/messages/MarkdownRenderer.js';
-import { PdfInlineViewer } from '../components/messages/PdfInlineViewer.js';
-import { ErrorEnvelope } from '../components/messages/ErrorEnvelope.js';
-import type { ErrorEnvelopeT } from '../schemas/ui-l2/error.js';
-import { ContextQuoteBlock } from '../components/messages/ContextQuoteBlock.js';
-// SlashCommandSuggestions import removed (P0-2 single-stack): CC useTypeahead
-// now drives the dropdown via UI_L2_SLASH_COMMANDS catalog.
-// UMMAYA Spec 1979 — UMMAYA-original permission UI imports removed.
-// CC's canonical PermissionRequest pipeline carries permission UX.
-import { useSessionStore } from '../store/session-store.js';
-import { PermissionReceiptProvider, usePermissionReceipts } from '../context/PermissionReceiptContext.js';
-import { usePermissionReceiptWatcher } from '../hooks/usePermissionReceiptWatcher.js';
-import type { PermissionReceiptT } from '../schemas/ui-l2/permission.js';
-import { ConsentListView } from '../components/consent/ConsentListView.js';
-import { ConsentRevokeConfirmDialog } from '../components/consent/ConsentRevokeConfirmDialog.js';
-import { requestRevoke } from '../ipc/consentBridge.js';
-import { HelpV2Grouped } from '../components/help/HelpV2Grouped.js';
-import { ConfigOverlay } from '../components/config/ConfigOverlay.js';
-import { EnvSecretIsolatedEditor } from '../components/config/EnvSecretIsolatedEditor.js';
-import { PluginBrowser } from '../components/plugins/PluginBrowser.js';
-import { ExportPdfDialog } from '../components/export/ExportPdfDialog.js';
-import { HistorySearchDialog } from '../components/history/HistorySearchDialog.js';
-import { MigrateSessionsResult } from '../components/MigrateSessionsResult.js';
-import { migrateSessions } from '../utils/migrateSessions.js';
-import { emitSurfaceActivation } from '../observability/surface.js';
-import { getUmmayaBridgeSessionId } from '../ipc/bridgeSingleton.js';
-// UMMAYA Spec 1979 — Spec 033 mode cycle import removed.
-import { executeHelp } from '../commands/help.js';
-import { executeConfig, applyConfigChanges } from '../commands/config.js';
-import { executePlugins } from '../commands/plugins.js';
-import { executeExport } from '../commands/export.js';
-import { executeHistory } from '../commands/history.js';
-import { parseConsentArgs } from '../commands/consent.js';
-import type { ConversationTurn, ToolInvocationRecord } from '../components/export/ExportPdfDialog.js';
-
 // Stable empty array for hooks that accept MCPServerConnection[] — avoids
 // creating a new [] literal on every render in remote mode, which would
 // cause useEffect dependency changes and infinite re-render loops.
 const EMPTY_MCP_CLIENTS: MCPServerConnection[] = [];
 
-// Stub for useAssistantHistory's non-KAIROS branch.
-// Declared as a function (hoisted) to avoid TDZ in circular import chains.
-function _getHistoryStub() { return { maybeLoadOlder: (_h: ScrollBoxHandle) => {} } }
-
-// Tiny consumer that mirrors PermissionReceiptContext.receipts + revokeReceipt
-// into parent refs so the REPL onSubmit useCallback (defined ABOVE the provider
-// in the JSX tree) can read the live array and call revokeReceipt synchronously.
-// Renders nothing.
-function PermissionReceiptsRefSync({
-  receiptsRef,
-  revokeReceiptRef,
-}: {
-  receiptsRef: React.MutableRefObject<readonly PermissionReceiptT[]>;
-  revokeReceiptRef: React.MutableRefObject<((id: string) => 'revoked' | 'already_revoked' | 'not_found') | null>;
-}): null {
-  const { receipts, revokeReceipt, addReceipt } = usePermissionReceipts();
-  receiptsRef.current = receipts;
-  revokeReceiptRef.current = revokeReceipt;
-  // Epic 1 finish — wire backend permission_response echo → addReceipt().
-  // Gap A: backend emits PermissionResponseFrame{role:"backend", receipt_id}
-  // after writing the consent ledger. This hook intercepts that echo and
-  // updates PermissionReceiptContext so /consent list reflects the new receipt
-  // without a separate round-trip. FR-018 / Spec 033 / Spec 1635.
-  usePermissionReceiptWatcher(addReceipt);
-  return null;
-}
+// Stable stub for useAssistantHistory's non-KAIROS branch — avoids a new
+// function identity each render, which would break composedOnScroll's memo.
+const HISTORY_STUB = {
+  maybeLoadOlder: (_: ScrollBoxHandle) => {}
+};
 // Window after a user-initiated scroll during which type-into-empty does NOT
 // repin to bottom. Josh Rosen's workflow: Claude emits long output → scroll
 // up to read the start → start typing → before this fix, snapped to bottom.
@@ -583,12 +470,9 @@ function TranscriptSearchBar({
         </Text> : null}
     </Box>;
 }
-// These constants are used inside AnimatedTerminalTitle (and React-Compiler-extracted
-// _temp* functions). To avoid TDZ in circular-import scenarios, they are defined
-// as lazily-initialised getters via functions so hoisting applies.
-function _getTitleAnimationFrames() { return ['⠂', '⠐'] }
-function _getTitleStaticPrefix() { return '✳' }
-function _getTitleAnimationIntervalMs() { return 960 }
+const TITLE_ANIMATION_FRAMES = ['⠂', '⠐'];
+const TITLE_STATIC_PREFIX = '✳';
+const TITLE_ANIMATION_INTERVAL_MS = 960;
 
 /**
  * Sets the terminal tab title, with an animated prefix glyph while a query
@@ -614,7 +498,7 @@ function AnimatedTerminalTitle(t0) {
       if (disabled || noPrefix || !isAnimating || !terminalFocused) {
         return;
       }
-      const interval = setInterval(_temp2, _getTitleAnimationIntervalMs(), setFrame);
+      const interval = setInterval(_temp2, TITLE_ANIMATION_INTERVAL_MS, setFrame);
       return () => clearInterval(interval);
     };
     t2 = [disabled, noPrefix, isAnimating, terminalFocused];
@@ -629,7 +513,7 @@ function AnimatedTerminalTitle(t0) {
     t2 = $[5];
   }
   useEffect(t1, t2);
-  const prefix = isAnimating ? _getTitleAnimationFrames()[frame] ?? _getTitleStaticPrefix() : _getTitleStaticPrefix();
+  const prefix = isAnimating ? TITLE_ANIMATION_FRAMES[frame] ?? TITLE_STATIC_PREFIX : TITLE_STATIC_PREFIX;
   useTerminalTitle(disabled ? null : noPrefix ? title : `${prefix} ${title}`);
   return null;
 }
@@ -637,12 +521,8 @@ function _temp2(setFrame_0) {
   return setFrame_0(_temp);
 }
 function _temp(f) {
-  return (f + 1) % _getTitleAnimationFrames().length;
+  return (f + 1) % TITLE_ANIMATION_FRAMES.length;
 }
-// UMMAYA Spec 1979 — UmmayaActivePermissionGate removed.  Permission UX now
-// flows through CC's canonical PermissionRequest pipeline.  See
-// specs/1979-plugin-dx-tui-integration/migration-scope-analysis.md.
-
 export type Props = {
   commands: Command[];
   debug: boolean;
@@ -681,8 +561,8 @@ export type Props = {
   taskListId?: string;
   // Remote session config for --remote mode (uses CCR as execution engine)
   remoteSessionConfig?: RemoteSessionConfig;
-  // UMMAYA-2642 / Epic F · S7 — directConnectConfig prop DROPPED
-  // (claude.ai sync swap-out, Spec 2642 § US1 / FR-002).
+  // Direct connect config for `claude connect` mode (connects to a claude server)
+  directConnectConfig?: DirectConnectConfig;
   // SSH session for `claude ssh` mode (local REPL, remote tools over ssh)
   sshSession?: SSHSession;
   // Thinking configuration to use when thinking is enabled
@@ -712,6 +592,7 @@ export function REPL({
   disableSlashCommands = false,
   taskListId,
   remoteSessionConfig,
+  directConnectConfig,
   sshSession,
   thinkingConfig
 }: Props): React.ReactNode {
@@ -731,26 +612,6 @@ export function REPL({
     logForDebugging(`[REPL:mount] REPL mounted, disabled=${disabled}`);
     return () => logForDebugging(`[REPL:unmount] REPL unmounting`);
   }, [disabled]);
-
-  // UMMAYA P4 UI L2 — T026: emit ummaya.ui.surface=repl on mount
-  useEffect(() => {
-    emitSurfaceActivation('repl');
-  }, []);
-
-  // UMMAYA P4 UI L2 — T022/T023: streaming state + 5-second no-chunk timeout
-  const [ummayaCurrentError, setUmmayaCurrentError] = useState<ErrorEnvelopeT | null>(null);
-  const ummayaLastChunkTimeRef = useRef<number>(Date.now());
-  // UMMAYA_STREAM_TIMEOUT_MS — first-token / inter-chunk silence detector
-  // for the "no response" network-error envelope. K-EXAONE 236B on FriendliAI
-  // Tier 1 with `high effort` reasoning routinely takes 1-3 minutes for the
-  // very first chunk when the system prompt + tool catalog is large (12
-  // tools — active primitives + MVP-7); the original 5_000 / 90_000 thresholds
-  // false-flagged every turn before the model finished its reasoning trace.
-  // 300_000 (5 min) is safely above the empirical p99 first-token latency
-  // and still surfaces real network outages without burying the citizen
-  // under a hung spinner. Override via UMMAYA_STREAM_TIMEOUT_MS env var if
-  // a deployment needs further tuning.
-  const UMMAYA_STREAM_TIMEOUT_MS = Number(process.env.UMMAYA_STREAM_TIMEOUT_MS ?? 300000);
 
   // Agent definition is state so /resume can update it mid-session
   const [mainThreadAgentDefinition, setMainThreadAgentDefinition] = useState(initialMainThreadAgentDefinition);
@@ -812,13 +673,6 @@ export function REPL({
   const terminal = useTerminalNotification();
   const mainLoopModel = useMainLoopModel();
 
-  // UMMAYA-1978 T050 — session ID from IPC session-store
-  // (still used elsewhere in REPL for IPC frame headers)
-  void useSessionStore((s) => s.session_id)
-
-  // UMMAYA Spec 1979 — bypassPermissions reinforcement intercept removed.
-  // CC's PermissionRequest pipeline owns the dangerous-mode UX.
-
   // Note: standaloneAgentContext is initialized in main.tsx (via initialState) or
   // ResumeConversation.tsx (via setAppState before rendering REPL) to avoid
   // useEffect-based state initialization on mount (per CLAUDE.md guidelines)
@@ -830,10 +684,7 @@ export function REPL({
   useSkillsChange(isRemoteSession ? undefined : getProjectRoot(), setLocalCommands);
 
   // Track proactive mode for tools dependency - SleepTool filters by proactive state
-  const proactiveActive = React.useSyncExternalStore(
-    getProactiveModule()?.subscribeToProactiveChanges ?? PROACTIVE_NO_OP_SUBSCRIBE,
-    getProactiveModule()?.isProactiveActive ?? PROACTIVE_FALSE,
-  );
+  const proactiveActive = React.useSyncExternalStore(proactiveModule?.subscribeToProactiveChanges ?? PROACTIVE_NO_OP_SUBSCRIBE, proactiveModule?.isProactiveActive ?? PROACTIVE_FALSE);
 
   // BriefTool.isEnabled() reads getUserMsgOptIn() from bootstrap state, which
   // /brief flips mid-session alongside isBriefOnly. The memo below needs a
@@ -948,7 +799,7 @@ export function REPL({
     void performStartupChecks(setAppState);
   }, [setAppState, isRemoteSession]);
 
-  // Allow Claude in Chrome MCP to send prompts through MCP notifications
+  // Allow UMMAYA in Chrome MCP to send prompts through MCP notifications
   // and sync permission mode changes to the Chrome extension
   usePromptsFromClaudeInChrome(isRemoteSession ? EMPTY_MCP_CLIENTS : mcpClients, toolPermissionContext.mode);
 
@@ -1053,8 +904,8 @@ export function REPL({
   const isQueryActive = React.useSyncExternalStore(queryGuard.subscribe, queryGuard.getSnapshot);
 
   // Separate loading flag for operations outside the local query guard:
-  // remote sessions (useRemoteSession; useDirectConnect DROPPED Spec 2642 § US1)
-  // and foregrounded background tasks (useSessionBackgrounding). These don't route through
+  // remote sessions (useRemoteSession / useDirectConnect) and foregrounded
+  // background tasks (useSessionBackgrounding). These don't route through
   // onQuery / queryGuard, so they need their own spinner-visibility state.
   // Initialize true if remote mode with initial prompt (CCR processing it).
   const [isExternalLoading, setIsExternalLoadingRaw] = React.useState(remoteSessionConfig?.hasInitialPrompt ?? false);
@@ -1063,10 +914,6 @@ export function REPL({
   // loading is driven by queryGuard (reserve/tryStart/end/cancelReservation),
   // external loading by setIsExternalLoading.
   const isLoading = isQueryActive || isExternalLoading;
-
-  // UMMAYA P4 UI L2 — T023 stream timeout effect moved below messages state
-  // declaration so messages.length can be a dependency (Codex P1 fix on
-  // PR #1847: chunk arrival now resets the 5s window).
 
   // Elapsed time is computed by SpinnerWithVerb from these refs on each
   // animation frame, avoiding a useInterval that re-renders the entire REPL.
@@ -1190,17 +1037,6 @@ export function REPL({
     isLocalJSXCommand?: boolean;
     isImmediate?: boolean;
   } | null>(null);
-
-  // UMMAYA — receipts mirror used by /export + /consent list (FR-019/032).
-  // The PermissionReceiptProvider lives BELOW REPL in the JSX tree, so the
-  // onSubmit useCallback (which fires above the provider) cannot consume it
-  // directly. A tiny consumer component (PermissionReceiptsRefSync, mounted
-  // inside the provider subtree below) writes the live receipt array into
-  // this ref on every change, giving onSubmit a synchronous read path.
-  const permissionReceiptsRef = useRef<readonly PermissionReceiptT[]>([]);
-  // Mirror for revokeReceipt — same pattern as permissionReceiptsRef.
-  // Updated by PermissionReceiptsRefSync on every render.
-  const revokeReceiptRef = useRef<((id: string) => 'revoked' | 'already_revoked' | 'not_found') | null>(null);
 
   // Track local JSX commands separately so tools can't overwrite them.
   // This enables "immediate" commands (like /btw) to persist while Claude is processing.
@@ -1343,15 +1179,6 @@ export function REPL({
     registerLeaderToolUseConfirmQueue(setToolUseConfirmQueue);
     return () => unregisterLeaderToolUseConfirmQueue();
   }, [setToolUseConfirmQueue]);
-
-  // Epic FU-4 — register the IPC permission bridge so backend permission_request
-  // frames synthesize a ToolUseConfirm and push it into toolUseConfirmQueue.
-  // This replaces the UmmayaIpcPermissionGauntletModal deleted in Spec 1979
-  // and restores the CC 4-arm permissionComponentForTool switch path.
-  useEffect(() => {
-    registerIpcToolUseConfirmQueue(setToolUseConfirmQueue);
-    return () => registerIpcToolUseConfirmQueue(null);
-  }, [setToolUseConfirmQueue]);
   const [messages, rawSetMessages] = useState<MessageType[]>(initialMessages ?? []);
   const messagesRef = useRef(messages);
   // Stores the willowMode variant that was shown (or false if no hint shown).
@@ -1404,7 +1231,6 @@ export function REPL({
     }
     setUserInputOnProcessingRaw(input);
   }, []);
-
   // Fullscreen: track the unseen-divider position. dividerIndex changes
   // only ~twice/scroll-session (first scroll-away + repin). pillVisible
   // and stickyPrompt now live in FullscreenLayout — they subscribe to
@@ -1448,10 +1274,6 @@ export function REPL({
       repinScroll();
     }
   }, [lastMsgIsHuman, lastMsg, repinScroll]);
-  // UMMAYA Epic #2077 — inter-chunk silence detector moved below the
-  // streamingText / streamingThinking state declarations (line ~1716+) so
-  // the dep array can reference them without hitting TS TDZ. See the
-  // useEffect at the streamingText declaration site.
   // Assistant-chat: lazy-load remote history on scroll-up. No-op unless
   // KAIROS build + config.viewerOnly. feature() is build-time constant so
   // the branch is dead-code-eliminated in non-KAIROS builds (same pattern
@@ -1465,8 +1287,7 @@ export function REPL({
     setMessages,
     scrollRef,
     onPrepend: shiftDivider
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  }) : _getHistoryStub();
+  }) : HISTORY_STUB;
   // Compose useUnseenDivider's callbacks with the lazy-load trigger.
   const composedOnScroll = useCallback((sticky: boolean, handle: ScrollBoxHandle) => {
     lastUserScrollTsRef.current = Date.now();
@@ -1577,11 +1398,18 @@ export function REPL({
     setInProgressToolUseIDs
   });
 
-  // UMMAYA-2642 / Epic F · S7 — useDirectConnect / `claude connect` DROPPED
-  // (claude.ai sync swap-out, Spec 2642 § US1 / FR-002).
+  // Direct connect hook - manages WebSocket to a claude server for `claude connect` mode
+  const directConnect = useDirectConnect({
+    config: directConnectConfig,
+    setMessages,
+    setIsLoading: setIsExternalLoading,
+    setToolUseConfirmQueue,
+    tools: combinedInitialTools
+  });
 
   // SSH session hook - manages ssh child process for `claude ssh` mode.
-  // (CC parity preserved; only useDirectConnect dropped above.)
+  // Same callback shape as useDirectConnect; only the transport under the
+  // hood differs (ChildProcess stdin/stdout vs WebSocket).
   const sshRemote = useSSHSession({
     session: sshSession,
     setMessages,
@@ -1591,7 +1419,7 @@ export function REPL({
   });
 
   // Use whichever remote mode is active
-  const activeRemote = sshRemote.isRemoteMode ? sshRemote : remoteSession;
+  const activeRemote = sshRemote.isRemoteMode ? sshRemote : directConnect.isRemoteMode ? directConnect : remoteSession;
   const [pastedContents, setPastedContents] = useState<Record<number, PastedContent>>({});
   const [submitCount, setSubmitCount] = useState(0);
   // Ref instead of state to avoid triggering React re-renders on every
@@ -1637,43 +1465,6 @@ export function REPL({
     if (!showStreamingText) return;
     setStreamingText(f);
   }, [showStreamingText]);
-
-  // UMMAYA Epic #2077 — inter-chunk silence detector. Reschedules the
-  // network-error timer on EVERY chunk arrival so K-EXAONE high-effort
-  // reasoning (which can stream `thinking_delta` tokens for minutes before
-  // emitting the first visible `text_delta`) does not falsely fire the
-  // network-error envelope. Original logic only re-armed on `messages.length`
-  // (turn completion — too late). Dep on streamingText/streamingThinking
-  // length keeps the timer rolling per chunk; the 5-minute hard ceiling
-  // (UMMAYA_STREAM_TIMEOUT_MS) still surfaces real outages.
-  useEffect(() => {
-    if (!isLoading) {
-      ummayaLastChunkTimeRef.current = Date.now();
-      return;
-    }
-    ummayaLastChunkTimeRef.current = Date.now();
-    const timer = setTimeout(() => {
-      if (Date.now() - ummayaLastChunkTimeRef.current >= UMMAYA_STREAM_TIMEOUT_MS) {
-        const networkError: ErrorEnvelopeT = {
-          type: 'network',
-          title_ko: '네트워크 연결이 끊어졌습니다',
-          title_en: 'Network connection lost',
-          detail_ko: '5분간 응답이 없습니다. 다시 시도해주세요.',
-          detail_en: 'No response for 5 minutes. Please retry.',
-          retry_suggested: true,
-          occurred_at: new Date().toISOString(),
-        };
-        setUmmayaCurrentError(networkError);
-      }
-    }, UMMAYA_STREAM_TIMEOUT_MS);
-    return () => clearTimeout(timer);
-  }, [
-    isLoading,
-    messages.length,
-    streamingText?.length ?? 0,
-    streamingThinking?.thinking?.length ?? 0,
-    UMMAYA_STREAM_TIMEOUT_MS,
-  ]);
 
   // Hide the in-progress source line so text streams line-by-line, not
   // char-by-char. lastIndexOf returns -1 when no newline, giving '' → null.
@@ -2322,7 +2113,7 @@ export function REPL({
     // Pause proactive mode so the user gets control back.
     // It will resume when they submit their next input (see onSubmit).
     if (feature('PROACTIVE') || feature('KAIROS')) {
-      pauseProactive();
+      proactiveModule?.pauseProactive();
     }
     queryGuard.forceEnd();
     skipIdleCheckRef.current = false;
@@ -2741,10 +2532,7 @@ export function REPL({
     const removedNotifications = removeByFilter(cmd => cmd.mode === 'task-notification');
     void (async () => {
       const toolUseContext = getToolUseContext(messagesRef.current, [], new AbortController(), mainLoopModel);
-      // Epic #2152 R5 — citizen chat-request path does not read
-      // getUserContext / getSystemContext; pass empty objects so the
-      // downstream signature stays stable for the AgentTool fork path.
-      const [defaultSystemPrompt, userContext, systemContext] = await Promise.all([getSystemPrompt(toolUseContext.options.tools, mainLoopModel, Array.from(toolPermissionContext.additionalWorkingDirectories.keys()), toolUseContext.options.mcpClients), Promise.resolve({}), Promise.resolve({})]);
+      const [defaultSystemPrompt, userContext, systemContext] = await Promise.all([getSystemPrompt(toolUseContext.options.tools, mainLoopModel, Array.from(toolPermissionContext.additionalWorkingDirectories.keys()), toolUseContext.options.mcpClients), getUserContext(), getSystemContext()]);
       const systemPrompt = buildEffectiveSystemPrompt({
         mainThreadAgentDefinition,
         toolUseContext,
@@ -2815,7 +2603,7 @@ export function REPL({
         setConversationId(randomUUID());
         // Compaction succeeded — clear the context-blocked flag so ticks resume
         if (feature('PROACTIVE') || feature('KAIROS')) {
-          setContextBlocked(false);
+          proactiveModule?.setContextBlocked(false);
         }
       } else if (newMessage.type === 'progress' && isEphemeralToolProgress(newMessage.data.type)) {
         // Replace the previous ephemeral progress tick for the same tool
@@ -2845,9 +2633,9 @@ export function REPL({
       // Cleared on compact boundary (above) or successful response (below).
       if (feature('PROACTIVE') || feature('KAIROS')) {
         if (newMessage.type === 'assistant' && 'isApiErrorMessage' in newMessage && newMessage.isApiErrorMessage) {
-          setContextBlocked(true);
+          proactiveModule?.setContextBlocked(true);
         } else if (newMessage.type === 'assistant') {
-          setContextBlocked(false);
+          proactiveModule?.setContextBlocked(false);
         }
       }
     }, newContent => {
@@ -2893,8 +2681,22 @@ export function REPL({
     // useDeferredHookMessages) and attachment messages (appended by
     // processTextPrompt) — both pushed length past 1 on turn one, so the
     // title silently fell through to the "Claude Code" default.
-    // generateSessionTitle (Anthropic queryHaiku-based) removed — Spec 1633 / Epic #2293.
-    // UMMAYA does not auto-derive a terminal title from LLM; haikuTitleAttemptedRef stays false.
+    if (!titleDisabled && !sessionTitle && !agentTitle && !haikuTitleAttemptedRef.current) {
+      const firstUserMessage = newMessages.find(m => m.type === 'user' && !m.isMeta);
+      const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content) : null;
+      // Skip synthetic breadcrumbs — slash-command output, prompt-skill
+      // expansions (/commit → <command-message>), local-command headers
+      // (/help → <command-name>), and bash-mode (!cmd → <bash-input>).
+      // None of these are the user's topic; wait for real prose.
+      if (text && !text.startsWith(`<${LOCAL_COMMAND_STDOUT_TAG}>`) && !text.startsWith(`<${COMMAND_MESSAGE_TAG}>`) && !text.startsWith(`<${COMMAND_NAME_TAG}>`) && !text.startsWith(`<${BASH_INPUT_TAG}>`)) {
+        haikuTitleAttemptedRef.current = true;
+        void generateSessionTitle(text, new AbortController().signal).then(title => {
+          if (title) setHaikuTitle(title);else haikuTitleAttemptedRef.current = false;
+        }, () => {
+          haikuTitleAttemptedRef.current = false;
+        });
+      }
+    }
 
     // Apply slash-command-scoped allowedTools (from skill frontmatter) to the
     // store once per turn. This also covers the reset: the next non-skill turn
@@ -2934,7 +2736,7 @@ export function REPL({
         // stale memoized rows remount with post-compact content.
         setConversationId(randomUUID());
         if (feature('PROACTIVE') || feature('KAIROS')) {
-          setContextBlocked(false);
+          proactiveModule?.setContextBlocked(false);
         }
       }
       resetLoadingState();
@@ -2967,13 +2769,11 @@ export function REPL({
     // IMPORTANT: do this after setMessages() above, to avoid UI jank
     checkAndDisableBypassPermissionsIfNeeded(toolPermissionContext, setAppState),
     // Gated on TRANSCRIPT_CLASSIFIER so GrowthBook kill switch runs wherever auto mode is built in
-    feature('TRANSCRIPT_CLASSIFIER') ? checkAndDisableAutoModeIfNeeded(toolPermissionContext, setAppState, store.getState().fastMode) : undefined, getSystemPrompt(freshTools, mainLoopModelParam, Array.from(toolPermissionContext.additionalWorkingDirectories.keys()), freshMcpClients), Promise.resolve({}), Promise.resolve({})]);
-    // Epic #2152 R5 — userContext/systemContext intentionally empty here:
-    // citizen chat-request path does not read CLAUDE.md / cwd / gitStatus.
+    feature('TRANSCRIPT_CLASSIFIER') ? checkAndDisableAutoModeIfNeeded(toolPermissionContext, setAppState, store.getState().fastMode) : undefined, getSystemPrompt(freshTools, mainLoopModelParam, Array.from(toolPermissionContext.additionalWorkingDirectories.keys()), freshMcpClients), getUserContext(), getSystemContext()]);
     const userContext = {
       ...baseUserContext,
       ...getCoordinatorUserContext(freshMcpClients, isScratchpadEnabled() ? getScratchpadDir() : undefined),
-      ...((feature('PROACTIVE') || feature('KAIROS')) && isProactiveActive() && !terminalFocusRef.current ? {
+      ...((feature('PROACTIVE') || feature('KAIROS')) && proactiveModule?.isProactiveActive() && !terminalFocusRef.current ? {
         terminalFocus: 'The terminal is unfocused \u2014 the user is not actively watching.'
       } : {})
     };
@@ -3352,618 +3152,7 @@ export function REPL({
 
     // Resume loop mode if paused
     if (feature('PROACTIVE') || feature('KAIROS')) {
-      resumeProactive();
-    }
-
-    // Auxiliary UMMAYA-only command dispatch. CC-owned local-jsx commands
-    // such as /login, /logout, and /agents fall through to the normal command
-    // router.
-    if (!speculationAccept && input.trim().startsWith('/')) {
-      const _ummayaRaw = expandPastedTextRefs(input, pastedContents).trim();
-      const _ummayaSpaceIdx = _ummayaRaw.indexOf(' ');
-      const _ummayaCmd = _ummayaSpaceIdx === -1 ? _ummayaRaw.slice(1) : _ummayaRaw.slice(1, _ummayaSpaceIdx);
-      const _ummayaArgs = _ummayaSpaceIdx === -1 ? '' : _ummayaRaw.slice(_ummayaSpaceIdx + 1).trim();
-
-      const _ummayaCloseJSX = (result?: string): void => {
-        setToolJSX({ jsx: null, shouldHidePromptInput: false, clearLocalJSX: true });
-        if (result) {
-          addNotification({ key: `ummaya-cmd-${_ummayaCmd}`, text: result, priority: 'immediate' });
-        }
-      };
-
-      if (_ummayaCmd === 'login') {
-        const loginCommand = commands.find(cmd => isCommandEnabled(cmd) && (cmd.name === _ummayaCmd || cmd.aliases?.includes(_ummayaCmd) || getCommandName(cmd) === _ummayaCmd));
-        if (loginCommand?.type === 'local-jsx') {
-          setInputValue('');
-          helpers.setCursorOffset(0);
-          helpers.clearBuffer();
-          let doneWasCalled = false;
-          const onDone = (result?: string, doneOptions?: {
-            display?: CommandResultDisplay;
-            metaMessages?: string[];
-          }): void => {
-            doneWasCalled = true;
-            setToolJSX({
-              jsx: null,
-              shouldHidePromptInput: false,
-              clearLocalJSX: true
-            });
-            const newMessages: MessageType[] = [];
-            if (result && doneOptions?.display !== 'skip') {
-              addNotification({
-                key: 'ummaya-login',
-                text: result,
-                priority: 'immediate'
-              });
-              if (!isFullscreenEnvEnabled()) {
-                newMessages.push(
-                  createCommandInputMessage(formatCommandInputTags(getCommandName(loginCommand), _ummayaArgs)),
-                  createCommandInputMessage(`<${LOCAL_COMMAND_STDOUT_TAG}>${escapeXml(result)}</${LOCAL_COMMAND_STDOUT_TAG}>`)
-                );
-              }
-            }
-            if (doneOptions?.metaMessages?.length) {
-              newMessages.push(...doneOptions.metaMessages.map(content => createUserMessage({
-                content,
-                isMeta: true
-              })));
-            }
-            if (newMessages.length) {
-              setMessages(prev => [...prev, ...newMessages]);
-            }
-          };
-          const context = getToolUseContext(messagesRef.current, [], createAbortController(), mainLoopModel);
-          void loginCommand.load().then(mod => mod.call(onDone, context, _ummayaArgs)).then(jsx => {
-            if (jsx && !doneWasCalled) {
-              setToolJSX({
-                jsx,
-                shouldHidePromptInput: true,
-                isLocalJSXCommand: false
-              });
-            }
-          }).catch(err => {
-            _ummayaCloseJSX(err instanceof Error ? err.message : String(err));
-          });
-          return;
-        }
-      }
-
-      if (_ummayaCmd === 'help') {
-        setInputValue('');
-        helpers.setCursorOffset(0);
-        helpers.clearBuffer();
-        // Mount the UMMAYA 4-group help overlay (HelpV2Grouped) but with
-        // `isLocalJSXCommand: false` so PromptInput.tsx:244's
-        // `isLocalJSXCommandActive` flag stays false — that flag, when
-        // true, sets `isModalOverlayActive` to true and deactivates EVERY
-        // useInput hook in the parent prompt subtree. Ink delivers
-        // stdin events to all active hooks via the same EventEmitter; if
-        // none are active in the parent and the overlay's child hook
-        // is the only listener, Esc must reach it. (Frame 28/29 proved
-        // raw \x1b reaches the child stdin via the Bun PTY harness; the
-        // deactivation in 32 was the missing link.)
-        // HelpV2Grouped.tsx now wires both `useKeybinding` and a
-        // `useInput((_,key)=>key.escape && onDismiss())` fallback so the
-        // overlay actually closes on a single Esc.
-        executeHelp((process.env['UMMAYA_TUI_LOCALE'] as 'ko' | 'en' | undefined) ?? 'ko');
-        setToolJSX({
-          jsx: React.createElement(HelpV2Grouped, { onDismiss: () => _ummayaCloseJSX() }),
-          shouldHidePromptInput: false,
-          isLocalJSXCommand: false,
-        });
-        return;
-      }
-
-      if (_ummayaCmd === 'config') {
-        setInputValue('');
-        helpers.setCursorOffset(0);
-        helpers.clearBuffer();
-        const configResult = executeConfig(_ummayaArgs || undefined);
-        let _showSecretEditor = configResult.openSecretEditorFor;
-        setToolJSX({
-          jsx: React.createElement(ConfigOverlay, {
-            entries: configResult.entries,
-            onSave: (updated) => { applyConfigChanges(updated); _ummayaCloseJSX(); },
-            onCancel: () => _ummayaCloseJSX(),
-            onOpenSecretEditor: (key) => {
-              _showSecretEditor = key;
-              setToolJSX({
-                jsx: React.createElement(EnvSecretIsolatedEditor, {
-                  secretKey: key,
-                  onConfirm: (_k, _v) => { _ummayaCloseJSX(); },
-                  onCancel: () => _ummayaCloseJSX(),
-                }),
-                shouldHidePromptInput: false,
-                isLocalJSXCommand: true,
-              });
-            },
-          }),
-          shouldHidePromptInput: false,
-          isLocalJSXCommand: true,
-        });
-        return;
-      }
-
-      // Spec 1979 — citizen plugin lifecycle (install/uninstall/list/pipa-text).
-      // Routed via the UMMAYA auxiliary dispatch (NOT processSlashCommand) because
-      // local-jsx commands mounted via processSlashCommand don't receive useInput
-      // events (likely a focus/raw-mode issue with shouldHidePromptInput: true).
-      // Mounted via setToolJSX with shouldHidePromptInput: false so PromptInput
-      // stays mounted (keeps stdin raw mode active) and useInput in the
-      // PluginInstallFlow / Select component receives keystrokes.
-      if (_ummayaCmd === 'plugin') {
-        const _pluginRest = _ummayaArgs;
-        const _pluginSpaceIdx = _pluginRest.indexOf(' ');
-        const _pluginSub =
-          _pluginSpaceIdx === -1 ? _pluginRest : _pluginRest.slice(0, _pluginSpaceIdx);
-        const _pluginRestArgs =
-          _pluginSpaceIdx === -1 ? '' : _pluginRest.slice(_pluginSpaceIdx + 1).trim();
-        if (_pluginSub === 'pipa-text' || _pluginSub === '') {
-          setInputValue('');
-          helpers.setCursorOffset(0);
-          helpers.clearBuffer();
-          if (_pluginSub === '') {
-            addNotification({
-              key: 'ummaya-plugin-usage',
-              text: '사용법: /plugin <install|list|uninstall|pipa-text> [...]',
-              priority: 'immediate',
-            });
-          } else {
-            // pipa-text — surface the canonical SHA-256 directly without a flow component.
-            void import('../ipc/pipa.generated.js').then(({ CANONICAL_PIPA_ACK_SHA256 }) => {
-              addNotification({
-                key: 'ummaya-plugin-pipa',
-                text: [
-                  'PIPA §26 trustee acknowledgment canonical SHA-256:',
-                  `  ${CANONICAL_PIPA_ACK_SHA256}`,
-                  'Source: docs/plugins/security-review.md (마커 사이 텍스트)',
-                ].join('\n'),
-                priority: 'immediate',
-              });
-            });
-          }
-          return;
-        }
-        if (_pluginSub === 'install' || _pluginSub === 'uninstall' || _pluginSub === 'list') {
-          setInputValue('');
-          helpers.setCursorOffset(0);
-          helpers.clearBuffer();
-          // Parse install args (--version, --dry-run) inline.
-          let _pluginName: string | undefined;
-          let _pluginVersion: string | undefined;
-          let _pluginDryRun = false;
-          const _pluginTokens = _pluginRestArgs.split(/\s+/).filter((t) => t.length > 0);
-          for (let i = 0; i < _pluginTokens.length; i += 1) {
-            const tok = _pluginTokens[i];
-            if (!tok) continue;
-            if (tok === '--version') {
-              _pluginVersion = _pluginTokens[i + 1];
-              i += 1;
-            } else if (tok === '--dry-run') {
-              _pluginDryRun = true;
-            } else if (!_pluginName && !tok.startsWith('--')) {
-              _pluginName = tok;
-            }
-          }
-          if ((_pluginSub === 'install' || _pluginSub === 'uninstall') && !_pluginName) {
-            addNotification({
-              key: 'ummaya-plugin-no-name',
-              text: `플러그인 이름이 필요합니다: /plugin ${_pluginSub} <name>`,
-              priority: 'immediate',
-            });
-            return;
-          }
-          // Lazy import to avoid pulling React component into the auxiliary dispatch.
-          void import('../components/plugins/PluginInstallFlow.js').then(
-            ({ PluginInstallFlow }) => {
-              setToolJSX({
-                jsx: React.createElement(PluginInstallFlow, {
-                  sub: _pluginSub as 'install' | 'uninstall' | 'list',
-                  name: _pluginName,
-                  requestedVersion: _pluginVersion,
-                  dryRun: _pluginDryRun,
-                  onComplete: (summary?: string) => {
-                    // Audit-6 P1: persist plugin op result as a permanent system
-                    // message (receipt + PIPA hash + error detail visible in
-                    // /history). addNotification is transient — the receipt ID
-                    // would be lost once the notification expires.
-                    setToolJSX({ jsx: null, shouldHidePromptInput: false, clearLocalJSX: true });
-                    if (summary) {
-                      setMessages((prev) => [
-                        ...prev,
-                        createSystemMessage(summary, 'info'),
-                      ]);
-                    }
-                  },
-                }),
-                shouldHidePromptInput: false,
-                isLocalJSXCommand: true,
-              });
-            },
-          );
-          return;
-        }
-        addNotification({
-          key: 'ummaya-plugin-unknown',
-          text: `알 수 없는 subcommand: ${_pluginSub}\n사용법: /plugin <install|list|uninstall|pipa-text> [...]`,
-          priority: 'immediate',
-        });
-        return;
-      }
-
-      if (_ummayaCmd === 'plugins') {
-        setInputValue('');
-        helpers.setCursorOffset(0);
-        helpers.clearBuffer();
-        // Spec 1979 T023 — executePlugins now async (IPC round-trip to
-        // backend plugin_op_dispatcher.handle_list). Render the browser
-        // with an empty list immediately so the citizen sees the surface
-        // open, then refresh once the round-trip resolves.
-        setToolJSX({
-          jsx: React.createElement(PluginBrowser, {
-            plugins: [],
-            onToggle: () => {},
-            onDetail: () => {},
-            onRemove: () => {},
-            onMarketplace: () => {},
-            onDismiss: () => _ummayaCloseJSX(),
-          }),
-          shouldHidePromptInput: false,
-          // Audit-6 P0-1: isLocalJSXCommand:true → false. AGENTS.md
-          // Infrastructure Insight #3 — :true deactivates EVERY useInput
-          // in the parent prompt subtree, including PluginBrowser's own
-          // Esc-dismiss handler.
-          isLocalJSXCommand: false,
-        });
-        // Fire-and-forget: when the IPC round-trip resolves, swap the
-        // toolJSX with the populated browser. Errors are silently swallowed
-        // here — the browser shows the empty-state hint until next /plugins.
-        executePlugins()
-          .then((result) => {
-            setToolJSX({
-              jsx: React.createElement(PluginBrowser, {
-                plugins: result.plugins,
-                onToggle: () => {},
-                onDetail: () => {},
-                onRemove: () => {},
-                onMarketplace: () => {},
-                onDismiss: () => _ummayaCloseJSX(),
-              }),
-              shouldHidePromptInput: false,
-              isLocalJSXCommand: false,
-            });
-          })
-          .catch(() => {
-            // Round-trip failed — keep the empty-state browser; user sees
-            // "플러그인이 없습니다 · No plugins installed".
-          });
-        return;
-      }
-
-      if (_ummayaCmd === 'export') {
-        setInputValue('');
-        helpers.setCursorOffset(0);
-        helpers.clearBuffer();
-        // Codex P1 fix on PR #1847: pass active session messages instead of
-        // empty arrays so /export honours its FR-032 contract.
-        const exportTurns = messages.map((m): { role: 'citizen' | 'assistant'; content: string; timestamp: string } => {
-          const human = isHumanTurn(m);
-          const raw = (m as { message?: { content?: unknown } }).message?.content;
-          let content: string;
-          if (typeof raw === 'string') {
-            content = raw;
-          } else if (Array.isArray(raw)) {
-            content = raw
-              .map((b) => (typeof b === 'object' && b !== null && 'text' in b ? String((b as { text?: unknown }).text ?? '') : ''))
-              .join('\n');
-          } else {
-            content = '';
-          }
-          const ts = (m as { timestamp?: string | number | Date }).timestamp;
-          const timestamp = ts != null ? new Date(ts).toISOString() : new Date().toISOString();
-          return { role: human ? 'citizen' : 'assistant', content, timestamp };
-        });
-        // Extract tool_use blocks (assistant) + matching tool_result blocks
-        // (user, with toolUseResult) from the active session's messages so
-        // /export honours its FR-032 contract: "대화 + 도구 + 영수증".
-        const toolUseInputs = new Map<string, { name: string; input: unknown; ts: string }>();
-        const toolResultOutputs = new Map<string, { output: unknown; ts: string }>();
-        for (const m of messages) {
-          const ts = (m as { timestamp?: string | number | Date }).timestamp;
-          const tsIso = ts != null ? new Date(ts).toISOString() : new Date().toISOString();
-          const blocks = (m as { message?: { content?: unknown } }).message?.content;
-          if (!Array.isArray(blocks)) continue;
-          for (const b of blocks) {
-            if (typeof b !== 'object' || b === null) continue;
-            const block = b as { type?: string; name?: string; input?: unknown; tool_use_id?: string; content?: unknown; id?: string };
-            if (block.type === 'tool_use' && typeof block.id === 'string') {
-              toolUseInputs.set(block.id, {
-                name: typeof block.name === 'string' ? block.name : 'unknown',
-                input: block.input,
-                ts: tsIso,
-              });
-            } else if (block.type === 'tool_result' && typeof block.tool_use_id === 'string') {
-              toolResultOutputs.set(block.tool_use_id, { output: block.content, ts: tsIso });
-            }
-          }
-        }
-        const summarize = (v: unknown, max = 200): string => {
-          if (v == null) return '';
-          let s: string;
-          if (typeof v === 'string') s = v;
-          else { try { s = JSON.stringify(v); } catch { s = String(v); } }
-          return s.length > max ? `${s.slice(0, max)}…` : s;
-        };
-        const toolInvocations: ToolInvocationRecord[] = [];
-        for (const [id, use] of toolUseInputs) {
-          const result = toolResultOutputs.get(id);
-          toolInvocations.push({
-            tool_name: use.name,
-            input_summary: summarize(use.input),
-            output_summary: result ? summarize(result.output) : '(pending)',
-            timestamp: use.ts,
-          });
-        }
-        // Receipts come from PermissionReceiptContext via the ref bridge so
-        // /export honours FR-032's third pillar ("권한 영수증").
-        const receipts = [...permissionReceiptsRef.current];
-        const exportResult = executeExport(exportTurns, toolInvocations, receipts);
-        // Mount ExportPdfDialog with `isLocalJSXCommand: false` so the
-        // parent prompt subtree's useInput hooks stay active and the
-        // dialog's own useInput Esc watcher can fire on raw `\x1b`.
-        // ExportPdfDialog now owns Esc → onCancel directly. AGENTS.md
-        // "Infrastructure insights" #3.
-        setToolJSX({
-          jsx: React.createElement(ExportPdfDialog, {
-            turns: exportResult.turns,
-            toolInvocations: exportResult.toolInvocations,
-            receipts: exportResult.receipts,
-            outputPath: exportResult.outputPath,
-            onDone: (result) => _ummayaCloseJSX(result.message),
-            onCancel: () => _ummayaCloseJSX(),
-          }),
-          shouldHidePromptInput: false,
-          isLocalJSXCommand: false,
-        });
-        return;
-      }
-
-      if (_ummayaCmd === 'history') {
-        setInputValue('');
-        helpers.setCursorOffset(0);
-        helpers.clearBuffer();
-        const { sessions } = executeHistory(_ummayaArgs);
-        setToolJSX({
-          jsx: React.createElement(HistorySearchDialog, {
-            sessions,
-            onSelect: (sessionId) => { _ummayaCloseJSX(); },
-            onCancel: () => _ummayaCloseJSX(),
-          }),
-          shouldHidePromptInput: false,
-          // Audit-7 P0-2 fix: isLocalJSXCommand:false (AGENTS.md insight #3
-          // — :true 시 HistorySearchDialog:179 자체 useInput 도 비활성).
-          isLocalJSXCommand: false,
-        });
-        return;
-      }
-
-      if (_ummayaCmd === 'consent') {
-        setInputValue('');
-        helpers.setCursorOffset(0);
-        helpers.clearBuffer();
-        const subCmd = _ummayaArgs.split(/\s/)[0] ?? '';
-        if (subCmd === 'list' || _ummayaArgs === '') {
-          // FR-019: render the in-session receipt table inside the toolJSX
-          // overlay slot.  Pull receipts from the ref bridge so the data
-          // matches whatever the PermissionReceiptProvider currently holds.
-          // `isLocalJSXCommand: false` keeps the parent prompt subtree's
-          // useInput hooks active so the dialog's own Esc watcher fires
-          // (AGENTS.md "Infrastructure insights" #3).
-          const receipts = [...permissionReceiptsRef.current];
-          setToolJSX({
-            jsx: React.createElement(ConsentListView, {
-              receipts,
-              onExit: () => _ummayaCloseJSX(),
-            }),
-            shouldHidePromptInput: false,
-            isLocalJSXCommand: false,
-          });
-        } else if (subCmd === 'revoke') {
-          // FR-020: parse /consent revoke rcpt-<id> → show ConsentRevokeConfirmDialog.
-          const parsed = parseConsentArgs(_ummayaArgs);
-          if (parsed.sub !== 'revoke') {
-            addNotification({
-              key: 'ummaya-consent-revoke-invalid',
-              text: '사용법: /consent revoke rcpt-<id>',
-              priority: 'immediate',
-            });
-            return;
-          }
-          const { receiptId } = parsed;
-          // Find the receipt in the current session.
-          const receipts = [...permissionReceiptsRef.current];
-          const receipt = receipts.find((r) => r.receipt_id === receiptId);
-          if (!receipt) {
-            addNotification({
-              key: 'ummaya-consent-revoke-not-found',
-              text: `영수증을 찾을 수 없습니다: ${receiptId}`,
-              priority: 'immediate',
-            });
-            return;
-          }
-          // Mount the confirmation dialog.
-          // `isLocalJSXCommand: false` keeps PromptInput's useInput hooks active
-          // so ConsentRevokeConfirmDialog's own useInput Esc handler fires
-          // (AGENTS.md "Infrastructure insights" #3/#4).
-          setToolJSX({
-            jsx: React.createElement(ConsentRevokeConfirmDialog, {
-              receipt,
-              locale: 'ko',
-              onCancel: () => _ummayaCloseJSX(),
-              onConfirm: (scope) => {
-                _ummayaCloseJSX();
-                // Optimistic in-session revoke.
-                const outcome = revokeReceiptRef.current?.(receiptId);
-                if (outcome === 'already_revoked') {
-                  addNotification({
-                    key: 'ummaya-consent-already-revoked',
-                    text: `이미 철회된 영수증입니다: ${receiptId}`,
-                    priority: 'immediate',
-                  });
-                  return;
-                }
-                // Async IPC revoke — fire and handle result.
-                const bridgeSessionId = getUmmayaBridgeSessionId?.() ?? '';
-                void requestRevoke(receiptId, {
-                  scope,
-                  sessionId: bridgeSessionId,
-                }).then((result) => {
-                  if (result.ok) {
-                    addNotification({
-                      key: 'ummaya-consent-revoked',
-                      text: `영수증 철회 완료: ${receiptId}`,
-                      priority: 'immediate',
-                    });
-                  } else {
-                    addNotification({
-                      key: 'ummaya-consent-revoke-error',
-                      text: `철회 오류 (${result.error}): ${receiptId}`,
-                      priority: 'immediate',
-                    });
-                  }
-                });
-              },
-            }),
-            shouldHidePromptInput: false,
-            isLocalJSXCommand: false,
-          });
-        }
-        return;
-      }
-
-      if (_ummayaCmd === 'lang') {
-        setInputValue('');
-        helpers.setCursorOffset(0);
-        helpers.clearBuffer();
-        const { parseLangCommand } = await import('../commands/lang.js');
-        const { getUiL2I18n } = await import('../i18n/uiL2.js');
-        const langResult = parseLangCommand(_ummayaArgs);
-        if (langResult.ok) {
-          // Force any currently-mounted i18n consumer (e.g. HelpV2Grouped) to
-          // unmount so the next /help invocation re-evaluates useUiL2I18n() and
-          // renders the new locale. Without this, process.env mutation alone
-          // does not trigger a React re-render and the citizen sees the old
-          // locale's labels until they manually dismiss + re-open the overlay
-          // (integration-verification frame 05-lang-consent-agents § snap-006).
-          setToolJSX({ jsx: null, shouldHidePromptInput: false, clearLocalJSX: true });
-          // Use the new locale's bundle so the toast itself reflects the change.
-          const newI18n = getUiL2I18n(langResult.locale);
-          addNotification({ key: 'ummaya-lang', text: newI18n.langChanged(langResult.locale), priority: 'immediate' });
-        } else {
-          addNotification({ key: 'ummaya-lang-error', text: langResult.message, priority: 'immediate' });
-        }
-        return;
-      }
-
-      // Audit-7 P0-3: /migrate-sessions wiring.
-      // Parses --prune / --filter-cwd / --dry-run / --confirmed flags inline
-      // and dispatches to the migrateSessions utility. Result is rendered
-      // via MigrateSessionsResult overlay so the citizen sees a transient
-      // table; the prompt remains active.
-      if (_ummayaCmd === 'migrate-sessions') {
-        setInputValue('');
-        helpers.setCursorOffset(0);
-        helpers.clearBuffer();
-        // Inline flag parser (mirrors tui/src/commands/migrate-sessions.ts
-        // — duplicated here to avoid an extra IO round-trip via CommandHandler).
-        let _migPrune = false;
-        let _migDryRun = false;
-        let _migConfirmed = false;
-        let _migFilterCwd: string | undefined;
-        const _migParseError: string[] = [];
-        const _migTokens = _ummayaArgs.split(/\s+/).filter((t) => t.length > 0);
-        for (let i = 0; i < _migTokens.length; i += 1) {
-          const tok = _migTokens[i];
-          if (tok === '--prune') _migPrune = true;
-          else if (tok === '--dry-run') _migDryRun = true;
-          else if (tok === '--confirmed') _migConfirmed = true;
-          else if (tok === '--filter-cwd') {
-            const next = _migTokens[i + 1];
-            if (!next || next.startsWith('--')) {
-              _migParseError.push('--filter-cwd requires a regex argument');
-            } else {
-              _migFilterCwd = next;
-              i += 1;
-            }
-          } else if (tok && !tok.startsWith('--')) {
-            _migParseError.push(`unexpected positional argument: ${tok}`);
-          } else if (tok) {
-            _migParseError.push(`unknown flag: ${tok}`);
-          }
-        }
-        if (_migFilterCwd !== undefined) {
-          try { new RegExp(_migFilterCwd); }
-          catch (err) { _migParseError.push(`--filter-cwd: invalid regex "${_migFilterCwd}": ${String(err)}`); }
-        }
-        if (_migParseError.length > 0) {
-          addNotification({
-            key: 'ummaya-migrate-parse-error',
-            text: ['/migrate-sessions: flag parse error(s):',
-                   ..._migParseError.map((e) => `  • ${e}`),
-                   'Usage: /migrate-sessions [--dry-run] [--filter-cwd <regex>] [--prune]'].join('\n'),
-            priority: 'immediate',
-          });
-          return;
-        }
-        // Guard: --prune in non-dry-run mode requires --confirmed.
-        if (_migPrune && !_migDryRun && !_migConfirmed) {
-          addNotification({
-            key: 'ummaya-migrate-confirm-needed',
-            text: ['/migrate-sessions --prune: source files will be deleted after copy.',
-                   '먼저 /migrate-sessions --prune --dry-run 으로 미리보기를 권장합니다.',
-                   '확인 후 /migrate-sessions --prune --confirmed 로 실행하세요.'].join('\n'),
-            priority: 'immediate',
-          });
-          return;
-        }
-        // Run migrateSessions and mount the result overlay.
-        void migrateSessions({
-          prune: _migPrune,
-          filterCwd: _migFilterCwd,
-          dryRun: _migDryRun,
-        }).then((summary) => {
-          setToolJSX({
-            jsx: React.createElement(MigrateSessionsResult, {
-              copied: summary.copied,
-              skipped: summary.skipped,
-              pruned: summary.pruned,
-              bytes: summary.bytes,
-              errors: summary.errors,
-              dryRun: _migDryRun,
-            }),
-            shouldHidePromptInput: false,
-            isLocalJSXCommand: false,
-          });
-          // Add a follow-up hint when dry-run yielded copy candidates.
-          if (_migDryRun && summary.copied > 0) {
-            const hint = _migPrune
-              ? '미리보기 완료. 적용하려면 /migrate-sessions --prune --confirmed 입력.'
-              : '미리보기 완료. 적용하려면 /migrate-sessions 입력.';
-            addNotification({
-              key: 'ummaya-migrate-hint',
-              text: hint,
-              priority: 'immediate',
-            });
-          }
-        }).catch((err) => {
-          addNotification({
-            key: 'ummaya-migrate-error',
-            text: `/migrate-sessions failed: ${String(err)}`,
-            priority: 'immediate',
-          });
-        });
-        return;
-      }
+      proactiveModule?.resumeProactive();
     }
 
     // Handle immediate commands - these bypass the queue and execute right away
@@ -4934,7 +4123,7 @@ export function REPL({
   useEffect(() => {
     const handleSuspend = () => {
       // Print suspension instructions
-      process.stdout.write(`\nClaude Code has been suspended. Run \`fg\` to bring Claude Code back.\nNote: ctrl + z now suspends Claude Code, ctrl + _ undoes input.\n`);
+      process.stdout.write(`\nUMMAYA has been suspended. Run \`fg\` to bring UMMAYA back.\nNote: ctrl + z now suspends UMMAYA, ctrl + _ undoes input.\n`);
     };
     const handleResume = () => {
       // Force complete component tree replacement instead of terminal clear
@@ -5119,10 +4308,11 @@ export function REPL({
       void (async () => {
         try {
           // Width = terminal minus vim's line-number gutter (4 digits +
-          // space + slack). Use the live TerminalSizeContext width so
-          // exported transcript text follows the user's current viewport
-          // instead of flooring narrow windows at 80 columns.
-          const w = Math.max(20, transcriptCols - 6);
+          // space + slack). Floor at 80. PassThrough has no .columns so
+          // without this Ink defaults to 80. Trailing-space strip: right-
+          // aligned timestamps still leave a flexbox spacer run at EOL.
+          // eslint-disable-next-line custom-rules/prefer-use-terminal-size -- one-shot at keypress time, not a reactive render dep
+          const w = Math.max(80, (process.stdout.columns ?? 80) - 6);
           const raw = await renderMessagesToPlainText(deferredMessages, tools, w);
           const text = raw.replace(/[ \t]+$/gm, '');
           const path = join(tmpdir(), `cc-transcript-${Date.now()}.txt`);
@@ -5355,9 +4545,7 @@ export function REPL({
   // flexGrow in FullscreenLayout resolves against this Box. The transcript
   // early return above wraps its virtual-scroll branch the same way; only
   // the 30-cap dump branch stays unwrapped for native terminal scrollback.
-  const mainReturn = <PermissionReceiptProvider>
-    <PermissionReceiptsRefSync receiptsRef={permissionReceiptsRef} revokeReceiptRef={revokeReceiptRef} />
-    <KeybindingSetup>
+  const mainReturn = <KeybindingSetup>
       <AnimatedTerminalTitle isAnimating={titleIsAnimating} title={terminalTitle} disabled={titleDisabled} noPrefix={showStatusInTerminalTab} />
       <GlobalKeybindingHandlers {...globalKeybindingProps} />
       {feature('VOICE_MODE') ? <VoiceKeybindingHandler voiceHandleKeyEvent={voice.handleKeyEvent} stripTrailing={voice.stripTrailing} resetAnchor={voice.resetAnchor} isActive={!toolJSX?.isLocalJSXCommand} /> : null}
@@ -5379,7 +4567,7 @@ export function REPL({
         jumpToNew(scrollRef.current);
       }} scrollable={<>
               <TeammateViewHeader />
-              <Messages messages={displayedMessages} tools={tools} commands={commands} verbose={verbose} toolJSX={toolJSX} toolUseConfirmQueue={toolUseConfirmQueue} inProgressToolUseIDs={viewedTeammateTask ? viewedTeammateTask.inProgressToolUseIDs ?? new Set() : inProgressToolUseIDs} isMessageSelectorVisible={isMessageSelectorVisible} conversationId={conversationId} screen={screen} streamingToolUses={streamingToolUses} showAllInTranscript={showAllInTranscript} agentDefinitions={agentDefinitions} onOpenRateLimitOptions={handleOpenRateLimitOptions} isLoading={isLoading} streamingText={isLoading && !viewedAgentTask ? visibleStreamingText : null} streamingThinking={isLoading && !viewedAgentTask ? streamingThinking : null} isBriefOnly={viewedAgentTask ? false : isBriefOnly} unseenDivider={viewedAgentTask ? undefined : unseenDivider} scrollRef={isFullscreenEnvEnabled() ? scrollRef : undefined} trackStickyPrompt={isFullscreenEnvEnabled() ? true : undefined} cursor={cursor} setCursor={setCursor} cursorNavRef={cursorNavRef} />
+              <Messages messages={displayedMessages} tools={tools} commands={commands} verbose={verbose} toolJSX={toolJSX} toolUseConfirmQueue={toolUseConfirmQueue} inProgressToolUseIDs={viewedTeammateTask ? viewedTeammateTask.inProgressToolUseIDs ?? new Set() : inProgressToolUseIDs} isMessageSelectorVisible={isMessageSelectorVisible} conversationId={conversationId} screen={screen} streamingToolUses={streamingToolUses} showAllInTranscript={showAllInTranscript} agentDefinitions={agentDefinitions} onOpenRateLimitOptions={handleOpenRateLimitOptions} isLoading={isLoading} streamingText={isLoading && !viewedAgentTask ? visibleStreamingText : null} isBriefOnly={viewedAgentTask ? false : isBriefOnly} unseenDivider={viewedAgentTask ? undefined : unseenDivider} scrollRef={isFullscreenEnvEnabled() ? scrollRef : undefined} trackStickyPrompt={isFullscreenEnvEnabled() ? true : undefined} cursor={cursor} setCursor={setCursor} cursorNavRef={cursorNavRef} />
               <AwsAuthStatusBox />
               {/* Hide the processing placeholder while a modal is showing —
                   it would sit at the last visible transcript row right above
@@ -5393,8 +4581,8 @@ export function REPL({
               {toolJSX && !(toolJSX.isLocalJSXCommand && toolJSX.isImmediate) && !toolJsxCentered && <Box flexDirection="column" width="100%">
                     {toolJSX.jsx}
                   </Box>}
-              {/* UMMAYA Spec 1633 / Epic #2293 — TungstenLiveMonitor JSX removed (TungstenTool deleted). */}
-              {feature('WEB_BROWSER_TOOL') ? (() => { const m = getWebBrowserPanelModule(); return m && <m.WebBrowserPanel /> })() : null}
+              {"external" === 'ant' && <TungstenLiveMonitor />}
+              {feature('WEB_BROWSER_TOOL') ? WebBrowserPanelModule && <WebBrowserPanelModule.WebBrowserPanel /> : null}
               <Box flexGrow={1} />
               {showSpinner && <SpinnerWithVerb mode={streamMode} spinnerTip={spinnerTip} responseLengthRef={responseLengthRef} apiMetricsRef={apiMetricsRef} overrideMessage={spinnerMessage} spinnerSuffix={stopHookSpinnerSuffix} verbose={verbose} loadingStartTimeRef={loadingStartTimeRef} totalPausedMsRef={totalPausedMsRef} pauseStartTimeRef={pauseStartTimeRef} overrideColor={spinnerColor} overrideShimmerColor={spinnerShimmerColor} hasActiveTools={inProgressToolUseIDs.size > 0} leaderIsIdle={!isLoading} />}
               {!showSpinner && !isLoading && !userInputOnProcessing && !hasRunningTeammates && isBriefOnly && !viewedAgentTask && <BriefIdleStatus />}
@@ -5716,21 +4904,6 @@ export function REPL({
             // Works during isLoading — edit cancels first; uuid selection survives appends.
             feature('MESSAGE_ACTIONS') && isFullscreenEnvEnabled() && !disableMessageActions ? enterMessageActions : undefined} mcpClients={mcpClients} pastedContents={pastedContents} setPastedContents={setPastedContents} vimMode={vimMode} setVimMode={setVimMode} showBashesDialog={showBashesDialog} setShowBashesDialog={setShowBashesDialog} onSubmit={onSubmit} onAgentSubmit={onAgentSubmit} isSearchingHistory={isSearchingHistory} setIsSearchingHistory={setIsSearchingHistory} helpOpen={isHelpOpen} setHelpOpen={setIsHelpOpen} insertTextRef={feature('VOICE_MODE') ? insertTextRef : undefined} voiceInterimRange={voice.interimRange} />
                       <SessionBackgroundHint onBackgroundSession={handleBackgroundSession} isLoading={isLoading} />
-                      {/* UMMAYA P0-2: SlashCommandSuggestions overlay removed — CC useTypeahead
-                          now sources commands from UI_L2_SLASH_COMMANDS catalog (single stack).
-                          See tui/src/utils/suggestions/commandSuggestions.ts:filterToUmmayaCommands */}
-                      {/* UMMAYA P4 UI L2 — T022: ErrorEnvelope for network/LLM/tool errors */}
-                      {ummayaCurrentError && (
-                        <ErrorEnvelope
-                          error={ummayaCurrentError}
-                          onRetry={() => setUmmayaCurrentError(null)}
-                        />
-                      )}
-                      {/* UMMAYA Spec 1979 — UMMAYA-original permission UI components
-                          (PermissionGauntletModal × 2, BypassReinforcementModal,
-                          UmmayaActivePermissionGate) removed.  Permission UX falls
-                          back to CC's canonical PermissionRequest pipeline mounted
-                          in the message stream by the agentic loop. */}
                     </>}
                 {cursor &&
           // inputValue is REPL state; typed text survives the round-trip.
@@ -5766,8 +4939,7 @@ export function REPL({
               defaultSystemPrompt: defaultSysPrompt,
               appendSystemPrompt: context.options.appendSystemPrompt
             });
-            // Epic #2152 R5 — citizen compaction does not read developer context.
-            const [userContext, systemContext] = await Promise.all([Promise.resolve({}), Promise.resolve({})]);
+            const [userContext, systemContext] = await Promise.all([getUserContext(), getSystemContext()]);
             const result = await partialCompactConversation(compactMessages, messageIndex, context, {
               systemPrompt,
               userContext,
@@ -5794,7 +4966,7 @@ export function REPL({
             // Partial compact bypasses handleMessageFromStream — clear
             // the context-blocked flag so proactive ticks resume.
             if (feature('PROACTIVE') || feature('KAIROS')) {
-              setContextBlocked(false);
+              proactiveModule?.setContextBlocked(false);
             }
             setConversationId(randomUUID());
             runPostCompactCleanup(context.options.querySource);
@@ -5823,8 +4995,7 @@ export function REPL({
               {feature('BUDDY') && !(companionNarrow && isFullscreenEnvEnabled()) && companionVisible ? <CompanionSprite /> : null}
             </Box>} />
       </MCPConnectionManager>
-    </KeybindingSetup>
-  </PermissionReceiptProvider>;
+    </KeybindingSetup>;
   if (isFullscreenEnvEnabled()) {
     return <AlternateScreen mouseTracking={isMouseTrackingEnabled()}>
         {mainReturn}

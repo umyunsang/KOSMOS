@@ -13,7 +13,7 @@
 //      envelope JSON; the heading is bounded to avoid terminal corruption.
 
 import { describe, expect, it, mock } from 'bun:test'
-import { Box as InkBox, Text as InkText } from 'ink'
+import { Box as InkBox, Text as InkText } from '../../../src/ink.js'
 import { render } from 'ink-testing-library'
 import { join } from 'node:path'
 import React from 'react'

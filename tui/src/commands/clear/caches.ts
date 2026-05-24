@@ -18,9 +18,8 @@ import {
 import { clearFileSuggestionCaches } from '../../hooks/fileSuggestions.js'
 import { clearAllPendingCallbacks } from '../../hooks/useSwarmPermissionPoller.js'
 import { clearAllDumpState } from '../../services/api/dumpPrompts.js'
-// UMMAYA: promptCacheBreakDetection + sessionIngress deleted (Anthropic-only). No-op stubs.
-const resetPromptCacheBreakDetection = (): void => {}
-const clearAllSessions = (): void => {}
+import { resetPromptCacheBreakDetection } from '../../services/api/promptCacheBreakDetection.js'
+import { clearAllSessions } from '../../services/api/sessionIngress.js'
 import { runPostCompactCleanup } from '../../services/compact/postCompactCleanup.js'
 import { resetAllLSPDiagnosticState } from '../../services/lsp/LSPDiagnosticRegistry.js'
 import { clearTrackedMagicDocs } from '../../services/MagicDocs/magicDocs.js'

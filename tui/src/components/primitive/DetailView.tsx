@@ -7,7 +7,7 @@
  * FR-020: find detail view renderer.
  */
 import React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../../ink.js'
 import { useTheme } from '@/theme/provider'
 import type { LookupDetailPayload } from './types'
 

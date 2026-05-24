@@ -1,11 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// UMMAYA Epic #2637 — byte-copy from CC 2.1.88 (constants/oauth.ts, R-4).
-// SWAP/anti-anthropic-1p(2637): Anthropic OAuth client_id + endpoints replaced
-// with null/placeholder (FriendliAI K-EXAONE = API-key only, no OAuth flow).
-// process.env.USER_TYPE === 'ant' guards preserved per CC source (auto-dead in UMMAYA).
-// MCP_CLIENT_METADATA_URL replaced with null (no Anthropic MCP proxy in UMMAYA).
-// See: specs/2637-p0-regression/data-model.md § Swap1IdentifierWhitelist
-
 import { isEnvTruthy } from 'src/utils/envUtils.js'
 
 // Default to prod config, override with test/staging if enabled
@@ -104,7 +96,7 @@ const PROD_OAUTH_CONFIG = {
   CLAUDEAI_SUCCESS_URL:
     'https://platform.claude.com/oauth/code/success?app=claude-code',
   MANUAL_REDIRECT_URL: 'https://platform.claude.com/oauth/code/callback',
-  CLIENT_ID: null as unknown as string, // SWAP/anti-anthropic-1p(2637): Anthropic OAuth client_id. UMMAYA has no OAuth flow (FriendliAI API-key only).
+  CLIENT_ID: '9d1c250a-e61b-44d9-88ed-5944d1962f5e',
   // No suffix for production config
   OAUTH_FILE_SUFFIX: '',
   MCP_PROXY_URL: 'https://mcp-proxy.anthropic.com',
@@ -119,7 +111,7 @@ const PROD_OAUTH_CONFIG = {
  * See: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-client-id-metadata-document-00
  */
 export const MCP_CLIENT_METADATA_URL =
-  null as unknown as string // SWAP/anti-anthropic-1p(2637): Anthropic MCP proxy metadata URL. UMMAYA has no Anthropic MCP proxy.
+  'https://claude.ai/oauth/claude-code-client-metadata'
 
 // Staging OAuth configuration - only included in ant builds with staging flag
 // Uses literal check for dead code elimination
@@ -143,7 +135,7 @@ const STAGING_OAUTH_CONFIG =
           'https://platform.staging.ant.dev/oauth/code/success?app=claude-code',
         MANUAL_REDIRECT_URL:
           'https://platform.staging.ant.dev/oauth/code/callback',
-        CLIENT_ID: null as unknown as string, // SWAP/anti-anthropic-1p(2637): staging client_id
+        CLIENT_ID: '22422756-60c9-4084-8eb7-27705fd5cf9a',
         OAUTH_FILE_SUFFIX: '-staging-oauth',
         MCP_PROXY_URL: 'https://mcp-proxy-staging.anthropic.com',
         MCP_PROXY_PATH: '/v1/mcp/{server_id}',
@@ -174,7 +166,7 @@ function getLocalOauthConfig(): OauthConfig {
     CONSOLE_SUCCESS_URL: `${consoleBase}/buy_credits?returnUrl=/oauth/code/success%3Fapp%3Dclaude-code`,
     CLAUDEAI_SUCCESS_URL: `${consoleBase}/oauth/code/success?app=claude-code`,
     MANUAL_REDIRECT_URL: `${consoleBase}/oauth/code/callback`,
-    CLIENT_ID: null as unknown as string, // SWAP/anti-anthropic-1p(2637): local dev client_id
+    CLIENT_ID: '22422756-60c9-4084-8eb7-27705fd5cf9a',
     OAUTH_FILE_SUFFIX: '-local-oauth',
     MCP_PROXY_URL: 'http://localhost:8205',
     MCP_PROXY_PATH: '/v1/toolbox/shttp/mcp/{server_id}',

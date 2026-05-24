@@ -8,7 +8,7 @@
  * FR-033: unrecognized primitive kind → yellow banner; no structure-guessing.
  */
 import React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../../ink.js'
 import { useTheme } from '@/theme/provider'
 import type { UnrecognizedPayloadData } from './types'
 

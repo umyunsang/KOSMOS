@@ -193,7 +193,7 @@ const SAMPLE_PLUGINS: PluginEntry[] = [
 // (text-only — we render a small wrapper that displays the result string)
 // ---------------------------------------------------------------------------
 
-import { Text, Box } from 'ink'
+import { Text, Box } from '../src/ink.js'
 
 function CommandAck(props: { command: string; result: string }) {
   return (

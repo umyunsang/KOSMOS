@@ -32,6 +32,16 @@ interface AdapterManifestCache {
 // ---------------------------------------------------------------------------
 
 let _cache: AdapterManifestCache | null = null
+const _waiters = new Set<(synced: boolean) => void>()
+let _version = 0
+const _subscribers = new Set<() => void>()
+
+function publishManifestChange(): void {
+  _version += 1
+  for (const subscriber of _subscribers) {
+    subscriber()
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -51,6 +61,11 @@ export function ingestManifestFrame(frame: AdapterManifestSyncFrame): void {
     emitterPid: frame.emitter_pid,
     ingestedAt: new Date(),
   }
+  publishManifestChange()
+  for (const resolve of _waiters) {
+    resolve(true)
+  }
+  _waiters.clear()
 }
 
 /**
@@ -67,6 +82,19 @@ export function resolveAdapter(tool_id: string): AdapterManifestEntry | undefine
 }
 
 /**
+ * Return the currently synced adapter entries in deterministic tool_id order.
+ *
+ * Dynamic adapter Tool objects are rebuilt from this snapshot when the CC query
+ * loop refreshes its tool pool for a model-emitted concrete adapter call.
+ */
+export function listAdapters(): AdapterManifestEntry[] {
+  if (_cache === null) return []
+  return [..._cache.entries.values()].sort((a, b) =>
+    a.tool_id.localeCompare(b.tool_id),
+  )
+}
+
+/**
  * Returns ``true`` when at least one manifest frame has been ingested.
  *
  * Used by primitive ``validateInput`` to enforce the cold-boot fail-closed
@@ -77,6 +105,37 @@ export function isManifestSynced(): boolean {
   return _cache !== null
 }
 
+export function getManifestVersion(): number {
+  return _version
+}
+
+export function subscribeAdapterManifest(listener: () => void): () => void {
+  _subscribers.add(listener)
+  return () => {
+    _subscribers.delete(listener)
+  }
+}
+
+export function waitForManifestSync(timeoutMs = 2_500): Promise<boolean> {
+  if (isManifestSynced()) {
+    return Promise.resolve(true)
+  }
+
+  return new Promise(resolve => {
+    let settled = false
+    let timeout: ReturnType<typeof setTimeout>
+    const done = (synced: boolean) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timeout)
+      _waiters.delete(done)
+      resolve(synced)
+    }
+    timeout = setTimeout(() => done(false), timeoutMs)
+    _waiters.add(done)
+  })
+}
+
 /**
  * Clear the manifest cache.
  *
@@ -85,4 +144,9 @@ export function isManifestSynced(): boolean {
  */
 export function clearManifestCache(): void {
   _cache = null
+  publishManifestChange()
+  for (const resolve of _waiters) {
+    resolve(false)
+  }
+  _waiters.clear()
 }

@@ -3,7 +3,7 @@
 //
 // Walks every active registered UMMAYA primitive (find / locate /
 // send / check) at process boot and asserts that
-// each one exposes the full `Tool<>` 9-member surface from
+// each one exposes the full `Tool<>` 10-member surface from
 // `tui/src/Tool.ts` (byte-identical to CC `Tool.ts`). Fails closed with a
 // Korean diagnostic if any member is missing.
 //
@@ -33,6 +33,7 @@ const REQUIRED_MEMBERS = [
   'isMcp',
   'validateInput',
   'call',
+  'mapToolResultToToolResultBlockParam',
   'renderToolUseMessage',
   'renderToolResultMessage',
 ] as const
@@ -53,7 +54,7 @@ export type BootResult =
 
 /**
  * Verify that every UMMAYA primitive in the registered tool array exposes the
- * full 9-member `Tool<>` contract from `tui/src/Tool.ts`. Returns the
+ * full 10-member `Tool<>` contract from `tui/src/Tool.ts`. Returns the
  * structured `BootResult`. Caller decides whether to `process.exit(1)` or
  * throw — the guard itself has no side effects beyond reading the registry.
  *
@@ -106,7 +107,7 @@ export function verifyBootRegistry(registry: readonly Tool[]): BootResult {
         diagnostic:
           `[UMMAYA][bootGuard] 도구 '${tool.name}' 등록 검증 실패. ` +
           `누락 필드: ${missing.join(', ')}.\n` +
-          `UMMAYA는 9-member ToolDef 계약을 준수하는 도구만 부팅 시점에 받아들입니다.\n` +
+          `UMMAYA는 10-member ToolDef 계약을 준수하는 도구만 부팅 시점에 받아들입니다.\n` +
           `참조: specs/2294-5-primitive-align/contracts/primitive-shape.md`,
       }
     }

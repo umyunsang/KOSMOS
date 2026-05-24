@@ -1,6 +1,6 @@
 import { feature } from 'bun:bundle';
 import React, { useCallback, useEffect, useRef } from 'react';
-import { setMainLoopModelOverride, setReplBridgeActive } from '../bootstrap/state.js';
+import { setMainLoopModelOverride } from '../bootstrap/state.js';
 import { type BridgePermissionCallbacks, type BridgePermissionResponse, isBridgePermissionResponse } from '../bridge/bridgePermissionCallbacks.js';
 import { buildBridgeConnectUrl } from '../bridge/bridgeStatusUtil.js';
 import { extractInboundMessageFields } from '../bridge/inboundMessages.js';
@@ -21,7 +21,7 @@ import { logForDebugging } from '../utils/debug.js';
 import { errorMessage } from '../utils/errors.js';
 import { enqueue } from '../utils/messageQueueManager.js';
 import { buildSystemInitMessage } from '../utils/messages/systemInit.js';
-import { createBridgeStatusMessage, createSystemMessage } from '../utils/systemMessageFactories.js';
+import { createBridgeStatusMessage, createSystemMessage } from '../utils/messages.js';
 import { getAutoModeUnavailableNotification, getAutoModeUnavailableReason, isAutoModeGateEnabled, isBypassPermissionsModeDisabled, transitionPermissionMode } from '../utils/permissions/permissionSetup.js';
 import { getLeaderToolUseConfirmQueue } from '../utils/swarm/leaderPermissionBridge.js';
 
@@ -517,7 +517,6 @@ export function useReplBridge(messages: Message[], setMessages: (action: React.S
           }
           handleRef.current = handle_0;
           setReplBridgeHandle(handle_0);
-          setReplBridgeActive(!outboundOnly);
           consecutiveFailuresRef.current = 0;
           // Skip initial messages in the forwarding effect — they were
           // already loaded as session events during creation.
@@ -657,7 +656,6 @@ export function useReplBridge(messages: Message[], setMessages: (action: React.S
           teardownPromiseRef.current = handleRef.current.teardown();
           handleRef.current = null;
           setReplBridgeHandle(null);
-          setReplBridgeActive(false);
         }
         setAppState(prev_19 => {
           if (!prev_19.replBridgeConnected && !prev_19.replBridgeSessionActive && !prev_19.replBridgeError) {

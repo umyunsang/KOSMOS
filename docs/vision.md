@@ -44,7 +44,7 @@ operator owns the work. UMMAYA does the decomposition and routing.
 
 ## The thesis — harness migration from developer to citizen
 
-UMMAYA's deeper claim is not "connect many public APIs." It is: **the Claude Code harness — the tool loop, the permission gauntlet, the context assembly, the TUI — is a general substrate for any domain that reduces to "call the right tools in the right order." Claude Code proved it for software development. UMMAYA migrates that harness from the developer domain to Korean national administrative infrastructure.**
+UMMAYA's deeper claim is not "connect many public APIs" or "answer from retrieved documents." It is: **the Claude Code harness — the tool loop, the permission gauntlet, the context assembly, the TUI — is a general substrate for any domain that reduces to "call the right tools in the right order." Claude Code proved it for software development. UMMAYA migrates that harness from the developer domain to Korean national administrative infrastructure.**
 
 | | Claude Code | UMMAYA |
 |---|---|---|
@@ -53,6 +53,8 @@ UMMAYA's deeper claim is not "connect many public APIs." It is: **the Claude Cod
 | Primitive verbs | Read, Edit, Bash, Grep, WebFetch | find, locate, send, check |
 | Permission concerns | Dangerous shell commands, file overwrites | PIPA (PII protection), identity verification, legal ordering |
 | Deployment | Developer laptop + IDE | Citizen laptop (TUI) → eventually mobile/web |
+
+The model's role is planner and executor inside this tool loop, not a reference-only RAG answerer. It decomposes a citizen request, selects the registered primitive and adapter, calls existing public-channel wrappers, inspects the returned envelope, and decides whether to continue, ask for confirmation, stop, or hand off. Public lookup can execute through `find`/`locate` immediately. Protected domains start with `check`: an identity or consent adapter such as Mobile ID, MyData, certificate, or OmniOne CX-style QR/app verification establishes purpose, scope, and delegation without asking the citizen to type raw personal data into the chat. The current public identity-check surface is mostly mock or shape-mirrored; the OpenDID hackathon target is to promote that path into a live OmniOne CX / Open DID / Chain-backed `check` tool without changing the downstream primitive contract. Downstream `send` adapters then consume that scoped delegation context to call or mirror Government24, Hometax, KFTC/OpenGiro, MyData, welfare, payment, certificate, or other existing-domain channels.
 
 This framing has three consequences for every decision in this document:
 
@@ -71,7 +73,7 @@ UMMAYA must apply the identical method to citizen-government interaction — not
 3. **Weight by empirical frequency and consequence.** Use annual transaction volume where available, but also weight rare high-consequence workflows such as disaster relief, immigration deadlines, tax submission, and identity issuance. `data.go.kr` usage metrics are only one input.
 4. **Distill to 6–8 always-loaded verbs.** Everything else is lazily discovered via `search_tools`. The upper bound matches Claude Code's cognitive budget for tool schemas in the system prompt.
 
-**Spec 031** executed this method and originally ratified five domain-agnostic harness primitives. The active surface is now four (`find`, `locate`, `send`, `check`). `subscribe` is deferred because official Korean notification delivery is anchored in authenticated app/mobile push channels, and UMMAYA does not yet own an app runtime that can receive or schedule push notifications. An earlier 8-verb proposal (with domain-tinted names such as `pay`, `issue_certificate`, `submit_application`, `reserve_slot`, `subscribe_alert`, `check_eligibility`) has been **retired** for leaking ministry knowledge into the main surface; domain specialization belongs in adapters (`src/ummaya/tools/<ministry>/<adapter>.py`), not in LLM-visible verb names. The method that produced the verb list is what is canonical — if a later survey contradicts a candidate, we re-run the method and update, rather than patching conclusions while keeping stale premises.
+**Spec 031** executed this method and originally ratified five domain-agnostic harness primitives. The active surface is now four (`find`, `locate`, `send`, `check`). `check` is the protected-domain entrypoint: it wraps identity, consent, QR/app verification, and delegation evidence as a tool result that later `send` calls can consume. Today that identity path is represented by mock or shape-mirrored adapters unless a credentialed live channel is available; converting it to a live OmniOne CX / Open DID / Chain-backed path is exactly the hackathon integration target. `subscribe` is deferred because official Korean notification delivery is anchored in authenticated app/mobile push channels, and UMMAYA does not yet own an app runtime that can receive or schedule push notifications. An earlier 8-verb proposal (with domain-tinted names such as `pay`, `issue_certificate`, `submit_application`, `reserve_slot`, `subscribe_alert`, `check_eligibility`) has been **retired** for leaking ministry knowledge into the main surface; domain specialization belongs in adapters (`src/ummaya/tools/<ministry>/<adapter>.py`), not in LLM-visible verb names. The method that produced the verb list is what is canonical — if a later survey contradicts a candidate, we re-run the method and update, rather than patching conclusions while keeping stale premises.
 
 The ambition above describes **what** this migration enables. The methodology here fixes **how we decide which tools serve it**. The six layers below describe **how the migration is structured**. All three serve the same thesis.
 
@@ -95,6 +97,8 @@ UMMAYA adapts architectural patterns from the conversational AI agent ecosystem 
 | Claude Reviews Claude (`openedclaude/claude-reviews-claude`) | Analysis | Detailed architectural review, state management, rendering pipeline, design rationale |
 | Claw Code (`ultraworkers/claw-code`) | Harness/Fork | Leaked source repackaged as harness — runtime behavior, hook system, tool execution flow |
 | PublicDataReader (`WooilJeong/PublicDataReader`) | MIT | Korean `data.go.kr` API wire format ground truth — auth patterns, XML/JSON response normalization, inconsistent field names across ministries |
+| data.go.kr KMA short-term forecast service (`data.go.kr/data/15084084/openapi.do`) | Official public API page | KMA VilageFcstInfoService_2.0 endpoint URLs, `serviceKey` data.go.kr surface, XML/JSON support, traffic quotas, current service metadata |
+| KMA API Hub short-term forecast pages (`apihub.kma.go.kr/apiList.do?seqApi=10`) | Official agency API catalog | KMA-owned `authKey` surface, VilageFcstInfoService_2.0 API Hub URLs, current/forecast publication timing, and API Hub-vs-data.go.kr credential boundary |
 | "Don't Break the Cache" (arXiv 2601.06007) | Open access | Empirical prompt caching study: dynamic tool results at end preserve cache prefix, 41–80% cost cut in 30–50+ tool-call sessions |
 | NeMo Guardrails (`NVIDIA/NeMo-Guardrails`) | Apache-2.0 | Colang 2.0 declarative tool-call validation rails — whitelist-of-approved-actions model, auditable policy language for PIPA compliance |
 | Google ADK (`google/adk-python`) | Apache-2.0 | Runner-level plugin pattern for centralized permission enforcement, reflect-and-retry tool failure handling |
@@ -210,7 +214,7 @@ The Python query loop never touches the terminal directly. Every progress event,
 
 ## Layer 2 — Tool System
 
-Each public-service channel is wrapped as a **tool module** with a schema-driven registration and fail-closed defaults. A channel may be a public API, authenticated API, official portal flow, certificate issuance path, payment rail, utility operator endpoint, fixture-backed mock, or narrative handoff for opaque domains.
+Each public-service channel is wrapped as a **tool module** with a schema-driven registration and fail-closed defaults. A channel may be a public API, authenticated API, official portal flow, identity or consent ceremony, certificate issuance path, payment rail, utility operator endpoint, fixture-backed mock, or narrative handoff for opaque domains. These adapters are not a document corpus for answer generation; they are the executable or shape-mirrored public-channel surfaces the LLM calls through the primitive loop.
 
 ### Tool definition shape
 
@@ -401,13 +405,11 @@ UMMAYA keeps the Claude Code runtime setup path byte-aligned where possible and 
 
 ### Keyboard-shortcut migration
 
-Claude Code defines 65 bindings across 20 contexts (`src/keybindings/defaultBindings.ts`). UMMAYA currently implements 5 (Enter, y/Y, n/N/Esc, Backspace/Delete, IME passthrough for modifiers). The tiered migration scope is:
+Claude Code defines the keyboard binding surface in `src/keybindings/defaultBindings.ts`. UMMAYA keeps the restored Claude Code input and keybinding path as the baseline; Korean text input is handled by that restored path, not by a UMMAYA-only IME shim.
 
-- **Tier 1 (pre-citizen-launch blocker)**: `ctrl+c` (interrupt active agent), `ctrl+d` (clean exit), `escape` in InputBar (cancel draft, gated on `!ime.isComposing`), `ctrl+r` (history search), `up`/`down` in InputBar (history prev/next, gated on empty buffer), `shift+tab` (cycle PermissionMode), `ctrl+o` (toggle transcript view — promoted from Tier 2 in Epic #2766 follow-up after the chord-registry-vs-fallback root-cause fix; see `tui/src/keybindings/types.ts:84` + `tui/src/keybindings/defaultBindings.ts:81`).
+- **Baseline**: restored CC keybinding files under `tui/src/keybindings/` are copied from `.references/claude-code-sourcemap/restored-src/src/keybindings/`.
 - **Tier 2 (post-launch hardening)**: `pageup`/`pagedown`, `ctrl+l` (redraw), `shift+tab` (cycle PermissionMode — binds to the Layer 3 spectrum), `ctrl+_` (undo), `ctrl+shift+c` (copy selection).
 - **Tier 3 (deferred until dependent specs)**: `ctrl+x ctrl+k` (killAll — requires multi-worker), `ctrl+e` (external editor), `meta+p` (modelPicker — UMMAYA uses K-EXAONE only), `ctrl+s` (stash), `ctrl+v` (image paste).
-
-IME safety rule: every binding that mutates the input buffer MUST check `!useKoreanIME().isComposing` before acting. Hangul composition must not be interrupted by a shortcut. The current `tui/src/hooks/useKoreanIME.ts` exposes the required predicate.
 
 ### TUI ↔ backend IPC
 

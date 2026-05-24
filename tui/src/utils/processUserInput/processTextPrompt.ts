@@ -1,4 +1,4 @@
-import type { ContentBlockParam } from 'src/sdk-compat.js'
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources'
 import { randomUUID } from 'crypto'
 import { setPromptId } from 'src/bootstrap/state.js'
 import type {
@@ -8,11 +8,9 @@ import type {
 } from 'src/types/message.js'
 import { logEvent } from '../../services/analytics/index.js'
 import type { PermissionMode } from '../../types/permissions.js'
-import { createUserMessage } from '../userMessageFactories.js'
-// utils/telemetry removed — UMMAYA telemetry handled by Spec 021 OTEL pipeline.
-const logOTelEvent = (_event: string, _attrs?: Record<string, unknown>): void => { /* no-op */ }
-const redactIfDisabled = (val: string): string => val
-const startInteractionSpan = (): void => { /* no-op */ }
+import { createUserMessage } from '../messages.js'
+import { logOTelEvent, redactIfDisabled } from '../telemetry/events.js'
+import { startInteractionSpan } from '../telemetry/sessionTracing.js'
 import {
   matchesKeepGoingKeyword,
   matchesNegativeKeyword,

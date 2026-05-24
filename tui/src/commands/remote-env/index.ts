@@ -1,6 +1,5 @@
 import type { Command } from '../../commands.js'
-// UMMAYA: policyLimits deleted by Spec 1633 P1. isPolicyAllowed → false (remote sessions disabled in UMMAYA).
-const isPolicyAllowed = (_policy: string): boolean => false
+import { isPolicyAllowed } from '../../services/policyLimits/index.js'
 import { isClaudeAISubscriber } from '../../utils/auth.js'
 
 export default {

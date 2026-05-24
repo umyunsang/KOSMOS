@@ -531,9 +531,10 @@ export class LLMClient {
         // ---- ToolResultFrame (I-D5 + Epic ζ smoke checkpoint, FR-013) ----
         else if (frame.kind === 'tool_result') {
           const trFrame = frame as ToolResultFrame
-          // Best-effort registry resolution (only fires if dispatcher
-          // pre-registered, which the post-2026-04-30 server-side-ack
-          // architecture no longer does — see dispatchPrimitive.ts header).
+          // Resolve the pending Tool.call registered by dispatchPrimitive.
+          // This is the CC-aligned path: provider yields assistant(tool_use),
+          // query.ts calls Tool.call(), and the backend answers that inbound
+          // tool_call with this tool_result frame.
           this.pendingCallRegistry.resolve(trFrame.call_id, trFrame)
 
           // Emit the canonical FR-013 / I-P2 checkpoint marker exactly once

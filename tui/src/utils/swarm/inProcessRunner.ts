@@ -10,7 +10,7 @@
  */
 
 import { feature } from 'bun:bundle'
-import type { ContentBlockParam } from 'src/sdk-compat.js'
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import { getSystemPrompt } from '../../constants/prompts.js'
 import { TEAMMATE_MESSAGE_TAG } from '../../constants/xml.js'
 import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'
@@ -57,8 +57,10 @@ import { TEAM_CREATE_TOOL_NAME } from '../../tools/TeamCreateTool/constants.js'
 import { TEAM_DELETE_TOOL_NAME } from '../../tools/TeamDeleteTool/constants.js'
 import type { Message } from '../../types/message.js'
 import type { PermissionDecision } from '../../types/permissions.js'
-import { createUserMessage } from '../../utils/userMessageFactories.js'
-import { createAssistantAPIErrorMessage } from '../../utils/assistantMessageFactories.js'
+import {
+  createAssistantAPIErrorMessage,
+  createUserMessage,
+} from '../../utils/messages.js'
 import { evictTaskOutput } from '../../utils/task/diskOutput.js'
 import { evictTerminalTask } from '../../utils/task/framework.js'
 import { tokenCountWithEstimation } from '../../utils/tokens.js'
@@ -70,7 +72,7 @@ import { cloneFileStateCache } from '../fileStateCache.js'
 import {
   SUBAGENT_REJECT_MESSAGE,
   SUBAGENT_REJECT_MESSAGE_WITH_REASON_PREFIX,
-} from '../permissionMessages.js'
+} from '../messages.js'
 import type { ModelAlias } from '../model/aliases.js'
 import {
   applyPermissionUpdates,
@@ -94,8 +96,7 @@ import {
   readMailbox,
   writeToMailbox,
 } from '../teammateMailbox.js'
-// UMMAYA: utils/telemetry/perfettoTracing.js deleted by Spec 1633 P1. unregisterPerfettoAgent → no-op.
-const unregisterPerfettoAgent = (_agentId: unknown): void => {}
+import { unregisterAgent as unregisterPerfettoAgent } from '../telemetry/perfettoTracing.js'
 import { createContentReplacementState } from '../toolResultStorage.js'
 import { TEAM_LEAD_NAME } from './constants.js'
 import {

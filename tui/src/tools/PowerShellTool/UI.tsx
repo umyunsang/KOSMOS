@@ -1,4 +1,4 @@
-import type { ToolResultBlockParam } from 'src/sdk-compat.js';
+import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';
 import * as React from 'react';
 import { KeyboardShortcutHint } from '../../components/design-system/KeyboardShortcutHint.js';
 import { FallbackToolUseErrorMessage } from '../../components/FallbackToolUseErrorMessage.js';
@@ -98,7 +98,7 @@ export function renderToolResultMessage(content: Out, progressMessagesForMessage
   } = content;
   if (isImage) {
     return <MessageResponse height={1}>
-        <Text dimColor>[Image data detected and sent to Claude]</Text>
+        <Text dimColor>[Image data detected and sent to UMMAYA]</Text>
       </MessageResponse>;
   }
   return <Box flexDirection="column">

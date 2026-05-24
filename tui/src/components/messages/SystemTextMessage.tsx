@@ -564,7 +564,7 @@ function TurnDurationMessage(t0) {
   } else {
     t6 = $[8];
   }
-  const t7 = showTurnDuration && `Done · ${duration}`;
+  const t7 = showTurnDuration && `${verb} for ${duration}`;
   const t8 = backgroundTaskSummary && ` \u00B7 ${backgroundTaskSummary} still running`;
   let t9;
   if ($[9] !== budgetSuffix || $[10] !== t7 || $[11] !== t8) {
@@ -814,7 +814,7 @@ function BridgeStatusMessage(t0) {
   }
   let t7;
   if ($[9] !== bg || $[10] !== t1 || $[11] !== t6) {
-    t7 = <Box flexDirection="row" marginTop={t1} backgroundColor={bg} width="100%">{t2}{t6}</Box>;
+    t7 = <Box flexDirection="row" marginTop={t1} backgroundColor={bg} width={999}>{t2}{t6}</Box>;
     $[9] = bg;
     $[10] = t1;
     $[11] = t6;

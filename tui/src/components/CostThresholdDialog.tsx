@@ -13,7 +13,7 @@ export function CostThresholdDialog(t0) {
   } = t0;
   let t1;
   if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
-    t1 = <Box flexDirection="column"><Text>Learn more about how to monitor your spending:</Text><Link url="https://code.claude.com/docs/en/costs" /></Box>;
+    t1 = <Box flexDirection="column"><Text>Learn more about how to monitor your FriendliAI API spending:</Text><Link url="https://ummaya-docs.pages.dev/en/" /></Box>;
     $[0] = t1;
   } else {
     t1 = $[0];
@@ -38,7 +38,7 @@ export function CostThresholdDialog(t0) {
   }
   let t4;
   if ($[4] !== onDone || $[5] !== t3) {
-    t4 = <Dialog title="You've spent $5 on the Anthropic API this session." onCancel={onDone}>{t1}{t3}</Dialog>;
+    t4 = <Dialog title="You've spent $5 on the FriendliAI API this session." onCancel={onDone}>{t1}{t3}</Dialog>;
     $[4] = onDone;
     $[5] = t3;
     $[6] = t4;

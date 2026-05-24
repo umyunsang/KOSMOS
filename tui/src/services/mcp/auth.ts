@@ -31,29 +31,16 @@ import { createServer, type Server } from 'http'
 import { join } from 'path'
 import { parse } from 'url'
 import xss from 'xss'
-// UMMAYA: constants/oauth.js deleted by Spec 1633 P1+P2. MCP_CLIENT_METADATA_URL → empty string.
-const MCP_CLIENT_METADATA_URL = ''
+import { MCP_CLIENT_METADATA_URL } from '../../constants/oauth.js'
 import { openBrowser } from '../../utils/browser.js'
 import { getClaudeConfigHomeDir } from '../../utils/envUtils.js'
 import { errorMessage, getErrnoCode } from '../../utils/errors.js'
 import * as lockfile from '../../utils/lockfile.js'
 import { logMCPDebug } from '../../utils/log.js'
 import { getPlatform } from '../../utils/platform.js'
-// UMMAYA: secureStorage deleted by Spec 1633 P1. UMMAYA uses .env-backed secrets, not OS keychain.
-// Provide minimal stubs so the file compiles; all OAuth/MCP auth is no-op in UMMAYA.
-type SecureStorageData = {
-  mcpOAuth?: Record<string, unknown>
-  mcpOAuthClientConfig?: Record<string, unknown>
-  pluginSecrets?: Record<string, Record<string, string>>
-}
-const getSecureStorage = (): {
-  read: () => null
-  update: (_data: unknown) => { success: true; warning?: string }
-} => ({
-  read: () => null,
-  update: (_data: unknown) => ({ success: true as const }),
-})
-const clearKeychainCache = (): void => {}
+import { getSecureStorage } from '../../utils/secureStorage/index.js'
+import { clearKeychainCache } from '../../utils/secureStorage/macOsKeychainHelpers.js'
+import type { SecureStorageData } from '../../utils/secureStorage/types.js'
 import { sleep } from '../../utils/sleep.js'
 import { jsonParse, jsonStringify } from '../../utils/slowOperations.js'
 import { logEvent } from '../analytics/index.js'
@@ -378,7 +365,7 @@ export function hasMcpDiscoveryButNoToken(
 /**
  * Revokes a single token on the OAuth server.
  *
- * Per RFC 7009, public clients (like Claude Code) should authenticate by including
+ * Per RFC 7009, public clients (like UMMAYA) should authenticate by including
  * client_id in the request body, NOT via an Authorization header. The Bearer token
  * in an Authorization header is meant for resource owner authentication, not client
  * authentication.
@@ -864,7 +851,7 @@ export async function performMCPOAuthFlow(
   abortSignal?: AbortSignal,
   options?: {
     skipBrowserOpen?: boolean
-    onWaitingForCallback?: (send: (callbackUrl: string) => void) => void
+    onWaitingForCallback?: (submit: (callbackUrl: string) => void) => void
   },
 ): Promise<void> {
   // XAA (SEP-990): if configured, bypass the per-server consent dance.
@@ -1155,7 +1142,7 @@ export async function performMCPOAuthFlow(
           if (code) {
             res.writeHead(200, { 'Content-Type': 'text/html' })
             res.end(
-              `<h1>Authentication Successful</h1><p>You can close this window. Return to Claude Code.</p>`,
+              `<h1>Authentication Successful</h1><p>You can close this window. Return to UMMAYA.</p>`,
             )
             cleanup()
             resolveOnce(code)
@@ -1429,7 +1416,7 @@ export class ClaudeAuthProvider implements OAuthClientProvider {
 
   get clientMetadata(): OAuthClientMetadata {
     const metadata: OAuthClientMetadata = {
-      client_name: `Claude Code (${this.serverName})`,
+      client_name: `UMMAYA (${this.serverName})`,
       redirect_uris: [this.redirectUri],
       grant_types: ['authorization_code', 'refresh_token'],
       response_types: ['code'],

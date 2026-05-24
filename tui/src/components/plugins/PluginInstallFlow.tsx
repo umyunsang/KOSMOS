@@ -20,7 +20,7 @@
 // replaced here by CC's Select-based pattern for consistency with the rest
 // of the TUI (PluginBrowser, PermissionGauntletModal in Spec 1978, etc).
 
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput } from '../../ink.js';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 

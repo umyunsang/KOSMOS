@@ -87,7 +87,9 @@ export async function startMCPServer(
                 tools,
                 agents: [],
               }),
-              inputSchema: zodToJsonSchema(tool.inputSchema) as ToolInput,
+              inputSchema: (
+                tool.inputJSONSchema ?? zodToJsonSchema(tool.inputSchema)
+              ) as ToolInput,
               outputSchema,
             }
           }),

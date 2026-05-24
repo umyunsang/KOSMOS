@@ -11,8 +11,16 @@
 // prompt is actually typed. Subsequent turns reuse the running child.
 
 import { createBridge, type IPCBridge } from './bridge.js'
-import { ingestManifestFrame } from '../services/api/adapterManifest.js'
-import { isAdapterManifestSync } from './codec.js'
+import {
+  ingestManifestFrame,
+  waitForManifestSync,
+} from '../services/api/adapterManifest.js'
+import {
+  isAdapterManifestSync,
+  isPermissionRequest,
+  isToolResult,
+} from './codec.js'
+import { getOrCreatePendingCallRegistry } from './pendingCallSingleton.js'
 
 let _bridge: IPCBridge | null = null
 let _sessionId: string | null = null
@@ -33,13 +41,30 @@ export function getOrCreateUmmayaBridge(): IPCBridge {
     // manifest cache on receipt (before any LLM turn, at backend boot time).
     // FR-015: fires once per backend lifecycle; FR-016: replace-on-frame
     // semantics are enforced inside ingestManifestFrame().
-    onFrame: (frame, direction) => {
-      if (direction === 'recv' && isAdapterManifestSync(frame)) {
+    onFrame: async (frame, direction) => {
+      if (direction !== 'recv') return
+      if (isAdapterManifestSync(frame)) {
         ingestManifestFrame(frame)
+      }
+      if (isToolResult(frame)) {
+        getOrCreatePendingCallRegistry().resolve(frame.call_id, frame)
+      }
+      if (isPermissionRequest(frame)) {
+        const { pushIpcPermissionRequest } = await import(
+          '../utils/permissions/ipcPermissionBridge.js'
+        )
+        pushIpcPermissionRequest(frame)
       }
     },
   })
   return _bridge
+}
+
+export async function ensureUmmayaAdapterManifest(
+  timeoutMs = 2_500,
+): Promise<boolean> {
+  getOrCreateUmmayaBridge()
+  return waitForManifestSync(timeoutMs)
 }
 
 export function getUmmayaBridgeSessionId(): string {

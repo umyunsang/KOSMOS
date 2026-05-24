@@ -5,7 +5,7 @@
 
 import { describe, expect, it, beforeEach, mock } from 'bun:test'
 import React, { useState } from 'react'
-import { Text } from 'ink'
+import { Text } from '../../../src/ink.js'
 import { render } from 'ink-testing-library'
 import { VirtualizedList } from '../../../src/components/conversation/VirtualizedList'
 

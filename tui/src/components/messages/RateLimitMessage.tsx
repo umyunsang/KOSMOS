@@ -2,9 +2,8 @@ import { c as _c } from "react/compiler-runtime";
 import React, { useEffect, useMemo, useState } from 'react';
 import { extraUsage } from 'src/commands/extra-usage/index.js';
 import { Box, Text } from 'src/ink.js';
-// UMMAYA: services/claudeAiLimitsHook.js deleted by Spec 1633 P1. useClaudeAiLimits → null stub (no Anthropic limits in UMMAYA).
-const useClaudeAiLimits = (): null => null
-// UMMAYA Epic #2112: shouldProcessMockLimits removed — rateLimitMocking.ts deleted.
+import { useClaudeAiLimits } from 'src/services/claudeAiLimitsHook.js';
+import { shouldProcessMockLimits } from 'src/services/rateLimitMocking.js'; // Used for /mock-limits command
 import { getRateLimitTier, getSubscriptionType, isClaudeAISubscriber } from 'src/utils/auth.js';
 import { hasClaudeAiBillingAccess } from 'src/utils/billing.js';
 import { MessageResponse } from '../MessageResponse.js';
@@ -76,7 +75,7 @@ export function RateLimitMessage(t0) {
   const isMax20x = rateLimitTier === "default_claude_max_20x";
   let t3;
   if ($[2] === Symbol.for("react.memo_cache_sentinel")) {
-    t3 = isClaudeAISubscriber();
+    t3 = shouldProcessMockLimits() || isClaudeAISubscriber();
     $[2] = t3;
   } else {
     t3 = $[2];

@@ -7,7 +7,7 @@
  * FR-032: check failure renderer.
  */
 import React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../../ink.js'
 import { useTheme } from '@/theme/provider'
 import type { VerifyFailPayload } from './types'
 

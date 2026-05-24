@@ -69,7 +69,7 @@ import type {
   ContentBlockParam,
   ImageBlockParam,
   Base64ImageSource,
-} from 'src/sdk-compat.js'
+} from '@anthropic-ai/sdk/resources/messages.mjs'
 import { maybeResizeAndDownsampleImageBlock } from './imageResizer.js'
 import type { PastedContent } from './config.js'
 import { getGlobalConfig } from './config.js'
@@ -188,9 +188,12 @@ import {
   clearAllLSPDiagnostics,
 } from '../services/lsp/LSPDiagnosticRegistry.js'
 import { logForDebugging } from './debug.js'
-import { getUserMessageText } from './messageContent.js'
-import { extractTextContent } from './messageText.js'
-import { isHumanTurn, isThinkingMessage } from './messagePredicates.js'
+import {
+  extractTextContent,
+  getUserMessageText,
+  isThinkingMessage,
+} from './messages.js'
+import { isHumanTurn } from './messagePredicates.js'
 import { isEnvTruthy, getClaudeConfigHomeDir } from './envUtils.js'
 import { feature } from 'bun:bundle'
 /* eslint-disable @typescript-eslint/no-require-imports */

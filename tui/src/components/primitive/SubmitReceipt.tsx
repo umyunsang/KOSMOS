@@ -8,7 +8,7 @@
  * FR-026: send success renderer.
  */
 import React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../../ink.js'
 import { useTheme } from '@/theme/provider'
 import type { SubmitSuccessPayload } from './types'
 

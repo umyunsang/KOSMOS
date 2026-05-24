@@ -47,7 +47,7 @@ export function AUTO_REJECT_MESSAGE(toolName: string): string {
 }
 
 export function DONT_ASK_REJECT_MESSAGE(toolName: string): string {
-  return `Permission to use ${toolName} has been denied because Claude Code is running in don't ask mode. ${DENIAL_WORKAROUND_GUIDANCE}`
+  return `Permission to use ${toolName} has been denied because UMMAYA is running in don't ask mode. ${DENIAL_WORKAROUND_GUIDANCE}`
 }
 
 export function isClassifierDenial(content: string): boolean {

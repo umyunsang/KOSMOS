@@ -50,14 +50,14 @@ export function TranscriptSharePrompt(t0) {
   useDebouncedDigitInput(t2);
   let t3;
   if ($[6] === Symbol.for("react.memo_cache_sentinel")) {
-    t3 = <Box><Text color="ansi:cyan">{BLACK_CIRCLE} </Text><Text bold={true}>Can Anthropic look at your session transcript to help us improve Claude Code?</Text></Box>;
+    t3 = <Box><Text color="ansi:cyan">{BLACK_CIRCLE} </Text><Text bold={true}>Can UMMAYA include this session transcript in product-quality feedback?</Text></Box>;
     $[6] = t3;
   } else {
     t3 = $[6];
   }
   let t4;
   if ($[7] === Symbol.for("react.memo_cache_sentinel")) {
-    t4 = <Box marginLeft={2}><Text dimColor={true}>Learn more: https://code.claude.com/docs/en/data-usage#session-quality-surveys</Text></Box>;
+    t4 = <Box marginLeft={2}><Text dimColor={true}>Review UMMAYA privacy settings before sharing session data.</Text></Box>;
     $[7] = t4;
   } else {
     t4 = $[7];

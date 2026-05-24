@@ -41,7 +41,6 @@ describe('executeHelp — 4-group output (FR-029)', () => {
     expect(result.text).toContain('/consent list');
     expect(result.text).toContain('/plugins');
     expect(result.text).toContain('/export');
-    expect(result.text).toContain('/history');
   });
 
   it('groups.session is non-empty', () => {

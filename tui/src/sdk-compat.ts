@@ -163,14 +163,15 @@ export default Anthropic
 
 export class APIError extends Error {
   readonly status?: number
-  readonly headers?: Record<string, string>
+  readonly headers?: Record<string, string> | Headers
   readonly error?: unknown
+  requestID?: string
 
   constructor(
     status: number | undefined,
     error: unknown,
     message: string | undefined,
-    headers?: Record<string, string>,
+    headers?: Record<string, string> | Headers,
   ) {
     super(message ?? 'APIError')
     this.name = 'APIError'
@@ -271,4 +272,3 @@ export type RedactedThinkingBlockParam = RedactedThinkingBlock
 export type BetaRedactedThinkingBlock = RedactedThinkingBlock
 export type BetaThinkingBlock = ThinkingBlock
 export type BetaWebSearchTool20250305 = Record<string, unknown>
-

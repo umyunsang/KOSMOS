@@ -1,4 +1,4 @@
-import type { ToolUseBlock } from 'src/sdk-compat.js'
+import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'
 import { findToolByName, type ToolUseContext } from '../../Tool.js'
 import type { AssistantMessage, Message } from '../../types/message.js'
@@ -22,7 +22,13 @@ export async function* runTools(
   canUseTool: CanUseToolFn,
   toolUseContext: ToolUseContext,
 ): AsyncGenerator<MessageUpdate, void> {
-  let currentContext = toolUseContext
+  let currentContext = {
+    ...toolUseContext,
+    options: {
+      ...toolUseContext.options,
+      tools: toolUseContext.options.refreshTools?.() ?? toolUseContext.options.tools,
+    },
+  }
   for (const { isConcurrencySafe, blocks } of partitionToolCalls(
     toolUseMessages,
     currentContext,

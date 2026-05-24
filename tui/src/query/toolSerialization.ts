@@ -6,41 +6,8 @@
 // ChatRequestFrame.tools. Uses zod/v4 built-in z.toJSONSchema() (Draft 2020-12).
 
 import { z } from 'zod/v4'
-import type { Tool } from '../Tool.js'
+import { getEmptyToolPermissionContext, type Tool } from '../Tool.js'
 import type { ToolDefinition } from '../ipc/codec.js'
-import { getAllBaseTools } from '../tools.js'
-
-// ---------------------------------------------------------------------------
-// Published-to-LLM name set — FR-003 single-source rule (TUI side).
-//
-// Includes ONLY the active reserved primitives (Migration Tree § L1-C.C1).
-// subscribe is deferred until UMMAYA has a real app/push-notification runtime.
-// MVP-7 auxiliary tools (Migration Tree § L1-C.C6) are tracked client-side
-// for permissions / sandbox infrastructure but NOT yet exposed to the LLM:
-// their TUI-side execution path (``runTools`` → ``tool_result`` frame back
-// to backend) is wired but the backend's IPC bridge does not yet round-trip
-// non-primitive ``tool_call`` futures end-to-end. Surfacing them here would
-// invite K-EXAONE to call them and trip the backend whitelist gate. Wiring
-// is deferred to a follow-up epic — see spec § Deferred to Future Work.
-//
-// Excludes CC-developer tools that are inappropriate for citizen UX:
-//   Read, Write, Edit, Bash, Glob, Grep, NotebookEdit  (Migration Tree § L1-C.C6)
-// ---------------------------------------------------------------------------
-const PUBLISHED_NAMES: ReadonlySet<string> = new Set([
-  // Active root primitives — Epic #2077 FR-003 single-source-of-truth.
-  'find',
-  'locate',
-  'send',
-  'check',
-])
-
-/**
- * Returns true if the tool should be included in the LLM's tool inventory.
- * Only tools whose `name` appears in the published set are forwarded.
- */
-function isPublishedToLLM(tool: Tool): boolean {
-  return PUBLISHED_NAMES.has(tool.name)
-}
 
 // ---------------------------------------------------------------------------
 // Serialization helpers
@@ -50,39 +17,19 @@ function isPublishedToLLM(tool: Tool): boolean {
  * Converts a single {@link Tool} to an OpenAI-compatible {@link ToolDefinition}.
  *
  * - `function.name`        = tool.name
- * - `function.description` = description() + "\n\n" + prompt().slice(0, 200)
- *                            (either part omitted when absent/empty)
- * - `function.parameters`  = z.toJSONSchema(tool.inputSchema) — Draft 2020-12
- */
+   * - `function.description` = await tool.prompt(...)
+   * - `function.parameters`  = z.toJSONSchema(tool.inputSchema) — Draft 2020-12
+   */
 export async function toolToFunctionSchema(tool: Tool): Promise<ToolDefinition> {
-  // UMMAYA primitives implement description() and prompt() as zero-arg constants.
-  // Auxiliary tools (e.g. WebFetchTool) implement description(input, opts) and
-  // require a real input value to produce a meaningful string.  We call with no
-  // args and catch any destructuring error, falling back to an empty string.
-  // This is safe: description() is used here only for the LLM's tool catalog
-  // entry, where a static capability phrase is sufficient.
-  const descFn = tool.description as unknown as (() => Promise<string>) | undefined
-  const promptFn = tool.prompt as unknown as (() => Promise<string>) | undefined
+  const description = await tool.prompt({
+    getToolPermissionContext: async () => getEmptyToolPermissionContext(),
+    tools: [tool],
+    agents: [],
+  })
 
-  let descriptionText = ''
-  try {
-    descriptionText = descFn ? await descFn() : ''
-  } catch {
-    // Non-primitive tools whose description() requires an input arg are
-    // silently skipped; the function.name alone identifies the tool to the LLM.
-    descriptionText = ''
-  }
-
-  let promptText = ''
-  try {
-    promptText = promptFn ? (await promptFn()).slice(0, 200) : ''
-  } catch {
-    promptText = ''
-  }
-
-  const description = [descriptionText, promptText].filter(Boolean).join('\n\n')
-
-  const parameters = z.toJSONSchema(tool.inputSchema) as Record<string, unknown>
+  const parameters = (
+    tool.inputJSONSchema ?? z.toJSONSchema(tool.inputSchema)
+  ) as Record<string, unknown>
 
   return {
     type: 'function' as const,
@@ -95,16 +42,12 @@ export async function toolToFunctionSchema(tool: Tool): Promise<ToolDefinition> 
 }
 
 /**
- * Walks {@link getAllBaseTools} and returns the publishable tool inventory,
- * sorted alphabetically by `function.name`.
+ * Returns the TUI-provided model-facing inventory.
  *
- * Called once per `chat_request` turn in `tui/src/query/deps.ts`.
- * Budget: ≤ 50 ms (4 published primitive schemas; Zod conversion is fast and tool descriptions
- * are constant-string returns — no I/O).
+ * UMMAYA's backend registry is now the single source for concrete adapter
+ * schemas. Returning an empty list here keeps CC's TUI Tool.call execution
+ * surface available without leaking root primitives as model-facing tools.
  */
 export async function getToolDefinitionsForFrame(): Promise<ToolDefinition[]> {
-  const allTools = getAllBaseTools()
-  const visible = allTools.filter(isPublishedToLLM)
-  const defs = await Promise.all(visible.map(toolToFunctionSchema))
-  return defs.sort((a, b) => a.function.name.localeCompare(b.function.name))
+  return []
 }

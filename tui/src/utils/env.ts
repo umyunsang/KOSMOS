@@ -1,8 +1,7 @@
 import memoize from 'lodash-es/memoize.js'
 import { homedir } from 'os'
 import { join } from 'path'
-// UMMAYA-original: oauth config suffix not used — UMMAYA uses FriendliAI, not Anthropic OAuth.
-const fileSuffixForOauthConfig = (): string => ''
+import { fileSuffixForOauthConfig } from '../constants/oauth.js'
 import { isRunningWithBun } from './bundledMode.js'
 import { getClaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
 import { findExecutable } from './findExecutable.js'

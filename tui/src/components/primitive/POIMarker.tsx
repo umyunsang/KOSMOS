@@ -7,7 +7,7 @@
  * FR-025: locate POI renderer.
  */
 import React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../../ink.js'
 import { useTheme } from '@/theme/provider'
 import type { PoiSlot } from './types'
 

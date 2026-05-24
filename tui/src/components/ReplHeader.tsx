@@ -17,7 +17,7 @@
 // "준비 완료" here, English builds see "Ready" — both stay below the band.
 
 import React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../ink.js'
 import { useTheme } from '../theme/provider'
 import { useSessionStore } from '../store/session-store'
 import { WelcomeV2 } from './LogoV2/WelcomeV2'

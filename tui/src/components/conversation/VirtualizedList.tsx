@@ -12,21 +12,19 @@
  * unmounted items so Ink layout does not reflow the whole list.
  *
  * FR-048: only visible-viewport rows are mounted as React fibers.
- * FR-052: overflowToBackbuffer prop pushes scrolled-off rows into Ink's static
- *         backbuffer region so they are never re-rendered once committed.
+ * FR-052: overflowToBackbuffer keeps scrolled-off rows above the live viewport.
  *
  * Props:
  *   items              — readonly array of data items (generic T)
  *   renderItem         — (item: T, index: number) => React.ReactElement
  *   keyExtractor       — (item: T, index: number) => string  (stable identity)
  *   scrollTop          — current scroll offset in rows (0 = top; caller-managed)
- *   overflowToBackbuffer — when true, rows that have scrolled off the top are
- *                          rendered via Ink's <Static> (backbuffer) region
- *                          instead of being unmounted (FR-052). Default: false.
+ *   overflowToBackbuffer — when true, rows that have scrolled off the top stay
+ *                          above the viewport instead of being unmounted.
  */
 
-import React, { memo, useCallback, useMemo } from 'react'
-import { Box, Static } from 'ink'
+import React, { memo, useCallback, useMemo, useRef } from 'react'
+import { Box } from '../../ink.js'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,8 +42,7 @@ export interface VirtualizedListProps<T> {
   readonly scrollTop?: number
   /**
    * When true, rows that scroll off the top are pushed into Ink's static
-   * backbuffer region (via <Static>) rather than being unmounted. This
-   * guarantees historical rows are never re-rendered (FR-052).
+   * backbuffer region rather than being unmounted.
    */
   readonly overflowToBackbuffer?: boolean
 }
@@ -133,11 +130,8 @@ function VirtualizedListInner<T>(
   // ---------------------------------------------------------------------------
   // overflowToBackbuffer: slice of items that have scrolled off (index < start)
   //
-  // We pass the raw item slice to <Static> and provide the render function
-  // directly so that Ink's <Static> controls when renderItem is called — it
-  // only calls it for NEW items (those appended since last committed index).
-  // This avoids eagerly calling renderItem for all backbuffer items on every
-  // render, which would defeat the purpose of overflowToBackbuffer (FR-052).
+  // Backbuffer entries stay mounted above the live viewport. This file is not
+  // part of CC's canonical message path; production chat uses VirtualMessageList.
   // ---------------------------------------------------------------------------
   type BackbufferEntry = { item: T; index: number; key: string }
   const backbufferEntries = useMemo((): BackbufferEntry[] => {
@@ -160,6 +154,27 @@ function VirtualizedListInner<T>(
     ),
     [renderItem],
   )
+
+  const backbufferCacheRef = useRef(new Map<string, React.ReactElement>())
+  const backbufferNodes = useMemo((): React.ReactElement[] => {
+    const cache = backbufferCacheRef.current
+    const activeKeys = new Set<string>()
+
+    for (const entry of backbufferEntries) {
+      activeKeys.add(entry.key)
+      if (!cache.has(entry.key)) {
+        cache.set(entry.key, renderBackbufferEntry(entry))
+      }
+    }
+
+    for (const key of cache.keys()) {
+      if (!activeKeys.has(key)) {
+        cache.delete(key)
+      }
+    }
+
+    return backbufferEntries.map(entry => cache.get(entry.key)!)
+  }, [backbufferEntries, renderBackbufferEntry])
 
   // ---------------------------------------------------------------------------
   // Viewport items (start..end)
@@ -184,14 +199,8 @@ function VirtualizedListInner<T>(
 
   return (
     <Box flexDirection="column">
-      {/* Static backbuffer: scrolled-off rows committed once, never re-rendered.
-          <Static> tracks its own index state and only renders entries appended
-          since the last committed index — historical rows are never re-invoked. */}
-      {overflowToBackbuffer && backbufferEntries.length > 0 && (
-        <Static items={backbufferEntries}>
-          {renderBackbufferEntry}
-        </Static>
-      )}
+      {/* Backbuffer: scrolled-off rows remain above the viewport. */}
+      {overflowToBackbuffer && backbufferNodes}
       {/* Top spacer: holds scroll height for unmounted rows above viewport */}
       {!overflowToBackbuffer && topSpacer > 0 && (
         <Box height={topSpacer} flexShrink={0} />

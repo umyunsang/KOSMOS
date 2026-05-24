@@ -1,6 +1,6 @@
 import { c as _c } from "react/compiler-runtime";
 import { feature } from 'bun:bundle';
-import React, { useContext, useEffect, useCallback, useState, useSyncExternalStore } from 'react';
+import React, { useContext, useEffect, useEffectEvent, useState, useSyncExternalStore } from 'react';
 import { MailboxProvider } from '../context/mailbox.js';
 import { useSettingsChange } from '../hooks/useSettingsChange.js';
 import { logForDebugging } from '../utils/debug.js';
@@ -87,7 +87,7 @@ export function AppStateProvider(t0) {
   } else {
     t4 = $[7];
   }
-  const onSettingsChange = useCallback(t4, []);
+  const onSettingsChange = useEffectEvent(t4);
   useSettingsChange(onSettingsChange);
   let t5;
   if ($[8] !== children) {

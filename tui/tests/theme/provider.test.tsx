@@ -5,7 +5,7 @@
 
 import { describe, expect, it, beforeEach, afterEach } from 'bun:test'
 import React from 'react'
-import { Text, Box } from 'ink'
+import { Text, Box } from '../../src/ink.js'
 import { render } from 'ink-testing-library'
 import { ThemeProvider, useTheme } from '../../src/theme/provider'
 import defaultTheme from '../../src/theme/default'

@@ -6,8 +6,7 @@ import { clearSpeculativeChecks } from '../../tools/BashTool/bashPermissions.js'
 import { clearClassifierApprovals } from '../../utils/classifierApprovals.js'
 import { resetGetMemoryFilesCache } from '../../utils/claudemd.js'
 import { clearSessionMessagesCache } from '../../utils/sessionStorage.js'
-// UMMAYA: utils/telemetry/betaSessionTracing.js deleted by Spec 1633 P1. clearBetaTracingState → no-op.
-const clearBetaTracingState = (): void => {}
+import { clearBetaTracingState } from '../../utils/telemetry/betaSessionTracing.js'
 import { resetMicrocompactState } from './microCompact.js'
 
 /**

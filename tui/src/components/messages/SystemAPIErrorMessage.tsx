@@ -2,9 +2,7 @@ import { c as _c } from "react/compiler-runtime";
 import * as React from 'react';
 import { useState } from 'react';
 import { Box, Text } from 'src/ink.js';
-// services/api/errorUtils removed (Spec 2293 cleanup); inline stub below.
-const formatAPIError = (err: unknown): string =>
-  err instanceof Error ? err.message : String(err);
+import { formatAPIError } from 'src/services/api/errorUtils.js';
 import type { SystemAPIErrorMessage } from 'src/types/message.js';
 import { useInterval } from 'usehooks-ts';
 import { CtrlOToExpand } from '../CtrlOToExpand.js';

@@ -1,32 +1,15 @@
-// SWAP: dead-code-cleanup (Spec 1633 P1 + Epic #2293) + LLM provider (sdk-compat)
-// CC reference: .references/claude-code-sourcemap/restored-src/src/components/messages/AssistantTextMessage.tsx
-// Divergence LOC: ~18 (services/api/errors inlined; secureStorage stub; sdk-compat import)
-// Spec citation: #1633 (services/api removal), #2293 (secureStorage removal), Epic #2639 (audit § 5.5)
-// Justification: Anthropic services/api/errors and secureStorage removed; constants and isMacOsKeychainLocked → false stub inlined to preserve contract.
 import { c as _c } from "react/compiler-runtime";
-import type { TextBlockParam } from 'src/sdk-compat.js';
+import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';
 import React, { useContext } from 'react';
 import { ERROR_MESSAGE_USER_ABORT } from 'src/services/compact/compact.js';
 import { isRateLimitErrorMessage } from 'src/services/rateLimitMessages.js';
 import { BLACK_CIRCLE } from '../../constants/figures.js';
 import { Box, NoSelect, Text } from '../../ink.js';
-// services/api/errors removed (Spec 2293 cleanup); inline constants below.
-const API_ERROR_MESSAGE_PREFIX = 'API Error'
-const API_TIMEOUT_ERROR_MESSAGE = 'API request timed out'
-const CREDIT_BALANCE_TOO_LOW_ERROR_MESSAGE = 'Credit balance too low'
-const CUSTOM_OFF_SWITCH_MESSAGE = 'Service temporarily unavailable'
-const INVALID_API_KEY_ERROR_MESSAGE = 'Invalid API key · Run /login to authenticate'
-const INVALID_API_KEY_ERROR_MESSAGE_EXTERNAL = 'Invalid API key'
-const ORG_DISABLED_ERROR_MESSAGE_ENV_KEY = 'Organization disabled'
-const ORG_DISABLED_ERROR_MESSAGE_ENV_KEY_WITH_OAUTH = 'Organization disabled (OAuth)'
-const PROMPT_TOO_LONG_ERROR_MESSAGE = 'Prompt too long'
-const TOKEN_REVOKED_ERROR_MESSAGE = 'Token revoked'
-const startsWithApiErrorPrefix = (msg: string): boolean => msg.startsWith(API_ERROR_MESSAGE_PREFIX)
-import { isEmptyMessageText, NO_RESPONSE_REQUESTED } from '../../utils/messageText.js';
+import { API_ERROR_MESSAGE_PREFIX, API_TIMEOUT_ERROR_MESSAGE, CREDIT_BALANCE_TOO_LOW_ERROR_MESSAGE, CUSTOM_OFF_SWITCH_MESSAGE, INVALID_API_KEY_ERROR_MESSAGE, INVALID_API_KEY_ERROR_MESSAGE_EXTERNAL, ORG_DISABLED_ERROR_MESSAGE_ENV_KEY, ORG_DISABLED_ERROR_MESSAGE_ENV_KEY_WITH_OAUTH, PROMPT_TOO_LONG_ERROR_MESSAGE, startsWithApiErrorPrefix, TOKEN_REVOKED_ERROR_MESSAGE } from '../../services/api/errors.js';
+import { isEmptyMessageText, NO_RESPONSE_REQUESTED } from '../../utils/messages.js';
 import { getUpgradeMessage } from '../../utils/model/contextWindowUpgradeCheck.js';
 import { getDefaultSonnetModel, renderModelName } from '../../utils/model/model.js';
-// UMMAYA: secureStorage deleted by Spec 1633 P1. isMacOsKeychainLocked → false (no OS keychain in UMMAYA).
-const isMacOsKeychainLocked = (): false => false
+import { isMacOsKeychainLocked } from '../../utils/secureStorage/macOsKeychainStorage.js';
 import { CtrlOToExpand } from '../CtrlOToExpand.js';
 import { InterruptedByUser } from '../InterruptedByUser.js';
 import { Markdown } from '../Markdown.js';

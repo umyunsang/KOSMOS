@@ -9,15 +9,14 @@ import type {
   LocalJSXCommandContext,
   LocalJSXCommandOnDone,
 } from '../../types/command.js'
-import { getMessagesAfterCompactBoundary } from '../../utils/messageBoundary.js'
+import { getMessagesAfterCompactBoundary } from '../../utils/messages.js'
 import {
   getTranscriptPath,
   saveAgentName,
   saveCustomTitle,
 } from '../../utils/sessionStorage.js'
 import { isTeammate } from '../../utils/teammate.js'
-// UMMAYA Spec 1633 / Epic #2293 — commands/rename/generateSessionName deleted (Anthropic queryHaiku auto-naming); inline no-op stub.
-const generateSessionName = async (..._args: unknown[]): Promise<string | null> => null
+import { generateSessionName } from './generateSessionName.js'
 
 export async function call(
   onDone: LocalJSXCommandOnDone,
@@ -57,7 +56,7 @@ export async function call(
   // Always save the custom title (session name)
   await saveCustomTitle(sessionId, newName, fullPath)
 
-  // Sync title to bridge session on claude.ai/code (best-effort, non-blocking).
+  // Sync title to bridge session on UMMAYA on the web (best-effort, non-blocking).
   // v2 env-less bridge stores cse_* in replBridgeSessionId —
   // updateBridgeSessionTitle retags internally for the compat endpoint.
   const appState = context.getAppState()

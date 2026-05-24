@@ -9,11 +9,8 @@ import { toError } from '../utils/errors.js';
 import { logError } from '../utils/log.js';
 import { getSettingSourceName, type SettingSource } from '../utils/settings/constants.js';
 import { updateSettingsForSource } from '../utils/settings/settings.js';
-// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — utils/teleport/ deleted; stub.
-type EnvironmentKind = 'anthropic_cloud' | 'byoc' | 'bridge'
-type EnvironmentResource = { kind: EnvironmentKind; environment_id: string; name: string; created_at: string; state: 'active' }
-type EnvironmentSelectionInfo = { availableEnvironments: EnvironmentResource[]; selectedEnvironment: EnvironmentResource | null; selectedEnvironmentSource: unknown | null }
-const getEnvironmentSelectionInfo = async (): Promise<EnvironmentSelectionInfo> => ({ availableEnvironments: [], selectedEnvironment: null, selectedEnvironmentSource: null })
+import { getEnvironmentSelectionInfo } from '../utils/teleport/environmentSelection.js';
+import type { EnvironmentResource } from '../utils/teleport/environments.js';
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js';
 import { Select } from './CustomSelect/select.js';
 import { Byline } from './design-system/Byline.js';
@@ -21,7 +18,7 @@ import { Dialog } from './design-system/Dialog.js';
 import { KeyboardShortcutHint } from './design-system/KeyboardShortcutHint.js';
 import { LoadingState } from './design-system/LoadingState.js';
 const DIALOG_TITLE = 'Select Remote Environment';
-const SETUP_HINT = `Configure environments at: https://claude.ai/code`;
+const SETUP_HINT = `Remote environments are not enabled in this UMMAYA build`;
 type Props = {
   onDone: (message?: string) => void;
 };

@@ -1,16 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // UMMAYA-original — Epic ζ #2297 Phase 0b · T008 (revised post-smoke 2026-04-30)
 //
-// Unit tests for dispatchPrimitive.ts (server-side-ack architecture).
+// Unit tests for dispatchPrimitive.ts.
 //
-// Architecture note: live smoke on 2026-04-30 revealed the backend's
-// `_handle_chat_request` runs the full agentic loop server-side and
-// emits its own tool_result frames; the TUI's CC SDK Tool.call() has
-// no inbound-tool_call counterpart on the backend, so the original
-// IPC-dispatch design timed out. The revised dispatcher returns a
-// synthetic-success ack envelope immediately so the SDK turn closes
-// without re-triggering execution. See the dispatchPrimitive.ts header
-// for the full rationale.
+// CC contract: the provider emits assistant(tool_use) and stops. query.ts
+// calls Tool.call(); dispatchPrimitive sends the matching ToolCallFrame to the
+// backend and resolves only after the backend returns ToolResultFrame.
 
 import { test, expect, describe, beforeEach } from 'bun:test'
 import { dispatchPrimitive } from './dispatchPrimitive.js'
@@ -40,9 +35,12 @@ function fakeContext(toolUseId = 'test-tool-use-id'): ToolUseContext {
   } as unknown as ToolUseContext
 }
 
-function fakeBridge(): IPCBridge {
+function fakeBridge(onSend?: (frame: unknown) => void): IPCBridge {
   return {
-    send: () => true,
+    send: (frame: unknown) => {
+      onSend?.(frame)
+      return true
+    },
     frames: () => ({ [Symbol.asyncIterator]: () => ({ next: () => Promise.resolve({ done: true, value: undefined }) }) }) as unknown as AsyncIterable<never>,
     close: () => Promise.resolve(),
     proc: {} as ReturnType<typeof Bun.spawn>,
@@ -54,78 +52,98 @@ function fakeBridge(): IPCBridge {
 }
 
 // ---------------------------------------------------------------------------
-// Tests — server-side-ack contract
+// Tests — CC register-and-await contract
 // ---------------------------------------------------------------------------
 
-// UMMAYA hotfix #2519 (CC-original migration, 2026-04-30): the
-// server-side-ack stub architecture this file tests was superseded by
-// the register-and-await pattern (see dispatchPrimitive.ts header).
-// The new architecture awaits a real ToolResultFrame from the backend;
-// the assertions below (synchronous return + ack envelope shape + no
-// inbound IPC tool_call frame) no longer apply. A follow-up Spec will
-// rewrite these tests against the register-and-await contract.
-describe.skip('dispatchPrimitive (server-side-ack) — superseded by register-and-await', () => {
+describe('dispatchPrimitive — CC register-and-await dispatch', () => {
   let registry: PendingCallRegistry
 
   beforeEach(() => {
     registry = new PendingCallRegistry()
   })
 
-  test('find returns ok=true with ack envelope', async () => {
-    const result = (await dispatchPrimitive({
-      primitive: 'find',
-      args: { mode: 'search', query: '날씨' },
-      context: fakeContext('find-use-1'),
-      registry,
-      bridge: fakeBridge(),
-    })) as unknown as { data: { ok: boolean; result?: Record<string, unknown> } }
-
-    expect(result.data.ok).toBe(true)
-    expect(result.data.result?.['dispatched_via']).toBe('backend-server-side')
-    expect(result.data.result?.['primitive']).toBe('find')
-    expect(result.data.result?.['tool_use_id']).toBe('find-use-1')
-  })
-
-  test('check forwards args verbatim — tool_id preserved (FR-009 / I-V6)', async () => {
+  test('sends a ToolCallFrame with the original tool_use id and arguments', async () => {
+    const sentFrames: unknown[] = []
+    const toolUseId = 'find-use-cc-1'
     const args = {
-      tool_id: 'mock_verify_module_modid',
-      params: {
-        scope_list: ['find:hometax.simplified'],
-        purpose_ko: '종합소득세 신고',
-        purpose_en: 'Tax return',
-      },
+      mode: 'fetch',
+      tool_id: 'kma_current_observation',
+      params: { nx: 97, ny: 74 },
     }
 
-    const result = (await dispatchPrimitive({
-      primitive: 'check',
+    const promise = dispatchPrimitive({
+      primitive: 'find',
       args,
-      context: fakeContext('check-use-1'),
+      context: fakeContext(toolUseId),
       registry,
-      bridge: fakeBridge(),
-    })) as unknown as { data: { ok: boolean; result?: Record<string, unknown> } }
+      bridge: fakeBridge((frame) => sentFrames.push(frame)),
+    }) as unknown as Promise<{ data: { ok: boolean; result?: unknown } }>
 
+    await Promise.resolve()
+    expect(sentFrames).toHaveLength(1)
+    expect(sentFrames[0]).toMatchObject({
+      role: 'tool',
+      kind: 'tool_call',
+      call_id: toolUseId,
+      name: 'find',
+      arguments: args,
+    })
+
+    registry.resolve(toolUseId, {
+      session_id: 'test-session',
+      correlation_id: 'test-corr',
+      ts: '2026-05-24T00:00:00Z',
+      role: 'backend',
+      kind: 'tool_result',
+      call_id: toolUseId,
+      envelope: { kind: 'find', result: { status: 'ok' } },
+    } as unknown as Parameters<typeof registry.resolve>[1])
+
+    const result = await promise
     expect(result.data.ok).toBe(true)
-    // The dispatcher does NOT translate tool_id at the TUI layer (FR-009).
-    // The server-side-ack architecture leaves args untouched on the
-    // wire — backend's `_VerifyInputForLLM` pre-validator owns translation.
-    expect(args.tool_id).toBe('mock_verify_module_modid')
-    expect(args.params.scope_list).toEqual(['find:hometax.simplified'])
+    expect(result.data.result).toEqual({ status: 'ok' })
   })
 
-  test('send returns ack with send primitive name', async () => {
-    const result = (await dispatchPrimitive({
-      primitive: 'send',
-      args: { tool_id: 'mock_submit_module_hometax_taxreturn' },
-      context: fakeContext('send-use-1'),
-      registry,
-      bridge: fakeBridge(),
-    })) as unknown as { data: { ok: boolean; result?: Record<string, unknown> } }
+  test('can preserve a concrete adapter name while dispatching through its primitive family', async () => {
+    const sentFrames: unknown[] = []
+    const toolUseId = 'kma-use-cc-1'
+    const args = { nx: 97, ny: 74, base_date: '20260524', base_time: '1600' }
 
+    const promise = dispatchPrimitive({
+      primitive: 'find',
+      toolName: 'kma_current_observation',
+      args,
+      context: fakeContext(toolUseId),
+      registry,
+      bridge: fakeBridge((frame) => sentFrames.push(frame)),
+    }) as unknown as Promise<{ data: { ok: boolean; result?: unknown } }>
+
+    await Promise.resolve()
+    expect(sentFrames[0]).toMatchObject({
+      role: 'tool',
+      kind: 'tool_call',
+      call_id: toolUseId,
+      name: 'kma_current_observation',
+      arguments: args,
+    })
+
+    registry.resolve(toolUseId, {
+      session_id: 'test-session',
+      correlation_id: 'test-corr',
+      ts: '2026-05-24T00:00:00Z',
+      role: 'backend',
+      kind: 'tool_result',
+      call_id: toolUseId,
+      envelope: { kind: 'find', result: { kind: 'record' } },
+    } as unknown as Parameters<typeof registry.resolve>[1])
+
+    const result = await promise
     expect(result.data.ok).toBe(true)
-    expect(result.data.result?.['primitive']).toBe('send')
+    expect(result.data.result).toEqual({ kind: 'record' })
   })
 
-  test('missing toolUseId surfaces null in ack envelope', async () => {
+  test('missing toolUseId fails closed instead of dispatching an unmatchable call', async () => {
+    let sent = false
     const ctx = {
       options: {
         sessionId: 'test-session',
@@ -146,49 +164,14 @@ describe.skip('dispatchPrimitive (server-side-ack) — superseded by register-an
       args: {},
       context: ctx,
       registry,
-      bridge: fakeBridge(),
-    })) as unknown as { data: { ok: boolean; result?: Record<string, unknown> } }
+      bridge: fakeBridge(() => {
+        sent = true
+      }),
+    })) as unknown as { data: { ok: boolean; error?: { kind: string } } }
 
-    expect(result.data.ok).toBe(true)
-    expect(result.data.result?.['tool_use_id']).toBe(null)
-  })
-
-  test('does NOT send IPC tool_call frame (server-side-ack architecture)', async () => {
-    let sendCalled = false
-    const bridge = {
-      ...fakeBridge(),
-      send: () => {
-        sendCalled = true
-        return true
-      },
-    } as unknown as IPCBridge
-
-    await dispatchPrimitive({
-      primitive: 'find',
-      args: {},
-      context: fakeContext(),
-      registry,
-      bridge,
-    })
-
-    // Per the server-side-ack architecture, the dispatcher does NOT emit
-    // a fresh tool_call frame — the backend's `_handle_chat_request`
-    // already dispatches internally.
-    expect(sendCalled).toBe(false)
-  })
-
-  test('completes synchronously (no timeout path under default settings)', async () => {
-    const start = Date.now()
-    await dispatchPrimitive({
-      primitive: 'find',
-      args: {},
-      context: fakeContext(),
-      registry,
-      bridge: fakeBridge(),
-    })
-    const elapsed = Date.now() - start
-    // Server-side-ack returns immediately — should complete in well under 1s.
-    expect(elapsed).toBeLessThan(1000)
+    expect(sent).toBe(false)
+    expect(result.data.ok).toBe(false)
+    expect(result.data.error?.kind).toBe('dispatch_error')
   })
 })
 

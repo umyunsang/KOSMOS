@@ -1,11 +1,10 @@
-import type Anthropic from 'src/sdk-compat.js'
-import type { BetaToolUnion } from 'src/sdk-compat.js'
+import type Anthropic from '@anthropic-ai/sdk'
+import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages.js'
 import {
   getLastApiCompletionTimestamp,
   setLastApiCompletionTimestamp,
 } from '../bootstrap/state.js'
-// UMMAYA-original: CC beta headers not used with FriendliAI provider.
-const STRUCTURED_OUTPUTS_BETA_HEADER = ''
+import { STRUCTURED_OUTPUTS_BETA_HEADER } from '../constants/betas.js'
 import type { QuerySource } from '../constants/querySource.js'
 import {
   getAttributionHeader,
@@ -13,10 +12,9 @@ import {
 } from '../constants/system.js'
 import { logEvent } from '../services/analytics/index.js'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../services/analytics/metadata.js'
-// UMMAYA-original: CC API metadata and Anthropic client replaced by FriendliAI IPC.
-const getAPIMetadata = (): Record<string, unknown> => ({})
-const getAnthropicClient = async (_opts?: unknown): Promise<null> => null
-// UMMAYA: betas.js deleted by Spec 1633 P1. getModelBetas → [] literal, modelSupportsStructuredOutputs → false literal.
+import { getAPIMetadata } from '../services/api/claude.js'
+import { getAnthropicClient } from '../services/api/client.js'
+import { getModelBetas, modelSupportsStructuredOutputs } from './betas.js'
 import { computeFingerprint } from './fingerprint.js'
 import { normalizeModelStringForAPI } from './model/model.js'
 
@@ -128,8 +126,15 @@ export async function sideQuery(opts: SideQueryOptions): Promise<BetaMessage> {
     model,
     source: 'side_query',
   })
-  // UMMAYA: betas.js deleted (Spec 1633 P1). No beta headers with FriendliAI provider.
-  const betas: string[] = []
+  const betas = [...getModelBetas(model)]
+  // Add structured-outputs beta if using output_format and provider supports it
+  if (
+    output_format &&
+    modelSupportsStructuredOutputs(model) &&
+    !betas.includes(STRUCTURED_OUTPUTS_BETA_HEADER)
+  ) {
+    betas.push(STRUCTURED_OUTPUTS_BETA_HEADER)
+  }
 
   // Extract first user message text for fingerprint
   const messageText = extractFirstUserMessageText(messages)

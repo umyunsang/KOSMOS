@@ -28,7 +28,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import React from 'react'
-import { Box, Text, render } from 'ink'
+import { Box, Text, render } from '../../ink.js'
 
 import { IPCFrameSchema, isBackpressureSignal } from '../codec'
 import type { BackpressureSignalFrame } from '../frames.generated'

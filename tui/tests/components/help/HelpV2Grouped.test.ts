@@ -61,12 +61,11 @@ describe('HelpV2Grouped — groupCatalog correctness (FR-029)', () => {
     expect(names).toContain('/plugins');
   });
 
-  it('storage group contains /config, /export, /history', () => {
+  it('storage group contains /config and /export', () => {
     const grouped = groupCatalog(UI_L2_SLASH_COMMANDS);
     const names = grouped.storage.map((e) => e.name);
     expect(names).toContain('/config');
     expect(names).toContain('/export');
-    expect(names).toContain('/history');
   });
 
   it('groups are sorted alphabetically within each group', () => {

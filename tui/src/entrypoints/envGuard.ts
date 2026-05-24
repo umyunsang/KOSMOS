@@ -8,20 +8,26 @@
 // Intentionally Node/Bun-stdlib only: no imports from ipc/, bridge/, or
 // LLM layers — this runs *before* anything else in main().
 
-import { hasFriendliCredential as hasFriendliCredentialInEnv } from '../utils/friendliAuth.js'
+import {
+  FRIENDLI_PRIMARY_ENV,
+  hasAnthropicApiKeyAuth,
+} from '../utils/auth.js'
 
 export const ENV_GUARD_MESSAGE =
   'FriendliAI API key not configured yet. Start UMMAYA and run /login before sending a request.'
 
 /**
- * Check whether the current process has an active FriendliAI login session.
- * A shell-level UMMAYA_FRIENDLI_TOKEN alone is not treated as logged in; /login
- * must activate the session so packaged builds cannot bypass the login step.
+ * Check whether the current process has a FriendliAI API key. UMMAYA keeps the
+ * CC auth surface, so an environment key and a /login-managed config key are
+ * both valid sources.
  */
 export function hasFriendliCredential(
   env: Record<string, string | undefined> = process.env,
 ): boolean {
-  return hasFriendliCredentialInEnv(env)
+  if (env[FRIENDLI_PRIMARY_ENV]?.trim()) {
+    return true
+  }
+  return env === process.env ? hasAnthropicApiKeyAuth() : false
 }
 
 /**

@@ -181,14 +181,6 @@ export const getUserContext = memoize(
       claudemd_disabled: Boolean(shouldDisableClaudeMd),
     })
 
-    // UMMAYA hotfix (2026-05-04): inject KST date + current time so the
-    // LLM cannot guess KMA `base_time` (KST HHMM publication slots:
-    // 0200/0500/0800/1100/1400/1700/2000/2300). The same information is
-    // emitted by stdio.py into the system-prompt dynamic suffix; both
-    // injection points are required because (a) sub-agent paths
-    // (runAgent / btw / compact) rebuild context from getUserContext and
-    // (b) the system-prompt suffix is the canonical hint surface for the
-    // primary chat loop. See `getKstTimeParts()` in constants/common.ts.
     const kst = getKstTimeParts()
     return {
       ...(claudeMd && { claudeMd }),

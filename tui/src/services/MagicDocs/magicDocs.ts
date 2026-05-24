@@ -21,8 +21,10 @@ import {
   type REPLHookContext,
   registerPostSamplingHook,
 } from '../../utils/hooks/postSamplingHooks.js'
-import { hasToolCallsInLastAssistantTurn } from '../../utils/messagePredicates.js'
-import { createUserMessage } from '../../utils/userMessageFactories.js'
+import {
+  createUserMessage,
+  hasToolCallsInLastAssistantTurn,
+} from '../../utils/messages.js'
 import { sequential } from '../../utils/sequential.js'
 import { buildMagicDocsUpdatePrompt } from './prompts.js'
 

@@ -33,12 +33,7 @@ import {
 import { builtInCommandNames } from '../commands.js'
 import { COMMAND_NAME_TAG, TICK_TAG } from '../constants/xml.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../services/analytics/growthbook.js'
-// UMMAYA: services/api/sessionIngress deleted (claude.ai session backend). Stubs below.
-const sessionIngress = {
-  appendSessionLog: async (..._args: unknown[]): Promise<boolean> => false,
-  getSessionLogs: async (..._args: unknown[]): Promise<unknown[]> => [],
-  clearAllSessions: (): void => {},
-}
+import * as sessionIngress from '../services/api/sessionIngress.js'
 import { REPL_TOOL_NAME } from '../tools/REPLTool/constants.js'
 import {
   type AgentId,
@@ -75,7 +70,6 @@ import { getCwd } from './cwd.js'
 import { logForDebugging } from './debug.js'
 import { logForDiagnosticsNoPII } from './diagLogs.js'
 import { getClaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
-import { getUmmayaSessionsDir } from './ummayaPaths.js'
 import { isFsInaccessible } from './errors.js'
 import type { FileHistorySnapshot } from './fileHistory.js'
 import { formatFileSize } from './format.js'
@@ -85,8 +79,7 @@ import { getBranch } from './git.js'
 import { gracefulShutdownSync, isShuttingDown } from './gracefulShutdown.js'
 import { parseJSONL } from './json.js'
 import { logError } from './log.js'
-import { isCompactBoundaryMessage } from './messageBoundary.js'
-import { extractTag } from './messageText.js'
+import { extractTag, isCompactBoundaryMessage } from './messages.js'
 import { sanitizePath } from './path.js'
 import {
   extractJsonStringField,
@@ -202,24 +195,7 @@ export function isEphemeralToolProgress(dataType: unknown): boolean {
   return typeof dataType === 'string' && EPHEMERAL_PROGRESS_TYPES.has(dataType)
 }
 
-/**
- * UMMAYA canonical session storage root.
- *
- * Returns `~/.ummaya/memdir/user/sessions/` (or the UMMAYA_MEMDIR_USER
- * override). This replaces the CC-legacy `~/.claude/projects/` path for
- * all UMMAYA session writes (Spec 027 / Initiative #2290).
- */
 export function getProjectsDir(): string {
-  return getUmmayaSessionsDir()
-}
-
-/**
- * CC-legacy projects directory — `~/.claude/projects/`.
- *
- * Kept for read-only backwards-compat access (e.g. migrating old sessions or
- * during transition). New session writes go through `getProjectsDir()`.
- */
-export function getCCLegacyProjectsDir(): string {
   return join(getClaudeConfigHomeDir(), 'projects')
 }
 

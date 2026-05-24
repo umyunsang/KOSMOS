@@ -48,6 +48,8 @@ type ContextWithCitation = ToolUseContext & {
   ummayaCitations?: AdapterCitation[]
 }
 
+const ROOT_PRIMITIVE_TOOL_IDS = new Set(['find', 'locate', 'check', 'send'])
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === 'object'
     ? value as Record<string, unknown>
@@ -534,8 +536,9 @@ const inputSchema = lazySchema(() =>
       .string()
       .min(1)
       .describe(
-        'Registered adapter identifier, picked from <available_adapters>. ' +
-          'e.g. "kma_forecast_fetch", "hira_hospital_search".',
+        'Concrete adapter identifier picked from <available_adapters>. ' +
+          'This is not the function name. Never use "find", "locate", "check", or "send". ' +
+          'Examples: "kma_forecast_fetch", "hira_hospital_search".',
       ),
     params: z
       .record(z.string(), z.unknown())
@@ -674,6 +677,14 @@ export const LookupPrimitive = buildTool({
     // 1002 contract (Spec 024 invariant: every adapter cites the agency
     // policy URL) is enforced at the primitive surface, not just at the
     // permission gauntlet.
+
+    if (ROOT_PRIMITIVE_TOOL_IDS.has(input.tool_id)) {
+      return {
+        result: false,
+        message: `Root primitive '${input.tool_id}' is not an adapter tool_id. Pick a concrete adapter from <available_adapters>.`,
+        errorCode: PrimitiveErrorCode.AdapterNotFound,
+      }
+    }
 
     // Tier 1 — synced backend manifest (FR-017).
     if (isManifestSynced()) {

@@ -29,7 +29,7 @@
 
 import { describe, it, expect, beforeEach } from 'bun:test'
 import React from 'react'
-import { Text, Box } from 'ink'
+import { Text, Box } from '../../src/ink.js'
 import { render } from 'ink-testing-library'
 import {
   dispatchSessionAction,

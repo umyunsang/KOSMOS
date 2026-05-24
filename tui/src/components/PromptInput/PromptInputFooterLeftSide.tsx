@@ -42,7 +42,10 @@ import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js';
 import { getPlatform } from '../../utils/platform.js';
 import { PrBadge } from '../PrBadge.js';
 
-import { getProactiveModule } from '../../utils/proactiveModule.js'
+// Dead code elimination: conditional import for proactive mode
+/* eslint-disable @typescript-eslint/no-require-imports */
+const proactiveModule = feature('PROACTIVE') || feature('KAIROS') ? require('../../proactive/index.js') : null;
+/* eslint-enable @typescript-eslint/no-require-imports */
 const NO_OP_SUBSCRIBE = (_cb: () => void) => () => {};
 const NULL = () => null;
 const MAX_VOICE_HINT_SHOWS = 3;
@@ -70,7 +73,7 @@ type Props = {
 };
 function ProactiveCountdown() {
   const $ = _c(7);
-  const nextTickAt = useSyncExternalStore(getProactiveModule()?.subscribeToProactiveChanges ?? NO_OP_SUBSCRIBE, getProactiveModule()?.getNextTickAt ?? NULL, NULL);
+  const nextTickAt = useSyncExternalStore(proactiveModule?.subscribeToProactiveChanges ?? NO_OP_SUBSCRIBE, proactiveModule?.getNextTickAt ?? NULL, NULL);
   const [remainingSeconds, setRemainingSeconds] = useState(null);
   let t0;
   let t1;
@@ -258,7 +261,7 @@ function ModeIndicator({
   const showSpinnerTree = expandedView === 'teammates';
   const prStatus = usePrStatus(isLoading, isPrStatusEnabled());
   const hasTmuxSession = useAppState(s_4 => "external" === 'ant' && s_4.tungstenActiveSession !== undefined);
-  const nextTickAt = useSyncExternalStore(getProactiveModule()?.subscribeToProactiveChanges ?? NO_OP_SUBSCRIBE, getProactiveModule()?.getNextTickAt ?? NULL, NULL);
+  const nextTickAt = useSyncExternalStore(proactiveModule?.subscribeToProactiveChanges ?? NO_OP_SUBSCRIBE, proactiveModule?.getNextTickAt ?? NULL, NULL);
   // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
   const voiceEnabled = feature('VOICE_MODE') ? useVoiceEnabled() : false;
   const voiceState = feature('VOICE_MODE') ?

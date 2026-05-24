@@ -1,4 +1,4 @@
-import type { BetaContentBlock } from 'src/sdk-compat.js'
+import type { BetaContentBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import { randomUUID, type UUID } from 'crypto'
 import { getSessionId } from 'src/bootstrap/state.js'
 import {
@@ -11,10 +11,7 @@ import type {
   SDKMessage,
   SDKRateLimitInfo,
 } from 'src/entrypoints/agentSdkTypes.js'
-// UMMAYA-1633 P1+P2 / UMMAYA-1978 T011 — services/claudeAiLimits deleted;
-// FriendliAI K-EXAONE has no Anthropic Claude.ai usage envelope. Local type
-// alias preserves the historic shape so message-mapping code links cleanly.
-type ClaudeAILimits = null
+import type { ClaudeAILimits } from 'src/services/claudeAiLimits.js'
 import { EXIT_PLAN_MODE_V2_TOOL_NAME } from 'src/tools/ExitPlanModeTool/constants.js'
 import type {
   AssistantMessage,
@@ -23,7 +20,7 @@ import type {
 } from 'src/types/message.js'
 import type { DeepImmutable } from 'src/types/utils.js'
 import stripAnsi from 'strip-ansi'
-import { createAssistantMessage } from '../assistantMessageFactories.js'
+import { createAssistantMessage } from '../messages.js'
 import { getPlan } from '../plans.js'
 
 export function toInternalMessages(

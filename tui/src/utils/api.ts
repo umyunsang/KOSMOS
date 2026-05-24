@@ -1,8 +1,8 @@
-import type Anthropic from 'src/sdk-compat.js'
+import type Anthropic from '@anthropic-ai/sdk'
 import type {
   BetaTool,
   BetaToolUnion,
-} from 'src/sdk-compat.js'
+} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import { createHash } from 'crypto'
 import { SYSTEM_PROMPT_DYNAMIC_BOUNDARY } from 'src/constants/prompts.js'
 import { getSystemContext, getUserContext } from 'src/context.js'
@@ -36,18 +36,17 @@ import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '../tools/ExitPlanModeTool/constants
 import { TASK_OUTPUT_TOOL_NAME } from '../tools/TaskOutputTool/constants.js'
 import type { Message } from '../types/message.js'
 import { isAgentSwarmsEnabled } from './agentSwarmsEnabled.js'
-// UMMAYA: betas.js deleted by Spec 1633 P1.
-// modelSupportsStructuredOutputs → false literal (no beta headers with FriendliAI).
-// shouldUseGlobalCacheScope → false literal (no Anthropic global cache).
-const modelSupportsStructuredOutputs = (_model: string): false => false
-const shouldUseGlobalCacheScope = (): false => false
+import {
+  modelSupportsStructuredOutputs,
+  shouldUseGlobalCacheScope,
+} from './betas.js'
 import { getCwd } from './cwd.js'
 import { logForDebugging } from './debug.js'
 import { isEnvTruthy } from './envUtils.js'
-import { createUserMessage } from './userMessageFactories.js'
+import { createUserMessage } from './messages.js'
 import {
   getAPIProvider,
-  isFirstPartyUmmayaBaseUrl,
+  isFirstPartyAnthropicBaseUrl,
 } from './model/providers.js'
 import {
   getFileReadIgnorePatterns,
@@ -199,7 +198,7 @@ export async function toolToAPISchema(
     // with Claude 4.5 reject this field with 400. See GH#32742, PR #21729.
     if (
       getAPIProvider() === 'firstParty' &&
-      isFirstPartyUmmayaBaseUrl() &&
+      isFirstPartyAnthropicBaseUrl() &&
       (getFeatureValue_CACHED_MAY_BE_STALE('tengu_fgts', false) ||
         isEnvTruthy(process.env.CLAUDE_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING))
     ) {

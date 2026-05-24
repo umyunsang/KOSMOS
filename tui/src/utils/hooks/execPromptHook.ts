@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'
 import type { HookEvent } from 'src/entrypoints/agentSdkTypes.js'
-// UMMAYA: services/api/claude.js deleted by Spec 1633 P1+P2. queryModelWithoutStreaming not available.
+import { queryModelWithoutStreaming } from '../../services/api/claude.js'
 import type { ToolUseContext } from '../../Tool.js'
 import type { Message } from '../../types/message.js'
 import { createAttachmentMessage } from '../attachments.js'
@@ -9,11 +9,10 @@ import { logForDebugging } from '../debug.js'
 import { errorMessage } from '../errors.js'
 import type { HookResult } from '../hooks.js'
 import { safeParseJSON } from '../json.js'
-import { extractTextContent } from '../messageText.js'
+import { createUserMessage, extractTextContent } from '../messages.js'
 import { getSmallFastModel } from '../model/model.js'
 import type { PromptHook } from '../settings/types.js'
 import { asSystemPrompt } from '../systemPromptType.js'
-import { createUserMessage } from '../userMessageFactories.js'
 import { addArgumentsToPrompt, hookResponseSchema } from './hookHelpers.js'
 
 /**
@@ -60,11 +59,45 @@ export async function execPromptHook(
       createCombinedAbortSignal(signal, { timeoutMs: hookTimeoutMs })
 
     try {
-      // UMMAYA: queryModelWithoutStreaming removed (Spec 1633 P1+P2). Anthropic API not available.
-      // Prompt-based hooks are not executable in UMMAYA — FriendliAI backend handles LLM calls.
-      throw new Error('Anthropic API not available in UMMAYA — Spec 1633')
-      // eslint-disable-next-line no-unreachable
-      const response = await Promise.resolve(null as never)
+      const response = await queryModelWithoutStreaming({
+        messages: messagesToQuery,
+        systemPrompt: asSystemPrompt([
+          `You are evaluating a hook in Claude Code.
+
+Your response must be a JSON object matching one of the following schemas:
+1. If the condition is met, return: {"ok": true}
+2. If the condition is not met, return: {"ok": false, "reason": "Reason for why it is not met"}`,
+        ]),
+        thinkingConfig: { type: 'disabled' as const },
+        tools: toolUseContext.options.tools,
+        signal: combinedSignal,
+        options: {
+          async getToolPermissionContext() {
+            const appState = toolUseContext.getAppState()
+            return appState.toolPermissionContext
+          },
+          model: hook.model ?? getSmallFastModel(),
+          toolChoice: undefined,
+          isNonInteractiveSession: true,
+          hasAppendSystemPrompt: false,
+          agents: [],
+          querySource: 'hook_prompt',
+          mcpTools: [],
+          agentId: toolUseContext.agentId,
+          outputFormat: {
+            type: 'json_schema',
+            schema: {
+              type: 'object',
+              properties: {
+                ok: { type: 'boolean' },
+                reason: { type: 'string' },
+              },
+              required: ['ok'],
+              additionalProperties: false,
+            },
+          },
+        },
+      })
 
       cleanupSignal()
 

@@ -17,7 +17,7 @@
 
 import { describe, it, expect, beforeEach } from 'bun:test'
 import instances from '../../src/ink/instances'
-import type Ink from 'ink'
+import type Ink from '../../src/ink/ink.js'
 
 // ---------------------------------------------------------------------------
 // Minimal Ink-like stub (only the shape the guard cares about: identity)

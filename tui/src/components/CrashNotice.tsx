@@ -10,7 +10,7 @@
 // the already-redacted tail verbatim.
 
 import React from 'react'
-import { Box, Text } from 'ink'
+import { Box, Text } from '../ink.js'
 import { useTheme } from '../theme/provider'
 import { useI18n } from '../i18n'
 import { useSessionStore } from '../store/session-store'

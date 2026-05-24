@@ -1,86 +1,47 @@
-// SPDX-License-Identifier: Apache-2.0
-// UMMAYA-original — Epic #1633 P2 · stub-noop replacement for CC analytics.
-//
-// The original Anthropic analytics surface (GrowthBook + Datadog + FirstParty
-// event logger + sinks) has been removed. UMMAYA emits all runtime telemetry
-// via the Spec 021 OTEL pipeline (local Langfuse, zero external egress —
-// docs/vision.md § L1-A A7).
-//
-// This file preserves the original export surface so call sites compile
-// without mass-editing 300+ files; every function is a no-op at runtime.
-// UMMAYA OTEL span emission is orthogonal to these stubs — see
-// tui/src/ipc/llmClient.ts for the real observability path.
+/**
+ * Analytics service - public API for event logging
+ *
+ * This module serves as the main entry point for analytics events in Claude CLI.
+ *
+ * DESIGN: This module has NO dependencies to avoid import cycles.
+ * Events are queued until attachAnalyticsSink() is called during app initialization.
+ * The sink handles routing to Datadog and 1P event logging.
+ */
 
-// ---------------------------------------------------------------------------
-// Type aliases (preserve the strange CC identifier used across the codebase)
-// ---------------------------------------------------------------------------
+/**
+ * Marker type for verifying analytics metadata doesn't contain sensitive data
+ *
+ * This type forces explicit verification that string values being logged
+ * don't contain code snippets, file paths, or other sensitive information.
+ *
+ * Usage: `myString as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS`
+ */
+export type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS = never
 
-export type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS = Record<
-  string,
-  string | number | boolean | null | undefined
->
+/**
+ * Marker type for values routed to PII-tagged proto columns via `_PROTO_*`
+ * payload keys. The destination BQ column has privileged access controls,
+ * so unredacted values are acceptable — unlike general-access backends.
+ *
+ * sink.ts strips `_PROTO_*` keys before Datadog fanout; only the 1P
+ * exporter (firstPartyEventLoggingExporter) sees them and hoists them to the
+ * top-level proto field. A single stripProtoFields call guards all non-1P
+ * sinks — no per-sink filtering to forget.
+ *
+ * Usage: `rawName as AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED`
+ */
+export type AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED = never
 
-// ---------------------------------------------------------------------------
-// Event logging — no-op (callers retained for code-review auditability;
-// runtime effect is zero).
-// ---------------------------------------------------------------------------
-
-export function logEvent(
-  _eventName: string,
-  _metadata?: AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-): void {
-  // Intentional no-op (Epic #1633 stub). Do not add behaviour here.
-}
-
-export function logEventAsync(
-  _eventName: string,
-  _metadata?: AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-): Promise<void> {
-  // Intentional no-op (Epic #1633 stub).
-  return Promise.resolve()
-}
-
-export function profileCheckpoint(
-  _name: string,
-  _metadata?: AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-): void {
-  // Intentional no-op.
-}
-
-// ---------------------------------------------------------------------------
-// Sink lifecycle — no-op (there is no UMMAYA analytics sink; Spec 021 OTEL
-// Collector is the sole telemetry destination).
-// ---------------------------------------------------------------------------
-
-export function initializeAnalyticsSink(): void {
-  // Intentional no-op.
-}
-
-export function flushAnalyticsSink(): Promise<void> {
-  return Promise.resolve()
-}
-
-export function shutdownAnalyticsSink(): Promise<void> {
-  return Promise.resolve()
-}
-
-// ---------------------------------------------------------------------------
-// Lifted verbatim from CC restored-src services/analytics/index.ts:45
-// (CC 2.1.88, research-use). Used by sink.ts:14 + firstPartyEventLoggingExporter.ts:33.
-// Returns the same reference when no _PROTO_ keys present — UMMAYA payloads
-// have no protobuf-typed PII layer, so it is a fast path. The UMMAYA-OTEL
-// pipeline does not consume these results, but CC's import sites still
-// require the function to link.
-// ---------------------------------------------------------------------------
-
-export type AnalyticsSink = {
-  logEvent: (eventName: string, metadata: Record<string, unknown>) => void
-  logEventAsync: (
-    eventName: string,
-    metadata: Record<string, unknown>,
-  ) => Promise<void>
-}
-
+/**
+ * Strip `_PROTO_*` keys from a payload destined for general-access storage.
+ * Used by:
+ *   - sink.ts: before Datadog fanout (never sees PII-tagged values)
+ *   - firstPartyEventLoggingExporter: defensive strip of additional_metadata
+ *     after hoisting known _PROTO_* keys to proto fields — prevents a future
+ *     unrecognized _PROTO_foo from silently landing in the BQ JSON blob.
+ *
+ * Returns the input unchanged (same reference) when no _PROTO_ keys present.
+ */
 export function stripProtoFields<V>(
   metadata: Record<string, V>,
 ): Record<string, V> {
@@ -96,48 +57,117 @@ export function stripProtoFields<V>(
   return result ?? metadata
 }
 
-export function attachAnalyticsSink(_sink: AnalyticsSink): void {
-  // UMMAYA-1633 P2 — there is no Datadog / 1P sink. CC's body queued events
-  // until a sink attached; UMMAYA drops events at the noop logEvent above.
+// Internal type for logEvent metadata - different from the enriched EventMetadata in metadata.ts
+type LogEventMetadata = { [key: string]: boolean | number | undefined }
+
+type QueuedEvent = {
+  eventName: string
+  metadata: LogEventMetadata
+  async: boolean
 }
 
-// ---------------------------------------------------------------------------
-// Vendor-aliased shutdown helpers — UMMAYA-1633 P1+P2 / UMMAYA-1978 T011.
-// Original CC modules (services/analytics/datadog.ts, sink.ts,
-// firstPartyEventLogger.ts) are deleted by Spec 1633 P1+P2 invariant. These
-// aliases preserve the call signatures so the bridge / chrome MCP / computer-
-// use MCP shutdown paths link cleanly without redirecting to vendor sinks
-// (UMMAYA does not ship Datadog or 1P event logging).
-// ---------------------------------------------------------------------------
-
-export function shutdownDatadog(): Promise<void> {
-  return Promise.resolve()
+/**
+ * Sink interface for the analytics backend
+ */
+export type AnalyticsSink = {
+  logEvent: (eventName: string, metadata: LogEventMetadata) => void
+  logEventAsync: (
+    eventName: string,
+    metadata: LogEventMetadata,
+  ) => Promise<void>
 }
 
-export function shutdown1PEventLogging(): Promise<void> {
-  return Promise.resolve()
+// Event queue for events logged before sink is attached
+const eventQueue: QueuedEvent[] = []
+
+// Sink - initialized during app startup
+let sink: AnalyticsSink | null = null
+
+/**
+ * Attach the analytics sink that will receive all events.
+ * Queued events are drained asynchronously via queueMicrotask to avoid
+ * adding latency to the startup path.
+ *
+ * Idempotent: if a sink is already attached, this is a no-op. This allows
+ * calling from both the preAction hook (for subcommands) and setup() (for
+ * the default command) without coordination.
+ */
+export function attachAnalyticsSink(newSink: AnalyticsSink): void {
+  if (sink !== null) {
+    return
+  }
+  sink = newSink
+
+  // Drain the queue asynchronously to avoid blocking startup
+  if (eventQueue.length > 0) {
+    const queuedEvents = [...eventQueue]
+    eventQueue.length = 0
+
+    // Log queue size for ants to help debug analytics initialization timing
+    if (process.env.USER_TYPE === 'ant') {
+      sink.logEvent('analytics_sink_attached', {
+        queued_event_count: queuedEvents.length,
+      })
+    }
+
+    queueMicrotask(() => {
+      for (const event of queuedEvents) {
+        if (event.async) {
+          void sink!.logEventAsync(event.eventName, event.metadata)
+        } else {
+          sink!.logEvent(event.eventName, event.metadata)
+        }
+      }
+    })
+  }
 }
 
-export function logEventTo1P(
-  _eventName: string,
-  _metadata?: AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+/**
+ * Log an event to analytics backends (synchronous)
+ *
+ * Events may be sampled based on the 'tengu_event_sampling_config' dynamic config.
+ * When sampled, the sample_rate is added to the event metadata.
+ *
+ * If no sink is attached, events are queued and drained when the sink attaches.
+ */
+export function logEvent(
+  eventName: string,
+  // intentionally no strings unless AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  // to avoid accidentally logging code/filepaths
+  metadata: LogEventMetadata,
 ): void {
-  // Intentional no-op (UMMAYA-1633 P2 stub).
+  if (sink === null) {
+    eventQueue.push({ eventName, metadata, async: false })
+    return
+  }
+  sink.logEvent(eventName, metadata)
 }
 
-// ---------------------------------------------------------------------------
-// Default export safety net — some callers may import the module namespace.
-// ---------------------------------------------------------------------------
+/**
+ * Log an event to analytics backends (asynchronous)
+ *
+ * Events may be sampled based on the 'tengu_event_sampling_config' dynamic config.
+ * When sampled, the sample_rate is added to the event metadata.
+ *
+ * If no sink is attached, events are queued and drained when the sink attaches.
+ */
+export async function logEventAsync(
+  eventName: string,
+  // intentionally no strings, to avoid accidentally logging code/filepaths
+  metadata: LogEventMetadata,
+): Promise<void> {
+  if (sink === null) {
+    eventQueue.push({ eventName, metadata, async: true })
+    return
+  }
+  await sink.logEventAsync(eventName, metadata)
+}
 
-export default {
-  logEvent,
-  profileCheckpoint,
-  initializeAnalyticsSink,
-  flushAnalyticsSink,
-  shutdownAnalyticsSink,
-  shutdownDatadog,
-  shutdown1PEventLogging,
-  logEventTo1P,
-  stripProtoFields,
-  attachAnalyticsSink,
+/**
+ * Reset analytics state for testing purposes only.
+ * @internal
+ */
+export function _resetForTesting(): void {
+  sink = null
+  eventQueue.length = 0
 }

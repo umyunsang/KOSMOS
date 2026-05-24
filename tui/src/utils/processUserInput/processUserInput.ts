@@ -3,11 +3,11 @@ import type {
   Base64ImageSource,
   ContentBlockParam,
   ImageBlockParam,
-} from 'src/sdk-compat.js'
+} from '@anthropic-ai/sdk/resources/messages.mjs'
 import { randomUUID } from 'crypto'
 import type { QuerySource } from 'src/constants/querySource.js'
 import { logEvent } from 'src/services/analytics/index.js'
-import { getContentText } from 'src/utils/messageContent.js'
+import { getContentText } from 'src/utils/messages.js'
 import {
   findCommand,
   getCommandName,
@@ -50,8 +50,8 @@ import { storeImages } from '../imageStore.js'
 import {
   createCommandInputMessage,
   createSystemMessage,
-} from '../systemMessageFactories.js'
-import { createUserMessage } from '../userMessageFactories.js'
+  createUserMessage,
+} from '../messages.js'
 import { queryCheckpoint } from '../queryProfiler.js'
 import { parseSlashCommand } from '../slashCommandParsing.js'
 import {

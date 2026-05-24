@@ -12,6 +12,7 @@ import { trace } from '@opentelemetry/api'
 import { makeUUIDv7, makeBaseEnvelope } from '../../ipc/envelope.js'
 import type { IPCBridge } from '../../ipc/bridge.js'
 import type { ToolCallFrame, ToolResultFrame } from '../../ipc/frames.generated.js'
+import { getUmmayaBridgeSessionId } from '../../ipc/bridgeSingleton.js'
 import type { ToolUseContext, ToolResult } from '../../Tool.js'
 import { PendingCallRegistry } from './pendingCallRegistry.js'
 
@@ -49,6 +50,8 @@ function _resolveTimeoutMs(override?: number): number {
 
 export interface DispatchPrimitiveOpts {
   primitive: 'find' | 'locate' | 'check' | 'send'
+  /** Concrete model-facing tool name. Defaults to the primitive for legacy root calls. */
+  toolName?: string
   /** Forwarded verbatim into tool_call frame arguments (FR-009). */
   args: Record<string, unknown>
   /** From CC SDK Tool.call signature. */
@@ -126,47 +129,22 @@ export async function dispatchPrimitive<O = unknown>(
   // ------------------------------------------------------------------
   // Step 1: OTEL span
   // ------------------------------------------------------------------
+  const toolName = opts.toolName ?? opts.primitive
   const span = _tracer.startSpan(`ummaya.tui.primitive.${opts.primitive}`, {
     attributes: {
       'ummaya.tui.primitive.name': opts.primitive,
+      'ummaya.tui.tool.name': toolName,
       'ummaya.tui.primitive.timeout_ms': timeoutMs,
     },
   })
 
   // ------------------------------------------------------------------
-  // Architecture (CC-original byte-identical migration, 2026-04-30):
-  //
-  // The backend's `_handle_chat_request` parses K-EXAONE function_calls,
-  // emits a ToolCallFrame (with call_id == K-EXAONE tool_use_id) AND
-  // fires `_dispatch_primitive` server-side as a parallel asyncio.Task.
-  // When the primitive completes, the backend emits a ToolResultFrame
-  // carrying the same call_id and the authoritative result envelope.
-  //
-  // The frontend matches the backend's ToolResultFrame to the SDK's
-  // Tool.call() invocation by call_id == toolUseId via PendingCallRegistry:
-  //   1. dispatchPrimitive registers the toolUseId here (race-safe — if
-  //      the backend's frame already arrived, register fires synchronously).
-  //   2. llmClient.ts:455 routes inbound tool_result frames into
-  //      registry.resolve(call_id, frame).
-  //   3. The Promise below resolves with the matched ToolResultEnvelope.
-  //
-  // The ToolResultEnvelope is then unwrapped into the SDK's ToolResult
-  // shape so the primitive's `renderToolResultMessage` sees the actual
-  // primitive output (LookupSearchResult / KMA forecast / receipt /
-  // SubscriptionHandle) rather than a sentinel. CC pattern: the SDK
-  // tool-use turn closes WITH the real result, exactly as it does for
-  // CC's Anthropic-API-direct path.
-  //
-  // Note: the SDK loop also adds the result to its turn-local message
-  // history, but `tui/src/query/deps.ts:48-65` filters tool messages out
-  // of the next ChatRequestFrame.messages (`only user/assistant turns
-  // with extractable text are forwarded`), so there is no double-execute
-  // risk — the backend retains its own role="tool" history server-side.
+  // CC contract: query.ts owns tool execution. The provider emits
+  // assistant(tool_use) and stops; runTools() invokes this Tool.call(), which
+  // dispatches the primitive over IPC and awaits the matching tool_result.
+  // The Python backend hosts the Korean public-service adapter surface, but
+  // it does not synthesize the follow-up assistant turn for this Tool.call().
   // ------------------------------------------------------------------
-
-  void makeUUIDv7  // import retained for future inbound-tool_call wiring
-  void makeBaseEnvelope
-  void opts.bridge
 
   const toolUseId =
     (opts.context as Record<string, unknown>)['toolUseId'] as string | undefined
@@ -189,8 +167,8 @@ export async function dispatchPrimitive<O = unknown>(
   span.setAttribute('ummaya.tui.primitive.tool_use_id', toolUseId)
 
   // Register-and-await. The backend has already started _dispatch_primitive
-  // as a parallel task; we wait for the matching ToolResultFrame to arrive
-  // via llmClient.ts → pendingCallRegistry.resolve().
+  // only after this Tool.call() sends the ToolCallFrame. The bridge singleton
+  // routes inbound ToolResultFrame objects into pendingCallRegistry.resolve().
   let resultFrame: ToolResultFrame
   try {
     resultFrame = await new Promise<ToolResultFrame>((resolve, reject) => {
@@ -210,6 +188,28 @@ export async function dispatchPrimitive<O = unknown>(
         reject,
         timeoutHandle,
       })
+
+      const toolCallFrame: ToolCallFrame = {
+        ...makeBaseEnvelope({
+          sessionId: getUmmayaBridgeSessionId(),
+          correlationId: makeUUIDv7(),
+        }),
+        role: 'tool',
+        kind: 'tool_call',
+        call_id: toolUseId,
+        name: toolName,
+        arguments: opts.args,
+      }
+
+      const sent = opts.bridge.send(toolCallFrame)
+      if (!sent) {
+        opts.registry.reject(
+          toolUseId,
+          new Error(
+            `${opts.primitive} request could not be sent because the backend exited.`,
+          ),
+        )
+      }
     })
   } catch (err) {
     span.setAttribute('ummaya.tui.primitive.timeout', true)

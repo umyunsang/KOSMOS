@@ -24,14 +24,7 @@ import { isEnvTruthy } from '../../utils/envUtils.js'
 import { toError } from '../../utils/errors.js'
 import { logMCPDebug } from '../../utils/log.js'
 import { getPlatform } from '../../utils/platform.js'
-// UMMAYA: secureStorage deleted by Spec 1633 P1. UMMAYA uses .env-backed secrets, not OS keychain.
-const getSecureStorage = (): {
-  read: () => null
-  update: (_data: unknown) => { success: true; warning?: string }
-} => ({
-  read: () => null,
-  update: (_data: unknown) => ({ success: true as const }),
-})
+import { getSecureStorage } from '../../utils/secureStorage/index.js'
 import { getInitialSettings } from '../../utils/settings/settings.js'
 import { jsonParse } from '../../utils/slowOperations.js'
 import { buildRedirectUri, findAvailablePort } from './oauthPort.js'

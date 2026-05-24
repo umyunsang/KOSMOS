@@ -16,7 +16,7 @@ type Props = {
   allQuestionsAnswered: boolean;
   permissionResult: PermissionDecision;
   minContentHeight?: number;
-  onFinalResponse: (value: 'send' | 'cancel') => void;
+  onFinalResponse: (value: 'submit' | 'cancel') => void;
 };
 export function SubmitQuestionsView(t0) {
   const $ = _c(27);
@@ -93,7 +93,7 @@ export function SubmitQuestionsView(t0) {
     t8 = {
       type: "text" as const,
       label: "Submit answers",
-      value: "send"
+      value: "submit"
     };
     $[14] = t8;
   } else {
@@ -112,7 +112,7 @@ export function SubmitQuestionsView(t0) {
   }
   let t10;
   if ($[16] !== onFinalResponse) {
-    t10 = <Box marginTop={1}><Select options={t9} onChange={value => onFinalResponse(value as 'send' | 'cancel')} onCancel={() => onFinalResponse("cancel")} /></Box>;
+    t10 = <Box marginTop={1}><Select options={t9} onChange={value => onFinalResponse(value as 'submit' | 'cancel')} onCancel={() => onFinalResponse("cancel")} /></Box>;
     $[16] = onFinalResponse;
     $[17] = t10;
   } else {

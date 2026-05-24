@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle';
-import type { ContentBlockParam, TextBlockParam } from 'src/sdk-compat.js';
+import type { ContentBlockParam, TextBlockParam } from '@anthropic-ai/sdk/resources';
 import { randomUUID } from 'crypto';
 import { setPromptId } from 'src/bootstrap/state.js';
 import { builtInCommandNames, type Command, type CommandBase, findCommand, getCommand, getCommandName, hasCommand, type PromptCommand } from 'src/commands.js';
@@ -31,12 +31,7 @@ import { toArray } from '../generators.js';
 import { registerSkillHooks } from '../hooks/registerSkillHooks.js';
 import { logError } from '../log.js';
 import { enqueuePendingNotification } from '../messageQueueManager.js';
-import { normalizeMessages } from '../messageNormalize.js';
-import { isCompactBoundaryMessage } from '../messageBoundary.js';
-import { createCommandInputMessage, createSystemMessage } from '../systemMessageFactories.js';
-import { createSyntheticUserCaveatMessage, createUserInterruptionMessage, createUserMessage, prepareUserContent } from '../userMessageFactories.js';
-import { formatCommandInputTags } from '../commandMessageTags.js';
-import { isSystemLocalCommandMessage } from '../messagePredicates.js';
+import { createCommandInputMessage, createSyntheticUserCaveatMessage, createSystemMessage, createUserInterruptionMessage, createUserMessage, formatCommandInputTags, isCompactBoundaryMessage, isSystemLocalCommandMessage, normalizeMessages, prepareUserContent } from '../messages.js';
 import type { ModelAlias } from '../model/aliases.js';
 import { parseToolListFromCLI } from '../permissions/permissionSetup.js';
 import { hasPermissionsToUseTool } from '../permissions/permissions.js';
@@ -45,10 +40,8 @@ import { isRestrictedToPluginOnly, isSourceAdminTrusted } from '../settings/plug
 import { parseSlashCommand } from '../slashCommandParsing.js';
 import { sleep } from '../sleep.js';
 import { recordSkillUsage } from '../suggestions/skillUsageTracking.js';
-// utils/telemetry removed — UMMAYA telemetry handled by Spec 021 OTEL pipeline.
-const logOTelEvent = (_event: string, _attrs?: Record<string, unknown>): void => { /* no-op */ }
-const redactIfDisabled = (val: string): string => val
-const buildPluginCommandTelemetryFields = (_info: unknown): Record<string, unknown> => ({})
+import { logOTelEvent, redactIfDisabled } from '../telemetry/events.js';
+import { buildPluginCommandTelemetryFields } from '../telemetry/pluginTelemetry.js';
 import { getAssistantMessageContentLength } from '../tokens.js';
 import { createAgentId } from '../uuid.js';
 import { getWorkload } from '../workloadContext.js';
