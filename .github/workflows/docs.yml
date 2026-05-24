@@ -67,6 +67,11 @@ jobs:
       - name: Build docs
         working-directory: docs-site
         run: bun run build
+      - name: Preserve Homebrew cask downloads
+        run: |
+          node scripts/stage-homebrew-downloads.mjs \
+            --root docs-site/dist/downloads/homebrew \
+            --preserve-remote
       - name: Verify LLM-readable docs outputs
         run: |
           test -s docs-site/public/llms.txt
@@ -76,7 +81,7 @@ jobs:
       - name: Deploy docs to Cloudflare Pages
         if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
         id: deploy
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}

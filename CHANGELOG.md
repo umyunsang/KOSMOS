@@ -30,6 +30,13 @@ The UMMAYA migration-completion release. Initiative #1631 closed; the six Phase 
 - Auto-generated adapter spec stubs from Pydantic docstrings (#1975).
 - Shape-mirror migration of the OPAQUE mock stubs (`barocert/`, `npki_crypto/`, `omnione/`) into `docs/scenarios/` (#1976).
 
+## [v0.1.13] - 2026-05-22
+
+### Fixed
+
+- Normalized LF terminal keypresses to Return in the Ink input parser so prompt text submits correctly in terminals that send `\n`.
+- Synced the Homebrew cask SHA to the published `ummaya@0.1.13` npm registry tarball.
+
 ## [Unreleased]
 
 ### Added

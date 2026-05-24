@@ -1,0 +1,222 @@
+name: Publish Homebrew Cask Artifacts
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build, without leading v"
+        required: true
+        type: string
+
+concurrency:
+  group: publish-homebrew-cask-artifacts-${{ github.ref }}-${{ github.event.inputs.version || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build macOS ${{ matrix.arch }} cask artifact
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-14
+          - arch: x64
+            runner: macos-15-intel
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Verify package version
+        run: |
+          package_version="$(node -p "require('./package.json').version")"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            expected_version="${GITHUB_REF_NAME#v}"
+          else
+            expected_version="${{ github.event.inputs.version }}"
+          fi
+          if [ "${package_version}" != "${expected_version}" ]; then
+            echo "::error::package.json version ${package_version} does not match release version ${expected_version}"
+            exit 1
+          fi
+
+      - name: Install npm CLI
+        run: npm install --global npm@11.14.1
+
+      - name: Install release tooling dependencies
+        run: npm ci --ignore-scripts --legacy-peer-deps
+
+      - name: Build prebuilt cask artifact
+        run: node scripts/build-homebrew-cask-artifact.mjs --arch "${{ matrix.arch }}" --out-dir dist/homebrew
+
+      - name: Verify archive shape
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          artifact="dist/homebrew/ummaya-${version}-macos-${{ matrix.arch }}.tar.gz"
+          mkdir -p "${RUNNER_TEMP}/ummaya-cask-smoke"
+          tar -xzf "${artifact}" -C "${RUNNER_TEMP}/ummaya-cask-smoke"
+          test -x "${RUNNER_TEMP}/ummaya-cask-smoke/ummaya"
+          test -x "${RUNNER_TEMP}/ummaya-cask-smoke/runtime/bun"
+          test -d "${RUNNER_TEMP}/ummaya-cask-smoke/package/node_modules"
+          test -f "${artifact}.sha256"
+          "${RUNNER_TEMP}/ummaya-cask-smoke/ummaya" --version
+          UMMAYA_FORCE_RUNTIME_CACHE=1 "${RUNNER_TEMP}/ummaya-cask-smoke/ummaya" --version
+          "${RUNNER_TEMP}/ummaya-cask-smoke/ummaya" --help >/dev/null
+
+      - name: Upload cask artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: homebrew-cask-${{ matrix.arch }}
+          path: |
+            dist/homebrew/ummaya-*-macos-${{ matrix.arch }}.tar.gz
+            dist/homebrew/ummaya-*-macos-${{ matrix.arch }}.tar.gz.sha256
+            dist/homebrew/ummaya-*-macos-${{ matrix.arch }}.json
+          if-no-files-found: error
+          retention-days: 90
+
+  release:
+    name: Publish cask artifacts
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ASTRO_TELEMETRY_DISABLED: "1"
+      CLOUDFLARE_ACCOUNT_ID: "657819314c95688d19e6d72cd138927e"
+      CLOUDFLARE_PROJECT_NAME: "ummaya-docs"
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22.12.0"
+          package-manager-cache: false
+
+      - uses: oven-sh/setup-bun@v2.2.0
+        with:
+          bun-version: "1.3.5"
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: homebrew-cask-*
+          path: dist/homebrew
+          merge-multiple: true
+
+      - name: Resolve tag
+        id: release
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            tag="${GITHUB_REF_NAME}"
+          else
+            tag="v${{ github.event.inputs.version }}"
+          fi
+          if ! printf '%s' "${tag}" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "::error::Invalid release tag: ${tag}"
+            exit 1
+          fi
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+
+      - name: Ensure GitHub Release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.release.outputs.tag }}"
+          if ! gh release view "${tag}" >/dev/null 2>&1; then
+            gh release create "${tag}" --title "UMMAYA ${tag}" --target "${GITHUB_SHA}" --generate-notes
+          else
+            gh release edit "${tag}" --title "UMMAYA ${tag}" --target "${GITHUB_SHA}"
+          fi
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ steps.release.outputs.tag }}" \
+            dist/homebrew/ummaya-*-macos-*.tar.gz \
+            dist/homebrew/ummaya-*-macos-*.tar.gz.sha256 \
+            dist/homebrew/ummaya-*-macos-*.json \
+            --clobber
+
+      - name: Build docs site
+        run: |
+          uv sync --frozen --all-extras --dev
+          uv run python scripts/docs_generate.py --check
+          cd docs-site
+          bun install --frozen-lockfile
+          bun run build
+
+      - name: Stage cask downloads on docs site
+        run: |
+          tag="${{ steps.release.outputs.tag }}"
+          node scripts/stage-homebrew-downloads.mjs \
+            --artifact-dir dist/homebrew \
+            --tag "${tag}" \
+            --root docs-site/dist/downloads/homebrew \
+            --preserve-remote
+
+      - name: Verify cask download URLs
+        run: |
+          tag="${{ steps.release.outputs.tag }}"
+          version="${tag#v}"
+          for arch in arm64 x64; do
+            test -s "docs-site/dist/downloads/homebrew/${tag}/ummaya-${version}-macos-${arch}.tar.gz.sha256"
+            test -s "docs-site/dist/downloads/homebrew/${tag}/ummaya-${version}-macos-${arch}.json"
+            grep -F "/downloads/homebrew/${tag}/ummaya-${version}-macos-${arch}.tar.gz https://github.com/umyunsang/UMMAYA/releases/download/${tag}/ummaya-${version}-macos-${arch}.tar.gz 302" docs-site/dist/_redirects
+          done
+          test -s docs-site/dist/downloads/homebrew/latest.json
+          test -s docs-site/dist/downloads/homebrew/versions.json
+
+      - name: Deploy cask downloads to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.91.0"
+          workingDirectory: docs-site
+          command: pages deploy dist --project-name=${{ env.CLOUDFLARE_PROJECT_NAME }} --branch=main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify deployed cask download redirects
+        run: |
+          tag="${{ steps.release.outputs.tag }}"
+          version="${tag#v}"
+          for arch in arm64 x64; do
+            url="https://ummaya-docs.pages.dev/downloads/homebrew/${tag}/ummaya-${version}-macos-${arch}.tar.gz"
+            for attempt in {1..12}; do
+              if curl -fsSIL "${url}" | grep -F "https://github.com/umyunsang/UMMAYA/releases/download/${tag}/ummaya-${version}-macos-${arch}.tar.gz"; then
+                break
+              fi
+              if [ "${attempt}" = "12" ]; then
+                echo "::error::Published redirect did not become visible for ${url}"
+                exit 1
+              fi
+              sleep 5
+            done
+          done
+          for attempt in {1..12}; do
+            if curl -fsSL "https://ummaya-docs.pages.dev/downloads/homebrew/latest.json" \
+              | node -e 'const expected = process.argv[1]; let input = ""; process.stdin.on("data", c => input += c); process.stdin.on("end", () => { const json = JSON.parse(input); if (json.version !== expected) process.exit(1); });' "${version}"; then
+              break
+            fi
+            if [ "${attempt}" = "12" ]; then
+              echo "::error::latest.json did not become visible for ${version}"
+              exit 1
+            fi
+            sleep 5
+          done

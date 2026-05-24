@@ -1,37 +1,26 @@
 # frozen_string_literal: true
 
 cask "ummaya" do
-  version "0.1.12"
-  sha256 "9e5c3d6ad0d1eb92e021a478656dc1fdf293636ad98a195c73c74b8b0111f40c"
+  arch arm: "arm64", intel: "x64"
 
-  url "https://registry.npmjs.org/ummaya/-/ummaya-#{version}.tgz",
-      verified: "registry.npmjs.org/ummaya/"
+  version "0.1.18"
+  sha256 arm:   "85da24e2240f0fcbf7e4c6098f36db74bb7e4dcaebe138237644167131c4ef0f",
+         intel: "23793a77722904e368cfe241c3d8039b382296c65e3482981efcfa4d664d1f15"
+
+  url "https://ummaya-docs.pages.dev/downloads/homebrew/v#{version}/ummaya-#{version}-macos-#{arch}.tar.gz"
   name "UMMAYA"
   desc "Conversational multi-agent harness for Korean public-service channels"
-  homepage "https://github.com/umyunsang/UMMAYA"
+  homepage "https://ummaya-docs.pages.dev/"
 
-  depends_on formula: "oven-sh/bun/bun"
-  depends_on formula: "uv"
-
-  preflight do
-    install_args = ["install", "--production", "--cwd", "#{staged_path}/package"]
-    if File.exist?("#{staged_path}/package/bun.lock")
-      install_args << "--frozen-lockfile"
-    else
-      install_args << "--no-save"
+  livecheck do
+    url "https://ummaya-docs.pages.dev/downloads/homebrew/latest.json"
+    strategy :json do |json|
+      json["version"]
     end
-
-    system_command "#{HOMEBREW_PREFIX}/opt/bun/bin/bun",
-                   args: install_args
-
-    wrapper = staged_path/"ummaya"
-    wrapper.write <<~SH
-      #!/bin/bash
-      export PATH="#{HOMEBREW_PREFIX}/opt/bun/bin:#{HOMEBREW_PREFIX}/opt/uv/bin:$PATH"
-      exec "#{HOMEBREW_PREFIX}/opt/bun/bin/bun" "#{staged_path}/package/bin/ummaya" "$@"
-    SH
-    FileUtils.chmod 0755, wrapper
   end
+
+  depends_on :macos
+  depends_on formula: "uv"
 
   binary "ummaya"
 
