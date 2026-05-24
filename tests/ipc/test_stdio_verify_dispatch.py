@@ -51,7 +51,7 @@ import ummaya.tools.mock  # noqa: F401
 from ummaya.ipc.frame_schema import (
     ChatMessage as IPCChatMessage,
 )
-from ummaya.ipc.frame_schema import ChatRequestFrame
+from ummaya.ipc.frame_schema import ChatRequestFrame, ToolCallFrame
 from ummaya.llm.models import StreamEvent
 from ummaya.tools.verify_canonical_map import (
     get_canonical_map,
@@ -220,8 +220,7 @@ async def _run_verify_dispatch(
     args_obj: dict[str, Any],
     monkeypatch: pytest.MonkeyPatch,
 ) -> _CaptureBuf:
-    """Run a single chat_request through the IPC harness with a fake LLM
-    that emits one ``verify(args_obj)`` tool_call.
+    """Run one TUI-owned ``check`` tool_call through the IPC harness.
 
     Returns the captured NDJSON frame buffer.
     """
@@ -274,6 +273,16 @@ async def _run_verify_dispatch(
         pass
 
     session_id = frame.session_id
+    tool_call_frame = ToolCallFrame(
+        session_id=session_id,
+        correlation_id=frame.correlation_id,
+        role="tool",
+        ts=_ts(),
+        kind="tool_call",
+        call_id=f"call-check-{uuid.uuid4().hex[:8]}",
+        name="check",
+        arguments=args_obj,
+    )
     exit_frame = SessionEventFrame(
         session_id=session_id,
         correlation_id=str(uuid.uuid4()),
@@ -283,7 +292,7 @@ async def _run_verify_dispatch(
         event="exit",
         payload={},
     )
-    payload = (frame.model_dump_json() + "\n").encode() + (
+    payload = (tool_call_frame.model_dump_json() + "\n").encode() + (
         exit_frame.model_dump_json() + "\n"
     ).encode()
 

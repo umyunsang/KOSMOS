@@ -249,7 +249,7 @@ class _FakeLLMClientNoTools(_BaseFakeLLMClient):
 # ---------------------------------------------------------------------------
 
 
-_RUNNER_TIMEOUT = 8.0  # seconds; well above what a smoke test needs
+_RUNNER_TIMEOUT = 30.0  # seconds; allows manifest boot under xdist load
 
 
 async def _run_with_frame(  # noqa: C901 — test harness deliberately covers many branches

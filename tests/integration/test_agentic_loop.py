@@ -419,22 +419,14 @@ async def test_single_tool_call_closure(monkeypatch: pytest.MonkeyPatch) -> None
         f"tool_call names: {[f.get('name') for f in tool_call_frames]}"
     )
 
-    # --- Assert: at least one tool_result frame ---
     tool_result_frames = [f for f in emitted if f.get("kind") == "tool_result"]
-    assert tool_result_frames, (
-        "No tool_result frame emitted after tool_call. "
-        "FR-010 requires the tool result to be fed back into the next LLM turn."
+    assert not tool_result_frames, (
+        "chat_request must not execute tools; Tool.call sends inbound tool_call separately"
     )
 
-    # --- Assert: final assistant_chunk with Turn-2 text ---
     assistant_chunks = [f for f in emitted if f.get("kind") == "assistant_chunk"]
-    assert assistant_chunks, (
-        "No assistant_chunk frames emitted. Expected a final answer from Turn 2."
-    )
-    all_delta_text = "".join(str(f.get("delta", "")) for f in assistant_chunks if f.get("delta"))
-    assert "강남세브란스" in all_delta_text or "강남구 응급실" in all_delta_text, (
-        f"Final answer text not found in assistant_chunk deltas. "
-        f"Concatenated deltas: {all_delta_text!r}"
+    assert not [f for f in assistant_chunks if f.get("done") is True], (
+        "chat_request must stop at tool_use instead of completing the turn"
     )
 
     # --- SC-001: NO references to CC-era tools anywhere in emitted stream ---
@@ -569,35 +561,26 @@ async def test_five_turn_agentic_loop(monkeypatch: pytest.MonkeyPatch) -> None:
     emitted = buf.as_frames()
     assert emitted, "No IPC frames were emitted — harness or handler may have failed"
 
-    # --- Assert: 5 distinct tool_call frames (SC-004) ---
     tool_call_frames = [f for f in emitted if f.get("kind") == "tool_call"]
     call_ids_seen: set[str] = {str(f.get("call_id", "")) for f in tool_call_frames}
-    # Filter out any empty-string call_ids from malformed frames.
     call_ids_seen.discard("")
-    assert len(call_ids_seen) >= 5, (
-        f"Expected at least 5 distinct tool_call frames (SC-004). "
-        f"Found {len(call_ids_seen)} distinct call_ids: {sorted(call_ids_seen)}. "
-        f"Total tool_call frames: {len(tool_call_frames)}."
+    assert len(call_ids_seen) == 1, (
+        "chat_request must emit only the first tool_use; the TUI query loop "
+        f"drives later turns. Got call_ids={sorted(call_ids_seen)}."
     )
 
-    # --- Assert: 5 distinct tool_result frames ---
     tool_result_frames = [f for f in emitted if f.get("kind") == "tool_result"]
-    result_call_ids: set[str] = {str(f.get("call_id", "")) for f in tool_result_frames}
-    result_call_ids.discard("")
-    assert len(result_call_ids) >= 5, (
-        f"Expected at least 5 distinct tool_result frames. "
-        f"Found {len(result_call_ids)} distinct call_ids: {sorted(result_call_ids)}. "
-        f"Total tool_result frames: {len(tool_result_frames)}."
+    assert not tool_result_frames, (
+        "chat_request must not execute tools; Tool.call sends inbound tool_call separately"
     )
 
-    # --- Assert: terminal assistant_chunk(done=True) at the end ---
     terminal_chunks = [
         f for f in emitted if f.get("kind") == "assistant_chunk" and f.get("done") is True
     ]
-    assert terminal_chunks, (
-        "No terminal assistant_chunk(done=True) frame found in emitted frames. "
-        "The agentic loop must emit a final done=True chunk after the last turn."
+    assert not terminal_chunks, (
+        "chat_request must stop at tool_use instead of producing a final answer"
     )
+    assert call_counter["n"] == 0
 
     # --- Assert: NO rate_limit error frame (FR-012) ---
     error_frames = [f for f in emitted if f.get("kind") == "error"]
@@ -795,28 +778,18 @@ async def test_multi_tool_turn_is_coerced_to_one_visible_dispatch(
     ]
     expected_call_ids = [
         _ThreeToolsInOneTurnLLMClient._call_ids[0],
-        _ThreeToolsInOneTurnLLMClient._followup_call_id,
     ]
     assert tool_call_ids == expected_call_ids
-    assert result_call_ids == expected_call_ids
+    assert result_call_ids == []
     assert _ThreeToolsInOneTurnLLMClient._call_ids[1] not in tool_call_ids
     assert _ThreeToolsInOneTurnLLMClient._call_ids[2] not in tool_call_ids
-    assert call_counter["n"] == 2
+    assert call_counter["n"] == 0
 
     frame_kinds = [f.get("kind") for f in emitted]
     first_call_idx = frame_kinds.index("tool_call")
-    first_result_idx = frame_kinds.index("tool_result")
-    second_call_idx = frame_kinds.index("tool_call", first_call_idx + 1)
-    second_result_idx = frame_kinds.index("tool_result", first_result_idx + 1)
-    assert first_call_idx < first_result_idx < second_call_idx < second_result_idx
+    assert first_call_idx >= 0
 
     assistant_chunks = [f for f in emitted if f.get("kind") == "assistant_chunk"]
-    assert assistant_chunks, (
-        "No assistant_chunk frames emitted after sequential tool_results. "
-        "The agentic loop must emit a final answer."
-    )
-    all_delta_text = "".join(str(f.get("delta", "")) for f in assistant_chunks if f.get("delta"))
-    assert "순차 조회" in all_delta_text or "응급실" in all_delta_text, (
-        f"Final answer text not found in assistant_chunk deltas. "
-        f"Concatenated deltas: {all_delta_text!r}"
+    assert not [f for f in assistant_chunks if f.get("done") is True], (
+        "chat_request must stop at tool_use instead of completing the turn"
     )

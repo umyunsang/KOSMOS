@@ -34,6 +34,7 @@ from ummaya.ipc.frame_schema import (
 
 _ADAPTER: TypeAdapter[IPCFrame] = TypeAdapter(IPCFrame)
 _PROJECT_ROOT = Path(__file__).parent.parent.parent
+_SESSION_EVENT_TIMEOUT = 20.0
 
 
 def _ts() -> str:
@@ -70,6 +71,29 @@ async def _read_lines(
     return lines
 
 
+async def _read_session_event(
+    stream: asyncio.StreamReader,
+    *,
+    event: str | None = None,
+    timeout: float = 10.0,
+) -> SessionEventFrame | None:
+    """Read until a session_event frame is observed, skipping boot frames."""
+    deadline = time.monotonic() + timeout
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return None
+        lines = await _read_lines(stream, 1, timeout=remaining)
+        if not lines:
+            return None
+        parsed = _ADAPTER.validate_json(lines[0])
+        if parsed.kind != "session_event":
+            continue
+        if event is not None and parsed.event != event:
+            continue
+        return parsed
+
+
 # ---------------------------------------------------------------------------
 # Fixture: hermetic backend subprocess
 # ---------------------------------------------------------------------------
@@ -94,6 +118,8 @@ async def session_backend(
         "UMMAYA_DATA_GO_KR_API_KEY": "test-dummy",
         "UMMAYA_FRIENDLI_TOKEN": "test-dummy",
         "UMMAYA_KAKAO_API_KEY": "test-dummy",
+        "UMMAYA_KMA_API_HUB_AUTH_KEY": "test-dummy",
+        "OTEL_SDK_DISABLED": "true",
     }
 
     proc = await asyncio.create_subprocess_exec(
@@ -105,6 +131,7 @@ async def session_backend(
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
+        limit=4 * 1024 * 1024,
         cwd=_PROJECT_ROOT,
         env=env,
     )
@@ -155,13 +182,9 @@ async def test_new_creates_session(
     await proc.stdin.drain()
 
     assert proc.stdout is not None
-    lines = await _read_lines(proc.stdout, 1, timeout=5.0)
-    assert lines, "Expected at least one response frame after session_event new"
-
-    parsed = _ADAPTER.validate_json(lines[0])
-    assert parsed.kind == "session_event"
-    assert parsed.event == "new"  # type: ignore[attr-defined]
-    new_sid = parsed.payload.get("session_id")  # type: ignore[attr-defined]
+    parsed = await _read_session_event(proc.stdout, event="new", timeout=_SESSION_EVENT_TIMEOUT)
+    assert parsed is not None, "Expected at least one response frame after session_event new"
+    new_sid = parsed.payload.get("session_id")
     assert new_sid, "Response payload must include session_id"
 
     # Verify a JSONL file was created in the hermetic session dir.
@@ -183,22 +206,18 @@ async def test_save_emits_ack(
     await proc.stdin.drain()
 
     assert proc.stdout is not None
-    new_lines = await _read_lines(proc.stdout, 1, timeout=5.0)
-    assert new_lines, "Expected new reply before save"
-    new_parsed = _ADAPTER.validate_json(new_lines[0])
-    new_sid = new_parsed.payload.get("session_id")  # type: ignore[attr-defined]
+    new_parsed = await _read_session_event(proc.stdout, event="new", timeout=_SESSION_EVENT_TIMEOUT)
+    assert new_parsed is not None, "Expected new reply before save"
+    new_sid = new_parsed.payload.get("session_id")
     assert new_sid
 
     # Now send save.
     proc.stdin.write(_session_event(new_sid, "save"))
     await proc.stdin.drain()
 
-    save_lines = await _read_lines(proc.stdout, 1, timeout=5.0)
-    assert save_lines, "Expected ack frame for session_event save"
-    save_parsed = _ADAPTER.validate_json(save_lines[0])
-    assert save_parsed.kind == "session_event"
-    assert save_parsed.event == "save"  # type: ignore[attr-defined]
-    assert save_parsed.payload.get("session_id"), "save ack must include session_id"  # type: ignore[attr-defined]
+    save_parsed = await _read_session_event(proc.stdout, event="save", timeout=_SESSION_EVENT_TIMEOUT)
+    assert save_parsed is not None, "Expected ack frame for session_event save"
+    assert save_parsed.payload.get("session_id"), "save ack must include session_id"
 
 
 @pytest.mark.asyncio
@@ -216,18 +235,15 @@ async def test_list_returns_sessions(
     await proc.stdin.drain()
 
     assert proc.stdout is not None
-    await _read_lines(proc.stdout, 1, timeout=5.0)  # consume the new reply
+    await _read_session_event(proc.stdout, event="new", timeout=_SESSION_EVENT_TIMEOUT)
 
     # Ask for the list.
     proc.stdin.write(_session_event(sid, "list"))
     await proc.stdin.drain()
 
-    list_lines = await _read_lines(proc.stdout, 1, timeout=5.0)
-    assert list_lines, "Expected a response frame for session_event list"
-    list_parsed = _ADAPTER.validate_json(list_lines[0])
-    assert list_parsed.kind == "session_event"
-    assert list_parsed.event == "list"  # type: ignore[attr-defined]
-    sessions = list_parsed.payload.get("sessions")  # type: ignore[attr-defined]
+    list_parsed = await _read_session_event(proc.stdout, event="list", timeout=_SESSION_EVENT_TIMEOUT)
+    assert list_parsed is not None, "Expected a response frame for session_event list"
+    sessions = list_parsed.payload.get("sessions")
     assert isinstance(sessions, list) and len(sessions) > 0, "sessions must be non-empty"
     for entry in sessions:
         assert "id" in entry, "Each session entry must have 'id'"
@@ -250,22 +266,18 @@ async def test_resume_emits_load_frame(
     await proc.stdin.drain()
 
     assert proc.stdout is not None
-    new_lines = await _read_lines(proc.stdout, 1, timeout=5.0)
-    assert new_lines, "Expected new reply"
-    new_parsed = _ADAPTER.validate_json(new_lines[0])
-    new_sid: str = new_parsed.payload.get("session_id")  # type: ignore[attr-defined]
+    new_parsed = await _read_session_event(proc.stdout, event="new", timeout=_SESSION_EVENT_TIMEOUT)
+    assert new_parsed is not None, "Expected new reply"
+    new_sid: str = new_parsed.payload.get("session_id")
     assert new_sid
 
     # Step 2: resume that session.
     proc.stdin.write(_session_event(sid, "resume", {"id": new_sid}))
     await proc.stdin.drain()
 
-    load_lines = await _read_lines(proc.stdout, 1, timeout=5.0)
-    assert load_lines, "Expected a load frame for session_event resume"
-    load_parsed = _ADAPTER.validate_json(load_lines[0])
-    assert load_parsed.kind == "session_event"
-    assert load_parsed.event == "load"  # type: ignore[attr-defined]
-    payload = load_parsed.payload  # type: ignore[attr-defined]
+    load_parsed = await _read_session_event(proc.stdout, event="load", timeout=_SESSION_EVENT_TIMEOUT)
+    assert load_parsed is not None, "Expected a load frame for session_event resume"
+    payload = load_parsed.payload
     assert payload.get("session_id") == new_sid, "load frame must echo session_id"
     assert isinstance(payload.get("messages"), list), "load frame must include messages array"
 
@@ -284,12 +296,9 @@ async def test_exit_event_shuts_down(
     proc.stdin.close()
 
     assert proc.stdout is not None
-    exit_lines = await _read_lines(proc.stdout, 1, timeout=5.0)
-    assert exit_lines, "Expected an exit frame response"
-    exit_parsed = _ADAPTER.validate_json(exit_lines[0])
+    exit_parsed = await _read_session_event(proc.stdout, event="exit", timeout=_SESSION_EVENT_TIMEOUT)
+    assert exit_parsed is not None, "Expected an exit frame response"
     # The loop always emits a final session_event exit frame on shutdown.
-    assert exit_parsed.kind == "session_event"
-    assert exit_parsed.event == "exit"  # type: ignore[attr-defined]
 
     # Wait for the backend process to exit cleanly within 3s.
     try:

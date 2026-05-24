@@ -26,9 +26,13 @@ from ummaya.ipc.frame_schema import IPCFrame, ipc_frame_json_schema
 def _compute_manifest_hash_for_test() -> str:
     """Pre-compute the manifest_hash for the single-entry test frame."""
     entry = {
+        "input_schema_json": {},
+        "llm_description": None,
         "name": "Resolve Location",
+        "output_schema_json": {},
         "policy_authority_url": None,
         "primitive": "locate",
+        "search_hint": None,
         "source_mode": "internal",
         "tool_id": "locate",
     }

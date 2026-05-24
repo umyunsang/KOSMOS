@@ -36,7 +36,7 @@ import pytest
 from ummaya.ipc.frame_schema import (
     ChatMessage as IPCChatMessage,
 )
-from ummaya.ipc.frame_schema import ChatRequestFrame
+from ummaya.ipc.frame_schema import ChatRequestFrame, ToolCallFrame
 from ummaya.llm.models import StreamEvent
 
 _RUNNER_TIMEOUT = 30.0
@@ -84,6 +84,12 @@ class _CaptureBuf:
 class _FakeStdout:
     def __init__(self) -> None:
         self.buffer = _CaptureBuf()
+
+    def write(self, data: str) -> None:
+        self.buffer.write(data.encode())
+
+    def flush(self) -> None:
+        pass
 
 
 class _LookupSearchOnceLLMClient:
@@ -173,6 +179,16 @@ async def _run_lookup_search(
         pass
 
     session_id = frame.session_id
+    tool_call_frame = ToolCallFrame(
+        session_id=session_id,
+        correlation_id=frame.correlation_id,
+        role="tool",
+        ts=_ts(),
+        kind="tool_call",
+        call_id=f"call-find-{uuid.uuid4().hex[:8]}",
+        name="find",
+        arguments={"mode": "search", "query": "부산 날씨", "top_k": 5},
+    )
     exit_frame = SessionEventFrame(
         session_id=session_id,
         correlation_id=str(uuid.uuid4()),
@@ -182,7 +198,7 @@ async def _run_lookup_search(
         event="exit",
         payload={},
     )
-    payload = (frame.model_dump_json() + "\n").encode() + (
+    payload = (tool_call_frame.model_dump_json() + "\n").encode() + (
         exit_frame.model_dump_json() + "\n"
     ).encode()
 
