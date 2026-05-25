@@ -80,6 +80,7 @@ def _invalid_qn_filter(qn: str | None) -> bool:
         return True
     return "," in stripped or "，" in stripped
 
+
 # ---------------------------------------------------------------------------
 # Input schema (T032 — lat/lon/limit, Pydantic v2 strict)
 # ---------------------------------------------------------------------------

@@ -21,7 +21,7 @@ def load_capture_module() -> ModuleType:
 def test_strip_ansi_does_not_emit_replacement_for_incomplete_utf8_tail() -> None:
     module = load_capture_module()
 
-    text = module.strip_ansi("UMMAYA ─".encode("utf-8")[:-1])
+    text = module.strip_ansi("UMMAYA ─".encode()[:-1])
 
     assert "\ufffd" not in text
     assert text == "UMMAYA "

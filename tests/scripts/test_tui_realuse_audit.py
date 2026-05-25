@@ -205,7 +205,11 @@ def test_passes_error_rendering_with_red_ansi(tmp_path: Path) -> None:
 
 
 def test_provider_abort_banner_is_not_tool_error_rendering(tmp_path: Path) -> None:
-    write_capture(tmp_path, "final.txt", "APIError:Theoperationwasaborted.\nShowing detailed transcript")
+    write_capture(
+        tmp_path,
+        "final.txt",
+        "APIError:Theoperationwasaborted.\nShowing detailed transcript",
+    )
     write_capture(tmp_path, "final.raw.txt", "APIError:Theoperationwasaborted.")
     write_capture(tmp_path, "frames/frame_0000_boot.txt", "UMMAYA")
 

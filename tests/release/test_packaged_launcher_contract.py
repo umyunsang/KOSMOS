@@ -7,16 +7,18 @@ starting the interactive TUI.
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
+NODE = shutil.which("node")
+assert NODE is not None
 
 
 def _run_node(script: str) -> dict[str, object]:
-    result = subprocess.run(
-        ["node", "--input-type=module", "--eval", script],
+    result = subprocess.run(  # noqa: S603 - script is a trusted test fixture.
+        [NODE, "--input-type=module", "--eval", script],
         cwd=ROOT,
         check=True,
         text=True,

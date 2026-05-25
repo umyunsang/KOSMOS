@@ -163,9 +163,7 @@ def search(
 
     if _TRAFFIC_HAZARD_SPECIFIC_RE.search(query):
         scored = [
-            (tool_id, score)
-            for tool_id, score in scored
-            if tool_id != "koroad_accident_search"
+            (tool_id, score) for tool_id, score in scored if tool_id != "koroad_accident_search"
         ]
 
     # Enforce the deterministic tie-break once, here. Backend-internal

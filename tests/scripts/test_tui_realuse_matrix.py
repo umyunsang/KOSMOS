@@ -58,9 +58,7 @@ def test_dry_run_builds_capture_and_audit_commands(tmp_path: Path) -> None:
 def test_dry_run_can_select_python_pty_driver(tmp_path: Path) -> None:
     module = load_matrix_module()
     matrix = Path("specs/2773-rollback-debug-infra/scenario-matrix.json")
-    scenario = next(
-        item for item in module.load_matrix(matrix) if item.id == "LOC-ER-HADAN-001"
-    )
+    scenario = next(item for item in module.load_matrix(matrix) if item.id == "LOC-ER-HADAN-001")
 
     result = module.run_scenario(
         scenario,

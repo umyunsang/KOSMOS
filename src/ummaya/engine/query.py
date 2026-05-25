@@ -335,9 +335,17 @@ async def dispatch_tool_calls(  # noqa: C901
                 tc.function.arguments,
                 tool_call_id=tc.id,
             )
+        primitive = tool.primitive
+        if primitive is None:
+            return ToolResult(
+                tool_id=tc.function.name,
+                success=False,
+                error=f"{tc.function.name} is missing primitive metadata for gated dispatch.",
+                error_type="schema_mismatch",
+            )
         return await _dispatch_concrete_adapter(
             tc,
-            tool.primitive,
+            primitive,
             tool_executor,
             session_context=session_context,
         )

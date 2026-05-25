@@ -256,9 +256,7 @@ class ToolExecutor:
         except ValidationError as exc:
             field_paths = [".".join(str(p) for p in e["loc"]) for e in exc.errors()]
             field_summary = ", ".join(field_paths) if field_paths else "(no field info)"
-            error_messages = "; ".join(
-                str(e.get("msg", "")) for e in exc.errors() if e.get("msg")
-            )
+            error_messages = "; ".join(str(e.get("msg", "")) for e in exc.errors() if e.get("msg"))
             recovery_hint = _adapter_validation_recovery_hint(tool_id)
             fallback_hint = (
                 "Read this adapter's input_schema in <available_adapters> and retry "

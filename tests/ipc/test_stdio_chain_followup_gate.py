@@ -54,9 +54,9 @@ from ummaya.ipc.stdio import (
     _location_independent_resolve_redirect_for_query,
     _maybe_reroute_locate_admin_keyword_args,
     _maybe_reroute_locate_poi_address_args,
-    _normalize_lookup_args_for_query,
     _normalize_hira_lookup_args_from_prior_locate,
     _normalize_koroad_lookup_args_from_prior_locate,
+    _normalize_lookup_args_for_query,
     _normalize_lookup_args_from_cached_locate_result,
     _normalize_nmc_lookup_args_from_prior_locate,
     _normalize_reverse_geocode_args_from_prior_locate,
@@ -2361,7 +2361,8 @@ def test_nmc_lookup_args_are_derived_from_prior_concrete_locate_result() -> None
     class Registry:
         def find(self, tool_id: str) -> object:
             if tool_id in {"kakao_address_search", "nmc_emergency_search"}:
-                return SimpleNamespace(primitive="locate" if tool_id.startswith("kakao_") else "find")
+                primitive = "locate" if tool_id.startswith("kakao_") else "find"
+                return SimpleNamespace(primitive=primitive)
             raise KeyError(tool_id)
 
     msgs: list[Any] = [

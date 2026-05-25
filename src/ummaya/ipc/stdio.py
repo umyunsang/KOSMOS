@@ -66,9 +66,7 @@ _tracer = trace.get_tracer(__name__)
 _BACKGROUND_FRAME_KINDS: frozenset[str] = frozenset(
     {"chat_request", "user_input", "tool_call", "plugin_op"}
 )
-_ROOT_PRIMITIVE_TOOL_IDS: Final[frozenset[str]] = frozenset(
-    {"locate", "find", "check", "send"}
-)
+_ROOT_PRIMITIVE_TOOL_IDS: Final[frozenset[str]] = frozenset({"locate", "find", "check", "send"})
 _SCOPE_ENTRY_RE = re.compile(r"^(find|send|check):[a-z0-9_]+\.[a-z0-9_-]+$")
 _TOOL_ID_SCOPE_RE = re.compile(r"^(?P<verb>find|send|check):(?P<tool_id>[a-z][a-z0-9_]*[a-z0-9])$")
 _LEGACY_SCOPE_VERB_ALIASES: Final[dict[str, str]] = {
@@ -2312,7 +2310,8 @@ def _normalize_hira_lookup_args_from_locate_result(
     normalized = dict(args_obj)
     normalized["params"] = params
     logger.info(
-        "find: normalized hira_hospital_search params from prior locate xPos=%s yPos=%s radius=%s dgsbjt=%s",
+        "find: normalized hira_hospital_search params from prior locate "
+        "xPos=%s yPos=%s radius=%s dgsbjt=%s",
         params.get("xPos"),
         params.get("yPos"),
         params.get("radius"),
@@ -7037,14 +7036,14 @@ async def run(  # noqa: C901
                     )
                     continue
 
-                raw_duplicate = (
-                    _canonical_primitive_args(raw_dispatch_args_obj)
-                    != _canonical_primitive_args(args_obj)
-                    and _conversation_has_successful_identical_primitive_call(
-                        llm_messages,
-                        primitive=fname,
-                        args=raw_dispatch_args_obj,
-                    )
+                raw_duplicate = _canonical_primitive_args(
+                    raw_dispatch_args_obj
+                ) != _canonical_primitive_args(
+                    args_obj
+                ) and _conversation_has_successful_identical_primitive_call(
+                    llm_messages,
+                    primitive=fname,
+                    args=raw_dispatch_args_obj,
                 )
                 if raw_duplicate or _conversation_has_successful_identical_primitive_call(
                     llm_messages,
