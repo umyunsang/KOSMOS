@@ -5,6 +5,16 @@ All notable changes to UMMAYA are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.2.3] - 2026-05-26
+
+### Fixed
+
+- Restored the released v0.2.1 Claude Code-style mid-loop painting behavior after
+  v0.2.2's deferred concrete adapter loading hid the root primitive tool surface.
+- Emitted same-turn assistant preamble text before tool-call frames so the TUI paints
+  the model's intent/tool-use narration before the first adapter row and between tool calls.
+- Added regression coverage and captured tmux/VHS evidence for the weather query loop.
+
 ## [v0.2.2] - 2026-05-25
 
 ### Fixed
