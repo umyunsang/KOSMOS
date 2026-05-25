@@ -103,7 +103,7 @@ function collectArchiveEntries(root) {
 
   function visit(relativeDir) {
     const absoluteDir = join(root, relativeDir)
-    const names = readdirSync(absoluteDir).sort((left, right) => left.localeCompare(right))
+    const names = readdirSync(absoluteDir).sort()
     for (const name of names) {
       const relativePath = relativeDir === '.' ? `./${name}` : `${relativeDir}/${name}`
       entries.push(relativePath)
