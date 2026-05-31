@@ -109,6 +109,75 @@ async def test_concrete_document_inspect_tool_call_bypasses_lookup_envelope(
     assert "expected envelope schema" not in json.dumps(result)
 
 
+@pytest.mark.asyncio
+async def test_local_document_validation_bypasses_citizen_permission_gate(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "weekly.hwpx"
+    _write_minimal_hwpx(source)
+
+    session_id = str(uuid.uuid4())
+    inspect_call_id = f"call-document-inspect-{uuid.uuid4().hex[:8]}"
+    validate_call_id = f"call-document-validate-{uuid.uuid4().hex[:8]}"
+    inspect_frame = ToolCallFrame(
+        session_id=session_id,
+        correlation_id=str(uuid.uuid4()),
+        role="tool",
+        ts=_ts(),
+        kind="tool_call",
+        call_id=inspect_call_id,
+        name="document_inspect",
+        arguments={
+            "correlation_id": "corr-doc-perm",
+            "document": {"path": str(source), "expected_format": "hwpx"},
+        },
+    )
+    validate_frame = ToolCallFrame(
+        session_id=session_id,
+        correlation_id=str(uuid.uuid4()),
+        role="tool",
+        ts=_ts(),
+        kind="tool_call",
+        call_id=validate_call_id,
+        name="document_validate_public_form",
+        arguments={
+            "correlation_id": "corr-doc-validate",
+            "document": {"artifact_id": "source-corr-doc-perm"},
+            "template_id": "unknown-template",
+        },
+    )
+    exit_frame = SessionEventFrame(
+        session_id=session_id,
+        correlation_id=str(uuid.uuid4()),
+        role="tui",
+        ts=_ts(),
+        kind="session_event",
+        event="exit",
+        payload={},
+    )
+
+    monkeypatch.setenv("UMMAYA_PERMISSION_TIMEOUT_SECONDS", "0.01")
+    buf = await _run_stdio_frames(
+        [inspect_frame, validate_frame, exit_frame], session_id, monkeypatch
+    )
+
+    frames = buf.as_frames()
+    assert not [frame for frame in frames if frame.get("kind") == "permission_request"]
+    validate_results = [
+        frame
+        for frame in frames
+        if frame.get("kind") == "tool_result" and frame.get("call_id") == validate_call_id
+    ]
+    assert validate_results, f"document_validate_public_form must emit a tool_result: {frames!r}"
+    envelope = validate_results[0]["envelope"]
+    assert envelope["kind"] == "check"
+    result = envelope.get("result")
+    assert isinstance(result, dict)
+    assert result.get("tool_id") == "document_validate_public_form"
+    assert result.get("status") == "blocked"
+
+
 async def _run_stdio_frames(
     frames: list[ToolCallFrame | SessionEventFrame],
     session_id: str,
@@ -147,3 +216,19 @@ def _write_minimal_docx(path: Path) -> None:
     with zipfile.ZipFile(path, "w") as package:
         package.writestr("[Content_Types].xml", "<Types/>")
         package.writestr("word/document.xml", "<w:document/>")
+
+
+def _write_minimal_hwpx(path: Path) -> None:
+    section = """<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+        xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
+  <hp:p><hp:run><hp:t>13 주차 </hp:t></hp:run></hp:p>
+</hs:sec>
+""".encode()
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as package:
+        package.writestr("mimetype", "application/owpml")
+        package.writestr("version.xml", "<version />")
+        package.writestr("Contents/header.xml", "<header />")
+        package.writestr("Contents/section0.xml", section)
+        package.writestr("META-INF/manifest.xml", "<manifest />")
+        package.writestr("Preview/PrvText.txt", "<13 주차 >")

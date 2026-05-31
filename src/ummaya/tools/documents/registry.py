@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import re
 from pathlib import Path
 from typing import Any, cast
 
@@ -429,21 +431,86 @@ class DocumentToolRuntime:
         return extraction
 
 
+class _SessionDocumentRuntimePool:
+    """Lazily allocate one document runtime per caller session."""
+
+    def __init__(
+        self,
+        *,
+        artifact_root: str | Path | None = None,
+        engine_registry: DocumentEngineRegistry | None = None,
+        baseline_catalog: ConformanceBaselineCatalog | None = None,
+    ) -> None:
+        self._artifact_root = artifact_root
+        self._engine_registry = engine_registry
+        self._baseline_catalog = baseline_catalog
+        self._runtimes: dict[str, DocumentToolRuntime] = {}
+
+    def runtime_for(self, session_identity: object | None) -> DocumentToolRuntime:
+        session_id = _runtime_session_id(session_identity)
+        runtime = self._runtimes.get(session_id)
+        if runtime is None:
+            runtime = DocumentToolRuntime(
+                session_id=session_id,
+                artifact_root=self._artifact_root,
+                engine_registry=self._engine_registry,
+                baseline_catalog=self._baseline_catalog,
+            )
+            self._runtimes[session_id] = runtime
+        return runtime
+
+
 def register_document_tools(
     registry: ToolRegistry,
     executor: ToolExecutor,
     *,
     runtime: DocumentToolRuntime | None = None,
+    artifact_root: str | Path | None = None,
+    engine_registry: DocumentEngineRegistry | None = None,
+    baseline_catalog: ConformanceBaselineCatalog | None = None,
 ) -> None:
     """Register document harness tools and their executor adapters."""
-    active_runtime = runtime or DocumentToolRuntime()
+    runtime_pool = None
+    if runtime is None:
+        runtime_pool = _SessionDocumentRuntimePool(
+            artifact_root=artifact_root,
+            engine_registry=engine_registry,
+            baseline_catalog=baseline_catalog,
+        )
+
     for tool in build_document_tool_definitions():
         registry.register(tool)
 
-        async def _adapter(inp: BaseModel, *, _tool_id: str = tool.id) -> dict[str, Any]:
-            return await active_runtime.handle(_tool_id, inp)
+        if runtime is not None:
 
-        executor.register_adapter(tool.id, _adapter)
+            async def _adapter(inp: BaseModel, *, _tool_id: str = tool.id) -> dict[str, Any]:
+                return await runtime.handle(_tool_id, inp)
+
+            executor.register_adapter(tool.id, _adapter)
+            continue
+
+        assert runtime_pool is not None
+        active_pool = runtime_pool
+
+        async def _session_adapter(
+            inp: BaseModel,
+            session_identity: object | None,
+            *,
+            _tool_id: str = tool.id,
+            _runtime_pool: _SessionDocumentRuntimePool = active_pool,
+        ) -> dict[str, Any]:
+            return await _runtime_pool.runtime_for(session_identity).handle(_tool_id, inp)
+
+        executor.register_session_adapter(tool.id, _session_adapter)
+
+
+def _runtime_session_id(session_identity: object | None) -> str:
+    if session_identity is None:
+        return "anonymous"
+    raw = str(session_identity).strip() or "anonymous"
+    digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:12]
+    label = re.sub(r"[^A-Za-z0-9_.-]+", "-", raw).strip("._-")[:48] or "session"
+    return f"{label}-{digest}"
 
 
 def _source_artifact_id(correlation_id: str) -> str:

@@ -6,8 +6,10 @@ from __future__ import annotations
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
+import pytest
+
 from ummaya.tools.documents.models import DocumentFormat, ToolResultStatus
-from ummaya.tools.documents.registry import DocumentToolRuntime
+from ummaya.tools.documents.registry import DocumentToolRuntime, register_document_tools
 from ummaya.tools.documents.tool_defs import (
     DocumentApplyFillRequest,
     DocumentCopyForEditRequest,
@@ -16,6 +18,8 @@ from ummaya.tools.documents.tool_defs import (
     DocumentInspectRequest,
     DocumentLocator,
 )
+from ummaya.tools.executor import ToolExecutor
+from ummaya.tools.registry import ToolRegistry
 
 
 def test_default_runtime_inspects_hwpx_with_package_text_engine(tmp_path: Path) -> None:
@@ -96,6 +100,60 @@ def test_default_runtime_writes_hwpx_text_nodes_on_working_copy(tmp_path: Path) 
         "2026.06.01 ~ 2026.06.07",
         "공공AX 문서 하네스 HWPX 작성 테스트 완료",
     ]
+
+
+@pytest.mark.asyncio
+async def test_registered_document_runtime_is_scoped_to_executor_session(
+    tmp_path: Path,
+) -> None:
+    source = _write_hwpx_fixture(tmp_path / "weekly.hwpx")
+    registry = ToolRegistry()
+    executor = ToolExecutor(registry)
+    register_document_tools(registry, executor, artifact_root=tmp_path / "store")
+
+    inspect_result = await executor.invoke_raw(
+        "document_inspect",
+        {
+            "correlation_id": "same-correlation",
+            "document": {"path": str(source), "expected_format": "hwpx"},
+        },
+        request_id="req-inspect-a",
+        session_identity="session-a",
+    )
+    assert isinstance(inspect_result, dict)
+    assert inspect_result["status"] == "ok"
+    artifact_id = inspect_result["artifact_refs"][0]
+
+    same_session_result = await executor.invoke_raw(
+        "document_extract",
+        {
+            "correlation_id": "read-a",
+            "document": {"artifact_id": artifact_id},
+            "include_tables": True,
+            "include_images": True,
+            "include_fields": True,
+        },
+        request_id="req-read-a",
+        session_identity="session-a",
+    )
+    assert isinstance(same_session_result, dict)
+    assert same_session_result["status"] == "ok"
+
+    other_session_result = await executor.invoke_raw(
+        "document_extract",
+        {
+            "correlation_id": "read-b",
+            "document": {"artifact_id": artifact_id},
+            "include_tables": True,
+            "include_images": True,
+            "include_fields": True,
+        },
+        request_id="req-read-b",
+        session_identity="session-b",
+    )
+    assert isinstance(other_session_result, dict)
+    assert other_session_result["status"] == "needs_input"
+    assert "Unknown local document artifact" in other_session_result["text_summary"]
 
 
 def _write_hwpx_fixture(path: Path) -> Path:
