@@ -266,6 +266,11 @@ def _should_append_tui_tool_to_llm_tools(
     return True
 
 
+def _is_local_document_harness_tool(tool: object) -> bool:
+    endpoint = getattr(tool, "endpoint", "")
+    return isinstance(endpoint, str) and endpoint.startswith("local://document-harness/")
+
+
 def _normalize_root_primitive_adapter_envelope(
     fname: str,
     args_obj: dict[str, object],
@@ -5393,6 +5398,19 @@ async def run(  # noqa: C901
             _ensure_tool_registry()  # populates both refs in one shot
         return _tool_executor_ref[0]
 
+    def _is_local_document_harness_root_call(
+        fname: str,
+        args_obj: dict[str, object],
+    ) -> bool:
+        tool_id = str(args_obj.get("tool_id") or "")
+        if not tool_id:
+            return False
+        try:
+            tool = _ensure_tool_registry().find(tool_id)
+        except Exception:
+            return False
+        return tool.primitive == fname and _is_local_document_harness_tool(tool)
+
     async def _ensure_llm_client() -> object:
         if not _llm_client_ref:
             from ummaya.llm.client import LLMClient  # noqa: PLC0415
@@ -6342,9 +6360,10 @@ async def run(  # noqa: C901
             span.set_attribute("ummaya.tool.dispatched", fname)
             span.set_attribute("ummaya.session.id", session_id)
 
+            local_document_harness_call = _is_local_document_harness_root_call(fname, args_obj)
             invalid_gated_tool_id = (
                 _invalid_gated_primitive_tool_id_result(fname, args_obj)
-                if fname in _PERMISSION_GATED_PRIMITIVES
+                if fname in _PERMISSION_GATED_PRIMITIVES and not local_document_harness_call
                 else None
             )
             if invalid_gated_tool_id is not None:
@@ -6375,13 +6394,17 @@ async def run(  # noqa: C901
                 return
 
             # ----- Permission gate (T043-T049) -----
-            allowed = await _check_permission_gate(
-                call_id, fname, args_obj, session_id, correlation_id
-            )
-            if not allowed:
-                # Gate already resolved the Future with an error envelope.
-                span.set_attribute("ummaya.permission.decision", "deny")
-                return
+            if not local_document_harness_call:
+                allowed = await _check_permission_gate(
+                    call_id, fname, args_obj, session_id, correlation_id
+                )
+                if not allowed:
+                    # Gate already resolved the Future with an error envelope.
+                    span.set_attribute("ummaya.permission.decision", "deny")
+                    return
+            else:
+                span.set_attribute("ummaya.permission.mode", "local_document_harness")
+                span.set_attribute("ummaya.permission.decision", "allow_once")
 
             result_payload: dict[str, object] = {}
             dispatch_error: str | None = None
@@ -6403,7 +6426,43 @@ async def run(  # noqa: C901
             _outbound_trace_token = start_outbound_capture()
 
             try:
-                if fname == "check":
+                document_harness_dispatched = False
+                document_tool_id = str(args_obj.get("tool_id") or "")
+                if document_tool_id:
+                    registry = _ensure_tool_registry()
+                    try:
+                        document_tool = registry.find(document_tool_id)
+                    except Exception:
+                        document_tool = None
+                    if document_tool is not None and _is_local_document_harness_tool(document_tool):
+                        document_harness_dispatched = True
+                        if document_tool.primitive != fname:
+                            dispatch_error = (
+                                f"Adapter {document_tool_id!r} is "
+                                f"primitive={document_tool.primitive!r}, "
+                                f"but was called through {fname}."
+                            )
+                        else:
+                            executor = _ensure_tool_executor()
+                            document_params = cast(
+                                "dict[str, object]",
+                                args_obj.get("params") or {},
+                            )
+                            raw = await executor.invoke_raw(
+                                tool_id=document_tool_id,
+                                params=document_params,
+                                request_id=str(uuid.uuid4()),
+                                session_identity=session_id,
+                            )
+                            result_payload = {
+                                "kind": fname,
+                                "result": _serialize_primitive_result(raw),
+                            }
+
+                if document_harness_dispatched:
+                    pass
+
+                elif fname == "check":
                     from ummaya.primitives.verify import (  # noqa: PLC0415
                         verify,
                     )
