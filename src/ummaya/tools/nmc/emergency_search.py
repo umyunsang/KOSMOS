@@ -787,6 +787,8 @@ NMC_EMERGENCY_SEARCH_TOOL = GovAPITool(
         self_contained_decl=(
             "ORDERING: turn1 locate(kakao_keyword_search 또는 kakao_address_search), "
             "turn2 locate(kakao_coord_to_region), turn3 본 도구. "
+            "If the same citizen request also mentions AED/자동심장충격기, call "
+            "nmc_aed_site_locate as a separate find adapter; ER data does not answer AED. "
             "응급실 시간은 '24시간 운영', "
             "outpatient_hours_display는 외래진료로만 설명."
         ),
